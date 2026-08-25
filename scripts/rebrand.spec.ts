@@ -37,6 +37,9 @@ const CHANGED: readonly (readonly [string, string])[] = [
   ['DshWindow', 'CxhWindow'],
   ['extensions.dshUnknown', 'extensions.cxhUnknown'],
   ['DSH_HOME', 'CXH_HOME'],
+  // a prefix glued to a preceding word or escape: only the separator identifies it
+  ['Skilldsh-manage-issues', 'Skillcxh-manage-issues'],
+  ['CXH_CRED_TEST: a\\nDSH_CRED_OTHER: [b]', 'CXH_CRED_TEST: a\\nCXH_CRED_OTHER: [b]'],
   // generated catalog anchors fuse scope and prefix; hand-written docs link to them
   ['<a id="deepseek-aidsh-tool-bash"></a>', '<a id="centurionarxcxh-tool-bash"></a>'],
 ]
@@ -64,8 +67,12 @@ const PRESERVED: readonly string[] = [
   'https://github.com/deepseek-harness/deepseek-harness/pull/436',
   'https://github.com/deepseek-harness/deepseek-harness/issues/2488',
   "repository: 'deepseekharness/dsh-test'",
+  // archived notes are frozen, so links into them keep the old file names
+  '../../archived/architecture/2026-07-28-dsh-native-typescript-source-launch.md',
+  '[note](../../archived/feature/2026-08-08-dsh-run-headless-command.zh.md)',
   // an unrelated word that merely contains the prefix
   'handshake',
+  'spreadsheet',
 ]
 
 describe('rebrandText', () => {

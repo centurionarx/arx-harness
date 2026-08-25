@@ -50,6 +50,7 @@ export const BRAND: Brand = {
  * is global and must not capture surrounding product text.
  */
 export const PROTECTED: readonly RegExp[] = [
+  /[A-Za-z0-9_./-]*archived\/[a-z-]+\/\d{4}-\d{2}-\d{2}-[A-Za-z0-9_-]+\.(?:zh\.)?md/g,
   /github\.com\/deepseek-harness\/(?!deepseek-harness\.git)[A-Za-z0-9_.-]+/g,
   /(?<![A-Za-z0-9_.-])deepseekharness\/[A-Za-z0-9_.-]+/g,
   /\bDEEPSEEK_[A-Z0-9_]+\b/g,
@@ -76,6 +77,13 @@ function rules(brand: Brand): readonly (readonly [RegExp, string])[] {
   // No rule anchors its left edge: `\b` fails wherever an escape sequence
   // puts a word character against the match (`\\nDeepSeek Harness` in escaped
   // JSON, `\\0dsh-css`), and every product literal here is unambiguous.
+  // A separator after the prefix is itself the evidence: no English word
+  // spells `dsh-`, `dsh_`, or `DSH_`, so those rules need no left guard at
+  // all - and without one they still reach a prefix glued to a preceding
+  // word (`Skilldsh-manage-issues` in a rendered test expectation) or to an
+  // escape (`\\nDSH_CRED_OTHER` inside a string literal). The guard stays only
+  // where a lowercase letter follows, which is where `handshake` and
+  // `spreadsheet` live.
   // `\b` is likewise NOT used for the prefix rules: `_` and digits are
   // word characters, so a boundary hides `__DSH_BOOT__`, `_dshWebServer`, and
   // the `\0dsh-css:` virtual-module prefixes. Excluding only letters reaches
@@ -100,15 +108,15 @@ function rules(brand: Brand): readonly (readonly [RegExp, string])[] {
     [/DeepSeek Harness/g, brand.prose],
     [/deepseek harness/g, brand.slug.replace('-', ' ')],
     [/DeepSeek-Harness/g, brand.prose.replace(' ', '-')],
-    [/(?<![A-Za-z])dsh-/g, `${brand.prefix}-`],
+    [/dsh-/g, `${brand.prefix}-`],
     [/(?<![A-Za-z])dsh(?=[A-Z])/g, brand.prefix],
-    [/(?<![A-Za-z])dsh_/g, `${brand.prefix}_`],
+    [/dsh_/g, `${brand.prefix}_`],
     // git lowercases config keys, so the `extensions.dshUnknown` namespace also
     // appears as `extensions.dshunknown`; both must move together.
     [/(?<![A-Za-z])dsh(?=[a-z])/g, brand.prefix],
     [/(?<![A-Za-z])dsh\b/g, brand.prefix],
     [/(?<![A-Za-z])Dsh(?=[A-Z])/g, pascalPrefix],
-    [/(?<![A-Za-z])DSH_/g, `${upper}_`],
+    [/DSH_/g, `${upper}_`],
     [/(?<![A-Za-z])DSH\b/g, upper],
   ]
 }

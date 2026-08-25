@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-25-rebrand-to-centurionarx.md
+2026-08-25-rebrand-to-centurionarx.md: d5d3f722b971c0fa200da907fa356bfd7edbbc5c
+2026-08-25-rebrand-to-centurionarx.zh.md: 2f14087a35b55d58586956836c1a8e54230c4169
