@@ -231,10 +231,10 @@ describe('collectPythonDependencies', () => {
   it('excludes normalized local project names without exempting a third-party prefix', () => {
     const pyprojects = [
       '[project]\nname = "centurionarx-harness-runtime-bin"\ndependencies = ["pydantic"]\n',
-      '[project]\nname = "centurionarx-harness-sdk"\ndependencies = ["DeepSeek.Harness_Runtime-Bin", "deepseek-unrelated"]\n',
+      '[project]\nname = "centurionarx-harness-sdk"\ndependencies = ["CENTURIONarx.Harness_Runtime-Bin", "centurionarx-unrelated"]\n',
     ]
     expect(() => collectPythonDependencies(pyprojects)).toThrow(
-      'python dependency deepseek-unrelated is missing from PYTHON_METADATA',
+      'python dependency centurionarx-unrelated is missing from PYTHON_METADATA',
     )
   })
 })
