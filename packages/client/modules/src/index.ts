@@ -123,7 +123,7 @@ interface WebPluginRecord {
 }
 
 /** Narrow an unknown parsed JSON value to the `cxh.client` declaration, throwing on malformed fields. */
-function parseDshClient(pkgName: string, value: unknown): CxhClientDeclaration | undefined {
+function parseCxhClient(pkgName: string, value: unknown): CxhClientDeclaration | undefined {
   if (value === undefined) return undefined
   if (typeof value !== 'object' || value === null) {
     throw new Error(`client-modules: ${pkgName} has a non-object cxh.client declaration`)
@@ -440,7 +440,7 @@ export class ClientModuleRegistry extends Service {
     }
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, unknown>
     const cxh = pkg.cxh
-    const decl = parseDshClient(
+    const decl = parseCxhClient(
       pkgName,
       cxh !== null && typeof cxh === 'object' ? (cxh as Record<string, unknown>).client : undefined,
     )

@@ -1,4 +1,4 @@
-# Agent Note: rebrand from DeepSeek Harness to CENTURIONarx Harness
+# Agent Note: rebrand from CENTURIONarx Harness to CENTURIONarx Harness
 
 Status: implemented
 
@@ -6,11 +6,11 @@ English | [中文](2026-08-25-rebrand-to-centurionarx.zh.md)
 
 ## Problem
 
-The harness shipped under DeepSeek's product identity: npm scope `@deepseek-ai`, package and binary prefix `dsh`, environment prefix `DSH_`, Python module `deepseek_harness`, and the `deepseek-ai/deepseek-harness` repository. The product now ships as CENTURIONarx and needs its own identity across every one of those surfaces.
+The harness shipped under DeepSeek's product identity: npm scope `@centurionarx`, package and binary prefix `cxh`, environment prefix `CXH_`, Python module `centurionarx_harness`, and the `centurionarx/centurionarx-harness` repository. The product now ships as CENTURIONarx and needs its own identity across every one of those surfaces.
 
 A blind rename destroys the product it renames. Of the 29,604 case-insensitive `deepseek` spans in the tree, roughly 5,900 do not name the harness at all: they name the DeepSeek *model*, *provider*, *credential*, or *endpoint* that [`cxh-llm-deepseek`](../../../../packages/llm/llm-deepseek/README.md) still speaks to. `DEEPSEEK_API_KEY`, `deepseek-official`, the `deepseek-v4` model ids, and `api.deepseek.com` are third-party facts, not branding.
 
-Two further span families look like the product and are not. The `deepseek-harness` GitHub organization is a third party here — it hosts the forks whose commits [`vendor/README.md`](../../../../vendor/README.md) pins, and the pull requests the notes cite. And the archived Agent Note tree is frozen by [the archive policy](../../README.md), so its file names keep the old prefix while every link *into* it lives in a file the rewrite does touch.
+Two further span families look like the product and are not. The `centurionarx-harness` GitHub organization is a third party here — it hosts the forks whose commits [`vendor/README.md`](../../../../vendor/README.md) pins, and the pull requests the notes cite. And the archived Agent Note tree is frozen by [the archive policy](../../README.md), so its file names keep the old prefix while every link *into* it lives in a file the rewrite does touch.
 
 ## Decision
 
@@ -18,11 +18,11 @@ Identity is `@centurionarx` (npm scope), `cxh` (package and binary prefix), `CXH
 
 [`scripts/rebrand.ts`](../../../../scripts/rebrand.ts) is the reproducible source of truth, and it is a **classifier, not a substitution**. Protected spans are masked before any rewrite rule runs and restored afterwards, so no rule can reach them whatever its order. [`scripts/rebrand.spec.ts`](../../../../scripts/rebrand.spec.ts) pins both directions: what must move, and what must survive untouched.
 
-The classifier preserves, in addition to the model and provider spans: `github.com/deepseek-harness/<repo>` for every repository except this product's own clone URL in [`native/`](../../../../native/README.md), which follows the product; the `deepseekharness/` fixture in the issue-management policy test; and every relative link naming a file under `archived/`.
+The classifier preserves, in addition to the model and provider spans: `github.com/centurionarx-harness/<repo>` for every repository except this product's own clone URL in [`native/`](../../../../native/README.md), which follows the product; the `centurionarxharness/` fixture in the issue-management policy test; and every relative link naming a file under `archived/`.
 
 The MIT notice keeps `Copyright (c) 2026 DeepSeek` and adds `Copyright (c) 2026 CENTURIONarx` below it, as a derivative must.
 
-Word boundaries are the wrong tool for the prefix rules and are deliberately absent from them. `_` and digits are word characters, so `\b` hides `__DSH_BOOT__`, `_dshWebServer`, `_dsh_base_agent`, the `\0dsh-css:` virtual-module prefixes, the Python distributions that extend the module name, and `DeepSeek Harness` wherever an escaped `\n` puts a letter against it inside JSON. Excluding only letters reaches all of them.
+Word boundaries are the wrong tool for the prefix rules and are deliberately absent from them. `_` and digits are word characters, so `\b` hides `__CXH_BOOT__`, `_cxhWebServer`, `_cxh_base_agent`, the `\0cxh-css:` virtual-module prefixes, the Python distributions that extend the module name, and `CENTURIONarx Harness` wherever an escaped `\n` puts a letter against it inside JSON. Excluding only letters reaches all of them.
 
 ## The acceptance invariant
 
@@ -34,7 +34,7 @@ Generated catalogs slugify `@scope/prefix-name` into anchors by dropping `@` and
 
 **`sed` over the tree.** Rejected: about a fifth of the matches must survive, and no ordering of blind substitutions distinguishes them. The masking pass exists precisely because rule order cannot be trusted to.
 
-**Keeping the `dsh` prefix.** It reads as an abbreviation rather than a brand, so it looked cheap to leave. Rejected: `dsh` *means* DeepSeek Harness, and a prefix that silently keeps the old product's initials is worse than either extreme — it is neither the old identity nor the new one.
+**Keeping the `cxh` prefix.** It reads as an abbreviation rather than a brand, so it looked cheap to leave. Rejected: `cxh` *means* CENTURIONarx Harness, and a prefix that silently keeps the old product's initials is worse than either extreme — it is neither the old identity nor the new one.
 
 **Renaming the archived notes with everything else.** Rejected: archived notes are the frozen record of what was decided under the old name, and rewriting them falsifies that record. The cost is an asymmetry — links into `archived/` name files whose prefix no longer matches the tree around them — which the classifier now protects explicitly.
 
@@ -42,7 +42,7 @@ Generated catalogs slugify `@scope/prefix-name` into anchors by dropping `@` and
 
 ## Consequences
 
-`$DSH_HOME` becomes `$CXH_HOME`, so existing sessions, credentials, and settings are orphaned. The [pre-release stance](../../../../CLAUDE.md) permits this — backends reject old on-disk formats — and `SESSION_FORMAT_VERSION` does not move, because a rebrand changes no log structure.
+`$CXH_HOME` becomes `$CXH_HOME`, so existing sessions, credentials, and settings are orphaned. The [pre-release stance](../../../../CLAUDE.md) permits this — backends reject old on-disk formats — and `SESSION_FORMAT_VERSION` does not move, because a rebrand changes no log structure.
 
 Publication now depends on owning the `@centurionarx` npm scope and the `centurionarx-harness-sdk` PyPI name; neither is a code change.
 

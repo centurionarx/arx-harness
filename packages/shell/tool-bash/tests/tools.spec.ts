@@ -1051,7 +1051,7 @@ describe('tool-owned UI presentation (presentCall / presentResult)', () => {
 })
 
 describe('the model-facing bash tool builds its request from named args only (no {...args} forward)', () => {
-  const recordingDshHome = join(spillDir, 'cxh-home')
+  const recordingCxhHome = join(spillDir, 'cxh-home')
 
   /**
    * Records every {@link ShellExecRequest} the consumer hands to `resolve()`, so a
@@ -1111,7 +1111,7 @@ describe('the model-facing bash tool builds its request from named args only (no
     }
     await ctx.plugin(LocalJobRegistry)
     await ctx.plugin(ToolTasks)
-    await ctx.plugin(BashEnvPlugin, { cxhHome: recordingDshHome })
+    await ctx.plugin(BashEnvPlugin, { cxhHome: recordingCxhHome })
     await ctx.plugin(RecordingBashExecutor)
     await ctx.plugin(ToolBash)
     return { ctx, bash: ctx.shell as RecordingBashExecutor }
@@ -1138,7 +1138,7 @@ describe('the model-facing bash tool builds its request from named args only (no
     })
 
     expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingDshHome,
+      CXH_HOME: recordingCxhHome,
       CXH_SESSION_ID: 'request-fg',
       CXH_SESSION_JSONL: path,
       CXH_SHELL: '1',
@@ -1165,7 +1165,7 @@ describe('the model-facing bash tool builds its request from named args only (no
 
     expect(bash.requests[0]?.env).toBeUndefined()
     expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingDshHome,
+      CXH_HOME: recordingCxhHome,
       CXH_SESSION_ID: 'request-bg',
       CXH_SESSION_JSONL: path,
       CXH_SHELL: '1',
@@ -1186,7 +1186,7 @@ describe('the model-facing bash tool builds its request from named args only (no
     })
 
     expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingDshHome,
+      CXH_HOME: recordingCxhHome,
       CXH_SESSION_ID: 'request-id-only',
       CXH_SHELL: '1',
     })
@@ -1210,13 +1210,13 @@ describe('the model-facing bash tool builds its request from named args only (no
 
     expect(bash.requests.map(request => request.cxhEnv)).toEqual([
       {
-        CXH_HOME: recordingDshHome,
+        CXH_HOME: recordingCxhHome,
         CXH_SESSION_ID: 'request-parent',
         CXH_SESSION_JSONL: ctx.sessionPersistence.locate(parent.session.header)?.path,
         CXH_SHELL: '1',
       },
       {
-        CXH_HOME: recordingDshHome,
+        CXH_HOME: recordingCxhHome,
         CXH_SESSION_ID: 'request-child',
         CXH_SESSION_JSONL: ctx.sessionPersistence.locate(child.session.header)?.path,
         CXH_SHELL: '1',

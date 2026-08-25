@@ -6,11 +6,11 @@ import {
   DEFAULT_CXH_HOME_DISPLAY,
   CXH_HOME_DIR_NAME,
   canonicalizeWatchPath,
-  defaultDshHome,
+  defaultCxhHome,
   cxhHomeDisplay,
   cxhHomePath,
   expandHomePath,
-  resolveDshHome,
+  resolveCxhHome,
 } from '@centurionarx/cxh-home-paths'
 
 afterEach(() => {
@@ -21,7 +21,7 @@ describe('cxh path helpers', () => {
   it('owns the shared default CXH home directory name', () => {
     expect(CXH_HOME_DIR_NAME).toBe('.cxh')
     expect(DEFAULT_CXH_HOME_DISPLAY).toBe('~/.cxh')
-    expect(defaultDshHome()).toBe(join(homedir(), '.cxh'))
+    expect(defaultCxhHome()).toBe(join(homedir(), '.cxh'))
   })
 
   it('expands tilde paths without changing non-tilde paths', () => {
@@ -35,14 +35,14 @@ describe('cxh path helpers', () => {
   it('resolves explicit path before CXH_HOME and the default', () => {
     const envHome = join(homedir(), 'env-cxh')
 
-    expect(resolveDshHome('/tmp/explicit-cxh', { CXH_HOME: '~/env-cxh' })).toBe(resolve('/tmp/explicit-cxh'))
-    expect(resolveDshHome(undefined, { CXH_HOME: '~/env-cxh' })).toBe(envHome)
-    expect(resolveDshHome(undefined, {})).toBe(defaultDshHome())
+    expect(resolveCxhHome('/tmp/explicit-cxh', { CXH_HOME: '~/env-cxh' })).toBe(resolve('/tmp/explicit-cxh'))
+    expect(resolveCxhHome(undefined, { CXH_HOME: '~/env-cxh' })).toBe(envHome)
+    expect(resolveCxhHome(undefined, {})).toBe(defaultCxhHome())
   })
 
   it('treats an empty or whitespace-only CXH_HOME as unset', () => {
-    expect(resolveDshHome(undefined, { CXH_HOME: '' })).toBe(defaultDshHome())
-    expect(resolveDshHome(undefined, { CXH_HOME: '   ' })).toBe(defaultDshHome())
+    expect(resolveCxhHome(undefined, { CXH_HOME: '' })).toBe(defaultCxhHome())
+    expect(resolveCxhHome(undefined, { CXH_HOME: '   ' })).toBe(defaultCxhHome())
   })
 
   it('joins child segments onto the resolved CXH_HOME', () => {
@@ -52,7 +52,7 @@ describe('cxh path helpers', () => {
   })
 
   it('labels a resolved home by whether it is the default root', () => {
-    expect(cxhHomeDisplay(resolve(defaultDshHome()))).toBe('~/.cxh')
+    expect(cxhHomeDisplay(resolve(defaultCxhHome()))).toBe('~/.cxh')
     expect(cxhHomeDisplay('/some/other/root')).toBe('$CXH_HOME')
   })
 

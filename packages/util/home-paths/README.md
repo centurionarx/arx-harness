@@ -6,7 +6,7 @@ Shared filesystem path helpers for CENTURIONarx Harness user data.
 
 ## CXH home
 
-`resolveDshHome()` resolves the single-root CENTURIONarx Harness home. Precedence, highest first: an explicit configured path, `$CXH_HOME`, then `~/.cxh`. The harness keeps all user data under one root.
+`resolveCxhHome()` resolves the single-root CENTURIONarx Harness home. Precedence, highest first: an explicit configured path, `$CXH_HOME`, then `~/.cxh`. The harness keeps all user data under one root.
 
 `cxhHomePath(...segments)` joins child segments onto that resolved home with Node's platform path rules. With no segments it returns the home itself.
 
@@ -14,7 +14,7 @@ Shared filesystem path helpers for CENTURIONarx Harness user data.
 
 `CXH_HOME_DIR_NAME` owns the default user-data directory name: `.cxh`.
 
-`defaultDshHome()` returns the default CENTURIONarx Harness home by joining the operating-system home directory with `.cxh`, using Node's platform path rules.
+`defaultCxhHome()` returns the default CENTURIONarx Harness home by joining the operating-system home directory with `.cxh`, using Node's platform path rules.
 
 `expandHomePath()` expands `~`, `~/...`, and Windows-style `~\...` prefixes against the operating-system home directory. It leaves non-tilde paths and `~user/...` untouched.
 

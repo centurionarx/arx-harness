@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { readFile, mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import { ImageVariantId } from '@centurionarx/cxh-attachment'
 import type { AttachmentId, ImageVariantId as ImageVariantIdType } from '@centurionarx/cxh-attachment'
 import { DeepSeekFileId, DeepSeekFileScope } from './file-id.ts'
@@ -116,7 +116,7 @@ export class DeepSeekUploadIndex {
   /**
    * @param path - explicit test path; omission uses `CXH_HOME/llm-deepseek/files-v3.json`.
    */
-  constructor(path = join(resolveDshHome(), 'llm-deepseek', 'files-v3.json')) {
+  constructor(path = join(resolveCxhHome(), 'llm-deepseek', 'files-v3.json')) {
     this.path = path
   }
 

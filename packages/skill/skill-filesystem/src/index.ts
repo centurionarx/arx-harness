@@ -19,7 +19,7 @@ import z from '@centurionarx/schemastery'
 import type Schema from '@centurionarx/schemastery'
 import { parse as parseYaml } from 'yaml'
 import type { FileSystem, FsDirEntry, FsTarget } from '@centurionarx/cxh-fs'
-import { canonicalizeWatchPath, resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { canonicalizeWatchPath, resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import {
   BUNDLED_SKILL_RANK,
   isSkillName,
@@ -160,7 +160,7 @@ export class FileSystemSkillProvider implements SkillProvider {
   ) {
     this.name = config.providerName ?? 'filesystem'
     this.includeDefaultRoots = config.includeDefaultRoots ?? true
-    this.cxhHome = resolveDshHome(config.cxhHome)
+    this.cxhHome = resolveCxhHome(config.cxhHome)
     this.agentsHome = resolve(config.agentsHome ?? process.env.CXH_AGENTS_HOME ?? join(homedir(), '.agents'))
     this.customSkillDirs = (config.customSkillDirs ?? []).map(root => resolve(root))
     this.watchManager = new SkillWatchManager(ctx, control.invalidate, resolveWatchConfig(config))

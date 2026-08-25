@@ -35,11 +35,15 @@ const CHANGED: readonly (readonly [string, string])[] = [
   ['_dsh_base_agent_default_model', '_cxh_base_agent_default_model'],
   ['_dshWebServer', '_cxhWebServer'],
   ['DshWindow', 'CxhWindow'],
+  ['isInternalDsh(name)', 'isInternalCxh(name)'],
+  ['resolveDshHome', 'resolveCxhHome'],
   ['extensions.dshUnknown', 'extensions.cxhUnknown'],
   ['DSH_HOME', 'CXH_HOME'],
   // a prefix glued to a preceding word or escape: only the separator identifies it
   ['Skilldsh-manage-issues', 'Skillcxh-manage-issues'],
   ['CXH_CRED_TEST: a\\nDSH_CRED_OTHER: [b]', 'CXH_CRED_TEST: a\\nCXH_CRED_OTHER: [b]'],
+  ['[type: shell]\\ndsh> ', '[type: shell]\\ncxh> '],
+  ['```sh\\ndsh plugin --profile <name> add', '```sh\\ncxh plugin --profile <name> add'],
   // generated catalog anchors fuse scope and prefix; hand-written docs link to them
   ['<a id="deepseek-aidsh-tool-bash"></a>', '<a id="centurionarxcxh-tool-bash"></a>'],
 ]
@@ -73,6 +77,8 @@ const PRESERVED: readonly string[] = [
   // an unrelated word that merely contains the prefix
   'handshake',
   'spreadsheet',
+  'headShare',
+  'CardShell',
 ]
 
 describe('rebrandText', () => {

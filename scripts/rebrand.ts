@@ -81,9 +81,12 @@ function rules(brand: Brand): readonly (readonly [RegExp, string])[] {
   // spells `dsh-`, `dsh_`, or `DSH_`, so those rules need no left guard at
   // all - and without one they still reach a prefix glued to a preceding
   // word (`Skilldsh-manage-issues` in a rendered test expectation) or to an
-  // escape (`\\nDSH_CRED_OTHER` inside a string literal). The guard stays only
-  // where a lowercase letter follows, which is where `handshake` and
-  // `spreadsheet` live.
+  // escape (`\\nDSH_CRED_OTHER` inside a string literal). The guard survives on
+  // exactly one rule: the case where a lowercase letter follows, which is
+  // where `handshake` and `spreadsheet` live. No word ends a `dsh` run at a
+  // word boundary or continues it in uppercase, so those rules need no guard
+  // either - and without one they reach `\\ndsh> ` and `\\ndsh plugin`, where
+  // an escape's letter sits against the prefix inside a recorded transcript.
   // `\b` is likewise NOT used for the prefix rules: `_` and digits are
   // word characters, so a boundary hides `__DSH_BOOT__`, `_dshWebServer`, and
   // the `\0dsh-css:` virtual-module prefixes. Excluding only letters reaches
@@ -109,15 +112,16 @@ function rules(brand: Brand): readonly (readonly [RegExp, string])[] {
     [/deepseek harness/g, brand.slug.replace('-', ' ')],
     [/DeepSeek-Harness/g, brand.prose.replace(' ', '-')],
     [/dsh-/g, `${brand.prefix}-`],
-    [/(?<![A-Za-z])dsh(?=[A-Z])/g, brand.prefix],
+    [/dsh(?=[A-Z])/g, brand.prefix],
     [/dsh_/g, `${brand.prefix}_`],
     // git lowercases config keys, so the `extensions.dshUnknown` namespace also
     // appears as `extensions.dshunknown`; both must move together.
     [/(?<![A-Za-z])dsh(?=[a-z])/g, brand.prefix],
-    [/(?<![A-Za-z])dsh\b/g, brand.prefix],
-    [/(?<![A-Za-z])Dsh(?=[A-Z])/g, pascalPrefix],
+    [/dsh\b/g, brand.prefix],
+    [/Dsh(?=[A-Z])/g, pascalPrefix],
+    [/Dsh\b/g, pascalPrefix],
     [/DSH_/g, `${upper}_`],
-    [/(?<![A-Za-z])DSH\b/g, upper],
+    [/DSH\b/g, upper],
   ]
 }
 

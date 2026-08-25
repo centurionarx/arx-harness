@@ -14,7 +14,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve } from 'node:path'
 import { Document, parseDocument } from 'yaml'
 import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { canonicalizeWatchPath, resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { canonicalizeWatchPath, resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import { SettingsProvider, deepEqualJson, type SettingsNamespace } from '@centurionarx/cxh-settings'
 
 /** Plugin config: file location and hot-reload behavior. */
@@ -53,7 +53,7 @@ interface ResolvedSpec {
  * @returns the resolved file location, format, and watch behavior.
  */
 export function resolveSpec(config: Config): ResolvedSpec {
-  const filename = resolve(config.path ?? join(resolveDshHome(config.cxhHome), 'settings.yaml'))
+  const filename = resolve(config.path ?? join(resolveCxhHome(config.cxhHome), 'settings.yaml'))
   const format = FORMATS[extname(filename)]
   if (format === undefined) {
     throw new Error(`settings-file: extension "${extname(filename)}" is not supported (use .yaml, .yml, or .json)`)
