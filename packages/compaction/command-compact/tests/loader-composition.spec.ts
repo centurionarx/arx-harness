@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import CommandRuntime from '@deepseek-ai/dsh-commands'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import Include from '@centurionarx/cordis-plugin-include'
+import type { Agent } from '@centurionarx/cxh-agent'
+import CommandRuntime from '@centurionarx/cxh-commands'
 import {
   CompactionId,
   CompactionEngine,
@@ -15,9 +15,9 @@ import {
   type CompactionResult,
   type CompactionTrigger,
   type ManualCompactAgentContext,
-} from '@deepseek-ai/dsh-compaction'
-import * as commandCompact from '@deepseek-ai/dsh-command-compact'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
+} from '@centurionarx/cxh-compaction'
+import * as commandCompact from '@centurionarx/cxh-command-compact'
+import { Session, SessionId } from '@centurionarx/cxh-session'
 
 const COMPACTION_ID = CompactionId('loader-command-compact-test')
 
@@ -81,12 +81,12 @@ afterEach(async () => {
 
 describe('command-compact real Loader composition', () => {
   it('discovers and executes /compact through the assembled command plane', async () => {
-    root = await mkdtemp(join(tmpdir(), 'dsh-command-compact-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'cxh-command-compact-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@deepseek-ai/dsh-commands'",
+      "- name: '@centurionarx/cxh-commands'",
       "- name: '@test/compact-backend'",
-      "- name: '@deepseek-ai/dsh-command-compact'",
+      "- name: '@centurionarx/cxh-command-compact'",
       '',
     ].join('\n'))
 
@@ -95,9 +95,9 @@ describe('command-compact real Loader composition', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@deepseek-ai/dsh-commands', CommandRuntime],
+      ['@centurionarx/cxh-commands', CommandRuntime],
       ['@test/compact-backend', LoaderCompactionEngine],
-      ['@deepseek-ai/dsh-command-compact', commandCompact],
+      ['@centurionarx/cxh-command-compact', commandCompact],
     ])
     context.loader.internal = {
       version: 'v2',

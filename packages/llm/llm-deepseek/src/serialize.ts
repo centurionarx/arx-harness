@@ -3,12 +3,12 @@
  * requests retain string user content; the image path resolves durable
  * attachments into ordered file-id or inline parts. Tool-result images follow their
  * string-only tool messages in a separate user message.
- * @module dsh-llm-deepseek/serialize
+ * @module cxh-llm-deepseek/serialize
  */
 
-import { contentHasImage, LlmError, offloadRequestImagesWithPolicy, requestImageHandleText } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@deepseek-ai/dsh-llm'
-import type { ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
+import { contentHasImage, LlmError, offloadRequestImagesWithPolicy, requestImageHandleText } from '@centurionarx/cxh-llm'
+import type { ContentBlock, GenerateOptions, Message } from '@centurionarx/cxh-llm'
+import type { ImageAttachmentRef, RequestImageAttachment } from '@centurionarx/cxh-attachment'
 import type {
   WireImageContentPart,
   WireMessage,

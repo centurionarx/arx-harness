@@ -1,11 +1,11 @@
-/** Package-owned background-job snapshot invariants. @module @deepseek-ai/dsh-jobs/invariant */
+/** Package-owned background-job snapshot invariants. @module @centurionarx/cxh-jobs/invariant */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { InvariantFailure, InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { Agent } from '@centurionarx/cxh-agent'
+import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
 import type { JobSnapshot } from './types.ts'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-jobs'
+const PACKAGE_NAME = '@centurionarx/cxh-jobs'
 const TERMINAL_STATUSES = new Set(['completed', 'killed', 'failed'])
 
 /** Cordis companion plugin name. */

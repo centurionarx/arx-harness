@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-session-title-first-prompt-llm",
-  "description": "First-message LLM provider plugin for DeepSeek Harness session titles",
+  "name": "@centurionarx/cxh-session-title-first-prompt-llm",
+  "description": "First-message LLM provider plugin for CENTURIONarx Harness session titles",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/session/session-title-first-prompt-llm"
   },
   "type": "module",
@@ -27,25 +27,25 @@
   "files": ["lib/index.js", "lib/invariant.js", "lib/types/**/*.d.ts"],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-session-title-llm": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-session-title": "workspace:^",
+    "@centurionarx/cxh-session-title-llm": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-title": "workspace:^",
-    "@deepseek-ai/dsh-session-title-llm": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis-plugin-include": "workspace:^",
+    "@centurionarx/cordis-plugin-loader": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-llm-deepseek": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-session-title": "workspace:^",
+    "@centurionarx/cxh-session-title-llm": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

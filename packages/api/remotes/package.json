@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-api-remotes",
+  "name": "@centurionarx/cxh-api-remotes",
   "description": "Remote BFF assembly and Host Agent/Session lookup policy",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/api/remotes"
   },
   "type": "module",
@@ -33,10 +33,10 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "dsh": {
+  "cxh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-api-gateway"
+        "@centurionarx/cxh-api-gateway"
       ],
       "platform": "web",
       "immediately": true
@@ -55,46 +55,46 @@
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^"
+    "@centurionarx/cxh-typert-protocol": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-presets": "workspace:^",
-    "@deepseek-ai/dsh-api-gateway": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-cordis-host-runner": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-file-reference": "workspace:^",
-    "@deepseek-ai/dsh-goal": "workspace:^",
-    "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-message-feedback": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-session-reference": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-typert-registry": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-agent-presets": "workspace:^",
+    "@centurionarx/cxh-api-gateway": "workspace:^",
+    "@centurionarx/cxh-commands": "workspace:^",
+    "@centurionarx/cxh-cordis-host-runner": "workspace:^",
+    "@centurionarx/cxh-credentials": "workspace:^",
+    "@centurionarx/cxh-file-reference": "workspace:^",
+    "@centurionarx/cxh-goal": "workspace:^",
+    "@centurionarx/cxh-host-plugin-inventory": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-message-feedback": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-session-persistence": "workspace:^",
+    "@centurionarx/cxh-session-reference": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-typert-registry": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-presets": "workspace:^",
-    "@deepseek-ai/dsh-api-gateway": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-cordis-host-runner": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-file-reference": "workspace:^",
-    "@deepseek-ai/dsh-goal": "workspace:^",
-    "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-message-feedback": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-session-reference": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-typert-registry": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-agent-presets": "workspace:^",
+    "@centurionarx/cxh-api-gateway": "workspace:^",
+    "@centurionarx/cxh-commands": "workspace:^",
+    "@centurionarx/cxh-cordis-host-runner": "workspace:^",
+    "@centurionarx/cxh-credentials": "workspace:^",
+    "@centurionarx/cxh-file-reference": "workspace:^",
+    "@centurionarx/cxh-goal": "workspace:^",
+    "@centurionarx/cxh-host-plugin-inventory": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-message-feedback": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-session-persistence": "workspace:^",
+    "@centurionarx/cxh-session-reference": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-typert-registry": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

@@ -7,7 +7,7 @@
  * locator and retrieval guidance.
  *
  * It registers NO service and owns NO storage or preview mechanics: preview is
- * `@deepseek-ai/dsh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
+ * `@centurionarx/cxh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
  * The policy only decides WHEN to spill and composes the notice.
  *
  * A second arm applies the SAME cap to the durable log: the
@@ -40,18 +40,18 @@
  * replaced content still has its replacement bounded, and value replacements
  * and `block` decisions pass through unchanged.
  *
- * @module @deepseek-ai/dsh-spill-policy
+ * @module @centurionarx/cxh-spill-policy
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import { TextRetainer, describeOmitted } from '@deepseek-ai/dsh-output-retention'
-import type { Omitted } from '@deepseek-ai/dsh-output-retention'
-import type { SaveTextSpill, SpillRef } from '@deepseek-ai/dsh-spill'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { CallId } from '@deepseek-ai/dsh-llm'
-import type { PostToolDecision, ToolExecution } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@centurionarx/cordis'
+import z from '@centurionarx/schemastery'
+import type { ContentBlock } from '@centurionarx/cxh-llm'
+import { TextRetainer, describeOmitted } from '@centurionarx/cxh-output-retention'
+import type { Omitted } from '@centurionarx/cxh-output-retention'
+import type { SaveTextSpill, SpillRef } from '@centurionarx/cxh-spill'
+import type { SessionId } from '@centurionarx/cxh-session'
+import type { CallId } from '@centurionarx/cxh-llm'
+import type { PostToolDecision, ToolExecution } from '@centurionarx/cxh-tools'
 import type { SpillPolicyExec } from './types.ts'
 
 export type { SpillPolicyExec } from './types.ts'

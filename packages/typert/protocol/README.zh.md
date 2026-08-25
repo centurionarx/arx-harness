@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-typert-protocol
+# @centurionarx/cxh-typert-protocol
 
 [English](README.md) | 中文
 

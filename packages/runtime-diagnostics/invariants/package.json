@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-invariants",
-  "description": "Registry service for package-owned DeepSeek Harness runtime invariants",
+  "name": "@centurionarx/cxh-invariants",
+  "description": "Registry service for package-owned CENTURIONarx Harness runtime invariants",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/runtime-diagnostics/invariants"
   },
   "type": "module",
@@ -32,12 +32,12 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis": "workspace:^"
   }
 }

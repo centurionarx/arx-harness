@@ -1,12 +1,12 @@
 /** Durable Team mailbox admission, target-local dispatch, acknowledgement, and recovery. */
 
 import { randomUUID } from 'node:crypto'
-import type { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
+import type { Context } from '@centurionarx/cordis'
+import type { Agent } from '@centurionarx/cxh-agent'
+import { createUserMessage } from '@centurionarx/cxh-llm'
+import type { ContentBlock } from '@centurionarx/cxh-llm'
+import { SessionId } from '@centurionarx/cxh-session'
+import type { Session, SessionEvent } from '@centurionarx/cxh-session'
 import { errorMessage, TeamError } from './error.ts'
 import type { TeamJournal } from './journal.ts'
 import type { TeamRuntimeLifecycle } from './lifecycle.ts'

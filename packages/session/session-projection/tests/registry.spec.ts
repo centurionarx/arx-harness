@@ -8,14 +8,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@centurionarx/cordis'
 import { z } from 'zod'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
+import SessionStore from '@centurionarx/cxh-session'
+import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
+import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@centurionarx/cxh-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/marks': MarksState
     'test/count': number
@@ -26,7 +26,7 @@ declare module '@deepseek-ai/dsh-session-projection/types' {
   }
 }
 
-declare module '@deepseek-ai/dsh-session/types' {
+declare module '@centurionarx/cxh-session/types' {
   interface SessionEventMap {
     'test/mark': { marks: string[] }
   }

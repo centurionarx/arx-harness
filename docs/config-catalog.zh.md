@@ -11,9 +11,9 @@
 
 `Requires:` 行列出插件通过 `inject` 注入的服务键：其 `cordis.yml` 树还必须加载这些服务的提供者。范围限定为 harness 层级（`packages/`）；配置树还可能加载的 vendored cordis 插件（`hmr`、控制台日志记录器等）固定为上游源代码（参见 [vendoring policy](../vendor/README.md)），未收录于此目录。
 
-<a id="deepseek-aidsh-acp"></a>
+<a id="centurionarxcxh-acp"></a>
 
-## `@deepseek-ai/dsh-acp`
+## `@centurionarx/cxh-acp`
 
 需要：`agents`
 
@@ -33,9 +33,9 @@ export interface AcpConfig {
 
 来源：[`packages/acp/acp/src/index.ts:71`](../packages/acp/acp/src/index.ts)
 
-<a id="deepseek-aidsh-acp-demo"></a>
+<a id="centurionarxcxh-acp-demo"></a>
 
-## `@deepseek-ai/dsh-acp-demo`
+## `@centurionarx/cxh-acp-demo`
 
 ```ts config-catalog
 /**
@@ -55,12 +55,12 @@ export interface Config {
   maxParallelToolCalls?: number
   /** Deployment persona (the system-prompt plugin's `persona` config). */
   persona?: string
-  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see dsh-system-prompt). */
+  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see cxh-system-prompt). */
   toolOrder?: string[]
-  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see dsh-tools). */
+  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see cxh-tools). */
   tools?: ToolsConfig
-  /** DeepSeek Harness home directory exposed to bash and used for local skill discovery. */
-  dshHome?: string
+  /** CENTURIONarx Harness home directory exposed to bash and used for local skill discovery. */
+  cxhHome?: string
   /** Fallback session-title limits forwarded through agent-spine-demo. */
   sessionTitle?: NonNullable<agentCore.Config['sessionTitle']>
   /** Directory for JSONL sessions and the derived query index. Defaults to `./.sessions`. */
@@ -84,13 +84,13 @@ export interface Config {
 }
 ```
 
-依赖：[`agentCore`](../packages/examples/agent-spine-demo/src/index.ts) · [`JsonlCompression`](../packages/session/session-persistence-jsonl/src/index.ts) · [`ToolsConfig`](#deepseek-aidsh-tools)
+依赖：[`agentCore`](../packages/examples/agent-spine-demo/src/index.ts) · [`JsonlCompression`](../packages/session/session-persistence-jsonl/src/index.ts) · [`ToolsConfig`](#centurionarxcxh-tools)
 
 来源：[`packages/examples/acp-demo/src/index.ts:39`](../packages/examples/acp-demo/src/index.ts)
 
-<a id="deepseek-aidsh-agent-default-model"></a>
+<a id="centurionarxcxh-agent-default-model"></a>
 
-## `@deepseek-ai/dsh-agent-default-model`
+## `@centurionarx/cxh-agent-default-model`
 
 ```ts config-catalog
 /** Composition entry for the default model selection. */
@@ -104,15 +104,15 @@ export interface Config {
 
 来源：[`packages/core/agent-default-model/src/index.ts:41`](../packages/core/agent-default-model/src/index.ts)
 
-<a id="deepseek-aidsh-agent-instructions"></a>
+<a id="centurionarxcxh-agent-instructions"></a>
 
-## `@deepseek-ai/dsh-agent-instructions`
+## `@centurionarx/cxh-agent-instructions`
 
 ```ts config-catalog
 /** User-facing workspace instruction loader configuration. */
 export interface Config {
-  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$DSH_HOME` or `~/.dsh`. */
-  dshHome?: string
+  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$CXH_HOME` or `~/.cxh`. */
+  cxhHome?: string
   /** Directory entries that identify the project root while walking upward from the session cwd. */
   projectRootMarkers?: string[]
   /** UTF-8 byte cap for one rendered baseline or dynamic batch; non-positive or non-finite disables loading. */
@@ -134,9 +134,9 @@ export interface Config {
 
 来源：[`packages/context/agent-instructions/src/config.ts:18`](../packages/context/agent-instructions/src/config.ts)
 
-<a id="deepseek-aidsh-agent-loop"></a>
+<a id="centurionarxcxh-agent-loop"></a>
 
-## `@deepseek-ai/dsh-agent-loop`
+## `@centurionarx/cxh-agent-loop`
 
 需要：`agents` · `sessions` · `llm` · `tools` · `systemPrompt`
 
@@ -166,9 +166,9 @@ export interface Config {
 
 来源：[`packages/core/agent-loop/src/index.ts:255`](../packages/core/agent-loop/src/index.ts)
 
-<a id="deepseek-aidsh-agent-presets"></a>
+<a id="centurionarxcxh-agent-presets"></a>
 
-## `@deepseek-ai/dsh-agent-presets`
+## `@centurionarx/cxh-agent-presets`
 
 需要：`loader`
 
@@ -204,9 +204,9 @@ export type PresetTrust = 'system' | 'user'
 
 来源：[`packages/preset/agent-presets/src/preset.ts:52`](../packages/preset/agent-presets/src/preset.ts)
 
-<a id="deepseek-aidsh-agent-spine-demo"></a>
+<a id="centurionarxcxh-agent-spine-demo"></a>
 
-## `@deepseek-ai/dsh-agent-spine-demo`
+## `@centurionarx/cxh-agent-spine-demo`
 
 ```ts config-catalog
 /**
@@ -216,7 +216,7 @@ export type PresetTrust = 'system' | 'user'
  * `persona`, and `toolOrder` to the system-prompt plugin (the fixed opener,
  * dynamic-context policy, deployment persona, and explicit model-facing tool
  * order), the `tools` object to the tool registry (its presentation `mode`),
- * `dshHome` to bash environment and local skill discovery, `sessionTitle` to
+ * `cxhHome` to bash environment and local skill discovery, `sessionTitle` to
  * the fallback title service, `skills` to the
  * skill registry/local provider/tool consumer, `workspaceContext` to the
  * agent-instructions loader, `jobs` to the process-local job provider, and
@@ -233,7 +233,7 @@ export type PresetTrust = 'system' | 'user'
  * `bash` name.
  */
 export interface Config {
-  /** The agent-loop `agents` list (see dsh-agent-loop's `Config`). */
+  /** The agent-loop `agents` list (see cxh-agent-loop's `Config`). */
   agents?: AgentLoopConfig['agents']
   /** Agent-loop concurrency cap; `1` is serial. */
   maxParallelToolCalls?: AgentLoopConfig['maxParallelToolCalls']
@@ -241,14 +241,14 @@ export interface Config {
   includeHarnessIdentity?: SystemPromptConfig['includeHarnessIdentity']
   /** Whether model history includes dynamic runtime-context snapshots (default true). */
   includeRuntimeContext?: SystemPromptConfig['includeRuntimeContext']
-  /** The deployment persona (see dsh-system-prompt's `Config`). */
+  /** The deployment persona (see cxh-system-prompt's `Config`). */
   persona?: SystemPromptConfig['persona']
-  /** The explicit model-facing tool order (see dsh-system-prompt's `Config`). */
+  /** The explicit model-facing tool order (see cxh-system-prompt's `Config`). */
   toolOrder?: SystemPromptConfig['toolOrder']
-  /** The tool registry's config — its presentation `mode` (see dsh-tools' `Config`). */
+  /** The tool registry's config — its presentation `mode` (see cxh-tools' `Config`). */
   tools?: ToolsConfig
-  /** DeepSeek Harness home directory shared by shell context and local skill discovery. */
-  dshHome?: string
+  /** CENTURIONarx Harness home directory shared by shell context and local skill discovery. */
+  cxhHome?: string
   /** Deterministic fallback and accepted-title limits; omission uses the bundle's example policy. */
   sessionTitle?: SessionTitleConfig
   /** Workspace-context loader controls with an explicit byte budget; set `false` for hermetic prompts. */
@@ -292,13 +292,13 @@ export interface GoalConfig {
 }
 ```
 
-依赖：[`AgentLoopConfig`](#deepseek-aidsh-agent-loop) · [`GoalDomainConfig`](#deepseek-aidsh-goal) · [`InvariantConfig`](#deepseek-aidsh-invariants) · [`JobsConfig`](#deepseek-aidsh-jobs-local) · [`SessionTitleConfig`](#deepseek-aidsh-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#deepseek-aidsh-skill) · [`SystemPromptConfig`](#deepseek-aidsh-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#deepseek-aidsh-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
+依赖：[`AgentLoopConfig`](#centurionarxcxh-agent-loop) · [`GoalDomainConfig`](#centurionarxcxh-goal) · [`InvariantConfig`](#centurionarxcxh-invariants) · [`JobsConfig`](#centurionarxcxh-jobs-local) · [`SessionTitleConfig`](#centurionarxcxh-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#centurionarxcxh-skill) · [`SystemPromptConfig`](#centurionarxcxh-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#centurionarxcxh-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
 
 来源：[`packages/examples/agent-spine-demo/src/index.ts:92`](../packages/examples/agent-spine-demo/src/index.ts)
 
-<a id="deepseek-aidsh-agent-tool-presentation"></a>
+<a id="centurionarxcxh-agent-tool-presentation"></a>
 
-## `@deepseek-ai/dsh-agent-tool-presentation`
+## `@centurionarx/cxh-agent-tool-presentation`
 
 需要：`tools`
 
@@ -320,15 +320,15 @@ export interface Config {
 
 来源：[`packages/core/agent-tool-presentation/src/index.ts:38`](../packages/core/agent-tool-presentation/src/index.ts)
 
-<a id="deepseek-aidsh-attachment-local"></a>
+<a id="centurionarxcxh-attachment-local"></a>
 
-## `@deepseek-ai/dsh-attachment-local`
+## `@centurionarx/cxh-attachment-local`
 
 ```ts config-catalog
 /** Local attachment backend configuration. */
 export interface Config {
-  /** Explicit harness home; omitted follows `DSH_HOME`, then `~/.dsh`. */
-  dshHome?: string
+  /** Explicit harness home; omitted follows `CXH_HOME`, then `~/.cxh`. */
+  cxhHome?: string
   /** Maximum encoded bytes accepted for one submitted image. Default: 20 MiB. */
   maxImageBytes?: number
   /** Maximum image count accepted in one submitted message. Default: 20. */
@@ -350,9 +350,9 @@ export interface Config {
 
 来源：[`packages/attachment/attachment-local/src/index.ts:51`](../packages/attachment/attachment-local/src/index.ts)
 
-<a id="deepseek-aidsh-bash-local"></a>
+<a id="centurionarxcxh-bash-local"></a>
 
-## `@deepseek-ai/dsh-bash-local`
+## `@centurionarx/cxh-bash-local`
 
 需要：`subprocess`
 
@@ -376,9 +376,9 @@ export interface Config {
 
 来源：[`packages/shell/bash-local/src/index.ts:41`](../packages/shell/bash-local/src/index.ts)
 
-<a id="deepseek-aidsh-bash-sandbox"></a>
+<a id="centurionarxcxh-bash-sandbox"></a>
 
-## `@deepseek-ai/dsh-bash-sandbox`
+## `@centurionarx/cxh-bash-sandbox`
 
 需要：`subprocess` · `sandbox` · `sandboxPolicy`
 
@@ -386,20 +386,20 @@ export interface Config {
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@deepseek-ai/dsh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The runner
  * choice is likewise the `ctx.sandbox` provider's config, not this executor's.
  */
 export type Config = LocalConfig
 ```
 
-依赖：[`LocalConfig`](#deepseek-aidsh-bash-local)
+依赖：[`LocalConfig`](#centurionarxcxh-bash-local)
 
 来源：[`packages/shell/bash-sandbox/src/index.ts:35`](../packages/shell/bash-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-client-connection"></a>
+<a id="centurionarxcxh-client-connection"></a>
 
-## `@deepseek-ai/dsh-client-connection`
+## `@centurionarx/cxh-client-connection`
 
 需要：`webServer`
 
@@ -411,7 +411,7 @@ export interface ConnectionConfig {
    * port-less `host` matching any port. The /api trust fence refuses any
    * request whose Host is neither loopback nor listed here, so a
    * non-loopback (`0.0.0.0`) deployment must declare the names it is reached
-   * by (the dsh CLI derives the machine's LAN IP literals itself). An entry
+   * by (the cxh CLI derives the machine's LAN IP literals itself). An entry
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
@@ -422,9 +422,9 @@ export interface ConnectionConfig {
 
 来源：[`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
 
-<a id="deepseek-aidsh-client-hmr"></a>
+<a id="centurionarxcxh-client-hmr"></a>
 
-## `@deepseek-ai/dsh-client-hmr`
+## `@centurionarx/cxh-client-hmr`
 
 需要：`clientModules` · `webServer`
 
@@ -438,9 +438,9 @@ export interface Config {
 
 来源：[`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
-<a id="deepseek-aidsh-code-runtime-worker-thread"></a>
+<a id="centurionarxcxh-code-runtime-worker-thread"></a>
 
-## `@deepseek-ai/dsh-code-runtime-worker-thread`
+## `@centurionarx/cxh-code-runtime-worker-thread`
 
 ```ts config-catalog
 /** Plugin config: every execution cap, changeable from `cordis.yml` (no hardcoded tunables). */
@@ -475,9 +475,9 @@ export interface Config {
 
 来源：[`packages/code-runtime/code-runtime-worker-thread/src/index.ts:25`](../packages/code-runtime/code-runtime-worker-thread/src/index.ts)
 
-<a id="deepseek-aidsh-compaction-basic"></a>
+<a id="centurionarxcxh-compaction-basic"></a>
 
-## `@deepseek-ai/dsh-compaction-basic`
+## `@centurionarx/cxh-compaction-basic`
 
 需要：`llm` · `tokenMeter` · `sessions`
 
@@ -521,9 +521,9 @@ export interface ModelCompactPolicyConfig extends CompactionPolicyConfig {
 
 来源：[`packages/compaction/compaction-basic/src/types.ts:38`](../packages/compaction/compaction-basic/src/types.ts)
 
-<a id="deepseek-aidsh-compaction-tool-result-pruner"></a>
+<a id="centurionarxcxh-compaction-tool-result-pruner"></a>
 
-## `@deepseek-ai/dsh-compaction-tool-result-pruner`
+## `@centurionarx/cxh-compaction-tool-result-pruner`
 
 需要：`tokenMeter`
 
@@ -541,9 +541,9 @@ export interface ToolResultPruneConfig {
 
 来源：[`packages/compaction/compaction-tool-result-pruner/src/types.ts:4`](../packages/compaction/compaction-tool-result-pruner/src/types.ts)
 
-<a id="deepseek-aidsh-cordis-host-runner"></a>
+<a id="centurionarxcxh-cordis-host-runner"></a>
 
-## `@deepseek-ai/dsh-cordis-host-runner`
+## `@centurionarx/cxh-cordis-host-runner`
 
 需要：`tools`
 
@@ -557,17 +557,17 @@ export interface Config {
 
 来源：[`packages/extensions/cordis-host-runner/src/index.ts:88`](../packages/extensions/cordis-host-runner/src/index.ts)
 
-<a id="deepseek-aidsh-credentials-local"></a>
+<a id="centurionarxcxh-credentials-local"></a>
 
-## `@deepseek-ai/dsh-credentials-local`
+## `@centurionarx/cxh-credentials-local`
 
 ```ts config-catalog
 /** Plugin config: file location and hot-reload behavior. */
 export interface Config {
   /** Credentials document path; defaults to `.credentials.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$DSH_HOME` or `~/.dsh`. */
-  dshHome?: string
+  /** Harness home used when `path` is omitted; defaults to `$CXH_HOME` or `~/.cxh`. */
+  cxhHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -577,9 +577,9 @@ export interface Config {
 
 来源：[`packages/credentials/credentials-local/src/index.ts:64`](../packages/credentials/credentials-local/src/index.ts)
 
-<a id="deepseek-aidsh-e2b"></a>
+<a id="centurionarxcxh-e2b"></a>
 
-## `@deepseek-ai/dsh-e2b`
+## `@centurionarx/cxh-e2b`
 
 ```ts config-catalog
 /** Configuration for the shared E2B sandbox owner. */
@@ -595,9 +595,9 @@ export interface Config {
 
 来源：[`packages/e2b/e2b/src/index.ts:43`](../packages/e2b/e2b/src/index.ts)
 
-<a id="deepseek-aidsh-experimental-agent-team"></a>
+<a id="centurionarxcxh-experimental-agent-team"></a>
 
-## `@deepseek-ai/dsh-experimental-agent-team`
+## `@centurionarx/cxh-experimental-agent-team`
 
 需要：`agents` · `sessions` · `sessionPersistence` · `subagents`
 
@@ -619,9 +619,9 @@ export interface Config {
 
 来源：[`packages/experimental/agent-team/src/types.ts:125`](../packages/experimental/agent-team/src/types.ts)
 
-<a id="deepseek-aidsh-experimental-tool-agent-team"></a>
+<a id="centurionarxcxh-experimental-tool-agent-team"></a>
 
-## `@deepseek-ai/dsh-experimental-tool-agent-team`
+## `@centurionarx/cxh-experimental-tool-agent-team`
 
 需要：`agents` · `agentTeams` · `tools` · `systemPrompt`
 
@@ -637,9 +637,9 @@ export interface Config {
 
 来源：[`packages/experimental/tool-agent-team/src/index.ts:17`](../packages/experimental/tool-agent-team/src/index.ts)
 
-<a id="deepseek-aidsh-file-reference-local"></a>
+<a id="centurionarxcxh-file-reference-local"></a>
 
-## `@deepseek-ai/dsh-file-reference-local`
+## `@centurionarx/cxh-file-reference-local`
 
 需要：`agents`
 
@@ -657,9 +657,9 @@ export interface Config {
 
 来源：[`packages/context/file-reference-local/src/index.ts:35`](../packages/context/file-reference-local/src/index.ts)
 
-<a id="deepseek-aidsh-fs-local"></a>
+<a id="centurionarxcxh-fs-local"></a>
 
-## `@deepseek-ai/dsh-fs-local`
+## `@centurionarx/cxh-fs-local`
 
 ```ts config-catalog
 /** Configuration for the local filesystem backend. */
@@ -676,9 +676,9 @@ export interface Config {
 
 来源：[`packages/fs/fs-local/src/index.ts:41`](../packages/fs/fs-local/src/index.ts)
 
-<a id="deepseek-aidsh-fs-sandbox"></a>
+<a id="centurionarxcxh-fs-sandbox"></a>
 
-## `@deepseek-ai/dsh-fs-sandbox`
+## `@centurionarx/cxh-fs-sandbox`
 
 需要：`sandboxPolicy`
 
@@ -692,13 +692,13 @@ export interface Config {
 export type Config = LocalConfig
 ```
 
-依赖：[`LocalConfig`](#deepseek-aidsh-fs-local)
+依赖：[`LocalConfig`](#centurionarxcxh-fs-local)
 
 来源：[`packages/fs/fs-sandbox/src/index.ts:49`](../packages/fs/fs-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-goal"></a>
+<a id="centurionarxcxh-goal"></a>
 
-## `@deepseek-ai/dsh-goal`
+## `@centurionarx/cxh-goal`
 
 需要：`agents`
 
@@ -712,9 +712,9 @@ export interface Config {
 
 来源：[`packages/goal/goal/src/index.ts:116`](../packages/goal/goal/src/index.ts)
 
-<a id="deepseek-aidsh-headless"></a>
+<a id="centurionarxcxh-headless"></a>
 
-## `@deepseek-ai/dsh-headless`
+## `@centurionarx/cxh-headless`
 
 需要：`agentDefaultModel` · `agents` · `sessions`
 
@@ -728,9 +728,9 @@ export interface Config {
 
 来源：[`packages/bundle/headless/src/index.ts:31`](../packages/bundle/headless/src/index.ts)
 
-<a id="deepseek-aidsh-hooks-claude-code"></a>
+<a id="centurionarxcxh-hooks-claude-code"></a>
 
-## `@deepseek-ai/dsh-hooks-claude-code`
+## `@centurionarx/cxh-hooks-claude-code`
 
 需要：`shell`
 
@@ -766,9 +766,9 @@ export interface Config {
 
 来源：[`packages/hooks/hooks-claude-code/src/index.ts:45`](../packages/hooks/hooks-claude-code/src/index.ts)
 
-<a id="deepseek-aidsh-hooks-codex"></a>
+<a id="centurionarxcxh-hooks-codex"></a>
 
-## `@deepseek-ai/dsh-hooks-codex`
+## `@centurionarx/cxh-hooks-codex`
 
 需要：`shell`
 
@@ -793,9 +793,9 @@ export interface Config {
 
 来源：[`packages/hooks/hooks-codex/src/index.ts:44`](../packages/hooks/hooks-codex/src/index.ts)
 
-<a id="deepseek-aidsh-host-apiproxy"></a>
+<a id="centurionarxcxh-host-apiproxy"></a>
 
-## `@deepseek-ai/dsh-host-apiproxy`
+## `@centurionarx/cxh-host-apiproxy`
 
 需要：`agentDefaultModel` · `agents` · `attachments` · `directoryPicker` · `llm` · `sessions` · `subagents` · `sessionQuery` · `tools` · `userQuestions` · `workspaceRegistry`
 
@@ -827,9 +827,9 @@ export interface Config {
 
 来源：[`packages/host/apiproxy/src/index.ts:41`](../packages/host/apiproxy/src/index.ts)
 
-<a id="deepseek-aidsh-host-directory-picker-browse"></a>
+<a id="centurionarxcxh-host-directory-picker-browse"></a>
 
-## `@deepseek-ai/dsh-host-directory-picker-browse`
+## `@centurionarx/cxh-host-directory-picker-browse`
 
 ```ts config-catalog
 /** Validated plugin configuration. */
@@ -841,9 +841,9 @@ export interface Config {
 
 来源：[`packages/host/directory-picker-browse/src/index.ts:181`](../packages/host/directory-picker-browse/src/index.ts)
 
-<a id="deepseek-aidsh-host-frontend-static"></a>
+<a id="centurionarxcxh-host-frontend-static"></a>
 
-## `@deepseek-ai/dsh-host-frontend-static`
+## `@centurionarx/cxh-host-frontend-static`
 
 需要：`webServer`
 
@@ -857,9 +857,9 @@ export interface Config {
 
 来源：[`packages/host/frontend-static/src/index.ts:28`](../packages/host/frontend-static/src/index.ts)
 
-<a id="deepseek-aidsh-host-webserver"></a>
+<a id="centurionarxcxh-host-webserver"></a>
 
-## `@deepseek-ai/dsh-host-webserver`
+## `@centurionarx/cxh-host-webserver`
 
 ```ts config-catalog
 /** Gateway config: the listen address. */
@@ -873,9 +873,9 @@ export interface Config {
 
 来源：[`packages/host/webserver/src/index.ts:59`](../packages/host/webserver/src/index.ts)
 
-<a id="deepseek-aidsh-invariants"></a>
+<a id="centurionarxcxh-invariants"></a>
 
-## `@deepseek-ai/dsh-invariants`
+## `@centurionarx/cxh-invariants`
 
 ```ts config-catalog
 /** Runtime invariant selection configured on the service plugin. */
@@ -891,9 +891,9 @@ export interface Config {
 
 来源：[`packages/runtime-diagnostics/invariants/src/index.ts:15`](../packages/runtime-diagnostics/invariants/src/index.ts)
 
-<a id="deepseek-aidsh-jobs-local"></a>
+<a id="centurionarxcxh-jobs-local"></a>
 
-## `@deepseek-ai/dsh-jobs-local`
+## `@centurionarx/cxh-jobs-local`
 
 ```ts config-catalog
 /** Configuration for the process-local job registry. */
@@ -908,9 +908,9 @@ export interface Config {
 
 来源：[`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
 
-<a id="deepseek-aidsh-llm-deepseek"></a>
+<a id="centurionarxcxh-llm-deepseek"></a>
 
-## `@deepseek-ai/dsh-llm-deepseek`
+## `@centurionarx/cxh-llm-deepseek`
 
 需要：`llm`
 
@@ -991,9 +991,9 @@ export interface DeepSeekCatalogModel {
 
 来源：[`packages/llm/llm-deepseek/src/index.ts:106`](../packages/llm/llm-deepseek/src/index.ts)
 
-<a id="deepseek-aidsh-llm-pi-ai"></a>
+<a id="centurionarxcxh-llm-pi-ai"></a>
 
-## `@deepseek-ai/dsh-llm-pi-ai`
+## `@centurionarx/cxh-llm-pi-ai`
 
 需要：`llm`
 
@@ -1245,21 +1245,21 @@ export type PiAiThinkingFormat = NonNullable<OpenAICompletionsCompat['thinkingFo
 
 来源：[`packages/llm/llm-pi-ai/src/config.ts:213`](../packages/llm/llm-pi-ai/src/config.ts)
 
-<a id="deepseek-aidsh-llm-replay"></a>
+<a id="centurionarxcxh-llm-replay"></a>
 
-## `@deepseek-ai/dsh-llm-replay`
+## `@centurionarx/cxh-llm-replay`
 
 需要：`llm`
 
 ```ts config-catalog
-/** Plugin config: the {@link ReplayConfig} inputs, each defaulting to its `DSH_SNAPSHOT_*` env var in `apply`. */
+/** Plugin config: the {@link ReplayConfig} inputs, each defaulting to its `CXH_SNAPSHOT_*` env var in `apply`. */
 export interface Config {
-  /** Override the fixture path; defaults to `$DSH_SNAPSHOT_FILE`. */
+  /** Override the fixture path; defaults to `$CXH_SNAPSHOT_FILE`. */
   file?: string
-  /** Override the sidecar path; defaults to `$DSH_SNAPSHOT_OVERRIDE`. */
+  /** Override the sidecar path; defaults to `$CXH_SNAPSHOT_OVERRIDE`. */
   overrideFile?: string
   /**
-   * Override the child-log paths; defaults to `$DSH_SNAPSHOT_CHILD_FILES` (a
+   * Override the child-log paths; defaults to `$CXH_SNAPSHOT_CHILD_FILES` (a
    * path-separator-delimited list). Each is a recorded subagent session log for
    * a nested-agent scenario; absent/empty for a single-session scenario.
    */
@@ -1313,9 +1313,9 @@ export interface ReplayModelConfig {
 
 来源：[`packages/test-support/llm-replay/src/index.ts:809`](../packages/test-support/llm-replay/src/index.ts)
 
-<a id="deepseek-aidsh-llm-retry"></a>
+<a id="centurionarxcxh-llm-retry"></a>
 
-## `@deepseek-ai/dsh-llm-retry`
+## `@centurionarx/cxh-llm-retry`
 
 需要：`agents`
 
@@ -1326,9 +1326,9 @@ export type Config = Readonly<Record<string, never>>
 
 来源：[`packages/llm/llm-retry/src/index.ts:24`](../packages/llm/llm-retry/src/index.ts)
 
-<a id="deepseek-aidsh-lsp-stdio"></a>
+<a id="centurionarxcxh-lsp-stdio"></a>
 
-## `@deepseek-ai/dsh-lsp-stdio`
+## `@centurionarx/cxh-lsp-stdio`
 
 需要：`fs` · `lsp` · `subprocess`
 
@@ -1368,9 +1368,9 @@ export interface LspLocalServerConfig {
 
 来源：[`packages/lsp/lsp-stdio/src/index.ts:82`](../packages/lsp/lsp-stdio/src/index.ts)
 
-<a id="deepseek-aidsh-mcp-client"></a>
+<a id="centurionarxcxh-mcp-client"></a>
 
-## `@deepseek-ai/dsh-mcp-client`
+## `@centurionarx/cxh-mcp-client`
 
 需要：`tools`
 
@@ -1441,9 +1441,9 @@ export interface ReconnectConfig {
 
 来源：[`packages/mcp/mcp-client/src/index.ts:98`](../packages/mcp/mcp-client/src/index.ts)
 
-<a id="deepseek-aidsh-message-feedback"></a>
+<a id="centurionarxcxh-message-feedback"></a>
 
-## `@deepseek-ai/dsh-message-feedback`
+## `@centurionarx/cxh-message-feedback`
 
 需要：`storageDomain` · `sessionPersistence` · `sessions`
 
@@ -1457,9 +1457,9 @@ export interface Config {
 
 来源：[`packages/feedback/message-feedback/src/index.ts:49`](../packages/feedback/message-feedback/src/index.ts)
 
-<a id="deepseek-aidsh-permission-presets"></a>
+<a id="centurionarxcxh-permission-presets"></a>
 
-## `@deepseek-ai/dsh-permission-presets`
+## `@centurionarx/cxh-permission-presets`
 
 需要：`shell` · `approval` · `sessions`
 
@@ -1496,9 +1496,9 @@ export interface PresetSpec {
 
 来源：[`packages/interaction/permission-presets/src/index.ts:156`](../packages/interaction/permission-presets/src/index.ts)
 
-<a id="deepseek-aidsh-persona"></a>
+<a id="centurionarxcxh-persona"></a>
 
-## `@deepseek-ai/dsh-persona`
+## `@centurionarx/cxh-persona`
 
 需要：`systemPrompt`
 
@@ -1520,9 +1520,9 @@ export interface Config {
 
 来源：[`packages/preset/persona/src/index.ts:34`](../packages/preset/persona/src/index.ts)
 
-<a id="deepseek-aidsh-plan-mode"></a>
+<a id="centurionarxcxh-plan-mode"></a>
 
-## `@deepseek-ai/dsh-plan-mode`
+## `@centurionarx/cxh-plan-mode`
 
 需要：`tools` · `systemPrompt`
 
@@ -1536,9 +1536,9 @@ export interface PlanModeConfig {
 
 来源：[`packages/plan/plan-mode/src/index.ts:70`](../packages/plan/plan-mode/src/index.ts)
 
-<a id="deepseek-aidsh-pwsh-local"></a>
+<a id="centurionarxcxh-pwsh-local"></a>
 
-## `@deepseek-ai/dsh-pwsh-local`
+## `@centurionarx/cxh-pwsh-local`
 
 需要：`subprocess`
 
@@ -1569,9 +1569,9 @@ export interface Config {
 
 来源：[`packages/shell/pwsh-local/src/index.ts:58`](../packages/shell/pwsh-local/src/index.ts)
 
-<a id="deepseek-aidsh-pwsh-sandbox"></a>
+<a id="centurionarxcxh-pwsh-sandbox"></a>
 
-## `@deepseek-ai/dsh-pwsh-sandbox`
+## `@centurionarx/cxh-pwsh-sandbox`
 
 需要：`subprocess` · `sandbox` · `sandboxPolicy`
 
@@ -1579,7 +1579,7 @@ export interface Config {
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@deepseek-ai/dsh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The
  * runner choice is likewise the `ctx.sandbox` provider's config, not this
  * executor's.
@@ -1587,13 +1587,13 @@ export interface Config {
 export type Config = LocalConfig
 ```
 
-依赖：[`LocalConfig`](#deepseek-aidsh-pwsh-local)
+依赖：[`LocalConfig`](#centurionarxcxh-pwsh-local)
 
 来源：[`packages/shell/pwsh-sandbox/src/index.ts:40`](../packages/shell/pwsh-sandbox/src/index.ts)
 
-<a id="deepseek-aidsh-repeat-tool-reminder"></a>
+<a id="centurionarxcxh-repeat-tool-reminder"></a>
 
-## `@deepseek-ai/dsh-repeat-tool-reminder`
+## `@centurionarx/cxh-repeat-tool-reminder`
 
 ```ts config-catalog
 /**
@@ -1625,9 +1625,9 @@ export interface Config {
 
 来源：[`packages/guard/repeat-tool-reminder/src/index.ts:28`](../packages/guard/repeat-tool-reminder/src/index.ts)
 
-<a id="deepseek-aidsh-sandbox-local"></a>
+<a id="centurionarxcxh-sandbox-local"></a>
 
-## `@deepseek-ai/dsh-sandbox-local`
+## `@centurionarx/cxh-sandbox-local`
 
 ```ts config-catalog
 /** Plugin config. All optional — `static Config` supplies the defaults. */
@@ -1657,9 +1657,9 @@ export interface Config {
 
 来源：[`packages/sandbox/sandbox-local/src/index.ts:44`](../packages/sandbox/sandbox-local/src/index.ts)
 
-<a id="deepseek-aidsh-sandbox-policy"></a>
+<a id="centurionarxcxh-sandbox-policy"></a>
 
-## `@deepseek-ai/dsh-sandbox-policy`
+## `@centurionarx/cxh-sandbox-policy`
 
 ```ts config-catalog
 /**
@@ -1684,9 +1684,9 @@ export interface Config {
 
 来源：[`packages/sandbox/sandbox-policy/src/index.ts:67`](../packages/sandbox/sandbox-policy/src/index.ts)
 
-<a id="deepseek-aidsh-sdk-jsonrpc-server"></a>
+<a id="centurionarxcxh-sdk-jsonrpc-server"></a>
 
-## `@deepseek-ai/dsh-sdk-jsonrpc-server`
+## `@centurionarx/cxh-sdk-jsonrpc-server`
 
 需要：`agents`
 
@@ -1708,9 +1708,9 @@ export interface JsonRpcConfig {
 
 来源：[`packages/sdk/server/src/index.ts:29`](../packages/sdk/server/src/index.ts)
 
-<a id="deepseek-aidsh-session-persistence-jsonl"></a>
+<a id="centurionarxcxh-session-persistence-jsonl"></a>
 
-## `@deepseek-ai/dsh-session-persistence-jsonl`
+## `@centurionarx/cxh-session-persistence-jsonl`
 
 需要：`sessions`
 
@@ -1747,9 +1747,9 @@ export type JsonlCompression = 'zstd' | 'none'
 
 来源：[`packages/session/session-persistence-jsonl/src/index.ts:60`](../packages/session/session-persistence-jsonl/src/index.ts)
 
-<a id="deepseek-aidsh-session-persistence-sqlite"></a>
+<a id="centurionarxcxh-session-persistence-sqlite"></a>
 
-## `@deepseek-ai/dsh-session-persistence-sqlite`
+## `@centurionarx/cxh-session-persistence-sqlite`
 
 需要：`sessions`
 
@@ -1774,9 +1774,9 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 来源：[`packages/session/session-persistence-sqlite/src/index.ts:36`](../packages/session/session-persistence-sqlite/src/index.ts)
 
-<a id="deepseek-aidsh-session-projection-cache"></a>
+<a id="centurionarxcxh-session-projection-cache"></a>
 
-## `@deepseek-ai/dsh-session-projection-cache`
+## `@centurionarx/cxh-session-projection-cache`
 
 需要：`storageDomain` · `sessionProjections` · `sessionPersistence` · `sessions`
 
@@ -1797,9 +1797,9 @@ export interface Config {
 
 来源：[`packages/session/session-projection-cache/src/index.ts:42`](../packages/session/session-projection-cache/src/index.ts)
 
-<a id="deepseek-aidsh-session-query-sqlite"></a>
+<a id="centurionarxcxh-session-query-sqlite"></a>
 
-## `@deepseek-ai/dsh-session-query-sqlite`
+## `@centurionarx/cxh-session-query-sqlite`
 
 需要：`sessions`
 
@@ -1843,9 +1843,9 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 来源：[`packages/session-query/session-query-sqlite/src/index.ts:89`](../packages/session-query/session-query-sqlite/src/index.ts)
 
-<a id="deepseek-aidsh-session-reference"></a>
+<a id="centurionarxcxh-session-reference"></a>
 
-## `@deepseek-ai/dsh-session-reference`
+## `@centurionarx/cxh-session-reference`
 
 需要：`sessionQuery`
 
@@ -1863,16 +1863,16 @@ export interface Config {
 
 来源：[`packages/context/session-reference/src/config.ts:11`](../packages/context/session-reference/src/config.ts)
 
-<a id="deepseek-aidsh-session-telemetry-otel"></a>
+<a id="centurionarxcxh-session-telemetry-otel"></a>
 
-## `@deepseek-ai/dsh-session-telemetry-otel`
+## `@centurionarx/cxh-session-telemetry-otel`
 
 需要：`sessions`
 
 ```ts config-catalog
 /**
  * Plugin configuration: one sharing policy, two verbatim SDK option objects,
- * and one DSH-owned shutdown bound. Uploading modes validate their endpoint
+ * and one CXH-owned shutdown bound. Uploading modes validate their endpoint
  * and shutdown deadline at plugin load; `DISABLED` reads neither.
  */
 export interface Config {
@@ -1909,9 +1909,9 @@ export enum SessionTelemetryMode {
 
 来源：[`packages/session/session-telemetry-otel/src/index.ts:91`](../packages/session/session-telemetry-otel/src/index.ts)
 
-<a id="deepseek-aidsh-session-title"></a>
+<a id="centurionarxcxh-session-title"></a>
 
-## `@deepseek-ai/dsh-session-title`
+## `@centurionarx/cxh-session-title`
 
 需要：`sessions`
 
@@ -1929,9 +1929,9 @@ export interface Config {
 
 来源：[`packages/session/session-title/src/index.ts:79`](../packages/session/session-title/src/index.ts)
 
-<a id="deepseek-aidsh-session-title-all-prompts-llm"></a>
+<a id="centurionarxcxh-session-title-all-prompts-llm"></a>
 
-## `@deepseek-ai/dsh-session-title-all-prompts-llm`
+## `@centurionarx/cxh-session-title-all-prompts-llm`
 
 需要：`sessionTitle` · `llm` · `sessions`
 
@@ -1944,9 +1944,9 @@ export type Config = SessionTitleLlmConfig
 
 来源：[`packages/session/session-title-all-prompts-llm/src/index.ts:15`](../packages/session/session-title-all-prompts-llm/src/index.ts)
 
-<a id="deepseek-aidsh-session-title-first-prompt-llm"></a>
+<a id="centurionarxcxh-session-title-first-prompt-llm"></a>
 
-## `@deepseek-ai/dsh-session-title-first-prompt-llm`
+## `@centurionarx/cxh-session-title-first-prompt-llm`
 
 需要：`sessionTitle` · `llm` · `sessions`
 
@@ -1959,17 +1959,17 @@ export type Config = SessionTitleLlmConfig
 
 来源：[`packages/session/session-title-first-prompt-llm/src/index.ts:15`](../packages/session/session-title-first-prompt-llm/src/index.ts)
 
-<a id="deepseek-aidsh-settings-file"></a>
+<a id="centurionarxcxh-settings-file"></a>
 
-## `@deepseek-ai/dsh-settings-file`
+## `@centurionarx/cxh-settings-file`
 
 ```ts config-catalog
 /** Plugin config: file location and hot-reload behavior. */
 export interface Config {
   /** Settings document path; defaults to `settings.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$DSH_HOME` or `~/.dsh`. */
-  dshHome?: string
+  /** Harness home used when `path` is omitted; defaults to `$CXH_HOME` or `~/.cxh`. */
+  cxhHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -1979,23 +1979,23 @@ export interface Config {
 
 来源：[`packages/settings/settings-file/src/index.ts:21`](../packages/settings/settings-file/src/index.ts)
 
-<a id="deepseek-aidsh-shell-env"></a>
+<a id="centurionarxcxh-shell-env"></a>
 
-## `@deepseek-ai/dsh-shell-env`
+## `@centurionarx/cxh-shell-env`
 
 ```ts config-catalog
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
-  /** DeepSeek Harness home directory exposed as `DSH_HOME`; defaults to `$DSH_HOME` or `~/.dsh`. */
-  dshHome?: string
+  /** CENTURIONarx Harness home directory exposed as `CXH_HOME`; defaults to `$CXH_HOME` or `~/.cxh`. */
+  cxhHome?: string
 }
 ```
 
 来源：[`packages/shell/shell-env/src/index.ts:29`](../packages/shell/shell-env/src/index.ts)
 
-<a id="deepseek-aidsh-skill"></a>
+<a id="centurionarxcxh-skill"></a>
 
-## `@deepseek-ai/dsh-skill`
+## `@centurionarx/cxh-skill`
 
 ```ts config-catalog
 /** Skill registry configuration. */
@@ -2007,9 +2007,9 @@ export interface Config {
 
 来源：[`packages/skill/skill/src/index.ts:279`](../packages/skill/skill/src/index.ts)
 
-<a id="deepseek-aidsh-skill-filesystem"></a>
+<a id="centurionarxcxh-skill-filesystem"></a>
 
-## `@deepseek-ai/dsh-skill-filesystem`
+## `@centurionarx/cxh-skill-filesystem`
 
 需要：`skills`
 
@@ -2020,9 +2020,9 @@ export interface Config {
   providerName?: string
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
-  /** DeepSeek Harness config root. Defaults to `$DSH_HOME` or `~/.dsh`. */
-  dshHome?: string
-  /** Shared agent config root. Defaults to `$DSH_AGENTS_HOME` or `~/.agents`. */
+  /** CENTURIONarx Harness config root. Defaults to `$CXH_HOME` or `~/.cxh`. */
+  cxhHome?: string
+  /** Shared agent config root. Defaults to `$CXH_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string
   /** Additional skill roots scanned after project roots and before user roots. */
   customSkillDirs?: string[]
@@ -2038,16 +2038,16 @@ export interface Config {
   watchMaxProjects?: number
   /** Whether watched symbolic links follow their target files. */
   watchFollowSymlinks?: boolean
-  /** Bundled skill root; defaults to `$DSH_BUNDLED_SKILL_DIR` when default roots are included, otherwise mounts none. */
+  /** Bundled skill root; defaults to `$CXH_BUNDLED_SKILL_DIR` when default roots are included, otherwise mounts none. */
   bundledSkillDir?: string
 }
 ```
 
 来源：[`packages/skill/skill-filesystem/src/index.ts:49`](../packages/skill/skill-filesystem/src/index.ts)
 
-<a id="deepseek-aidsh-spill-local"></a>
+<a id="centurionarxcxh-spill-local"></a>
 
-## `@deepseek-ai/dsh-spill-local`
+## `@centurionarx/cxh-spill-local`
 
 ```ts config-catalog
 /** Plugin config (all optional — `static Config` supplies the defaults). */
@@ -2063,9 +2063,9 @@ export interface Config {
 
 来源：[`packages/spill/spill-local/src/index.ts:22`](../packages/spill/spill-local/src/index.ts)
 
-<a id="deepseek-aidsh-spill-policy"></a>
+<a id="centurionarxcxh-spill-policy"></a>
 
-## `@deepseek-ai/dsh-spill-policy`
+## `@centurionarx/cxh-spill-policy`
 
 需要：`tools`
 
@@ -2083,9 +2083,9 @@ export interface Config {
 
 来源：[`packages/spill/spill-policy/src/index.ts:60`](../packages/spill/spill-policy/src/index.ts)
 
-<a id="deepseek-aidsh-storage-domain"></a>
+<a id="centurionarxcxh-storage-domain"></a>
 
-## `@deepseek-ai/dsh-storage-domain`
+## `@centurionarx/cxh-storage-domain`
 
 需要：`storage`
 
@@ -2106,9 +2106,9 @@ export interface Config {
 
 来源：[`packages/storage/storage-domain/src/index.ts:52`](../packages/storage/storage-domain/src/index.ts)
 
-<a id="deepseek-aidsh-storage-json"></a>
+<a id="centurionarxcxh-storage-json"></a>
 
-## `@deepseek-ai/dsh-storage-json`
+## `@centurionarx/cxh-storage-json`
 
 需要：`storage`
 
@@ -2127,9 +2127,9 @@ export interface Config {
 
 来源：[`packages/storage/storage-json/src/index.ts:27`](../packages/storage/storage-json/src/index.ts)
 
-<a id="deepseek-aidsh-storage-sqlite"></a>
+<a id="centurionarxcxh-storage-sqlite"></a>
 
-## `@deepseek-ai/dsh-storage-sqlite`
+## `@centurionarx/cxh-storage-sqlite`
 
 需要：`storage`
 
@@ -2167,9 +2167,9 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 来源：[`packages/storage/storage-sqlite/src/index.ts:24`](../packages/storage/storage-sqlite/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-acp"></a>
+<a id="centurionarxcxh-subagent-acp"></a>
 
-## `@deepseek-ai/dsh-subagent-acp`
+## `@centurionarx/cxh-subagent-acp`
 
 需要：`subagents` · `subprocess`
 
@@ -2220,9 +2220,9 @@ export type PermissionPolicy = 'allow' | 'reject'
 
 来源：[`packages/subagent/subagent-acp/src/index.ts:27`](../packages/subagent/subagent-acp/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-claude-code"></a>
+<a id="centurionarxcxh-subagent-claude-code"></a>
 
-## `@deepseek-ai/dsh-subagent-claude-code`
+## `@centurionarx/cxh-subagent-claude-code`
 
 需要：`subagents` · `subprocess`
 
@@ -2253,9 +2253,9 @@ export type ClaudeCodePermissionMode = typeof CLAUDE_CODE_PERMISSION_MODES[numbe
 
 来源：[`packages/subagent/subagent-claude-code/src/index.ts:38`](../packages/subagent/subagent-claude-code/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-codex"></a>
+<a id="centurionarxcxh-subagent-codex"></a>
 
-## `@deepseek-ai/dsh-subagent-codex`
+## `@centurionarx/cxh-subagent-codex`
 
 需要：`subagents` · `subprocess`
 
@@ -2284,16 +2284,16 @@ export type CodexPermissionMode =
 
 来源：[`packages/subagent/subagent-codex/src/index.ts:36`](../packages/subagent/subagent-codex/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-dsh-sdk"></a>
+<a id="centurionarxcxh-subagent-cxh-sdk"></a>
 
-## `@deepseek-ai/dsh-subagent-dsh-sdk`
+## `@centurionarx/cxh-subagent-cxh-sdk`
 
 需要：`subagents`
 
 ```ts config-catalog
 /** Config: how to spawn and drive the child SDK runtime process. */
 export interface Config {
-  /** Provider name on `ctx.subagents` (default `dsh-sdk`). */
+  /** Provider name on `ctx.subagents` (default `cxh-sdk`). */
   providerName: string
   /** The executable to spawn for each run (the child runtime bin or packaged exe). */
   command: string
@@ -2316,7 +2316,7 @@ export interface Config {
   maxTokens?: number
   /**
    * Extra environment variables for the child process — e.g. the child
-   * runtime's own `DEEPSEEK_API_KEY`, or `DSH_CORDIS_CONFIG` naming its
+   * runtime's own `DEEPSEEK_API_KEY`, or `CXH_CORDIS_CONFIG` naming its
    * config. Forwarded on top of a credential-scrubbed copy of the parent
    * env, so an explicit key here reaches the child while ambient secrets do
    * not leak implicitly.
@@ -2335,11 +2335,11 @@ export interface Config {
 }
 ```
 
-来源：[`packages/subagent/subagent-dsh-sdk/src/index.ts:29`](../packages/subagent/subagent-dsh-sdk/src/index.ts)
+来源：[`packages/subagent/subagent-cxh-sdk/src/index.ts:29`](../packages/subagent/subagent-cxh-sdk/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-fork-in-process"></a>
+<a id="centurionarxcxh-subagent-fork-in-process"></a>
 
-## `@deepseek-ai/dsh-subagent-fork-in-process`
+## `@centurionarx/cxh-subagent-fork-in-process`
 
 需要：`subagents`
 
@@ -2353,9 +2353,9 @@ export interface Config {
 
 来源：[`packages/subagent/subagent-fork-in-process/src/index.ts:31`](../packages/subagent/subagent-fork-in-process/src/index.ts)
 
-<a id="deepseek-aidsh-subagent-spawn-in-process"></a>
+<a id="centurionarxcxh-subagent-spawn-in-process"></a>
 
-## `@deepseek-ai/dsh-subagent-spawn-in-process`
+## `@centurionarx/cxh-subagent-spawn-in-process`
 
 需要：`subagents`
 
@@ -2369,9 +2369,9 @@ export interface Config {
 
 来源：[`packages/subagent/subagent-spawn-in-process/src/index.ts:25`](../packages/subagent/subagent-spawn-in-process/src/index.ts)
 
-<a id="deepseek-aidsh-subprocess-e2b"></a>
+<a id="centurionarxcxh-subprocess-e2b"></a>
 
-## `@deepseek-ai/dsh-subprocess-e2b`
+## `@centurionarx/cxh-subprocess-e2b`
 
 需要：`e2b`
 
@@ -2385,14 +2385,14 @@ export interface Config {
 
 来源：[`packages/e2b/subprocess-e2b/src/index.ts:25`](../packages/e2b/subprocess-e2b/src/index.ts)
 
-<a id="deepseek-aidsh-system-prompt"></a>
+<a id="centurionarxcxh-system-prompt"></a>
 
-## `@deepseek-ai/dsh-system-prompt`
+## `@centurionarx/cxh-system-prompt`
 
 ```ts config-catalog
 /** Plugin config: the deployment-authored fragment of the system prompt (see {@link Config.persona} for its contract). */
 export interface Config {
-  /** Include the fixed DeepSeek Harness identity before the deployment persona (default true). */
+  /** Include the fixed CENTURIONarx Harness identity before the deployment persona (default true). */
   includeHarnessIdentity?: boolean
   /** Include dynamic runtime-context snapshots in model history (default true). */
   includeRuntimeContext?: boolean
@@ -2412,9 +2412,9 @@ export interface Config {
 
 来源：[`packages/core/system-prompt/src/index.ts:186`](../packages/core/system-prompt/src/index.ts)
 
-<a id="deepseek-aidsh-terminal-bash"></a>
+<a id="centurionarxcxh-terminal-bash"></a>
 
-## `@deepseek-ai/dsh-terminal-bash`
+## `@centurionarx/cxh-terminal-bash`
 
 需要：`terminals` · `sandboxPolicy` · `subprocess`
 
@@ -2462,9 +2462,9 @@ export type ShellDialect = 'bash' | 'pwsh'
 
 来源：[`packages/terminal/terminal-bash/src/config.ts:10`](../packages/terminal/terminal-bash/src/config.ts)
 
-<a id="deepseek-aidsh-time-context"></a>
+<a id="centurionarxcxh-time-context"></a>
 
-## `@deepseek-ai/dsh-time-context`
+## `@centurionarx/cxh-time-context`
 
 需要：`agents`
 
@@ -2480,9 +2480,9 @@ export interface Config {
 
 来源：[`packages/context/time-context/src/index.ts:27`](../packages/context/time-context/src/index.ts)
 
-<a id="deepseek-aidsh-tmux-context"></a>
+<a id="centurionarxcxh-tmux-context"></a>
 
-## `@deepseek-ai/dsh-tmux-context`
+## `@centurionarx/cxh-tmux-context`
 
 需要：`agents`
 
@@ -2496,9 +2496,9 @@ export interface Config {
 
 来源：[`packages/context/tmux-context/src/index.ts:34`](../packages/context/tmux-context/src/index.ts)
 
-<a id="deepseek-aidsh-token-meter"></a>
+<a id="centurionarxcxh-token-meter"></a>
 
-## `@deepseek-ai/dsh-token-meter`
+## `@centurionarx/cxh-token-meter`
 
 ```ts config-catalog
 /** Token-meter plugin configuration; the fixed estimator has no settings. */
@@ -2507,9 +2507,9 @@ export type TokenMeterConfig = Record<string, never>
 
 来源：[`packages/llm/token-meter/src/types.ts:12`](../packages/llm/token-meter/src/types.ts)
 
-<a id="deepseek-aidsh-tool-bash"></a>
+<a id="centurionarxcxh-tool-bash"></a>
 
-## `@deepseek-ai/dsh-tool-bash`
+## `@centurionarx/cxh-tool-bash`
 
 需要：`tools` · `shell` · `systemPrompt` · `shellEnv`
 
@@ -2523,9 +2523,9 @@ export interface Config {
 
 来源：[`packages/shell/tool-bash/src/index.ts:34`](../packages/shell/tool-bash/src/index.ts)
 
-<a id="deepseek-aidsh-tool-bash-persistent"></a>
+<a id="centurionarxcxh-tool-bash-persistent"></a>
 
-## `@deepseek-ai/dsh-tool-bash-persistent`
+## `@centurionarx/cxh-tool-bash-persistent`
 
 需要：`tools` · `terminals`
 
@@ -2545,9 +2545,9 @@ export interface Config {
 
 来源：[`packages/shell/tool-bash-persistent/src/index.ts:432`](../packages/shell/tool-bash-persistent/src/index.ts)
 
-<a id="deepseek-aidsh-tool-fs"></a>
+<a id="centurionarxcxh-tool-fs"></a>
 
-## `@deepseek-ai/dsh-tool-fs`
+## `@centurionarx/cxh-tool-fs`
 
 需要：`tools` · `fs` · `systemPrompt`
 
@@ -2567,9 +2567,9 @@ export interface Config {
 
 来源：[`packages/fs/tool-fs/src/index.ts:25`](../packages/fs/tool-fs/src/index.ts)
 
-<a id="deepseek-aidsh-tool-fs-search"></a>
+<a id="centurionarxcxh-tool-fs-search"></a>
 
-## `@deepseek-ai/dsh-tool-fs-search`
+## `@centurionarx/cxh-tool-fs-search`
 
 需要：`tools` · `systemPrompt` · `subprocess`
 
@@ -2594,7 +2594,7 @@ export interface Config {
   stderrMaxBytes?: number
   /**
    * Cooperative tool-call timeout budget (ms) on both tools, enforced by
-   * `@deepseek-ai/dsh-tool-call-timeout-policy` through `exec.signal`.
+   * `@centurionarx/cxh-tool-call-timeout-policy` through `exec.signal`.
    */
   timeoutMs?: number
 }
@@ -2602,9 +2602,9 @@ export interface Config {
 
 来源：[`packages/fs/tool-fs-search/src/index.ts:73`](../packages/fs/tool-fs-search/src/index.ts)
 
-<a id="deepseek-aidsh-tool-goal"></a>
+<a id="centurionarxcxh-tool-goal"></a>
 
-## `@deepseek-ai/dsh-tool-goal`
+## `@centurionarx/cxh-tool-goal`
 
 需要：`agents` · `goals` · `tools` · `systemPrompt`
 
@@ -2618,9 +2618,9 @@ export interface Config {
 
 来源：[`packages/goal/tool-goal/src/index.ts:26`](../packages/goal/tool-goal/src/index.ts)
 
-<a id="deepseek-aidsh-tool-jobs"></a>
+<a id="centurionarxcxh-tool-jobs"></a>
 
-## `@deepseek-ai/dsh-tool-jobs`
+## `@centurionarx/cxh-tool-jobs`
 
 需要：`tools` · `jobs` · `systemPrompt`
 
@@ -2652,9 +2652,9 @@ export type CompletionDelivery = 'quiet' | 'wakeup'
 
 来源：[`packages/jobs/tool-jobs/src/index.ts:32`](../packages/jobs/tool-jobs/src/index.ts)
 
-<a id="deepseek-aidsh-tool-lsp"></a>
+<a id="centurionarxcxh-tool-lsp"></a>
 
-## `@deepseek-ai/dsh-tool-lsp`
+## `@centurionarx/cxh-tool-lsp`
 
 需要：`tools` · `lsp` · `systemPrompt`
 
@@ -2672,9 +2672,9 @@ export interface Config {
 
 来源：[`packages/lsp/tool-lsp/src/index.ts:58`](../packages/lsp/tool-lsp/src/index.ts)
 
-<a id="deepseek-aidsh-tool-pwsh"></a>
+<a id="centurionarxcxh-tool-pwsh"></a>
 
-## `@deepseek-ai/dsh-tool-pwsh`
+## `@centurionarx/cxh-tool-pwsh`
 
 需要：`tools` · `shell` · `systemPrompt` · `shellEnv`
 
@@ -2688,9 +2688,9 @@ export interface Config {
 
 来源：[`packages/shell/tool-pwsh/src/index.ts:52`](../packages/shell/tool-pwsh/src/index.ts)
 
-<a id="deepseek-aidsh-tool-pwsh-persistent"></a>
+<a id="centurionarxcxh-tool-pwsh-persistent"></a>
 
-## `@deepseek-ai/dsh-tool-pwsh-persistent`
+## `@centurionarx/cxh-tool-pwsh-persistent`
 
 需要：`tools` · `terminals`
 
@@ -2710,9 +2710,9 @@ export interface Config {
 
 来源：[`packages/shell/tool-pwsh-persistent/src/index.ts:472`](../packages/shell/tool-pwsh-persistent/src/index.ts)
 
-<a id="deepseek-aidsh-tool-ralph"></a>
+<a id="centurionarxcxh-tool-ralph"></a>
 
-## `@deepseek-ai/dsh-tool-ralph`
+## `@centurionarx/cxh-tool-ralph`
 
 需要：`tools` · `workflowEngine` · `subagents` · `systemPrompt`
 
@@ -2732,9 +2732,9 @@ export interface Config {
 
 来源：[`packages/workflow/tool-ralph/src/index.ts:23`](../packages/workflow/tool-ralph/src/index.ts)
 
-<a id="deepseek-aidsh-tool-session-query"></a>
+<a id="centurionarxcxh-tool-session-query"></a>
 
-## `@deepseek-ai/dsh-tool-session-query`
+## `@centurionarx/cxh-tool-session-query`
 
 需要：`tools` · `systemPrompt` · `sessionQuery`
 
@@ -2750,9 +2750,9 @@ export interface Config {
 
 来源：[`packages/session-query/tool-session-query/src/index.ts:29`](../packages/session-query/tool-session-query/src/index.ts)
 
-<a id="deepseek-aidsh-tool-skill"></a>
+<a id="centurionarxcxh-tool-skill"></a>
 
-## `@deepseek-ai/dsh-tool-skill`
+## `@centurionarx/cxh-tool-skill`
 
 需要：`agents` · `tools` · `skills`
 
@@ -2766,9 +2766,9 @@ export interface Config {
 
 来源：[`packages/skill/tool-skill/src/index.ts:61`](../packages/skill/tool-skill/src/index.ts)
 
-<a id="deepseek-aidsh-tool-str-replace-editor"></a>
+<a id="centurionarxcxh-tool-str-replace-editor"></a>
 
-## `@deepseek-ai/dsh-tool-str-replace-editor`
+## `@centurionarx/cxh-tool-str-replace-editor`
 
 需要：`tools` · `fs`
 
@@ -2784,9 +2784,9 @@ export interface Config {
 
 来源：[`packages/fs/tool-str-replace-editor/src/index.ts:497`](../packages/fs/tool-str-replace-editor/src/index.ts)
 
-<a id="deepseek-aidsh-tool-subagent"></a>
+<a id="centurionarxcxh-tool-subagent"></a>
 
-## `@deepseek-ai/dsh-tool-subagent`
+## `@centurionarx/cxh-tool-subagent`
 
 需要：`tools` · `subagents` · `systemPrompt`
 
@@ -2849,9 +2849,9 @@ export interface Config {
 
 来源：[`packages/subagent/tool-subagent/src/index.ts:29`](../packages/subagent/tool-subagent/src/index.ts)
 
-<a id="deepseek-aidsh-tool-subagent-report"></a>
+<a id="centurionarxcxh-tool-subagent-report"></a>
 
-## `@deepseek-ai/dsh-tool-subagent-report`
+## `@centurionarx/cxh-tool-subagent-report`
 
 需要：`subagents` · `tools` · `systemPrompt`
 
@@ -2871,9 +2871,9 @@ export interface Config {
 
 来源：[`packages/subagent/tool-subagent-report/src/index.ts:27`](../packages/subagent/tool-subagent-report/src/index.ts)
 
-<a id="deepseek-aidsh-tool-terminal"></a>
+<a id="centurionarxcxh-tool-terminal"></a>
 
-## `@deepseek-ai/dsh-tool-terminal`
+## `@centurionarx/cxh-tool-terminal`
 
 需要：`terminals` · `tools` · `systemPrompt`
 
@@ -2889,9 +2889,9 @@ export interface Config {
 
 来源：[`packages/terminal/tool-terminal/src/index.ts:35`](../packages/terminal/tool-terminal/src/index.ts)
 
-<a id="deepseek-aidsh-tool-todo"></a>
+<a id="centurionarxcxh-tool-todo"></a>
 
-## `@deepseek-ai/dsh-tool-todo`
+## `@centurionarx/cxh-tool-todo`
 
 需要：`tools`
 
@@ -2911,9 +2911,9 @@ export interface Config {
 
 来源：[`packages/todo/tool-todo/src/index.ts:29`](../packages/todo/tool-todo/src/index.ts)
 
-<a id="deepseek-aidsh-tool-web"></a>
+<a id="centurionarxcxh-tool-web"></a>
 
-## `@deepseek-ai/dsh-tool-web`
+## `@centurionarx/cxh-tool-web`
 
 需要：`tools` · `web` · `systemPrompt`
 
@@ -2939,9 +2939,9 @@ export interface Config {
 
 来源：[`packages/web/tool-web/src/index.ts:37`](../packages/web/tool-web/src/index.ts)
 
-<a id="deepseek-aidsh-tool-workflow"></a>
+<a id="centurionarxcxh-tool-workflow"></a>
 
-## `@deepseek-ai/dsh-tool-workflow`
+## `@centurionarx/cxh-tool-workflow`
 
 需要：`tools` · `workflowEngine` · `systemPrompt`
 
@@ -2957,9 +2957,9 @@ export interface Config {
 
 来源：[`packages/workflow/tool-workflow/src/index.ts:33`](../packages/workflow/tool-workflow/src/index.ts)
 
-<a id="deepseek-aidsh-tools"></a>
+<a id="centurionarxcxh-tools"></a>
 
-## `@deepseek-ai/dsh-tools`
+## `@centurionarx/cxh-tools`
 
 需要：`systemPrompt`
 
@@ -2993,9 +2993,9 @@ export type ToolPresentationMode = 'native' | 'code' | 'both'
 
 来源：[`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/index.ts)
 
-<a id="deepseek-aidsh-typert-loader"></a>
+<a id="centurionarxcxh-typert-loader"></a>
 
-## `@deepseek-ai/dsh-typert-loader`
+## `@centurionarx/cxh-typert-loader`
 
 需要：`typert` · `loader`
 
@@ -3009,9 +3009,9 @@ export interface Config {
 
 来源：[`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
-<a id="deepseek-aidsh-user-approval"></a>
+<a id="centurionarxcxh-user-approval"></a>
 
-## `@deepseek-ai/dsh-user-approval`
+## `@centurionarx/cxh-user-approval`
 
 ```ts config-catalog
 /** Plugin config. All optional — `static Config` supplies the defaults. */
@@ -3040,9 +3040,9 @@ export type ApprovalPolicy = 'ask' | 'never'
 
 来源：[`packages/interaction/user-approval/src/index.ts:177`](../packages/interaction/user-approval/src/index.ts)
 
-<a id="deepseek-aidsh-web"></a>
+<a id="centurionarxcxh-web"></a>
 
-## `@deepseek-ai/dsh-web`
+## `@centurionarx/cxh-web`
 
 ```ts config-catalog
 /**
@@ -3061,9 +3061,9 @@ export interface WebRuntimeConfig {
 
 来源：[`packages/web/web/src/index.ts:55`](../packages/web/web/src/index.ts)
 
-<a id="deepseek-aidsh-web-app"></a>
+<a id="centurionarxcxh-web-app"></a>
 
-## `@deepseek-ai/dsh-web-app`
+## `@centurionarx/cxh-web-app`
 
 需要：`webServer`
 
@@ -3076,7 +3076,7 @@ export interface Config {
   printUrl: boolean
   /**
    * Register the model-visible surface context (the `app:web-surface` prompt
-   * section and the `DSH_WEB_URL` bash variable). A one-shot non-interactive
+   * section and the `CXH_WEB_URL` bash variable). A one-shot non-interactive
    * layer can turn it off when its user is not in the GUI, so the
    * orientation text would be false.
    */
@@ -3088,9 +3088,9 @@ export interface Config {
 
 来源：[`packages/bundle/web-app/src/index.ts:42`](../packages/bundle/web-app/src/index.ts)
 
-<a id="deepseek-aidsh-web-fetch-http"></a>
+<a id="centurionarxcxh-web-fetch-http"></a>
 
-## `@deepseek-ai/dsh-web-fetch-http`
+## `@centurionarx/cxh-web-fetch-http`
 
 需要：`web`
 
@@ -3114,9 +3114,9 @@ export interface Config {
 
 来源：[`packages/web/web-fetch-http/src/index.ts:34`](../packages/web/web-fetch-http/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-deepseek"></a>
+<a id="centurionarxcxh-web-search-deepseek"></a>
 
-## `@deepseek-ai/dsh-web-search-deepseek`
+## `@centurionarx/cxh-web-search-deepseek`
 
 需要：`web`
 
@@ -3142,9 +3142,9 @@ export interface Config {
 
 来源：[`packages/web/web-search-deepseek/src/index.ts:46`](../packages/web/web-search-deepseek/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-exa"></a>
+<a id="centurionarxcxh-web-search-exa"></a>
 
-## `@deepseek-ai/dsh-web-search-exa`
+## `@centurionarx/cxh-web-search-exa`
 
 需要：`web`
 
@@ -3166,9 +3166,9 @@ export interface Config {
 
 来源：[`packages/web/web-search-exa/src/index.ts:38`](../packages/web/web-search-exa/src/index.ts)
 
-<a id="deepseek-aidsh-web-search-perplexity"></a>
+<a id="centurionarxcxh-web-search-perplexity"></a>
 
-## `@deepseek-ai/dsh-web-search-perplexity`
+## `@centurionarx/cxh-web-search-perplexity`
 
 需要：`web`
 
@@ -3190,9 +3190,9 @@ export interface Config {
 
 来源：[`packages/web/web-search-perplexity/src/index.ts:32`](../packages/web/web-search-perplexity/src/index.ts)
 
-<a id="deepseek-aidsh-workflow-worker-thread"></a>
+<a id="centurionarxcxh-workflow-worker-thread"></a>
 
-## `@deepseek-ai/dsh-workflow-worker-thread`
+## `@centurionarx/cxh-workflow-worker-thread`
 
 需要：`subagents`
 
@@ -3224,130 +3224,130 @@ export interface Config {
 
 这些插件通过 `cordis.yml` 中不含 `config:` 块的条目加载；它们未声明任何配置接口。
 
-- `@deepseek-ai/dsh-agent`（[`packages/core/agent/src/index.ts`](../packages/core/agent/src/index.ts)）
-- `@deepseek-ai/dsh-api-gateway` — 需要 `typert`（[`packages/api/gateway/src/index.ts`](../packages/api/gateway/src/index.ts)）
-- `@deepseek-ai/dsh-api-remotes`（[`packages/api/remotes/src/index.ts`](../packages/api/remotes/src/index.ts)）
-- `@deepseek-ai/dsh-authorization` — 需要 `credentials`（[`packages/credentials/authorization/src/index.ts`](../packages/credentials/authorization/src/index.ts)）
-- `@deepseek-ai/dsh-client-locale`（[`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts)）
-- `@deepseek-ai/dsh-client-modules` — 需要 `webServer` · `loader`（[`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts)）
-- `@deepseek-ai/dsh-client-runtime`（[`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-agent-preset`（[`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-attachment`（[`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-brand-official`（[`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-commands`（[`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-conversation`（[`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-cordis`（[`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-deliverables` — 需要 `systemPrompt`（[`packages/client/ui-deliverables/src/index.ts`](../packages/client/ui-deliverables/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-directory-picker-browse`（[`packages/client/ui-directory-picker-browse/src/index.ts`](../packages/client/ui-directory-picker-browse/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-directory-picker-native`（[`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-goal`（[`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-input-trigger`（[`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-jobs`（[`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-layout`（[`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-message-feedback`（[`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-model-selection`（[`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-permission-presets`（[`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-plan`（[`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-reference`（[`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-renderer`（[`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-settings`（[`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-settings-general`（[`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-settings-models`（[`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-settings-plugin-inventory`（[`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-settings-plugins`（[`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-sidebar`（[`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-skill`（[`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-subagent`（[`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-theme`（[`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-tool`（[`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-trajectory`（[`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-user-questions`（[`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-workflow-run`（[`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-workspace`（[`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts)）
-- `@deepseek-ai/dsh-command-compact` — 需要 `commands` · `compact`（[`packages/compaction/command-compact/src/index.ts`](../packages/compaction/command-compact/src/index.ts)）
-- `@deepseek-ai/dsh-command-feedback` — 需要 `commands`（[`packages/feedback/command-feedback/src/index.ts`](../packages/feedback/command-feedback/src/index.ts)）
-- `@deepseek-ai/dsh-command-goal` — 需要 `commands` · `goals`（[`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts)）
-- `@deepseek-ai/dsh-commands`（[`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts)）
-- `@deepseek-ai/dsh-cordis-client-runner`（[`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts)）
-- `@deepseek-ai/dsh-fs-e2b` — 需要 `e2b`（[`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts)）
-- `@deepseek-ai/dsh-fs-observation-policy`（[`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts)）
-- `@deepseek-ai/dsh-goal-round-driver` — 需要 `agents` · `goals` · `sessions`（[`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts)）
-- `@deepseek-ai/dsh-host-directory-picker-auto` — 需要 `webServer` · `loader`（[`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts)）
-- `@deepseek-ai/dsh-host-directory-picker-native`（[`packages/host/directory-picker-native/src/index.ts`](../packages/host/directory-picker-native/src/index.ts)）
-- `@deepseek-ai/dsh-host-plugin-inventory` — 需要 `loader`（[`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts)）
-- `@deepseek-ai/dsh-llm`（[`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts)）
-- `@deepseek-ai/dsh-lsp`（[`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts)）
-- `@deepseek-ai/dsh-schedule` — 需要 `agents` · `sessions` · `tools` · `sessionPersistence`（[`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts)）
-- `@deepseek-ai/dsh-session`（[`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts)）
-- `@deepseek-ai/dsh-session-checkpoint-policy` — 需要 `llm` · `sessionPersistence` · `sessions` · `tools`（[`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts)）
-- `@deepseek-ai/dsh-session-log-export` — 需要 `commands`（[`packages/session-query/session-log-export/src/index.ts`](../packages/session-query/session-log-export/src/index.ts)）
-- `@deepseek-ai/dsh-session-projection`（[`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts)）
-- `@deepseek-ai/dsh-session-stats` — 需要 `sessionProjections`（[`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts)）
-- `@deepseek-ai/dsh-skill-badge` — 需要 `skills`（[`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts)）
-- `@deepseek-ai/dsh-storage`（[`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts)）
-- `@deepseek-ai/dsh-subagent`（[`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts)）
-- `@deepseek-ai/dsh-subprocess-local`（[`packages/subprocess/subprocess-local/src/index.ts`](../packages/subprocess/subprocess-local/src/index.ts)）
-- `@deepseek-ai/dsh-terminal`（[`packages/terminal/terminal/src/index.ts`](../packages/terminal/terminal/src/index.ts)）
-- `@deepseek-ai/dsh-tool-ask-user` — 需要 `tools` · `userInteraction`（[`packages/interaction/tool-ask-user/src/index.ts`](../packages/interaction/tool-ask-user/src/index.ts)）
-- `@deepseek-ai/dsh-tool-call-timeout-policy` — 需要 `tools`（[`packages/guard/timeout-policy/src/index.ts`](../packages/guard/timeout-policy/src/index.ts)）
-- `@deepseek-ai/dsh-tool-cordis` — 需要 `tools` · `systemPrompt` · `dynamicCordisRunner` · `cordisInspect`（[`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/tool-cordis/src/index.ts)）
-- `@deepseek-ai/dsh-tool-subagent-control` — 需要 `tools` · `subagents`（[`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts)）
-- `@deepseek-ai/dsh-user-questions`（[`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts)）
-- `@deepseek-ai/dsh-workspace` — 需要 `storageDomain` · `sessionPersistence`（[`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts)）
+- `@centurionarx/cxh-agent`（[`packages/core/agent/src/index.ts`](../packages/core/agent/src/index.ts)）
+- `@centurionarx/cxh-api-gateway` — 需要 `typert`（[`packages/api/gateway/src/index.ts`](../packages/api/gateway/src/index.ts)）
+- `@centurionarx/cxh-api-remotes`（[`packages/api/remotes/src/index.ts`](../packages/api/remotes/src/index.ts)）
+- `@centurionarx/cxh-authorization` — 需要 `credentials`（[`packages/credentials/authorization/src/index.ts`](../packages/credentials/authorization/src/index.ts)）
+- `@centurionarx/cxh-client-locale`（[`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts)）
+- `@centurionarx/cxh-client-modules` — 需要 `webServer` · `loader`（[`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts)）
+- `@centurionarx/cxh-client-runtime`（[`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts)）
+- `@centurionarx/cxh-client-ui-agent-preset`（[`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts)）
+- `@centurionarx/cxh-client-ui-attachment`（[`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts)）
+- `@centurionarx/cxh-client-ui-brand-official`（[`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts)）
+- `@centurionarx/cxh-client-ui-commands`（[`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts)）
+- `@centurionarx/cxh-client-ui-conversation`（[`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts)）
+- `@centurionarx/cxh-client-ui-cordis`（[`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts)）
+- `@centurionarx/cxh-client-ui-deliverables` — 需要 `systemPrompt`（[`packages/client/ui-deliverables/src/index.ts`](../packages/client/ui-deliverables/src/index.ts)）
+- `@centurionarx/cxh-client-ui-directory-picker-browse`（[`packages/client/ui-directory-picker-browse/src/index.ts`](../packages/client/ui-directory-picker-browse/src/index.ts)）
+- `@centurionarx/cxh-client-ui-directory-picker-native`（[`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts)）
+- `@centurionarx/cxh-client-ui-goal`（[`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts)）
+- `@centurionarx/cxh-client-ui-input-trigger`（[`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts)）
+- `@centurionarx/cxh-client-ui-jobs`（[`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts)）
+- `@centurionarx/cxh-client-ui-layout`（[`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts)）
+- `@centurionarx/cxh-client-ui-message-feedback`（[`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts)）
+- `@centurionarx/cxh-client-ui-model-selection`（[`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts)）
+- `@centurionarx/cxh-client-ui-permission-presets`（[`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts)）
+- `@centurionarx/cxh-client-ui-plan`（[`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts)）
+- `@centurionarx/cxh-client-ui-reference`（[`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts)）
+- `@centurionarx/cxh-client-ui-renderer`（[`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts)）
+- `@centurionarx/cxh-client-ui-settings`（[`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts)）
+- `@centurionarx/cxh-client-ui-settings-general`（[`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts)）
+- `@centurionarx/cxh-client-ui-settings-models`（[`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts)）
+- `@centurionarx/cxh-client-ui-settings-plugin-inventory`（[`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts)）
+- `@centurionarx/cxh-client-ui-settings-plugins`（[`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts)）
+- `@centurionarx/cxh-client-ui-sidebar`（[`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts)）
+- `@centurionarx/cxh-client-ui-skill`（[`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts)）
+- `@centurionarx/cxh-client-ui-subagent`（[`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts)）
+- `@centurionarx/cxh-client-ui-theme`（[`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts)）
+- `@centurionarx/cxh-client-ui-tool`（[`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts)）
+- `@centurionarx/cxh-client-ui-trajectory`（[`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts)）
+- `@centurionarx/cxh-client-ui-user-questions`（[`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts)）
+- `@centurionarx/cxh-client-ui-workflow-run`（[`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts)）
+- `@centurionarx/cxh-client-ui-workspace`（[`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts)）
+- `@centurionarx/cxh-command-compact` — 需要 `commands` · `compact`（[`packages/compaction/command-compact/src/index.ts`](../packages/compaction/command-compact/src/index.ts)）
+- `@centurionarx/cxh-command-feedback` — 需要 `commands`（[`packages/feedback/command-feedback/src/index.ts`](../packages/feedback/command-feedback/src/index.ts)）
+- `@centurionarx/cxh-command-goal` — 需要 `commands` · `goals`（[`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts)）
+- `@centurionarx/cxh-commands`（[`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts)）
+- `@centurionarx/cxh-cordis-client-runner`（[`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts)）
+- `@centurionarx/cxh-fs-e2b` — 需要 `e2b`（[`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts)）
+- `@centurionarx/cxh-fs-observation-policy`（[`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts)）
+- `@centurionarx/cxh-goal-round-driver` — 需要 `agents` · `goals` · `sessions`（[`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts)）
+- `@centurionarx/cxh-host-directory-picker-auto` — 需要 `webServer` · `loader`（[`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts)）
+- `@centurionarx/cxh-host-directory-picker-native`（[`packages/host/directory-picker-native/src/index.ts`](../packages/host/directory-picker-native/src/index.ts)）
+- `@centurionarx/cxh-host-plugin-inventory` — 需要 `loader`（[`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts)）
+- `@centurionarx/cxh-llm`（[`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts)）
+- `@centurionarx/cxh-lsp`（[`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts)）
+- `@centurionarx/cxh-schedule` — 需要 `agents` · `sessions` · `tools` · `sessionPersistence`（[`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts)）
+- `@centurionarx/cxh-session`（[`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts)）
+- `@centurionarx/cxh-session-checkpoint-policy` — 需要 `llm` · `sessionPersistence` · `sessions` · `tools`（[`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts)）
+- `@centurionarx/cxh-session-log-export` — 需要 `commands`（[`packages/session-query/session-log-export/src/index.ts`](../packages/session-query/session-log-export/src/index.ts)）
+- `@centurionarx/cxh-session-projection`（[`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts)）
+- `@centurionarx/cxh-session-stats` — 需要 `sessionProjections`（[`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts)）
+- `@centurionarx/cxh-skill-badge` — 需要 `skills`（[`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts)）
+- `@centurionarx/cxh-storage`（[`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts)）
+- `@centurionarx/cxh-subagent`（[`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts)）
+- `@centurionarx/cxh-subprocess-local`（[`packages/subprocess/subprocess-local/src/index.ts`](../packages/subprocess/subprocess-local/src/index.ts)）
+- `@centurionarx/cxh-terminal`（[`packages/terminal/terminal/src/index.ts`](../packages/terminal/terminal/src/index.ts)）
+- `@centurionarx/cxh-tool-ask-user` — 需要 `tools` · `userInteraction`（[`packages/interaction/tool-ask-user/src/index.ts`](../packages/interaction/tool-ask-user/src/index.ts)）
+- `@centurionarx/cxh-tool-call-timeout-policy` — 需要 `tools`（[`packages/guard/timeout-policy/src/index.ts`](../packages/guard/timeout-policy/src/index.ts)）
+- `@centurionarx/cxh-tool-cordis` — 需要 `tools` · `systemPrompt` · `dynamicCordisRunner` · `cordisInspect`（[`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/tool-cordis/src/index.ts)）
+- `@centurionarx/cxh-tool-subagent-control` — 需要 `tools` · `subagents`（[`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts)）
+- `@centurionarx/cxh-user-questions`（[`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts)）
+- `@centurionarx/cxh-workspace` — 需要 `storageDomain` · `sessionPersistence`（[`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts)）
 
 ## Seam 包（不可直接加载）
 
 抽象服务类——部署时应改为加载具体的实现包（参见[能力 seam](../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)）。
 
-- `@deepseek-ai/dsh-attachment` — 抽象 `AttachmentStore`（[`packages/attachment/attachment/src/index.ts`](../packages/attachment/attachment/src/index.ts)）
-- `@deepseek-ai/dsh-code-runtime` — 抽象 `CodeRuntime`（[`packages/code-runtime/code-runtime/src/index.ts`](../packages/code-runtime/code-runtime/src/index.ts)）
-- `@deepseek-ai/dsh-compaction` — 抽象 `CompactionEngine`（[`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts)）
-- `@deepseek-ai/dsh-credentials` — 抽象 `Credentials`（[`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts)）
-- `@deepseek-ai/dsh-file-reference` — 抽象 `FileReferenceService`（[`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts)）
-- `@deepseek-ai/dsh-fs` — 抽象 `FileSystem`（[`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts)）
-- `@deepseek-ai/dsh-host-directory-picker` — 抽象 `DirectoryPicker`（[`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts)）
-- `@deepseek-ai/dsh-jobs` — 抽象 `JobRegistry`（[`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts)）
-- `@deepseek-ai/dsh-sandbox` — 抽象 `SandboxProvider`（[`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts)）
-- `@deepseek-ai/dsh-session-persistence` — 抽象 `SessionPersistence`（[`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts)）
-- `@deepseek-ai/dsh-session-query` — 抽象 `SessionQueryEngine`（[`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts)）
-- `@deepseek-ai/dsh-settings` — 抽象 `Settings`（[`packages/settings/settings/src/index.ts`](../packages/settings/settings/src/index.ts)）
-- `@deepseek-ai/dsh-shell` — 抽象 `ShellExecutor`（[`packages/shell/shell/src/index.ts`](../packages/shell/shell/src/index.ts)）
-- `@deepseek-ai/dsh-spill` — 抽象 `SpillStore`（[`packages/spill/spill/src/index.ts`](../packages/spill/spill/src/index.ts)）
-- `@deepseek-ai/dsh-subprocess` — 抽象 `SubprocessRuntime`（[`packages/subprocess/subprocess/src/index.ts`](../packages/subprocess/subprocess/src/index.ts)）
-- `@deepseek-ai/dsh-workflow` — 抽象 `WorkflowEngine`（[`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts)）
+- `@centurionarx/cxh-attachment` — 抽象 `AttachmentStore`（[`packages/attachment/attachment/src/index.ts`](../packages/attachment/attachment/src/index.ts)）
+- `@centurionarx/cxh-code-runtime` — 抽象 `CodeRuntime`（[`packages/code-runtime/code-runtime/src/index.ts`](../packages/code-runtime/code-runtime/src/index.ts)）
+- `@centurionarx/cxh-compaction` — 抽象 `CompactionEngine`（[`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts)）
+- `@centurionarx/cxh-credentials` — 抽象 `Credentials`（[`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts)）
+- `@centurionarx/cxh-file-reference` — 抽象 `FileReferenceService`（[`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts)）
+- `@centurionarx/cxh-fs` — 抽象 `FileSystem`（[`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts)）
+- `@centurionarx/cxh-host-directory-picker` — 抽象 `DirectoryPicker`（[`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts)）
+- `@centurionarx/cxh-jobs` — 抽象 `JobRegistry`（[`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts)）
+- `@centurionarx/cxh-sandbox` — 抽象 `SandboxProvider`（[`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts)）
+- `@centurionarx/cxh-session-persistence` — 抽象 `SessionPersistence`（[`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts)）
+- `@centurionarx/cxh-session-query` — 抽象 `SessionQueryEngine`（[`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts)）
+- `@centurionarx/cxh-settings` — 抽象 `Settings`（[`packages/settings/settings/src/index.ts`](../packages/settings/settings/src/index.ts)）
+- `@centurionarx/cxh-shell` — 抽象 `ShellExecutor`（[`packages/shell/shell/src/index.ts`](../packages/shell/shell/src/index.ts)）
+- `@centurionarx/cxh-spill` — 抽象 `SpillStore`（[`packages/spill/spill/src/index.ts`](../packages/spill/spill/src/index.ts)）
+- `@centurionarx/cxh-subprocess` — 抽象 `SubprocessRuntime`（[`packages/subprocess/subprocess/src/index.ts`](../packages/subprocess/subprocess/src/index.ts)）
+- `@centurionarx/cxh-workflow` — 抽象 `WorkflowEngine`（[`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts)）
 ## 库包（无插件入口）
 
 由其他包作为库导入；`cordis.yml` 无法加载它们。
 
-- `@deepseek-ai/dsh-acp-snapshot`（[`packages/test-support/acp-snapshot/src/index.ts`](../packages/test-support/acp-snapshot/src/index.ts)）
-- `@deepseek-ai/dsh-agent-loop-testkit`（[`packages/test-support/agent-loop-testkit/src/index.ts`](../packages/test-support/agent-loop-testkit/src/index.ts)）
-- `@deepseek-ai/dsh-anonymous-user-id`（[`packages/identity/anonymous-user-id/src/index.ts`](../packages/identity/anonymous-user-id/src/index.ts)）
-- `@deepseek-ai/dsh-app-boot`（[`packages/boot/app-boot/src/index.ts`](../packages/boot/app-boot/src/index.ts)）
-- `@deepseek-ai/dsh-atomic-write`（[`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts)）
-- `@deepseek-ai/dsh-base`（[`packages/bundle/base/src/index.ts`](../packages/bundle/base/src/index.ts)）
-- `@deepseek-ai/dsh-brand`（[`packages/util/brand/src/index.ts`](../packages/util/brand/src/index.ts)）
-- `@deepseek-ai/dsh-client-test-runtime`（[`packages/test-support/client-runtime/src/index.ts`](../packages/test-support/client-runtime/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-primitives`（[`packages/client/ui-primitives/src/index.ts`](../packages/client/ui-primitives/src/index.ts)）
-- `@deepseek-ai/dsh-client-ui-slots`（[`packages/client/ui-slots/src/index.ts`](../packages/client/ui-slots/src/index.ts)）
-- `@deepseek-ai/dsh-client-web`（[`packages/client/web/src/index.ts`](../packages/client/web/src/index.ts)）
-- `@deepseek-ai/dsh-cmdline`（[`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts)）
-- `@deepseek-ai/dsh-code-runtime-python`（[`packages/code-runtime/code-runtime-python/src/index.ts`](../packages/code-runtime/code-runtime-python/src/index.ts)）
-- `@deepseek-ai/dsh-home-paths`（[`packages/util/home-paths/src/index.ts`](../packages/util/home-paths/src/index.ts)）
-- `@deepseek-ai/dsh-hook-protocol`（[`packages/hooks/hook-protocol/src/index.ts`](../packages/hooks/hook-protocol/src/index.ts)）
-- `@deepseek-ai/dsh-launch-environment`（[`packages/util/launch-environment/src/index.ts`](../packages/util/launch-environment/src/index.ts)）
-- `@deepseek-ai/dsh-llm-mock-server`（[`packages/test-support/llm-mock-server/src/index.ts`](../packages/test-support/llm-mock-server/src/index.ts)）
-- `@deepseek-ai/dsh-loader-smoke`（[`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts)）
-- `@deepseek-ai/dsh-native-command`（[`packages/util/native-command/src/index.ts`](../packages/util/native-command/src/index.ts)）
-- `@deepseek-ai/dsh-output-retention`（[`packages/util/output-retention/src/index.ts`](../packages/util/output-retention/src/index.ts)）
-- `@deepseek-ai/dsh-sandbox-windows-acl`（[`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts)）
-- `@deepseek-ai/dsh-scope`（[`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts)）
-- `@deepseek-ai/dsh-sdk-client`（[`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts)）
-- `@deepseek-ai/dsh-sdk-jsonrpc-demo`（[`packages/examples/jsonrpc-demo/src/index.ts`](../packages/examples/jsonrpc-demo/src/index.ts)）
-- `@deepseek-ai/dsh-sdk-protocol`（[`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts)）
-- `@deepseek-ai/dsh-session-telemetry`（[`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts)）
-- `@deepseek-ai/dsh-session-title-llm`（[`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts)）
-- `@deepseek-ai/dsh-subagent-in-process-driver`（[`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts)）
-- `@deepseek-ai/dsh-timeout`（[`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts)）
-- `@deepseek-ai/dsh-typert-generator`（[`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts)）
-- `@deepseek-ai/dsh-typert-protocol`（[`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts)）
-- `@deepseek-ai/dsh-typert-registry`（[`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts)）
+- `@centurionarx/cxh-acp-snapshot`（[`packages/test-support/acp-snapshot/src/index.ts`](../packages/test-support/acp-snapshot/src/index.ts)）
+- `@centurionarx/cxh-agent-loop-testkit`（[`packages/test-support/agent-loop-testkit/src/index.ts`](../packages/test-support/agent-loop-testkit/src/index.ts)）
+- `@centurionarx/cxh-anonymous-user-id`（[`packages/identity/anonymous-user-id/src/index.ts`](../packages/identity/anonymous-user-id/src/index.ts)）
+- `@centurionarx/cxh-app-boot`（[`packages/boot/app-boot/src/index.ts`](../packages/boot/app-boot/src/index.ts)）
+- `@centurionarx/cxh-atomic-write`（[`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts)）
+- `@centurionarx/cxh-base`（[`packages/bundle/base/src/index.ts`](../packages/bundle/base/src/index.ts)）
+- `@centurionarx/cxh-brand`（[`packages/util/brand/src/index.ts`](../packages/util/brand/src/index.ts)）
+- `@centurionarx/cxh-client-test-runtime`（[`packages/test-support/client-runtime/src/index.ts`](../packages/test-support/client-runtime/src/index.ts)）
+- `@centurionarx/cxh-client-ui-primitives`（[`packages/client/ui-primitives/src/index.ts`](../packages/client/ui-primitives/src/index.ts)）
+- `@centurionarx/cxh-client-ui-slots`（[`packages/client/ui-slots/src/index.ts`](../packages/client/ui-slots/src/index.ts)）
+- `@centurionarx/cxh-client-web`（[`packages/client/web/src/index.ts`](../packages/client/web/src/index.ts)）
+- `@centurionarx/cxh-cmdline`（[`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts)）
+- `@centurionarx/cxh-code-runtime-python`（[`packages/code-runtime/code-runtime-python/src/index.ts`](../packages/code-runtime/code-runtime-python/src/index.ts)）
+- `@centurionarx/cxh-home-paths`（[`packages/util/home-paths/src/index.ts`](../packages/util/home-paths/src/index.ts)）
+- `@centurionarx/cxh-hook-protocol`（[`packages/hooks/hook-protocol/src/index.ts`](../packages/hooks/hook-protocol/src/index.ts)）
+- `@centurionarx/cxh-launch-environment`（[`packages/util/launch-environment/src/index.ts`](../packages/util/launch-environment/src/index.ts)）
+- `@centurionarx/cxh-llm-mock-server`（[`packages/test-support/llm-mock-server/src/index.ts`](../packages/test-support/llm-mock-server/src/index.ts)）
+- `@centurionarx/cxh-loader-smoke`（[`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts)）
+- `@centurionarx/cxh-native-command`（[`packages/util/native-command/src/index.ts`](../packages/util/native-command/src/index.ts)）
+- `@centurionarx/cxh-output-retention`（[`packages/util/output-retention/src/index.ts`](../packages/util/output-retention/src/index.ts)）
+- `@centurionarx/cxh-sandbox-windows-acl`（[`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts)）
+- `@centurionarx/cxh-scope`（[`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts)）
+- `@centurionarx/cxh-sdk-client`（[`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts)）
+- `@centurionarx/cxh-sdk-jsonrpc-demo`（[`packages/examples/jsonrpc-demo/src/index.ts`](../packages/examples/jsonrpc-demo/src/index.ts)）
+- `@centurionarx/cxh-sdk-protocol`（[`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts)）
+- `@centurionarx/cxh-session-telemetry`（[`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts)）
+- `@centurionarx/cxh-session-title-llm`（[`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts)）
+- `@centurionarx/cxh-subagent-in-process-driver`（[`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts)）
+- `@centurionarx/cxh-timeout`（[`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts)）
+- `@centurionarx/cxh-typert-generator`（[`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts)）
+- `@centurionarx/cxh-typert-protocol`（[`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts)）
+- `@centurionarx/cxh-typert-registry`（[`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts)）

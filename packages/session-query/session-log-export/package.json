@@ -1,11 +1,11 @@
 {
-  "name": "@deepseek-ai/dsh-session-log-export",
+  "name": "@centurionarx/cxh-session-log-export",
   "description": "Web Session-log export command and shared download dialog",
   "version": "0.1.1-rc.2",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/session-query/session-log-export"
   },
   "type": "module",
@@ -22,37 +22,37 @@
   "scripts": { "bundle": "tsdown", "watch": "tsdown --watch" },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-commands": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-conversation": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@centurionarx/cordis": "workspace:^",
+    "@centurionarx/cxh-client-locale": "workspace:^",
+    "@centurionarx/cxh-client-runtime": "workspace:^",
+    "@centurionarx/cxh-client-ui-commands": "workspace:^",
+    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
+    "@centurionarx/cxh-commands": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-commands": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-conversation": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-commands": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
+    "@centurionarx/cordis": "workspace:^",
+    "@centurionarx/cordis-plugin-loader": "workspace:^",
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-client-locale": "workspace:^",
+    "@centurionarx/cxh-client-runtime": "workspace:^",
+    "@centurionarx/cxh-client-ui-commands": "workspace:^",
+    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
+    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
+    "@centurionarx/cxh-client-ui-slots": "workspace:^",
+    "@centurionarx/cxh-commands": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
     "@types/react": "~18.3.1",
     "react": "^18.2.0"
   },
-  "dsh": {
+  "cxh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-ui-commands",
-        "@deepseek-ai/dsh-client-ui-conversation"
+        "@centurionarx/cxh-client-locale",
+        "@centurionarx/cxh-client-runtime",
+        "@centurionarx/cxh-client-ui-commands",
+        "@centurionarx/cxh-client-ui-conversation"
       ],
       "platform": "web"
     }
