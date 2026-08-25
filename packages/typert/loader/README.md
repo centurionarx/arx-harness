@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-typert-loader
+# @centurionarx/cxh-typert-loader
 
 English | [中文](README.zh.md)
 

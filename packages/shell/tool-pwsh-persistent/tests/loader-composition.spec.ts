@@ -4,23 +4,23 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import TerminalSessionService from '@deepseek-ai/dsh-terminal'
-import * as TerminalBash from '@deepseek-ai/dsh-terminal-bash'
-import SandboxProvider from '@deepseek-ai/dsh-sandbox'
-import type { ConfinedArgv, SandboxPolicy } from '@deepseek-ai/dsh-sandbox'
-import SandboxPolicyService from '@deepseek-ai/dsh-sandbox-policy'
-import LocalSubprocessService from '@deepseek-ai/dsh-subprocess-local'
-import { resolvePwshPath } from '@deepseek-ai/dsh-pwsh-local/src/resolve.ts'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRegistry from '@deepseek-ai/dsh-tools'
-import * as ToolPwshPersistent from '@deepseek-ai/dsh-tool-pwsh-persistent'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import Include from '@centurionarx/cordis-plugin-include'
+import { CallId } from '@centurionarx/cxh-llm'
+import { Session, SessionId } from '@centurionarx/cxh-session'
+import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
+import type { Agent } from '@centurionarx/cxh-agent'
+import TerminalSessionService from '@centurionarx/cxh-terminal'
+import * as TerminalBash from '@centurionarx/cxh-terminal-bash'
+import SandboxProvider from '@centurionarx/cxh-sandbox'
+import type { ConfinedArgv, SandboxPolicy } from '@centurionarx/cxh-sandbox'
+import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
+import LocalSubprocessService from '@centurionarx/cxh-subprocess-local'
+import { resolvePwshPath } from '@centurionarx/cxh-pwsh-local/src/resolve.ts'
+import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import ToolRegistry from '@centurionarx/cxh-tools'
+import * as ToolPwshPersistent from '@centurionarx/cxh-tool-pwsh-persistent'
 
 const hasPwsh = spawnSync(
   resolvePwshPath(), ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$true'],
@@ -72,20 +72,20 @@ function text(result: { content: { type: string; text?: string }[] }): string {
 
 describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader composition', () => {
   it('preserves cwd and environment across calls', async () => {
-    root = await mkdtemp(join(tmpdir(), 'dsh-persistent-pwsh-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'cxh-persistent-pwsh-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@deepseek-ai/dsh-agent'",
-      "- name: '@deepseek-ai/dsh-system-prompt'",
-      "- name: '@deepseek-ai/dsh-tools'",
-      "- name: '@deepseek-ai/dsh-terminal'",
-      "- name: '@deepseek-ai/dsh-test-sandbox'",
-      "- name: '@deepseek-ai/dsh-sandbox-policy'",
+      "- name: '@centurionarx/cxh-agent'",
+      "- name: '@centurionarx/cxh-system-prompt'",
+      "- name: '@centurionarx/cxh-tools'",
+      "- name: '@centurionarx/cxh-terminal'",
+      "- name: '@centurionarx/cxh-test-sandbox'",
+      "- name: '@centurionarx/cxh-sandbox-policy'",
       '  config:',
       '    mode: danger-full-access',
       `    workspaceRoot: ${JSON.stringify(root)}`,
-      "- name: '@deepseek-ai/dsh-subprocess-local'",
-      "- name: '@deepseek-ai/dsh-terminal-bash'",
+      "- name: '@centurionarx/cxh-subprocess-local'",
+      "- name: '@centurionarx/cxh-terminal-bash'",
       '  config:',
       '    shellDialect: pwsh',
       '    pollIntervalMs: 10',
@@ -95,7 +95,7 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
       '    scrollbackLines: 20000',
       '    timeoutMs: 8000',
       '    disposeGraceMs: 500',
-      "- name: '@deepseek-ai/dsh-tool-pwsh-persistent'",
+      "- name: '@centurionarx/cxh-tool-pwsh-persistent'",
       '  config:',
       '    timeoutMs: 20000',
       '',
@@ -106,15 +106,15 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@deepseek-ai/dsh-agent', AgentRegistry],
-      ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-      ['@deepseek-ai/dsh-tools', ToolRegistry],
-      ['@deepseek-ai/dsh-terminal', TerminalSessionService],
-      ['@deepseek-ai/dsh-test-sandbox', PassthroughSandbox],
-      ['@deepseek-ai/dsh-sandbox-policy', SandboxPolicyService],
-      ['@deepseek-ai/dsh-subprocess-local', LocalSubprocessService],
-      ['@deepseek-ai/dsh-terminal-bash', TerminalBash],
-      ['@deepseek-ai/dsh-tool-pwsh-persistent', ToolPwshPersistent],
+      ['@centurionarx/cxh-agent', AgentRegistry],
+      ['@centurionarx/cxh-system-prompt', SystemPrompt],
+      ['@centurionarx/cxh-tools', ToolRegistry],
+      ['@centurionarx/cxh-terminal', TerminalSessionService],
+      ['@centurionarx/cxh-test-sandbox', PassthroughSandbox],
+      ['@centurionarx/cxh-sandbox-policy', SandboxPolicyService],
+      ['@centurionarx/cxh-subprocess-local', LocalSubprocessService],
+      ['@centurionarx/cxh-terminal-bash', TerminalBash],
+      ['@centurionarx/cxh-tool-pwsh-persistent', ToolPwshPersistent],
     ])
     context.loader.internal = {
       version: 'v2',
@@ -140,14 +140,14 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
     await execute('state', '$env:KEEP = "loader"; New-Item -ItemType Directory -Force -Path nested | Out-Null; Set-Location nested')
     const observed = text(await execute('observe', 'Write-Output "cwd=$PWD keep=$env:KEEP"'))
     expect(observed).toContain(`cwd=${join(root, 'nested')} keep=loader`)
-    expect(observed).not.toContain('DSH_PERSISTENT_PWSH')
+    expect(observed).not.toContain('CXH_PERSISTENT_PWSH')
 
     const multiline = text(await execute(
       'multiline',
       '$value = "line one"\nWrite-Output "${value}:it\'s fine"',
     ))
     expect(multiline).toBe("line one:it's fine")
-    expect(multiline).not.toContain('DSH_PERSISTENT_PWSH')
+    expect(multiline).not.toContain('CXH_PERSISTENT_PWSH')
 
     const hereString = text(await execute(
       'here-string',

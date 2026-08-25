@@ -8,8 +8,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SessionHeader } from '@deepseek-ai/dsh-session'
+import { SessionId } from '@centurionarx/cxh-session'
+import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
 import { resolveSessionPreset } from '../src/session.ts'
 
 /** A header carrying the creation-time preset, if any. */

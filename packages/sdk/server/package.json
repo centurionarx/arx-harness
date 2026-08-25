@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-sdk-jsonrpc-server",
-  "description": "Stdio JSON-RPC server plugin for out-of-process DeepSeek Harness SDK clients",
+  "name": "@centurionarx/cxh-sdk-jsonrpc-server",
+  "description": "Stdio JSON-RPC server plugin for out-of-process CENTURIONarx Harness SDK clients",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/sdk/server"
   },
   "type": "module",
@@ -32,31 +32,31 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-sdk-protocol": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-llm-deepseek": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-sdk-protocol": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-subagent": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-spine-demo": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-llm-deepseek": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-sdk-protocol": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis-plugin-loader": "workspace:^",
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-agent-spine-demo": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-llm-deepseek": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-sdk-protocol": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-session-persistence-jsonl": "workspace:^",
+    "@centurionarx/cxh-subagent": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

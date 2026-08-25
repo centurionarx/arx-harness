@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-goal",
-  "description": "Event-sourced same-session goal state and lifecycle service for the DeepSeek Harness",
+  "name": "@centurionarx/cxh-goal",
+  "description": "Event-sourced same-session goal state and lifecycle service for the CENTURIONarx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/goal/goal"
   },
   "type": "module",
@@ -53,30 +53,30 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-session-projection": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-typert-protocol": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@centurionarx/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-session-projection": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-loader-smoke": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-session-projection": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-loader-smoke": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-typert-protocol": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

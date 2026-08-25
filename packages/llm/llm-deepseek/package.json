@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-llm-deepseek",
-  "description": "DeepSeek chat-completions adapter for the DeepSeek Harness LLM seam",
+  "name": "@centurionarx/cxh-llm-deepseek",
+  "description": "DeepSeek chat-completions adapter for the CENTURIONarx Harness LLM seam",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/llm/llm-deepseek"
   },
   "type": "module",
@@ -32,35 +32,35 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-anonymous-user-id": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-attachment": "workspace:^",
+    "@centurionarx/cxh-atomic-write": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-credentials": "workspace:^",
+    "@centurionarx/cxh-launch-environment": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-home-paths": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-timeout": "workspace:^",
+    "@centurionarx/cxh-anonymous-user-id": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
     "eventsource-parser": "^3.1.0",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-credentials": "workspace:^",
-    "@deepseek-ai/dsh-launch-environment": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-anonymous-user-id": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-attachment": "workspace:^",
+    "@centurionarx/cxh-atomic-write": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-credentials": "workspace:^",
+    "@centurionarx/cxh-launch-environment": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-home-paths": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-timeout": "workspace:^",
+    "@centurionarx/cxh-anonymous-user-id": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

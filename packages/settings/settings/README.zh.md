@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-settings
+# @centurionarx/cxh-settings
 
 [English](README.md) | 中文
 

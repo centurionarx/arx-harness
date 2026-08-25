@@ -2,15 +2,15 @@
  * Provider-routed model-request retry policy on the agent loop's request
  * recovery extension point. Each scheduled retry is durable before its cancellable wait.
  *
- * @module @deepseek-ai/dsh-llm-retry
+ * @module @centurionarx/cxh-llm-retry
  */
 
 import { randomUUID } from 'node:crypto'
-import type { Context, Events } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent, RequestErrorAction } from '@deepseek-ai/dsh-agent'
-import type { LlmFailure, ResolvedRetryPolicy } from '@deepseek-ai/dsh-llm'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { Context, Events } from '@centurionarx/cordis'
+import z from '@centurionarx/schemastery'
+import type { Agent, RequestErrorAction } from '@centurionarx/cxh-agent'
+import type { LlmFailure, ResolvedRetryPolicy } from '@centurionarx/cxh-llm'
+import type { SessionEvent } from '@centurionarx/cxh-session'
 import { RetryId } from './brand.ts'
 import type { LlmRetryEventData } from './types.ts'
 

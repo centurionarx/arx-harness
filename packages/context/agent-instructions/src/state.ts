@@ -1,14 +1,14 @@
 /**
  * Session-visible workspace instruction state and dynamic reconciliation.
  *
- * @module @deepseek-ai/dsh-agent-instructions/state
+ * @module @centurionarx/cxh-agent-instructions/state
  */
 
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { Message } from '@deepseek-ai/dsh-llm'
-import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
-import type { FileSystem, FsVersion } from '@deepseek-ai/dsh-fs'
+import type { Agent } from '@centurionarx/cxh-agent'
+import { createUserMessage } from '@centurionarx/cxh-llm'
+import type { Message } from '@centurionarx/cxh-llm'
+import type { Session, UserMessage } from '@centurionarx/cxh-session'
+import type { FileSystem, FsVersion } from '@centurionarx/cxh-fs'
 import type { ResolvedConfig } from './config.ts'
 import { instructionContentSha1, trimmedInstructionDigest } from './digest.ts'
 import {
@@ -45,7 +45,7 @@ export interface AgentInstructionSource {
   changes: AgentInstructionChange[]
 }
 
-declare module '@deepseek-ai/dsh-llm' {
+declare module '@centurionarx/cxh-llm' {
   interface MessageSourceMap {
     'agent-instructions': AgentInstructionSource
   }

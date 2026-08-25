@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-client-test-runtime`.
- * @module @deepseek-ai/dsh-client-test-runtime/invariant
+ * Package-owned invariant companion for `@centurionarx/cxh-client-test-runtime`.
+ * @module @centurionarx/cxh-client-test-runtime/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-client-test-runtime'
+const PACKAGE_NAME = '@centurionarx/cxh-client-test-runtime'
 
 /** Cordis companion plugin name. */
 export const name = 'client-test-runtime-invariant'

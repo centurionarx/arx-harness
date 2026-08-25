@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-agent-presets",
-  "description": "Per-session agent composition from preset cordis.yml files for the DeepSeek Harness",
+  "name": "@centurionarx/cxh-agent-presets",
+  "description": "Per-session agent composition from preset cordis.yml files for the CENTURIONarx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/preset/agent-presets"
   },
   "type": "module",
@@ -37,37 +37,37 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis-plugin-include": "workspace:^",
+    "@centurionarx/cordis-plugin-loader": "workspace:^",
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-atomic-write": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-home-paths": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-system-prompt": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-settings-file": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cordis-plugin-include": "workspace:^",
+    "@centurionarx/cordis-plugin-loader": "workspace:^",
+    "@centurionarx/cxh-agent": "workspace:^",
+    "@centurionarx/cxh-agent-loop": "workspace:^",
+    "@centurionarx/cxh-atomic-write": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-home-paths": "workspace:^",
+    "@centurionarx/cxh-scope": "workspace:^",
+    "@centurionarx/cxh-session": "workspace:^",
+    "@centurionarx/cxh-settings": "workspace:^",
+    "@centurionarx/cxh-settings-file": "workspace:^",
+    "@centurionarx/cxh-system-prompt": "workspace:^",
+    "@centurionarx/cxh-tools": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

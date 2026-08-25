@@ -1,10 +1,10 @@
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import { createUserMessage } from '@centurionarx/cxh-llm'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import SessionStore, { Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import * as TimeInvariant from '@deepseek-ai/dsh-time-context/invariant'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
+import { Context } from '@centurionarx/cordis'
+import type { ContentBlock } from '@centurionarx/cxh-llm'
+import SessionStore, { Session, SessionId, type SessionEvent } from '@centurionarx/cxh-session'
+import * as TimeInvariant from '@centurionarx/cxh-time-context/invariant'
+import InvariantRegistry from '@centurionarx/cxh-invariants'
 
 const SECOND = Date.parse('2026-07-14T00:00:00Z')
 
