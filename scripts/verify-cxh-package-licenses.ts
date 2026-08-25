@@ -54,7 +54,7 @@ function printable(value: unknown): string {
  * @param root - absolute repository root containing the workspace package.json.
  * @returns the checked package count and every non-MIT declaration.
  */
-export function inspectDshPackageLicenses(root: string): CxhPackageLicenseReport {
+export function inspectCxhPackageLicenses(root: string): CxhPackageLicenseReport {
   let packageCount = 0
   const failures: string[] = []
 
@@ -76,7 +76,7 @@ export function inspectDshPackageLicenses(root: string): CxhPackageLicenseReport
 }
 
 if (process.argv[1] && import.meta.filename === resolve(process.argv[1])) {
-  const report = inspectDshPackageLicenses(ROOT)
+  const report = inspectCxhPackageLicenses(ROOT)
   if (report.failures.length > 0) {
     process.stderr.write('verify-cxh-package-licenses: non-MIT CXH package declarations found:\n')
     for (const failure of report.failures) process.stderr.write(`  ${failure}\n`)

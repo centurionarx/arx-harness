@@ -58,7 +58,7 @@ export async function canonicalizeWatchPath(path: string): Promise<string> {
  * Resolve the default CENTURIONarx Harness home using Node's platform path rules.
  * @returns the absolute default harness home path.
  */
-export function defaultDshHome(): string {
+export function defaultCxhHome(): string {
   return join(homedir(), CXH_HOME_DIR_NAME)
 }
 
@@ -84,9 +84,9 @@ export function expandHomePath(path: string): string {
  * @param env - environment mapping used to read `CXH_HOME`.
  * @returns the normalized absolute harness home path.
  */
-export function resolveDshHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
+export function resolveCxhHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
   const fromEnv = env[CXH_HOME_ENV]
-  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultDshHome())
+  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultCxhHome())
   return resolve(expandHomePath(selected))
 }
 
@@ -96,7 +96,7 @@ export function resolveDshHome(configured?: string, env: Record<string, string |
  * @returns the normalized absolute joined path.
  */
 export function cxhHomePath(...segments: string[]): string {
-  return join(resolveDshHome(), ...segments)
+  return join(resolveCxhHome(), ...segments)
 }
 
 /**
@@ -104,9 +104,9 @@ export function cxhHomePath(...segments: string[]): string {
  *
  * It never returns an absolute machine path: the default home is labelled
  * `~/.cxh`, and any configured home is labelled `$CXH_HOME`.
- * @param resolvedHome - the absolute path returned by {@link resolveDshHome}.
+ * @param resolvedHome - the absolute path returned by {@link resolveCxhHome}.
  * @returns `~/.cxh` for the default home, otherwise `$CXH_HOME`.
  */
 export function cxhHomeDisplay(resolvedHome: string): string {
-  return resolvedHome === resolve(defaultDshHome()) ? DEFAULT_CXH_HOME_DISPLAY : `$${CXH_HOME_ENV}`
+  return resolvedHome === resolve(defaultCxhHome()) ? DEFAULT_CXH_HOME_DISPLAY : `$${CXH_HOME_ENV}`
 }

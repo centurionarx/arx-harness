@@ -35,7 +35,7 @@ import * as toolSkill from '@centurionarx/cxh-tool-skill'
 import * as toolJobs from '@centurionarx/cxh-tool-jobs'
 import AgentLoop, { type Config as AgentLoopConfig } from '@centurionarx/cxh-agent-loop'
 import * as llmRetry from '@centurionarx/cxh-llm-retry'
-import { resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { resolveCxhHome } from '@centurionarx/cxh-home-paths'
 
 export const name = 'agent-spine-demo'
 
@@ -210,12 +210,12 @@ export function pickSpineConfig(config: Omit<Config, 'agents'>): Omit<Config, 'a
  * seams, then the loop that drives them.
  */
 export function apply(ctx: Context, config: Config): void {
-  const nestedDshHome = config.skills?.filesystem?.cxhHome
-  if (config.cxhHome !== undefined && nestedDshHome !== undefined
-    && resolveDshHome(config.cxhHome) !== resolveDshHome(nestedDshHome)) {
+  const nestedCxhHome = config.skills?.filesystem?.cxhHome
+  if (config.cxhHome !== undefined && nestedCxhHome !== undefined
+    && resolveCxhHome(config.cxhHome) !== resolveCxhHome(nestedCxhHome)) {
     throw new Error('agent-spine-demo: cxhHome and skills.filesystem.cxhHome must resolve to the same directory')
   }
-  const cxhHome = resolveDshHome(config.cxhHome ?? nestedDshHome)
+  const cxhHome = resolveCxhHome(config.cxhHome ?? nestedCxhHome)
 
   ctx.plugin(Timer)
   ctx.plugin(LlmRuntime)

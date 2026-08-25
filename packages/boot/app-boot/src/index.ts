@@ -15,7 +15,7 @@ import { Context, type FiberState } from '@centurionarx/cordis'
 import Loader, { type Entry, type EntryOptions } from '@centurionarx/cordis-plugin-loader'
 import Include, { applyEntryPatches, entryListSchema, type PatchOptions } from '@centurionarx/cordis-plugin-include'
 import Group from '@centurionarx/cordis-plugin-group'
-import { cxhHomePath, resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { cxhHomePath, resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import { createLaunchEnvironmentSnapshot, type LaunchEnvironmentSnapshot } from '@centurionarx/cxh-launch-environment'
 import type {} from '@centurionarx/cordis-plugin-hmr'
 // Side-effect type import: resolves `ctx.get('systemPrompt')` to the service.
@@ -178,7 +178,7 @@ export function loadLayeredEnv(
   binName: string, cwd: string = process.cwd(),
   warn: (line: string) => void = line => void process.stderr.write(line),
 ): LaunchEnvironmentSnapshot {
-  const home = resolveDshHome()
+  const home = resolveCxhHome()
   const inherited = { ...process.env } as Record<string, string>
   // Parse both layers first: a rejection must not leave one file applied.
   const project = readEnvLayer(binName, cwd, warn)

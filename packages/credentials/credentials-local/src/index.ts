@@ -42,7 +42,7 @@ import { mkdir, readFile, stat } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { Document, isMap, isScalar, parseDocument, type YAMLError } from 'yaml'
 import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { canonicalizeWatchPath, resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { canonicalizeWatchPath, resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import { launchEnvironmentOf } from '@centurionarx/cxh-launch-environment'
 import { CredentialProvider, credentialRef, parseCredentialKey } from '@centurionarx/cxh-credentials'
 import type {
@@ -87,7 +87,7 @@ interface ResolvedSpec {
  */
 export function resolveSpec(config: Config): ResolvedSpec {
   return {
-    filename: resolve(config.path ?? join(resolveDshHome(config.cxhHome), CREDENTIALS_FILENAME)),
+    filename: resolve(config.path ?? join(resolveCxhHome(config.cxhHome), CREDENTIALS_FILENAME)),
     watch: config.watch ?? true,
     debounceMs: config.debounceMs ?? 100,
   }

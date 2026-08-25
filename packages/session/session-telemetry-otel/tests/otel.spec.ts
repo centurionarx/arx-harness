@@ -46,15 +46,15 @@ const servers: Server[] = []
 // The backend resolves the harness home's anonymous user id at construction;
 // pin CXH_HOME to a temp dir so the suite never touches the ambient ~/.cxh.
 let tempHome: string
-let previousDshHome: string | undefined
+let previousCxhHome: string | undefined
 beforeAll(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'cxh-otel-home-'))
-  previousDshHome = process.env.CXH_HOME
+  previousCxhHome = process.env.CXH_HOME
   process.env.CXH_HOME = tempHome
 })
 afterAll(() => {
-  if (previousDshHome === undefined) delete process.env.CXH_HOME
-  else process.env.CXH_HOME = previousDshHome
+  if (previousCxhHome === undefined) delete process.env.CXH_HOME
+  else process.env.CXH_HOME = previousCxhHome
   rmSync(tempHome, { recursive: true, force: true })
 })
 

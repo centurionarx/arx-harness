@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { inspectDshPackageLicenses } from './verify-cxh-package-licenses.ts'
+import { inspectCxhPackageLicenses } from './verify-cxh-package-licenses.ts'
 
 const roots: string[] = []
 
@@ -40,7 +40,7 @@ describe('CXH package license gate', () => {
       license: 'BSD-3-Clause',
     })
 
-    expect(inspectDshPackageLicenses(root)).toEqual({
+    expect(inspectCxhPackageLicenses(root)).toEqual({
       packageCount: 3,
       failures: [
         'packages/core/agent/package.json: @centurionarx/cxh-agent must declare "license": "MIT"; found "BSD-3-Clause".',
@@ -52,7 +52,7 @@ describe('CXH package license gate', () => {
     const root = createWorkspace()
     writeManifest(root, 'packages/core/agent/package.json', { name: '@centurionarx/cxh-agent' })
 
-    expect(inspectDshPackageLicenses(root).failures).toEqual([
+    expect(inspectCxhPackageLicenses(root).failures).toEqual([
       'packages/core/agent/package.json: @centurionarx/cxh-agent must declare "license": "MIT"; found undefined.',
     ])
   })

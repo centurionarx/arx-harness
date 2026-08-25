@@ -63,7 +63,7 @@ async function composePrefix(ctx: Context, cwd: string): Promise<Message[]> {
  * bin smokes; here we assert the composition + config forwarding.
  */
 async function mount(config: agentCore.Config, withBash = false): Promise<Context> {
-  const oldDshHome = process.env.CXH_HOME
+  const oldCxhHome = process.env.CXH_HOME
   const oldAgentsHome = process.env.CXH_AGENTS_HOME
   process.env.CXH_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-home-'))
   process.env.CXH_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-agents-'))
@@ -83,10 +83,10 @@ async function mount(config: agentCore.Config, withBash = false): Promise<Contex
     await new Promise(resolve => setTimeout(resolve, 50))
     return ctx
   } finally {
-    if (oldDshHome === undefined) {
+    if (oldCxhHome === undefined) {
       delete process.env.CXH_HOME
     } else {
-      process.env.CXH_HOME = oldDshHome
+      process.env.CXH_HOME = oldCxhHome
     }
     if (oldAgentsHome === undefined) {
       delete process.env.CXH_AGENTS_HOME
@@ -97,17 +97,17 @@ async function mount(config: agentCore.Config, withBash = false): Promise<Contex
 }
 
 async function withIsolatedSkillHomes<T>(run: () => Promise<T>): Promise<T> {
-  const oldDshHome = process.env.CXH_HOME
+  const oldCxhHome = process.env.CXH_HOME
   const oldAgentsHome = process.env.CXH_AGENTS_HOME
   process.env.CXH_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-home-'))
   process.env.CXH_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-agents-'))
   try {
     return await run()
   } finally {
-    if (oldDshHome === undefined) {
+    if (oldCxhHome === undefined) {
       delete process.env.CXH_HOME
     } else {
-      process.env.CXH_HOME = oldDshHome
+      process.env.CXH_HOME = oldCxhHome
     }
     if (oldAgentsHome === undefined) {
       delete process.env.CXH_AGENTS_HOME

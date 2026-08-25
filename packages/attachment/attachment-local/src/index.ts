@@ -12,7 +12,7 @@ import type {
   SaveImageAttachment,
   StoredImageAttachment,
 } from '@centurionarx/cxh-attachment'
-import { resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import type { NormalizationPolicy } from './normalization.ts'
 import { CompressionLimiter } from './compression-limiter.ts'
 import { commitPreparedImageFile, prepareImageFile, readImageFile, validateImageFile } from './store.ts'
@@ -157,7 +157,7 @@ export class LocalAttachmentStore extends AttachmentStore {
 
   constructor(ctx: Context, config: Config) {
     super(ctx)
-    this.root = resolve(join(resolveDshHome(config.cxhHome), 'attachments', 'v1'))
+    this.root = resolve(join(resolveCxhHome(config.cxhHome), 'attachments', 'v1'))
     this.imageLimits = Object.freeze({
       maxImageBytes: config.maxImageBytes ?? DEFAULT_MAX_IMAGE_BYTES,
       maxImagesPerMessage: config.maxImagesPerMessage ?? DEFAULT_MAX_IMAGES_PER_MESSAGE,

@@ -254,7 +254,7 @@ export function fixClientPackageManifests(root: string, facts: ClientPackageFact
         if (range === undefined) continue
         if (staticInputs.has(name)) {
           target.changed = ensureDevOnly(target.manifest, name, range) || target.changed
-        } else if (section(target.manifest, 'dependencies')[name] !== undefined && isInternalDsh(name)) {
+        } else if (section(target.manifest, 'dependencies')[name] !== undefined && isInternalCxh(name)) {
           target.changed = ensurePeerDev(target.manifest, name, range) || target.changed
         }
       }
@@ -356,7 +356,7 @@ function preferredRange(
     const range = section(manifest, field)[name]
     if (range !== undefined) return range
   }
-  if (isInternalDsh(name)) return 'workspace:^'
+  if (isInternalCxh(name)) return 'workspace:^'
   const candidates = inferred.get(name)
   return candidates?.size === 1 ? [...candidates][0] : undefined
 }
@@ -505,7 +505,7 @@ function collectDependencyViolations(facts: ClientPackageFacts): string[] {
             pkg.manifest + ': dynamic package declares static input ' + name + ' in ' + section + ';'
             + ' move it to devDependencies or delete the stale declaration',
           )
-        } else if (section === 'dependencies' && isInternalDsh(name)) {
+        } else if (section === 'dependencies' && isInternalCxh(name)) {
           violations.push(
             pkg.manifest + ': dynamic package declares ' + name + ' in dependencies;'
             + ' dynamic CXH relationships are peer plus dev, and static client inputs are dev-only',
@@ -524,7 +524,7 @@ function expectedSections(pkg: ClientPackage, staticInputs: ReadonlySet<string>)
   if (!pkg.dynamic) {
     if (pkg.name === CLIENT_WEB) return expected
     for (const [name, locations] of Object.entries(pkg.runtimeSourceUses)) {
-      if (name === pkg.name || name === CORDIS || isInternalDsh(name)) continue
+      if (name === pkg.name || name === CORDIS || isInternalCxh(name)) continue
       expected.set(name, { kind: 'dependency', origins: new Set(locations) })
     }
     return expected
@@ -532,7 +532,7 @@ function expectedSections(pkg: ClientPackage, staticInputs: ReadonlySet<string>)
 
   const add = (name: string, origin: string): void => {
     if (name === pkg.name) return
-    const kind = staticInputs.has(name) ? 'dev' : isInternalDsh(name) ? 'peer-dev' : undefined
+    const kind = staticInputs.has(name) ? 'dev' : isInternalCxh(name) ? 'peer-dev' : undefined
     if (kind === undefined) return
     const current = expected.get(name)
     if (current !== undefined) current.origins.add(origin)
@@ -865,7 +865,7 @@ function describeOrigins(origins: ReadonlySet<string>): string {
   return rest.length === 0 ? first + ', ' + second : first + ', ' + second + ', and ' + String(rest.length) + ' more'
 }
 
-function isInternalDsh(name: string): boolean {
+function isInternalCxh(name: string): boolean {
   return name === CORDIS || name.startsWith(CXH_PREFIX)
 }
 

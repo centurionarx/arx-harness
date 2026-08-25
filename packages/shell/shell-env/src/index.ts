@@ -12,7 +12,7 @@ import { Service, type Context } from '@centurionarx/cordis'
 import z from '@centurionarx/schemastery'
 import { CXH_ENV_PREFIX } from '@centurionarx/cxh-shell'
 import type { CxhEnvironment, CxhEnvironmentKey } from '@centurionarx/cxh-shell'
-import { CXH_HOME_ENV, resolveDshHome } from '@centurionarx/cxh-home-paths'
+import { CXH_HOME_ENV, resolveCxhHome } from '@centurionarx/cxh-home-paths'
 import type { ToolExecution } from '@centurionarx/cxh-tools'
 import type {} from '@centurionarx/cxh-session-persistence'
 
@@ -98,7 +98,7 @@ export class ShellEnvRegistry extends Service {
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'shellEnv')
-    this.cxhHome = resolveDshHome(config.cxhHome)
+    this.cxhHome = resolveCxhHome(config.cxhHome)
   }
 
   /**
