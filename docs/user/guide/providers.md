@@ -28,6 +28,25 @@ The Provider ID is permanent because requests, saved sessions, model defaults, a
 
 Under **Model catalog**, choose **Fetch available models** to query the base URL and credential currently shown in the form. Selecting candidates updates the draft; the provider is not stored until you save. Catalog providers use their installed catalog without a network request.
 
+### A local model server
+
+Ollama, llama-server, vLLM, and LM Studio all speak the OpenAI-compatible protocol, so each is a custom provider pointed at `127.0.0.1`. No paid key is involved, but the route still needs a credential *reference*: a profile naming none is refused with `No API key for provider` before any request leaves the process. Name an environment variable and give it any non-empty value — a local server ignores the `Authorization` header.
+
+```yaml
+llm-pi-ai:
+  providers:
+    ollama:
+      displayName: Ollama
+      apiKeyEnv: OLLAMA_API_KEY
+      api: openai-completions
+      baseURL: http://127.0.0.1:11434/v1
+      models:
+        - id: qwen3:8b
+          contextWindow: 40960
+```
+
+Give every model its real `contextWindow`. A model entered without one inherits a 262144-token default that most local models do not serve, and automatic compaction reads that figure to decide when to summarize — so the session overruns the model's actual window before compaction starts.
+
 ### Image input
 
 A model you enter by hand is treated as text-only until it says otherwise, because nothing can ask an endpoint which modalities it accepts. Attaching an image to such a model is refused before it is sent, naming the model.
