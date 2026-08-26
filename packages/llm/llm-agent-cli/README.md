@@ -27,17 +27,17 @@ The CLI presents an in-process MCP server's tools as `mcp__cxh__<name>`. The mod
 
 Tool schemas cross as JSON Schema, verbatim. The SDK's own `tool()` helper takes a Zod shape and would force a lossy translation of every tool the harness registers, so this package answers `tools/list` from the low-level MCP server instead.
 
-## One live conversation per session
+## One vendor run per step
 
-`LlmAdapter` is stateless: every `stream()` receives the whole history. A vendor run is not — it holds its own conversation. Replaying the transcript on each step would flatten roles, lose the vendor's prompt cache, and spend subscription quota re-reading what the run already knows.
+`LlmAdapter` is stateless: every `stream()` receives the whole history. A vendor run is not — it holds its own conversation. So each call opens its own run, delivers the transcript as its prompt, and releases the run when the turn ends.
 
-So each harness session keeps **one vendor run alive** across turns. The run's input is a channel this adapter pushes into: the first turn delivers the history it must know, and every later turn delivers only what it adds — a new user message or a tool result, carried as real `tool_result` blocks. The run never restarts, so nothing is re-read.
+A run cannot be carried across steps, because the harness and the CLI disagree about who closes a tool call. The harness executes tools itself, so the CLI is started with every tool refused. Refusal is final there: the CLI writes its own denial result and moves on. The harness's real result then arrives for a call that run already closed, and the turn never completes. Holding the CLI's `tools/call` open until the harness answers is not available either — `MCP_TOOL_TIMEOUT` is a hard wall-clock limit per call that progress notifications do not extend, so any tool awaiting human approval would fail on the clock.
 
-Continuing is only valid while history still extends what that run consumed, which a per-message digest list decides. Anything else — a compaction that rewrote history, a plan-mode edit, a branch — makes the run an invalid continuation: it is disposed, and the next turn opens a fresh one with the transcript replayed as labelled text. That replay is the lossy path, and keeping the run alive is what avoids it.
+The cost is that each step re-sends the transcript: roles flatten into labelled text, the vendor's prompt cache is lost, and subscription quota is spent re-reading what the previous run already knew. That cost grows with the conversation. It buys turns that terminate.
 
-The vendor's own `resume` is not used, and cannot be: resuming requires `persistSession`, which would write a copy of every conversation to the host's Claude directory — outside this harness's control and lifetime, duplicating the session log it already keeps. Keeping the run alive achieves the same continuity with no disk at all.
+The vendor's own `resume` would not remove it: resuming requires `persistSession`, which writes a copy of every conversation to the host's Claude directory — outside this harness's control and lifetime, duplicating the session log it already keeps.
 
-A run owns a CLI process tree, so it is released when its session diverges, when a turn is cancelled or fails, and when the plugin unloads.
+A run owns a CLI process tree, so it is released when its turn ends, fails, or is cancelled.
 
 ## Config
 

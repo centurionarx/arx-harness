@@ -24,19 +24,18 @@ function vendorRun(messages: readonly unknown[]): Record<string, unknown> {
   }
 }
 
-/** Read everything a turn pushed into the run's input. */
-async function delivered(call: number): Promise<unknown[]> {
-  const prompt = (queryMock.mock.calls[call]?.[0] as { prompt: AsyncIterable<unknown> }).prompt
-  const iterator = prompt[Symbol.asyncIterator]()
-  const out: unknown[] = []
-  for (;;) {
-    const pulled = await Promise.race([
-      iterator.next(),
-      new Promise<{ done: true; value: undefined }>((resolve) => { setTimeout(() => { resolve({ done: true, value: undefined }) }, 5) }),
-    ])
-    if (pulled.done === true) return out
-    out.push(pulled.value)
-  }
+/** A vendor run that spawns its CLI, as the real SDK does when it starts. */
+function spawningRun(messages: readonly unknown[]): void {
+  queryMock.mockImplementation((request: unknown) => {
+    const options = (request as { options: Record<string, unknown> }).options
+    void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
+    return vendorRun(messages)
+  })
+}
+
+/** The prompt one call opened its run with. */
+function delivered(call: number): string {
+  return (queryMock.mock.calls[call]?.[0] as { prompt: string }).prompt
 }
 
 /** A spawn that records its request and hands back an inert handle. */
@@ -153,81 +152,69 @@ describe('stream', () => {
   it('opens a run with the history it must know', async () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(adapter().stream({ provider: 'claude', model: 'sonnet', messages: [ask] }))
-    expect(await delivered(0)).toEqual([{
-      type: 'user',
-      message: { role: 'user', content: [{ type: 'text', text: 'user: list files' }] },
-      parent_tool_use_id: null,
-    }])
+    expect(delivered(0)).toBe('user: list files')
   })
 
-  it('continues one run across turns, delivering only what each turn adds', async () => {
+  it('opens its own run per call, replaying what came before', async () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     const sessionId = 'session-1' as never
     const one = adapter()
     await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId }))
     const next = createUserMessage({ content: [{ type: 'text', text: 'again' }], source: { kind: 'user' } }) as Message
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask, next], sessionId }))
-    // One run served both turns: the vendor was started once.
-    expect(queryMock).toHaveBeenCalledTimes(1)
-    expect(await delivered(0)).toEqual([
-      { type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'user: list files' }] }, parent_tool_use_id: null },
-      { type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'again' }] }, parent_tool_use_id: null },
-    ])
-  })
-
-  it('starts a fresh run once history stops extending what the last one consumed', async () => {
-    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
-    const sessionId = 'session-2' as never
-    const one = adapter()
-    await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId }))
-    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
-    const rewritten = createUserMessage({ content: [{ type: 'text', text: 'compacted' }], source: { kind: 'user' } }) as Message
-    await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [rewritten], sessionId }))
     expect(queryMock).toHaveBeenCalledTimes(2)
+    expect(delivered(1)).toBe('user: list files\n\nuser: again')
   })
 
   it('releases the run when the caller cancels mid-turn', async () => {
-    // A run that never answers, so the turn is still open when cancellation
-    // arrives — which is the only moment this signal is meant to reach.
-    queryMock.mockReturnValue({ next: () => new Promise(() => {}) })
     const spawn = recordingSpawn()
+    // A run that answers only once aborted, as the real one does — which is
+    // the only moment this signal is meant to reach.
+    queryMock.mockImplementation((request: unknown) => {
+      const options = (request as { options: Record<string, unknown> }).options
+      void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
+      const { signal } = options['abortController'] as AbortController
+      return {
+        next: () => new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => { reject(new Error('aborted')) }, { once: true })
+        }),
+      }
+    })
     const controller = new AbortController()
-    const stream = adapter(spawn.spawn).stream({
+    const pending = drain(adapter(spawn.spawn).stream({
       provider: 'claude',
       model: 'sonnet',
       messages: [ask],
       sessionId: 'session-3' as never,
       signal: controller.signal,
-    })
-    const pending = stream[Symbol.asyncIterator]().next()
-    pending.catch(() => {})
-    await Promise.resolve()
-    const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
-    void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
+    }))
+    await new Promise((resolve) => { setImmediate(resolve) })
     controller.abort()
+    await expect(pending).rejects.toThrow('aborted')
+    // Cancelling released the run; ending the turn must not release it twice.
     expect(spawn.terminated()).toBe(1)
   })
 
-  it('does not continue a run whose turn failed', async () => {
-    const failing = { next: () => Promise.reject(new Error('vendor died')) }
-    queryMock.mockReturnValue(failing)
-    const sessionId = 'session-4' as never
-    const one = adapter()
-    await expect(drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId })))
+  it('releases the run a failed turn left behind', async () => {
+    const spawn = recordingSpawn()
+    spawningRun([])
+    queryMock.mockImplementation((request: unknown) => {
+      const options = (request as { options: Record<string, unknown> }).options
+      void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
+      return { next: () => Promise.reject(new Error('vendor died')) }
+    })
+    const one = adapter(spawn.spawn)
+    await expect(drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId: 'session-4' as never })))
       .rejects.toThrow('vendor died')
-    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
-    await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId }))
-    expect(queryMock).toHaveBeenCalledTimes(2)
+    expect(spawn.terminated()).toBe(1)
   })
 
-  it('releases every run it still holds at teardown', async () => {
-    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+  it('releases the run once the turn it opened is over', async () => {
     const spawn = recordingSpawn()
+    spawningRun([{ type: 'result', subtype: 'success' }])
     const one = adapter(spawn.spawn)
     await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask], sessionId: 'session-5' as never }))
-    const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
-    void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
-    one.dispose()
     expect(spawn.terminated()).toBe(1)
   })
 
@@ -251,9 +238,8 @@ describe('plugin', () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
     ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: () => ({}) }
-    const release = await plugin.apply(ctx, {})
+    plugin.apply(ctx, {})
     expect(ctx.llm.listProviders()).toEqual([])
-    expect(() => { release() }).not.toThrow()
   })
 
   it('drives the configured workspace and process owner on a real call', async () => {
@@ -262,7 +248,7 @@ describe('plugin', () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
     ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: spawn.spawn }
-    await plugin.apply(ctx, { providers: ROUTES, cwd: '/configured' })
+    plugin.apply(ctx, { providers: ROUTES, cwd: '/configured' })
     const prepared = await ctx.llm.prepareCall({ provider: 'claude', model: 'sonnet' })
     await drain(prepared.stream({ ...prepared.config, messages: [ask] }))
     const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
@@ -276,33 +262,30 @@ describe('plugin', () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
     ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: recordingSpawn().spawn }
-    await plugin.apply(ctx, { providers: ROUTES })
+    plugin.apply(ctx, { providers: ROUTES })
     const prepared = await ctx.llm.prepareCall({ provider: 'claude', model: 'sonnet' })
     await drain(prepared.stream({ ...prepared.config, messages: [ask] }))
     expect((queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options['cwd']).toBe(process.cwd())
   })
 
-  it('releases its routes and every live run when the plugin unloads', async () => {
-    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
-    const spawn = recordingSpawn()
+  it('releases its routes when the plugin unloads', async () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
-    ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: spawn.spawn }
-    const release = await plugin.apply(ctx, { providers: ROUTES, cwd: '/workspace' })
-    const prepared = await ctx.llm.prepareCall({ provider: 'claude', model: 'sonnet' })
-    await drain(prepared.stream({ ...prepared.config, messages: [ask], sessionId: 'unload-1' as never }))
-    const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
-    void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/workspace', env: {} })
-    release()
+    ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: () => ({}) }
+    const fork = await ctx.plugin({
+      inject: ['llm'],
+      apply: (inner: Context) => { plugin.apply(inner, { providers: ROUTES, cwd: '/workspace' }) },
+    })
+    expect(ctx.llm.listProviders()).toEqual([{ id: 'claude', name: 'Claude' }])
+    await fork.dispose()
     expect(ctx.llm.listProviders()).toEqual([])
-    expect(spawn.terminated()).toBe(1)
   })
 
   it('registers one route per configured provider', async () => {
     const ctx = new Context()
     await ctx.plugin(LlmRuntime)
     ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: () => ({}) }
-    await plugin.apply(ctx, { providers: ROUTES, cwd: '/workspace' })
+    plugin.apply(ctx, { providers: ROUTES, cwd: '/workspace' })
     expect(ctx.llm.listProviders()).toEqual([{ id: 'claude', name: 'Claude' }])
   })
 })

@@ -19,8 +19,7 @@ import {
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
 
 import type { ResolvedRoute } from './config.ts'
-import { toVendorMessages, renderTranscript } from './prompt.ts'
-import { ConversationInput, ConversationRegistry, type LiveConversation } from './session.ts'
+import { renderTranscript } from './prompt.ts'
 import { translate } from './stream.ts'
 import { createToolServer, MCP_SERVER_NAME, toolAlias } from './tools.ts'
 
@@ -51,8 +50,6 @@ const VENDOR_TOOLS = [
  * which is exactly `stream()`'s contract.
  */
 export class AgentCliAdapter extends LlmAdapter {
-  private readonly conversations = new ConversationRegistry()
-
   constructor(private readonly spec: AgentCliAdapterSpec) {
     super()
   }
@@ -154,79 +151,42 @@ export class AgentCliAdapter extends LlmAdapter {
   }
 
   /**
-   * Start one vendor run for a harness session.
-   *
-   * The run stays open across turns: its input is a channel this adapter keeps
-   * pushing into, so the vendor holds the conversation and no turn replays
-   * what the previous one already delivered.
-   * @param options - the assembled harness request opening the conversation.
-   * @param route - the resolved route serving it.
-   * @returns the live conversation, positioned before its first turn.
-   */
-  private startConversation(options: GenerateOptions, route: ResolvedRoute): LiveConversation {
-    const input = new ConversationInput()
-    const controller = new AbortController()
-    let child: SubprocessHandle | undefined
-    const run = query({
-      prompt: input as never,
-      options: {
-        ...this.queryOptions(options, route, (handle) => { child = handle }),
-        abortController: controller,
-      },
-    })
-    return {
-      input,
-      messages: run,
-      dispose: () => {
-        input.close()
-        controller.abort()
-        child?.terminate()
-      },
-    }
-  }
-
-  /**
    * Stream one model call through the vendor CLI.
+   *
+   * Each call is one vendor run, started and released here. A run cannot be
+   * carried across calls: the CLI resolves a tool call itself the moment
+   * permission is refused, so a result the harness produces afterwards would
+   * arrive for a call that run already closed.
    * @param options - the fully assembled harness request.
    * @returns the harness chunk stream for that call.
    */
   async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     const route = this.route(options.provider)
-    const sessionId = options.sessionId as string | undefined
-    const continuation = this.conversations.resolve(sessionId, options.messages)
-    const opening = continuation.live === undefined
-    const live = continuation.live ?? this.startConversation(options, route)
-
-    // A fresh run receives the history it must know; a continuing one receives
-    // only what this turn adds, as the user-role messages it accepts.
-    if (opening) {
-      live.input.push({
-        type: 'user',
-        message: { role: 'user', content: [{ type: 'text', text: renderTranscript(continuation.deliver) }] },
-        parent_tool_use_id: null,
-      })
-    } else {
-      for (const message of toVendorMessages(continuation.deliver)) live.input.push(message)
+    const controller = new AbortController()
+    let child: SubprocessHandle | undefined
+    let released = false
+    // Ends the run: aborting alone leaves the CLI process tree to notice, and
+    // a cancelled turn must not wait on that.
+    const release = (): void => {
+      if (released) return
+      released = true
+      controller.abort()
+      child?.terminate()
     }
-
-    const abort = (): void => { this.conversations.forget(sessionId); live.dispose() }
-    options.signal?.addEventListener('abort', abort, { once: true })
+    options.signal?.addEventListener('abort', release, { once: true })
+    const run = query({
+      prompt: renderTranscript(options.messages),
+      options: {
+        ...this.queryOptions(options, route, (handle) => { child = handle }),
+        abortController: controller,
+      },
+    })
     try {
-      yield* translate(live.messages)
-      this.conversations.commit(sessionId, live, continuation.digests)
-    } catch (error) {
-      // A turn that failed leaves the run at an unknown point in its own
-      // conversation, so the next turn must not continue it.
-      this.conversations.forget(sessionId)
-      live.dispose()
-      throw error
+      yield* translate(run)
     } finally {
-      options.signal?.removeEventListener('abort', abort)
+      options.signal?.removeEventListener('abort', release)
+      // The turn is over, but the run would keep going on its own.
+      release()
     }
-  }
-
-  /** Release every vendor run this adapter still holds. */
-  dispose(): void {
-    this.conversations.disposeAll()
   }
 }
