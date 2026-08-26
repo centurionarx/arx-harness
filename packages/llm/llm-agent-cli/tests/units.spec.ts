@@ -94,6 +94,39 @@ describe('translate', () => {
     expect(out.at(-1)).toEqual({ type: 'finish', reason: { kind: 'tool-calls' } })
   })
 
+  it('carries every tool a turn requested, not just the first', async () => {
+    const out = await chunks([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":"ls"}' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-2', name: 'mcp__cxh__read' } }),
+      event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"path":"a.ts"}' } }),
+      event({ type: 'content_block_stop', index: 1 }),
+      { type: 'result', subtype: 'error_max_turns' },
+    ])
+    expect(out.filter(chunk => chunk.type === 'block-end')).toEqual([
+      { type: 'block-end', index: 0, block: { type: 'tool-call', id: CallId('call-1'), name: 'bash', arguments: '{"command":"ls"}' } },
+      { type: 'block-end', index: 1, block: { type: 'tool-call', id: CallId('call-2'), name: 'read', arguments: '{"path":"a.ts"}' } },
+    ])
+    expect(out.at(-1)).toEqual({ type: 'finish', reason: { kind: 'tool-calls' } })
+  })
+
+  it('keeps interleaved blocks apart by their own index', async () => {
+    const out = await chunks([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{}' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'running' } }),
+      event({ type: 'content_block_stop', index: 1 }),
+      event({ type: 'content_block_stop', index: 0 }),
+      { type: 'result', subtype: 'success' },
+    ])
+    expect(out.filter(chunk => chunk.type === 'block-end')).toEqual([
+      { type: 'block-end', index: 1, block: { type: 'tool-call', id: CallId('call-1'), name: 'bash', arguments: '{}' } },
+      { type: 'block-end', index: 0, block: { type: 'text', text: 'running' } },
+    ])
+  })
+
   it('reports a vendor failure as a terminal error', async () => {
     const out = await chunks([{ type: 'result', subtype: 'error_during_execution' }])
     expect(out).toEqual([{
