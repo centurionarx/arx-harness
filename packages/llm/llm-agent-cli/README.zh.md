@@ -91,6 +91,7 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
 
 ## Known Limitations and Deferred Work
 
+- **目前只有一个厂商**——本包的命名描述的是形态而非名单：它只驱动 Claude Agent SDK，因此 Claude 订阅是它服务的唯一登录。第二个厂商意味着第二套 SDK，带有自己的协议与进程投影；它究竟以另一个包的形式出现，还是作为本包内部的一个 seam，尚未决定——包名不应被读作任何一方的承诺。
 - **图片无法到达厂商 CLI**——携带 image 块的请求以 `UNSUPPORTED_CONTENT` 失败，而不是在丢弃图片后照常发送。
 - **亲和保存在内存中**——配对不会写入会话日志，因此无法跨重启存活。可持久化的变体可以把它放进 `finish` chunk 的 `ReplayEnvelope`。
 - **SDK 版本按精确值锁定**——`0.3.220`，与 [`cxh-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.zh.md) 中的投影一致。
