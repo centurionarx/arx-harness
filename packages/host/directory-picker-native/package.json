@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-host-directory-picker-native",
-  "description": "Native-OS-chooser backend of the directory-picker seam for the CENTURIONarx Harness web GUI host",
+  "name": "@arx-ai/arx-host-directory-picker-native",
+  "description": "Native-OS-chooser backend of the directory-picker seam for the arx Harness web GUI host",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/host/directory-picker-native"
   },
   "type": "module",
@@ -37,17 +37,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/cxh-host-directory-picker": "workspace:^",
-    "@centurionarx/cxh-native-command": "workspace:^",
+    "@arx-ai/arx-host-directory-picker": "workspace:^",
+    "@arx-ai/arx-native-command": "workspace:^",
     "koffi": "^3.1.0"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "tsx": "^4.19.2"
   }
 }

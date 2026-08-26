@@ -1,11 +1,11 @@
 /**
  * Result-time contextual diff presentation for write and edit. Storage returns before/after
  * text; this model-facing layer derives one three-line-context card per applied hunk.
- * @module @centurionarx/cxh-tool-fs/src/diff
+ * @module @arx-ai/arx-tool-fs/src/diff
  */
 
 import { structuredPatch } from 'diff'
-import type { FileDiff } from '@centurionarx/cxh-tools'
+import type { FileDiff } from '@arx-ai/arx-tools'
 
 /** Context lines shown on each side of an applied hunk. */
 export const DIFF_CONTEXT = 3

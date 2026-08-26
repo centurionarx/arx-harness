@@ -5,12 +5,12 @@
  * the command never ran: foreground calls throw `SANDBOX_UNAVAILABLE`, while
  * background processes carry `runnerFailed`; other spawn rejections retain
  * local-executor semantics. The tool owns approval and passes a complete per-call policy.
- * @module @centurionarx/cxh-bash-sandbox
+ * @module @arx-ai/arx-bash-sandbox
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@centurionarx/cxh-shell'
-import { SandboxUnavailableError } from '@centurionarx/cxh-sandbox'
+import { Context } from '@arx-ai/cordis'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@arx-ai/arx-shell'
+import { SandboxUnavailableError } from '@arx-ai/arx-sandbox'
 import type {
   ConfinedArgv,
   ConfinedSandboxMode,
@@ -19,16 +19,16 @@ import type {
   SandboxExecutionPolicy,
   SandboxMode,
   SandboxPolicy,
-} from '@centurionarx/cxh-sandbox'
-import type {} from '@centurionarx/cxh-sandbox-policy'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
-import type { Config as LocalConfig } from '@centurionarx/cxh-bash-local'
+} from '@arx-ai/arx-sandbox'
+import type {} from '@arx-ai/arx-sandbox-policy'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
+import type { Config as LocalConfig } from '@arx-ai/arx-bash-local'
 import { classifyDenial, classifyRunnerFailure, isRunnerSpawnFailure, matchesSignature } from './helpers.ts'
 
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@arx-ai/arx-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The runner
  * choice is likewise the `ctx.sandbox` provider's config, not this executor's.
  */

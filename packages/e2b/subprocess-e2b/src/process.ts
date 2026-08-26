@@ -9,16 +9,16 @@ import {
   FileNotFoundError,
   SandboxNotFoundError,
   quoteE2BShellArg,
-} from '@centurionarx/cxh-e2b'
-import type { CommandHandle, CommandResult, Sandbox } from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-e2b'
+import type { CommandHandle, CommandResult, Sandbox } from '@arx-ai/arx-e2b'
 import type {
   SubprocessCollect,
   SubprocessHandle,
   SubprocessOutcome,
   SubprocessOutputMode,
   SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import type E2BRuntime from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-subprocess'
+import type E2BRuntime from '@arx-ai/arx-e2b'
 import { bootstrapEnvironment, readRemoteEnvironment, serializeRemoteEnvironment } from './environment.ts'
 import { E2BBase64Decoder, E2B_OUTPUT_COMPLETE_FRAME, E2BOutputReader } from './output.ts'
 import { asError, commandOpts, signalRemoteGroups, waitTick } from './remote.ts'
@@ -91,49 +91,49 @@ function withinMs(settlement: Promise<CommandSettlement>, timeoutMs: number): Pr
 }
 
 function commandText(spec: SubprocessSpawnSpec, paths: RemotePaths): string {
-  const encoder = `"$cxh_e2b_env_bin" -i "$cxh_e2b_node" -e ${quoteE2BShellArg(OUTPUT_ENCODER_SOURCE)}`
+  const encoder = `"$arx_e2b_env_bin" -i "$arx_e2b_node" -e ${quoteE2BShellArg(OUTPUT_ENCODER_SOURCE)}`
   const stdoutRedirect = hasSpill(spec.stdio.stdout)
-    ? `> >("$cxh_e2b_tee" --output-error=warn-nopipe >("$cxh_e2b_head" -c ${spec.stdio.stdout.spill.maxBytes} > ${quoteE2BShellArg(paths.stdout)}) | ${encoder} 2>/dev/null)`
+    ? `> >("$arx_e2b_tee" --output-error=warn-nopipe >("$arx_e2b_head" -c ${spec.stdio.stdout.spill.maxBytes} > ${quoteE2BShellArg(paths.stdout)}) | ${encoder} 2>/dev/null)`
     : `> >(${encoder} 2>/dev/null)`
   const stderrRedirect = hasSpill(spec.stdio.stderr)
-    ? `2> >("$cxh_e2b_tee" --output-error=warn-nopipe >("$cxh_e2b_head" -c ${spec.stdio.stderr.spill.maxBytes} > ${quoteE2BShellArg(paths.stderr)}) | ${encoder} >&2 2>/dev/null)`
+    ? `2> >("$arx_e2b_tee" --output-error=warn-nopipe >("$arx_e2b_head" -c ${spec.stdio.stderr.spill.maxBytes} > ${quoteE2BShellArg(paths.stderr)}) | ${encoder} >&2 2>/dev/null)`
     : `2> >(${encoder} >&2 2>/dev/null)`
   const inner = [
     'set +e',
-    'cxh_e2b_env_bin=$1',
-    'cxh_e2b_node=$2',
-    'cxh_e2b_ps=$3',
-    'cxh_e2b_tr=$4',
-    'cxh_e2b_tee=$5',
-    'cxh_e2b_head=$6',
-    'cxh_e2b_rm=$7',
+    'arx_e2b_env_bin=$1',
+    'arx_e2b_node=$2',
+    'arx_e2b_ps=$3',
+    'arx_e2b_tr=$4',
+    'arx_e2b_tee=$5',
+    'arx_e2b_head=$6',
+    'arx_e2b_rm=$7',
     'shift 7',
-    'cxh_e2b_pgid="$("$cxh_e2b_ps" -o pgid= -p "$$" | "$cxh_e2b_tr" -d " ")"',
-    `printf '%s\\n' "$cxh_e2b_pgid" > ${quoteE2BShellArg(paths.pid)}`,
-    `mapfile -d '' -t cxh_e2b_env < ${quoteE2BShellArg(paths.environment)}`,
-    `"$cxh_e2b_rm" -f -- ${quoteE2BShellArg(paths.environment)}`,
-    `"$cxh_e2b_env_bin" -i -- "\${cxh_e2b_env[@]}" "$@" ${stdoutRedirect} ${stderrRedirect}`.trimEnd(),
-    'cxh_e2b_status=$?',
-    `printf '%s\\n' "$cxh_e2b_status" > ${quoteE2BShellArg(paths.status)}`,
+    'arx_e2b_pgid="$("$arx_e2b_ps" -o pgid= -p "$$" | "$arx_e2b_tr" -d " ")"',
+    `printf '%s\\n' "$arx_e2b_pgid" > ${quoteE2BShellArg(paths.pid)}`,
+    `mapfile -d '' -t arx_e2b_env < ${quoteE2BShellArg(paths.environment)}`,
+    `"$arx_e2b_rm" -f -- ${quoteE2BShellArg(paths.environment)}`,
+    `"$arx_e2b_env_bin" -i -- "\${arx_e2b_env[@]}" "$@" ${stdoutRedirect} ${stderrRedirect}`.trimEnd(),
+    'arx_e2b_status=$?',
+    `printf '%s\\n' "$arx_e2b_status" > ${quoteE2BShellArg(paths.status)}`,
     'wait',
-    'exit "$cxh_e2b_status"',
+    'exit "$arx_e2b_status"',
   ].join('\n')
   const argv = spec.argv.map(quoteE2BShellArg).join(' ')
   const bootstrap = [
-    `mapfile -d '' -t cxh_e2b_env < ${quoteE2BShellArg(paths.environment)}`,
-    'cxh_e2b_env_bin="$(command -v env)"',
-    'cxh_e2b_setsid="$(command -v setsid)"',
-    'cxh_e2b_bash="$(command -v bash)"',
-    'cxh_e2b_node="$(command -v node)"',
-    'cxh_e2b_ps="$(command -v ps)"',
-    'cxh_e2b_tr="$(command -v tr)"',
-    'cxh_e2b_tee="$(command -v tee)"',
-    'cxh_e2b_head="$(command -v head)"',
-    'cxh_e2b_rm="$(command -v rm)"',
-    'for cxh_e2b_tool in "$cxh_e2b_env_bin" "$cxh_e2b_setsid" "$cxh_e2b_bash" "$cxh_e2b_node" "$cxh_e2b_ps" "$cxh_e2b_tr" "$cxh_e2b_tee" "$cxh_e2b_head" "$cxh_e2b_rm"; do',
-    '  [[ "$cxh_e2b_tool" == /* && -x "$cxh_e2b_tool" ]] || exit 125',
+    `mapfile -d '' -t arx_e2b_env < ${quoteE2BShellArg(paths.environment)}`,
+    'arx_e2b_env_bin="$(command -v env)"',
+    'arx_e2b_setsid="$(command -v setsid)"',
+    'arx_e2b_bash="$(command -v bash)"',
+    'arx_e2b_node="$(command -v node)"',
+    'arx_e2b_ps="$(command -v ps)"',
+    'arx_e2b_tr="$(command -v tr)"',
+    'arx_e2b_tee="$(command -v tee)"',
+    'arx_e2b_head="$(command -v head)"',
+    'arx_e2b_rm="$(command -v rm)"',
+    'for arx_e2b_tool in "$arx_e2b_env_bin" "$arx_e2b_setsid" "$arx_e2b_bash" "$arx_e2b_node" "$arx_e2b_ps" "$arx_e2b_tr" "$arx_e2b_tee" "$arx_e2b_head" "$arx_e2b_rm"; do',
+    '  [[ "$arx_e2b_tool" == /* && -x "$arx_e2b_tool" ]] || exit 125',
     'done',
-    `exec "$cxh_e2b_env_bin" -i -- "\${cxh_e2b_env[@]}" "$cxh_e2b_setsid" --wait -- "$cxh_e2b_bash" -c ${quoteE2BShellArg(inner)} cxh-e2b "$cxh_e2b_env_bin" "$cxh_e2b_node" "$cxh_e2b_ps" "$cxh_e2b_tr" "$cxh_e2b_tee" "$cxh_e2b_head" "$cxh_e2b_rm" ${argv}`,
+    `exec "$arx_e2b_env_bin" -i -- "\${arx_e2b_env[@]}" "$arx_e2b_setsid" --wait -- "$arx_e2b_bash" -c ${quoteE2BShellArg(inner)} arx-e2b "$arx_e2b_env_bin" "$arx_e2b_node" "$arx_e2b_ps" "$arx_e2b_tr" "$arx_e2b_tee" "$arx_e2b_head" "$arx_e2b_rm" ${argv}`,
   ].join('\n')
   return bootstrap
 }

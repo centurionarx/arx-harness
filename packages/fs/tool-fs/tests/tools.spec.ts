@@ -4,14 +4,14 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve, sep } from 'node:path'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt, { renderPrompt } from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { type ToolResult } from '@centurionarx/cxh-tools'
-import { FileSystem, FsError, FsTargetKey, FsVersion } from '@centurionarx/cxh-fs'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt, { renderPrompt } from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { type ToolResult } from '@arx-ai/arx-tools'
+import { FileSystem, FsError, FsTargetKey, FsVersion } from '@arx-ai/arx-fs'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -21,16 +21,16 @@ import type {
   FsTarget,
   FsWriteIntent,
   FsWriteOutcome,
-} from '@centurionarx/cxh-fs'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
+} from '@arx-ai/arx-fs'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
 import { STREAM_MIN_SIZE } from '../src/read.ts'
 import { formatReadOutput } from '../src/read-render.ts'
 import type { FileReadOutcome } from '../src/read-render.ts'
 import { sessionCwd } from '../src/session-cwd.ts'
-import ApprovalService from '@centurionarx/cxh-user-approval'
-import type { SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
+import ApprovalService from '@arx-ai/arx-user-approval'
+import type { SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
 
 const testToolSignal = new AbortController().signal
 
@@ -136,7 +136,7 @@ describe('session cwd resolution', () => {
     expect(sessionCwd(execution(cwd) as never, 'file.txt')).toBe(cwd)
     expect(sessionCwd(execution(throughParent) as never, 'file.txt')).toBe(realpathSync.native(throughParent))
 
-    const root = mkdtempSync(join(tmpdir(), 'cxh-tool-fs-session-cwd-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-tool-fs-session-cwd-'))
     const physical = join(root, 'physical')
     const link = join(root, 'link')
     try {

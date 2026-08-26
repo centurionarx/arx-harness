@@ -11,11 +11,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import z from '@centurionarx/schemastery'
-import { settingsNamespace, type SettingsScope } from '@centurionarx/cxh-settings'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import z from '@arx-ai/schemastery'
+import { settingsNamespace, type SettingsScope } from '@arx-ai/arx-settings'
 import FileSettingsProvider from '../src/index.ts'
 
 interface ThemeConfig {
@@ -49,7 +49,7 @@ async function loadComposition(
   options?: { withSettings?: boolean },
 ): Promise<{ ctx: Context; state: ConsumerState; settingsPath: string }> {
   const withSettings = options?.withSettings ?? true
-  root = await mkdtemp(join(tmpdir(), 'cxh-settings-composition-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-settings-composition-'))
   const settingsPath = join(root, 'settings.yaml')
   await writeFile(settingsPath, 'ui-theme:\n  theme: light\n')
 
@@ -79,7 +79,7 @@ async function loadComposition(
     ...withSettings
       ? [
         '- id: settings',
-        "  name: '@centurionarx/cxh-settings-file'",
+        "  name: '@arx-ai/arx-settings-file'",
         '  config:',
         `    path: ${JSON.stringify(settingsPath)}`,
         '    debounceMs: 10',
@@ -96,7 +96,7 @@ async function loadComposition(
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-settings-file', FileSettingsProvider],
+    ['@arx-ai/arx-settings-file', FileSettingsProvider],
     ['test-settings-consumer', consumer],
   ])
   ctx.loader.internal = {

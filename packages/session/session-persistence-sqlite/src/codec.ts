@@ -1,11 +1,11 @@
 /**
  * Schema-17 physical chunk-row codec. This package owns the durable tags,
  * validation, and row-size limits independently from other persistence formats.
- * @module @centurionarx/cxh-session-persistence-sqlite/codec
+ * @module @arx-ai/arx-session-persistence-sqlite/codec
  */
 
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /* jscpd:ignore-start -- schema 17 deliberately owns a frozen physical codec;
  * importing or sharing the JSONL codec would let that format mutate this database interpreter. */

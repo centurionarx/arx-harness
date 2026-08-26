@@ -1,20 +1,20 @@
 /**
  * Tool operation orchestration over session-query service capabilities.
  *
- * @module @centurionarx/cxh-tool-session-query/operations
+ * @module @arx-ai/arx-tool-session-query/operations
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
 import {
   SessionQueryError,
   type SessionEventSearchPage,
   type SessionEventSurface,
   type SessionRecord,
   type SessionSearchCursor,
-} from '@centurionarx/cxh-session-query'
-import type { ToolRunContext } from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-session-query'
+import type { ToolRunContext } from '@arx-ai/arx-tools'
 import { toolInput } from './input.ts'
 import { presentation } from './presentation.ts'
 import { serviceBoundary } from './service-boundary.ts'

@@ -6,12 +6,12 @@
  * cancelled error encoding, receipt checks — lives HERE, with the package
  * that consumes it.
  */
-import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 // Also pulls ui-conversation's SlotMap merge (the 'conversation.composer'
 // entry) into every program that sees this contract, so PropsRuntime resolves.
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
-import type { PendingWait } from '@centurionarx/cxh-client-runtime/client'
-import type { QuestionResponsePayload } from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
+import type { PendingWait } from '@arx-ai/arx-client-runtime/client'
+import type { QuestionResponsePayload } from '@arx-ai/arx-api-remotes/client'
 
 /** The pending question carrier the owner dispatches into the composer slot. */
 export type QuestionWait = PendingWait<'question'>

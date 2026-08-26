@@ -1,7 +1,7 @@
 /** Registration/capability behavior of the native backend (the seam's cordis half). */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import NativeDirectoryPicker from '../src/index.ts'
 
 describe('NativeDirectoryPicker', () => {

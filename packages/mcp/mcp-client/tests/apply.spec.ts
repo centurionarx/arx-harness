@@ -3,10 +3,10 @@
  * Isolated file so vi.mock of the MCP SDK doesn't pollute other test suites.
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import type { Config } from '@centurionarx/cxh-mcp-client'
+import { Context } from '@arx-ai/cordis'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import type { Config } from '@arx-ai/arx-mcp-client'
 
 // ---- Mock MCP SDK ----
 
@@ -54,7 +54,7 @@ vi.mock('@modelcontextprotocol/sdk/client/streamableHttp.js', () => ({
 
 // vi.mock is hoisted above static imports, so the module under test sees the
 // mocked SDK even through a static import.
-import { apply, name, inject, Config as ConfigSchema } from '@centurionarx/cxh-mcp-client/src/index.ts'
+import { apply, name, inject, Config as ConfigSchema } from '@arx-ai/arx-mcp-client/src/index.ts'
 
 // ---- Helpers ----
 

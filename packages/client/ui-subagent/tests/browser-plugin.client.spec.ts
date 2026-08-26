@@ -1,13 +1,13 @@
 /** ui-subagent browser half: catalog actions and read-only composer routing. */
-import { Context } from '@centurionarx/cordis'
-import { stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import { describe, expect, it } from 'vitest'
 import {
   SlotRegistry, type ConversationSnapshot, type SessionId, type SessionListState,
   type SessionSummary, type SubagentAddress,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ComposerChainProps } from '@centurionarx/cxh-client-ui-conversation/client'
-import { apply as applyLocale, inject as localeInject } from '@centurionarx/cxh-client-locale/client'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ComposerChainProps } from '@arx-ai/arx-client-ui-conversation/client'
+import { apply as applyLocale, inject as localeInject } from '@arx-ai/arx-client-locale/client'
 import {
   SubagentHeaderLineage, type SubagentCatalogInjected,
 } from '../src/client/SubagentHeaderLineage.tsx'

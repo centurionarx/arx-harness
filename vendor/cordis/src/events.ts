@@ -1,5 +1,5 @@
-import { defineProperty } from '@centurionarx/cosmokit'
-import type { Promisify } from '@centurionarx/cosmokit'
+import { defineProperty } from '@arx-ai/cosmokit'
+import type { Promisify } from '@arx-ai/cosmokit'
 import { Context } from './context.ts'
 import { Fiber, FiberState } from './fiber.ts'
 import { DisposableList, symbols } from './utils.ts'

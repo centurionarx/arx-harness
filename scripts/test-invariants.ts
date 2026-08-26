@@ -6,16 +6,16 @@
  */
 
 import { expect } from 'vitest'
-import { FiberState, Inject, RegistryService, ValidationError } from '@centurionarx/cordis'
-import type { Context, Plugin } from '@centurionarx/cordis'
-import { AttachmentStore } from '@centurionarx/cxh-attachment'
+import { FiberState, Inject, RegistryService, ValidationError } from '@arx-ai/cordis'
+import type { Context, Plugin } from '@arx-ai/cordis'
+import { AttachmentStore } from '@arx-ai/arx-attachment'
 import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+} from '@arx-ai/arx-attachment'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 declare global {
   interface ImportMeta {

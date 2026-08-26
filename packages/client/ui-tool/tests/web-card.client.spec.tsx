@@ -12,24 +12,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import {
   createSnapshotStore, EMPTY_CONVERSATION_VIEWS,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   ConversationSnapshot, RunningToolCall, SessionId, SessionListState, ToolResultNode, WorkspaceListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ToolResultView } from '@centurionarx/cxh-api-remotes/client'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import type { SelectionTarget } from '@centurionarx/cxh-client-ui-conversation/client'
-import type { ToolCallOwnerProps } from '@centurionarx/cxh-client-ui-tool/client'
-import { IconGlobeOutline14 } from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ToolResultView } from '@arx-ai/arx-api-remotes/client'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import type { SelectionTarget } from '@arx-ai/arx-client-ui-conversation/client'
+import type { ToolCallOwnerProps } from '@arx-ai/arx-client-ui-tool/client'
+import { IconGlobeOutline14 } from '@arx-ai/arx-client-ui-primitives'
 import { webCardModel } from '../src/client/tool/models/web-card-model.ts'
-import { createChatStore } from '@centurionarx/cxh-client-ui-conversation/src/client/stores.ts'
+import { createChatStore } from '@arx-ai/arx-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard } from '../src/client/tool/toolviews/GenericToolCard.tsx'
-import { DetailsPanel } from '@centurionarx/cxh-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
+import { DetailsPanel } from '@arx-ai/arx-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
 import { WebRow, webToolview } from '../src/client/tool/toolviews/web-row.tsx'
 import { renderToolDetails, SessionProviderStub, toolChatSnapshot } from './tool-details-render.client.tsx'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
-import { zh } from '@centurionarx/cxh-client-ui-conversation/src/client/locales.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
 
 afterEach(cleanup)
 
@@ -38,7 +38,7 @@ const SID = 's1' as SessionId
 /** Locale seat for the card render sites (GenericToolCard, DetailsPanel), as the sibling suites build it. */
 const t = makeTranslate(zh, commonZh)
 
-const SEARCH_ARGS = '{"query":"centurionarx harness"}'
+const SEARCH_ARGS = '{"query":"arx harness"}'
 const FETCH_ARGS = '{"url":"https://example.com/page"}'
 
 /** A web_search result view; overrides tune the sources / answer / truncation. */
@@ -300,7 +300,7 @@ describe('web toolview registration', () => {
           return () => {}
         },
       },
-    } as unknown as import('@centurionarx/cordis').Context
+    } as unknown as import('@arx-ai/cordis').Context
     webToolview.apply(ctx)
     expect(registered.map(r => r.key)).toEqual(['web_search', 'web_fetch'])
     // Both keys claim the conversation locale seat ToolRow's body copy needs.

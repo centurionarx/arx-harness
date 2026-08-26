@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-agent-loop-testkit`.
- * @module @centurionarx/cxh-agent-loop-testkit/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-agent-loop-testkit`.
+ * @module @arx-ai/arx-agent-loop-testkit/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-agent-loop-testkit'
+const PACKAGE_NAME = '@arx-ai/arx-agent-loop-testkit'
 
 /** Cordis companion plugin name. */
 export const name = 'agent-loop-testkit-invariant'

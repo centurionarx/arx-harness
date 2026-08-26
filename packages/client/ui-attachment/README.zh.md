@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-attachment
+# @arx-ai/arx-client-ui-attachment
 
 [English](README.md) | 中文
 

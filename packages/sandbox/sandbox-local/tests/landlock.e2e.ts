@@ -4,14 +4,14 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { SandboxPolicy } from '@centurionarx/cxh-sandbox'
-import { launcherPath } from '@centurionarx/node-addon-landlock-run'
-import { LocalSandboxProvider } from '@centurionarx/cxh-sandbox-local'
+import { Context } from '@arx-ai/cordis'
+import type { SandboxPolicy } from '@arx-ai/arx-sandbox'
+import { launcherPath } from '@arx-ai/node-addon-landlock-run'
+import { LocalSandboxProvider } from '@arx-ai/arx-sandbox-local'
 
 /**
  * Keyless backend integration through `confine()` and the workspace `landlock-run` launcher, with
- * bwrap forced off. Tests assert real world effects; consumer coverage lives in cxh-bash-sandbox.
+ * bwrap forced off. Tests assert real world effects; consumer coverage lives in arx-bash-sandbox.
  * Skips when the platform package or enforcing kernel is unavailable. HOME-based workspaces avoid
  * Landlock's wholesale `/tmp` grant, so workspace-write proves the workspace-root grant itself.
  */
@@ -31,7 +31,7 @@ afterEach(async () => {
 })
 
 async function tempDir(base: string): Promise<string> {
-  const dir = await mkdtemp(join(base, 'cxh-landlock-e2e-'))
+  const dir = await mkdtemp(join(base, 'arx-landlock-e2e-'))
   tempDirs.push(dir)
   return dir
 }
@@ -75,7 +75,7 @@ describe.skipIf(!landlockUsable)('sandbox-local: real Landlock confinement throu
     // the persistent host effect read-only promises never happen.
     const workdir = await tempDir(tmpdir())
     const sandbox = await provider()
-    const target = `/dev/shm/cxh-landlock-e2e-${process.pid}`
+    const target = `/dev/shm/arx-landlock-e2e-${process.pid}`
     const { result } = runConfined(sandbox, `echo hi > ${target}`, { mode: 'read-only', workspaceRoot: workdir })
     expect(result.status).not.toBe(0)
     expect(existsSync(target)).toBe(false)

@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId  } from '@centurionarx/cxh-llm'
-import { createScope } from '@centurionarx/cxh-scope'
-import type { Scope } from '@centurionarx/cxh-scope'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import { CodeRuntime } from '@centurionarx/cxh-code-runtime'
-import type { CodeRunRequest, CodeRunResult } from '@centurionarx/cxh-code-runtime'
-import ToolRuntime, { CodeRunFailedError, RUN_CODE_NAME, TOOL_ABORTED_BEFORE_DISPATCH, defineContentToolFixture, defineTool } from '@centurionarx/cxh-tools'
-import type { Config, JsonSchemaNode, PostToolDecision, ToolExecutionResult } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import type { JsonValue, SessionEventMap } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId  } from '@arx-ai/arx-llm'
+import { createScope } from '@arx-ai/arx-scope'
+import type { Scope } from '@arx-ai/arx-scope'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import { CodeRuntime } from '@arx-ai/arx-code-runtime'
+import type { CodeRunRequest, CodeRunResult } from '@arx-ai/arx-code-runtime'
+import ToolRuntime, { CodeRunFailedError, RUN_CODE_NAME, TOOL_ABORTED_BEFORE_DISPATCH, defineContentToolFixture, defineTool } from '@arx-ai/arx-tools'
+import type { Config, JsonSchemaNode, PostToolDecision, ToolExecutionResult } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import type { JsonValue, SessionEventMap } from '@arx-ai/arx-session'
 
 const testToolSignal = new AbortController().signal
 
@@ -1735,7 +1735,7 @@ describe('per-agent presentation', () => {
   })
 
   it('inherits a STANDING preset scope\'s mode down the chain, agents beside it unaffected', async () => {
-    const { bindScopeParent } = await import('@centurionarx/cxh-scope')
+    const { bindScopeParent } = await import('@arx-ai/arx-scope')
     const { ctx, systemPrompt } = await setup({ mode: 'native' })
     const calls = registerEcho(ctx)
     // The preset's standing scope declares once; the agent only PARENTS to it
@@ -1753,7 +1753,7 @@ describe('per-agent presentation', () => {
     // `native` here, so a collapse predicate reading it instead of this
     // scope's effective mode would announce [run_code] and still execute the
     // native call — the bypass, reopened for exactly the preset composition
-    // `cxh-agent-tool-presentation` produces.
+    // `arx-agent-tool-presentation` produces.
     expect(ctx.tools.executionMode({
       signal: testToolSignal,
       callId: CallId('preset-coded-schedule'),

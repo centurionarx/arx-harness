@@ -2,9 +2,9 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import { decodeGoalChange } from '@centurionarx/cxh-goal'
-import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@centurionarx/cxh-loader-smoke'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import { decodeGoalChange } from '@arx-ai/arx-goal'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@arx-ai/arx-loader-smoke'
 
 const binScript = fileURLToPath(new URL('../../../../examples/headless-agent/tests/fixtures/headless-driver.ts', import.meta.url))
 const configPath = fileURLToPath(new URL(

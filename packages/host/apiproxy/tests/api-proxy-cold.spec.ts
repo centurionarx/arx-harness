@@ -8,24 +8,24 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore from '@centurionarx/cxh-session'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import { TypertLookupFailure } from '@centurionarx/cxh-typert-protocol'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
-import { createUserMessage, MessageId } from '@centurionarx/cxh-llm'
-import type { Agent } from '@centurionarx/cxh-agent'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import SessionStore from '@arx-ai/arx-session'
+import AgentRegistry from '@arx-ai/arx-agent'
+import { TypertLookupFailure } from '@arx-ai/arx-typert-protocol'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
+import { createUserMessage, MessageId } from '@arx-ai/arx-llm'
+import type { Agent } from '@arx-ai/arx-agent'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
 import {
   PersistenceCoordinator,
   SessionPersistenceRevision,
   type PersistenceBackend,
   type StoredPrefix,
-} from '@centurionarx/cxh-session-persistence'
-import type { RpcRequest } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+} from '@arx-ai/arx-session-persistence'
+import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 
@@ -43,7 +43,7 @@ describe('sessions.list cold merge', () => {
     const ctx = new Context()
     await ctx.plugin(SessionStore)
     await ctx.plugin(UserQuestionService)
-    const root = mkdtempSync(join(tmpdir(), 'cxh-cold-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-cold-'))
     const smallPath = join(root, 'small.log')
     const largePath = join(root, 'large.log')
     writeFileSync(smallPath, 'x'.repeat(1024))
@@ -163,7 +163,7 @@ describe('sessions.list cold merge', () => {
     await ctx.plugin(UserQuestionService)
     await ctx.plugin(AgentRegistry)
     const meta = header('attached-during-probe', 100)
-    const root = mkdtempSync(join(tmpdir(), 'cxh-cold-race-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-cold-race-'))
     const path = join(root, 'small.log')
     writeFileSync(path, 'x')
     const started = Promise.withResolvers<undefined>()
@@ -339,7 +339,7 @@ describe('Remote Agent and Session lookup policy', () => {
       inspect,
       locate: () => undefined,
     } as never)
-    const resumedSession = { id: sessionId, header: meta, events: [] } as unknown as import('@centurionarx/cxh-session').Session
+    const resumedSession = { id: sessionId, header: meta, events: [] } as unknown as import('@arx-ai/arx-session').Session
     const resumedAgent = { id: sessionId, session: resumedSession, status: 'idle', ctx } as Agent
     const release = Promise.withResolvers<undefined>()
     const resume = vi.spyOn(ctx.agents, 'resume').mockImplementation(async () => {

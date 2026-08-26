@@ -2,8 +2,8 @@
 // The input order is authoritative; lineage only makes each child adjacent to its parent.
 // Orphaned lineage degrades to root level; cycles fail soft and emit as roots.
 
-import type { SessionId, SessionSummary } from '@centurionarx/cxh-api-remotes/client'
-import type { SessionProjectionMap } from '@centurionarx/cxh-session-projection/types'
+import type { SessionId, SessionSummary } from '@arx-ai/arx-api-remotes/client'
+import type { SessionProjectionMap } from '@arx-ai/arx-session-projection/types'
 import type { PendingInteractionStatus } from './pending.ts'
 
 /** Host list summary enriched with the latest mux-projected durable title. */

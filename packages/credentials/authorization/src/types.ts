@@ -2,10 +2,10 @@
  * Wire-safe authorization types, free of cordis/service imports so browser type
  * chains (apiproxy api → client) can consume them without loading this
  * package's Context augmentation.
- * @module @centurionarx/cxh-authorization/types
+ * @module @arx-ai/arx-authorization/types
  */
 
-import type { CredentialKey } from '@centurionarx/cxh-credentials/types'
+import type { CredentialKey } from '@arx-ai/arx-credentials/types'
 
 /** One way a flow can obtain its credential, named by the flow that offers it. */
 export interface AuthorizationMethod {

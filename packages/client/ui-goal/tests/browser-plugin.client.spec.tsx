@@ -10,16 +10,16 @@
  * plugin fiber (HMR safety). The node half and the invariant companion are
  * exercised over the same Context.
  */
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import { afterEach } from 'vitest'
-import { SlotRegistry, type SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { ConversationEventRegistry } from '@centurionarx/cxh-client-runtime/src/client/conversation/event-registry.ts'
-import type { GoalProjection } from '@centurionarx/cxh-goal/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { SlotRegistry, type SessionId } from '@arx-ai/arx-client-runtime/client'
+import { ConversationEventRegistry } from '@arx-ai/arx-client-runtime/src/client/conversation/event-registry.ts'
+import type { GoalProjection } from '@arx-ai/arx-goal/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { GoalBarActions } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { GoalDock } from '../src/client/GoalBar.tsx'

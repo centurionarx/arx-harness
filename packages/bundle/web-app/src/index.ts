@@ -1,6 +1,6 @@
 /**
- * @centurionarx/cxh-web-app — the browser-surface bundle's runtime glue plugin
- * plus the bundle patch (`cordis.patch.yml`, declared by the `cxh.bundle.patch`
+ * @arx-ai/arx-web-app — the browser-surface bundle's runtime glue plugin
+ * plus the bundle patch (`cordis.patch.yml`, declared by the `arx.bundle.patch`
  * manifest field). The plugin owns the browser-surface glue: it resolves
  * the built frontend dist (workspace knowledge of this bundle, never user
  * config), mounts the `frontend-static` fallback owner over it, registers the
@@ -8,28 +8,28 @@
  * variable, the URL line, and the default-browser handoff. App command-line
  * values arrive through the `webStartup` service expressions in the bundle
  * patch.
- * @module @centurionarx/cxh-web-app
+ * @module @arx-ai/arx-web-app
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { networkInterfaces } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { addHarnessSourceSection } from '@centurionarx/cxh-app-boot'
-import * as FrontendStatic from '@centurionarx/cxh-host-frontend-static'
-import { launchEnvironmentOf } from '@centurionarx/cxh-launch-environment'
-import { scrubbedParentEnv } from '@centurionarx/cxh-subprocess'
-import type {} from '@centurionarx/cordis-plugin-loader'
-import type {} from '@centurionarx/cxh-host-webserver'
-import type {} from '@centurionarx/cxh-system-prompt'
-import type {} from '@centurionarx/cxh-shell-env'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { addHarnessSourceSection } from '@arx-ai/arx-app-boot'
+import * as FrontendStatic from '@arx-ai/arx-host-frontend-static'
+import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import { scrubbedParentEnv } from '@arx-ai/arx-subprocess'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import type {} from '@arx-ai/arx-host-webserver'
+import type {} from '@arx-ai/arx-system-prompt'
+import type {} from '@arx-ai/arx-shell-env'
 
 /** Stable Cordis plugin name. */
 export const name = 'web-app'
 
-/** This cxh installation's root, from either this package's source or built entry. */
+/** This arx installation's root, from either this package's source or built entry. */
 const SOURCE_ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
 
 /** Runtime service that releases Web rows after bind-dependent values resolve. */
@@ -46,7 +46,7 @@ export interface Config {
   printUrl: boolean
   /**
    * Register the model-visible surface context (the `app:web-surface` prompt
-   * section and the `CXH_WEB_URL` bash variable). A one-shot non-interactive
+   * section and the `ARX_WEB_URL` bash variable). A one-shot non-interactive
    * layer can turn it off when its user is not in the GUI, so the
    * orientation text would be false.
    */
@@ -71,7 +71,7 @@ export interface WebRuntimeValues {
 }
 
 /** Environment variable naming the canonical local URL of this Web GUI. */
-const CXH_WEB_URL = 'CXH_WEB_URL' as const
+const ARX_WEB_URL = 'ARX_WEB_URL' as const
 
 // Display-only mirror of the webserver schema's loopback host: the address the
 // local URL always prints. Not a source of truth — the schema is.
@@ -138,17 +138,17 @@ export function resolveLanTrust(bindHost: string, extra: readonly string[]): Web
   return { lanAddresses, trustedHosts: [...lanAddresses, ...extra] }
 }
 
-/** Model-visible orientation and acceptance boundary for sessions created through `cxh web`. */
+/** Model-visible orientation and acceptance boundary for sessions created through `arx web`. */
 function webSurfacePrompt(webUrl: string): string {
   const updateContract = 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
     + '`pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. '
     + 'Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. '
-  return `You are interacting with the user through the CENTURIONarx Harness Web GUI at ${webUrl}. `
+  return `You are interacting with the user through the arx Harness Web GUI at ${webUrl}. `
     + 'When the user refers to "this page", "this GUI", or "this app" without naming another target, they mean this GUI. '
     + 'The browser provides no implicit DOM, route, or screenshot context. '
     + updateContract
     + 'Starting another server does not update this GUI. '
-    + 'The apps/web Vite entry builds the shell but is not a standalone application because only cxh web injects window.__CXH_BOOT__. '
+    + 'The apps/web Vite entry builds the shell but is not a standalone application because only arx web injects window.__ARX_BOOT__. '
     + 'Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.'
 }
 
@@ -163,7 +163,7 @@ function localWebUrl(ctx: Context): string {
 function resolveDistIndex(): string {
   const require = createRequire(import.meta.url)
   try {
-    return require.resolve('@centurionarx/cxh-web-frontend/dist/index.html')
+    return require.resolve('@arx-ai/arx-web-frontend/dist/index.html')
   } catch {
     /* v8 ignore next 2 -- reachable only on a checkout without a built dist; the test tree builds it */
     throw new Error('web-app: frontend dist not built; run pnpm run build from the repository root first')
@@ -244,9 +244,9 @@ export function apply(ctx: Context, config: Config): void {
       runtimeCtx.shellEnv.register({
         name: 'web-runtime',
         variables: {
-          [CXH_WEB_URL]: { description: 'Canonical local URL of the CENTURIONarx Harness Web GUI serving this session.' },
+          [ARX_WEB_URL]: { description: 'Canonical local URL of the arx Harness Web GUI serving this session.' },
         },
-        resolve: () => ({ [CXH_WEB_URL]: localWebUrl(runtimeCtx) }),
+        resolve: () => ({ [ARX_WEB_URL]: localWebUrl(runtimeCtx) }),
       })
     })
   }
@@ -262,10 +262,10 @@ export function apply(ctx: Context, config: Config): void {
       const lanCandidate = runtime.lanAddresses[0]
       const port = ctx.webServer.port
       if (config.printUrl) {
-        console.log(`cxh web: ${webUrl}${lanCandidate === undefined ? '' : ` (LAN: http://${lanCandidate}:${String(port)})`}`)
+        console.log(`arx web: ${webUrl}${lanCandidate === undefined ? '' : ` (LAN: http://${lanCandidate}:${String(port)})`}`)
       }
       if (handoffBrowser) {
-        console.log('cxh web: opening the default browser; pass --no-open to disable')
+        console.log('arx web: opening the default browser; pass --no-open to disable')
         void internals.openBrowser(webUrl).catch((error: unknown) => {
           const reason = error instanceof Error ? error.message : String(error)
           console.error(`web-app: could not open the default browser because ${reason}; visit ${webUrl} manually`)

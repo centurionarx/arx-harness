@@ -1,7 +1,7 @@
-/** Shared top-level-call post-policy selection for search result spill. @module cxh-tool-fs-search/direct-call */
+/** Shared top-level-call post-policy selection for search result spill. @module arx-tool-fs-search/direct-call */
 
-import type { Context } from '@centurionarx/cordis'
-import type { JsonValue, PostToolDecision, ToolDefinition, ToolExecution, ToolExecutionResult } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type { JsonValue, PostToolDecision, ToolDefinition, ToolExecution, ToolExecutionResult } from '@arx-ai/arx-tools'
 
 /**
  * Return the accepted canonical value only when this tool still owns a direct

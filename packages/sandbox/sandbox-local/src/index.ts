@@ -17,7 +17,7 @@
  * stops managing DACLs itself. The rung reports partial enforcement because
  * WRITE_RESTRICTED must retain Everyone in its
  * restricting list and NTFS hard links alias one file object across paths.
- * @module @centurionarx/cxh-sandbox-local
+ * @module @arx-ai/arx-sandbox-local
  */
 
 import { spawnSync } from 'node:child_process'
@@ -30,14 +30,14 @@ import {
   LAUNCHER_FAILURE_EXIT,
   launcherPath as landlockLauncherPath,
   probe as defaultProbeLandlock,
-} from '@centurionarx/node-addon-landlock-run'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { SandboxProvider, SandboxUnavailableError } from '@centurionarx/cxh-sandbox'
-import type { ConfinedArgv, ConfinedSandboxMode, RunnerFailureRule, SandboxEnforcement, SandboxPolicy } from '@centurionarx/cxh-sandbox'
-import type { SessionId } from '@centurionarx/cxh-session'
-import { AclWriteGrant, assertTempRootOutsideWorkspace, tempWriteSid, workspaceWriteSid } from '@centurionarx/cxh-sandbox-windows-acl'
+} from '@arx-ai/node-addon-landlock-run'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { assertNever } from '@arx-ai/arx-llm'
+import { SandboxProvider, SandboxUnavailableError } from '@arx-ai/arx-sandbox'
+import type { ConfinedArgv, ConfinedSandboxMode, RunnerFailureRule, SandboxEnforcement, SandboxPolicy } from '@arx-ai/arx-sandbox'
+import type { SessionId } from '@arx-ai/arx-session'
+import { AclWriteGrant, assertTempRootOutsideWorkspace, tempWriteSid, workspaceWriteSid } from '@arx-ai/arx-sandbox-windows-acl'
 import { bwrapProfileArgs, landlockProfileArgs, seatbeltProfileArgs } from './profiles.ts'
 
 /** Plugin config. All optional — `static Config` supplies the defaults. */
@@ -159,7 +159,7 @@ interface AclTempCapability {
 const PLATFORM_CHAINS: Record<string, readonly SelectedRunner['runner'][]> = {
   linux: ['bwrap', 'landlock'],
   darwin: ['seatbelt'],
-  // The Windows restricted-token runner (@centurionarx/cxh-sandbox-windows-acl):
+  // The Windows restricted-token runner (@arx-ai/arx-sandbox-windows-acl):
   // a sole candidate, selected without a probe — its execution-time refusal
   // fails closed through its stderr signature (windows-acl-run:) and exit 127.
   win32: ['windows-acl'],
@@ -412,7 +412,7 @@ export class LocalSandboxProvider extends SandboxProvider {
     const key = JSON.stringify([String(sessionId), workspaceRoot])
     const existing = this.tempCapabilities.get(key)
     if (existing !== undefined) return existing
-    const tempDir = mkdtempSync(join(tmpdir(), 'cxh-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'arx-'))
     const tempSid = tempWriteSid(tempDir)
     let grant: AclWriteGrant | undefined
     try {
@@ -557,9 +557,9 @@ export class LocalSandboxProvider extends SandboxProvider {
   private windowsAclRunnerInvocation(): string[] {
     const override = this.internals.windowsAclRunnerArgs
     if (override !== undefined) return override
-    const builtEntry = this.internals.windowsAclRunnerEntry ?? fileURLToPath(import.meta.resolve('@centurionarx/cxh-sandbox-windows-acl/runner'))
+    const builtEntry = this.internals.windowsAclRunnerEntry ?? fileURLToPath(import.meta.resolve('@arx-ai/arx-sandbox-windows-acl/runner'))
     if (existsSync(builtEntry)) return [process.execPath, builtEntry]
-    const sourceEntry = fileURLToPath(import.meta.resolve('@centurionarx/cxh-sandbox-windows-acl/src/runner.ts'))
+    const sourceEntry = fileURLToPath(import.meta.resolve('@arx-ai/arx-sandbox-windows-acl/src/runner.ts'))
     return [process.execPath, '--import', 'tsx/esm', sourceEntry]
   }
 }

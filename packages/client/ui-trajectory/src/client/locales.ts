@@ -20,7 +20,7 @@ export type TrajectoryKey =
   | 'toolbar.search'
   | 'toolbar.searchPlaceholder'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The trajectory view tab label and toolbar strings. */
     'trajectory': TrajectoryKey

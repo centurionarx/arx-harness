@@ -5,15 +5,15 @@ import { createPortal } from 'react-dom'
 import {
   indexSubagentDescendants, type SessionId, type SessionListState, type SessionProjectionMap,
   type SessionSummary, type SubagentAddress, type SubagentCatalogSnapshot,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import {
   IconChevronDownOutline14, IconChevronRightOutline14, IconRefreshOutline14, StateDot,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime, TranslateNS } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale, PropsRuntime, TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import { NS } from './locales.ts'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
-import type {} from '@centurionarx/cxh-subagent/client'
-import type {} from '@centurionarx/cxh-token-meter/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-subagent/client'
+import type {} from '@arx-ai/arx-token-meter/client'
 import css from './SubagentHeaderLineage.module.css'
 
 type CatalogEntry = SubagentCatalogSnapshot['entries'][number]

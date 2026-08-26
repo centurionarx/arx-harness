@@ -1,6 +1,6 @@
-/** Durable request-route lookup for one open model step. @module @centurionarx/cxh-llm-retry/history */
+/** Durable request-route lookup for one open model step. @module @arx-ai/arx-llm-retry/history */
 
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /**
  * Find the provider in force for one currently open step.

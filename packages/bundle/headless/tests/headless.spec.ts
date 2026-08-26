@@ -1,13 +1,13 @@
 /** Direct one-shot Agent driving, durable aggregation, flushing, and exit mapping. */
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@centurionarx/cxh-agent'
-import AgentDefaultModelConfig from '@centurionarx/cxh-agent-default-model'
-import { createAssistantMessage } from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session, UserMessage } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@arx-ai/arx-agent'
+import AgentDefaultModelConfig from '@arx-ai/arx-agent-default-model'
+import { createAssistantMessage } from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session, UserMessage } from '@arx-ai/arx-session'
 import { apply, Config, internals } from '../src/index.ts'
 
 const originalInternals = { ...internals }
@@ -167,7 +167,7 @@ describe('headless runner', () => {
     expect(await test.run()).toMatchObject({
       code: 1,
       out: '\n',
-      err: 'cxh: SERVER: provider unavailable\n',
+      err: 'arx: SERVER: provider unavailable\n',
     })
     await test.ctx.fiber.dispose()
   })
@@ -191,7 +191,7 @@ describe('headless runner', () => {
     ctx.provide('agents', { create: () => Promise.reject(new Error('factory exploded')) } as never)
     apply(ctx, { task: 't' })
     expect(await exited).toBe(1)
-    expect(err).toBe('cxh: factory exploded\n')
+    expect(err).toBe('arx: factory exploded\n')
     await ctx.fiber.dispose()
   })
 
@@ -213,7 +213,7 @@ describe('headless runner', () => {
     ctx.provide('agents', { create: () => rejected } as never)
     apply(ctx, { task: 't' })
     expect(await exited).toBe(1)
-    expect(err).toBe('cxh: factory exploded\n')
+    expect(err).toBe('arx: factory exploded\n')
     await ctx.fiber.dispose()
   })
 

@@ -1,5 +1,5 @@
-import type { Context } from '@centurionarx/cordis'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import { describe, expect, it, vi } from 'vitest'
 import { runFixtureTurn } from '../src/agent-turn.ts'
 

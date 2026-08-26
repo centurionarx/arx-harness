@@ -5,7 +5,7 @@
  * TODO(acp-subagent-replay): add snapshot-tier coverage with a separate replay fixture and
  * sessions root inside each child process. Current keyless coverage uses a scripted ACP child;
  * with-key coverage drives the real ACP example.
- * @module @centurionarx/cxh-subagent-acp/run
+ * @module @arx-ai/arx-subagent-acp/run
  */
 
 import { randomUUID } from 'node:crypto'
@@ -22,11 +22,11 @@ import {
   type SessionNotification,
   type StopReason,
 } from '@agentclientprotocol/sdk'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import { AssistantOutputFold } from '@centurionarx/cxh-subagent'
-import type { SubagentResult, SubagentRun, SubagentStartRequest, SubagentStopReason } from '@centurionarx/cxh-subagent'
-import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import { AssistantOutputFold } from '@arx-ai/arx-subagent'
+import type { SubagentResult, SubagentRun, SubagentStartRequest, SubagentStopReason } from '@arx-ai/arx-subagent'
+import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 
 /** Fixed response to child permission requests: reject by default, or select the first allow option. */
 export type PermissionPolicy = 'allow' | 'reject'
@@ -50,8 +50,8 @@ export interface AcpRunSpec {
    * `DEEPSEEK_API_KEY`). Merged on top of the subprocess seam's scrubbed
    * parent env. A value here is forwarded even if its name matches the
    * credential-scrub pattern (an explicit opt-in for the child's own creds).
-   * Explicit `CXH_*` entries are deployment-owned facts for the child harness
-   * (e.g. `CXH_PERMISSION_MODE`); they simply merge after the scrub that
+   * Explicit `ARX_*` entries are deployment-owned facts for the child harness
+   * (e.g. `ARX_PERMISSION_MODE`); they simply merge after the scrub that
    * dropped their stale ambient namesakes.
    */
   env: Record<string, string>
@@ -204,7 +204,7 @@ export async function startAcpRun(request: SubagentStartRequest, spec: AcpRunSpe
   const id = SessionId(randomUUID())
 
   // Keep diagnostics on parent stderr ('inherit'); only ACP output contributes
-  // to the result. The seam's scrub drops ambient credentials and CXH_* names
+  // to the result. The seam's scrub drops ambient credentials and ARX_* names
   // while spec.env (the child's own key, its deployment facts) merges after it.
   const child = spec.spawn({
     argv: [spec.command, ...spec.args],

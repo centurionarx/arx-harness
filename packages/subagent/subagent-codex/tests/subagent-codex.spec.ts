@@ -2,21 +2,21 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { fileURLToPath } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
 import * as yaml from 'js-yaml'
 import { describe, expect, it, vi } from 'vitest'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import type {
   SubprocessHandle,
   SubprocessOutcome,
   SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+} from '@arx-ai/arx-subprocess'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as codex from '../src/index.ts'
 import * as invariant from '../src/invariant.ts'
 import {
@@ -363,16 +363,16 @@ describe('task admission and package contracts', () => {
     const manifest = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')) as {
       dependencies?: Record<string, string>
       files?: string[]
-      cxh?: { bundle?: { patch?: string } }
+      arx?: { bundle?: { patch?: string } }
     }
-    expect(manifest.cxh?.bundle?.patch).toBe('./cordis.patch.yml')
+    expect(manifest.arx?.bundle?.patch).toBe('./cordis.patch.yml')
     expect(manifest.files).toContain('cordis.patch.yml')
     expect(manifest.dependencies).toHaveProperty(
-      '@centurionarx/cxh-sdk-protocol',
+      '@arx-ai/arx-sdk-protocol',
       'workspace:^',
     )
     expect(manifest.dependencies).toHaveProperty('@openai/codex', CODEX_VERSION)
-    expect(manifest.dependencies).not.toHaveProperty('@centurionarx/cxh-subagent-claude-code')
+    expect(manifest.dependencies).not.toHaveProperty('@arx-ai/arx-subagent-claude-code')
 
     const codexPackageJson = fileURLToPath(import.meta.resolve('@openai/codex/package.json'))
     const codexManifest = JSON.parse(readFileSync(codexPackageJson, 'utf8')) as {
@@ -404,13 +404,13 @@ describe('task admission and package contracts', () => {
       )
     }
 
-    const parsed = yaml.load(readFileSync(resolve(root, manifest.cxh!.bundle!.patch!), 'utf8'))
+    const parsed = yaml.load(readFileSync(resolve(root, manifest.arx!.bundle!.patch!), 'utf8'))
     const rows = Array.isArray(parsed)
       ? (parsed as Array<{ insert?: Array<{ id?: string; name?: string }> }>).flatMap(entry => entry.insert ?? [])
       : []
     expect(rows).toEqual([{
       id: 'subagent-codex',
-      name: '@centurionarx/cxh-subagent-codex',
+      name: '@arx-ai/arx-subagent-codex',
     }])
     expect(JSON.stringify(rows)).not.toContain('tool-subagent')
   })
@@ -465,7 +465,7 @@ describe('task admission and package contracts', () => {
     const spawnSpecs: SubprocessSpawnSpec[] = []
     vi.spyOn(ctx.subprocess, 'spawn').mockImplementation((spec) => {
       spawnSpecs.push(spec)
-      return spec.env?.CXH_CODEX_INSTANCE === 'safe'
+      return spec.env?.ARX_CODEX_INSTANCE === 'safe'
         ? safeChild.handle
         : bypassChild.handle
     })
@@ -479,13 +479,13 @@ describe('task admission and package contracts', () => {
     ctx.on('subagent/provider-removed', providerName => void removed.push(providerName))
     const safeFiber = await ctx.plugin(codex, {
       providerName: 'codex-safe',
-      env: { CXH_CODEX_INSTANCE: 'safe' },
+      env: { ARX_CODEX_INSTANCE: 'safe' },
       permissionMode: 'never',
       disposeGraceMs: 11,
     })
     const bypassFiber = await ctx.plugin(codex, {
       providerName: 'codex-bypass',
-      env: { CXH_CODEX_INSTANCE: 'bypass' },
+      env: { ARX_CODEX_INSTANCE: 'bypass' },
       permissionMode: 'dangerously-bypass-approvals-and-sandbox',
       disposeGraceMs: 29,
     })
@@ -535,7 +535,7 @@ describe('task admission and package contracts', () => {
       stopReason: 'aborted',
     })
     expect(spawnSpecs.map(spec => ({
-      instance: spec.env?.CXH_CODEX_INSTANCE,
+      instance: spec.env?.ARX_CODEX_INSTANCE,
       graceMs: spec.graceMs,
     }))).toEqual([
       { instance: 'safe', graceMs: 11 },
@@ -665,7 +665,7 @@ describe('task admission and package contracts', () => {
     const ctx = { invariants: { register } } as unknown as Context
     await expect(invariant.apply(ctx)).resolves.toBe(dispose)
     expect(register).toHaveBeenCalledWith(
-      '@centurionarx/cxh-subagent-codex',
+      '@arx-ai/arx-subagent-codex',
       expect.any(Function),
     )
     const install = register.mock.calls[0]![1]
@@ -686,8 +686,8 @@ describe('CodexAppServerWire', () => {
     const initialize = await child.peer.nextMethod('initialize')
     expect(initialize.params).toEqual({
       clientInfo: {
-        name: 'centurionarx-harness',
-        title: 'CENTURIONarx Harness',
+        name: 'arx-harness',
+        title: 'arx Harness',
         version: '0.0.1',
       },
       capabilities: {

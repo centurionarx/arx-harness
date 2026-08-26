@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import { Context } from '@centurionarx/cordis'
-import { SettingsSchemaService } from '@centurionarx/cxh-client-ui-settings/src/client/schema.ts'
-import { SettingsDescribeMirror } from '@centurionarx/cxh-client-ui-settings/src/client/settings-mirror.ts'
-import { SettingsScopeController } from '@centurionarx/cxh-client-ui-settings/src/client/settings-scope.ts'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
+import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
+import { SettingsScopeController } from '@arx-ai/arx-client-ui-settings/src/client/settings-scope.ts'
 
 /** Stateless schema service for scope construction in this jsdom fixture. */
 const schemaService = new SettingsSchemaService(new Context())
@@ -89,7 +89,7 @@ describe('WelcomeNotice', () => {
   it('uses the exact owner copy in both GUI locales', () => {
     expect(WELCOME_NOTICE_COPY.en).toEqual({
       title: 'Internal Testing Notice',
-      body: "CENTURIONarx Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. CENTURIONarx Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the CXH plugin ecosystem.",
+      body: "arx Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. arx Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the ARX plugin ecosystem.",
       continueLabel: 'Continue',
     })
     expect(en.welcomeBody).toBe(WELCOME_NOTICE_COPY.en.body)

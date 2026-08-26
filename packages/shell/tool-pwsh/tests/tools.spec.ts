@@ -4,33 +4,33 @@
  * registry. The fake executor makes every seam outcome scriptable — output
  * text, truncation, timeout, abort, nonzero exits, background handles — so
  * these tests verify the schema, argument validation, workdir derivation,
- * managed `CXH_*` collection, abort translation, canonical result projection,
+ * managed `ARX_*` collection, abort translation, canonical result projection,
  * sandbox denial rendering with the escalation surface, rendering,
  * background job wiring, and the UI presenters. Real-pwsh behavior
  * is pinned separately in integration.spec.ts.
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtempSync, realpathSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve as resolvePath } from 'node:path'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt, { renderPrompt } from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED, TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import ApprovalService from '@centurionarx/cxh-user-approval'
-import type { ApprovalOutcome } from '@centurionarx/cxh-user-approval'
-import { ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@centurionarx/cxh-shell'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import * as ToolPwsh from '@centurionarx/cxh-tool-pwsh'
-import * as BashEnvPlugin from '@centurionarx/cxh-shell-env'
-import type { ShellProcessRead } from '@centurionarx/cxh-shell'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt, { renderPrompt } from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED, TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import ApprovalService from '@arx-ai/arx-user-approval'
+import type { ApprovalOutcome } from '@arx-ai/arx-user-approval'
+import { ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@arx-ai/arx-shell'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import * as ToolPwsh from '@arx-ai/arx-tool-pwsh'
+import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
+import type { ShellProcessRead } from '@arx-ai/arx-shell'
 import { processOutcome } from '../src/background.ts'
 import { renderPwshProcessRead, renderPwshResult } from '../src/render.ts'
 
@@ -58,7 +58,7 @@ class FakeBash extends ShellExecutor {
       ...request.signal ? { signal: request.signal } : {},
       ...request.stdin !== undefined ? { stdin: request.stdin } : {},
       ...request.env !== undefined ? { env: request.env } : {},
-      ...request.cxhEnv !== undefined ? { cxhEnv: request.cxhEnv } : {},
+      ...request.arxEnv !== undefined ? { arxEnv: request.arxEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }
@@ -127,12 +127,12 @@ function killableProcess(): ShellProcess {
   return proc
 }
 
-async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, cxhHome?: string) {
+async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, arxHome?: string) {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentRegistry)
-  await ctx.plugin(BashEnvPlugin, cxhHome === undefined ? {} : { cxhHome })
+  await ctx.plugin(BashEnvPlugin, arxHome === undefined ? {} : { arxHome })
   await ctx.plugin(FakeBash)
   await ctx.plugin(ToolPwsh, toolConfig)
   const bash = ctx.shell as FakeBash
@@ -140,14 +140,14 @@ async function setup(toolConfig: Partial<ToolPwsh.Config> = {}, cxhHome?: string
 }
 
 /** Full harness: the generic job runtime + its controller, then the pwsh tool. */
-async function setupWithTasks(toolConfig: Partial<ToolPwsh.Config> = {}, cxhHome?: string) {
+async function setupWithTasks(toolConfig: Partial<ToolPwsh.Config> = {}, arxHome?: string) {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(LocalJobRegistry)
   await ctx.plugin(ToolTasks)
-  await ctx.plugin(BashEnvPlugin, cxhHome === undefined ? {} : { cxhHome })
+  await ctx.plugin(BashEnvPlugin, arxHome === undefined ? {} : { arxHome })
   await ctx.plugin(FakeBash)
   await ctx.plugin(ToolPwsh, toolConfig)
   const bash = ctx.shell as FakeBash
@@ -177,7 +177,7 @@ class ConfiningFakeBash extends ShellExecutor {
       timeoutMs: request.timeoutMs ?? 60_000,
       stdoutMaxBytes: request.stdoutMaxBytes ?? 64_000,
       ...request.signal ? { signal: request.signal } : {},
-      ...request.cxhEnv !== undefined ? { cxhEnv: request.cxhEnv } : {},
+      ...request.arxEnv !== undefined ? { arxEnv: request.arxEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }
@@ -350,9 +350,9 @@ describe('argument validation', () => {
 })
 
 describe('execution through the bash seam', () => {
-  it('forwards command, session cwd, timeout, and managed CXH_* environment', async () => {
-    const cxhHome = mkdtempSync(join(tmpdir(), 'cxh-tool-pwsh-home-'))
-    const { ctx, bash } = await setup({}, cxhHome)
+  it('forwards command, session cwd, timeout, and managed ARX_* environment', async () => {
+    const arxHome = mkdtempSync(join(tmpdir(), 'arx-tool-pwsh-home-'))
+    const { ctx, bash } = await setup({}, arxHome)
     bash.handler = () => runResult('hi\n')
     const agent = registerFakeAgent(ctx, 'session-1')
     Object.assign(agent.session.header, { cwd: '/sessions/s1' })
@@ -366,10 +366,10 @@ describe('execution through the bash seam', () => {
     expect(request?.command).toBe('Write-Output hi')
     expect(request?.workdir).toBe('/sessions/s1')
     expect(request?.timeoutMs).toBe(1234)
-    expect(request?.cxhEnv).toEqual({
-      CXH_HOME: cxhHome,
-      CXH_SHELL: '1',
-      CXH_SESSION_ID: 'session-1',
+    expect(request?.arxEnv).toEqual({
+      ARX_HOME: arxHome,
+      ARX_SHELL: '1',
+      ARX_SESSION_ID: 'session-1',
     })
     expect(bash.specs[0]?.workdir).toBe('/sessions/s1')
   })
@@ -390,11 +390,11 @@ describe('execution through the bash seam', () => {
     bash.handler = () => runResult('ok\n')
     await call(ctx, 'pwsh', { command: 'Write-Output ok', description: 'ok' })
     expect(bash.requests[0]).not.toHaveProperty('workdir')
-    const cxhEnv = bash.requests[0]?.cxhEnv
-    expect(cxhEnv).toBeDefined()
-    expect(cxhEnv?.['CXH_SHELL']).toBe('1')
-    expect(cxhEnv?.['CXH_HOME']).toEqual(expect.any(String))
-    expect(cxhEnv).not.toHaveProperty('CXH_SESSION_ID')
+    const arxEnv = bash.requests[0]?.arxEnv
+    expect(arxEnv).toBeDefined()
+    expect(arxEnv?.['ARX_SHELL']).toBe('1')
+    expect(arxEnv?.['ARX_HOME']).toEqual(expect.any(String))
+    expect(arxEnv).not.toHaveProperty('ARX_SESSION_ID')
   })
 
   it('forwards exec.signal into the resolved request', async () => {
@@ -501,7 +501,7 @@ describe('execution through the bash seam', () => {
 describe('per-call sandbox policy resolution', () => {
   it('stamps the CALLING SESSION\'s resolved policy onto the request (session cwd, not the server launch dir)', async () => {
     const { ctx, bash } = await setupSandboxed()
-    const sessionCwd = mkdtempSync(join(tmpdir(), 'cxh-tool-pwsh-policy-'))
+    const sessionCwd = mkdtempSync(join(tmpdir(), 'arx-tool-pwsh-policy-'))
     const agent = registerFakeAgent(ctx, 'policy-session')
     Object.assign(agent.session.header, { cwd: sessionCwd })
     const result = await call(ctx, 'pwsh', { command: 'Write-Output hi', description: 'say hi' }, agent)
@@ -744,7 +744,7 @@ describe('background execution through the job runtime', () => {
     const { ctx } = await setup() // no LocalJobRegistry / ToolTasks
     const result = await call(ctx, 'pwsh', { command: 'Start-Sleep -Seconds 60', description: 'test command', run_in_background: true })
     expect(result.isError).toBe(true)
-    expect(text(result)).toContain('background jobs unavailable: load @centurionarx/cxh-jobs and @centurionarx/cxh-tool-jobs')
+    expect(text(result)).toContain('background jobs unavailable: load @arx-ai/arx-jobs and @arx-ai/arx-tool-jobs')
   })
 
   it('a pre-aborted call is skipped before the process starts', async () => {

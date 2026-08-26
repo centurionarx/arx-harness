@@ -5,14 +5,14 @@
  * that are already showing, so a default set from one converges the other.
  */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { resolveSlotLabel } from '@centurionarx/cxh-client-ui-slots'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-agent-preset/client'
+import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-agent-preset/client'
 import { AgentPresetLabel } from '../src/client/AgentPresetLabel.tsx'
 import type { AgentPresetLabelInjected } from '../src/client/AgentPresetLabel.tsx'
 import { AgentPresetRow } from '../src/client/AgentPresetRow.tsx'

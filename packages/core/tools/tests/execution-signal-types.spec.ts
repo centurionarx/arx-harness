@@ -1,13 +1,13 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import { defineTool } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import { defineTool } from '@arx-ai/arx-tools'
 import type {
   ToolDispatchExecution,
   ToolExecution,
   ToolExecutionInput,
   ToolRunContext,
-} from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-tools'
 
 function inputAndExecutionContracts(
   input: ToolExecutionInput,

@@ -1,8 +1,8 @@
 /** Public Agent Teams identities, durable records, and service request values. */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
 
 /** Identifies the implicit team rooted at one top-level Session. */
 export type TeamId = Branded<'TeamId'>
@@ -115,7 +115,7 @@ export interface TeamMessageSource {
   readonly senderName: string
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     'team-message': TeamMessageSource
   }
@@ -200,7 +200,7 @@ export interface TeamWaitResult {
   readonly timedOut: boolean
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /** Whole teammate lifecycle value, stored only in the Team Lead Session. */
     'team/member': { version: 1; teamId: TeamId; member: TeamMemberSnapshot }

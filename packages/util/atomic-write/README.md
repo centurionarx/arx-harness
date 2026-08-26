@@ -1,22 +1,22 @@
-# cxh-atomic-write
+# arx-atomic-write
 
 English | [中文](README.zh.md)
 
-Zero-dependency atomic file replacement shared by file-backed stores that must never leave partial, symlink-hijacked, or wider-than-intended content on disk — the user-settings document (`cxh-settings-file`) and the credentials store (`cxh-credentials-local`).
+Zero-dependency atomic file replacement shared by file-backed stores that must never leave partial, symlink-hijacked, or wider-than-intended content on disk — the user-settings document (`arx-settings-file`) and the credentials store (`arx-credentials-local`).
 
 ## Surface
 
 ```ts
-import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
+import { withFileLock, writeFileAtomic } from '@arx-ai/arx-atomic-write'
 
 declare const text: string
 declare const render: (previous: string) => string
 
-await writeFileAtomic('/home/u/.cxh/settings.yaml', text, { mode: 0o600 })
+await writeFileAtomic('/home/u/.arx/settings.yaml', text, { mode: 0o600 })
 
 // Read-modify-write against the same file from several processes.
-await withFileLock('/home/u/.cxh/settings.yaml', async () => {
-  await writeFileAtomic('/home/u/.cxh/settings.yaml', render(text), { mode: 0o600 })
+await withFileLock('/home/u/.arx/settings.yaml', async () => {
+  await writeFileAtomic('/home/u/.arx/settings.yaml', render(text), { mode: 0o600 })
 })
 ```
 

@@ -1,6 +1,6 @@
 # Minimal keyless composition: real app, bash, and search tool; replayed model.
 - id: llm-replay
-  name: '@centurionarx/cxh-llm-replay'
+  name: '@arx-ai/arx-llm-replay'
   config:
     providers:
       - id: deepseek-official
@@ -9,17 +9,17 @@
           - id: deepseek-v4-pro
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
 
 - id: acp-agent
-  name: '@centurionarx/cxh-acp-demo'
+  name: '@arx-ai/arx-acp-demo'
   config:
     provider: deepseek-official
     model: deepseek-v4-pro
-    persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+    persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
     persistenceCompression: none
     workspaceContext: false
     skills:
@@ -29,7 +29,7 @@
     persona: You are a concise snapshot agent working in {{cwd}}.
 
 - id: tool-fs-search
-  name: '@centurionarx/cxh-tool-fs-search'
+  name: '@arx-ai/arx-tool-fs-search'
   config:
     sampleOverCapGlobResults: true
     globMaxResults: 4

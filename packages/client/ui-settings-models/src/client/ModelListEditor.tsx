@@ -16,8 +16,8 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import type { DiscoveredModelView, IApiClient } from '@centurionarx/cxh-api-remotes/client'
-import { Button, Modal } from '@centurionarx/cxh-client-ui-primitives'
+import type { DiscoveredModelView, IApiClient } from '@arx-ai/arx-api-remotes/client'
+import { Button, Modal } from '@arx-ai/arx-client-ui-primitives'
 import { formatCapacity, parseCapacity } from './DeepSeekModelsEditor.tsx'
 import type { DeepSeekModelDraft } from './DeepSeekModelsEditor.tsx'
 import { messageOf } from './store.ts'

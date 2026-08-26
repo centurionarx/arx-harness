@@ -6,11 +6,11 @@
  * backend write leaves memory untouched (no divergence between reads and the
  * medium), and events carry values that equal the in-memory state at
  * emission, in write order.
- * @module @centurionarx/cxh-storage-domain/src/domain
+ * @module @arx-ai/arx-storage-domain/src/domain
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { KvUnit } from '@centurionarx/cxh-storage'
+import type { Context } from '@arx-ai/cordis'
+import type { KvUnit } from '@arx-ai/arx-storage'
 import { DomainError } from './error.ts'
 import type { DomainSpec, DomainGlobalSpec, TableKeyOf, TableValueOf } from './spec.ts'
 import type { DomainChanged } from './events.ts'

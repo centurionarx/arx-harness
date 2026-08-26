@@ -1,8 +1,8 @@
 /** Deterministic provider-independent image normalization. */
 
 import sharp, { type Sharp } from 'sharp'
-import { AttachmentError } from '@centurionarx/cxh-attachment'
-import type { ImageMediaType } from '@centurionarx/cxh-attachment'
+import { AttachmentError } from '@arx-ai/arx-attachment'
+import type { ImageMediaType } from '@arx-ai/arx-attachment'
 import { encodeFirstWithinLimit, isExhaustedEncoding } from './encoding.ts'
 import { detectImage, encodedAlphaIsCompatible } from './image.ts'
 import type { DetectedImage } from './image.ts'

@@ -7,13 +7,13 @@
 // non-expandable rather than empty.
 
 import { memo, useState } from 'react'
-import type { CompactionSummaryNode } from '@centurionarx/cxh-client-runtime/client'
+import type { CompactionSummaryNode } from '@arx-ai/arx-client-runtime/client'
 import {
   IconApiOutline14,
   IconChevronDownOutline14,
   IconChevronRightOutline14,
   MarkdownText,
-} from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import css from './MessageItem.module.css'
 

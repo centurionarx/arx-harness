@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-cordis-client-runner`.
- * @module @centurionarx/cxh-cordis-client-runner/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-cordis-client-runner`.
+ * @module @arx-ai/arx-cordis-client-runner/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-cordis-client-runner'
+const PACKAGE_NAME = '@arx-ai/arx-cordis-client-runner'
 
 /** Cordis companion plugin name. */
 export const name = 'cordis-client-runner-invariant'

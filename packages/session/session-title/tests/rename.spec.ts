@@ -1,15 +1,15 @@
 // SessionTitleService.rename: user-source acceptance, normalization/rejection
 // boundaries, and the pin (a user-sourced latest title schedules no automatic
 // revision; explicit refresh stays the unpin).
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
 import SessionTitleService, {
   SessionTitleProviderId,
   foldSessionTitle,
   type SessionTitleProviderRequest,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,

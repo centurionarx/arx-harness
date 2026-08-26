@@ -1,17 +1,17 @@
 /**
  * Opt-in SQLite persistence provider. Logical sessions remain unchanged;
  * the physical backend packs eligible chunk runs into schema-17 rows.
- * @module @centurionarx/cxh-session-persistence-sqlite
+ * @module @arx-ai/arx-session-persistence-sqlite
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import type {
   SessionEvent,
   SessionHeader,
   SessionId,
   SessionPreparation,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import {
   DEFAULT_PREPARED_SESSION_CACHE_SIZE,
   DEFAULT_WRITE_BATCH_MAX_DELAY_MS,
@@ -21,7 +21,7 @@ import {
   type SessionInspection,
   type SessionLocation,
   type SessionPersistenceSnapshot,
-} from '@centurionarx/cxh-session-persistence'
+} from '@arx-ai/arx-session-persistence'
 import type { JournalMode } from './schema.ts'
 import { SqliteStore } from './store.ts'
 

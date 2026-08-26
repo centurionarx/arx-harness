@@ -8,15 +8,15 @@
 # disables the key-requiring DeepSeek adapter and inserts `llm-replay` to serve
 # recorded JSONL without a key or network.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: agent-spine
-        name: '@centurionarx/cxh-agent-spine-demo'
+        name: '@arx-ai/arx-agent-spine-demo'
         config:
           agents:
             - id: main
@@ -32,7 +32,7 @@
 
             Verify your work by running the code or tests. Keep answers brief and factual.
       - id: persistence
-        name: '@centurionarx/cxh-session-persistence-jsonl'
+        name: '@arx-ai/arx-session-persistence-jsonl'
         config:
           root: './.sessions'
           # Replay fixtures are raw JSONL; the whole-config patch must restate
@@ -40,10 +40,10 @@
           compression: none
       - insert:
           - id: code-runtime
-            name: '@centurionarx/cxh-code-runtime-worker-thread'
+            name: '@arx-ai/arx-code-runtime-worker-thread'
           - id: cordis-host-runner
-            name: '@centurionarx/cxh-cordis-host-runner'
+            name: '@arx-ai/arx-cordis-host-runner'
           - id: tool-cordis
-            name: '@centurionarx/cxh-tool-cordis'
+            name: '@arx-ai/arx-tool-cordis'
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'

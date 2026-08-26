@@ -16,7 +16,7 @@
  * over as a stream option, which `Models` presents to `resolve()` as the
  * credential key.
  *
- * @module cxh-llm-pi-ai/provider
+ * @module arx-llm-pi-ai/provider
  */
 
 import { createProvider } from '@earendil-works/pi-ai'

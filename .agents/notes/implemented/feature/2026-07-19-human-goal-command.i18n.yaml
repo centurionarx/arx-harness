@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-19-human-goal-command.md
-2026-07-19-human-goal-command.md: a53fa0d66b71bd47a0587b18f92bec864bba1c06
-2026-07-19-human-goal-command.zh.md: b8d5d0ef1811dca1a7fca14f1980b48bc9d1cccf
+2026-07-19-human-goal-command.md: 27cd2f8cc9d33f575a0493fe44f24d4c13a7a179
+2026-07-19-human-goal-command.zh.md: bcadb74bca82e85835122b80ae1aec285b050d25

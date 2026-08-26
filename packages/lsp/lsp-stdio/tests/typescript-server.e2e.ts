@@ -1,6 +1,6 @@
 /**
  * Keyless real-server e2e: drives the real `typescript-language-server` through the full
- * `ctx.lsp` → `cxh-lsp-stdio` stack over the base protocol, exercising all four operations. No API
+ * `ctx.lsp` → `arx-lsp-stdio` stack over the base protocol, exercising all four operations. No API
  * key needed — the server is a local dev dependency. This establishes one compatibility floor
  * (TypeScript), not a cross-language claim.
  */
@@ -9,11 +9,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { mkdtemp, mkdir, rm, writeFile, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import Lsp, { type LspQueryRequest, type LspQueryResult } from '@centurionarx/cxh-lsp'
-import * as LspLocal from '@centurionarx/cxh-lsp-stdio'
+import { Context } from '@arx-ai/cordis'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import Lsp, { type LspQueryRequest, type LspQueryResult } from '@arx-ai/arx-lsp'
+import * as LspLocal from '@arx-ai/arx-lsp-stdio'
 
 // The server binary is a dev dependency of this package; resolve its pnpm-hoisted .bin path.
 const serverBin = join(

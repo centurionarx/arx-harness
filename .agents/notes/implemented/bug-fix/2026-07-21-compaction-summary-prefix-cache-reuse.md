@@ -33,9 +33,9 @@ Auto-compaction always anchors at the surface head, so the shadowed region is th
 
 ## Consequences
 
-- **`cxh-compaction-basic`** owns `SummarizationInput`; the protected `summarize(input, agent, signal?)` hook signature changed (acceptable pre-release), and `region.ts` gained `buildSummarizationInput` folding `deriveEventMessage` over the shadowed seqs behind the header prefix.
-- **Dead render surface removed.** The old flattening path (`renderTranscript` / `renderContentBlocks` and its spec in `cxh-compaction`) had no remaining consumer and was deleted with its export.
-- **README model experience** for `cxh-compaction-basic` now documents the auxiliary request as the replayed prefix plus a trailing compaction-instruction message, and its KV-cache effect as reuse of the warm conversation prefix.
+- **`arx-compaction-basic`** owns `SummarizationInput`; the protected `summarize(input, agent, signal?)` hook signature changed (acceptable pre-release), and `region.ts` gained `buildSummarizationInput` folding `deriveEventMessage` over the shadowed seqs behind the header prefix.
+- **Dead render surface removed.** The old flattening path (`renderTranscript` / `renderContentBlocks` and its spec in `arx-compaction`) had no remaining consumer and was deleted with its export.
+- **README model experience** for `arx-compaction-basic` now documents the auxiliary request as the replayed prefix plus a trailing compaction-instruction message, and its KV-cache effect as reuse of the warm conversation prefix.
 - **The framed checkpoint output is unchanged**, so the landed `user/message` and every conversation-request snapshot are unaffected; only the auxiliary request's shape changed.
 
 ## Testing

@@ -6,8 +6,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import type { IApiClient } from '@centurionarx/cxh-api-remotes/client'
-import { SettingsDescribeMirror } from '@centurionarx/cxh-client-ui-settings/src/client/settings-mirror.ts'
+import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
+import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import {
   AGENT_PRESET_SETTINGS_NS, AgentPresetSettingsController, messageOf,
 } from '../src/client/settings-store.ts'

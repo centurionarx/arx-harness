@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentCancelCause, InboxTarget } from '@centurionarx/cxh-agent'
-import type { UserMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentCancelCause, InboxTarget } from '@arx-ai/arx-agent'
+import type { UserMessage } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import {
   ScheduleId,
   createAfterScheduleRecord,

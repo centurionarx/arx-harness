@@ -3,7 +3,7 @@
  * real CLI process under the shared subprocess owner, map only strict SDK
  * success to completion, and dispose to whole-tree quiescence.
  *
- * @module @centurionarx/cxh-subagent-claude-code/run
+ * @module @arx-ai/arx-subagent-claude-code/run
  */
 
 import { randomUUID } from 'node:crypto'
@@ -15,8 +15,8 @@ import {
   type SDKResultMessage,
   type SpawnOptions,
 } from '@anthropic-ai/claude-agent-sdk'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import {
   settleRunResult,
   subprocessRunHandle,
@@ -24,17 +24,17 @@ import {
   type SubagentRun,
   type SubagentStartRequest,
   type SubagentStopReason,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import {
   scrubbedParentEnv,
   type SubprocessHandle,
   type SubprocessOutcome,
   type SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-subprocess'
 import {
   claudeSpawnSpec,
   ManagedClaudeCodeProcess,
-} from '@centurionarx/cxh-claude-agent-sdk-process'
+} from '@arx-ai/arx-claude-agent-sdk-process'
 
 /** Default POSIX grace between subprocess termination tiers. */
 export const DEFAULT_DISPOSE_GRACE_MS = 3_000

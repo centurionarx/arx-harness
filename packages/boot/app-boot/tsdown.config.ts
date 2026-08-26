@@ -14,6 +14,6 @@ export default defineConfig({
   dts: false,
   clean: false,
   deps: {
-    alwaysBundle: ['@centurionarx/cordis-plugin-include'],
+    alwaysBundle: ['@arx-ai/cordis-plugin-include'],
   },
 })

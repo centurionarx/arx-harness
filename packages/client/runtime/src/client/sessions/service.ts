@@ -14,17 +14,17 @@
  * tears its scope down immediately unless it is the staged one, whose scope
  * survives frozen (read-only view) until the stage moves on.
  */
-import type { Context, Fiber } from '@centurionarx/cordis'
+import type { Context, Fiber } from '@arx-ai/cordis'
 import type {
   IApiClient, RpcError, RpcResult, SessionId, SubagentAddress, JobView, WorkspaceId,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 // Value import from the inline-safe wire layer (not the connection plugin):
 // plugin-to-plugin value imports are a bundle purity error.
-import { SESSION_SEARCH_RESULT_LIMIT } from '@centurionarx/cxh-host-apiproxy/api'
+import { SESSION_SEARCH_RESULT_LIMIT } from '@arx-ai/arx-host-apiproxy/api'
 import type {
   HostObservable, SessionMaybeProvideInfo, SessionProvideInfo,
-} from '@centurionarx/cxh-client-ui-slots'
-import type { SessionProjectionMap } from '@centurionarx/cxh-session-projection/types'
+} from '@arx-ai/arx-client-ui-slots'
+import type { SessionProjectionMap } from '@arx-ai/arx-session-projection/types'
 import type { SnapshotStore } from '../contract/store.ts'
 import { createSnapshotStore } from '../contract/store.ts'
 import type { SessionFace } from '../contract/session.ts'
@@ -144,7 +144,7 @@ export interface SessionBinding {
 }
 
 // Scope primitives live in ../agents/scope.ts (the client mirror of host
-// cxh-scope, keyed by Agent identity); re-exported here so existing
+// arx-scope, keyed by Agent identity); re-exported here so existing
 // consumers keep their import site.
 export { scopeOf } from '../agents/scope.ts'
 
@@ -283,7 +283,7 @@ export class SessionRuntime implements ISessions {
   ) {
     this.selection = createSnapshotStore<SessionSelection>(
       {},
-      { persist: { name: 'cxh.sessions.current' } })
+      { persist: { name: 'arx.sessions.current' } })
     const restored = this.selection.getSnapshot()
     const conversationEvents = rootCtx.get('conversationEvents')
     const conversationViews = rootCtx.get('conversationViews')

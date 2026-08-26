@@ -1,14 +1,14 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 
 /**
  * With-key proof that log-derived requests translate into real provider cache hits: a

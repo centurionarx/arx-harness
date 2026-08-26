@@ -7,9 +7,9 @@
 
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { isJsonValue } from '@centurionarx/cxh-session'
-import { parameterSchemaSpecToJsonSchema, validateArgs } from '@centurionarx/cxh-tools'
-import type { ParameterPropertySpec, ParameterSchemaSpec, ValueSchemaSpec } from '@centurionarx/cxh-tools'
+import { isJsonValue } from '@arx-ai/arx-session'
+import { parameterSchemaSpecToJsonSchema, validateArgs } from '@arx-ai/arx-tools'
+import type { ParameterPropertySpec, ParameterSchemaSpec, ValueSchemaSpec } from '@arx-ai/arx-tools'
 
 /** Remove parameter-only requiredness before nesting a schema as an array item. */
 function asValueSchema(prop: ParameterPropertySpec): ValueSchemaSpec {

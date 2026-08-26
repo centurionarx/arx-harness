@@ -2,11 +2,11 @@
  * Translation from the vendor SDK's message stream to the harness chunk
  * protocol.
  *
- * @module @centurionarx/cxh-llm-agent-cli/stream
+ * @module @arx-ai/arx-llm-agent-cli/stream
  */
 
 import type { SDKMessage } from '@anthropic-ai/claude-agent-sdk'
-import { CallId, type ContentBlock, type ContentBlockType, type StreamChunk, type TokenUsage } from '@centurionarx/cxh-llm'
+import { CallId, type ContentBlock, type ContentBlockType, type StreamChunk, type TokenUsage } from '@arx-ai/arx-llm'
 
 import { harnessToolName } from './tools.ts'
 

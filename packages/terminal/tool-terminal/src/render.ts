@@ -1,6 +1,6 @@
 /** Model and UI rendering for persistent terminal tool results. */
 
-import { TextRetainer } from '@centurionarx/cxh-output-retention'
+import { TextRetainer } from '@arx-ai/arx-output-retention'
 
 interface RenderedSessionStatusRunning {
   kind: 'running'

@@ -1,12 +1,12 @@
 /** Deterministic provider for model-visible foreground and Job diagnostic snapshots. */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import {
   NO_START_CAPABILITIES,
   type ResolvedSubagentStartRequest,
   type SubagentProvider,
-} from '@centurionarx/cxh-subagent'
-import { SessionId } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-subagent'
+import { SessionId } from '@arx-ai/arx-session'
 
 export const name = 'subagent-result-diagnostic'
 export const inject = ['subagents']

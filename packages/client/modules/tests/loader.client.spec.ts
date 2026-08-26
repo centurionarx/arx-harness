@@ -7,16 +7,16 @@
  * default transport hook, and the loud failure modes (duplicate
  * registration, cycles, table misses, double boot).
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply, createClientModuleSystem, parseBootManifest,
   type BootModuleRow, type ClientBundleRegistration, type ClientModuleCreateOptions,
-  type ClientModuleLoader, type ClientModuleLoaderTarget, type CxhWindow,
+  type ClientModuleLoader, type ClientModuleLoaderTarget, type ArxWindow,
 } from '../src/client/index.ts'
 
-const MODULES_ID = '@centurionarx/cxh-client-modules'
-const win = globalThis as CxhWindow
+const MODULES_ID = '@arx-ai/arx-client-modules'
+const win = globalThis as ArxWindow
 const bootstrapExports = { apply, createClientModuleSystem }
 
 type Factory = ClientBundleRegistration['factory']

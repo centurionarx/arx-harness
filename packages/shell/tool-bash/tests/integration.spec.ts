@@ -1,20 +1,20 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as ToolBash from '@centurionarx/cxh-tool-bash'
-import * as BashEnvPlugin from '@centurionarx/cxh-shell-env'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as ToolBash from '@arx-ai/arx-tool-bash'
+import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 
 /**
@@ -23,7 +23,7 @@ import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent
  * (tool/call + tool/result session events, the generic `ctx.jobs` runtime,
  * agent.inject completion notices).
  */
-async function harness(adapter: MockAdapter, sessionRoot?: string, cxhHome?: string) {
+async function harness(adapter: MockAdapter, sessionRoot?: string, arxHome?: string) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
   if (sessionRoot !== undefined) {
@@ -33,7 +33,7 @@ async function harness(adapter: MockAdapter, sessionRoot?: string, cxhHome?: str
   await ctx.plugin(LocalJobRegistry)
   await ctx.plugin(ToolTasks)
   await ctx.plugin(LocalSubprocessRuntime)
-  await ctx.plugin(BashEnvPlugin, cxhHome === undefined ? {} : { cxhHome })
+  await ctx.plugin(BashEnvPlugin, arxHome === undefined ? {} : { arxHome })
   await ctx.plugin(LocalBashExecutor, { timeoutMs: 10_000 })
   await ctx.plugin(ToolBash)
   ctx.llm.registerAdapter(['mock'], adapter)
@@ -94,18 +94,18 @@ async function pollUntil(predicate: () => boolean, timeoutMs = 5_000): Promise<v
 
 describe('bash tool through the agent loop', () => {
   it('first-turn bash receives session identity before the lazy JSONL file materializes', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'cxh-bash-session-env-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-bash-session-env-'))
     dirs.push(root)
-    const cxhHome = join(root, 'cxh-home')
-    vi.stubEnv('CXH_STALE_PARENT', 'stale')
+    const arxHome = join(root, 'arx-home')
+    vi.stubEnv('ARX_STALE_PARENT', 'stale')
     const adapter = new MockAdapter([
       toolCallResponse('call-1', 'bash', {
-        command: 'printf \'%s\\n%s\\n%s\\n%s\\n%s\\n\' "$CXH_HOME" "$CXH_SHELL" "$CXH_SESSION_ID" "$CXH_SESSION_JSONL" "${CXH_STALE_PARENT-unset}"; if [ -e "$CXH_SESSION_JSONL" ]; then printf \'present\\n\'; else printf \'absent\\n\'; fi',
+        command: 'printf \'%s\\n%s\\n%s\\n%s\\n%s\\n\' "$ARX_HOME" "$ARX_SHELL" "$ARX_SESSION_ID" "$ARX_SESSION_JSONL" "${ARX_STALE_PARENT-unset}"; if [ -e "$ARX_SESSION_JSONL" ]; then printf \'present\\n\'; else printf \'absent\\n\'; fi',
         description: 'inspect session environment',
       }),
       textResponse('Session environment inspected.'),
     ])
-    const ctx = await harness(adapter, root, cxhHome)
+    const ctx = await harness(adapter, root, arxHome)
     const handle = await ctx.agents.create({
       sessionId: SessionId('session-env-id'),
       agentOptions: { provider: 'mock', model: 'mock' },
@@ -118,7 +118,7 @@ describe('bash tool through the agent loop', () => {
     await waitForIdle(ctx, agent)
 
     const result = findEvent(events(agent), 'tool/result')
-    expect(resultText(result)).toBe(`${cxhHome}\n1\nsession-env-id\n${location?.path}\nunset\nabsent\n`)
+    expect(resultText(result)).toBe(`${arxHome}\n1\nsession-env-id\n${location?.path}\nunset\nabsent\n`)
     await ctx.sessions.flush(agent.session)
     expect(existsSync(location!.path)).toBe(true)
     const header = JSON.parse(readFileSync(location!.path, 'utf8').split('\n')[0]!) as { type: string; id: string }
@@ -181,7 +181,7 @@ describe('bash tool through the agent loop', () => {
     // claim, which folds the notice into a turn whose scripted reply is final:
     // the turn then closes with an empty next-step inbox and the collection
     // entries are never reached.
-    const dir = mkdtempSync(join(tmpdir(), 'cxh-bg-'))
+    const dir = mkdtempSync(join(tmpdir(), 'arx-bg-'))
     dirs.push(dir)
     const sentinel = join(dir, 'release')
     // The job id is deterministic (a fresh LocalJobRegistry counts per kind from 1),

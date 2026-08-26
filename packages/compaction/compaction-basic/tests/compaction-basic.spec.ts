@@ -1,18 +1,18 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
-import BasicCompactionEngine from '@centurionarx/cxh-compaction-basic'
-import type { BasicCompactionConfig } from '@centurionarx/cxh-compaction-basic'
-import { selectCompactableRange } from '@centurionarx/cxh-compaction-basic/src/region.ts'
-import type { SummarizationInput, SummaryResult } from '@centurionarx/cxh-compaction-basic/src/summarizer.ts'
-import { CompactionId, toolPairingBalancedAfter, toolPairingBalancedBefore } from '@centurionarx/cxh-compaction'
+import { Context } from '@arx-ai/cordis'
+import { AttachmentId } from '@arx-ai/arx-attachment'
+import BasicCompactionEngine from '@arx-ai/arx-compaction-basic'
+import type { BasicCompactionConfig } from '@arx-ai/arx-compaction-basic'
+import { selectCompactableRange } from '@arx-ai/arx-compaction-basic/src/region.ts'
+import type { SummarizationInput, SummaryResult } from '@arx-ai/arx-compaction-basic/src/summarizer.ts'
+import { CompactionId, toolPairingBalancedAfter, toolPairingBalancedBefore } from '@arx-ai/arx-compaction'
 import {
   resolveCompactSpec,
   resolveConfig,
   resolveTargetPolicy,
-} from '@centurionarx/cxh-compaction-basic/src/config.ts'
-import type { CompactionResult } from '@centurionarx/cxh-compaction'
-import LlmRuntime, { createUserMessage, CallId, CONTEXT_WINDOW_EXCEEDED_CODE, createToolResultMessage, LlmAdapter , createMessage } from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-compaction-basic/src/config.ts'
+import type { CompactionResult } from '@arx-ai/arx-compaction'
+import LlmRuntime, { createUserMessage, CallId, CONTEXT_WINDOW_EXCEEDED_CODE, createToolResultMessage, LlmAdapter , createMessage } from '@arx-ai/arx-llm'
 import type {
   ContentBlock,
   GenerateOptions,
@@ -21,11 +21,11 @@ import type {
   Message,
   StreamChunk,
   TokenUsage,
-} from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import { agentEvents, type Agent, type RequestErrorAction } from '@centurionarx/cxh-agent'
-import ToolResultPruner from '@centurionarx/cxh-compaction-tool-result-pruner'
+} from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import { agentEvents, type Agent, type RequestErrorAction } from '@arx-ai/arx-agent'
+import ToolResultPruner from '@arx-ai/arx-compaction-tool-result-pruner'
 
 const SIGNAL = new AbortController().signal
 const MODEL = 'test-model'

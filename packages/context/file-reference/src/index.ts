@@ -1,12 +1,12 @@
 /**
  * File-reference discovery seam shared by host-backed user interfaces.
  *
- * @module @centurionarx/cxh-file-reference
+ * @module @arx-ai/arx-file-reference
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { Remote, TypertRemoteService } from '@centurionarx/cxh-typert-protocol'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { Remote, TypertRemoteService } from '@arx-ai/arx-typert-protocol'
 
 import type { FileReferenceCandidate } from './types.ts'
 
@@ -17,7 +17,7 @@ export type { FileReferenceCandidate } from './types.ts'
 /** Model guidance for path-only references selected by a user interface. */
 export const FILE_REFERENCE_PROMPT = 'Paths prefixed with @ are files explicitly referenced by the user. Use the read tool when their contents are needed; do not claim to have inspected a file before reading it.'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     fileReferences: FileReferenceService
   }

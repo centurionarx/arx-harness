@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-deliverables
+# @arx-ai/arx-client-ui-deliverables
 
 English | [中文](README.zh.md)
 

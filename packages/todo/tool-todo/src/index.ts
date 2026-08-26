@@ -2,17 +2,17 @@
  * Model-facing whole-list replacement. Each call appends a `todo/write` snapshot to the calling
  * agent's session; replay is last-write-wins, and UIs render from session events. A non-agent
  * caller has no owning list and is rejected. Named exports preserve loader injection metadata.
- * @module @centurionarx/cxh-tool-todo
+ * @module @arx-ai/arx-tool-todo
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { z as zod } from 'zod'
 import type { ZodType } from 'zod'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { TodoItem } from '@centurionarx/cxh-session'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { TodoItem } from '@arx-ai/arx-session'
 // Type-only: resolves ctx.sessionProjections for the optional unit child.
-import type {} from '@centurionarx/cxh-session-projection'
+import type {} from '@arx-ai/arx-session-projection'
 // The `todos` projection-key declaration lives in src/types.ts (its one home);
 // this re-export projects the type face onto the package root AND keeps the
 // module edge in the emitted index.d.ts, so aggregate programs consuming the

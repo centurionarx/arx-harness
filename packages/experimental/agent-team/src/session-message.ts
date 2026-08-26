@@ -1,7 +1,7 @@
 /** Durable Session-message acceptance checks shared by provisioning and mailbox recovery. */
 
-import type { UserMessage } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { UserMessage } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 type InboxProjection = Record<'next-turn' | 'next-step', UserMessage[]>
 

@@ -1,7 +1,7 @@
 /** Web Session-log download command over the host endpoint owned by ApiProxy. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { CommandResult } from '@centurionarx/cxh-commands'
+import type { Context } from '@arx-ai/cordis'
+import type { CommandResult } from '@arx-ai/arx-commands'
 
 export const name = 'session-log-download'
 export const inject = ['commands']

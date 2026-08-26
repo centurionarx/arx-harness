@@ -1,8 +1,8 @@
-import { Context, Service } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { z } from 'zod'
-import type { ConnectionHandle } from '@centurionarx/cxh-client-connection/client'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 import type {
   InvocationDescriptor,
   RemoteResult,
@@ -10,12 +10,12 @@ import type {
   TypertContext,
   TypertRemoteScopeApi,
   TypertRemoteNamespace,
-} from '@centurionarx/cxh-typert-protocol'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+} from '@arx-ai/arx-typert-protocol'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 import type { ClientRemote } from '../src/client/index.ts'
 import { apply, inject } from '../src/client/index.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * Test-only forwarded Host event.
@@ -35,7 +35,7 @@ declare module '@centurionarx/cordis' {
   }
 }
 
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   interface TypertRemoteEventSelection extends Record<'fixture/changed' | 'fixture/idle', true> {}
 
   interface TypertContextMap {

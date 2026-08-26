@@ -1,11 +1,11 @@
 /** Cordis dynamic-plugin cards, inventory panel, business-view host, and `@pluginId` source. */
 
-import type { ClientContext, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-tool/client'
-import type {} from '@centurionarx/cxh-client-locale/client'
-import type {} from '@centurionarx/cxh-client-ui-sidebar/client'
-import type {} from '@centurionarx/cxh-api-remotes/client'
-import type { InputTriggerService, InputTriggerSource } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-tool/client'
+import type {} from '@arx-ai/arx-client-locale/client'
+import type {} from '@arx-ai/arx-client-ui-sidebar/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
+import type { InputTriggerService, InputTriggerSource } from '@arx-ai/arx-client-ui-input-trigger/client'
 import type {} from './events.ts'
 import { CordisActionRow } from './CordisActionRow.tsx'
 import { CordisDefineRow } from './CordisDefineRow.tsx'

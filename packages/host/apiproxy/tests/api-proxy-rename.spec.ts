@@ -8,17 +8,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore from '@centurionarx/cxh-session'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SessionTitleService from '@centurionarx/cxh-session-title'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { Session, SessionId } from '@centurionarx/cxh-session'
-import type { RpcRequest } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+import { Context } from '@arx-ai/cordis'
+import SessionStore from '@arx-ai/arx-session'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SessionTitleService from '@arx-ai/arx-session-title'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { Session, SessionId } from '@arx-ai/arx-session'
+import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 

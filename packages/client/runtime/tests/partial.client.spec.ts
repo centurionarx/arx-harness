@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import type { StreamChunk } from '@centurionarx/cxh-api-remotes/client'
+import type { StreamChunk } from '@arx-ai/arx-api-remotes/client'
 import { PartialAccumulator } from '../src/client/sessions/partial.ts'
 
 const chunk = (c: Record<string, unknown>): StreamChunk => c as unknown as StreamChunk

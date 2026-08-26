@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, CallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionEvent, SessionId, TurnEndReason, type UserMessage } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture, type PostToolDecision } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, CallId, LlmError, MessageSource, ProviderRequestId, StreamChunk  } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionEvent, SessionId, TurnEndReason, type UserMessage } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture, type PostToolDecision } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { ReactLoopAgent } from '../src/agent.ts'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as AgentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import * as AgentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
 
 async function mountInvariants(ctx: Context): Promise<void> {
@@ -810,7 +810,7 @@ describe('turn and step boundary recovery', () => {
     expect(adapter.requests).toHaveLength(1)
     expect(errors.map(error => error.message)).toEqual([
       'reject first step-end',
-      'invariant violated by "@centurionarx/cxh-session": turn/end 1 while step 1 is still open',
+      'invariant violated by "@arx-ai/arx-session": turn/end 1 while step 1 is still open',
     ])
     expect(boundaryCounts(agent)).toMatchObject({
       turnStart: 1,

@@ -1,8 +1,8 @@
 // Web e2e scenario: at the 800×720 viewport the plan chip and the model
 // trigger keep disjoint click areas, and clicking the chip at its center
 // leaves plan mode through the real command channel. This is the browser
-// regression the external report asked for (cxh-external/issues#107 →
-// centurionarx-harness#1406): "increase an 800×720 browser regression test and
+// regression the external report asked for (arx-external/issues#107 →
+// arx-harness#1406): "increase an 800×720 browser regression test and
 // assert that the plan center hits the plan button".
 //
 // Plan mode is entered through the real /plan command with no argument:
@@ -28,8 +28,8 @@ import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 // Type-only: pulls the plan/mode SessionEventMap merge so the discriminant
 // filter below types as the plan-mode event in the host aggregate.
-import type {} from '@centurionarx/cxh-plan-mode'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type {} from '@arx-ai/arx-plan-mode'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import {
   assertFixtureInventory, compareOrRefreshGolden,
   launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold,

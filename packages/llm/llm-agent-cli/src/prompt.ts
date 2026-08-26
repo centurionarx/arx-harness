@@ -1,10 +1,10 @@
 /**
  * Rendering of harness messages into what the vendor CLI accepts as input.
  *
- * @module @centurionarx/cxh-llm-agent-cli/prompt
+ * @module @arx-ai/arx-llm-agent-cli/prompt
  */
 
-import { LlmError, type ContentBlock, type Message } from '@centurionarx/cxh-llm'
+import { LlmError, type ContentBlock, type Message } from '@arx-ai/arx-llm'
 
 /** Flatten a tool result's own blocks into the text the vendor carries. */
 function toolResultText(content: readonly ContentBlock[]): string {

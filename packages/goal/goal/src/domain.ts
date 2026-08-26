@@ -2,12 +2,12 @@
  * Host-side vocabulary of the goal domain: live views, durable change
  * payloads, message attribution, replay folds, and the scoped `goal/changed`
  * event. Kept separate from ./types.ts (the pure client-safe outlet) because
- * these declarations pull cxh-agent, cxh-llm, and cordis into the program —
+ * these declarations pull arx-agent, arx-llm, and cordis into the program —
  * the one-program-per-side layout forbids that on client aggregates.
- * @module @centurionarx/cxh-goal
+ * @module @arx-ai/arx-goal
  */
 
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Agent } from '@arx-ai/arx-agent'
 import type { GoalId, GoalRef, GoalSnapshot, GoalView } from './types.ts'
 
 /** Goal state-changing verbs recorded in the durable source change. */
@@ -52,13 +52,13 @@ export interface GoalMessageSource {
   readonly round: number
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     goal: GoalMessageSource
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Complete post-mutation goal state or clear tombstone.
@@ -101,16 +101,16 @@ export type GoalErrorCode =
   | 'GOAL_INVALID_EDIT'
   | 'GOAL_INVALID_TRANSITION'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * Goal mutation accepted by one live agent. The matching `goal/change`
      * session event has already committed. Listener failures are contained.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`): agent-scoped listeners receive only that agent.
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`): agent-scoped listeners receive only that agent.
      * @param payload.agent - agent whose session owns the goal.
      * @param payload.change - fresh current projection or clear tombstone.
      * @mode emit
      */
-    'goal/changed'(this: import('@centurionarx/cxh-scope').Scoped<Agent>, payload: { agent: Agent; change: GoalChanged }): void
+    'goal/changed'(this: import('@arx-ai/arx-scope').Scoped<Agent>, payload: { agent: Agent; change: GoalChanged }): void
   }
 }

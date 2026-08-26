@@ -1,8 +1,8 @@
 /** Live/persisted logical-corpus resolution for session-query. */
 
-import type { Context, Fiber } from '@centurionarx/cordis'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type SessionPersistence from '@centurionarx/cxh-session-persistence'
+import type { Context, Fiber } from '@arx-ai/cordis'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type SessionPersistence from '@arx-ai/arx-session-persistence'
 import type { SessionRecord } from './types.ts'
 import { SessionQueryError } from './config.ts'
 import { assertSessionHeadersCompatible } from './sources.ts'

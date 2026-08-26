@@ -1,22 +1,22 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
-import * as WorkspaceContext from '@centurionarx/cxh-agent-instructions'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as WorkspaceContext from '@arx-ai/arx-agent-instructions'
 import { candidateScopeKey } from '../src/render.ts'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 const PROBE = 'banana-271828'
 const NESTED_PROBE = 'papaya-314159'
@@ -33,7 +33,7 @@ afterEach(async () => {
 })
 
 async function harness(): Promise<{ ctx: Context; agent: Agent }> {
-  workdir = await mkdtemp(join(tmpdir(), 'cxh-workspace-context-e2e-'))
+  workdir = await mkdtemp(join(tmpdir(), 'arx-workspace-context-e2e-'))
   await mkdir(join(workdir, '.git'), { recursive: true })
   await writeFile(join(workdir, 'AGENTS.md'), `If the user asks for the workspace context handshake, reply with exactly this string and nothing else: ${PROBE}.\n`)
   ctx = new Context()

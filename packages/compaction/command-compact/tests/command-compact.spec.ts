@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import type { Agent } from '@centurionarx/cxh-agent'
-import CommandRuntime, { type CommandResult } from '@centurionarx/cxh-commands'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import type { Agent } from '@arx-ai/arx-agent'
+import CommandRuntime, { type CommandResult } from '@arx-ai/arx-commands'
 import {
   CompactionId,
   CompactionEngine,
@@ -11,9 +11,9 @@ import {
   type CompactionResult,
   type CompactionTrigger,
   type ManualCompactAgentContext,
-} from '@centurionarx/cxh-compaction'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import * as commandCompact from '@centurionarx/cxh-command-compact'
+} from '@arx-ai/arx-compaction'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import * as commandCompact from '@arx-ai/arx-command-compact'
 
 const COMPACTION_ID = CompactionId('command-compact-test')
 
@@ -153,7 +153,7 @@ function expectLastLifecycle(
   return runEvent.data.commandId
 }
 
-describe('@centurionarx/cxh-command-compact registration', () => {
+describe('@arx-ai/arx-command-compact registration', () => {
   it('registers one argument-free command with Loader-safe exports and disposes it', async () => {
     const test = await harness()
     expect(commandCompact.name).toBe('command-compact')

@@ -1,4 +1,4 @@
-import { Service } from '@centurionarx/cordis'
+import { Service } from '@arx-ai/cordis'
 
 /** Shared lifecycle and stable-entry storage for one Conversation Definition registry. */
 export abstract class ConversationDefinitionRegistry<Definition> extends Service {

@@ -13,7 +13,7 @@
  * NOTE: ./suite.ts imports vitest, so this package is importable only inside a
  * vitest run — a support-tier constraint stated in the README.
  *
- * @module @centurionarx/cxh-acp-snapshot
+ * @module @arx-ai/arx-acp-snapshot
  */
 
 export {

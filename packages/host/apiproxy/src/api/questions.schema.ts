@@ -5,12 +5,12 @@
  */
 
 import { z } from 'zod'
-import type { AskUserQuestionAnswer } from '@centurionarx/cxh-user-questions/types'
+import type { AskUserQuestionAnswer } from '@arx-ai/arx-user-questions/types'
 import type { QuestionResponsePayload } from './questions.ts'
 import type { Wire } from './rpc.schema.ts'
 import { sessionIdSchema } from './sessions.schema.ts'
 
-/** AskUserQuestionAnswer validated strictly against core cxh-user-questions. */
+/** AskUserQuestionAnswer validated strictly against core arx-user-questions. */
 export const askUserQuestionAnswerSchema = z.object({
   answers: z.array(z.object({
     id: z.string(),

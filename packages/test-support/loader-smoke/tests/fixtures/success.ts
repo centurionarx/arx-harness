@@ -8,8 +8,8 @@ process.stdin.on('end', () => {
     configPath: process.argv[2],
     args: process.argv.slice(2),
     cwd: process.cwd(),
-    cxhHome: process.env.CXH_HOME,
-    agentsHome: process.env.CXH_AGENTS_HOME,
+    arxHome: process.env.ARX_HOME,
+    agentsHome: process.env.ARX_AGENTS_HOME,
     marker: process.env.LOADER_SMOKE_MARKER,
     input,
   }))

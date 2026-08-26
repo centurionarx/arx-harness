@@ -6,10 +6,10 @@ import { realpath } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
-import { Context } from '@centurionarx/cordis'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import { deadline } from '@centurionarx/cxh-timeout'
-import { canonicalizeWorkspace, readHostSource } from '@centurionarx/cxh-lsp-stdio'
+import { Context } from '@arx-ai/cordis'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import { deadline } from '@arx-ai/arx-timeout'
+import { canonicalizeWorkspace, readHostSource } from '@arx-ai/arx-lsp-stdio'
 
 const execFileAsync = promisify(execFile)
 

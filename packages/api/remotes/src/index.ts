@@ -1,18 +1,18 @@
 /** Host BFF entry and Loader shell for the Remote contribution assembly. */
 
-import type { TypertForwardableEvent } from '@centurionarx/cxh-typert-protocol'
+import type { TypertForwardableEvent } from '@arx-ai/arx-typert-protocol'
 import { API_REMOTE_FORWARDED_EVENTS } from './remote-events.ts'
 
 // The owner packages' client-safe `./types` exports carry the cordis `Events`
 // declarations for every allowlisted event. Pulling them into this face is what
 // makes the shape assertion below judge real signatures rather than an empty
 // event vocabulary.
-import type {} from '@centurionarx/cxh-commands/types'
-import type {} from '@centurionarx/cxh-cordis-host-runner/types'
-import type {} from '@centurionarx/cxh-credentials/types'
-import type {} from '@centurionarx/cxh-llm/types'
-import type {} from '@centurionarx/cxh-agent-presets/types'
-import type {} from '@centurionarx/cxh-settings/types'
+import type {} from '@arx-ai/arx-commands/types'
+import type {} from '@arx-ai/arx-cordis-host-runner/types'
+import type {} from '@arx-ai/arx-credentials/types'
+import type {} from '@arx-ai/arx-llm/types'
+import type {} from '@arx-ai/arx-agent-presets/types'
+import type {} from '@arx-ai/arx-settings/types'
 
 export {
   ApiRemoteSessionNotFound,

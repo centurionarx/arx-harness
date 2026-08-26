@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import type { TurnEndReason } from '@centurionarx/cxh-session'
-import { foldConsumedWork } from '@centurionarx/cxh-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import type { TurnEndReason } from '@arx-ai/arx-session'
+import { foldConsumedWork } from '@arx-ai/arx-agent'
 
 /** One pending message, as the inbox records it. */
 function message(text: string) {

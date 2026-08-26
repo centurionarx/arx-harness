@@ -2,26 +2,26 @@
 # fixture server stay real (the tool call re-executes the actual HTTP fetch and
 # markdown rendering); only the model adapter is replaced by replay.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - insert:
           - id: web
-            name: '@centurionarx/cxh-web'
+            name: '@arx-ai/arx-web'
           - id: web-fetch-http
-            name: '@centurionarx/cxh-web-fetch-http'
+            name: '@arx-ai/arx-web-fetch-http'
           - id: web-fetch-fixture
             name: './web-fetch-fixture-server.mjs'
           - id: tool-web
-            name: '@centurionarx/cxh-tool-web'
+            name: '@arx-ai/arx-tool-web'
             config:
               search: false
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official

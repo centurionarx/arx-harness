@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-file-reference`.
- * @module @centurionarx/cxh-file-reference/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-file-reference`.
+ * @module @arx-ai/arx-file-reference/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-file-reference'
+const PACKAGE_NAME = '@arx-ai/arx-file-reference'
 
 /** Cordis companion plugin name. */
 export const name = 'file-reference-invariant'

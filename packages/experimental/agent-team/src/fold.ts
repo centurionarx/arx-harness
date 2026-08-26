@@ -1,9 +1,9 @@
 /** Strict replay fold for Agent Teams log-only events. */
 
 import { z } from 'zod'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionEventMap } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionEventMap } from '@arx-ai/arx-session'
 import type {
   TeamId,
   TeamMemberSnapshot,

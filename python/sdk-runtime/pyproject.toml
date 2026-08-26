@@ -3,28 +3,28 @@ requires = ["hatchling==1.30.1"]
 build-backend = "hatchling.build"
 
 [project]
-name = "centurionarx-harness-runtime-bin"
+name = "arx-harness-runtime-bin"
 version = "0.0.0.dev0"
-description = "Pinned CENTURIONarx Harness runtime for the Python SDK"
+description = "Pinned arx Harness runtime for the Python SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "DeepSeek" }]
 
 [project.urls]
-Homepage = "https://github.com/centurionarx/centurionarx-harness"
-Documentation = "https://github.com/centurionarx/centurionarx-harness/blob/master/python/sdk-runtime/README.md"
-Issues = "https://github.com/centurionarx/centurionarx-harness/issues"
-Source = "https://github.com/centurionarx/centurionarx-harness"
+Homepage = "https://github.com/arx-ai/arx-harness"
+Documentation = "https://github.com/arx-ai/arx-harness/blob/master/python/sdk-runtime/README.md"
+Issues = "https://github.com/arx-ai/arx-harness/issues"
+Source = "https://github.com/arx-ai/arx-harness"
 
 # Include the injected executable and default config; exclude the dev-only node
 # closure from wheels and sdists.
 [tool.hatch.build]
-artifacts = ["src/centurionarx_harness_runtime/runtime/cxh-jsonrpc-agent-*"]
-exclude = ["src/centurionarx_harness_runtime/runtime/node"]
+artifacts = ["src/arx_harness_runtime/runtime/arx-jsonrpc-agent-*"]
+exclude = ["src/arx_harness_runtime/runtime/node"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/centurionarx_harness_runtime"]
+packages = ["src/arx_harness_runtime"]
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 

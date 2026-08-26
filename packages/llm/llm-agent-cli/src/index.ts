@@ -2,10 +2,10 @@
  * Cordis plugin registering vendor-CLI model routes on the shared `llm`
  * service.
  *
- * @module @centurionarx/cxh-llm-agent-cli
+ * @module @arx-ai/arx-llm-agent-cli
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 
 import { AgentCliAdapter } from './adapter.ts'
 import { Config, resolveRoutes } from './config.ts'

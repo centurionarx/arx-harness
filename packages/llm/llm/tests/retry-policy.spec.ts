@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   resolveRetryPolicy,
   RetryPolicySchema,
-} from '@centurionarx/cxh-llm'
-import type { RetryPolicyConfig } from '@centurionarx/cxh-llm'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-llm'
+import type { RetryPolicyConfig } from '@arx-ai/arx-llm'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 
 describe('provider retry policy', () => {
   it('resolves immutable normal defaults', () => {

@@ -5,8 +5,8 @@
  * RpcReceipt carrier receipt as the HTTP response body; the final outcome arrives in the resolved frame.
  */
 
-import type { ApprovalRequestId } from '@centurionarx/cxh-user-approval/types'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { ApprovalRequestId } from '@arx-ai/arx-user-approval/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /**
  * Approval answer payload (the result.value slot of a client-response). outcome accepts only

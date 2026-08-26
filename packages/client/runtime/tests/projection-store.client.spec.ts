@@ -8,7 +8,7 @@
  * list rows' title projection).
  */
 import { describe, expect, it } from 'vitest'
-import type { SessionId } from '@centurionarx/cxh-api-remotes/client'
+import type { SessionId } from '@arx-ai/arx-api-remotes/client'
 import { ProjectionValueStore } from '../src/client/sessions/projection-store.ts'
 import { Session } from '../src/client/sessions/session.ts'
 import { SessionManager } from '../src/client/sessions/manager.ts'
@@ -17,7 +17,7 @@ import { entries, plainTurn } from './event-script.client.ts'
 
 // Test-domain keys merged into the projection map (the Service Definition package's
 // pure-type outlet), the same way domain host plugins merge theirs.
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionMap {
     'test/marks': { marks: string[] }
   }

@@ -1,20 +1,20 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-agent-presets`.
- * @module @centurionarx/cxh-agent-presets/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-agent-presets`.
+ * @module @arx-ai/arx-agent-presets/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 // Type-only: resolves the `system-prompt/assemble` waterfall this companion
-// joins, and the `agent` field `cxh-agent` merges into its context.
-import type {} from '@centurionarx/cxh-system-prompt'
-import type {} from '@centurionarx/cxh-agent'
+// joins, and the `agent` field `arx-agent` merges into its context.
+import type {} from '@arx-ai/arx-system-prompt'
+import type {} from '@arx-ai/arx-agent'
 // Imported through the package name, not `./mount.ts`: a module shared between
 // the two build entry points becomes a third chunk that the published `files`
 // list does not carry, which `verify-built-package-invariants` rejects.
-import { leakedServices, livePresetMounts } from '@centurionarx/cxh-agent-presets'
+import { leakedServices, livePresetMounts } from '@arx-ai/arx-agent-presets'
 
-const PACKAGE_NAME = '@centurionarx/cxh-agent-presets'
+const PACKAGE_NAME = '@arx-ai/arx-agent-presets'
 
 /** Cordis companion plugin name. */
 export const name = 'agent-presets-invariant'

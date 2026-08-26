@@ -1,8 +1,8 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { SettingsNamespaceView } from '@centurionarx/cxh-api-remotes/client'
-import { SettingsSchemaService } from '@centurionarx/cxh-client-ui-settings/src/client/schema.ts'
-import { SettingsDescribeMirror } from '@centurionarx/cxh-client-ui-settings/src/client/settings-mirror.ts'
+import type { SettingsNamespaceView } from '@arx-ai/arx-api-remotes/client'
+import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
+import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import {
   PermissionPresetSettingsController, permissionDefaultOf,
 } from '../src/client/settings-store.ts'

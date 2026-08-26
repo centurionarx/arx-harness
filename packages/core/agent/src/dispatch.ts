@@ -3,13 +3,13 @@
  * {@link agentEvents} couples the agent subject to its scope carrier, so the
  * scope key and the payload's `agent` cannot diverge; repeat dispatchers (the
  * loop driver) build it once in the agent's constructor and reuse it.
- * @module @centurionarx/cxh-agent/dispatch
+ * @module @arx-ai/arx-agent/dispatch
  */
 
-import type { Context, Events } from '@centurionarx/cordis'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import type { Scoped } from '@centurionarx/cxh-scope'
-import type { AssembleContext } from '@centurionarx/cxh-system-prompt'
+import type { Context, Events } from '@arx-ai/cordis'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import type { Scoped } from '@arx-ai/arx-scope'
+import type { AssembleContext } from '@arx-ai/arx-system-prompt'
 import type { Agent } from './runtime-types.ts'
 
 /** Extract the parameter tuple from an event handler type (its `this` is not part of the tuple). */

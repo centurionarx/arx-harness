@@ -5,8 +5,8 @@ import type {
   SubprocessOutcome,
   SubprocessTerminalForeground,
   SubprocessTerminalHandle,
-} from '@centurionarx/cxh-subprocess'
-import { TerminalError } from '@centurionarx/cxh-terminal'
+} from '@arx-ai/arx-subprocess'
+import { TerminalError } from '@arx-ai/arx-terminal'
 import type {
   TerminalBackendSession,
   TerminalReadRequest,
@@ -19,7 +19,7 @@ import type {
   TerminalSignal,
   TerminalSignalResult,
   TerminalWaitReason,
-} from '@centurionarx/cxh-terminal'
+} from '@arx-ai/arx-terminal'
 import type { ResolvedConfig } from './config.ts'
 import { CONTROLLED_PROMPT, TerminalSanitizer } from './sanitize.ts'
 

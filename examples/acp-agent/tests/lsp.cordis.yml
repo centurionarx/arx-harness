@@ -1,15 +1,15 @@
 # Exercise the model-facing LSP tool through the shipped ACP app and Loader entry path.
 # The scenario workspace supplies the deterministic stdio server used by this test composition.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ../cordis.yml
     patches:
       - insert:
           - id: lsp
-            name: '@centurionarx/cxh-lsp'
+            name: '@arx-ai/arx-lsp'
           - id: lsp-stdio
-            name: '@centurionarx/cxh-lsp-stdio'
+            name: '@arx-ai/arx-lsp-stdio'
             config:
               servers:
                 fixture:
@@ -18,8 +18,8 @@
                   extensionToLanguage:
                     '.ts': typescript
           - id: timeout-policy
-            name: '@centurionarx/cxh-tool-call-timeout-policy'
+            name: '@arx-ai/arx-tool-call-timeout-policy'
           - id: tool-lsp
-            name: '@centurionarx/cxh-tool-lsp'
+            name: '@arx-ai/arx-tool-lsp'
             config:
               maxLocations: 1

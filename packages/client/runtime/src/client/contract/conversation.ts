@@ -1,5 +1,5 @@
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type { ToolEventView } from '@centurionarx/cxh-api-remotes/client'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type { ToolEventView } from '@arx-ai/arx-api-remotes/client'
 
 /* oxlint-disable typescript/no-duplicate-type-constituents, typescript/no-redundant-type-constituents --
  * The unaugmented declaration-merge maps intentionally resolve to never in the Runtime program;

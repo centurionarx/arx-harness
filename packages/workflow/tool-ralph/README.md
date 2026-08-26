@@ -1,4 +1,4 @@
-# @centurionarx/cxh-tool-ralph
+# @arx-ai/arx-tool-ralph
 
 English | [中文](README.zh.md)
 
@@ -59,7 +59,7 @@ Prefix-stable while the plugin scope and guidance text are unchanged. Activation
 
 #### What the model sees
 
-The generated [`ralph` schema](../../../docs/tool-catalog.md#centurionarxcxh-tool-ralph) exposes one required `objective` string and one optional `maxRounds` number. Provider choice, handoff size, report schema, workflow script, and orchestration behavior are deployment-owned and absent from the call schema.
+The generated [`ralph` schema](../../../docs/tool-catalog.md#arx-aiarx-tool-ralph) exposes one required `objective` string and one optional `maxRounds` number. Provider choice, handoff size, report schema, workflow script, and orchestration behavior are deployment-owned and absent from the call schema.
 
 #### Token effect
 

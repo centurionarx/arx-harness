@@ -1,7 +1,7 @@
-/** OpenAI-compatible DeepSeek Files API transport. @module cxh-llm-deepseek/files-api */
+/** OpenAI-compatible DeepSeek Files API transport. @module arx-llm-deepseek/files-api */
 
-import { attributionHeaders, LlmError } from '@centurionarx/cxh-llm'
-import type { ImageMediaType } from '@centurionarx/cxh-attachment'
+import { attributionHeaders, LlmError } from '@arx-ai/arx-llm'
+import type { ImageMediaType } from '@arx-ai/arx-attachment'
 import { DeepSeekFileId } from './file-id.ts'
 import type { DeepSeekFileId as DeepSeekFileIdType } from './file-id.ts'
 

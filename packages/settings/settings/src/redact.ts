@@ -4,10 +4,10 @@
  * each schema-declared secret position and whether it currently holds a value,
  * so a configuration surface can render a write-only input without ever
  * receiving the secret itself.
- * @module @centurionarx/cxh-settings/redact
+ * @module @arx-ai/arx-settings/redact
  */
 
-import type z from '@centurionarx/schemastery'
+import type z from '@arx-ai/schemastery'
 
 /**
  * Minimal structural view of a live schemastery node. Only the relations the

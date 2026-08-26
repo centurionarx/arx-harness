@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-host-frontend-static`.
- * @module @centurionarx/cxh-host-frontend-static/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-host-frontend-static`.
+ * @module @arx-ai/arx-host-frontend-static/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-host-frontend-static'
+const PACKAGE_NAME = '@arx-ai/arx-host-frontend-static'
 
 /** Cordis companion plugin name. */
 export const name = 'host-frontend-static-invariant'

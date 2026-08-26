@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context, type Plugin } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { remoteMethods } from '@centurionarx/cxh-typert-protocol'
+import { Context, type Plugin } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { remoteMethods } from '@arx-ai/arx-typert-protocol'
 import PluginInventoryGateway from '../src/index.ts'
 
 const contexts: Context[] = []

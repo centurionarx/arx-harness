@@ -2,16 +2,16 @@
  * Workspace entity registry (`ctx.workspaceRegistry`): durable workspace records,
  * stable registry order, and header-validated session membership over the
  * domain data form.
- * @module @centurionarx/cxh-workspace
+ * @module @arx-ai/arx-workspace
  */
 
 import { randomUUID } from 'node:crypto'
 import { stat } from 'node:fs/promises'
 import { basename } from 'node:path'
-import { Context, Service } from '@centurionarx/cordis'
-import type { SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-session-persistence'
-import type { DomainGlobal, KvTable } from '@centurionarx/cxh-storage-domain'
+import { Context, Service } from '@arx-ai/cordis'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-session-persistence'
+import type { DomainGlobal, KvTable } from '@arx-ai/arx-storage-domain'
 import { WorkspaceEntity } from './entity.ts'
 import type { WorkspaceEntityHost } from './entity.ts'
 
@@ -64,7 +64,7 @@ export class WorkspaceOrderInvalidError extends Error {
 }
 
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     workspaceRegistry: WorkspaceRegistry
   }

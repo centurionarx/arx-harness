@@ -1,4 +1,4 @@
-# @centurionarx/cxh-tool-terminal
+# @arx-ai/arx-tool-terminal
 
 English | [中文](README.zh.md)
 
@@ -41,7 +41,7 @@ Prefix-stable while the registration scope and guidance text are unchanged.
 
 #### What the model sees
 
-The six generated schemas are listed in the [`cxh-tool-terminal` catalog section](../../../docs/tool-catalog.md#centurionarxcxh-tool-terminal). Their fixed schema tokens are present whenever this plugin is active; agent-scoped tool filtering may hide them.
+The six generated schemas are listed in the [`arx-tool-terminal` catalog section](../../../docs/tool-catalog.md#arx-aiarx-tool-terminal). Their fixed schema tokens are present whenever this plugin is active; agent-scoped tool filtering may hide them.
 
 #### Token effect
 
@@ -68,4 +68,4 @@ Append-only; new results follow the reusable request prefix.
 ## Known Limitations and Deferred Work
 
 - No named key sequence, TUI, BEL, resize, auto-start, or cross-agent sharing schema is exposed.
-- Background mode requires both `@centurionarx/cxh-jobs` and its model-facing controller.
+- Background mode requires both `@arx-ai/arx-jobs` and its model-facing controller.

@@ -1,15 +1,15 @@
 /**
  * Durable projection state for dynamic runtime context.
- * @module @centurionarx/cxh-agent-loop/runtime-context
+ * @module @arx-ai/arx-agent-loop/runtime-context
  */
 
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContextSnapshotSection } from '@centurionarx/cxh-llm'
-import type { Session, UserMessage } from '@centurionarx/cxh-session'
-import { isReplacementSurfaceEvent } from '@centurionarx/cxh-session'
-import type { Context } from '@centurionarx/cordis'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { ContextSnapshotSection } from '@arx-ai/arx-llm'
+import type { Session, UserMessage } from '@arx-ai/arx-session'
+import { isReplacementSurfaceEvent } from '@arx-ai/arx-session'
+import type { Context } from '@arx-ai/cordis'
 
-const SOURCE = '@centurionarx/cxh-system-prompt'
+const SOURCE = '@arx-ai/arx-system-prompt'
 const CLEARED = 'Current runtime context: none. Earlier runtime-context snapshots no longer apply.'
 
 function isOwned(message: UserMessage): boolean {

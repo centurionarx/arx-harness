@@ -10,12 +10,12 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubprocessHandle } from '@centurionarx/cxh-subprocess'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+import type { Agent } from '@arx-ai/arx-agent'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubprocessHandle } from '@arx-ai/arx-subprocess'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as claudeCode from '../src/index.ts'
 
 const execFileAsync = promisify(execFile)
@@ -69,7 +69,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
     it('returns one unique nonce through the production provider and real SDK/CLI', async () => {
       const apiKey = process.env.DEEPSEEK_API_KEY
       if (apiKey === undefined) throw new Error('e2e ran without DEEPSEEK_API_KEY')
-      const root = mkdtempSync(join(tmpdir(), 'cxh-claude-deepseek-e2e-'))
+      const root = mkdtempSync(join(tmpdir(), 'arx-claude-deepseek-e2e-'))
       roots.push(root)
       const workspace = join(root, 'workspace')
       const claudeConfig = join(root, 'claude-config')
@@ -131,7 +131,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
       })
       expect(version.stdout.trim()).toBe('2.1.220 (Claude Code)')
 
-      const nonce = `CXH_CLAUDE_DEEPSEEK_${randomUUID()}`
+      const nonce = `ARX_CLAUDE_DEEPSEEK_${randomUUID()}`
       const parent = {
         id: 'deepseek-e2e-parent',
         session: { header: { cwd: workspace } },

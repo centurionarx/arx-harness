@@ -1,10 +1,10 @@
 /**
  * Durable and model-facing Schedule value types.
- * @module @centurionarx/cxh-schedule
+ * @module @arx-ai/arx-schedule
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type {} from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type {} from '@arx-ai/arx-session/types'
 
 /** Stable reminder identity that is unique and never reused within one session. */
 export type ScheduleId = Branded<'ScheduleId'>
@@ -210,7 +210,7 @@ export type ScheduleDeleteResult =
 /** Canonical `schedule_delete` value. */
 export type ScheduleDeleteValue = ScheduleDeleteResult | ScheduleToolError
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Versioned Schedule mutation. The owning package validates the complete

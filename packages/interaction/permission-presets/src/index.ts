@@ -7,24 +7,24 @@
  * `permissions` session projection; the write side ships as the
  * `/permission` command — both optional children over the same service.
  *
- * @module cxh-permission-presets
+ * @module arx-permission-presets
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { z as zod } from 'zod'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
-import { SANDBOX_MODES, effectiveSandboxMode, setSandboxMode } from '@centurionarx/cxh-sandbox-policy'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
+import { SANDBOX_MODES, effectiveSandboxMode, setSandboxMode } from '@arx-ai/arx-sandbox-policy'
 // Side-effect type import: declaration-merges `ctx.shell` (the capability fact
 // `sandboxMode` this service reads), without a value dependency on the seam.
-import type {} from '@centurionarx/cxh-shell'
-import type { ApprovalPolicy } from '@centurionarx/cxh-user-approval'
-import { APPROVAL_POLICIES, effectiveApprovalPolicy, setApprovalPolicy } from '@centurionarx/cxh-user-approval'
-import { installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
+import type {} from '@arx-ai/arx-shell'
+import type { ApprovalPolicy } from '@arx-ai/arx-user-approval'
+import { APPROVAL_POLICIES, effectiveApprovalPolicy, setApprovalPolicy } from '@arx-ai/arx-user-approval'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 // Type-only: resolves ctx.sessionProjections / ctx.commands for the optional children.
-import type {} from '@centurionarx/cxh-session-projection'
-import type {} from '@centurionarx/cxh-commands'
+import type {} from '@arx-ai/arx-session-projection'
+import type {} from '@arx-ai/arx-commands'
 import type { PermissionSelect, PresetOption } from './types.ts'
 
 // The `permissions` projection-key declaration lives in src/types.ts (its one
@@ -33,13 +33,13 @@ import type { PermissionSelect, PresetOption } from './types.ts'
 // consuming the declarations still receive the SessionProjectionMap merge.
 export type * from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     permissionPresets: PermissionPresetService
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Records the selected preset as durable, log-only user intent. The knob
@@ -100,7 +100,7 @@ export interface KnobState {
   approval: ApprovalPolicy | null
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     permissions: KnobState
   }

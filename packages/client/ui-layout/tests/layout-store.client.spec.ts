@@ -6,13 +6,13 @@
  * real engine instance (same create path as production).
  */
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createLayoutStore } from '@centurionarx/cxh-client-ui-layout/src/client/stores.ts'
+import { createLayoutStore } from '@arx-ai/arx-client-ui-layout/src/client/stores.ts'
 import {
   DETAILS_DEFAULT, DETAILS_MAX, DETAILS_MIN,
   SIDEBAR_DEFAULT, SIDEBAR_MAX, SIDEBAR_MIN,
-} from '@centurionarx/cxh-client-ui-layout/src/client/columns.ts'
+} from '@arx-ai/arx-client-ui-layout/src/client/columns.ts'
 
-const PERSIST_KEY = 'cxh.layout.panels'
+const PERSIST_KEY = 'arx.layout.panels'
 
 beforeEach(() => { localStorage.clear() })
 

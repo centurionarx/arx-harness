@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { AttachmentId, ImageVariantId } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@centurionarx/cxh-attachment'
-import { createUserMessage, CallId, ReasoningEffortId, createMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@centurionarx/cxh-llm'
+import { AttachmentId, ImageVariantId } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentRef, ImageMediaType, RequestImageAttachment } from '@arx-ai/arx-attachment'
+import { createUserMessage, CallId, ReasoningEffortId, createMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, GenerateOptions, Message } from '@arx-ai/arx-llm'
 import {
   serializeMessages,
   serializeMessagesWithImages,

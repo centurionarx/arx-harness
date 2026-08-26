@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
+import { AttachmentId } from '@arx-ai/arx-attachment'
 import {
   CallId,
   createUserMessage,

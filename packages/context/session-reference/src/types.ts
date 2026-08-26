@@ -2,12 +2,12 @@
  * Public session-reference request, candidate, and preparation records.
  * Imports stay on type-only subpaths so generated Remote clients can consume
  * this module without Host runtime code.
- * @module @centurionarx/cxh-session-reference/types
+ * @module @arx-ai/arx-session-reference/types
  */
 
-import type { UserMessage } from '@centurionarx/cxh-llm/message'
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { UserMessage } from '@arx-ai/arx-llm/message'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /** Durable source session, cited event seqs, and snapshot facts for prepared cross-session context. */
 export interface SessionReferenceSource {
@@ -29,7 +29,7 @@ export interface SessionReferenceSource {
   }[]
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     'session-reference': SessionReferenceSource
   }
@@ -57,7 +57,7 @@ export interface SessionReferenceCandidate {
 
 /** One discovery candidate carrying its canonical prompt mention. */
 export interface SessionReferenceMentionCandidate extends SessionReferenceCandidate {
-  /** Canonical `@[label](cxh-session:…)` mention serialized into the prompt draft. */
+  /** Canonical `@[label](arx-session:…)` mention serialized into the prompt draft. */
   mention: string
 }
 

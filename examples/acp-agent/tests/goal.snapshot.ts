@@ -8,9 +8,9 @@ import {
   type AgentUnderTest,
   type InputScript,
   type NormalizeContext,
-} from '@centurionarx/cxh-acp-snapshot'
-import { foldGoal } from '@centurionarx/cxh-goal'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-acp-snapshot'
+import { foldGoal } from '@arx-ai/arx-goal'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import { describe, expect, it } from 'vitest'
 
 // This lifecycle proof has goal-specific timestamp normalization and semantic
@@ -21,7 +21,7 @@ const overrideFile = join(scenarioDir, 'replay.override.json')
 const stdoutExpected = join(scenarioDir, 'stdout.expected.jsonl')
 const sessionExpected = join(scenarioDir, 'session.expected.jsonl')
 const wrapupDir = join(dirname(fileURLToPath(import.meta.url)), 'goal-snapshots/goal-wrapup')
-const refreshing = process.env.CXH_SNAPSHOT === 'refresh'
+const refreshing = process.env.ARX_SNAPSHOT === 'refresh'
 
 const agent: AgentUnderTest = {
   binScript: fileURLToPath(new URL('../../../packages/examples/acp-demo/src/bin.ts', import.meta.url)),

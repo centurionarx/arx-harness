@@ -4,52 +4,52 @@
 # context compaction are absent.
 
 - id: sdk-jsonrpc-server
-  name: '@centurionarx/cxh-sdk-jsonrpc-server'
+  name: '@arx-ai/arx-sdk-jsonrpc-server'
   config:
     maxTokensAsSuccess: false
 
 - id: llm-deepseek
-  name: '@centurionarx/cxh-llm-deepseek'
+  name: '@arx-ai/arx-llm-deepseek'
   config:
     apiKeyEnv: DEEPSEEK_API_KEY
     streamIdleTimeoutMs: 172800000
     models:
-      - id: !!js process.env.CXH_MODEL ?? 'deepseek-v4-flash'
-        contextWindow: !!js Number(process.env.CXH_CONTEXT_WINDOW ?? 1000000)
+      - id: !!js process.env.ARX_MODEL ?? 'deepseek-v4-flash'
+        contextWindow: !!js Number(process.env.ARX_CONTEXT_WINDOW ?? 1000000)
 
 - id: sandbox
-  name: '@centurionarx/cxh-sandbox-local'
+  name: '@arx-ai/arx-sandbox-local'
 
 - id: sandbox-policy
-  name: '@centurionarx/cxh-sandbox-policy'
+  name: '@arx-ai/arx-sandbox-policy'
   config:
     mode: danger-full-access
-    workspaceRoot: !!js process.env.CXH_CWD ?? process.cwd()
+    workspaceRoot: !!js process.env.ARX_CWD ?? process.cwd()
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: pty
-  name: '@centurionarx/cxh-terminal'
+  name: '@arx-ai/arx-terminal'
 
 - id: terminal-bash
-  name: '@centurionarx/cxh-terminal-bash'
+  name: '@arx-ai/arx-terminal-bash'
   config:
     timeoutMs: 300000
 
 # The editor uses the bare local filesystem; persistent Bash still consumes the
 # shared danger-full-access sandbox policy above.
 - id: fs-local
-  name: '@centurionarx/cxh-fs-local'
+  name: '@arx-ai/arx-fs-local'
   config:
-    cwd: !!js process.env.CXH_CWD ?? process.cwd()
+    cwd: !!js process.env.ARX_CWD ?? process.cwd()
 
 - id: agent-spine
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     includeHarnessIdentity: false
     includeRuntimeContext: false
-    persona: !!js process.env.CXH_SYSTEM_PROMPT ?? 'You are a helpful software engineer assistant.'
+    persona: !!js process.env.ARX_SYSTEM_PROMPT ?? 'You are a helpful software engineer assistant.'
     workspaceContext: false
     skills:
       enabled: false
@@ -57,7 +57,7 @@
     toolJobs: false
 
 - id: persistent-bash
-  name: '@centurionarx/cxh-tool-bash-persistent'
+  name: '@arx-ai/arx-tool-bash-persistent'
   config:
     timeoutMs: 300000
     description: |-
@@ -71,12 +71,12 @@
       * Please run long lived commands in the background, e.g. 'sleep 10 &' or start a server in the background.
 
 - id: str-replace-editor
-  name: '@centurionarx/cxh-tool-str-replace-editor'
+  name: '@arx-ai/arx-tool-str-replace-editor'
   config:
     maxOutputChars: 16000
 
 - id: sessions
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
-    root: !!js process.env.CXH_SESSION_ROOT ?? './.sessions'
+    root: !!js process.env.ARX_SESSION_ROOT ?? './.sessions'
     compression: none

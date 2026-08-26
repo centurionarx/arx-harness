@@ -1,25 +1,25 @@
 /**
  * Shared route, framing, timeout, assembly, and validation policy for
  * model-backed session-title providers.
- * @module @centurionarx/cxh-session-title-llm
+ * @module @arx-ai/arx-session-title-llm
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { createUserMessage, BlockAssembler, deepFreeze } from '@centurionarx/cxh-llm'
-import type { FinishReason, GenerateOptions, Message } from '@centurionarx/cxh-llm'
-import { deadline, MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { createUserMessage, BlockAssembler, deepFreeze } from '@arx-ai/arx-llm'
+import type { FinishReason, GenerateOptions, Message } from '@arx-ai/arx-llm'
+import { deadline, MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import {
   normalizeSessionTitle,
   SessionTitleProviderId,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 import type {
   SessionTitleAutomaticMode,
   SessionTitleModelProvenance,
   SessionTitleProviderRequest,
   SessionTitleProviderResult,
   SessionTitleUserMessage,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 
 /** Exact model-visible request recorded before one auxiliary title dispatch. */
 export interface SessionTitleLlmRequestEventData {
@@ -37,7 +37,7 @@ export interface SessionTitleLlmRequestEventData {
   readonly maxTokens: number
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /** Log-only pre-dispatch record of one session-title model request. */
     'session/title-llm-request': SessionTitleLlmRequestEventData
@@ -245,7 +245,7 @@ export async function generateSessionTitleWithLlm(
   const route = resolveRoute(config, request)
   const messages: Message[] = [createUserMessage({
     content: [{ type: 'text', text: framedInput }],
-    source: { kind: 'plugin', plugin: 'cxh-session-title-llm' },
+    source: { kind: 'plugin', plugin: 'arx-session-title-llm' },
   })]
   const system = systemPrompt(config)
   using callDeadline = deadline(request.signal, config.timeoutMs, SESSION_TITLE_TIMEOUT_CODE)

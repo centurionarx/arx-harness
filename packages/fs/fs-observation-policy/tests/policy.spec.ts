@@ -1,11 +1,11 @@
 /** Event-level policy tests; no filesystem provider is needed because the plugin performs no I/O. */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { FsTargetKey, FsVersion } from '@centurionarx/cxh-fs'
-import type { FsObservation, FsTarget, FsWriteIntent } from '@centurionarx/cxh-fs'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import type { FsObservationActor } from '@centurionarx/cxh-fs-observation-policy'
+import { Context } from '@arx-ai/cordis'
+import { FsTargetKey, FsVersion } from '@arx-ai/arx-fs'
+import type { FsObservation, FsTarget, FsWriteIntent } from '@arx-ai/arx-fs'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import type { FsObservationActor } from '@arx-ai/arx-fs-observation-policy'
 
 function target(path: string): FsTarget {
   return { targetKey: FsTargetKey(path), displayPath: path }

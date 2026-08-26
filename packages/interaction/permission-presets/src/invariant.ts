@@ -1,10 +1,10 @@
-/** Package-owned permission-preset event invariants. @module @centurionarx/cxh-permission-presets/invariant */
+/** Package-owned permission-preset event invariants. @module @arx-ai/arx-permission-presets/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-permission-presets'
+const PACKAGE_NAME = '@arx-ai/arx-permission-presets'
 
 /** Cordis companion plugin name. */
 export const name = 'permission-presets-invariant'

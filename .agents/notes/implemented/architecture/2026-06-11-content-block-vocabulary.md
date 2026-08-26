@@ -1,4 +1,4 @@
-# Agent Note: Provider-neutral content-block vocabulary owned by cxh-llm
+# Agent Note: Provider-neutral content-block vocabulary owned by arx-llm
 
 Status: implemented
 

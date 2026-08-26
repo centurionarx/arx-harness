@@ -8,10 +8,10 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import { internals, provideCmdline } from '@centurionarx/cxh-cmdline'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import { internals, provideCmdline } from '@arx-ai/arx-cmdline'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apply, HEADLESS_STARTUP_SERVICE, type HeadlessStartupValues } from '../src/startup.ts'
 
@@ -36,7 +36,7 @@ afterEach(async () => {
  * @returns the resolved service value and observed runner/process effects.
  */
 async function bootStartup(args: string[]): Promise<{ task: HeadlessStartupValues | undefined; observed: Observed }> {
-  const dir = mkdtempSync(join(tmpdir(), 'cxh-headless-startup-'))
+  const dir = mkdtempSync(join(tmpdir(), 'arx-headless-startup-'))
   const observed: Observed = { exits: [], out: '' }
   writeFileSync(join(dir, 'row.mjs'), 'export function apply(_ctx, config) { globalThis.__headlessStartupObserved.runnerConfig = config }\n')
   // Loader imports through Node's resolver, so this fixture delegates to the
@@ -98,7 +98,7 @@ describe('headless command-line provider', () => {
 
   it('prints its own help and leaves the runner pending', async () => {
     const { task, observed } = await bootStartup(['--help'])
-    expect(observed.out).toContain('cxh --profile headless')
+    expect(observed.out).toContain('arx --profile headless')
     expect(task).toBeUndefined()
     expect(observed.runnerConfig).toBeUndefined()
     expect(observed.exits).toEqual([0])

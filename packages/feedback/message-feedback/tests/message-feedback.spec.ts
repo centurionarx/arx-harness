@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import { remoteMethods } from '@centurionarx/cxh-typert-protocol'
+import { Context } from '@arx-ai/cordis'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import { remoteMethods } from '@arx-ai/arx-typert-protocol'
 import MessageFeedbackService, { messageFeedbackRowSchema } from '../src/index.ts'
 import type {
   MessageFeedbackItem,

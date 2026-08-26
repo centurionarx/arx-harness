@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@centurionarx/cxh-session'
-import { SessionSearchCursor, type SessionQueryErrorCode } from '@centurionarx/cxh-session-query'
+import { SessionId } from '@arx-ai/arx-session'
+import { SessionSearchCursor, type SessionQueryErrorCode } from '@arx-ai/arx-session-query'
 import {
   buildEventWhere,
   buildSessionWhere,

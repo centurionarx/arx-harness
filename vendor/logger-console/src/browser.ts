@@ -1,4 +1,4 @@
-import { Message } from '@centurionarx/cordis'
+import { Message } from '@arx-ai/cordis'
 import { ConsoleExporter as Base } from './shared.ts'
 
 /** Re-export shared console exporter config and base implementation. */

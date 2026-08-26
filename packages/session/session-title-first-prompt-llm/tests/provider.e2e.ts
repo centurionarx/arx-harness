@@ -1,11 +1,11 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SessionTitleService from '@centurionarx/cxh-session-title'
-import * as FirstMessageTitleProvider from '@centurionarx/cxh-session-title-first-prompt-llm'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SessionTitleService from '@arx-ai/arx-session-title'
+import * as FirstMessageTitleProvider from '@arx-ai/arx-session-title-first-prompt-llm'
 
 const contexts: Context[] = []
 

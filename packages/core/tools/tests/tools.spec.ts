@@ -1,15 +1,15 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId, HarnessError, type ContentBlock  } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import type { Agent } from '@centurionarx/cxh-agent'
-import ApprovalService, { type ApprovalOutcome, type ApprovalRequest } from '@centurionarx/cxh-user-approval'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId, HarnessError, type ContentBlock  } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import type { Agent } from '@arx-ai/arx-agent'
+import ApprovalService, { type ApprovalOutcome, type ApprovalRequest } from '@arx-ai/arx-user-approval'
 import ToolRuntime, {
   defineContentToolFixture, defineTool, JsonSchemaError, parameterSchemaSpecToJsonSchema, validateArgs, ToolArgsError, ToolNotFoundError,
   TOOL_ABORTED, TOOL_ABORTED_BEFORE_DISPATCH,
   type InferArgs, type JsonValue, type ParameterSchemaSpec, type PreToolDecision, type PostToolDecision,
   type JsonSchemaNode, type ToolDefinition, type ToolDispatchExecution, type ToolExecutionResult, type ToolExecutionToken,
-} from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-tools'
 
 const testToolSignal = new AbortController().signal
 
@@ -665,7 +665,7 @@ describe('ToolRuntime', () => {
   })
 
   it('ToolNotFoundError carries a stable message and code', async () => {
-    const { HarnessError } = await import('@centurionarx/cxh-llm')
+    const { HarnessError } = await import('@arx-ai/arx-llm')
     const err = new ToolNotFoundError('ghost')
     expect(err).toBeInstanceOf(HarnessError)
     expect(err.name).toBe('ToolNotFoundError')
@@ -2631,7 +2631,7 @@ describe('defineTool validation (the runtime-validation Agent Note, part 1)', ()
   })
 
   it('a tool throwing a HarnessError surfaces its name and code', async () => {
-    const { HarnessError } = await import('@centurionarx/cxh-llm')
+    const { HarnessError } = await import('@arx-ai/arx-llm')
     const ctx = await setup()
     ctx.tools.register({
       ...echoTool,

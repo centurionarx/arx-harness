@@ -1,7 +1,7 @@
 /**
- * Built-artifact guard for the scope carrier shared by `cxh-subagent` and
- * `cxh-sdk-jsonrpc-server`. The carrier registry is module-local, so both bundles must
- * externalize `cxh-scope`; source-mode tests cannot expose an accidentally
+ * Built-artifact guard for the scope carrier shared by `arx-subagent` and
+ * `arx-sdk-jsonrpc-server`. The carrier registry is module-local, so both bundles must
+ * externalize `arx-scope`; source-mode tests cannot expose an accidentally
  * inlined second registry. This test runs the real `lib/index.js` bundles in a
  * plain Node subprocess, disposes the child before settlement, and requires the
  * SDK completion notification to retain the delegating parent.
@@ -98,7 +98,7 @@ try {
 }
 `
 
-describe.skipIf(!existsSync(jsonrpcBundle))('cxh-sdk-jsonrpc-server BUILT scope carrier', () => {
+describe.skipIf(!existsSync(jsonrpcBundle))('arx-sdk-jsonrpc-server BUILT scope carrier', () => {
   it('preserves parent-scoped completion after child disposal', async () => {
     const { stdout, stderr } = await execFileAsync(process.execPath, ['--input-type=module', '-e', builtRuntimeProbe], {
       cwd: repoRoot,

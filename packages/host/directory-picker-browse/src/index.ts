@@ -6,20 +6,20 @@
  * serves remote clients the dialog backend cannot. Policy decisions (hidden
  * entries flagged but returned, symlinks followed, whole-filesystem scope) are
  * recorded in the directory-picker seam Agent Note.
- * @module @centurionarx/cxh-host-directory-picker-browse
+ * @module @arx-ai/arx-host-directory-picker-browse
  */
 
 import { mkdir, opendir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join, posix, resolve, win32 } from 'node:path'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import {
   DirectoryPicker, DirectoryPickerError,
-} from '@centurionarx/cxh-host-directory-picker'
+} from '@arx-ai/arx-host-directory-picker'
 import type {
   DirectoryEntry, DirectoryListing, DirectoryPickerCapability,
-} from '@centurionarx/cxh-host-directory-picker'
+} from '@arx-ai/arx-host-directory-picker'
 
 /**
  * Ancestor chain from the filesystem root to `target` inclusive — the

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-hmr
+# @arx-ai/arx-client-hmr
 
 [English](README.md) | 中文
 

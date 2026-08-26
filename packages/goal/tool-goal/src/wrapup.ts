@@ -1,6 +1,6 @@
 /** Model-visible wrap-up instruction for a terminal autonomous goal update. */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
 
 const GROUNDING =
   'Report only what earlier rounds and tool results in this session actually establish; '

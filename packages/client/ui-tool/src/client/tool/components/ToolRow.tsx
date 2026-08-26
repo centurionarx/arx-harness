@@ -21,9 +21,9 @@ import { useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'r
 import clsx from 'clsx'
 import {
   CodeBlock, DiffBlock, DisclosureRow, IconInspectOutline12, ReadBlock, SearchBlock, StateDot, TerminalBlock, WebBlock,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { WebBlockProps } from '@centurionarx/cxh-client-ui-primitives'
-import type { TranslateNS } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { WebBlockProps } from '@arx-ai/arx-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import { CHAT_DIFF_MAX_LINES, type DiffCardModel } from '../models/diff-card-model.ts'
 import { CHAT_READ_MAX_LINES, type ReadCardModel } from '../models/read-card-model.ts'
 import { CHAT_SEARCH_MAX_LINES, type SearchCardModel } from '../models/search-card-model.ts'

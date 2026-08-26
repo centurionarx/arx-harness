@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage, CallId, HarnessError , createMessage } from '@centurionarx/cxh-llm'
-import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@centurionarx/cxh-timeout'
-import * as TimeoutPolicy from '@centurionarx/cxh-tool-call-timeout-policy'
+import { Context, type Fiber } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage, CallId, HarnessError , createMessage } from '@arx-ai/arx-llm'
+import { MAX_TIMER_DELAY_MS, TimeoutReason } from '@arx-ai/arx-timeout'
+import * as TimeoutPolicy from '@arx-ai/arx-tool-call-timeout-policy'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
   type Session,
   type SessionHeader,
   type SessionId as SessionIdValue,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import SessionQueryEngine, {
   SessionQueryError,
   SessionSearchCursor,
@@ -23,10 +23,10 @@ import SessionQueryEngine, {
   type SessionSearchPage,
   type SessionSearchRequest,
   type SessionTitleObservationResult,
-} from '@centurionarx/cxh-session-query'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { type ToolExecutionResult } from '@centurionarx/cxh-tools'
-import * as ToolSessionQuery from '@centurionarx/cxh-tool-session-query'
+} from '@arx-ai/arx-session-query'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { type ToolExecutionResult } from '@arx-ai/arx-tools'
+import * as ToolSessionQuery from '@arx-ai/arx-tool-session-query'
 
 const activeContexts: Context[] = []
 

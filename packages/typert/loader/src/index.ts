@@ -22,18 +22,18 @@
  * that do not use a `./typert` artifact (hand-written wire schemas,
  * tests, non-loader compositions).
  *
- * @module @centurionarx/cxh-typert-loader
+ * @module @arx-ai/arx-typert-loader
  */
 
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cordis-plugin-loader'
-import type {} from '@centurionarx/cxh-typert-registry'
-import type { TypertContribution } from '@centurionarx/cxh-typert-registry/types'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import type {} from '@arx-ai/arx-typert-registry'
+import type { TypertContribution } from '@arx-ai/arx-typert-registry/types'
 
 /** The package.json exports key naming a package's host-face typert artifact. */
 export const TYPERT_HOST_EXPORT = './typert'

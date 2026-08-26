@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type {} from '@centurionarx/cxh-commands/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type {} from '@arx-ai/arx-commands/types'
 import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureStableAria,
   compareOrRefreshGolden, launchWebScaffold, watchConsole, webSnapshotMode,

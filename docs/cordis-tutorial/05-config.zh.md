@@ -9,8 +9,8 @@
 创建 `config-demo.ts`，并将其放在 `tmp/cordis-tutorial` 中：
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import Schema from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import Schema from '@arx-ai/schemastery'
 
 export const name = 'config-demo'
 
@@ -81,4 +81,4 @@ ValidationError: invalid config:
 
 下一章：[组合与 HMR（热模块替换）](06-composition-and-hmr.zh.md)：将 `cordis.yml` 视为应用。
 
-[![](https://img.shields.io/badge/powered_by-cxh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/centurionarx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/arx-ai/arx-harness)

@@ -3,9 +3,9 @@
 import { useEffect } from 'react'
 import {
   IconCodeOutline16, IconInspectOutline12, StateDot,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRenderSlots } from '@centurionarx/cxh-client-ui-slots'
-import type { ToolCallViewProps } from '@centurionarx/cxh-client-ui-tool/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
+import type { ToolCallViewProps } from '@arx-ai/arx-client-ui-tool/client'
 import { cordisRunCard } from './card-model.ts'
 import { cordisToolViewKey } from './run-card-index.ts'
 import type { CordisRunCardFace } from './slots.ts'

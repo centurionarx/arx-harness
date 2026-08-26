@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-title
+# @arx-ai/arx-session-title
 
 English | [中文](README.zh.md)
 

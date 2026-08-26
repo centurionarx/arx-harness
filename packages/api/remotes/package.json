@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-api-remotes",
+  "name": "@arx-ai/arx-api-remotes",
   "description": "Remote BFF assembly and Host Agent/Session lookup policy",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/api/remotes"
   },
   "type": "module",
@@ -33,10 +33,10 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-api-gateway"
+        "@arx-ai/arx-api-gateway"
       ],
       "platform": "web",
       "immediately": true
@@ -55,46 +55,46 @@
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@centurionarx/cxh-typert-protocol": "workspace:^"
+    "@arx-ai/arx-typert-protocol": "workspace:^"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-presets": "workspace:^",
-    "@centurionarx/cxh-api-gateway": "workspace:^",
-    "@centurionarx/cxh-commands": "workspace:^",
-    "@centurionarx/cxh-cordis-host-runner": "workspace:^",
-    "@centurionarx/cxh-credentials": "workspace:^",
-    "@centurionarx/cxh-file-reference": "workspace:^",
-    "@centurionarx/cxh-goal": "workspace:^",
-    "@centurionarx/cxh-host-plugin-inventory": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-message-feedback": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-session-reference": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^",
-    "@centurionarx/cxh-typert-registry": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
+    "@arx-ai/arx-api-gateway": "workspace:^",
+    "@arx-ai/arx-commands": "workspace:^",
+    "@arx-ai/arx-cordis-host-runner": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-file-reference": "workspace:^",
+    "@arx-ai/arx-goal": "workspace:^",
+    "@arx-ai/arx-host-plugin-inventory": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-message-feedback": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-reference": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-typert-registry": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-presets": "workspace:^",
-    "@centurionarx/cxh-api-gateway": "workspace:^",
-    "@centurionarx/cxh-commands": "workspace:^",
-    "@centurionarx/cxh-cordis-host-runner": "workspace:^",
-    "@centurionarx/cxh-credentials": "workspace:^",
-    "@centurionarx/cxh-file-reference": "workspace:^",
-    "@centurionarx/cxh-goal": "workspace:^",
-    "@centurionarx/cxh-host-plugin-inventory": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-message-feedback": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-session-reference": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^",
-    "@centurionarx/cxh-typert-registry": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
+    "@arx-ai/arx-api-gateway": "workspace:^",
+    "@arx-ai/arx-commands": "workspace:^",
+    "@arx-ai/arx-cordis-host-runner": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-file-reference": "workspace:^",
+    "@arx-ai/arx-goal": "workspace:^",
+    "@arx-ai/arx-host-plugin-inventory": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-message-feedback": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-reference": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-typert-registry": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

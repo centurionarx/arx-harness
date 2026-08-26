@@ -1,20 +1,20 @@
 /**
  * Service Definition for the approval capability seam, covering requests, cancellation, audit, and per-session policy. Missing
  * answerers fail closed; grants apply only to the requested action.
- * @module @centurionarx/cxh-user-approval
+ * @module @arx-ai/arx-user-approval
  */
 
 import { randomUUID } from 'node:crypto'
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage, type CallId } from '@centurionarx/cxh-llm'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import type { Scoped } from '@centurionarx/cxh-scope'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-system-prompt'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage, type CallId } from '@arx-ai/arx-llm'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import type { Scoped } from '@arx-ai/arx-scope'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-system-prompt'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     approval: ApprovalService
   }
@@ -23,7 +23,7 @@ declare module '@centurionarx/cordis' {
     /**
      * Ask composed answerers for one decision. Return an outcome to claim the
      * request or call `next()`; failure yields the fail-closed default.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`): agent-scoped listeners receive only that agent.
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`): agent-scoped listeners receive only that agent.
      * @param req - the pending decision (agent, tool identity, reason, signal).
      * @mode waterfall
      */
@@ -31,7 +31,7 @@ declare module '@centurionarx/cordis' {
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * An approval question was put to the answerer chain — log-only audit

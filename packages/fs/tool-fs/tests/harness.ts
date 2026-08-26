@@ -1,11 +1,11 @@
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 
 /**
  * Build the real fs-tool stack for with-key e2e tests. Agents have no session

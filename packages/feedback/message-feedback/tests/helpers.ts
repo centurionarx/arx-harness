@@ -1,25 +1,25 @@
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { createAssistantMessage, createUserMessage } from '@centurionarx/cxh-llm'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
+import { Context } from '@arx-ai/cordis'
+import { createAssistantMessage, createUserMessage } from '@arx-ai/arx-llm'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   Session,
   SessionId,
   type SessionEvent,
   type SessionHeader,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import SessionPersistence, {
   SessionPersistenceRevision,
   type SessionInspection,
   type SessionLocation,
   type SessionPersistenceSnapshot,
-} from '@centurionarx/cxh-session-persistence'
-import Storage from '@centurionarx/cxh-storage'
-import * as StorageDomain from '@centurionarx/cxh-storage-domain'
-import * as StorageJson from '@centurionarx/cxh-storage-json'
+} from '@arx-ai/arx-session-persistence'
+import Storage from '@arx-ai/arx-storage'
+import * as StorageDomain from '@arx-ai/arx-storage-domain'
+import * as StorageJson from '@arx-ai/arx-storage-json'
 import MessageFeedbackService from '../src/index.ts'
 
 export interface MessageFixture {
@@ -185,7 +185,7 @@ export interface TestHarness {
 
 /** Compose the service over the real storage hub/domain/JSON backend. */
 export async function setupHarness(maxNoteBytes = 64): Promise<TestHarness> {
-  const root = await mkdtemp(join(tmpdir(), 'cxh-message-feedback-test-'))
+  const root = await mkdtemp(join(tmpdir(), 'arx-message-feedback-test-'))
   const ctx = new Context()
   let disposeFeedback: (() => Promise<void>) | undefined
   try {

@@ -1,21 +1,21 @@
 import { access } from 'node:fs/promises'
 import { join, posix } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { runLoaderSmoke } from '@centurionarx/cxh-loader-smoke'
+import { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import { runLoaderSmoke } from '@arx-ai/arx-loader-smoke'
 import {
   FileNotFoundError,
   Sandbox,
   SandboxNotFoundError,
-} from '@centurionarx/cxh-e2b'
-import TerminalSessionService, { TerminalSessionId } from '@centurionarx/cxh-terminal'
-import { BashTerminalBackend } from '@centurionarx/cxh-terminal-bash'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import E2BSubprocessRuntime from '@centurionarx/cxh-subprocess-e2b'
+} from '@arx-ai/arx-e2b'
+import TerminalSessionService, { TerminalSessionId } from '@arx-ai/arx-terminal'
+import { BashTerminalBackend } from '@arx-ai/arx-terminal-bash'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import E2BSubprocessRuntime from '@arx-ai/arx-subprocess-e2b'
 
 const fixtureRoot = fileURLToPath(new URL('../../../../examples/headless-agent/tests/fixtures/e2b/e2b/', import.meta.url))
 const binScript = join(fixtureRoot, 'bin.ts')
@@ -28,13 +28,13 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
     if (apiKey === undefined) throw new Error('E2B_API_KEY disappeared before the PTY environment test')
     const sandbox = await Sandbox.create({
       apiKey,
-      envs: { NPM_TOKEN: 'sentinel-secret', CXH_STALE: 'sentinel-stale', KEEP: 'visible' },
+      envs: { NPM_TOKEN: 'sentinel-secret', ARX_STALE: 'sentinel-stale', KEEP: 'visible' },
       timeoutMs: 60_000,
       secure: true,
       lifecycle: { onTimeout: 'kill' },
     })
     try {
-      const profileLeakPath = '/home/user/cxh-e2b-bootstrap-profile-leak'
+      const profileLeakPath = '/home/user/arx-e2b-bootstrap-profile-leak'
       const hostileProfile = [
         'if [[ "${NPM_TOKEN-}" == "sentinel-secret" ]]; then',
         `  printf leaked > ${profileLeakPath}`,
@@ -49,7 +49,7 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
       const ctx = new Context()
       ctx.provide('e2b', {
         cwd: '/home/user',
-        runtimeRoot: '/home/user/.cxh-e2b',
+        runtimeRoot: '/home/user/.arx-e2b',
         getSandbox: async () => sandbox,
       } as never)
       const sandboxPolicyFiber = await ctx.plugin(SandboxPolicyService, {
@@ -64,12 +64,12 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
       await expect(sandbox.files.read(profileLeakPath)).rejects.toBeInstanceOf(FileNotFoundError)
       const environmentProbe = ctx.subprocess.spawn({
         argv: ['/bin/bash', '-c', [
-          'cxh_leak=0',
-          'for cxh_pid in "$PPID" $(ps -o pid= --ppid "$PPID"); do',
-          '  [[ "$cxh_pid" == "$$" ]] && continue',
-          '  if tr "\\0" "\\n" < "/proc/$cxh_pid/environ" 2>/dev/null | grep -Fqx "NPM_TOKEN=sentinel-secret"; then cxh_leak=1; fi',
+          'arx_leak=0',
+          'for arx_pid in "$PPID" $(ps -o pid= --ppid "$PPID"); do',
+          '  [[ "$arx_pid" == "$$" ]] && continue',
+          '  if tr "\\0" "\\n" < "/proc/$arx_pid/environ" 2>/dev/null | grep -Fqx "NPM_TOKEN=sentinel-secret"; then arx_leak=1; fi',
           'done',
-          'printf "DIRECT=<%s> LEAK=<%s>\\n" "${NPM_TOKEN-}" "$cxh_leak"',
+          'printf "DIRECT=<%s> LEAK=<%s>\\n" "${NPM_TOKEN-}" "$arx_leak"',
         ].join('\n')],
         cwd: '/home/user',
         stdio: { stdin: 'ignore', stdout: { maxBytes: 1_024 }, stderr: { maxBytes: 1_024 } },
@@ -105,10 +105,10 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
       })
       const session = await backend.spawn({ sessionId: TerminalSessionId('env'), owner, type: 'shell' })
       const result = await session.startSend({
-        text: "printf 'NPM=<%s> CXH=<%s> KEEP=<%s>\\n' \"$NPM_TOKEN\" \"$CXH_STALE\" \"$KEEP\"",
+        text: "printf 'NPM=<%s> ARX=<%s> KEEP=<%s>\\n' \"$NPM_TOKEN\" \"$ARX_STALE\" \"$KEEP\"",
         submit: true,
       }).done
-      expect(result.viewport).toContain('NPM=<> CXH=<> KEEP=<visible>')
+      expect(result.viewport).toContain('NPM=<> ARX=<> KEEP=<visible>')
       expect(result.viewport).not.toContain('sentinel-secret')
       expect(result.viewport).not.toContain('sentinel-stale')
       await expect(sandbox.files.read(profileLeakPath)).rejects.toBeInstanceOf(FileNotFoundError)
@@ -125,7 +125,7 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
   it('runs FS, Bash, PTY, and LSP in one sandbox and deletes it', async () => {
     const { stdout, stderr } = await runLoaderSmoke({
       label: 'E2B composition',
-      tempDirPrefix: 'cxh-e2b-composition-',
+      tempDirPrefix: 'arx-e2b-composition-',
       binScript,
       libBinScript: binScript,
       configPath,
@@ -166,7 +166,7 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
     const terminalMotd = (output.terminal as { motd: string }).motd
     expect(terminalMotd.length).toBeGreaterThan(0)
     expect(terminalMotd).not.toContain('exec /bin/bash')
-    expect(terminalMotd).not.toContain('.cxh-e2b/terminals/')
+    expect(terminalMotd).not.toContain('.arx-e2b/terminals/')
     expect((output.terminal as { echo: { viewport: string } }).echo.viewport).toContain('PTY-你好')
     expect((output.terminal as { scrollback: string }).scrollback).toContain('PTY-你好')
     expect((output.terminal as { signal: { targetPgid: number } }).signal.targetPgid).toBeGreaterThan(0)

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { PassThrough } from 'node:stream'
-import { Context } from '@centurionarx/cordis'
-import { scrubbedParentEnv, SubprocessRuntime } from '@centurionarx/cxh-subprocess'
+import { Context } from '@arx-ai/cordis'
+import { scrubbedParentEnv, SubprocessRuntime } from '@arx-ai/arx-subprocess'
 import type {
   SubprocessHandle,
   SubprocessOutputRead,
   SubprocessSpawnSpec,
   SubprocessTerminalHandle,
   SubprocessTerminalSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-subprocess'
 
 /**
  * Minimal concrete service: a hand-built handle. The seam is spawn-only —
@@ -75,23 +75,23 @@ describe('SubprocessRuntime seam', () => {
     await expect(ctx.plugin(SecondService)).rejects.toThrow(/service "subprocess" has been registered/)
   })
 
-  it('scrubbedParentEnv drops credential-shaped and CXH_ names (case-insensitively) but keeps PATH', () => {
-    process.env.CXH_SCRUB_PROBE = 'stale'
-    process.env.cxh_scrub_probe_lower = 'stale'
+  it('scrubbedParentEnv drops credential-shaped and ARX_ names (case-insensitively) but keeps PATH', () => {
+    process.env.ARX_SCRUB_PROBE = 'stale'
+    process.env.arx_scrub_probe_lower = 'stale'
     process.env.SCRUB_PROBE_TOKEN = 'secret'
     process.env.SCRUB_PROBE_PASSWORD = 'secret'
     process.env.SCRUB_PROBE_PLAIN = 'visible'
     try {
       const env = scrubbedParentEnv()
-      expect(env.CXH_SCRUB_PROBE).toBeUndefined()
-      expect(env.cxh_scrub_probe_lower).toBeUndefined()
+      expect(env.ARX_SCRUB_PROBE).toBeUndefined()
+      expect(env.arx_scrub_probe_lower).toBeUndefined()
       expect(env.SCRUB_PROBE_TOKEN).toBeUndefined()
       expect(env.SCRUB_PROBE_PASSWORD).toBeUndefined()
       expect(env.SCRUB_PROBE_PLAIN).toBe('visible')
       expect(env.PATH).toBeDefined()
     } finally {
-      delete process.env.CXH_SCRUB_PROBE
-      delete process.env.cxh_scrub_probe_lower
+      delete process.env.ARX_SCRUB_PROBE
+      delete process.env.arx_scrub_probe_lower
       delete process.env.SCRUB_PROBE_TOKEN
       delete process.env.SCRUB_PROBE_PASSWORD
       delete process.env.SCRUB_PROBE_PLAIN

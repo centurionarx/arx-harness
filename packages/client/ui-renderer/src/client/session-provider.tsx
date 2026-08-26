@@ -3,7 +3,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import type {
   HostObservable, MaybeSnapshotSelectorHook, SessionMaybeProvideInfo, SessionProvideInfo,
   SlotRendererHost, SnapshotSelectorHook,
-} from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-slots'
 import { bindSnapshotSelector } from './bind.ts'
 
 /**

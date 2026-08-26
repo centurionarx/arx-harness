@@ -3,11 +3,11 @@
  * contract and rejects every violation by name. Meta arrives as schema-checked
  * JSON data, never evaluated script text; evaluating it on the host could run getters outside the
  * worker timeout that exists to isolate model-written code.
- * @module @centurionarx/cxh-workflow-worker-thread/meta
+ * @module @arx-ai/arx-workflow-worker-thread/meta
  */
 
-import { WorkflowError } from '@centurionarx/cxh-workflow'
-import type { WorkflowMeta, WorkflowPhase } from '@centurionarx/cxh-workflow'
+import { WorkflowError } from '@arx-ai/arx-workflow'
+import type { WorkflowMeta, WorkflowPhase } from '@arx-ai/arx-workflow'
 
 /** Collect shape violations for a meta value (plain JSON data by the seam contract). */
 function validateMetaShape(meta: unknown): { meta?: WorkflowMeta; violations: string[] } {

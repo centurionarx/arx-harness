@@ -1,6 +1,6 @@
-import type { ObservableSnapshot, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { Button, Modal } from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { ObservableSnapshot, SessionId } from '@arx-ai/arx-client-runtime/client'
+import { Button, Modal } from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import type { SessionLogDownloadState } from './controller.ts'
 import { NS } from './locales.ts'
 

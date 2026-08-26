@@ -2,18 +2,18 @@
  * JSON-RPC methods and notifications for out-of-process harness SDKs.
  * The surrounding context owns plugins, persistence, and configured adapters.
  *
- * @module @centurionarx/cxh-sdk-jsonrpc-server/server
+ * @module @arx-ai/arx-sdk-jsonrpc-server/server
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { resolve } from 'node:path'
-import type { Agent, AgentHandle } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { carrierKeyOf, type Scoped } from '@centurionarx/cxh-scope'
-import { SessionId } from '@centurionarx/cxh-session'
-import type SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentRunEndInfo } from '@centurionarx/cxh-subagent'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
+import type { Agent, AgentHandle } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { carrierKeyOf, type Scoped } from '@arx-ai/arx-scope'
+import { SessionId } from '@arx-ai/arx-session'
+import type SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentRunEndInfo } from '@arx-ai/arx-subagent'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 import type {
   InitializeParams,
   InitializeResult,
@@ -23,7 +23,7 @@ import type {
   SessionPromptResult,
   SubagentFinishedNotification,
   SubagentStartedNotification,
-} from '@centurionarx/cxh-sdk-protocol'
+} from '@arx-ai/arx-sdk-protocol'
 
 interface SessionRecord {
   handle: AgentHandle
@@ -121,7 +121,7 @@ export class HarnessSdkJsonRpcServer {
       if (this.provider !== 'deepseek-official') throw new Error(`no adapter registered for provider "${this.provider}"`)
       this.llmFiber = await this.ctx.plugin(LlmDeepSeek, {})
     }
-    return { serverInfo: { name: 'centurionarx-harness-sdk-runtime', version: '0.0.1' } }
+    return { serverInfo: { name: 'arx-harness-sdk-runtime', version: '0.0.1' } }
   }
 
   /**
@@ -196,7 +196,7 @@ export class HarnessSdkJsonRpcServer {
       case 'shutdown':
         return this.shutdown()
       default:
-        throw new Error(`unknown CENTURIONarx Harness SDK runtime method: ${method}`)
+        throw new Error(`unknown arx Harness SDK runtime method: ${method}`)
     }
   }
 
@@ -219,7 +219,7 @@ export class HarnessSdkJsonRpcServer {
     // No preset composition: this server's compositions keep the model-facing
     // rows in the host plane, so this agent reads them from the global layer. A
     // deployment that configures a roster has to join one here first
-    // (@centurionarx/cxh-agent-presets README, "Composing a child agent").
+    // (@arx-ai/arx-agent-presets README, "Composing a child agent").
     const handle = await this.ctx.agents.create({
       sessionId: SessionId(sessionId),
       meta: { cwd: this.cwd },

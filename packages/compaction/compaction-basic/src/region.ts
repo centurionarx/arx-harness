@@ -2,7 +2,7 @@
  * Surface retention selection and the shared log-recorded compaction
  * transaction for automatic open-turn and manual idle-session compaction.
  *
- * @module @centurionarx/cxh-compaction-basic/region
+ * @module @arx-ai/arx-compaction-basic/region
  */
 
 import { randomUUID } from 'node:crypto'
@@ -13,14 +13,14 @@ import {
   compactCheckpointSource,
   toolPairingBalancedAfter,
   toolPairingBalancedBefore,
-} from '@centurionarx/cxh-compaction'
-import type { CompactionResult } from '@centurionarx/cxh-compaction'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
-import { createUserMessage, errorChain } from '@centurionarx/cxh-llm'
-import type { Message, UserMessage } from '@centurionarx/cxh-llm'
-import type { TokenMeasurement, TokenMeter } from '@centurionarx/cxh-token-meter'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { Agent } from '@centurionarx/cxh-agent'
+} from '@arx-ai/arx-compaction'
+import type { CompactionResult } from '@arx-ai/arx-compaction'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
+import { createUserMessage, errorChain } from '@arx-ai/arx-llm'
+import type { Message, UserMessage } from '@arx-ai/arx-llm'
+import type { TokenMeasurement, TokenMeter } from '@arx-ai/arx-token-meter'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { Agent } from '@arx-ai/arx-agent'
 import { frameSummary } from './summarizer.ts'
 import type { SummarizationInput, SummaryResult } from './summarizer.ts'
 

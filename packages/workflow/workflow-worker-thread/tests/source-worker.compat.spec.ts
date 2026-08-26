@@ -5,12 +5,12 @@
  */
 
 import { expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentProvider } from '@centurionarx/cxh-subagent'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentProvider } from '@arx-ai/arx-subagent'
 import WorkerThreadWorkflowEngine from '../src/index.ts'
-import { SessionId } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
 
 // A fresh thread compiles the source runtime. Leave contention headroom on
 // shared CI runners without weakening any engine-level timeout assertion.

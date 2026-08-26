@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matcherDiagnostic, matchesMatcher } from '@centurionarx/cxh-hook-protocol'
+import { matcherDiagnostic, matchesMatcher } from '@arx-ai/arx-hook-protocol'
 
 describe('matchesMatcher — match-all sentinels (both dialects)', () => {
   for (const mode of ['claude-code', 'codex'] as const) {

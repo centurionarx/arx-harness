@@ -1,14 +1,14 @@
 /**
  * Package-owned request-reconstruction invariant for loop-built LLM calls.
- * @module @centurionarx/cxh-agent-loop/invariant
+ * @module @arx-ai/arx-agent-loop/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { isAgentLoopRequest, type GenerateOptions } from '@centurionarx/cxh-llm'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
-import { foldRequestHeader } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import { isAgentLoopRequest, type GenerateOptions } from '@arx-ai/arx-llm'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
+import { foldRequestHeader } from '@arx-ai/arx-session'
 
-const PACKAGE_NAME = '@centurionarx/cxh-agent-loop'
+const PACKAGE_NAME = '@arx-ai/arx-agent-loop'
 
 /** Cordis companion plugin name. */
 export const name = 'agent-loop-invariant'

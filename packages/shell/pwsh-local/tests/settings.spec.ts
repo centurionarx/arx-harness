@@ -1,13 +1,13 @@
 /** The shared `bash` settings section as the pwsh executor family resolves it. */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import { SHELL_SETTINGS_NAMESPACE } from '@centurionarx/cxh-shell'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import { PwshLocalExecutor } from '@centurionarx/cxh-pwsh-local'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import { SHELL_SETTINGS_NAMESPACE } from '@arx-ai/arx-shell'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import { PwshLocalExecutor } from '@arx-ai/arx-pwsh-local'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {

@@ -4,16 +4,16 @@
  * instance owns one `(provider id, canonical workspace)` process. Queries serialize through a single
  * queue so a cancellation that fails to stop the server can terminate it without killing unrelated
  * work; distinct instances run in parallel.
- * @module @centurionarx/cxh-lsp-stdio/instance
+ * @module @arx-ai/arx-lsp-stdio/instance
  */
 
-import { LspError } from '@centurionarx/cxh-lsp'
+import { LspError } from '@arx-ai/arx-lsp'
 import type {
   LspOperation,
   LspProviderQuery,
   LspQueryResult,
-} from '@centurionarx/cxh-lsp'
-import { deadline } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-lsp'
+import { deadline } from '@arx-ai/arx-timeout'
 import { abortable, abortError } from './abort.ts'
 import { LspConnection } from './connection.ts'
 import type { ConnectionSpawner, ConnectionSpec, ConnectionWriter } from './connection.ts'

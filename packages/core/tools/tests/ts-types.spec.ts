@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { jsonSchemaToTs, renderToolsSdk } from '@centurionarx/cxh-tools/src/ts-types.ts'
-import type { ToolSdkSchema } from '@centurionarx/cxh-tools/src/ts-types.ts'
-import { parameterSchemaSpecToJsonSchema } from '@centurionarx/cxh-tools'
+import { jsonSchemaToTs, renderToolsSdk } from '@arx-ai/arx-tools/src/ts-types.ts'
+import type { ToolSdkSchema } from '@arx-ai/arx-tools/src/ts-types.ts'
+import { parameterSchemaSpecToJsonSchema } from '@arx-ai/arx-tools'
 
 describe('jsonSchemaToTs', () => {
   it('maps every unified schema construct', () => {

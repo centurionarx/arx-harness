@@ -10,18 +10,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SandboxPolicyService, { effectiveSandboxMode, setSandboxMode } from '@centurionarx/cxh-sandbox-policy'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import * as SubagentFork from '@centurionarx/cxh-subagent-fork-in-process'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import ApprovalService, { effectiveApprovalPolicy } from '@centurionarx/cxh-user-approval'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SandboxPolicyService, { effectiveSandboxMode, setSandboxMode } from '@arx-ai/arx-sandbox-policy'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import * as SubagentFork from '@arx-ai/arx-subagent-fork-in-process'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import ApprovalService, { effectiveApprovalPolicy } from '@arx-ai/arx-user-approval'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import SubagentRuntime from '../src/index.ts'
 
@@ -39,7 +39,7 @@ async function setup(script: Script) {
   const ctx = new Context()
   contexts.push(ctx)
   await mountAgentLoopTestDependencies(ctx)
-  const root = mkdtempSync(join(tmpdir(), 'cxh-continuation-inherit-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-continuation-inherit-'))
   roots.push(root)
   await ctx.plugin(JsonlSessionPersistence, { root })
   await ctx.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: root })
@@ -104,7 +104,7 @@ describe('continuable policy inheritance', () => {
     const runtimeContext = loaded.events.find(
       (event): event is SessionEvent<'user/message'> => event.type === 'user/message'
         && event.data.source.kind === 'plugin'
-        && event.data.source.plugin === '@centurionarx/cxh-system-prompt',
+        && event.data.source.plugin === '@arx-ai/arx-system-prompt',
     )
     const contextText = runtimeContext?.data.content
       .flatMap(block => block.type === 'text' ? [block.text] : [])

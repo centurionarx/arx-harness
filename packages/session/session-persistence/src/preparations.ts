@@ -1,9 +1,9 @@
 /**
  * Bounded sharing and exclusive reservation of unpublished Sessions.
- * @module @centurionarx/cxh-session-persistence/preparations
+ * @module @arx-ai/arx-session-persistence/preparations
  */
 
-import type { Session, SessionId } from '@centurionarx/cxh-session'
+import type { Session, SessionId } from '@arx-ai/arx-session'
 
 interface PreparedSource {
   readonly session: Session

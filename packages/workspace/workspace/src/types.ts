@@ -2,11 +2,11 @@
  * Public type vocabulary of the workspace entity: the `WorkspaceId` brand and
  * the `Workspace` consumer interface. Types only — the `WorkspaceId` factory
  * lives in `index.ts` (this file carries no runtime code).
- * @module @centurionarx/cxh-workspace/src/types
+ * @module @arx-ai/arx-workspace/src/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { SessionId } from '@arx-ai/arx-session'
 
 /**
  * Identifies one workspace record. A generated uuid, never the path: path

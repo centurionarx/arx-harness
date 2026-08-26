@@ -2,24 +2,24 @@ import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import AgentRegistry, { assembleContextFor, type Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import AgentRegistry, { assembleContextFor, type Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AgentPresets, {
   COMPOSITION_FILE, leakedServices, livePresetMounts, mountPreset, PresetMountError, serviceForAgent,
-} from '@centurionarx/cxh-agent-presets'
-import type { Config } from '@centurionarx/cxh-agent-presets'
-import type {} from '@centurionarx/cxh-agent-presets/types'
-import { bindScopeParent, createScope, scopeOf } from '@centurionarx/cxh-scope'
+} from '@arx-ai/arx-agent-presets'
+import type { Config } from '@arx-ai/arx-agent-presets'
+import type {} from '@arx-ai/arx-agent-presets/types'
+import { bindScopeParent, createScope, scopeOf } from '@arx-ai/arx-scope'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Published by the `isolated` fixture preset behind an entry-local realm. */
     fixtureIsolatedSvc: { label: string }
@@ -86,7 +86,7 @@ beforeEach(async () => {
 
 describe('composing an agent from a preset', () => {
   it('hands an absolute plugin path to Node as a file URL', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-preset-absolute-plugin-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-preset-absolute-plugin-'))
     const presetDir = join(root, 'absolute')
     const plugin = join(FIXTURES, 'plugins', 'contribute.js')
     await mkdir(presetDir)
@@ -344,7 +344,7 @@ describe('the preset roster', () => {
 describe('composing from a broken preset', () => {
   /** A roster whose only user preset carries `composition`. */
   async function rosterWith(composition: string): Promise<Context> {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-preset-broken-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-preset-broken-'))
     await mkdir(join(root, 'damaged'))
     await writeFile(join(root, 'damaged', COMPOSITION_FILE), composition)
     return await harness({ default: 'damaged', roots: [{ path: root, trust: 'user' as const }], includeUserRoot: false })
@@ -393,7 +393,7 @@ describe('the preset file is an input, never a persistence target', () => {
     // `write()` override the Loader REWRITES the composition it read, so a
     // committed fixture would be mutated by the very run that proves the bug
     // and every later run would compare against the damaged file and pass.
-    const root = await mkdtemp(join(tmpdir(), 'cxh-preset-write-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-preset-write-'))
     const dir = join(root, 'self-disposing')
     await mkdir(dir)
     const path = join(dir, COMPOSITION_FILE)
@@ -567,7 +567,7 @@ describe('replacing a composition', () => {
   it('keeps the agent on its standing composition when a switch fails, even with the source deleted', async () => {
     // A preset root this test owns, so removing the composition mid-flight
     // cannot disturb the shipped fixtures.
-    const root = await mkdtemp(join(tmpdir(), 'cxh-preset-restore-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-preset-restore-'))
     const seeded: [string, string][] = [['first', `- id: only\n  name: ${join(FIXTURES, 'plugins', 'contribute.js')}\n  config:\n    tool: only\n`], ['broken', '- id: nope\n  name: ./does-not-exist.js\n']]
     for (const [id, body] of seeded) {
       await mkdir(join(root, id))
@@ -619,7 +619,7 @@ describe('editing a composition file', () => {
    * per-test because `livePresetMounts()` is a process-global registry.
    */
   async function editable(id: string): Promise<{ scoped: Context; path: string }> {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-preset-edit-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-preset-edit-'))
     await mkdir(join(root, id))
     const path = join(root, id, COMPOSITION_FILE)
     await writeFile(path, rowFor('before'))

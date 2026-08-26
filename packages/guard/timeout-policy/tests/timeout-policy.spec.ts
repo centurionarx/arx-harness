@@ -1,5 +1,5 @@
 /**
- * Unit + real-load-path coverage for @centurionarx/cxh-tool-call-timeout-policy. The
+ * Unit + real-load-path coverage for @arx-ai/arx-tool-call-timeout-policy. The
  * timeout-wins cases drive the deadline under fake timers (deterministic — no
  * wall-clock race) and use a COOPERATIVE tool that settles only when its
  * `exec.signal` aborts, mirroring how a real capability forwards the signal and
@@ -7,13 +7,13 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { CallId, HarnessError } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED, type ToolExecutionInput, type PostToolDecision } from '@centurionarx/cxh-tools'
-import * as timeoutPolicy from '@centurionarx/cxh-tool-call-timeout-policy'
-import { TOOL_TIMEOUT } from '@centurionarx/cxh-tool-call-timeout-policy'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { CallId, HarnessError } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED, type ToolExecutionInput, type PostToolDecision } from '@arx-ai/arx-tools'
+import * as timeoutPolicy from '@arx-ai/arx-tool-call-timeout-policy'
+import { TOOL_TIMEOUT } from '@arx-ai/arx-tool-call-timeout-policy'
 
 const testToolSignal = new AbortController().signal
 
@@ -217,7 +217,7 @@ describe('timeout-policy disposal (HMR safety)', () => {
   })
 })
 
-describe('cxh-tool-call-timeout-policy real-load-path guard', () => {
+describe('arx-tool-call-timeout-policy real-load-path guard', () => {
   it('has no default export and keeps name/inject through unwrapExports', () => {
     expect('default' in timeoutPolicy).toBe(false)
     const loader = Object.create(Loader.prototype) as Loader

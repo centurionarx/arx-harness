@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { createUserMessage, CallId  } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import { STRUCTURED_OUTPUT_TOOL } from '@centurionarx/cxh-subagent-in-process-driver'
-import * as spawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import WorkerThreadWorkflowEngine from '@centurionarx/cxh-workflow-worker-thread'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { createUserMessage, CallId  } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import { STRUCTURED_OUTPUT_TOOL } from '@arx-ai/arx-subagent-in-process-driver'
+import * as spawn from '@arx-ai/arx-subagent-spawn-in-process'
+import WorkerThreadWorkflowEngine from '@arx-ai/arx-workflow-worker-thread'
 import { MockAdapter, maxTokensResponse, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as toolRalph from '../src/index.ts'
 
@@ -34,7 +34,7 @@ async function mountRalph(script: MockScript, config: toolRalph.Config) {
   return { ctx, adapter, parentHandle, parent: parentHandle.agent }
 }
 
-describe('cxh-tool-ralph over the real spawn and worker-thread stack', () => {
+describe('arx-tool-ralph over the real spawn and worker-thread stack', () => {
   it('uses distinct empty-seed children, shared cwd, and only the prior bounded handoff', async () => {
     const firstReport = {
       status: 'continue',

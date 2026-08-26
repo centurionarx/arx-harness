@@ -1,18 +1,18 @@
 /**
  * Local-filesystem implementation of `ctx.fileReferences`.
  *
- * @module @centurionarx/cxh-file-reference-local
+ * @module @arx-ai/arx-file-reference-local
  */
 
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
 import FileReferenceService, {
   FILE_REFERENCE_PROMPT,
   type FileReferenceCandidate,
-} from '@centurionarx/cxh-file-reference'
-import type {} from '@centurionarx/cxh-system-prompt'
-import type {} from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-file-reference'
+import type {} from '@arx-ai/arx-system-prompt'
+import type {} from '@arx-ai/arx-tools'
 import {
   DEFAULT_FILE_SEARCH_EXCLUDED_DIRECTORIES,
   DEFAULT_FILE_SEARCH_MAX_ENTRIES,
@@ -28,8 +28,8 @@ export {
   WorkspaceFileSearch,
 } from './search.ts'
 export type { FileSearchConfig } from './search.ts'
-export { FILE_REFERENCE_PROMPT } from '@centurionarx/cxh-file-reference'
-export { activeAtToken, formatFileMention } from '@centurionarx/cxh-file-reference/grammar'
+export { FILE_REFERENCE_PROMPT } from '@arx-ai/arx-file-reference'
+export { activeAtToken, formatFileMention } from '@arx-ai/arx-file-reference/grammar'
 
 /** Local file-reference discovery configuration. */
 export interface Config {

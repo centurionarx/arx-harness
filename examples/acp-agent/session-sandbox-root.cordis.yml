@@ -3,12 +3,12 @@
 # /tmp. A workspace-write mutation can therefore succeed only when the calling
 # session's cwd replaces the process-level fallback root.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: sandbox-policy
-        name: '@centurionarx/cxh-sandbox-policy'
+        name: '@arx-ai/arx-sandbox-policy'
         config:
-          mode: !!js "process.env.CXH_PERMISSION_MODE ?? (process.env.CXH_SNAPSHOT === undefined ? 'workspace-write' : 'danger-full-access')"
+          mode: !!js "process.env.ARX_PERMISSION_MODE ?? (process.env.ARX_SNAPSHOT === undefined ? 'workspace-write' : 'danger-full-access')"
           workspaceRoot: /tmp

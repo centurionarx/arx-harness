@@ -1,7 +1,7 @@
 /** Host registration for browser conversation preferences. */
 
-import type { Context } from '@centurionarx/cordis'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import type { Context } from '@arx-ai/cordis'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 import { CONVERSATION_SETTINGS_NAMESPACE, ConversationSettingsSchema } from './submission-settings.ts'
 
 export {

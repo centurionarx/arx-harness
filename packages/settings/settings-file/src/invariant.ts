@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-settings-file`.
- * @module @centurionarx/cxh-settings-file/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-settings-file`.
+ * @module @arx-ai/arx-settings-file/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-settings-file'
+const PACKAGE_NAME = '@arx-ai/arx-settings-file'
 
 /** Cordis companion plugin name. */
 export const name = 'settings-file-invariant'
@@ -17,7 +17,7 @@ export const inject = ['invariants']
 /**
  * No runtime invariant: this provider's contracts are file round-trip,
  * watcher timing, and atomic-write behavior — IO effects proven by package
- * tests; the in-process commit relation is owned by `@centurionarx/cxh-settings`.
+ * tests; the in-process commit relation is owned by `@arx-ai/arx-settings`.
  */
 const install: InvariantInstaller = () => {}
 

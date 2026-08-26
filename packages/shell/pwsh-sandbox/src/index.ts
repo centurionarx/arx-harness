@@ -1,6 +1,6 @@
 /**
  * Sandbox-consuming PowerShell executor — the pwsh twin of
- * `@centurionarx/cxh-bash-sandbox`. It wraps the exact local pwsh argv through
+ * `@arx-ai/arx-bash-sandbox`. It wraps the exact local pwsh argv through
  * `ctx.sandbox` (which on Windows resolves to the ACL restricted-token runner
  * chain), inherits local process mechanics, and reports the selected mode,
  * enforcement, and denial facts. Positive runner-launch evidence means the
@@ -9,12 +9,12 @@
  * local-executor semantics. The tool layer owns the escalation approval flow
  * through `ctx.approval`; this executor reports the sandbox facts the tool
  * renders.
- * @module @centurionarx/cxh-pwsh-sandbox
+ * @module @arx-ai/arx-pwsh-sandbox
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@centurionarx/cxh-shell'
-import { SandboxUnavailableError } from '@centurionarx/cxh-sandbox'
+import { Context } from '@arx-ai/cordis'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@arx-ai/arx-shell'
+import { SandboxUnavailableError } from '@arx-ai/arx-sandbox'
 import type {
   ConfinedArgv,
   ConfinedSandboxMode,
@@ -23,16 +23,16 @@ import type {
   SandboxExecutionPolicy,
   SandboxMode,
   SandboxPolicy,
-} from '@centurionarx/cxh-sandbox'
-import type {} from '@centurionarx/cxh-sandbox-policy'
-import { PwshLocalExecutor } from '@centurionarx/cxh-pwsh-local'
-import type { Config as LocalConfig } from '@centurionarx/cxh-pwsh-local'
+} from '@arx-ai/arx-sandbox'
+import type {} from '@arx-ai/arx-sandbox-policy'
+import { PwshLocalExecutor } from '@arx-ai/arx-pwsh-local'
+import type { Config as LocalConfig } from '@arx-ai/arx-pwsh-local'
 import { classifyDenial, classifyRunnerFailure, isRunnerSpawnFailure, matchesSignature } from './helpers.ts'
 
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@arx-ai/arx-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The
  * runner choice is likewise the `ctx.sandbox` provider's config, not this
  * executor's.

@@ -1,11 +1,11 @@
 /**
  * Pure generated-artifact and runtime-registry types. The registry stores Zod
  * schemas separately from generated package reflection metadata.
- * @module @centurionarx/cxh-typert-registry/types
+ * @module @arx-ai/arx-typert-registry/types
  */
 
 import type { z } from 'zod'
-import type { InvocationDescriptor } from '@centurionarx/cxh-typert-protocol'
+import type { InvocationDescriptor } from '@arx-ai/arx-typert-protocol'
 
 /** Independently compiled side that produced a contribution. */
 export type TypertFace = 'host' | 'client'

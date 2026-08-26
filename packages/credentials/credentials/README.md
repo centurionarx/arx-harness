@@ -1,4 +1,4 @@
-# cxh-credentials
+# arx-credentials
 
 English | [中文](README.zh.md)
 
@@ -21,8 +21,8 @@ The key is `<scope>/<id>`, where `scope` is the **owning plugin's registered nam
 ## Surface
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import { credentialKey, credentialRef } from '@centurionarx/cxh-credentials'
+import type { Context } from '@arx-ai/cordis'
+import { credentialKey, credentialRef } from '@arx-ai/arx-credentials'
 
 declare const ctx: Context
 
@@ -52,7 +52,7 @@ The shadowing rule on `set`/`unset` is deliberate fail-loud: when a read-only so
 
 ## Providers
 
-[`cxh-credentials-local`](../credentials-local/README.md) layers the inherited process environment over its managed `$CXH_HOME/.credentials.yaml` document, with the launcher's project and user `.env` layers as fallbacks. The seam shape leaves room for keyring-, helper-command-, and KMS-backed providers; a remote settings provider never needs to carry secrets.
+[`arx-credentials-local`](../credentials-local/README.md) layers the inherited process environment over its managed `$ARX_HOME/.credentials.yaml` document, with the launcher's project and user `.env` layers as fallbacks. The seam shape leaves room for keyring-, helper-command-, and KMS-backed providers; a remote settings provider never needs to carry secrets.
 
 ## Model Experience
 

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentStatus } from '@centurionarx/cxh-agent'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import GoalService from '@centurionarx/cxh-goal'
-import type { GoalRef } from '@centurionarx/cxh-goal'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import * as commandGoal from '@centurionarx/cxh-command-goal'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentStatus } from '@arx-ai/arx-agent'
+import CommandRuntime from '@arx-ai/arx-commands'
+import GoalService from '@arx-ai/arx-goal'
+import type { GoalRef } from '@arx-ai/arx-goal'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import * as commandGoal from '@arx-ai/arx-command-goal'
 
 interface Harness {
   readonly ctx: Context
@@ -85,7 +85,7 @@ function ref(goal: NonNullable<ReturnType<GoalService['get']>>): GoalRef {
   return { id: goal.id, revision: goal.revision }
 }
 
-describe('@centurionarx/cxh-command-goal registration', () => {
+describe('@arx-ai/arx-command-goal registration', () => {
   it('registers one global command with Loader-safe exports and disposes it', async () => {
     const test = await harness()
     expect(commandGoal.name).toBe('command-goal')

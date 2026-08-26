@@ -6,10 +6,10 @@
  * serialize per Session, and a disposed controller stops publishing.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { MessageId, SessionId } from '@centurionarx/cxh-client-connection/client'
+import type { MessageId, SessionId } from '@arx-ai/arx-client-connection/client'
 import type {
   MessageFeedbackItem, MessageFeedbackVersion,
-} from '@centurionarx/cxh-message-feedback/types'
+} from '@arx-ai/arx-message-feedback/types'
 import { MessageFeedbackController, type MessageFeedbackRemote } from '../src/client/controller.ts'
 
 const SESSION = 's-1' as SessionId

@@ -1,8 +1,8 @@
 /** General Settings row for the Composer's busy-state Enter preference. */
 import { useState } from 'react'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import { IconChevronDownOutline14, Menu } from '@centurionarx/cxh-client-ui-primitives'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import { IconChevronDownOutline14, Menu } from '@arx-ai/arx-client-ui-primitives'
 import type { BusyEnterBehavior } from '../contract/composer-submission.ts'
 import type { ConversationKey } from '../locales.ts'
 import css from './EnterBehaviorRow.module.css'

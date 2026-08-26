@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { AttachmentStore } from '@centurionarx/cxh-attachment'
-import { admitEncodedImages } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentRef, SaveImageAttachment } from '@centurionarx/cxh-attachment/types'
+import type { AttachmentStore } from '@arx-ai/arx-attachment'
+import { admitEncodedImages } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentRef, SaveImageAttachment } from '@arx-ai/arx-attachment/types'
 
 const PNG = 'AAAA' // canonical base64, 3 bytes
 

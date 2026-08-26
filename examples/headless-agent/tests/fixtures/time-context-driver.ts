@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /** Test driver that sends two turns through one Headless Loader composition. */
 
-import { boot, resolveConfigPath } from '@centurionarx/cxh-app-boot'
-import { runFixtureTurn } from '@centurionarx/cxh-loader-smoke'
+import { boot, resolveConfigPath } from '@arx-ai/arx-app-boot'
+import { runFixtureTurn } from '@arx-ai/arx-loader-smoke'
 
 const configPath = process.argv[2]
 if (configPath === undefined) throw new Error('time-context driver requires a config path')

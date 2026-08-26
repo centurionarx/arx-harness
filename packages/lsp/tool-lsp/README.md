@@ -1,4 +1,4 @@
-# @centurionarx/cxh-tool-lsp
+# @arx-ai/arx-tool-lsp
 
 English | [中文](README.zh.md)
 
@@ -18,7 +18,7 @@ The tool requires the workspace root from the session `header.cwd`, with no fall
 |---|---|---|
 | `maxLocations` | `100` | Largest number of rendered locations before an omission marker. |
 | `maxResultChars` | `16000` | Largest complete rendered result, including truncation metadata. |
-| `timeoutMs` | `60000` | Tool-call timeout budget, enforced by `cxh-tool-call-timeout-policy`; covers the complete queued open/query/close lifecycle and is not model-configurable. |
+| `timeoutMs` | `60000` | Tool-call timeout budget, enforced by `arx-tool-call-timeout-policy`; covers the complete queued open/query/close lifecycle and is not model-configurable. |
 
 ## Model Experience
 
@@ -46,7 +46,7 @@ Prefix-stable while the plugin scope and guidance text are unchanged; activation
 
 #### What the model sees
 
-The model sees the generated [`lsp` schema](../../../docs/tool-catalog.md#centurionarxcxh-tool-lsp).
+The model sees the generated [`lsp` schema](../../../docs/tool-catalog.md#arx-aiarx-tool-lsp).
 
 #### Token effect
 

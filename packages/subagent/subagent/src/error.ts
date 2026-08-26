@@ -1,10 +1,10 @@
 /**
  * Typed failures shared by subagent service and provider operations.
  *
- * @module @centurionarx/cxh-subagent
+ * @module @arx-ai/arx-subagent
  */
 
-import { HarnessError } from '@centurionarx/cxh-llm'
+import { HarnessError } from '@arx-ai/arx-llm'
 
 /** Typed failure for the subagent seam. */
 export class SubagentError extends HarnessError {

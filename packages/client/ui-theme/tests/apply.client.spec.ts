@@ -1,14 +1,14 @@
 /** ui-theme apply wiring: service provision, settings dictionaries riding the
  * locale service, declaration-aware Appearance row registration, snapshot
  * projection into the row store, and HMR collapse recovery. */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import { apply, inject, SETTINGS_NS } from '@centurionarx/cxh-client-ui-theme/client'
-import type { AppearanceRowInjected, ThemeRuntime } from '@centurionarx/cxh-client-ui-theme/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import { apply, inject, SETTINGS_NS } from '@arx-ai/arx-client-ui-theme/client'
+import type { AppearanceRowInjected, ThemeRuntime } from '@arx-ai/arx-client-ui-theme/client'
 import { THEME_SETTINGS_NAMESPACE, ThemeSettingsSchema } from '../src/theme-settings.ts'
 import { AppearanceRow } from '../src/client/AppearanceRow.tsx'
 import type { createAppearanceRowStore } from '../src/client/settings-store.ts'

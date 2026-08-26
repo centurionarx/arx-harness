@@ -4,13 +4,13 @@
  * registration follows the slot declaration, resolves the per-session controller from the slot's
  * sessionId, and unregisters on fiber teardown.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { createScope, scopeOf, SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { apply, inject, InputTriggerService } from '@centurionarx/cxh-client-ui-input-trigger/client'
-import type { MenuViewInjected } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { createScope, scopeOf, SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { apply, inject, InputTriggerService } from '@arx-ai/arx-client-ui-input-trigger/client'
+import type { MenuViewInjected } from '@arx-ai/arx-client-ui-input-trigger/client'
 
 const sid = (k: string): SessionId => k as SessionId
 

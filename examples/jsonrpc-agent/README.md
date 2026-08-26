@@ -18,23 +18,23 @@ The surrounding runtime also loads JSONL session persistence and automatic conte
 | Variable | Purpose |
 |---|---|
 | `DEEPSEEK_API_KEY` | Credential passed to the OpenAI-compatible host endpoint |
-| `DEEPSEEK_BASE_URL` | Host endpoint used by `cxh-llm-deepseek` |
-| `CXH_CWD` | Agent workspace for bash and filesystem tools |
-| `CXH_CONTEXT_WINDOW` | Context capacity recorded for the `CXH_MODEL` catalog entry in the minimal variant |
-| `CXH_MAX_TOKENS_AS_SUCCESS` | `true` (default) accepts token-limited results; `false` reports them as errors |
-| `CXH_MODEL` | Default model used by `minimal.py`; `--model` takes precedence |
-| `CXH_SESSION_ROOT` | JSONL session directory |
-| `CXH_SYSTEM_PROMPT` | Deployment-provided coding persona |
+| `DEEPSEEK_BASE_URL` | Host endpoint used by `arx-llm-deepseek` |
+| `ARX_CWD` | Agent workspace for bash and filesystem tools |
+| `ARX_CONTEXT_WINDOW` | Context capacity recorded for the `ARX_MODEL` catalog entry in the minimal variant |
+| `ARX_MAX_TOKENS_AS_SUCCESS` | `true` (default) accepts token-limited results; `false` reports them as errors |
+| `ARX_MODEL` | Default model used by `minimal.py`; `--model` takes precedence |
+| `ARX_SESSION_ROOT` | JSONL session directory |
+| `ARX_SYSTEM_PROMPT` | Deployment-provided coding persona |
 
-Pass the config path through the Python SDK's `cordis` option or `CXH_CORDIS_CONFIG`. The bundled executable already carries every plugin named by this file; the target machine does not need Node.js.
+Pass the config path through the Python SDK's `cordis` option or `ARX_CORDIS_CONFIG`. The bundled executable already carries every plugin named by this file; the target machine does not need Node.js.
 
 ## Minimal variant
 
-[`minimal.cordis.yml`](minimal.cordis.yml) is the complete standalone counterpart of the Web `minimal` preset. `CXH_SYSTEM_PROMPT` selects its system prompt, with `You are a helpful software engineer assistant.` as the fallback. It suppresses every system-prompt runtime-context contribution for fresh sessions and mounts no context-compaction plugin. Its model-facing tools are exactly:
+[`minimal.cordis.yml`](minimal.cordis.yml) is the complete standalone counterpart of the Web `minimal` preset. `ARX_SYSTEM_PROMPT` selects its system prompt, with `You are a helpful software engineer assistant.` as the fallback. It suppresses every system-prompt runtime-context contribution for fresh sessions and mounts no context-compaction plugin. Its model-facing tools are exactly:
 
 - owner-scoped persistent `bash`
 - `str_replace_editor` with `view`, `create`, `str_replace`, and `insert`
 
 It composes the local PTY, bare `fs-local` backend, danger-full-access policy for persistent Bash, and uncompressed JSONL persistence needed by the bundled runtime. Bash and absolute editor paths can modify any path available to the runtime process, so run this variant only against a disposable checkout or container. The persistent PTY requires a POSIX terminal environment and is not a Windows agent interface.
 
-[`minimal.py`](minimal.py) runs the composition through the Python SDK and uses `CXH_MODEL` as its default model. The [Python SDK tutorial](../../docs/user/guide/python-sdk.md) covers installation, execution, workspace selection, and session identity; the [SDK reference](../../python/sdk/README.md) owns runtime lifecycle and result semantics.
+[`minimal.py`](minimal.py) runs the composition through the Python SDK and uses `ARX_MODEL` as its default model. The [Python SDK tutorial](../../docs/user/guide/python-sdk.md) covers installation, execution, workspace selection, and session identity; the [SDK reference](../../python/sdk/README.md) owns runtime lifecycle and result semantics.

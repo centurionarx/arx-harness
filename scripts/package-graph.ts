@@ -8,11 +8,11 @@
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, resolve, sep } from 'node:path'
 
-const SCOPE = '@centurionarx/cxh-'
+const SCOPE = '@arx-ai/arx-'
 
 /** One harness package and its in-repo peer-dependency edges. */
 export interface PackageGraphNode {
-  /** Package name with the `@centurionarx/cxh-` prefix removed. */
+  /** Package name with the `@arx-ai/arx-` prefix removed. */
   short: string
   /** Full npm package name. */
   name: string

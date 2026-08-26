@@ -5,15 +5,15 @@
  * never provider selection or network access.
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, JsonValue, ToolResult, WebSearchResultView, WebSource } from '@centurionarx/cxh-tools'
-import type { WebSearchResult, WebSearchSource } from '@centurionarx/cxh-web'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, JsonValue, ToolResult, WebSearchResultView, WebSource } from '@arx-ai/arx-tools'
+import type { WebSearchResult, WebSearchSource } from '@arx-ai/arx-web'
+import type {} from '@arx-ai/arx-system-prompt'
 
 /**
  * Default upper bound on returned sources (the `searchMaxResults` config).
- * Owned by the consumer (not the provider or model), mirroring `cxh-tool-fs`'s
+ * Owned by the consumer (not the provider or model), mirroring `arx-tool-fs`'s
  * `READ_LIMIT`. The model just asks a question; the product controls how much
  * context returns. The default `8` aligns with OpenCode's Exa default.
  */
@@ -302,7 +302,7 @@ function mergeSearchResults(
  *   request's `maxResults`.
  * @param maxQueries - the deployment's query cap enforced before provider calls.
  * @param timeoutMs - the cooperative tool-call budget (ms) attached as the tool's
- *   `ToolDefinition.timeoutMs` for `@centurionarx/cxh-tool-call-timeout-policy` to enforce.
+ *   `ToolDefinition.timeoutMs` for `@arx-ai/arx-tool-call-timeout-policy` to enforce.
  * @param fetchEnabled - whether the same composition exposes `web_fetch`, which
  *   controls whether search guidance may recommend that follow-up tool.
  */

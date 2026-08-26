@@ -8,18 +8,18 @@
 import { mkdtempSync, realpathSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { type AgentFactory } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore, { SessionId, type Session } from '@centurionarx/cxh-session'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { type AgentFactory } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore, { SessionId, type Session } from '@arx-ai/arx-session'
+import UserQuestionService from '@arx-ai/arx-user-questions'
 import { RpcId, type RpcRequest } from '../src/api/rpc.ts'
 import type { HostFrame } from '../src/api/events.ts'
 import {
   InvalidPresetIdError, PresetExistsError, resolveSessionPreset, UnknownPresetError,
-} from '@centurionarx/cxh-agent-presets'
-import type {} from '@centurionarx/cxh-agent-presets/types'
-import { GoalId } from '@centurionarx/cxh-goal'
+} from '@arx-ai/arx-agent-presets'
+import type {} from '@arx-ai/arx-agent-presets/types'
+import { GoalId } from '@arx-ai/arx-goal'
 import { createApiProxy } from '../src/api-proxy.ts'
 import { describe, expect, it } from 'vitest'
 
@@ -106,7 +106,7 @@ async function harness(
   persistence?: unknown,
   options: { userIds?: readonly string[]; defaults?: Record<string, unknown> } = {},
 ) {
-  const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'cxh-apiproxy-preset-')))
+  const cwd = realpathSync(mkdtempSync(join(tmpdir(), 'arx-apiproxy-preset-')))
   const ctx = new Context()
   await ctx.plugin(SessionStore)
   await ctx.plugin(AgentRegistry)

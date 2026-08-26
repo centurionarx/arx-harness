@@ -1,10 +1,10 @@
-/** Package-owned durable plan-mode invariants. @module @centurionarx/cxh-plan-mode/invariant */
+/** Package-owned durable plan-mode invariants. @module @arx-ai/arx-plan-mode/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-plan-mode'
+const PACKAGE_NAME = '@arx-ai/arx-plan-mode'
 
 /** Cordis companion plugin name. */
 export const name = 'plan-mode-invariant'

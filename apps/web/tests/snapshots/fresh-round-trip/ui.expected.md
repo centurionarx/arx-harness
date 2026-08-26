@@ -12,10 +12,10 @@
 - text: "Use the bash tool to run exactly: echo WEB_E2E_OK. Then reply with the single word DONE and stop. {{clock}}"
 - button "Copy":
   - img
-- button "Context injection @centurionarx/cxh-system-prompt":
+- button "Context injection @arx-ai/arx-system-prompt":
   - img
   - img
-  - text: Context injection @centurionarx/cxh-system-prompt
+  - text: Context injection @arx-ai/arx-system-prompt
 - button "Think The user wants me to run a simple bash command and reply with \"DONE\".":
   - img
   - img

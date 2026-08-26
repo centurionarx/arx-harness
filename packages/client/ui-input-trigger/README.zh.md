@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-input-trigger
+# @arx-ai/arx-client-ui-input-trigger
 
 [English](README.md) | 中文
 

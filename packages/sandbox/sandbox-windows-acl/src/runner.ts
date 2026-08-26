@@ -41,7 +41,7 @@
  * directories, token/grant/spawn errors) prints `windows-acl-run: <detail>`
  * to stderr and exits 127 — the seam's RUNNER_FAILURE_RULES matches that
  * signature. The child is NEVER spawned unrestricted.
- * @module @centurionarx/cxh-sandbox-windows-acl/runner
+ * @module @arx-ai/arx-sandbox-windows-acl/runner
  */
 
 import { existsSync, mkdtempSync, rmSync, statSync } from 'node:fs'
@@ -153,7 +153,7 @@ async function main(): Promise<number> {
         privateTempSid = tempWriteSid(privateTempDir)
         if (parsed.tempWriteSid !== privateTempSid) fail('--temp-write-sid does not match --temp')
       } else {
-        ownedTempDir = mkdtempSync(join(parsed.temp, 'cxh-'))
+        ownedTempDir = mkdtempSync(join(parsed.temp, 'arx-'))
         privateTempDir = ownedTempDir
         privateTempSid = tempWriteSid(privateTempDir)
       }

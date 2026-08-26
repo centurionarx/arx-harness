@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-web-frontend",
-  "description": "Web application entry: vite build over the @centurionarx/cxh-client-web shell library; dist/ served by apps/cli's cxh web",
+  "name": "@arx-ai/arx-web-frontend",
+  "description": "Web application entry: vite build over the @arx-ai/arx-client-web shell library; dist/ served by apps/cli's arx web",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "apps/web"
   },
   "type": "module",
@@ -26,13 +26,13 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@centurionarx/cordis-plugin-group": "workspace:^",
-    "@centurionarx/cxh-client-modules": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-client-web": "workspace:^",
-    "@centurionarx/cxh-cmdline": "workspace:^",
-    "@centurionarx/cxh-pwsh-local": "workspace:^",
+    "@arx-ai/cordis-plugin-group": "workspace:^",
+    "@arx-ai/arx-client-modules": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-client-web": "workspace:^",
+    "@arx-ai/arx-cmdline": "workspace:^",
+    "@arx-ai/arx-pwsh-local": "workspace:^",
     "@types/node": "^22.0.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",

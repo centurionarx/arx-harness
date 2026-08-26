@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { AddressInfo } from 'node:net'
-import { Context } from '@centurionarx/cordis'
-import WebRuntime from '@centurionarx/cxh-web'
-import { HttpFetchProvider, LOCAL_FETCH_PROVIDER_ID } from '@centurionarx/cxh-web-fetch-http'
-import type { HttpFetchLimits } from '@centurionarx/cxh-web-fetch-http'
-import * as fetchPlugin from '@centurionarx/cxh-web-fetch-http'
+import { Context } from '@arx-ai/cordis'
+import WebRuntime from '@arx-ai/arx-web'
+import { HttpFetchProvider, LOCAL_FETCH_PROVIDER_ID } from '@arx-ai/arx-web-fetch-http'
+import type { HttpFetchLimits } from '@arx-ai/arx-web-fetch-http'
+import * as fetchPlugin from '@arx-ai/arx-web-fetch-http'
 import { classifyContentType, decoderForCharset, isSameOrigin, parseCharset, validateFetchUrl } from '../src/policy.ts'
 
 const limits: HttpFetchLimits = {

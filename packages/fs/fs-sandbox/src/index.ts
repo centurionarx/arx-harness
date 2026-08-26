@@ -1,6 +1,6 @@
 /**
  * `SandboxedFileSystem`: the sandbox-enforcing implementation of the
- * `@centurionarx/cxh-fs` Service Definition. It extends `LocalFileSystem` so all
+ * `@arx-ai/arx-fs` Service Definition. It extends `LocalFileSystem` so all
  * text-storage mechanics — resolve, stat, read/stream, list, the atomic
  * write and the read-match-write edit critical section — are the local
  * implementation's, verbatim; this package adds only the per-call POLICY fence
@@ -11,7 +11,7 @@
  * NOT a kernel boundary — the operations are the seam's own (open, rename),
  * and only the target path is untrusted, so canonicalize-then-contain is the
  * complete answer to this surface. Kernel-grade isolation of untrusted CODE
- * stays `ctx.shell`'s job (`@centurionarx/cxh-bash-sandbox`). This mirrors the
+ * stays `ctx.shell`'s job (`@arx-ai/arx-bash-sandbox`). This mirrors the
  * `code-runtime` stance: containment, not a security boundary. The residual
  * TOCTOU (an ancestor symlink swapped between the containment re-check and the
  * syscall) is narrowed by re-canonicalizing immediately before delegating and
@@ -24,20 +24,20 @@
  * `danger-full-access` delegates unfenced. A denial throws the structured
  * `FS_SANDBOX_DENIED` — no text inference is needed (unlike bash's kernel
  * stderr), because an in-process fence knows exactly what it refused. The
- * escalation retry lives in the tool layer (`@centurionarx/cxh-tool-fs`),
+ * escalation retry lives in the tool layer (`@arx-ai/arx-tool-fs`),
  * exactly as bash's does.
  *
- * @module @centurionarx/cxh-fs-sandbox
+ * @module @arx-ai/arx-fs-sandbox
  */
 
-import { Context } from '@centurionarx/cordis'
-import { LocalFileSystem } from '@centurionarx/cxh-fs-local'
-import type { Config as LocalConfig } from '@centurionarx/cxh-fs-local'
-import { FsError } from '@centurionarx/cxh-fs'
-import type { FsEditOutcome, FsEditRequest, FsTarget, FsVersion, FsWriteIntent, FsWriteOutcome } from '@centurionarx/cxh-fs'
-import { writableRoots } from '@centurionarx/cxh-sandbox'
-import type { SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
-import type {} from '@centurionarx/cxh-sandbox-policy'
+import { Context } from '@arx-ai/cordis'
+import { LocalFileSystem } from '@arx-ai/arx-fs-local'
+import type { Config as LocalConfig } from '@arx-ai/arx-fs-local'
+import { FsError } from '@arx-ai/arx-fs'
+import type { FsEditOutcome, FsEditRequest, FsTarget, FsVersion, FsWriteIntent, FsWriteOutcome } from '@arx-ai/arx-fs'
+import { writableRoots } from '@arx-ai/arx-sandbox'
+import type { SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
+import type {} from '@arx-ai/arx-sandbox-policy'
 import { isPathUnder } from './containment.ts'
 
 /**
@@ -50,9 +50,9 @@ export type Config = LocalConfig
 
 /**
  * Sandbox-enforcing filesystem backend. Registers as `ctx.fs` (loading it
- * INSTEAD OF `cxh-fs-local`, together with a `ctx.sandboxPolicy`, is the whole
+ * INSTEAD OF `arx-fs-local`, together with a `ctx.sandboxPolicy`, is the whole
  * swap — the model-facing tools are untouched). Its configured default mode is
- * the capability fact exposed by {@link sandboxMode}; `cxh-tool-fs` resolves
+ * the capability fact exposed by {@link sandboxMode}; `arx-tool-fs` resolves
  * each session's mode and cwd into a policy for every mutation, while an
  * approved escalation may stamp a strictly wider mode for one call.
  */

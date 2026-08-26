@@ -1,19 +1,19 @@
 # Image-scenario overlay: adds the durable attachment store the read_image tool
-# commits through. The store resolves its root from $CXH_HOME, which the
+# commits through. The store resolves its root from $ARX_HOME, which the
 # snapshot harness scopes per run, so the overlay itself carries no paths. The
 # app config is restated to select the shipped vision model because a config
 # patch replaces the whole app config.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash-vision-exp
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:
             maxBytes: 65536
@@ -23,4 +23,4 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: attachment-local
-            name: '@centurionarx/cxh-attachment-local'
+            name: '@arx-ai/arx-attachment-local'

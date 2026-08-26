@@ -27,7 +27,7 @@
  *   web bodies). `head` / `tail` / `headTail`, preserving UTF-8 boundaries at
  *   {@link TextRetainer.finish}.
  *
- * @module @centurionarx/cxh-output-retention
+ * @module @arx-ai/arx-output-retention
  */
 
 /**

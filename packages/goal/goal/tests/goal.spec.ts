@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { agentEvents, Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage, HarnessError } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId, type UserMessage } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { agentEvents, Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage, HarnessError } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId, type UserMessage } from '@arx-ai/arx-session'
 import GoalService, {
   GoalError,
   GoalId,
   decodeGoalChange,
   foldGoal,
-} from '@centurionarx/cxh-goal'
-import type { GoalChangeMeta, GoalRef, GoalSnapshotChangeMeta } from '@centurionarx/cxh-goal'
+} from '@arx-ai/arx-goal'
+import type { GoalChangeMeta, GoalRef, GoalSnapshotChangeMeta } from '@arx-ai/arx-goal'
 
 interface StubAgent {
   agent: Agent
@@ -53,7 +53,7 @@ function stubAgentForSession(session: Session): StubAgent {
 }
 
 /** Build a registry-compatible agent around a fresh session. */
-function stubAgent(rawId: string, seed?: readonly import('@centurionarx/cxh-session').SessionEvent[]): StubAgent {
+function stubAgent(rawId: string, seed?: readonly import('@arx-ai/arx-session').SessionEvent[]): StubAgent {
   return stubAgentForSession(Session.create(SessionId(rawId), seed))
 }
 

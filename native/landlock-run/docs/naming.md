@@ -2,11 +2,11 @@
 
 ## npm packages
 
-The public package family belongs to the `@centurionarx` scope and uses the `node-addon-landlock-run` package prefix; platform packages append platform information only:
+The public package family belongs to the `@arx-ai` scope and uses the `node-addon-landlock-run` package prefix; platform packages append platform information only:
 
 ```text
-@centurionarx/node-addon-landlock-run
-@centurionarx/node-addon-landlock-run-<platform>
+@arx-ai/node-addon-landlock-run
+@arx-ai/node-addon-landlock-run-<platform>
 ```
 
 Platform suffixes carry no libc component (binaries are static musl) and no variant component — variants stay inside `prebuilds.json` and binary filenames.

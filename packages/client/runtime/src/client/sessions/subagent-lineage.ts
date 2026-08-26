@@ -2,9 +2,9 @@
  * Pure subagent-lineage aggregation over the retained session-list mirror.
  * Ordinary forks terminate propagation so each visible session owns only its
  * uninterrupted subagent subtree.
- * @module @centurionarx/cxh-client-runtime/client/sessions/subagent-lineage
+ * @module @arx-ai/arx-client-runtime/client/sessions/subagent-lineage
  */
-import type { SessionId } from '@centurionarx/cxh-api-remotes/client'
+import type { SessionId } from '@arx-ai/arx-api-remotes/client'
 import type { SessionSummary } from './service.ts'
 
 /** Descendant counts projected for one possible parent session. */

@@ -5,9 +5,9 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   IconChevronDownOutline14, IconInspectOutline12, IconSkillOutline16, StateDot,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { ToolCallViewProps } from '@centurionarx/cxh-client-ui-tool/client'
-import type { PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { ToolCallViewProps } from '@arx-ai/arx-client-ui-tool/client'
+import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import css from './SkillRow.module.css'
 
 /** Skill row lifecycle derived solely from the durable call slice. */

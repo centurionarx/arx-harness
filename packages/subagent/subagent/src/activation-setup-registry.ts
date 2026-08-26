@@ -8,12 +8,12 @@
  * Activation disposal, so no installation outlives either owner and no removed
  * contribution can be installed after revocation reports completion.
  *
- * @module @centurionarx/cxh-subagent/activation-setup-registry
+ * @module @arx-ai/arx-subagent/activation-setup-registry
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { AgentSetupCommit } from '@centurionarx/cxh-agent'
-import { errorChain } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { AgentSetupCommit } from '@arx-ai/arx-agent'
+import { errorChain } from '@arx-ai/arx-llm'
 import { SubagentError } from './error.ts'
 
 /**

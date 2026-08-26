@@ -1,17 +1,17 @@
 /**
- * `@centurionarx/cxh-web-search-exa`: registers an Exa-backed `WebSearchProvider`
+ * `@arx-ai/arx-web-search-exa`: registers an Exa-backed `WebSearchProvider`
  * with `ctx.web`. A function/namespace plugin (NOT a default-export service):
  * a search provider does not own the `ctx.web` key — it registers INTO the
- * seam's provider registry, exactly as `@centurionarx/cxh-llm-deepseek`
- * registers an adapter into `ctx.llm`. The key is owned by `@centurionarx/cxh-web`.
+ * seam's provider registry, exactly as `@arx-ai/arx-llm-deepseek`
+ * registers an adapter into `ctx.llm`. The key is owned by `@arx-ai/arx-web`.
  *
- * @module @centurionarx/cxh-web-search-exa
+ * @module @arx-ai/arx-web-search-exa
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { launchEnvironmentOf } from '@centurionarx/cxh-launch-environment'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-web'
+import type { Context } from '@arx-ai/cordis'
+import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-web'
 import {
   ExaSearchProvider,
   EXA_DEFAULT_BASE_URL,

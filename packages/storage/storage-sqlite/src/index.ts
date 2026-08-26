@@ -2,14 +2,14 @@
  * SQLite storage backend for the storage hub: one database file hosts every
  * routed unit, document-per-row (`key TEXT` / `value TEXT` JSON). Registers
  * as backend `sqlite`; the disposer unregisters first, then closes the medium.
- * @module @centurionarx/cxh-storage-sqlite
+ * @module @arx-ai/arx-storage-sqlite
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import type { DatabaseSync } from 'node:sqlite'
-import { StorageError, UNIT_NAME_RE, storageBackendServiceKey } from '@centurionarx/cxh-storage'
-import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@centurionarx/cxh-storage'
+import { StorageError, UNIT_NAME_RE, storageBackendServiceKey } from '@arx-ai/arx-storage'
+import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@arx-ai/arx-storage'
 import { openDatabase, recordTableName, type JournalMode } from './schema.ts'
 import { SqliteKvUnit } from './unit.ts'
 

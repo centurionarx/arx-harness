@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-shell",
-  "description": "Abstract bash executor seam (ctx.shell) for the CENTURIONarx Harness",
+  "name": "@arx-ai/arx-shell",
+  "description": "Abstract bash executor seam (ctx.shell) for the arx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/shell/shell"
   },
   "type": "module",
@@ -32,17 +32,17 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   }
 }

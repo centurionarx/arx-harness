@@ -1,6 +1,6 @@
 /**
  * Showcase integration: the real `web_fetch` tool + the real spill stack
- * (`cxh-spill-local` backend + `cxh-spill-policy`), exercised through
+ * (`arx-spill-local` backend + `arx-spill-policy`), exercised through
  * `ctx.tools.execute()`. Proves the Agent Note's default local-backend path — a large
  * formatted fetch result is automatically retained and spilled with NO
  * tool-specific spill code, and the model-facing text changes ONLY by the
@@ -13,19 +13,19 @@ import { AddressInfo } from 'node:net'
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import type { ToolExecution } from '@arx-ai/arx-tools'
 
 const testToolSignal = new AbortController().signal
-import WebRuntime from '@centurionarx/cxh-web'
-import * as WebFetchLocal from '@centurionarx/cxh-web-fetch-http'
-import LocalSpillStore from '@centurionarx/cxh-spill-local'
-import * as SpillPolicy from '@centurionarx/cxh-spill-policy'
-import * as ToolWeb from '@centurionarx/cxh-tool-web'
+import WebRuntime from '@arx-ai/arx-web'
+import * as WebFetchLocal from '@arx-ai/arx-web-fetch-http'
+import LocalSpillStore from '@arx-ai/arx-spill-local'
+import * as SpillPolicy from '@arx-ai/arx-spill-policy'
+import * as ToolWeb from '@arx-ai/arx-tool-web'
 
 type Handler = (req: IncomingMessage, res: ServerResponse) => void
 
@@ -43,7 +43,7 @@ beforeEach(async () => {
   server = createServer((req, res) => { handler(req, res) })
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
-  spillRoot = mkdtempSync(join(tmpdir(), 'cxh-spill-web-'))
+  spillRoot = mkdtempSync(join(tmpdir(), 'arx-spill-web-'))
 
   ctx = new Context()
   await ctx.plugin(SystemPrompt)

@@ -3,16 +3,16 @@
  * with logged model context without vetoing or rewriting calls. Configuration
  * and chain semantics live in the package README; rationale lives in the
  * repeat-tool-reminder Agent Note.
- * @module @centurionarx/cxh-repeat-tool-reminder
+ * @module @arx-ai/arx-repeat-tool-reminder
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { MessageSource } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-session'
-import type { PostToolDecision, ToolExecution } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { MessageSource } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-session'
+import type { PostToolDecision, ToolExecution } from '@arx-ai/arx-tools'
 
 export const name = 'repeat-tool-reminder'
 

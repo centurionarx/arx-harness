@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { CallId } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentCapabilities, SubagentProvider, SubagentRun, SubagentStartRequest } from '@centurionarx/cxh-subagent'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import type { ToolExecutionResult } from '@centurionarx/cxh-tools'
-import { WorkflowRunId, WorkflowEngine } from '@centurionarx/cxh-workflow'
-import type { WorkflowResult, WorkflowRun, WorkflowStartRequest } from '@centurionarx/cxh-workflow'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import type { Agent } from '@arx-ai/arx-agent'
+import { CallId } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentCapabilities, SubagentProvider, SubagentRun, SubagentStartRequest } from '@arx-ai/arx-subagent'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import type { ToolExecutionResult } from '@arx-ai/arx-tools'
+import { WorkflowRunId, WorkflowEngine } from '@arx-ai/arx-workflow'
+import type { WorkflowResult, WorkflowRun, WorkflowStartRequest } from '@arx-ai/arx-workflow'
 import * as toolRalph from '../src/index.ts'
 
 const testToolSignal = new AbortController().signal
@@ -141,7 +141,7 @@ async function settleCompleted(
   return pending
 }
 
-describe('cxh-tool-ralph', () => {
+describe('arx-tool-ralph', () => {
   it('starts the fixed workflow through the configured fresh provider and renders completion', async () => {
     const { ctx, engine, parent } = await setup({ config: { maxRounds: 9, maxHandoffChars: 9000 } })
     const pending = execute(ctx, { objective: '  Finish the migration.  ', maxRounds: 4 }, { agent: parent })

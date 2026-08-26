@@ -5,21 +5,21 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { stat } from 'node:fs/promises'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import type { SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
+import AgentRegistry from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session'
+import UserQuestionService from '@arx-ai/arx-user-questions'
 import {
   SessionQueryError,
   type SessionSearchHit,
   type SessionSearchRequest,
-} from '@centurionarx/cxh-session-query'
-import type { RpcRequest } from '@centurionarx/cxh-host-apiproxy/api'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+} from '@arx-ai/arx-session-query'
+import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()

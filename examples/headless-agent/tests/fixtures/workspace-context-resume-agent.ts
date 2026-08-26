@@ -3,8 +3,8 @@
  * @module workspace-context-resume-agent
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { SessionId } from '@arx-ai/arx-session'
 
 /** Fixture plugin name. */
 export const name = 'workspace-context-resume-agent'

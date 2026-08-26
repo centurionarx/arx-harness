@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-11-content-block-vocabulary.md
-2026-06-11-content-block-vocabulary.md: 64229460c618a87a88176ad634d7d4ae99bafdbe
-2026-06-11-content-block-vocabulary.zh.md: 51c66e8a0ea04960b05edba36eb82e906542b957
+2026-06-11-content-block-vocabulary.md: ad0eb2d063ddb90de07c02ca824a31b13db33ead
+2026-06-11-content-block-vocabulary.zh.md: 053b2120aa4c3d46d57787d47e54e481624b5252

@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-agent-spine-demo`.
- * @module @centurionarx/cxh-agent-spine-demo/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-agent-spine-demo`.
+ * @module @arx-ai/arx-agent-spine-demo/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-agent-spine-demo'
+const PACKAGE_NAME = '@arx-ai/arx-agent-spine-demo'
 
 /** Cordis companion plugin name. */
 export const name = 'agent-spine-demo-invariant'

@@ -1,11 +1,11 @@
 /**
  * Incremental projection of durable agent inbox events.
  *
- * @module @centurionarx/cxh-agent/inbox
+ * @module @arx-ai/arx-agent/inbox
  */
 
-import type { MessageId } from '@centurionarx/cxh-llm'
-import type { Session, SessionEventMap, UserMessage } from '@centurionarx/cxh-session'
+import type { MessageId } from '@arx-ai/arx-llm'
+import type { Session, SessionEventMap, UserMessage } from '@arx-ai/arx-session'
 import type { InboxTarget } from './types.ts'
 
 /** Mutable state privately owned by an {@link Inbox}. */

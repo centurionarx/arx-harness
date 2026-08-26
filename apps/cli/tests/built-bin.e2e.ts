@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { startMockLlmServer } from '@centurionarx/cxh-llm-mock-server'
+import { startMockLlmServer } from '@arx-ai/arx-llm-mock-server'
 import { execa } from 'execa'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -11,7 +11,7 @@ const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 // The release version, including a prerelease such as 0.0.1-rc.1: `--version`
 // prints what this manifest carries, so no test may pin it to a literal.
 const cliVersion = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version
-const cxhBin = join(repoRoot, 'apps/cli/lib/bin.js')
+const arxBin = join(repoRoot, 'apps/cli/lib/bin.js')
 const invalidProvider = fileURLToPath(new URL('./fixtures/invalid-provider.cordis.yml', import.meta.url))
 
 async function runBuiltBin(
@@ -23,7 +23,7 @@ async function runBuiltBin(
     Object.entries({ ...process.env, ...env })
       .filter((entry): entry is [string, string] => entry[1] !== undefined),
   )
-  const result = await execa(process.execPath, [cxhBin, ...args], {
+  const result = await execa(process.execPath, [arxBin, ...args], {
     input: '',
     timeout: 25_000,
     killSignal: 'SIGKILL',
@@ -33,7 +33,7 @@ async function runBuiltBin(
     ...cwd === undefined ? {} : { cwd },
   })
   if (result.timedOut) {
-    throw new Error(`cxh built bin did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+    throw new Error(`arx built bin did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
   }
   return { stdout: result.stdout, code: result.exitCode ?? -1, stderr: result.stderr }
 }
@@ -41,7 +41,7 @@ async function runBuiltBin(
 async function waitForFile(file: string): Promise<void> {
   const deadline = Date.now() + 20_000
   while (!existsSync(file)) {
-    if (Date.now() >= deadline) throw new Error(`cxh profile lifecycle marker did not appear: ${file}`)
+    if (Date.now() >= deadline) throw new Error(`arx profile lifecycle marker did not appear: ${file}`)
     await new Promise(resolve => setTimeout(resolve, 20))
   }
 }
@@ -56,11 +56,11 @@ interface ProfileLifecycleFixture {
 
 /**
  * A minimal custom profile: one lifecycle-marker plugin bundle listed in
- * cxh.profile.bundles, no cxh-base — proving out-of-box composition machinery without
+ * arx.profile.bundles, no arx-base — proving out-of-box composition machinery without
  * booting the entire product tree.
  */
 function createProfileLifecycleFixture(): ProfileLifecycleFixture {
-  const home = mkdtempSync(join(tmpdir(), 'cxh-profile-lifecycle-'))
+  const home = mkdtempSync(join(tmpdir(), 'arx-profile-lifecycle-'))
   const ready = join(home, 'ready')
   const settled = join(home, 'settled')
   const disposed = join(home, 'disposed')
@@ -83,7 +83,7 @@ function createProfileLifecycleFixture(): ProfileLifecycleFixture {
     '  }, 20)',
     '  // Echo the mounted generation so the hot-reload e2e can assert both an',
     '  // applied override and its removal reverting to this bundle default.',
-    "  writeFileSync(join(process.env.CXH_HOME, 'config-echo'), String(config.generation ?? 'bundle-default'))",
+    "  writeFileSync(join(process.env.ARX_HOME, 'config-echo'), String(config.generation ?? 'bundle-default'))",
     "  writeFileSync(process.env.RAW_READY_FILE, 'ready')",
     '  void ctx.loader.await().then(() => {',
     "    if (active) writeFileSync(process.env.RAW_SETTLED_FILE, 'settled')",
@@ -103,22 +103,22 @@ function createProfileLifecycleFixture(): ProfileLifecycleFixture {
     '',
   ].join('\n'))
   writeFileSync(join(bundleDir, 'package.json'), JSON.stringify({
-    name: 'cxh-lifecycle-bundle',
+    name: 'arx-lifecycle-bundle',
     version: '0.0.0',
     type: 'module',
-    cxh: { bundle: { patch: './cordis.patch.yml' } },
+    arx: { bundle: { patch: './cordis.patch.yml' } },
   }, undefined, 2))
   const profileDir = join(home, 'profiles', 'lifecycle')
   mkdirSync(join(profileDir, 'node_modules'), { recursive: true })
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'cxh-profile-lifecycle',
+    name: 'arx-profile-lifecycle',
     private: true,
     dependencies: {},
-    cxh: { profile: { bundles: ['cxh-lifecycle-bundle'] } },
+    arx: { profile: { bundles: ['arx-lifecycle-bundle'] } },
   }, undefined, 2))
   // Hand-place the "installed" bundle where profile resolution finds it.
   writeFileSync(join(profileDir, 'cordis.patch.yml'), '[]\n')
-  const linkTarget = join(profileDir, 'node_modules', 'cxh-lifecycle-bundle')
+  const linkTarget = join(profileDir, 'node_modules', 'arx-lifecycle-bundle')
   mkdirSync(join(profileDir, 'node_modules'), { recursive: true })
   try {
     rmSync(linkTarget, { recursive: true, force: true })
@@ -132,12 +132,12 @@ function createProfileLifecycleFixture(): ProfileLifecycleFixture {
 }
 
 function startProfileLifecycle(fixture: ProfileLifecycleFixture, args: readonly string[] = []) {
-  return execa(process.execPath, [cxhBin, '--profile', 'lifecycle', ...args], {
+  return execa(process.execPath, [arxBin, '--profile', 'lifecycle', ...args], {
     cwd: fixture.home,
     input: '',
     reject: false,
     env: {
-      CXH_HOME: fixture.home,
+      ARX_HOME: fixture.home,
       RAW_READY_FILE: fixture.ready,
       RAW_SETTLED_FILE: fixture.settled,
       RAW_DISPOSED_FILE: fixture.disposed,
@@ -183,10 +183,10 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
   const profileDir = join(home, 'profiles', 'environment-probe')
   mkdirSync(profileDir, { recursive: true })
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'cxh-profile-environment-probe',
+    name: 'arx-profile-environment-probe',
     private: true,
     dependencies: {},
-    cxh: { profile: { bundles: ['@centurionarx/cxh-base'] } },
+    arx: { profile: { bundles: ['@arx-ai/arx-base'] } },
   }, undefined, 2))
   writeFileSync(join(profileDir, 'cordis.patch.yml'), [
     '- insert:',
@@ -209,20 +209,20 @@ interface StartupFixture {
  * A custom profile whose ordinary provider plugin injects `cmdlineArgs`, plus
  * a row that reads its app-owned service through a `!!js` config expression.
  * Both plugin modules resolve
- * `@centurionarx/cxh-cmdline` and `commander` through the profile module
+ * `@arx-ai/arx-cmdline` and `commander` through the profile module
  * fallback, exactly as an installed out-of-tree bundle does.
  */
 function createStartupFixture(): StartupFixture {
-  const home = mkdtempSync(join(tmpdir(), 'cxh-profile-startup-'))
+  const home = mkdtempSync(join(tmpdir(), 'arx-profile-startup-'))
   const profileDir = join(home, 'profiles', 'startup')
   // Written straight into the installed location: a row module resolves its
   // own imports from where it is installed, and only inside the profile does
   // Node's parent walk reach the installation fallback these plugins need.
-  const bundleDir = join(profileDir, 'node_modules', 'cxh-startup-bundle')
+  const bundleDir = join(profileDir, 'node_modules', 'arx-startup-bundle')
   mkdirSync(bundleDir, { recursive: true })
   writeFileSync(join(bundleDir, 'startup.mjs'), [
     "import { Command } from 'commander'",
-    "import { parseCmdline } from '@centurionarx/cxh-cmdline'",
+    "import { parseCmdline } from '@arx-ai/arx-cmdline'",
     "export const name = 'fixture-startup'",
     "export const inject = ['cmdlineArgs']",
     'export function apply(ctx) {',
@@ -243,7 +243,7 @@ function createStartupFixture(): StartupFixture {
     '    interrupted = true',
     "    process.emit('SIGTERM')",
     '  }, 20)',
-    "  writeFileSync(join(process.env.CXH_HOME, 'config-echo'), String(config.generation ?? 'bundle-default'))",
+    "  writeFileSync(join(process.env.ARX_HOME, 'config-echo'), String(config.generation ?? 'bundle-default'))",
     "  writeFileSync(process.env.RAW_READY_FILE, 'ready')",
     '  ctx.effect(() => () => { clearInterval(heartbeat) })',
     '}',
@@ -254,7 +254,7 @@ function createStartupFixture(): StartupFixture {
     "import { join } from 'node:path'",
     "export const name = 'reload-witness'",
     'export function apply(ctx, config = {}) {',
-    "  writeFileSync(join(process.env.CXH_HOME, 'witness'), String(config.generation ?? 'bundle-default'))",
+    "  writeFileSync(join(process.env.ARX_HOME, 'witness'), String(config.generation ?? 'bundle-default'))",
     '}',
     '',
   ].join('\n'))
@@ -273,16 +273,16 @@ function createStartupFixture(): StartupFixture {
     '',
   ].join('\n'))
   writeFileSync(join(bundleDir, 'package.json'), JSON.stringify({
-    name: 'cxh-startup-bundle',
+    name: 'arx-startup-bundle',
     version: '0.0.0',
     type: 'module',
-    cxh: { bundle: { patch: './cordis.patch.yml' } },
+    arx: { bundle: { patch: './cordis.patch.yml' } },
   }, undefined, 2))
   writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-    name: 'cxh-profile-startup',
+    name: 'arx-profile-startup',
     private: true,
     dependencies: {},
-    cxh: { profile: { bundles: ['cxh-startup-bundle'] } },
+    arx: { profile: { bundles: ['arx-startup-bundle'] } },
   }, undefined, 2))
   writeFileSync(join(profileDir, 'cordis.patch.yml'), '[]\n')
   return {
@@ -295,21 +295,21 @@ function createStartupFixture(): StartupFixture {
 }
 
 function startStartupProfile(fixture: StartupFixture, args: readonly string[]) {
-  return execa(process.execPath, [cxhBin, '--profile', 'startup', ...args], {
+  return execa(process.execPath, [arxBin, '--profile', 'startup', ...args], {
     cwd: fixture.home,
     input: '',
     reject: false,
     timeout: 25_000,
     killSignal: 'SIGKILL',
     env: {
-      CXH_HOME: fixture.home,
+      ARX_HOME: fixture.home,
       RAW_READY_FILE: fixture.ready,
       RAW_INTERRUPT_FILE: fixture.interrupt,
     },
   })
 }
 
-describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', () => {
+describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', () => {
   it('requires --profile and rejects removed commands', async () => {
     const bare = await runBuiltBin()
     expect(bare.code).toBe(1)
@@ -317,8 +317,8 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
     expect(bare.stderr).toContain('--profile <name> is required')
     const help = await runBuiltBin(['--help'])
     expect(help.code).toBe(0)
-    expect(help.stdout).toContain('cxh --profile web')
-    expect(help.stdout).toContain('cxh plugin --profile')
+    expect(help.stdout).toContain('arx --profile web')
+    expect(help.stdout).toContain('arx plugin --profile')
     expect(help.stdout).not.toMatch(/^\s+(?:tui|meta|upgrade)\b/mu)
     for (const removed of [['tui'], ['--config', 'x.yml'], ['-p', 'task'], ['run', 'task']]) {
       const result = await runBuiltBin(removed)
@@ -327,38 +327,38 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   }, 30_000)
 
   it('routes help and usage errors without activating startup-dependent rows', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'cxh-app-help-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-app-help-'))
     try {
       const web = await runBuiltBin(['--profile', 'web', '--help'], {
-        CXH_HOME: home,
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_HOME: home,
+        ARX_TELEMETRY_DISABLED: '1',
       })
       expect(web.code).toBe(0)
       expect(web.stderr).toBe('')
-      expect(web.stdout).toContain('Usage: cxh --profile web')
+      expect(web.stdout).toContain('Usage: arx --profile web')
       expect(web.stdout).toContain('--port <port>')
-      expect(web.stdout).not.toContain('cxh web: http://')
+      expect(web.stdout).not.toContain('arx web: http://')
 
       const wildcardHost = await runBuiltBin(['web', '--host', '0.0.0.0'], {
-        CXH_HOME: home,
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_HOME: home,
+        ARX_TELEMETRY_DISABLED: '1',
       })
       expect(wildcardHost.code).toBe(1)
       expect(wildcardHost.stdout).toBe('')
       expect(wildcardHost.stderr).toContain('--host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network; use 127.0.0.1 instead')
-      expect(wildcardHost.stderr).not.toContain('cxh web: http://')
+      expect(wildcardHost.stderr).not.toContain('arx web: http://')
 
       const headlessHelp = await runBuiltBin(['--profile', 'headless', '--help'], {
-        CXH_HOME: home,
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_HOME: home,
+        ARX_TELEMETRY_DISABLED: '1',
       })
       expect(headlessHelp.code).toBe(0)
       expect(headlessHelp.stderr).toBe('')
-      expect(headlessHelp.stdout).toContain('Usage: cxh --profile headless')
+      expect(headlessHelp.stdout).toContain('Usage: arx --profile headless')
 
       const missingTask = await runBuiltBin(['--profile', 'headless'], {
-        CXH_HOME: home,
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_HOME: home,
+        ARX_TELEMETRY_DISABLED: '1',
       })
       expect(missingTask.code).toBe(1)
       expect(missingTask.stderr).toContain('a task is required')
@@ -368,17 +368,17 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   }, 30_000)
 
   it('runs the headless profile through its app-owned task positional', async () => {
-    const apiKey = 'built-cxh-headless-key'
+    const apiKey = 'built-arx-headless-key'
     const server = await startMockLlmServer({
       sequence: ['success'],
       apiKey,
       successText: 'published headless profile reached the mock',
     })
-    const home = mkdtempSync(join(tmpdir(), 'cxh-built-headless-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-built-headless-'))
     try {
       const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
-        CXH_HOME: home,
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_HOME: home,
+        ARX_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: apiKey,
         DEEPSEEK_BASE_URL: server.baseURL,
       })
@@ -395,7 +395,7 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   }, 30_000)
 
   it('does not load a project environment for --version', async () => {
-    const project = mkdtempSync(join(tmpdir(), 'cxh-version-project-'))
+    const project = mkdtempSync(join(tmpdir(), 'arx-version-project-'))
     writeFileSync(join(project, '.env'), 'PATH=/project-only-path\n')
     try {
       const result = await runBuiltBin(['--version'], {}, project)
@@ -406,12 +406,12 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   })
 
   it('fails loud on a nonexistent profile with the plugin-command hint', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'cxh-missing-profile-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-missing-profile-'))
     try {
-      const result = await runBuiltBin(['--profile', 'nope'], { CXH_HOME: home })
+      const result = await runBuiltBin(['--profile', 'nope'], { ARX_HOME: home })
       expect(result.code).toBe(1)
       expect(result.stderr).toContain('profile "nope" does not exist')
-      expect(result.stderr).toContain('cxh plugin --profile nope add')
+      expect(result.stderr).toContain('arx plugin --profile nope add')
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
@@ -424,16 +424,16 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
       apiKey,
       successText: 'launching endpoint reached the mock',
     })
-    const home = mkdtempSync(join(tmpdir(), 'cxh-home-environment-'))
-    const project = mkdtempSync(join(tmpdir(), 'cxh-home-project-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-home-environment-'))
+    const project = mkdtempSync(join(tmpdir(), 'arx-home-project-'))
     writeFileSync(join(home, '.credentials.yaml'), `version: 1\nrefs:\n  DEEPSEEK_API_KEY: ${apiKey}\n`, { mode: 0o600 })
     createEnvironmentProbeProfile(home, project)
     try {
       const result = await runBuiltBin(
         ['--profile', 'environment-probe'],
         {
-          CXH_HOME: home,
-          CXH_TELEMETRY_DISABLED: '1',
+          ARX_HOME: home,
+          ARX_TELEMETRY_DISABLED: '1',
           DEEPSEEK_API_KEY: undefined,
           DEEPSEEK_BASE_URL: server.baseURL,
         },
@@ -460,14 +460,14 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   it('reports a patch-overlay boot failure without hanging', async () => {
     // The HMR main watcher's initial scan once refreshed the include
     // mid-initial-apply, deadlocking the failing apply's rollback against the
-    // refresh drain: cxh exited 13 with no diagnostic instead of settling
+    // refresh drain: arx exited 13 with no diagnostic instead of settling
     // ([Agent Note](../../../.agents/notes/implemented/bug-fix/2026-08-03-hmr-initial-scan-boot-deadlock.md)).
-    const home = mkdtempSync(join(tmpdir(), 'cxh-invalid-patch-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-invalid-patch-'))
     try {
       const result = await runBuiltBin(['--profile', 'web', '--patch', invalidProvider], {
-        CXH_HOME: home,
+        ARX_HOME: home,
         DEEPSEEK_API_KEY: 'keyless-invalid-config',
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_TELEMETRY_DISABLED: '1',
       })
       expect(result.code).toBe(1)
       expect(result.stdout).toBe('')
@@ -523,7 +523,7 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
       writeFileSync(profilePatch, '[]\n')
       await waitForFile(fixture.ready)
       expect(readFileSync(configFile, 'utf8')).toBe('bundle-default')
-      // The home-level user layer ($CXH_HOME/cordis.patch.yml) is live too
+      // The home-level user layer ($ARX_HOME/cordis.patch.yml) is live too
       // and outranks the per-profile layer.
       rmSync(fixture.ready)
       writeFileSync(join(fixture.home, 'cordis.patch.yml'), [
@@ -623,37 +623,37 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
   }, 30_000)
 
   it('anchors a relative add spec to the invoking directory, not the profile', async () => {
-    // `cxh plugin --profile x add .` from a plugin checkout must install THAT
+    // `arx plugin --profile x add .` from a plugin checkout must install THAT
     // checkout — pnpm's cwd is the profile directory, so an un-anchored `.`
     // would self-link the profile.
-    const home = mkdtempSync(join(tmpdir(), 'cxh-plugin-anchor-'))
-    const checkout = mkdtempSync(join(tmpdir(), 'cxh-plugin-checkout-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-plugin-anchor-'))
+    const checkout = mkdtempSync(join(tmpdir(), 'arx-plugin-checkout-'))
     try {
       writeFileSync(join(checkout, 'package.json'), JSON.stringify({
         name: 'anchored-bundle',
         version: '1.0.0',
-        cxh: { bundle: { patch: './cordis.patch.yml' } },
+        arx: { bundle: { patch: './cordis.patch.yml' } },
       }))
       writeFileSync(join(checkout, 'cordis.patch.yml'), '[]\n')
-      const result = await execa(process.execPath, [cxhBin, 'plugin', '--profile', 'anchor', 'add', '.'], {
+      const result = await execa(process.execPath, [arxBin, 'plugin', '--profile', 'anchor', 'add', '.'], {
         cwd: checkout,
         input: '',
         timeout: 60_000,
         killSignal: 'SIGKILL',
         reject: false,
-        env: { CXH_HOME: home },
+        env: { ARX_HOME: home },
       })
       expect(result.exitCode).toBe(0)
       const manifest = JSON.parse(readFileSync(join(home, 'profiles', 'anchor', 'package.json'), 'utf8')) as {
         dependencies: Record<string, string>
-        cxh: { profile: { bundles: string[] } }
+        arx: { profile: { bundles: string[] } }
       }
       expect(Object.keys(manifest.dependencies)).toEqual(['anchored-bundle'])
-      expect(manifest.cxh.profile.bundles).toContain('anchored-bundle')
+      expect(manifest.arx.profile.bundles).toContain('anchored-bundle')
 
       const removed = await runBuiltBin(
         ['plugin', '--profile', 'anchor', 'remove', 'anchored-bundle'],
-        { CXH_HOME: home },
+        { ARX_HOME: home },
         checkout,
       )
       expect(removed.code).toBe(0)
@@ -661,48 +661,48 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
         readFileSync(join(home, 'profiles', 'anchor', 'package.json'), 'utf8'),
       ) as {
         dependencies?: Record<string, string>
-        cxh: { profile: { bundles: string[] } }
+        arx: { profile: { bundles: string[] } }
       }
       expect(Object.keys(afterRemove.dependencies ?? {})).toEqual([])
-      expect(afterRemove.cxh.profile.bundles).not.toContain('anchored-bundle')
+      expect(afterRemove.arx.profile.bundles).not.toContain('anchored-bundle')
     } finally {
       rmSync(home, { recursive: true, force: true })
       rmSync(checkout, { recursive: true, force: true })
     }
   }, 90_000)
 
-  it('activates a dependency that gained cxh.bundle in a later update', async () => {
+  it('activates a dependency that gained arx.bundle in a later update', async () => {
     // Reconcile runs against the INSTALLED state on every successful pnpm
     // run, so `update` (not only `add`) activates a package whose newer
-    // version declares cxh.bundle. Simulated without a registry: hand-place
+    // version declares arx.bundle. Simulated without a registry: hand-place
     // the installed package, flip its manifest, and run a benign pnpm verb.
-    const home = mkdtempSync(join(tmpdir(), 'cxh-plugin-update-'))
+    const home = mkdtempSync(join(tmpdir(), 'arx-plugin-update-'))
     try {
       const profileDir = join(home, 'profiles', 'up')
       const installed = join(profileDir, 'node_modules', 'late-bundle')
       mkdirSync(installed, { recursive: true })
       writeFileSync(join(profileDir, 'package.json'), JSON.stringify({
-        name: 'cxh-profile-up',
+        name: 'arx-profile-up',
         private: true,
         dependencies: { 'late-bundle': 'file:./late-bundle' },
-        cxh: { profile: { bundles: ['@centurionarx/cxh-base'] } },
+        arx: { profile: { bundles: ['@arx-ai/arx-base'] } },
       }))
       writeFileSync(join(profileDir, 'cordis.patch.yml'), '[]\n')
-      // v1: no cxh manifest — a plain dependency.
+      // v1: no arx manifest — a plain dependency.
       writeFileSync(join(installed, 'package.json'), JSON.stringify({ name: 'late-bundle', version: '1.0.0' }))
-      const first = await runBuiltBin(['plugin', '--profile', 'up', 'root'], { CXH_HOME: home })
+      const first = await runBuiltBin(['plugin', '--profile', 'up', 'root'], { ARX_HOME: home })
       expect(first.code).toBe(0)
-      let manifest = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { cxh: { profile: { bundles: string[] } } }
-      expect(manifest.cxh.profile.bundles).toEqual(['@centurionarx/cxh-base'])
-      // v2: the installed package now declares cxh.bundle (an update landed).
+      let manifest = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { arx: { profile: { bundles: string[] } } }
+      expect(manifest.arx.profile.bundles).toEqual(['@arx-ai/arx-base'])
+      // v2: the installed package now declares arx.bundle (an update landed).
       writeFileSync(join(installed, 'package.json'), JSON.stringify({
-        name: 'late-bundle', version: '2.0.0', cxh: { bundle: { patch: './cordis.patch.yml' } },
+        name: 'late-bundle', version: '2.0.0', arx: { bundle: { patch: './cordis.patch.yml' } },
       }))
       writeFileSync(join(installed, 'cordis.patch.yml'), '[]\n')
-      const second = await runBuiltBin(['plugin', '--profile', 'up', 'root'], { CXH_HOME: home })
+      const second = await runBuiltBin(['plugin', '--profile', 'up', 'root'], { ARX_HOME: home })
       expect(second.code).toBe(0)
-      manifest = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { cxh: { profile: { bundles: string[] } } }
-      expect(manifest.cxh.profile.bundles).toEqual(['@centurionarx/cxh-base', 'late-bundle'])
+      manifest = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { arx: { profile: { bundles: string[] } } }
+      expect(manifest.arx.profile.bundles).toEqual(['@arx-ai/arx-base', 'late-bundle'])
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
@@ -710,35 +710,35 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
 
   describe('config dump', () => {
     let home: string
-    beforeEach(() => { home = mkdtempSync(join(tmpdir(), 'cxh-dump-bin-')) })
+    beforeEach(() => { home = mkdtempSync(join(tmpdir(), 'arx-dump-bin-')) })
     afterEach(() => { rmSync(home, { recursive: true, force: true }) })
 
     it('prints the web profile bundle layers without a user layer', async () => {
-      const { stdout, code, stderr } = await runBuiltBin(['--profile', 'web', '--dump-default-config'], { CXH_HOME: home })
+      const { stdout, code, stderr } = await runBuiltBin(['--profile', 'web', '--dump-default-config'], { ARX_HOME: home })
       expect(code).toBe(0)
       expect(stderr).toBe('')
-      expect(stdout).toContain("name: '@centurionarx/cxh-agent-loop'")
+      expect(stdout).toContain("name: '@arx-ai/arx-agent-loop'")
       expect(stdout).toContain('agents: []')
-      expect(stdout).toContain('# == @centurionarx/cxh-base')
-      expect(stdout).toContain("name: '@centurionarx/cxh-host-webserver'")
+      expect(stdout).toContain('# == @arx-ai/arx-base')
+      expect(stdout).toContain("name: '@arx-ai/arx-host-webserver'")
     }, 30_000)
 
     it('prints the headless profile without Host or browser layers', async () => {
       const { stdout, code, stderr } = await runBuiltBin(
         ['--profile', 'headless', '--dump-default-config'],
-        { CXH_HOME: home },
+        { ARX_HOME: home },
       )
       expect(code).toBe(0)
       expect(stderr).toBe('')
-      expect(stdout).toContain("name: '@centurionarx/cxh-headless'")
-      expect(stdout).not.toMatch(/name: '@centurionarx\/cxh-host-/)
-      expect(stdout).not.toContain("name: '@centurionarx/cxh-web-app'")
-      expect(stdout).not.toMatch(/name: '@centurionarx\/cxh-client-/)
+      expect(stdout).toContain("name: '@arx-ai/arx-headless'")
+      expect(stdout).not.toMatch(/name: '@arx-ai\/arx-host-/)
+      expect(stdout).not.toContain("name: '@arx-ai/arx-web-app'")
+      expect(stdout).not.toMatch(/name: '@arx-ai\/arx-client-/)
     }, 30_000)
 
     it('composes the profile user layer and a --patch overlay in order', async () => {
       // Auto-init the web profile first, then write its user layer.
-      const init = await runBuiltBin(['--profile', 'web', '--dump-default-config'], { CXH_HOME: home })
+      const init = await runBuiltBin(['--profile', 'web', '--dump-default-config'], { ARX_HOME: home })
       expect(init.code).toBe(0)
       const profilePatch = join(home, 'profiles', 'web', 'cordis.patch.yml')
       writeFileSync(profilePatch, [
@@ -765,7 +765,7 @@ describe.skipIf(!existsSync(cxhBin))('cxh BUILT bin (node lib/bin.js, no tsx)', 
       ].join('\n'))
       const { stdout, code, stderr } = await runBuiltBin(
         ['--profile', 'web', '--patch', overlay, '--dump-config'],
-        { CXH_HOME: home },
+        { ARX_HOME: home },
       )
       expect(code).toBe(0)
       expect(stdout).toContain('provider: configured-provider')

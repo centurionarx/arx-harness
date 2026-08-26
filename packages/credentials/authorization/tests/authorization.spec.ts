@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { credentialKey } from '@centurionarx/cxh-credentials'
+import { Context } from '@arx-ai/cordis'
+import { credentialKey } from '@arx-ai/arx-credentials'
 import AuthorizationService, {
   AuthorizationDeclinedError,
   type AuthorizationFlow,
   type AuthorizationInteraction,
   type AuthorizationSession,
-} from '@centurionarx/cxh-authorization'
+} from '@arx-ai/arx-authorization'
 import { MemoryCredentials } from './memory.ts'
 
 const KEY = credentialKey('llm-pi-ai', 'openai-codex')

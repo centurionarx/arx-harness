@@ -1,5 +1,5 @@
-import type { GenerateOptions, LlmModelReasoningInfo, LlmResolvedModelInfo, StreamChunk } from '@centurionarx/cxh-llm'
-import { CallId, LlmAdapter } from '@centurionarx/cxh-llm'
+import type { GenerateOptions, LlmModelReasoningInfo, LlmResolvedModelInfo, StreamChunk } from '@arx-ai/arx-llm'
+import { CallId, LlmAdapter } from '@arx-ai/arx-llm'
 
 /** Helpers to write scripted responses tersely. */
 export function textResponse(text: string): StreamChunk[] {

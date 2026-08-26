@@ -1,14 +1,14 @@
-/** Package-owned durable retry-event invariants. @module @centurionarx/cxh-llm-retry/invariant */
+/** Package-owned durable retry-event invariants. @module @arx-ai/arx-llm-retry/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { LlmFailure } from '@centurionarx/cxh-llm'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { LlmFailure } from '@arx-ai/arx-llm'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import { providerForOpenStep } from './history.ts'
 import type {} from './index.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-llm-retry'
+const PACKAGE_NAME = '@arx-ai/arx-llm-retry'
 
 /** Cordis companion plugin name. */
 export const name = 'llm-retry-invariant'

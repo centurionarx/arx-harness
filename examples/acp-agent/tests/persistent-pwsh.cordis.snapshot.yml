@@ -1,6 +1,6 @@
 # Keyless replay counterpart to persistent-pwsh.cordis.yml.
 - id: llm-replay
-  name: '@centurionarx/cxh-llm-replay'
+  name: '@arx-ai/arx-llm-replay'
   config:
     providers:
       - id: deepseek-official
@@ -9,29 +9,29 @@
           - id: deepseek-v4-pro
 
 - id: terminal
-  name: '@centurionarx/cxh-terminal'
+  name: '@arx-ai/arx-terminal'
 
 - id: sandbox-policy
-  name: '@centurionarx/cxh-sandbox-policy'
+  name: '@arx-ai/arx-sandbox-policy'
   config:
     mode: danger-full-access
     workspaceRoot: !!js process.cwd()
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: terminal-pwsh
-  name: '@centurionarx/cxh-terminal-bash'
+  name: '@arx-ai/arx-terminal-bash'
   config:
     shellDialect: pwsh
     timeoutMs: 30000
 
 - id: acp-agent
-  name: '@centurionarx/cxh-acp-demo'
+  name: '@arx-ai/arx-acp-demo'
   config:
     provider: deepseek-official
     model: deepseek-v4-pro
-    persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+    persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
     persistenceCompression: none
     workspaceContext: false
     skills:
@@ -42,4 +42,4 @@
     persona: You are a concise snapshot agent working in {{cwd}}.
 
 - id: tool-pwsh-persistent
-  name: '@centurionarx/cxh-tool-pwsh-persistent'
+  name: '@arx-ai/arx-tool-pwsh-persistent'

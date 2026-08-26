@@ -3,15 +3,15 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentStatus } from '@centurionarx/cxh-agent'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import * as CommandFeedback from '@centurionarx/cxh-command-feedback'
-import { getOrCreateAnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentStatus } from '@arx-ai/arx-agent'
+import CommandRuntime from '@arx-ai/arx-commands'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import * as CommandFeedback from '@arx-ai/arx-command-feedback'
+import { getOrCreateAnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
 
 let root: string | undefined
 let context: Context | undefined
@@ -52,14 +52,14 @@ function agent(ctx: Context): Agent {
 
 describe('/feedback real Loader composition through cordis.yml', () => {
   it('boots cordis.yml and records feedback without model-visible output', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-command-feedback-loader-'))
-    vi.stubEnv('CXH_HOME', root)
+    root = await mkdtemp(join(tmpdir(), 'arx-command-feedback-loader-'))
+    vi.stubEnv('ARX_HOME', root)
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-agent'",
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-commands'",
-      "- name: '@centurionarx/cxh-command-feedback'",
+      "- name: '@arx-ai/arx-agent'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-commands'",
+      "- name: '@arx-ai/arx-command-feedback'",
       '',
     ].join('\n'))
 
@@ -68,10 +68,10 @@ describe('/feedback real Loader composition through cordis.yml', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@centurionarx/cxh-agent', AgentRegistry],
-      ['@centurionarx/cxh-session', SessionStore],
-      ['@centurionarx/cxh-commands', CommandRuntime],
-      ['@centurionarx/cxh-command-feedback', CommandFeedback],
+      ['@arx-ai/arx-agent', AgentRegistry],
+      ['@arx-ai/arx-session', SessionStore],
+      ['@arx-ai/arx-commands', CommandRuntime],
+      ['@arx-ai/arx-command-feedback', CommandFeedback],
     ])
     context.loader.internal = {
       version: 'v2',
@@ -90,7 +90,7 @@ describe('/feedback real Loader composition through cordis.yml', () => {
     expect(context.commands.list(owner).map(command => command.name)).toContain('feedback')
 
     const accepted = await context.commands.execute(owner, '/feedback the diff view is unreadable', [], signal)
-    const userId = getOrCreateAnonymousUserId({ env: { CXH_HOME: root } })
+    const userId = getOrCreateAnonymousUserId({ env: { ARX_HOME: root } })
     expect(accepted?.result).toEqual({
       kind: 'success',
       text: `Feedback recorded for session feedback-loader-agent\nAnonymous user: ${userId}. Session sharing is not configured.`,

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-permission-presets
+# @arx-ai/arx-permission-presets
 
 English | [中文](README.zh.md)
 
@@ -14,7 +14,7 @@ Two optional children ship the product surfaces over the same service: a `permis
 
 ## Model Experience
 
-Indirectly, through `cxh-user-approval` and `cxh-tool-bash`, which render the approval-policy prompt, switch notice, and sandboxed tool outcomes selected by this service's knob events; `permissionPresets/preset` itself is log-only.
+Indirectly, through `arx-user-approval` and `arx-tool-bash`, which render the approval-policy prompt, switch notice, and sandboxed tool outcomes selected by this service's knob events; `permissionPresets/preset` itself is log-only.
 
 #### KV Cache effect
 

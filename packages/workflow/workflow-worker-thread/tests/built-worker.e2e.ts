@@ -21,9 +21,9 @@ describe.skipIf(!existsSync(builtIndex) || !existsSync(builtWorker))('built work
     const driver = join(packageRoot, `.built-worker-driver-${process.pid}.mjs`)
     try {
       await writeFile(driver, `
-import { Context } from '@centurionarx/cordis'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import WorkerThreadWorkflowEngine from '@centurionarx/cxh-workflow-worker-thread'
+import { Context } from '@arx-ai/cordis'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import WorkerThreadWorkflowEngine from '@arx-ai/arx-workflow-worker-thread'
 
 const ctx = new Context()
 await ctx.plugin(SubagentRuntime)

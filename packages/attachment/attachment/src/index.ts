@@ -1,6 +1,6 @@
-/** Durable attachment storage seam (`ctx.attachments`). @module @centurionarx/cxh-attachment */
+/** Durable attachment storage seam (`ctx.attachments`). @module @arx-ai/arx-attachment */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { AttachmentError } from './error.ts'
 import type {
   ImageAttachmentLimits,
@@ -27,7 +27,7 @@ export type {
   StoredImageAttachment,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     attachments: AttachmentStore
   }

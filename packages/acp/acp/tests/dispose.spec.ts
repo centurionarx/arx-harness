@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import { makeBridgeHarness, type BridgeHarness } from './harness.ts'
 
 describe('ACP connection ownership', () => {

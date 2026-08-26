@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-session-title-first-prompt-llm",
-  "description": "First-message LLM provider plugin for CENTURIONarx Harness session titles",
+  "name": "@arx-ai/arx-session-title-first-prompt-llm",
+  "description": "First-message LLM provider plugin for arx Harness session titles",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/session/session-title-first-prompt-llm"
   },
   "type": "module",
@@ -27,25 +27,25 @@
   "files": ["lib/index.js", "lib/invariant.js", "lib/types/**/*.d.ts"],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-title": "workspace:^",
-    "@centurionarx/cxh-session-title-llm": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-title": "workspace:^",
+    "@arx-ai/arx-session-title-llm": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cordis-plugin-include": "workspace:^",
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-llm-deepseek": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-title": "workspace:^",
-    "@centurionarx/cxh-session-title-llm": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-llm-deepseek": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-title": "workspace:^",
+    "@arx-ai/arx-session-title-llm": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

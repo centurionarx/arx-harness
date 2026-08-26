@@ -6,15 +6,15 @@
  * argument validation, argv construction, result parsing, inline sampling,
  * and formatting; process concerns (spawn execution, tree termination,
  * environment scrubbing, output capture) stay behind `ctx.subprocess`.
- * @module @centurionarx/cxh-tool-fs-search/glob
+ * @module @arx-ai/arx-tool-fs-search/glob
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { sep } from 'node:path'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, SearchResultView, ToolResult } from '@centurionarx/cxh-tools'
-import type { SpillRef } from '@centurionarx/cxh-spill'
-import type {} from '@centurionarx/cxh-system-prompt'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, SearchResultView, ToolResult } from '@arx-ai/arx-tools'
+import type { SpillRef } from '@arx-ai/arx-spill'
+import type {} from '@arx-ai/arx-system-prompt'
 import { runRipgrep, toWorkdirRelative, trySaveFormattedResult } from './search-core.ts'
 import { globSearchMeta, searchViewFromMeta } from './presentation.ts'
 import { acceptedDirectCallValue } from './direct-call.ts'

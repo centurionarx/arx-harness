@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ConversationEventRegistry, ConversationNodeAssembler, SlotRegistry,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   ChatConversationViewNode, ConversationEventInput, ConversationMatch, ConversationNodeDefinition,
   ConversationViewDefinition, SessionId, SessionListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import { apply as applyLocale, inject as localeInject } from '@centurionarx/cxh-client-locale/client'
-import { makeTranslate, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+} from '@arx-ai/arx-client-runtime/client'
+import { apply as applyLocale, inject as localeInject } from '@arx-ai/arx-client-locale/client'
+import { makeTranslate, stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import {
   WorkflowRunPanel, type WorkflowRunInjected, type WorkflowRunPanelProps,
 } from '../src/client/WorkflowRunPanel.tsx'
@@ -880,6 +880,6 @@ describe('plugin lifecycle', () => {
       register: (pkg: string) => { registered.push(pkg); return () => {} },
     } as never)
     await applyInvariant(ctx)
-    expect(registered).toEqual(['@centurionarx/cxh-client-ui-workflow-run'])
+    expect(registered).toEqual(['@arx-ai/arx-client-ui-workflow-run'])
   })
 })

@@ -1,21 +1,21 @@
 /**
  * Six model-facing persistent terminal tools. Owner identity comes from the exact
  * tool execution Agent; generic `ctx.jobs` owns background ids and collection.
- * @module @centurionarx/cxh-tool-terminal
+ * @module @arx-ai/arx-tool-terminal
  */
 
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { TerminalSessionId } from '@centurionarx/cxh-terminal'
-import type { TerminalSendResult, TerminalSessionId as TerminalSessionIdType, TerminalSignal } from '@centurionarx/cxh-terminal'
-import type {} from '@centurionarx/cxh-jobs'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ToolDefinition } from '@centurionarx/cxh-tools'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { TerminalSessionId } from '@arx-ai/arx-terminal'
+import type { TerminalSendResult, TerminalSessionId as TerminalSessionIdType, TerminalSignal } from '@arx-ai/arx-terminal'
+import type {} from '@arx-ai/arx-jobs'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ToolDefinition } from '@arx-ai/arx-tools'
 import { boundTerminalText, renderList, renderRead, renderSend, renderSendRead, renderSpawn } from './render.ts'
 
-declare module '@centurionarx/cxh-jobs' {
+declare module '@arx-ai/arx-jobs' {
   interface JobKindMap {
     'pty-send': 'pty-send'
   }
@@ -250,7 +250,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       if (args.run_in_background === true) {
         if (!enableRunInBackground) throw new Error('background terminal sends are disabled by tool-terminal configuration')
         const jobs = ctx.get('jobs')
-        if (jobs === undefined) throw new Error('background terminal sends require @centurionarx/cxh-jobs and @centurionarx/cxh-tool-jobs')
+        if (jobs === undefined) throw new Error('background terminal sends require @arx-ai/arx-jobs and @arx-ai/arx-tool-jobs')
         let cancelRequested = false
         const jobId = jobs.start({
           kind: 'pty-send',

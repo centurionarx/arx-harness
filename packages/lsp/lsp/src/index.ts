@@ -8,11 +8,11 @@
  * invalid or conflicting registration publishes nothing, and its disposer releases every
  * reservation together. Selection routes a query by the file's final extension; it never depends on
  * registration order. The seam exposes exactly the four operations and no JSON-RPC escape hatch.
- * @module @centurionarx/cxh-lsp
+ * @module @arx-ai/arx-lsp
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import { Context, Service } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
 import type { LspProviderId } from './brand.ts'
 import type {
   LspProvider,
@@ -35,7 +35,7 @@ export type {
   LspService,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     lsp: LspService
   }

@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-web-search-deepseek",
-  "description": "DeepSeek-backed search provider (native web_search via the Anthropic-compatible API) for the CENTURIONarx Harness web capability seam (ctx.web)",
+  "name": "@arx-ai/arx-web-search-deepseek",
+  "description": "DeepSeek-backed search provider (native web_search via the Anthropic-compatible API) for the arx Harness web capability seam (ctx.web)",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/web/web-search-deepseek"
   },
   "type": "module",
@@ -32,27 +32,27 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-credentials": "workspace:^",
-    "@centurionarx/cxh-launch-environment": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-web": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-web": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-credentials": "workspace:^",
-    "@centurionarx/cxh-credentials-local": "workspace:^",
-    "@centurionarx/cxh-launch-environment": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-web": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-credentials-local": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-web": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   }
 }

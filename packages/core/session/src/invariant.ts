@@ -1,18 +1,18 @@
 /**
  * Package-owned relational invariants for the session event log. Load this
- * companion beside `@centurionarx/cxh-invariants` to enable the checks.
+ * companion beside `@arx-ai/arx-invariants` to enable the checks.
  *
- * @module @centurionarx/cxh-session/invariant
+ * @module @arx-ai/arx-session/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { assertNever } from '@centurionarx/cxh-llm'
-import type { CallId } from '@centurionarx/cxh-llm'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import { assertNever } from '@arx-ai/arx-llm'
+import type { CallId } from '@arx-ai/arx-llm'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 import { TOOL_NOT_STARTED } from './repair.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session'
+const PACKAGE_NAME = '@arx-ai/arx-session'
 
 /** Cordis companion plugin name. */
 export const name = 'session-invariant'

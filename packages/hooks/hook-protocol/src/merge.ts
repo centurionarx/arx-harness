@@ -3,7 +3,7 @@
  * is `deny > ask > allow`; the first `continue:false` stop is sticky; reasons
  * for the winning rank are joined; and context and system messages accumulate
  * in hook order.
- * @module @centurionarx/cxh-hook-protocol/merge
+ * @module @arx-ai/arx-hook-protocol/merge
  */
 
 import type { HookOutput } from './types.ts'

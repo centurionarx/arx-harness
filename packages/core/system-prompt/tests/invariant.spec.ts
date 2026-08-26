@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { PromptAssembly } from '@centurionarx/cxh-system-prompt'
-import * as SystemPromptInvariant from '@centurionarx/cxh-system-prompt/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { PromptAssembly } from '@arx-ai/arx-system-prompt'
+import * as SystemPromptInvariant from '@arx-ai/arx-system-prompt/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

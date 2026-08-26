@@ -6,16 +6,16 @@
  * classification, the model-friendly terminal environment, and the model-facing
  * stdout/stderr merge for background reads. Execution policy belongs in
  * `tools/pre-execute` or a sandboxing executor.
- * @module @centurionarx/cxh-bash-local
+ * @module @arx-ai/arx-bash-local
  */
 
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { SHELL_SETTINGS_NAMESPACE, ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult, CollectedOutput } from '@centurionarx/cxh-shell'
-import type { SubprocessCollect, SubprocessHandle, SubprocessOutputReader, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
-import { installSettingsSection } from '@centurionarx/cxh-settings'
-import { clampTimeout, deadline, MAX_TIMER_DELAY_MS, timeoutOf } from '@centurionarx/cxh-timeout'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { SHELL_SETTINGS_NAMESPACE, ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult, CollectedOutput } from '@arx-ai/arx-shell'
+import type { SubprocessCollect, SubprocessHandle, SubprocessOutputReader, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
+import { installSettingsSection } from '@arx-ai/arx-settings'
+import { clampTimeout, deadline, MAX_TIMER_DELAY_MS, timeoutOf } from '@arx-ai/arx-timeout'
 
 /**
  * Model-friendly environment overrides: disable colors, pagers, and
@@ -158,11 +158,11 @@ export class LocalBashExecutor extends ShellExecutor {
       timeoutMs,
       stdoutMaxBytes,
       ...request.signal ? { signal: request.signal } : {},
-      // Carry stdin/ordinary env/trusted cxhEnv through verbatim — optional,
+      // Carry stdin/ordinary env/trusted arxEnv through verbatim — optional,
       // no config default. The subprocess service owns the scrub and merge order.
       ...request.stdin !== undefined ? { stdin: request.stdin } : {},
       ...request.env !== undefined ? { env: request.env } : {},
-      ...request.cxhEnv !== undefined ? { cxhEnv: request.cxhEnv } : {},
+      ...request.arxEnv !== undefined ? { arxEnv: request.arxEnv } : {},
       // Carry a sandbox policy through verbatim: this executor never
       // confines, so the field is inert here (the seam contract) — a
       // sandboxing subclass overrides resolve() to stamp its default instead.
@@ -190,10 +190,10 @@ export class LocalBashExecutor extends ShellExecutor {
       },
       graceMs: this.config.graceMs,
       signal,
-      // One explicit env map for the seam, layered so the trusted cxhEnv
+      // One explicit env map for the seam, layered so the trusted arxEnv
       // snapshot beats both the caller's env and the terminal overrides; the
       // subprocess service merges the whole map after its ambient scrub.
-      env: { ...ENV_OVERRIDES, ...spec.env, ...spec.cxhEnv },
+      env: { ...ENV_OVERRIDES, ...spec.env, ...spec.arxEnv },
     }
   }
 

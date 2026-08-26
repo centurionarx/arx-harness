@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { encodeMessage, MessageDecoder } from '@centurionarx/cxh-lsp-stdio'
+import { encodeMessage, MessageDecoder } from '@arx-ai/arx-lsp-stdio'
 
 /** Frame a message the way a server would, for decoder round-trips. */
 function frame(body: string): Buffer {

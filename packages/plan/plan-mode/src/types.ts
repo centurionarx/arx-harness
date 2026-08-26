@@ -1,11 +1,11 @@
 /**
  * Pure types of the plan domain: the ONE home of the `plan` projection-key
  * declaration, free of this package's host-side value imports (cordis
- * service, cxh-tools, cxh-agent). Two namespace projections serve it —
+ * service, arx-tools, arx-agent). Two namespace projections serve it —
  * `./types` for host consumers, `./client` for client aggregates — with zero
  * content duplication.
  *
- * @module @centurionarx/cxh-plan-mode/types
+ * @module @arx-ai/arx-plan-mode/types
  */
 
 /**
@@ -21,7 +21,7 @@ export interface PlanProjection {
   pending: boolean
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionMap {
     /** Plan collaboration state folded from the plan command lifecycle and `plan/mode` events. */
     plan: PlanProjection

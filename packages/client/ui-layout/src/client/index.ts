@@ -7,8 +7,8 @@
  * with the runtime sessions service. A second effect seats the theme
  * presenter, which projects ctx.theme snapshots onto document.body.
  */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-theme/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-theme/client'
 import type { PanelActions } from './service.ts'
 import { AppFrame } from './AppFrame.tsx'
 import { createLayoutStore } from './stores.ts'
@@ -23,14 +23,14 @@ import { ThemePresenter } from './theme-presenter.ts'
 export { LayoutController } from './service.ts'
 export type { ILayout } from './service.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** The outward face only; the concrete service stays inside this plugin. */
     layout: import('./service.ts').ILayout
   }
 }
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     // The 'root' entry itself is the runtime's built-in slot (declared
     // there); these four are the frame's children, declared by the same

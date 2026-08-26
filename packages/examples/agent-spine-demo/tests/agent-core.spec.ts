@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { join, sep } from 'node:path'
 import { tmpdir } from 'node:os'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { renderPrompt, TOOL_ORDER_REST } from '@centurionarx/cxh-system-prompt'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { renderPrompt, TOOL_ORDER_REST } from '@arx-ai/arx-system-prompt'
 import * as agentCore from '../src/index.ts'
-import { agentEvents, type Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import LocalBashExecutor from '@centurionarx/cxh-bash-local'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
+import { agentEvents, type Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import LocalBashExecutor from '@arx-ai/arx-bash-local'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import {
   createUserMessage,
@@ -22,16 +22,16 @@ import {
   type Message,
   type ResolvedRetryPolicy,
   type StreamChunk,
-} from '@centurionarx/cxh-llm'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
-import * as sessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as agentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as scopeInvariant from '@centurionarx/cxh-scope/invariant'
-import * as agentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
+} from '@arx-ai/arx-llm'
+import type { ToolExecution } from '@arx-ai/arx-tools'
+import * as sessionInvariant from '@arx-ai/arx-session/invariant'
+import * as agentInvariant from '@arx-ai/arx-agent/invariant'
+import * as scopeInvariant from '@arx-ai/arx-scope/invariant'
+import * as agentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
 
 const testToolSignal = new AbortController().signal
 
-declare module '@centurionarx/cxh-jobs' {
+declare module '@arx-ai/arx-jobs' {
   interface JobKindMap {
     probe: 'probe'
   }
@@ -53,7 +53,7 @@ async function composePrefix(ctx: Context, cwd: string): Promise<Message[]> {
 }
 
 /**
- * Unit coverage for the @centurionarx/cxh-agent-spine-demo bundle: mounting it brings
+ * Unit coverage for the @arx-ai/arx-agent-spine-demo bundle: mounting it brings
  * up the whole default spine in one `ctx.plugin`, and the forwarded
  * `agents` config reaches the loop (default `[]`, or a pre-created agent).
  *
@@ -63,10 +63,10 @@ async function composePrefix(ctx: Context, cwd: string): Promise<Message[]> {
  * bin smokes; here we assert the composition + config forwarding.
  */
 async function mount(config: agentCore.Config, withBash = false): Promise<Context> {
-  const oldCxhHome = process.env.CXH_HOME
-  const oldAgentsHome = process.env.CXH_AGENTS_HOME
-  process.env.CXH_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-home-'))
-  process.env.CXH_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-agents-'))
+  const oldArxHome = process.env.ARX_HOME
+  const oldAgentsHome = process.env.ARX_AGENTS_HOME
+  process.env.ARX_HOME = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-home-'))
+  process.env.ARX_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-agents-'))
   const ctx = new Context()
   if (withBash) {
     ctx.provide('shell', {
@@ -83,36 +83,36 @@ async function mount(config: agentCore.Config, withBash = false): Promise<Contex
     await new Promise(resolve => setTimeout(resolve, 50))
     return ctx
   } finally {
-    if (oldCxhHome === undefined) {
-      delete process.env.CXH_HOME
+    if (oldArxHome === undefined) {
+      delete process.env.ARX_HOME
     } else {
-      process.env.CXH_HOME = oldCxhHome
+      process.env.ARX_HOME = oldArxHome
     }
     if (oldAgentsHome === undefined) {
-      delete process.env.CXH_AGENTS_HOME
+      delete process.env.ARX_AGENTS_HOME
     } else {
-      process.env.CXH_AGENTS_HOME = oldAgentsHome
+      process.env.ARX_AGENTS_HOME = oldAgentsHome
     }
   }
 }
 
 async function withIsolatedSkillHomes<T>(run: () => Promise<T>): Promise<T> {
-  const oldCxhHome = process.env.CXH_HOME
-  const oldAgentsHome = process.env.CXH_AGENTS_HOME
-  process.env.CXH_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-home-'))
-  process.env.CXH_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-agents-'))
+  const oldArxHome = process.env.ARX_HOME
+  const oldAgentsHome = process.env.ARX_AGENTS_HOME
+  process.env.ARX_HOME = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-home-'))
+  process.env.ARX_AGENTS_HOME = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-agents-'))
   try {
     return await run()
   } finally {
-    if (oldCxhHome === undefined) {
-      delete process.env.CXH_HOME
+    if (oldArxHome === undefined) {
+      delete process.env.ARX_HOME
     } else {
-      process.env.CXH_HOME = oldCxhHome
+      process.env.ARX_HOME = oldArxHome
     }
     if (oldAgentsHome === undefined) {
-      delete process.env.CXH_AGENTS_HOME
+      delete process.env.ARX_AGENTS_HOME
     } else {
-      process.env.CXH_AGENTS_HOME = oldAgentsHome
+      process.env.ARX_AGENTS_HOME = oldAgentsHome
     }
   }
 }
@@ -144,7 +144,7 @@ class TransientOnceAdapter extends LlmAdapter {
   }
 }
 
-describe('cxh-agent-spine-demo bundle', () => {
+describe('arx-agent-spine-demo bundle', () => {
   it('brings up the full default spine', async () => {
     const ctx = await mount({ workspaceContext: false })
     // One service from each layer of the spine proves the children loaded.
@@ -227,8 +227,8 @@ describe('cxh-agent-spine-demo bundle', () => {
 
     for (const invariants of [
       { enabled: false },
-      { package_allowlist: ['^@centurionarx/cxh-agent$'] },
-      { package_blocklist: ['^@centurionarx/cxh-session$'] },
+      { package_allowlist: ['^@arx-ai/arx-agent$'] },
+      { package_blocklist: ['^@arx-ai/arx-session$'] },
     ]) {
       const filtered = await mount({ workspaceContext: false, invariants })
       expect(() => { nestedTurn(filtered) }).not.toThrow()
@@ -353,7 +353,7 @@ describe('cxh-agent-spine-demo bundle', () => {
   })
 
   it('loads workspace instructions into requests through the bundled spine', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-workspace-context-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-workspace-context-'))
     try {
       await mkdir(join(root, '.git'), { recursive: true })
       await writeFile(join(root, 'AGENTS.md'), 'bundled project rule')
@@ -375,7 +375,7 @@ describe('cxh-agent-spine-demo bundle', () => {
       const firstRequestText = adapter.requests[0]?.messages.map(messageText).join('\n')
       expect(firstRequestText).toContain('hi')
       expect(firstRequestText).toContain('bundled project rule')
-      expect(adapter.requests[0]?.system).toContain('You are an AI agent powered by CENTURIONarx Harness.')
+      expect(adapter.requests[0]?.system).toContain('You are an AI agent powered by arx Harness.')
       expect(adapter.requests[0]?.system).not.toContain('bundled project rule')
       await handle.dispose()
       await ctx.fiber.dispose()
@@ -385,7 +385,7 @@ describe('cxh-agent-spine-demo bundle', () => {
   })
 
   it('forwards agent-instructions config to the bundled loader', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-workspace-context-disabled-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-workspace-context-disabled-'))
     try {
       await mkdir(join(root, '.git'), { recursive: true })
       await writeFile(join(root, 'AGENTS.md'), 'must not be injected')
@@ -415,9 +415,9 @@ describe('cxh-agent-spine-demo bundle', () => {
   })
 
   it('forwards skill config to the registry, local provider, and model-facing consumer', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-skill-home-'))
-    const agentsHome = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-skill-agents-'))
-    const custom = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-skill-custom-'))
+    const home = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-skill-home-'))
+    const agentsHome = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-skill-agents-'))
+    const custom = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-skill-custom-'))
     await mkdir(custom, { recursive: true })
     await writeFile(join(custom, 'custom-skill.md'), '---\nname: custom-skill\ndescription: Custom skill\n---\n\nCustom body.\n')
     const ctx = await mount({
@@ -426,7 +426,7 @@ describe('cxh-agent-spine-demo bundle', () => {
       skills: {
         registry: { collectCacheMaxEntries: 4 },
         filesystem: {
-          cxhHome: join(home, '.cxh'),
+          arxHome: join(home, '.arx'),
           agentsHome: join(agentsHome, '.agents'),
           customSkillDirs: [custom],
         },
@@ -439,8 +439,8 @@ describe('cxh-agent-spine-demo bundle', () => {
   })
 
   it('snapshots a created project skill through catalog refresh and progressive loading', { timeout: 15_000 }, async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-skill-refresh-'))
-    const home = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-skill-refresh-home-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-skill-refresh-'))
+    const home = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-skill-refresh-home-'))
     try {
       await mkdir(join(root, '.git'), { recursive: true })
       const skillPath = '.agents/skills/hot-skill/SKILL.md'
@@ -461,7 +461,7 @@ describe('cxh-agent-spine-demo bundle', () => {
         workspaceContext: false,
         skills: {
           filesystem: {
-            cxhHome: join(home, '.cxh'),
+            arxHome: join(home, '.arx'),
             agentsHome: join(home, '.agents'),
             watchStabilityThresholdMs: 20,
             watchPollIntervalMs: 10,
@@ -589,14 +589,14 @@ describe('cxh-agent-spine-demo bundle', () => {
     }
   })
 
-  it('shares top-level cxhHome between local skills and the managed bash environment', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'cxh-agent-core-shared-home-'))
-    const agentsHome = await mkdtemp(join(tmpdir(), 'cxh-agent-core-shared-agents-'))
+  it('shares top-level arxHome between local skills and the managed bash environment', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'arx-agent-core-shared-home-'))
+    const agentsHome = await mkdtemp(join(tmpdir(), 'arx-agent-core-shared-agents-'))
     await mkdir(join(home, 'skills'), { recursive: true })
     await writeFile(join(home, 'skills', 'shared-skill.md'), '---\nname: shared-skill\ndescription: Shared home skill\n---\n\nShared body.\n')
 
     const ctx = await mount({
-      cxhHome: home,
+      arxHome: home,
       workspaceContext: false,
       skills: { filesystem: { agentsHome } },
     }, true)
@@ -604,28 +604,28 @@ describe('cxh-agent-spine-demo bundle', () => {
     expect((await ctx.skills.list()).map(skill => skill.name)).toEqual(['shared-skill'])
     const execution: ToolExecution = {
       signal: testToolSignal,
-      token: Symbol('agent-core-cxh-home-test') as ToolExecution['token'],
-      callId: CallId('agent-core-cxh-home'),
-      rootCallId: CallId('agent-core-cxh-home'),
+      token: Symbol('agent-core-arx-home-test') as ToolExecution['token'],
+      callId: CallId('agent-core-arx-home'),
+      rootCallId: CallId('agent-core-arx-home'),
       name: 'bash',
       arguments: { command: 'true' },
     }
-    expect(ctx.shellEnv.collect(execution)).toMatchObject({ CXH_HOME: home, CXH_SHELL: '1' })
+    expect(ctx.shellEnv.collect(execution)).toMatchObject({ ARX_HOME: home, ARX_SHELL: '1' })
     await ctx.fiber.dispose()
   })
 
-  it('rejects conflicting global and nested CXH home directories', () => {
+  it('rejects conflicting global and nested ARX home directories', () => {
     expect(() => {
       agentCore.apply(new Context(), {
-        cxhHome: '/global-cxh-home',
+        arxHome: '/global-arx-home',
         workspaceContext: false,
-        skills: { filesystem: { cxhHome: '/nested-cxh-home' } },
+        skills: { filesystem: { arxHome: '/nested-arx-home' } },
       })
-    }).toThrow('agent-spine-demo: cxhHome and skills.filesystem.cxhHome must resolve to the same directory')
+    }).toThrow('agent-spine-demo: arxHome and skills.filesystem.arxHome must resolve to the same directory')
   })
 
   it('delivers workspace instructions ahead of the first-step skill catalog', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-agent-spine-demo-prefix-order-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-agent-spine-demo-prefix-order-'))
     try {
       await mkdir(join(root, '.git'), { recursive: true })
       await writeFile(join(root, 'AGENTS.md'), 'workspace rule before skills')
@@ -738,7 +738,7 @@ describe('cxh-agent-spine-demo bundle', () => {
       persona: 'You are merged.',
       toolOrder: ['zulu'],
       tools: { mode: 'native' as const },
-      cxhHome: '/tmp/cxh-home',
+      arxHome: '/tmp/arx-home',
       sessionTitle: { fallbackMaxWords: 3, fallbackMaxBytes: 24, maxTitleBytes: 60 },
       workspaceContext: false as const,
       skills: { enabled: false },
@@ -756,7 +756,7 @@ describe('cxh-agent-spine-demo bundle', () => {
       persona: appConfig.persona,
       toolOrder: appConfig.toolOrder,
       tools: appConfig.tools,
-      cxhHome: appConfig.cxhHome,
+      arxHome: appConfig.arxHome,
       sessionTitle: appConfig.sessionTitle,
       workspaceContext: false,
       skills: appConfig.skills,

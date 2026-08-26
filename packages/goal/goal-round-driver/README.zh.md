@@ -1,4 +1,4 @@
-# @centurionarx/cxh-goal-round-driver
+# @arx-ai/arx-goal-round-driver
 
 [English](README.md) | 中文
 
@@ -8,16 +8,16 @@
 
 ```yaml
 - id: goal
-  name: '@centurionarx/cxh-goal'
+  name: '@arx-ai/arx-goal'
 
 - id: tool-goal
-  name: '@centurionarx/cxh-tool-goal'
+  name: '@arx-ai/arx-tool-goal'
 
 - id: goal-round-driver
-  name: '@centurionarx/cxh-goal-round-driver'
+  name: '@arx-ai/arx-goal-round-driver'
 ```
 
-该插件没有可调配置。`maxGoalRounds` 属于目标定义，面向模型的阻塞阈值则属于 [`cxh-tool-goal`](../tool-goal/README.zh.md)；在驱动器中重复任一数值都可能产生分歧策略。
+该插件没有可调配置。`maxGoalRounds` 属于目标定义，面向模型的阻塞阈值则属于 [`arx-tool-goal`](../tool-goal/README.zh.md)；在驱动器中重复任一数值都可能产生分歧策略。
 
 ## Round 约定
 
@@ -25,7 +25,7 @@
 
 `MessageId` 通过持久 inbox 插入和领取来标识预留消息；它不标识轮次结果。人类消息不消耗 goal 上限。如果人类工作在预留前进入 inbox，或加入预留的待处理批次，自动工作会让行，直到 agent 进入 idle；混合批次中的待处理自动提示词会被拒绝，只有在该检查点之后才重新预留。
 
-保留的提示词会点明经过 JSON 引用的目标与 `round/maxGoalRounds`，将当前工作区、工具结果和持久会话状态视为权威信息，要求在完成前提供证据，并要求在工作仍未完成时保持目标 active。引用可将多行或形似标签的目标文本保留为数据。goal 生命周期变更仍必须通过 `cxh-tool-goal` 的独立权限检查。
+保留的提示词会点明经过 JSON 引用的目标与 `round/maxGoalRounds`，将当前工作区、工具结果和持久会话状态视为权威信息，要求在完成前提供证据，并要求在工作仍未完成时保持目标 active。引用可将多行或形似标签的目标文本保留为数据。goal 生命周期变更仍必须通过 `arx-tool-goal` 的独立权限检查。
 
 ## Idle 检查点
 

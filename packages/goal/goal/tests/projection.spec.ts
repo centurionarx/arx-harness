@@ -9,16 +9,16 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentStatus } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-session'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import GoalService, { applyGoalProjection, foldGoal } from '@centurionarx/cxh-goal'
-import type { GoalRef } from '@centurionarx/cxh-goal'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentStatus } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-session'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import GoalService, { applyGoalProjection, foldGoal } from '@arx-ai/arx-goal'
+import type { GoalRef } from '@arx-ai/arx-goal'
 
 interface Bench {
   ctx: Context

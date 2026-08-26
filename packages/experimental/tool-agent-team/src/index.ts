@@ -1,12 +1,12 @@
 /** Scoped model-facing tools for the opt-in Agent Teams runtime. */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { TeamTaskId } from '@centurionarx/cxh-experimental-agent-team'
-import type { TeamMemberView } from '@centurionarx/cxh-experimental-agent-team'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { InferValue, ValueSchemaSpec } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import { TeamTaskId } from '@arx-ai/arx-experimental-agent-team'
+import type { TeamMemberView } from '@arx-ai/arx-experimental-agent-team'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { InferValue, ValueSchemaSpec } from '@arx-ai/arx-tools'
 
 /** Cordis plugin name. */
 export const name = 'tool-agent-team'

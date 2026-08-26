@@ -4,14 +4,14 @@
  * api-gateway's own coverage); each established connection generation emits
  * `connection/reset` for generation-scoped cache invalidation.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import type { ConnectionHandle, ConnectionSinks } from '@centurionarx/cxh-api-remotes/client'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+import type { ConnectionHandle, ConnectionSinks } from '@arx-ai/arx-api-remotes/client'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 // Type-only: the api-remotes facade carries both the allowlist's selection seat
 // and the owner packages' `./types` declarations, which together give `$on` its
 // key face and per-event listener signatures.
-import type {} from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
 import * as RuntimeClient from '../src/client/index.ts'
 import { FakeApiClient, fakeRemote } from './fake-api.client.ts'
 

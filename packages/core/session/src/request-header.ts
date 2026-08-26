@@ -4,11 +4,11 @@
  * any request was built under by taking the latest canonical snapshot; the
  * loop uses the same equality helper to avoid logging unchanged headers.
  *
- * @module cxh-session/request-header
+ * @module arx-session/request-header
  */
 
-import { callConfigEquals } from '@centurionarx/cxh-llm'
-import type { ToolSchema } from '@centurionarx/cxh-llm'
+import { callConfigEquals } from '@arx-ai/arx-llm'
+import type { ToolSchema } from '@arx-ai/arx-llm'
 import type { EpochHeader, SessionEvent } from './types.ts'
 
 /**

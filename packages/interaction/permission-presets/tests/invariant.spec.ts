@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context, Service } from '@centurionarx/cordis'
-import SessionStore, { type Session, type SessionEvent } from '@centurionarx/cxh-session'
-import * as PermissionInvariant from '@centurionarx/cxh-permission-presets/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context, Service } from '@arx-ai/cordis'
+import SessionStore, { type Session, type SessionEvent } from '@arx-ai/arx-session'
+import * as PermissionInvariant from '@arx-ai/arx-permission-presets/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 class PermissionProbe extends Service {
   readonly names = ['safe', 'trusted']

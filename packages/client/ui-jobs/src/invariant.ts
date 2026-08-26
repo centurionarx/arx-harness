@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-ui-jobs`.
- * @module @centurionarx/cxh-client-ui-jobs/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-ui-jobs`.
+ * @module @arx-ai/arx-client-ui-jobs/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-ui-jobs'
+const PACKAGE_NAME = '@arx-ai/arx-client-ui-jobs'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-jobs-invariant'

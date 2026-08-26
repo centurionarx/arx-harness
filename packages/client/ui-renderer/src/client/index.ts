@@ -6,8 +6,8 @@
 import { createElement, useLayoutEffect, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot, hydrateRoot, type Root } from 'react-dom/client'
-import type { Context } from '@centurionarx/cordis'
-import type { SnapshotSelectorHook } from '@centurionarx/cxh-client-ui-slots'
+import type { Context } from '@arx-ai/cordis'
+import type { SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
 import { createSlotRenderer } from './scoped-slots.tsx'
 import { buildRenderApp } from './app.tsx'
 
@@ -17,7 +17,7 @@ export type UseSession<Snap extends object = object> = SnapshotSelectorHook<Snap
 export type {
   ChainRenderOpts, HostObservable, RenderOpts, SessionProvideInfo, SnapshotSelectorHook,
   SlotRenderer, SlotRendererHost, StoreInstanceLike,
-} from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-slots'
 export type { SessionProviderProps } from './session-provider.tsx'
 
 /** Mount operation exposed to the framework-free boot kernel. */
@@ -30,7 +30,7 @@ export interface UiRendererService {
   mount: (container: HTMLElement) => () => void
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Mount face provided after the UI renderer activates. */
     uiRenderer: UiRendererService
@@ -52,14 +52,14 @@ function BootHandoff(props: { app: () => ReactNode; boot: BootSnapshot }): React
   if (ready) return props.app()
   return createElement('div', {
     className: props.boot.className,
-    'data-cxh-boot': '',
+    'data-arx-boot': '',
     dangerouslySetInnerHTML: { __html: props.boot.html },
   })
 }
 
 /** Mount React while preserving the framework-free boot DOM through hydration. */
 function mountApp(container: HTMLElement, app: () => ReactNode): Root {
-  const boot = container.querySelector<HTMLElement>(':scope > [data-cxh-boot]')
+  const boot = container.querySelector<HTMLElement>(':scope > [data-arx-boot]')
   if (boot !== null) {
     return hydrateRoot(container, createElement(BootHandoff, {
       app,

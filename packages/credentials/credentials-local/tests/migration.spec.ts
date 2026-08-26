@@ -3,12 +3,12 @@
 // edit, byte for byte, while everything the recognizer cannot prove flat
 // keeps the loud rejection local.spec exercises.
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import { withFileLock } from '@centurionarx/cxh-atomic-write'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import { withFileLock } from '@arx-ai/arx-atomic-write'
 import { LocalCredentialProvider, renderFlatLayoutMigration } from '../src/index.ts'
 
 /** Credential documents are seeded owner-only, exactly as the provider creates them. */
@@ -23,7 +23,7 @@ afterEach(async () => {
 })
 
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-cred-migration-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-cred-migration-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }
@@ -41,11 +41,11 @@ async function boot(config: ConstructorParameters<typeof LocalCredentialProvider
 // section name of the versioned layout.
 const FLAT = [
   '# keys stored before the versioned layout',
-  'CXH_CRED_TEST: stored',
+  'ARX_CRED_TEST: stored',
   '',
   '# annotates the quoted entry',
-  "CXH_CRED_OTHER: 'quoted value'",
-  'CXH_CRED_BLOCK: |',
+  "ARX_CRED_OTHER: 'quoted value'",
+  'ARX_CRED_BLOCK: |',
   '  first line',
   '  second line',
   'records: tricky',
@@ -55,11 +55,11 @@ const MIGRATED = [
   'version: 1',
   'refs:',
   '  # keys stored before the versioned layout',
-  '  CXH_CRED_TEST: stored',
+  '  ARX_CRED_TEST: stored',
   '',
   '  # annotates the quoted entry',
-  "  CXH_CRED_OTHER: 'quoted value'",
-  '  CXH_CRED_BLOCK: |',
+  "  ARX_CRED_OTHER: 'quoted value'",
+  '  ARX_CRED_BLOCK: |',
   '    first line',
   '    second line',
   '  records: tricky',
@@ -73,10 +73,10 @@ describe('flat-layout boot migration', () => {
     const ctx = await boot({ path, watch: false })
     expect(await readFile(path, 'utf8')).toBe(MIGRATED)
     if (process.platform !== 'win32') expect((await stat(path)).mode & 0o777).toBe(0o600)
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_TEST'))).toEqual({ value: 'stored', source: 'file' })
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_OTHER')))
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_TEST'))).toEqual({ value: 'stored', source: 'file' })
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_OTHER')))
       .toEqual({ value: 'quoted value', source: 'file' })
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_BLOCK')))
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_BLOCK')))
       .toEqual({ value: 'first line\nsecond line\n', source: 'file' })
     expect(await ctx.credentials.resolve(credentialRef('records'))).toEqual({ value: 'tricky', source: 'file' })
   })
@@ -88,14 +88,14 @@ describe('flat-layout boot migration', () => {
     await boot({ path, watch: false })
     const ctx = await boot({ path, watch: false })
     expect(await readFile(path, 'utf8')).toBe(MIGRATED)
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_TEST'))).toEqual({ value: 'stored', source: 'file' })
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_TEST'))).toEqual({ value: 'stored', source: 'file' })
   })
 
   it('yields to a concurrent migrator under the writer lock', async () => {
     const dir = await tempDir()
     const path = join(dir, '.credentials.yaml')
     await writeCredentials(path, FLAT)
-    const winner = 'version: 1\nrefs:\n  CXH_CRED_TEST: winner\n'
+    const winner = 'version: 1\nrefs:\n  ARX_CRED_TEST: winner\n'
     let release!: () => void
     const held = new Promise<void>((resolve) => { release = resolve })
     let acquired!: () => void
@@ -113,7 +113,7 @@ describe('flat-layout boot migration', () => {
     await holder
     const ctx = await booting
     expect(await readFile(path, 'utf8')).toBe(winner)
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_TEST'))).toEqual({ value: 'winner', source: 'file' })
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_TEST'))).toEqual({ value: 'winner', source: 'file' })
   })
 
   it('leaves an empty flow mapping alone', async () => {
@@ -122,7 +122,7 @@ describe('flat-layout boot migration', () => {
     await writeCredentials(path, '{}\n')
     const ctx = await boot({ path, watch: false })
     expect(await readFile(path, 'utf8')).toBe('{}\n')
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_TEST'))).toBeUndefined()
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_TEST'))).toBeUndefined()
   })
 
   it('leaves a comment-only document alone', async () => {
@@ -131,10 +131,10 @@ describe('flat-layout boot migration', () => {
     await writeCredentials(path, '# nothing stored yet\n')
     const ctx = await boot({ path, watch: false })
     expect(await readFile(path, 'utf8')).toBe('# nothing stored yet\n')
-    expect(await ctx.credentials.resolve(credentialRef('CXH_CRED_TEST'))).toBeUndefined()
+    expect(await ctx.credentials.resolve(credentialRef('ARX_CRED_TEST'))).toBeUndefined()
   })
 
   it('renders a final newline for a document that lacks one', () => {
-    expect(renderFlatLayoutMigration('CXH_CRED_TEST: bare')).toBe('version: 1\nrefs:\n  CXH_CRED_TEST: bare\n')
+    expect(renderFlatLayoutMigration('ARX_CRED_TEST: bare')).toBe('version: 1\nrefs:\n  ARX_CRED_TEST: bare\n')
   })
 })

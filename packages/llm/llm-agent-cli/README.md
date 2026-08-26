@@ -1,4 +1,4 @@
-# @centurionarx/cxh-llm-agent-cli
+# @arx-ai/arx-llm-agent-cli
 
 English | [中文](README.zh.md)
 
@@ -23,7 +23,7 @@ The vendor CLI is an agent with a tool loop of its own. Four settings reduce it 
 
 ## Tool names are namespaced, and that is model-visible
 
-The CLI presents an in-process MCP server's tools as `mcp__cxh__<name>`. The model therefore emits `mcp__cxh__bash`, and this adapter maps it back to `bash` before the harness sees the call. The namespaced form is what the model reads in its own context, so a system prompt that names tools describes them by their harness names while the model sees the prefixed ones.
+The CLI presents an in-process MCP server's tools as `mcp__arx__<name>`. The model therefore emits `mcp__arx__bash`, and this adapter maps it back to `bash` before the harness sees the call. The namespaced form is what the model reads in its own context, so a system prompt that names tools describes them by their harness names while the model sees the prefixed ones.
 
 Tool schemas cross as JSON Schema, verbatim. The SDK's own `tool()` helper takes a Zod shape and would force a lossy translation of every tool the harness registers, so this package answers `tools/list` from the low-level MCP server instead.
 
@@ -45,7 +45,7 @@ A run owns a CLI process tree, so it is released when its turn ends, fails, or i
 
 ```yaml
 - id: llm-agent-cli
-  name: '@centurionarx/cxh-llm-agent-cli'
+  name: '@arx-ai/arx-llm-agent-cli'
   config:
     cwd: /srv/workspace
     providers:
@@ -70,7 +70,7 @@ The mandatory `attributionHeaders()` invariant is vacuous here. This adapter iss
 
 #### What the model sees
 
-The harness system prompt verbatim in place of the CLI's own, the harness tool schemas as JSON Schema under `mcp__cxh__` names, and the conversation as either the delta into the live vendor run — new user messages and tool results carried as real `tool_result` blocks — or a labelled replay of the whole transcript when no run can continue it.
+The harness system prompt verbatim in place of the CLI's own, the harness tool schemas as JSON Schema under `mcp__arx__` names, and the conversation as either the delta into the live vendor run — new user messages and tool results carried as real `tool_result` blocks — or a labelled replay of the whole transcript when no run can continue it.
 
 #### Token effect
 
@@ -84,7 +84,7 @@ A live run keeps whatever prefix cache the vendor maintains across its own turns
 
 #### What the model sees
 
-Nothing further: the response is the model's own output. Reasoning, text, and tool calls are translated into harness chunks, with each tool name mapped back from `mcp__cxh__<name>` before the loop logs it.
+Nothing further: the response is the model's own output. Reasoning, text, and tool calls are translated into harness chunks, with each tool name mapped back from `mcp__arx__<name>` before the loop logs it.
 
 #### Token effect
 
@@ -99,4 +99,4 @@ None of its own; the response does not change the request prefix.
 - **One vendor today** — the package is named for the shape, not the roster: it drives the Claude Agent SDK and nothing else, so a Claude subscription is the only login it serves. A second vendor is a second SDK with its own protocol and its own process projection; whether that arrives as another package or as a seam inside this one is undecided, and the name should not be read as a promise either way.
 - **Images cannot reach the vendor CLI** — a request carrying an image block fails with `UNSUPPORTED_CONTENT` rather than being sent without it.
 - **A live run does not survive the process** — the conversation lives in memory beside its CLI, so a restart replays once per session and opens a new run. Nothing durable could carry it: the state is a running process, not a record.
-- **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`cxh-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).
+- **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`arx-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).

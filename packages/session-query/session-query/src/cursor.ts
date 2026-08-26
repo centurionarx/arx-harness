@@ -1,6 +1,6 @@
 /** Opaque cursor identity for session-search pagination. */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Provider-owned opaque continuation token returned by session search. */
 export type SessionSearchCursor = Branded<'SessionSearchCursor'>

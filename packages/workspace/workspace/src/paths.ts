@@ -1,6 +1,6 @@
 /**
  * Path canonicalization for workspace identity.
- * @module @centurionarx/cxh-workspace/src/paths
+ * @module @arx-ai/arx-workspace/src/paths
  */
 
 import { realpath } from 'node:fs/promises'

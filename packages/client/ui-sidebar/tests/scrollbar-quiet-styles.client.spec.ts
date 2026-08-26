@@ -20,8 +20,8 @@ describe('SidebarRoot.module.css quiet column', () => {
     expect(rule).not.toBeNull()
     const declarations = (rule![1] ?? '').split(';').map(part => part.trim()).filter(Boolean).sort()
     expect(declarations).toEqual([
-      '--cxh-scrollbar-thumb-hover: transparent',
-      '--cxh-scrollbar-thumb: transparent',
+      '--arx-scrollbar-thumb-hover: transparent',
+      '--arx-scrollbar-thumb: transparent',
     ].sort())
   })
 

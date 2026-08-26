@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-command-goal`.
- * @module @centurionarx/cxh-command-goal/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-command-goal`.
+ * @module @arx-ai/arx-command-goal/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-command-goal'
+const PACKAGE_NAME = '@arx-ai/arx-command-goal'
 
 /** Cordis companion plugin name. */
 export const name = 'command-goal-invariant'

@@ -1,6 +1,6 @@
-/** Attachment identifier brand. @module @centurionarx/cxh-attachment/brand */
+/** Attachment identifier brand. @module @arx-ai/arx-attachment/brand */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Opaque content-addressed identifier for one immutable attachment object. */
 export type AttachmentId = Branded<'AttachmentId'>

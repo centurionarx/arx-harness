@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-llm-deepseek`.
- * @module @centurionarx/cxh-llm-deepseek/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-llm-deepseek`.
+ * @module @arx-ai/arx-llm-deepseek/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-llm-deepseek'
+const PACKAGE_NAME = '@arx-ai/arx-llm-deepseek'
 
 /** Cordis companion plugin name. */
 export const name = 'llm-deepseek-invariant'

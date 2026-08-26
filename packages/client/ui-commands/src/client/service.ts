@@ -7,25 +7,25 @@
  * addresses the session's agent by sessionId — sessions are always
  * agent-backed.
  */
-import { Service } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
+import { Service } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
 // Type-only: pulls the ctx.remote merge and the forwarded-event key face
 // (`commands/change` rides the allowlist) into this program.
-import type {} from '@centurionarx/cxh-api-remotes/client'
-import type { CommandResult } from '@centurionarx/cxh-commands/types'
-import type { ClientContext, ISessions, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type { TranslateNS } from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
+import type { CommandResult } from '@arx-ai/arx-commands/types'
+import type { ClientContext, ISessions, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type { TranslateNS } from '@arx-ai/arx-client-locale/client'
 import type {
   CandidateRequest, ClientSessionContext, CommandClaim, PickOutcome, InputTriggerCandidate, InputTriggerPick,
   SubmitEnvelope, SubmitImageAttachment, SubmitOutcome,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
 import type { CommandContribution, CommandDecoration, CommandUiContract } from './contract.ts'
 import type { CommandDescriptor } from './directory.ts'
 import { CommandDirectory } from './directory.ts'
 import { PopupSelectController } from './popup.ts'
 import type { TokenSegment } from './popup.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * This browser client completed one admitted Host command execution.

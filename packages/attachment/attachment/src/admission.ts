@@ -1,4 +1,4 @@
-/** Wire-form admission of base64-encoded image uploads. @module @centurionarx/cxh-attachment/admission */
+/** Wire-form admission of base64-encoded image uploads. @module @arx-ai/arx-attachment/admission */
 
 import { Buffer } from 'node:buffer'
 import { AttachmentError } from './error.ts'

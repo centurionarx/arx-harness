@@ -1,17 +1,17 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 /**
  * Keyless real-Loader-path smoke for the combined SQLite session-query service.
  *
- * @module @centurionarx/cxh-session-query-sqlite/tests/load-path
+ * @module @arx-ai/arx-session-query-sqlite/tests/load-path
  */
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { SESSION_FORMAT_VERSION, SessionId } from '@centurionarx/cxh-session'
-import SessionStore from '@centurionarx/cxh-session'
-import SqliteSessionPersistence from '@centurionarx/cxh-session-persistence-sqlite'
-import SqliteSessionQueryEngine, * as queryModule from '@centurionarx/cxh-session-query-sqlite'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { SESSION_FORMAT_VERSION, SessionId } from '@arx-ai/arx-session'
+import SessionStore from '@arx-ai/arx-session'
+import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
+import SqliteSessionQueryEngine, * as queryModule from '@arx-ai/arx-session-query-sqlite'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -25,12 +25,12 @@ afterEach(async () => {
 })
 
 async function temporaryPath(name: string): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), 'cxh-session-search-loader-'))
+  const directory = await mkdtemp(join(tmpdir(), 'arx-session-search-loader-'))
   temporaryDirectories.push(directory)
   return join(directory, name)
 }
 
-describe('cxh-session-query-sqlite real Loader path', () => {
+describe('arx-session-query-sqlite real Loader path', () => {
   it('unwraps, mounts, and searches the real persistence backend', async () => {
     const persistencePath = await temporaryPath('canonical.db')
     const searchPath = await temporaryPath('derived.db')

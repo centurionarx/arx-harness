@@ -1,15 +1,15 @@
-/** Package-owned compaction log-stream invariants. @module @centurionarx/cxh-compaction/invariant */
+/** Package-owned compaction log-stream invariants. @module @arx-ai/arx-compaction/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import { isReplacementSurfaceEvent } from '@centurionarx/cxh-session'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import { isReplacementSurfaceEvent } from '@arx-ai/arx-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { CompactionId } from './brand.ts'
 import { isCompactCheckpointSource } from './checkpoint.ts'
 import type { CompactionCheckpointSource } from './checkpoint.ts'
 import type {} from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-compaction'
+const PACKAGE_NAME = '@arx-ai/arx-compaction'
 
 /** Cordis companion plugin name. */
 export const name = 'compaction-invariant'

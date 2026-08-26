@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import {
   ComposerSubmissionPolicy, DEFAULT_BUSY_ENTER_BEHAVIOR,
 } from '../src/client/input/submission-policy.ts'

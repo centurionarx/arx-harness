@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /** Snapshot-only Loader driver: stream one fixture turn as canonical JSONL. */
 
-import type { Context } from '@centurionarx/cordis'
-import { boot, installFailLoud, loadEnv, resolveConfigPath } from '@centurionarx/cxh-app-boot'
-import { runFixtureTurn } from '@centurionarx/cxh-loader-smoke'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import { boot, installFailLoud, loadEnv, resolveConfigPath } from '@arx-ai/arx-app-boot'
+import { runFixtureTurn } from '@arx-ai/arx-loader-smoke'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 const NAME = 'headless-test-driver'
 const [configPath, ...taskParts] = process.argv.slice(2)

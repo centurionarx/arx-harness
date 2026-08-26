@@ -44,22 +44,22 @@ describe('WorkspaceBrowser.module.css list', () => {
   })
 
   it('counts the themed scrollbar inside the shell trailing inset', () => {
-    expect(root?.get('--cxh-session-list-edge-inset')).toBe('var(--cxh-sidebar-inline-padding)')
-    expect(root?.get('--cxh-session-list-scrollbar-width')).toBe('8px')
-    expect(root?.get('--cxh-session-list-scrollbar-offset')).toBe('2px')
-    expect(root?.get('padding-right')).toBe('var(--cxh-session-list-edge-inset)')
+    expect(root?.get('--arx-session-list-edge-inset')).toBe('var(--arx-sidebar-inline-padding)')
+    expect(root?.get('--arx-session-list-scrollbar-width')).toBe('8px')
+    expect(root?.get('--arx-session-list-scrollbar-offset')).toBe('2px')
+    expect(root?.get('padding-right')).toBe('var(--arx-session-list-edge-inset)')
     expect(listArea?.get('margin-left')).toBe('-4px')
     expect(listArea?.get('padding-left')).toBe('4px')
-    expect(listArea?.get('margin-right')).toBe('calc(-1 * var(--cxh-session-list-edge-inset))')
-    expect(declarations('.fade')?.get('right')).toBe('var(--cxh-session-list-edge-inset)')
-    expect(list?.get('margin-right')).toBe('var(--cxh-session-list-scrollbar-offset)')
+    expect(listArea?.get('margin-right')).toBe('calc(-1 * var(--arx-session-list-edge-inset))')
+    expect(declarations('.fade')?.get('right')).toBe('var(--arx-session-list-edge-inset)')
+    expect(list?.get('margin-right')).toBe('var(--arx-session-list-scrollbar-offset)')
     expect(list?.get('margin-left')).toBe('-4px')
     expect(list?.get('padding-left')).toBe('4px')
     expect(list?.get('padding-right')).toBe([
       'calc(',
-      'var(--cxh-session-list-edge-inset)',
-      '- var(--cxh-session-list-scrollbar-width)',
-      '- var(--cxh-session-list-scrollbar-offset)',
+      'var(--arx-session-list-edge-inset)',
+      '- var(--arx-session-list-scrollbar-width)',
+      '- var(--arx-session-list-scrollbar-offset)',
       ')',
     ].join(' '))
     expect(declarations('.list::-webkit-scrollbar')).toBeUndefined()

@@ -1,8 +1,8 @@
-# @centurionarx/cxh-code-runtime-python
+# @arx-ai/arx-code-runtime-python
 
 English | [中文](README.zh.md)
 
-CPython-subprocess implementation of the [`@centurionarx/cxh-code-runtime`](../code-runtime/README.md) seam. Companion to [`@centurionarx/cxh-code-runtime-worker-thread`](../code-runtime-worker-thread/README.md); trades the Node worker thread for a fresh `python3` subprocess so model code is Python instead of TypeScript.
+CPython-subprocess implementation of the [`@arx-ai/arx-code-runtime`](../code-runtime/README.md) seam. Companion to [`@arx-ai/arx-code-runtime-worker-thread`](../code-runtime-worker-thread/README.md); trades the Node worker thread for a fresh `python3` subprocess so model code is Python instead of TypeScript.
 
 The package owns the wire protocol for that seam: the host-side frame codec and the Python-side mirror of the same message vocabulary.
 
@@ -17,7 +17,7 @@ The host and the CPython subprocess exchange a versionless, JSON-lines protocol 
 
 ## Model Experience
 
-Indirectly, through Code Mode in [`cxh-tools`](../../core/tools/README.md), which renders this backend's exact completion value when it fits (or an explicit `invalid-output` / `output-limit` failure), plus the exact `[cxh-code-runtime-python] log capture truncated at <maxLogBytes> bytes` log marker, into a retained `run_code` result.
+Indirectly, through Code Mode in [`arx-tools`](../../core/tools/README.md), which renders this backend's exact completion value when it fits (or an explicit `invalid-output` / `output-limit` failure), plus the exact `[arx-code-runtime-python] log capture truncated at <maxLogBytes> bytes` log marker, into a retained `run_code` result.
 
 #### KV Cache effect
 

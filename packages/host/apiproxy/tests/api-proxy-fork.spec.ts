@@ -1,19 +1,19 @@
 /** Session-fork boundaries, lineage, and inherited model routing. */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { agentEvents } from '@centurionarx/cxh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@centurionarx/cxh-agent'
-import { createUserMessage, ReasoningEffortId } from '@centurionarx/cxh-llm'
-import type { LlmCallConfig } from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { Workspace } from '@centurionarx/cxh-workspace'
-import type { RpcRequest } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { agentEvents } from '@arx-ai/arx-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@arx-ai/arx-agent'
+import { createUserMessage, ReasoningEffortId } from '@arx-ai/arx-llm'
+import type { LlmCallConfig } from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { Workspace } from '@arx-ai/arx-workspace'
+import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 

@@ -18,24 +18,24 @@
  * disposed by then, and the release that wakes the parent's own settlement
  * watcher has already run. See {@link SubagentContinuationManager.notifySettlement}.
  *
- * @module @centurionarx/cxh-subagent
+ * @module @arx-ai/arx-subagent
  */
 
 import { randomUUID } from 'node:crypto'
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   Agent,
   AgentHandle,
   AgentOptions,
   AgentSetupCommit,
   CreateAgentOptions,
-} from '@centurionarx/cxh-agent'
-import { boundContextSummary, createUserMessage, errorChain } from '@centurionarx/cxh-llm'
-import type { ContentBlock, MessageId, MessageSource } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import type { SessionPersistence } from '@centurionarx/cxh-session-persistence'
-import type { ToolRestriction } from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-agent'
+import { boundContextSummary, createUserMessage, errorChain } from '@arx-ai/arx-llm'
+import type { ContentBlock, MessageId, MessageSource } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
+import type { ToolRestriction } from '@arx-ai/arx-tools'
 import { foldSubagentDescriptor, snapshotSubagentDescriptor } from './descriptor.ts'
 import type { SubagentDescriptorData } from './descriptor.ts'
 import {
@@ -89,7 +89,7 @@ export interface SubagentSettledMessageSource {
   readonly senderSessionId: SessionId
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     coordinator: CoordinatorMessageSource
     'subagent-report': SubagentReportMessageSource
@@ -1533,7 +1533,7 @@ export class SubagentContinuationManager {
     const persistence = this.ctx.get('sessionPersistence')
     if (persistence === undefined) {
       throw new SubagentError(
-        'continuable subagents require session persistence (load a cxh-session-persistence backend)',
+        'continuable subagents require session persistence (load a arx-session-persistence backend)',
         'PERSISTENCE_UNAVAILABLE',
       )
     }

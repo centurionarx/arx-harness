@@ -1,7 +1,7 @@
 /** Validated configuration for the local PTY backend. */
 
-import z from '@centurionarx/schemastery'
-import { resolvePwshPath } from '@centurionarx/cxh-pwsh-local'
+import z from '@arx-ai/schemastery'
+import { resolvePwshPath } from '@arx-ai/arx-pwsh-local'
 
 /** One supported interactive shell dialect. */
 export type ShellDialect = 'bash' | 'pwsh'

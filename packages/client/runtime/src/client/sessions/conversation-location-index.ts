@@ -1,4 +1,4 @@
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 import type {
   ConversationEventInput, ConversationLocation, ConversationLocationData,
   ConversationLocationDataStore, ConversationStepDataMap, ConversationTimelineSnapshot,

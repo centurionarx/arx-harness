@@ -1,29 +1,29 @@
 /**
- * Bundled `cxh-badge` skill provider.
+ * Bundled `arx-badge` skill provider.
  *
- * @module @centurionarx/cxh-skill-badge
+ * @module @arx-ai/arx-skill-badge
  */
 
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import {
   BUNDLED_SKILL_RANK,
   type SkillCandidate,
   type SkillDefinition,
   type SkillProvider,
-} from '@centurionarx/cxh-skill'
+} from '@arx-ai/arx-skill'
 
-const PROVIDER_NAME = 'cxh-badge'
-const SKILL_BODY_URL = new URL('../assets/cxh-badge.md', import.meta.url)
+const PROVIDER_NAME = 'arx-badge'
+const SKILL_BODY_URL = new URL('../assets/arx-badge.md', import.meta.url)
 const RESOURCE_BASE = {
   kind: 'directory',
   path: fileURLToPath(new URL('../assets/', import.meta.url)),
 } as const
 const INVOCATION = { modelInvocable: true, userInvocable: true } as const
-const DESCRIPTION = 'Add the official “powered by cxh” badge to documents, pull requests, merge requests, and other content produced with CENTURIONarx Harness. Use whenever creating a pull request or merge request. Also use when the user asks for a cxh badge, powered-by-cxh attribution, or a reusable cxh badge asset or snippet.'
+const DESCRIPTION = 'Add the official “powered by arx” badge to documents, pull requests, merge requests, and other content produced with arx Harness. Use whenever creating a pull request or merge request. Also use when the user asks for a arx badge, powered-by-arx attribution, or a reusable arx badge asset or snippet.'
 const CANDIDATE: SkillCandidate = {
-  name: 'cxh-badge',
+  name: 'arx-badge',
   description: DESCRIPTION,
   invocation: INVOCATION,
   provider: PROVIDER_NAME,
@@ -54,7 +54,7 @@ export const name = 'skill-badge'
 /** Service required by the bundled provider. */
 export const inject = ['skills']
 
-/** Register the bundled `cxh-badge` provider on `ctx.skills`. */
+/** Register the bundled `arx-badge` provider on `ctx.skills`. */
 export function apply(ctx: Context): void {
   ctx.skills.registerProvider(() => provider)
 }

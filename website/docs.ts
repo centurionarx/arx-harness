@@ -108,7 +108,7 @@ const homeAndGuide = pairedPages([
   {
     source: 'docs/user/index.md',
     route: 'index.md',
-    label: { root: 'CENTURIONarx Harness', en: 'CENTURIONarx Harness' },
+    label: { root: 'arx Harness', en: 'arx Harness' },
     sidebar: { root: null, en: null },
     section: { root: '首页', en: 'Home' },
     order: 0,

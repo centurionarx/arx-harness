@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-28-skill-invocation-policy.md
-2026-07-28-skill-invocation-policy.md: 352508186d5d4174df664ec3aa126f2382febac6
-2026-07-28-skill-invocation-policy.zh.md: 181699825a7ba606df2b28b35c544113d94f74fa
+2026-07-28-skill-invocation-policy.md: fb94ea79c5dd3f3eb8b3bc793ec535f62bd3a830
+2026-07-28-skill-invocation-policy.zh.md: 81499b1393fe53b24fe647f9a957d8802d3eb44e

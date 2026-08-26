@@ -1,15 +1,15 @@
 /**
  * Session-query service error containment and model-safe translation.
  *
- * @module @centurionarx/cxh-tool-session-query/service-boundary
+ * @module @arx-ai/arx-tool-session-query/service-boundary
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
 import {
   SessionQueryError,
   type SessionQueryErrorCode,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 
 interface ModelSafeServiceFailure {
   readonly code: SessionQueryErrorCode | 'SESSION_QUERY_TOOL_FAILED'

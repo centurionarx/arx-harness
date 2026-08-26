@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import sharp from 'sharp'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -29,9 +29,9 @@ afterEach(async () => {
 
 describe('request image verification', () => {
   it('rejects an encoded request whose decoded facts disagree with the encoder result', async () => {
-    const cxhHome = await mkdtemp(join(tmpdir(), 'cxh-request-verification-'))
-    homes.push(cxhHome)
-    const attachments = new LocalAttachmentStore(new Context(), { cxhHome })
+    const arxHome = await mkdtemp(join(tmpdir(), 'arx-request-verification-'))
+    homes.push(arxHome)
+    const attachments = new LocalAttachmentStore(new Context(), { arxHome })
     const source = new Uint8Array(await sharp({
       create: { width: 64, height: 32, channels: 3, background: { r: 12, g: 34, b: 56 } },
     }).png().toBuffer())

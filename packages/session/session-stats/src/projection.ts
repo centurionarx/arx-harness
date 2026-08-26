@@ -11,7 +11,7 @@
  * and undercount cancelled steps (aborted before the message assembles).
  *
  * The wall-time folds mirror the client window fold field by field
- * (`deriveStats` in cxh-client-ui-conversation, that fold's whole-window
+ * (`deriveStats` in arx-client-ui-conversation, that fold's whole-window
  * fallback role): model time is `step/start` → `assistant/message`, first
  * token is the first non-empty delta chunk and survives an in-step
  * `llm/retry`, decode spans first token → assembled message on steps that
@@ -20,12 +20,12 @@
  * time stays uncounted in every time figure — matching the window, which
  * renders it as an untimed interrupted node.
  *
- * @module @centurionarx/cxh-session-stats/projection
+ * @module @arx-ai/arx-session-stats/projection
  */
 
 import { z } from 'zod'
-import { isTokenDelta } from '@centurionarx/cxh-llm/message'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import { isTokenDelta } from '@arx-ai/arx-llm/message'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
 
 /** Accumulated whole-log figures (the view is exactly these totals). */
 interface SessionStatsTotals {
@@ -62,7 +62,7 @@ interface SessionStatsState extends SessionStatsTotals {
   pendingCalls: Record<string, number>
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     sessionStats: SessionStatsState
   }

@@ -7,38 +7,38 @@
 # delegation bypass.
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
     compression: none
 
-# file/override/childFiles all default to their CXH_SNAPSHOT_* env vars.
+# file/override/childFiles all default to their ARX_SNAPSHOT_* env vars.
 - id: replay
-  name: '@centurionarx/cxh-llm-replay'
+  name: '@arx-ai/arx-llm-replay'
 
 # The confining filesystem stack: the wide deployment default lives on the
 # shared policy home; the seeded parent's read-only override must beat it
 # INSIDE the child for the scenario to deny.
 - id: sandbox-policy
-  name: '@centurionarx/cxh-sandbox-policy'
+  name: '@arx-ai/arx-sandbox-policy'
   config:
     mode: workspace-write
     workspaceRoot: !!js process.cwd()
 
 - id: fs-sandbox
-  name: '@centurionarx/cxh-fs-sandbox'
+  name: '@arx-ai/arx-fs-sandbox'
 
 - id: fs-observation-policy
-  name: '@centurionarx/cxh-fs-observation-policy'
+  name: '@arx-ai/arx-fs-observation-policy'
 
 - id: tool-fs
-  name: '@centurionarx/cxh-tool-fs'
+  name: '@arx-ai/arx-tool-fs'
 
 # This scenario probes filesystem confinement only, so the bash stack is absent:
 # without it the bundle's `toolBash: false` is required, because `tool-bash` would
 # otherwise wait forever for a `bash` executor this tree never mounts.
 - id: agent
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents: []
     workspaceContext: false
@@ -49,15 +49,15 @@
     goals: false
 
 - id: subagent
-  name: '@centurionarx/cxh-subagent'
+  name: '@arx-ai/arx-subagent'
 
 - id: subagent-spawn-in-process
-  name: '@centurionarx/cxh-subagent-spawn-in-process'
+  name: '@arx-ai/arx-subagent-spawn-in-process'
   config:
     providerName: spawn
 
 - id: tool-subagent
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: spawn
     toolName: subagent

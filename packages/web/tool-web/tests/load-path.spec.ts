@@ -6,14 +6,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import WebRuntime from '@centurionarx/cxh-web'
-import * as toolWeb from '@centurionarx/cxh-tool-web'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import WebRuntime from '@arx-ai/arx-web'
+import * as toolWeb from '@arx-ai/arx-tool-web'
 
-describe('cxh-tool-web real-load-path guard', () => {
+describe('arx-tool-web real-load-path guard', () => {
   it('has no default export and keeps name/inject/Config through unwrapExports', () => {
     expect('default' in toolWeb).toBe(false)
 

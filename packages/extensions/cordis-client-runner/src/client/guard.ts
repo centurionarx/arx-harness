@@ -13,10 +13,10 @@
  * as trusted as the host process that accepted its definition.
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { DynamicCordisPackage } from '@centurionarx/cxh-api-remotes/client'
-import type { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import type { ThemeRuntime } from '@centurionarx/cxh-client-ui-theme/client'
+import { Context } from '@arx-ai/cordis'
+import type { DynamicCordisPackage } from '@arx-ai/arx-api-remotes/client'
+import type { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import type { ThemeRuntime } from '@arx-ai/arx-client-ui-theme/client'
 
 /** Facade verbs beyond declared services (host CTX_VERBS twin). */
 const CTX_VERBS = new Set([

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-time-context
+# @arx-ai/arx-time-context
 
 [English](README.md) | 中文
 
@@ -8,7 +8,7 @@
 
 ```yaml
 - id: time-context
-  name: '@centurionarx/cxh-time-context'
+  name: '@arx-ai/arx-time-context'
   config:
     timeZone: Asia/Shanghai  # optional fallback when the request has no unique browser zone
     refreshIntervalMs: 60000 # optional; omit or set to 0 for every eligible attempt

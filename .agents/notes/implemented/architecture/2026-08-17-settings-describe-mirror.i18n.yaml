@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-17-settings-describe-mirror.md
-2026-08-17-settings-describe-mirror.md: 214ad5585b5bd388e4c894e4caa7535e7a4766a6
-2026-08-17-settings-describe-mirror.zh.md: 69b33d32fec1f8772e462242d213fb97d892109f
+2026-08-17-settings-describe-mirror.md: 2b41b522b945416f86e7efac877f655705dde6fc
+2026-08-17-settings-describe-mirror.zh.md: 6c26a14177a5f14f457ca0cd9a89364af6c2fbe2

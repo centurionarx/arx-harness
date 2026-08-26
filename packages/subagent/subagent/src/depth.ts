@@ -3,12 +3,12 @@
  * children. Kept apart from the service so composition helpers can read it
  * without importing the registry.
  *
- * @module @centurionarx/cxh-subagent/depth
+ * @module @arx-ai/arx-subagent/depth
  */
 
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Agent } from '@arx-ai/arx-agent'
 
-declare module '@centurionarx/cxh-agent' {
+declare module '@arx-ai/arx-agent' {
   interface AgentOptions {
     /** Delegation depth: zero for a top-level agent and parent depth + 1 for a child. */
     subagentDepth?: number

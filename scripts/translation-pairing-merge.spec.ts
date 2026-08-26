@@ -98,7 +98,7 @@ function startMergeWithFakeNode(
   chmodSync(fakeNode, 0o755)
   git(fixture, [
     'config',
-    'merge.cxh-translation-pairing.driver',
+    'merge.arx-translation-pairing.driver',
     `${shellQuote(driverLauncher)} %O %A %B %P`,
   ])
   return spawnSync('git', ['-C', fixture.root, 'merge', '--no-commit', 'master'], {
@@ -111,7 +111,7 @@ function startMergeWithFakeNode(
 }
 
 function createFixture(attributes = true): Fixture {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-translation-pairing-merge-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-translation-pairing-merge-'))
   fixtures.push(root)
   const env: NodeJS.ProcessEnv = {
     ...process.env,
@@ -125,7 +125,7 @@ function createFixture(attributes = true): Fixture {
   }
   const fixture = { env, root }
   execFileSync('git', ['init', '--quiet', '--initial-branch=master', root], { env })
-  if (attributes) write(root, '.gitattributes', '*.i18n.yaml merge=cxh-translation-pairing\n')
+  if (attributes) write(root, '.gitattributes', '*.i18n.yaml merge=arx-translation-pairing\n')
   return fixture
 }
 
@@ -481,7 +481,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     installFixtureRuntime(fixture.root)
     git(fixture, [
       'config',
-      'merge.cxh-translation-pairing.driver',
+      'merge.arx-translation-pairing.driver',
       'scripts/merge-translation-pairing-driver.sh %O %A %B %P',
     ])
 
@@ -515,7 +515,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     installFixtureRuntime(fixture.root)
     git(fixture, [
       'config',
-      'merge.cxh-translation-pairing.driver',
+      'merge.arx-translation-pairing.driver',
       'scripts/merge-translation-pairing-driver.sh %O %A %B %P',
     ])
 
@@ -603,7 +603,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     installFixtureRuntime(fixture.root)
     git(fixture, [
       'config',
-      'merge.cxh-translation-pairing.driver',
+      'merge.arx-translation-pairing.driver',
       'scripts/merge-translation-pairing-driver.sh %O %A %B %P',
     ])
     const hooks = join(fixture.root, 'hooks')

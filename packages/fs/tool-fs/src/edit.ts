@@ -2,14 +2,14 @@
  * Model-facing literal edit, unique-match by default. It obtains an optional guard from the
  * single intent slot, calls `ctx.fs.editText` without a separate stat, then records the observed
  * version; no policy means an unconditional atomic edit.
- * @module @centurionarx/cxh-tool-fs/src/edit
+ * @module @arx-ai/arx-tool-fs/src/edit
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { DiffCallView, DiffResultView, ToolResult } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-fs'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { DiffCallView, DiffResultView, ToolResult } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-fs'
+import type {} from '@arx-ai/arx-system-prompt'
 import { computeHunkDiffs, diffsFromMeta } from './diff.ts'
 import { remediateFsError } from './error.ts'
 import { sessionResolveOptions } from './session-cwd.ts'

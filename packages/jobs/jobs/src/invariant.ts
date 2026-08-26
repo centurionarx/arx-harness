@@ -1,11 +1,11 @@
-/** Package-owned background-job snapshot invariants. @module @centurionarx/cxh-jobs/invariant */
+/** Package-owned background-job snapshot invariants. @module @arx-ai/arx-jobs/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { JobSnapshot } from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-jobs'
+const PACKAGE_NAME = '@arx-ai/arx-jobs'
 const TERMINAL_STATUSES = new Set(['completed', 'killed', 'failed'])
 
 /** Cordis companion plugin name. */

@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import LlmRuntime, { LlmAdapter } from '@centurionarx/cxh-llm'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import { LocalCredentialProvider } from '@centurionarx/cxh-credentials-local'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
-import { FileSettingsProvider } from '@centurionarx/cxh-settings-file'
-import * as LlmPiAi from '@centurionarx/cxh-llm-pi-ai'
-import AuthorizationService from '@centurionarx/cxh-authorization'
+import LlmRuntime, { LlmAdapter } from '@arx-ai/arx-llm'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import { LocalCredentialProvider } from '@arx-ai/arx-credentials-local'
+import { settingsNamespace } from '@arx-ai/arx-settings'
+import { FileSettingsProvider } from '@arx-ai/arx-settings-file'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
+import AuthorizationService from '@arx-ai/arx-authorization'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -32,7 +32,7 @@ afterEach(async () => {
 })
 
 async function home(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-dynamic-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-pi-dynamic-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }

@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-tool-todo",
-  "description": "Model-facing todo_write tool over the CENTURIONarx Harness event-sourced session log",
+  "name": "@arx-ai/arx-tool-todo",
+  "description": "Model-facing todo_write tool over the arx Harness event-sourced session log",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/todo/tool-todo"
   },
   "type": "module",
@@ -37,31 +37,31 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-projection": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cordis-plugin-include": "workspace:^",
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-loop": "workspace:^",
-    "@centurionarx/cxh-agent-loop-testkit": "workspace:^",
-    "@centurionarx/cxh-host-apiproxy": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-projection": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cxh-user-questions": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-loop": "workspace:^",
+    "@arx-ai/arx-agent-loop-testkit": "workspace:^",
+    "@arx-ai/arx-host-apiproxy": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-user-questions": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

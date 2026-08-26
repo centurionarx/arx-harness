@@ -15,12 +15,12 @@ import {
 import { clientBundle } from '../packages/client/tsdown.client.ts'
 
 const root = resolve(import.meta.dirname, '..')
-const PROBE_NAME = 'CXH_CLIENT_BUILD_TEST'
+const PROBE_NAME = 'ARX_CLIENT_BUILD_TEST'
 const COMMIT_HASH = '0123456789abcdef0123456789abcdef01234567'
 const PROBE_KEY = `process.env.${PROBE_NAME}`
 const originalProbe = process.env[PROBE_NAME]
 const roots: string[] = []
-const cxhBuildWorkflows = [
+const arxBuildWorkflows = [
   'build-exe-for-python-sdk.yml',
   'ci.yml',
   'e2b-e2e.yml',
@@ -43,7 +43,7 @@ function write(path: string, content: string): void {
 }
 
 function buildFixture(environment: Record<string, string>): string {
-  const fixtureRoot = mkdtempSync(join(tmpdir(), 'cxh-client-build-'))
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'arx-client-build-'))
   roots.push(fixtureRoot)
   write(join(fixtureRoot, 'apps/web/dist/index.html'), '<main></main>')
   write(join(fixtureRoot, 'packages/client/example/lib/client.js'), 'module.exports = {}\n')
@@ -54,77 +54,77 @@ function buildFixture(environment: Record<string, string>): string {
 describe('client build environment', () => {
   it('requires an exact public environment for a named artifact profile', () => {
     const expected = {
-      CXH_CLIENT_BUILD_PROFILE: 'official',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+      ARX_CLIENT_BUILD_PROFILE: 'official',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'arx Harness',
     } as const
 
     expect(() => { assertClientBuildEnvironment({ PATH: '/bin', ...expected }, expected) }).not.toThrow()
-    expect(() => { assertClientBuildEnvironment({}, expected) }).toThrow(/CXH_CLIENT_TITLE/)
-    expect(() => { assertClientBuildEnvironment({ CXH_CLIENT_TITLE: 'Other' }, expected) }).toThrow(/CXH_CLIENT_TITLE/)
+    expect(() => { assertClientBuildEnvironment({}, expected) }).toThrow(/ARX_CLIENT_TITLE/)
+    expect(() => { assertClientBuildEnvironment({ ARX_CLIENT_TITLE: 'Other' }, expected) }).toThrow(/ARX_CLIENT_TITLE/)
     expect(() => {
-      assertClientBuildEnvironment({ ...expected, CXH_CLIENT_UNDECLARED: 'value' }, expected)
-    }).toThrow(/CXH_CLIENT_UNDECLARED/)
+      assertClientBuildEnvironment({ ...expected, ARX_CLIENT_UNDECLARED: 'value' }, expected)
+    }).toThrow(/ARX_CLIENT_UNDECLARED/)
   })
 
   it('inherits public values by default and isolates an explicit official profile', () => {
     const parent = {
       PATH: '/bin',
-      CXH_BUILD_CLIENT_PROFILE: 'official',
-      CXH_CLIENT_BUILD_PROFILE: 'local',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'Local title',
-      CXH_CLIENT_EXTRA: 'local-extra',
+      ARX_BUILD_CLIENT_PROFILE: 'official',
+      ARX_CLIENT_BUILD_PROFILE: 'local',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'Local title',
+      ARX_CLIENT_EXTRA: 'local-extra',
     }
 
-    expect(resolveClientBuildEnvironment({ CXH_CLIENT_TITLE: 'Local title' })).toEqual({
-      CXH_CLIENT_TITLE: 'Local title',
+    expect(resolveClientBuildEnvironment({ ARX_CLIENT_TITLE: 'Local title' })).toEqual({
+      ARX_CLIENT_TITLE: 'Local title',
     })
     expect(resolveClientBuildEnvironment(parent)).toEqual({
-      CXH_CLIENT_BUILD_PROFILE: 'official',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+      ARX_CLIENT_BUILD_PROFILE: 'official',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'arx Harness',
     })
     expect(() => {
-      resolveClientBuildEnvironment({ CXH_BUILD_CLIENT_PROFILE: 'official' })
-    }).toThrow(/CXH_CLIENT_COMMIT_HASH/)
+      resolveClientBuildEnvironment({ ARX_BUILD_CLIENT_PROFILE: 'official' })
+    }).toThrow(/ARX_CLIENT_COMMIT_HASH/)
     expect(() => { resolveClientBuildEnvironment({}, 'unknown') }).toThrow(/unknown client build profile/)
     expect(clientBuildProcessEnvironment(parent, {
-      CXH_CLIENT_BUILD_PROFILE: 'official',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+      ARX_CLIENT_BUILD_PROFILE: 'official',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'arx Harness',
     })).toEqual({
       PATH: '/bin',
-      CXH_CLIENT_BUILD_PROFILE: 'official',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+      ARX_CLIENT_BUILD_PROFILE: 'official',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'arx Harness',
     })
-    expect(repositoryCommitHash('/unused', { CXH_CLIENT_COMMIT_HASH: COMMIT_HASH })).toBe(COMMIT_HASH.slice(0, 7))
+    expect(repositoryCommitHash('/unused', { ARX_CLIENT_COMMIT_HASH: COMMIT_HASH })).toBe(COMMIT_HASH.slice(0, 7))
   })
 
   it('defines only public client values over a non-enumerable fallback', () => {
     expect(clientBuildEnvironmentDefines({
       PATH: '/bin',
-      CXH_TEST_API_KEY: 'secret',
-      CXH_CLIENT_VARIANT: 'quoted "value"',
-      CXH_CLIENT_EMPTY: '',
-      CXH_CLIENT_UNSET: undefined,
+      ARX_TEST_API_KEY: 'secret',
+      ARX_CLIENT_VARIANT: 'quoted "value"',
+      ARX_CLIENT_EMPTY: '',
+      ARX_CLIENT_UNSET: undefined,
     })).toEqual({
       'process.env': '{}',
-      'process.env.CXH_CLIENT_EMPTY': '""',
-      'process.env.CXH_CLIENT_VARIANT': '"quoted \\"value\\""',
+      'process.env.ARX_CLIENT_EMPTY': '""',
+      'process.env.ARX_CLIENT_VARIANT': '"quoted \\"value\\""',
     })
   })
 
   it('feeds the same build-process value to dynamic tsdown bundles and the Vite shell', async () => {
     process.env[PROBE_NAME] = 'shared-value'
 
-    const configs = clientBundle('@centurionarx/cxh-client-ui-sidebar', [
+    const configs = clientBundle('@arx-ai/arx-client-ui-sidebar', [
       'lib/types/index.js',
       'lib/types/invariant.js',
-    ])({ env: { CXH_BUILD_FACE: 'client' } })
+    ])({ env: { ARX_BUILD_FACE: 'client' } })
     if (!Array.isArray(configs)) throw new TypeError('client bundle config must be an array')
-    const dynamic = configs.find(config => config.name === '@centurionarx/cxh-client-ui-sidebar/client')
+    const dynamic = configs.find(config => config.name === '@arx-ai/arx-client-ui-sidebar/client')
     expect(dynamic?.define).toMatchObject({
       'process.env': '{}',
       [PROBE_KEY]: '"shared-value"',
@@ -148,15 +148,15 @@ describe('client build environment', () => {
 
   it('binds the recorded environment to a complete set of client artifacts', () => {
     const officialEnvironment = {
-      CXH_CLIENT_BUILD_PROFILE: 'official',
-      CXH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
-      CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+      ARX_CLIENT_BUILD_PROFILE: 'official',
+      ARX_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      ARX_CLIENT_TITLE: 'arx Harness',
     }
     const official = buildFixture(officialEnvironment)
     const defaultBuild = buildFixture({})
 
     expect(readClientBuildRecord(official, officialEnvironment).environment).toEqual(officialEnvironment)
-    expect(() => { readClientBuildRecord(defaultBuild, officialEnvironment) }).toThrow(/CXH_CLIENT_/)
+    expect(() => { readClientBuildRecord(defaultBuild, officialEnvironment) }).toThrow(/ARX_CLIENT_/)
     expect(() => { readClientBuildRecord(join(defaultBuild, 'missing')) }).toThrow(/record.*missing/)
 
     write(join(official, 'apps/web/dist/index.html'), '<main>changed</main>')
@@ -164,13 +164,13 @@ describe('client build environment', () => {
   })
 
   it('keeps public client values out of workflow-wide environments', () => {
-    for (const name of cxhBuildWorkflows) {
+    for (const name of arxBuildWorkflows) {
       const path = `.github/workflows/${name}`
       const document: unknown = yaml.load(readFileSync(resolve(root, path), 'utf8'))
       if (typeof document !== 'object' || document === null || Array.isArray(document)) {
         throw new TypeError(`${path} must contain a workflow object`)
       }
-      expect(JSON.stringify(document), path).not.toContain('CXH_CLIENT_')
+      expect(JSON.stringify(document), path).not.toContain('ARX_CLIENT_')
     }
   })
 })

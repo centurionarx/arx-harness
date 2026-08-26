@@ -3,9 +3,9 @@ import {
   createProcessInspector,
   linuxProcessGroupHasLiveMembers,
   parseProcStat,
-} from '@centurionarx/cxh-subprocess-local/src/process-inspector.ts'
-import type { ProcessInspectorInternals } from '@centurionarx/cxh-subprocess-local/src/process-inspector.ts'
-import { WindowsProcessInspector } from '@centurionarx/cxh-subprocess-local/src/windows-inspector.ts'
+} from '@arx-ai/arx-subprocess-local/src/process-inspector.ts'
+import type { ProcessInspectorInternals } from '@arx-ai/arx-subprocess-local/src/process-inspector.ts'
+import { WindowsProcessInspector } from '@arx-ai/arx-subprocess-local/src/windows-inspector.ts'
 
 function stat(pid: number, pgrp: number, session: number, tpgid: number, started: string, parentPid = 1, state = 'S'): string {
   const rest = [state, String(parentPid), String(pgrp), String(session), '99', String(tpgid)]

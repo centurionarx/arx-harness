@@ -4,8 +4,8 @@
  * @module subagent-report-fence
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-agent-loop'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-agent-loop'
 
 /** Fixture plugin name. */
 export const name = 'subagent-report-fence'

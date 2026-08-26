@@ -3,11 +3,11 @@
  * record of the child's declared composition before its first request, so a
  * later cold resume can reconstruct it from its own log.
  *
- * @module @centurionarx/cxh-subagent/descriptor-seed
+ * @module @arx-ai/arx-subagent/descriptor-seed
  */
 
-import { Session } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionId } from '@centurionarx/cxh-session'
+import { Session } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionId } from '@arx-ai/arx-session'
 import type { SubagentDescriptorData } from './descriptor.ts'
 
 /**

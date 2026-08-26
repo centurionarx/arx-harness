@@ -13,11 +13,11 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, waitFor, within } from '@testing-library/react'
-import type { ISession, SessionId, WorkspaceId } from '@centurionarx/cxh-client-runtime/client'
-import type { PropsRenderSlots } from '@centurionarx/cxh-client-ui-slots'
-import { SlotTestRuntime, usePinnedBrowserLanguages } from '@centurionarx/cxh-client-test-runtime'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-workspace/client'
+import type { ISession, SessionId, WorkspaceId } from '@arx-ai/arx-client-runtime/client'
+import type { PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
+import { SlotTestRuntime, usePinnedBrowserLanguages } from '@arx-ai/arx-client-test-runtime'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-workspace/client'
 
 // The service reads its initial locale from the browser; these specs assert
 // the shipped Chinese copy, so they state the browser they assume.

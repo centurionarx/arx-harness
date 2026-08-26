@@ -4,25 +4,25 @@
  * through the seam, and every write re-reads the document under a
  * cross-process writer lock before patching it as a comment-preserving
  * leaf-level diff.
- * @module @centurionarx/cxh-settings-file
+ * @module @arx-ai/arx-settings-file
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { watch as chokidarWatch } from 'chokidar'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, resolve } from 'node:path'
 import { Document, parseDocument } from 'yaml'
-import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { canonicalizeWatchPath, resolveCxhHome } from '@centurionarx/cxh-home-paths'
-import { SettingsProvider, deepEqualJson, type SettingsNamespace } from '@centurionarx/cxh-settings'
+import { withFileLock, writeFileAtomic } from '@arx-ai/arx-atomic-write'
+import { canonicalizeWatchPath, resolveArxHome } from '@arx-ai/arx-home-paths'
+import { SettingsProvider, deepEqualJson, type SettingsNamespace } from '@arx-ai/arx-settings'
 
 /** Plugin config: file location and hot-reload behavior. */
 export interface Config {
   /** Settings document path; defaults to `settings.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** Harness home used when `path` is omitted; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -53,7 +53,7 @@ interface ResolvedSpec {
  * @returns the resolved file location, format, and watch behavior.
  */
 export function resolveSpec(config: Config): ResolvedSpec {
-  const filename = resolve(config.path ?? join(resolveCxhHome(config.cxhHome), 'settings.yaml'))
+  const filename = resolve(config.path ?? join(resolveArxHome(config.arxHome), 'settings.yaml'))
   const format = FORMATS[extname(filename)]
   if (format === undefined) {
     throw new Error(`settings-file: extension "${extname(filename)}" is not supported (use .yaml, .yml, or .json)`)
@@ -105,7 +105,7 @@ function isEEXIST(error: unknown): boolean {
 export class FileSettingsProvider extends SettingsProvider {
   static Config: z<Config> = z.object({
     path: z.string(),
-    cxhHome: z.string(),
+    arxHome: z.string(),
     watch: z.boolean().default(true),
     debounceMs: z.number().min(0).default(100),
   })

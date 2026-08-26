@@ -1,4 +1,4 @@
-import { Service } from '@centurionarx/cordis'
+import { Service } from '@arx-ai/cordis'
 
 /** Service whose public annotations are intentionally absent. */
 export class WritableService extends Service {
@@ -9,7 +9,7 @@ export class WritableService extends Service {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     writable: WritableService
   }

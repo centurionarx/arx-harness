@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
-import { AttachmentError } from '@centurionarx/cxh-attachment'
-import { SessionId } from '@centurionarx/cxh-session'
+import { AttachmentError } from '@arx-ai/arx-attachment'
+import { SessionId } from '@arx-ai/arx-session'
 import { makeBridgeHarness, textResponse, type BridgeHarness } from './harness.ts'
 
 describe('automation-only ACP bridge', () => {
@@ -21,7 +21,7 @@ describe('automation-only ACP bridge', () => {
 
     expect(response).toEqual({
       protocolVersion: PROTOCOL_VERSION,
-      agentInfo: { name: 'centurionarx-harness-acp', version: '0.0.1' },
+      agentInfo: { name: 'arx-harness-acp', version: '0.0.1' },
       agentCapabilities: {
         promptCapabilities: { image: false, audio: false, embeddedContext: false },
       },

@@ -29,11 +29,11 @@
     color-mix(in srgb, var(--dsw-alias-bg-base) 60%, transparent) 55%,
     transparent 100%
   );
-  animation: cxh-skill-row-sweep 2.6s ease-out infinite;
+  animation: arx-skill-row-sweep 2.6s ease-out infinite;
   pointer-events: none;
 }
 
-@keyframes cxh-skill-row-sweep {
+@keyframes arx-skill-row-sweep {
   0% { left: -300px; }
   90%, 100% { left: 100%; }
 }

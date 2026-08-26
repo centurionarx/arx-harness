@@ -7,7 +7,7 @@
  * call this, so the hunks they show are derived once.
  * @module
  */
-import type { DiffBlockProps, DiffHunk } from '@centurionarx/cxh-client-ui-primitives'
+import type { DiffBlockProps, DiffHunk } from '@arx-ai/arx-client-ui-primitives'
 import type { ToolCallBlock } from './tool-call-model.ts'
 
 /**

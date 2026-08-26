@@ -1,7 +1,7 @@
 /**
  * Pure client-safe subagent projection vocabulary.
  *
- * @module @centurionarx/cxh-subagent/projection-types
+ * @module @arx-ai/arx-subagent/projection-types
  */
 
 /** Durable active-turn timing for one descriptor-backed child session. */
@@ -46,7 +46,7 @@ export type SubagentIdentityProjection =
     seq: number
   }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionMap {
     /** Active-turn duration for a descriptor-backed subagent session. */
     subagentTiming: SubagentTimingProjection

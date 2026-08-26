@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-client-ui-brand-official",
-  "description": "Official CENTURIONarx Harness brand occupants for the Web client's sidebar and conversation Hero slots",
+  "name": "@arx-ai/arx-client-ui-brand-official",
+  "description": "Official arx Harness brand occupants for the Web client's sidebar and conversation Hero slots",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/ui-brand-official"
   },
   "type": "module",
@@ -29,12 +29,12 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-ui-conversation",
-        "@centurionarx/cxh-client-ui-sidebar"
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-ui-conversation",
+        "@arx-ai/arx-client-ui-sidebar"
       ],
       "platform": "web"
     }
@@ -45,19 +45,19 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-client-ui-sidebar": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-client-ui-sidebar": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-sidebar": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-sidebar": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "@testing-library/react": "^16.1.0",
     "@types/react": "~18.3.1",
     "react": "^18.2.0",

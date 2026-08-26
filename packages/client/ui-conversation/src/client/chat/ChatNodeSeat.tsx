@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react'
-import { JsonBlock } from '@centurionarx/cxh-client-ui-primitives'
+import { JsonBlock } from '@arx-ai/arx-client-ui-primitives'
 import type { ChatNodeOwnerProps, ChatViewSlotProps } from '../contract/slots.ts'
 import type { ChatNode } from '../contract/chat-nodes.ts'
 import css from './ChatView.module.css'

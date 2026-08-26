@@ -12,8 +12,8 @@ it('ships install metadata with the built web application', async () => {
   const manifest: unknown = JSON.parse(await readFile(join(DIST_ROOT, 'manifest.webmanifest'), 'utf8'))
   expect(manifest).toEqual({
     id: '/',
-    name: 'CENTURIONarx Harness',
-    short_name: 'CXH',
+    name: 'arx Harness',
+    short_name: 'ARX',
     start_url: '/',
     scope: '/',
     display: 'fullscreen',

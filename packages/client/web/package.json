@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-client-web",
+  "name": "@arx-ai/arx-client-web",
   "description": "Web boot kernel: static module table, Cordis loader, framework-free boot page, and UI-renderer handoff",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/web"
   },
   "type": "module",
@@ -27,22 +27,22 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-client-modules": "workspace:^",
-    "@centurionarx/cxh-client-ui-renderer": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-client-modules": "workspace:^",
+    "@arx-ai/arx-client-ui-renderer": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "files": [
     "lib/index.js",

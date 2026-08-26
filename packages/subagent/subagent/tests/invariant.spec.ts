@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import { SessionId } from '@centurionarx/cxh-session'
-import SubagentRuntime, { SubagentRunId } from '@centurionarx/cxh-subagent'
+import { Context } from '@arx-ai/cordis'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import { SessionId } from '@arx-ai/arx-session'
+import SubagentRuntime, { SubagentRunId } from '@arx-ai/arx-subagent'
 import type {
   SubagentProvider,
   SubagentRunEndInfo,
   SubagentRunInfo,
-} from '@centurionarx/cxh-subagent'
-import * as SubagentInvariant from '@centurionarx/cxh-subagent/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+} from '@arx-ai/arx-subagent'
+import * as SubagentInvariant from '@arx-ai/arx-subagent/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

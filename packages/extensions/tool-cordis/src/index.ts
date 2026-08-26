@@ -1,20 +1,20 @@
 /**
  * Model-facing Cordis runtime/package inspection, define, run, stop, and remove tools.
- * @module @centurionarx/cxh-tool-cordis
+ * @module @arx-ai/arx-tool-cordis
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
 import {
   CordisDynamicPackageId, CordisDynamicPluginId,
-} from '@centurionarx/cxh-cordis-host-runner'
-import type { DynamicCordisReference } from '@centurionarx/cxh-cordis-host-runner'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session'
-import type { UserMessage } from '@centurionarx/cxh-session'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-system-prompt'
+} from '@arx-ai/arx-cordis-host-runner'
+import type { DynamicCordisReference } from '@arx-ai/arx-cordis-host-runner'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session'
+import type { UserMessage } from '@arx-ai/arx-session'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ToolExecution } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-system-prompt'
 import { missingServices, providedServices } from './inspect.ts'
 import {
   presentDefineCall, presentInspectListCall, presentInspectQueryCall, presentInspectSelfCall, presentRunCall,
@@ -523,7 +523,7 @@ function renderUnavailableReference(id: string): string {
   return [
     '<cordis_dynamic_plugin_context>',
     `The user explicitly referenced @${id}, but this Plugin is unavailable in the current Session.`,
-    'It may have been removed, belong to another Session, or have been lost when the CXH process restarted.',
+    'It may have been removed, belong to another Session, or have been lost when the ARX process restarted.',
     'Do not claim that it was updated or silently create a replacement Plugin. Tell the user that the reference is currently unavailable.',
     '</cordis_dynamic_plugin_context>',
   ].join('\n')

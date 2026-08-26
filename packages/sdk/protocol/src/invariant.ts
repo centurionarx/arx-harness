@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-sdk-protocol`.
- * @module @centurionarx/cxh-sdk-protocol/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-sdk-protocol`.
+ * @module @arx-ai/arx-sdk-protocol/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-sdk-protocol'
+const PACKAGE_NAME = '@arx-ai/arx-sdk-protocol'
 
 /** Cordis companion plugin name. */
 export const name = 'sdk-protocol-invariant'

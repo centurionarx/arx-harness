@@ -3,8 +3,8 @@
  * preference, clicks drive setTheme. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { createSnapshotStore, type SessionListState, type WorkspaceListState } from '@centurionarx/cxh-client-runtime/client'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
+import { createSnapshotStore, type SessionListState, type WorkspaceListState } from '@arx-ai/arx-client-runtime/client'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import { AppearanceRow } from '../src/client/AppearanceRow.tsx'
 import type { AppearanceRowComponentProps } from '../src/client/AppearanceRow.tsx'
 import { createAppearanceRowStore } from '../src/client/settings-store.ts'

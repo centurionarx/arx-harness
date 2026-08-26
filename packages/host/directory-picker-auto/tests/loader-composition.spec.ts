@@ -13,13 +13,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import HttpServer from '@centurionarx/cxh-host-webserver'
-import type { DirectoryPicker } from '@centurionarx/cxh-host-directory-picker'
-import BrowseDirectoryPicker from '@centurionarx/cxh-host-directory-picker-browse'
-import NativeDirectoryPicker from '@centurionarx/cxh-host-directory-picker-native'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import HttpServer from '@arx-ai/arx-host-webserver'
+import type { DirectoryPicker } from '@arx-ai/arx-host-directory-picker'
+import BrowseDirectoryPicker from '@arx-ai/arx-host-directory-picker-browse'
+import NativeDirectoryPicker from '@arx-ai/arx-host-directory-picker-native'
 import * as DirectoryPickerAuto from '../src/index.ts'
 
 const renameControl = vi.hoisted(() => ({
@@ -45,11 +45,11 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   }
 })
 
-const AUTO = '@centurionarx/cxh-host-directory-picker-auto'
-const NATIVE = '@centurionarx/cxh-host-directory-picker-native'
-const BROWSE = '@centurionarx/cxh-host-directory-picker-browse'
-const NATIVE_SURFACE = '@centurionarx/cxh-client-ui-directory-picker-native'
-const BROWSE_SURFACE = '@centurionarx/cxh-client-ui-directory-picker-browse'
+const AUTO = '@arx-ai/arx-host-directory-picker-auto'
+const NATIVE = '@arx-ai/arx-host-directory-picker-native'
+const BROWSE = '@arx-ai/arx-host-directory-picker-browse'
+const NATIVE_SURFACE = '@arx-ai/arx-client-ui-directory-picker-native'
+const BROWSE_SURFACE = '@arx-ai/arx-client-ui-directory-picker-browse'
 
 /**
  * Loader-visible stand-in for a client surface package: the surfaces belong to
@@ -92,10 +92,10 @@ async function loadComposition(
   bindHost: '127.0.0.1' | '0.0.0.0',
   options: { failSurface?: boolean } = {},
 ): Promise<{ ctx: Context; configPath: string }> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-directory-picker-auto-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-directory-picker-auto-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@centurionarx/cxh-host-webserver'",
+    "- name: '@arx-ai/arx-host-webserver'",
     '  config:',
     `    host: '${bindHost}'`,
     '    port: 0',
@@ -108,7 +108,7 @@ async function loadComposition(
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-host-webserver', HttpServer],
+    ['@arx-ai/arx-host-webserver', HttpServer],
     [AUTO, DirectoryPickerAuto],
     [NATIVE, NativeDirectoryPicker],
     [BROWSE, BrowseDirectoryPicker],
@@ -144,7 +144,7 @@ function entryNames(ctx: Context): string[] {
  * probe resolves identically on hosts with and without zenity/kdialog.
  */
 function stubAttendedHost(): void {
-  fakeBin = mkdtempSync(join(tmpdir(), 'cxh-picker-bin-'))
+  fakeBin = mkdtempSync(join(tmpdir(), 'arx-picker-bin-'))
   const zenity = join(fakeBin, 'zenity')
   writeFileSync(zenity, '#!/bin/sh\n')
   chmodSync(zenity, 0o755)

@@ -1,10 +1,10 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import type { IndexInjection } from '@centurionarx/cxh-host-webserver'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@centurionarx/cxh-settings'
+import type { IndexInjection } from '@arx-ai/arx-host-webserver'
+import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@arx-ai/arx-settings'
 import {
   DEFAULT_PREFERENCE, THEME_SETTINGS_NAMESPACE, apply,
-} from '@centurionarx/cxh-client-ui-theme'
+} from '@arx-ai/arx-client-ui-theme'
 
 class MemorySettings extends SettingsProvider {
   readonly writable = true

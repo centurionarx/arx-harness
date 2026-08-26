@@ -2,9 +2,9 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
-import type {} from '@centurionarx/cxh-skill'
-import { SessionId } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-agent-presets'
+import type {} from '@arx-ai/arx-skill'
+import { SessionId } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-agent-presets'
 import { launchWebScaffold, type WebScaffold } from './scaffold.ts'
 
 async function writeSkill(root: string, name: string): Promise<void> {
@@ -20,22 +20,22 @@ Ambient host state.
 }
 
 it('isolates replay skill discovery from every ambient host root', async () => {
-  const ambient = await mkdtemp(join(tmpdir(), 'cxh-web-ambient-skills-'))
-  const cxhHome = join(ambient, 'cxh-home')
+  const ambient = await mkdtemp(join(tmpdir(), 'arx-web-ambient-skills-'))
+  const arxHome = join(ambient, 'arx-home')
   const agentsHome = join(ambient, 'agents-home')
   const bundled = join(ambient, 'bundled')
   await Promise.all([
-    writeSkill(join(cxhHome, 'skills'), 'ambient-cxh'),
+    writeSkill(join(arxHome, 'skills'), 'ambient-arx'),
     writeSkill(join(agentsHome, 'skills'), 'ambient-agents'),
     writeSkill(bundled, 'ambient-bundled'),
   ])
 
-  const originalCxhHome = process.env.CXH_HOME
-  const originalAgentsHome = process.env.CXH_AGENTS_HOME
-  const originalBundled = process.env.CXH_BUNDLED_SKILL_DIR
-  process.env.CXH_HOME = cxhHome
-  process.env.CXH_AGENTS_HOME = agentsHome
-  process.env.CXH_BUNDLED_SKILL_DIR = bundled
+  const originalArxHome = process.env.ARX_HOME
+  const originalAgentsHome = process.env.ARX_AGENTS_HOME
+  const originalBundled = process.env.ARX_BUNDLED_SKILL_DIR
+  process.env.ARX_HOME = arxHome
+  process.env.ARX_AGENTS_HOME = agentsHome
+  process.env.ARX_BUNDLED_SKILL_DIR = bundled
   let scaffold: WebScaffold | undefined
   try {
     scaffold = await launchWebScaffold()
@@ -52,7 +52,7 @@ it('isolates replay skill discovery from every ambient host root', async () => {
       const skills = ctx.get('skills')
       if (skills === undefined) throw new Error('the composition mounts no skill registry')
       const names = (await skills.list({ cwd: scaffold.workspaceCwd, scope: handle.agent })).map(skill => skill.name)
-      expect(names).not.toContain('ambient-cxh')
+      expect(names).not.toContain('ambient-arx')
       expect(names).not.toContain('ambient-agents')
       expect(names).not.toContain('ambient-bundled')
     } finally {
@@ -62,12 +62,12 @@ it('isolates replay skill discovery from every ambient host root', async () => {
     try {
       await scaffold?.close()
     } finally {
-      if (originalCxhHome === undefined) delete process.env.CXH_HOME
-      else process.env.CXH_HOME = originalCxhHome
-      if (originalAgentsHome === undefined) delete process.env.CXH_AGENTS_HOME
-      else process.env.CXH_AGENTS_HOME = originalAgentsHome
-      if (originalBundled === undefined) delete process.env.CXH_BUNDLED_SKILL_DIR
-      else process.env.CXH_BUNDLED_SKILL_DIR = originalBundled
+      if (originalArxHome === undefined) delete process.env.ARX_HOME
+      else process.env.ARX_HOME = originalArxHome
+      if (originalAgentsHome === undefined) delete process.env.ARX_AGENTS_HOME
+      else process.env.ARX_AGENTS_HOME = originalAgentsHome
+      if (originalBundled === undefined) delete process.env.ARX_BUNDLED_SKILL_DIR
+      else process.env.ARX_BUNDLED_SKILL_DIR = originalBundled
       await rm(ambient, { recursive: true, force: true })
     }
   }

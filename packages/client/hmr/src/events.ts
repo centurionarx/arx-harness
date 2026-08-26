@@ -5,7 +5,7 @@
  * the two ends from drifting, not from parsing.
  */
 
-import type { WebBootGraph } from '@centurionarx/cxh-client-modules'
+import type { WebBootGraph } from '@arx-ai/arx-client-modules'
 
 /** One SSE frame: the full graph on connect, or one rebuilt bundle notice. */
 export type PluginsEventFrame =

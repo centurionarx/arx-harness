@@ -1,4 +1,4 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 /**
  * Shared write-path orchestration contract for backends using {@link PersistenceCoordinator}.
  * Unlike the public storage-semantics suite in `contract.ts`, it covers SessionStore event wiring,
@@ -7,14 +7,14 @@ import { createUserMessage } from '@centurionarx/cxh-llm'
  *
  * Each real backend supplies a shared storage scope and optional torn-tail injector; backend specs
  * retain only storage-mechanics tests, while these scenarios run once per backend.
- * @module @centurionarx/cxh-session-persistence/tests/coordinator-contract
+ * @module @arx-ai/arx-session-persistence/tests/coordinator-contract
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@centurionarx/cordis'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import SessionStore, { SESSION_FORMAT_VERSION, Session, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import { Context, type Fiber } from '@arx-ai/cordis'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import SessionStore, { SESSION_FORMAT_VERSION, Session, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import { meta, oneTurnLog, appendLog } from './contract.ts'
 
 /**

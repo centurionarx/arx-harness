@@ -1,20 +1,20 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context, symbols, type EffectMeta } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as AgentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
-import SubagentRuntime, { type SubagentStartRequest } from '@centurionarx/cxh-subagent'
+import { Context, symbols, type EffectMeta } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import * as AgentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
+import SubagentRuntime, { type SubagentStartRequest } from '@arx-ai/arx-subagent'
 import { MockAdapter, maxTokensResponse, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as spawn from '../src/index.ts'
-import { STRUCTURED_OUTPUT_TOOL } from '@centurionarx/cxh-subagent-in-process-driver'
-import { defineContentToolFixture } from '@centurionarx/cxh-tools'
+import { STRUCTURED_OUTPUT_TOOL } from '@arx-ai/arx-subagent-in-process-driver'
+import { defineContentToolFixture } from '@arx-ai/arx-tools'
 
 type Script = ConstructorParameters<typeof MockAdapter>[0]
 
@@ -64,7 +64,7 @@ function disposeChildLifecycle(parent: Agent): void {
   void lifecycle()
 }
 
-describe('cxh-subagent-spawn-in-process', () => {
+describe('arx-subagent-spawn-in-process', () => {
   it('runs a fresh child to completion and returns its final assistant output', async () => {
     // One model call for the child: a plain text answer.
     const { ctx, parent } = await setup([textResponse('child answer')])

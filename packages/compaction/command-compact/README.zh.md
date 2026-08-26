@@ -1,4 +1,4 @@
-# @centurionarx/cxh-command-compact
+# @arx-ai/arx-command-compact
 
 [English](README.md) | 中文
 
@@ -34,14 +34,14 @@ busy 结果有意限定在进程范围内：活动的未匹配标记会阻塞，
 
 ```yaml
 - id: commands
-  name: '@centurionarx/cxh-commands'
+  name: '@arx-ai/arx-commands'
 - id: compaction-basic
-  name: '@centurionarx/cxh-compaction-basic'
+  name: '@arx-ai/arx-compaction-basic'
 - id: command-compact
-  name: '@centurionarx/cxh-command-compact'
+  name: '@arx-ai/arx-command-compact'
 ```
 
-随附 `cxh` 基础配置将它挂载在 `compaction-basic` 旁，Web 客户端提供命令适配器。未组合命令适配器的自动化接口只保留自动压缩。
+随附 `arx` 基础配置将它挂载在 `compaction-basic` 旁，Web 客户端提供命令适配器。未组合命令适配器的自动化接口只保留自动压缩。
 
 ## 模型体验
 

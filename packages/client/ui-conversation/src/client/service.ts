@@ -7,14 +7,14 @@
  * through one property read; assignment through the tracker proxy and `#`
  * private fields bypass that rebinding.
  */
-import { Service } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
+import { Service } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
 // Type-only imports: a plugin-to-plugin value import is a bundle purity
 // error, so scope resolution goes through the sessions service (scopeOf
 // method) instead of the standalone helper.
-import type { ISessions, SessionFace, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type { SubmitImageAttachment, SubmitOutcome } from '@centurionarx/cxh-client-ui-input-trigger/client'
-import type { ImageAttachmentRef, ImageMediaType } from '@centurionarx/cxh-attachment'
+import type { ISessions, SessionFace, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type { SubmitImageAttachment, SubmitOutcome } from '@arx-ai/arx-client-ui-input-trigger/client'
+import type { ImageAttachmentRef, ImageMediaType } from '@arx-ai/arx-attachment'
 import type { ComposerAttachment } from './contract/slots.ts'
 import type { QueueAction, QueueItemId } from './contract/queue.ts'
 import type { ComposerBlocks } from './input/blocks.ts'

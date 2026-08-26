@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createScope, scopeTarget } from '@centurionarx/cxh-scope'
-import { createUserMessage, CallId, createMessage, createToolResultMessage, freezeMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId, TOOL_NOT_STARTED } from '@centurionarx/cxh-session'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import { createScope, scopeTarget } from '@arx-ai/arx-scope'
+import { createUserMessage, CallId, createMessage, createToolResultMessage, freezeMessage } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId, TOOL_NOT_STARTED } from '@arx-ai/arx-session'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<{ ctx: Context; fiber: Awaited<ReturnType<Context['plugin']>> }> {
   const ctx = new Context()

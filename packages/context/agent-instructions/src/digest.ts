@@ -1,7 +1,7 @@
 /**
  * Content identity for workspace instruction duplicate suppression.
  *
- * @module @centurionarx/cxh-agent-instructions/digest
+ * @module @arx-ai/arx-agent-instructions/digest
  */
 
 import { createHash } from 'node:crypto'

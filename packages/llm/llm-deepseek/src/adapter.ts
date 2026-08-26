@@ -5,10 +5,10 @@
  * operation and the bearer token through a per-request resolver, so the
  * registering plugin owns validation, layering, and credential policy.
  *
- * @module cxh-llm-deepseek/adapter
+ * @module arx-llm-deepseek/adapter
  */
 
-import { attributionHeaders, contentHasImage, CONTEXT_WINDOW_EXCEEDED_CODE, isContextWindowExceededError, isQuotaExceededError, LlmAdapter, LlmError, offloadRequestImagesWithPolicy, ProviderRequestId, QUOTA_EXCEEDED_CODE, ReasoningEffortId } from '@centurionarx/cxh-llm'
+import { attributionHeaders, contentHasImage, CONTEXT_WINDOW_EXCEEDED_CODE, isContextWindowExceededError, isQuotaExceededError, LlmAdapter, LlmError, offloadRequestImagesWithPolicy, ProviderRequestId, QUOTA_EXCEEDED_CODE, ReasoningEffortId } from '@arx-ai/arx-llm'
 import type {
   ContentBlock,
   GenerateOptions,
@@ -19,17 +19,17 @@ import type {
   ModelModality,
   ResolvedRetryPolicy,
   StreamChunk,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 import type {
   AttachmentId,
   AttachmentStore,
   ImageAttachmentRef,
   ImageRequestPolicy,
   RequestImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import type { CredentialRef } from '@centurionarx/cxh-credentials'
-import { deadline, idleWatchdog, timeoutOf } from '@centurionarx/cxh-timeout'
-import type { AnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
+} from '@arx-ai/arx-attachment'
+import type { CredentialRef } from '@arx-ai/arx-credentials'
+import { deadline, idleWatchdog, timeoutOf } from '@arx-ai/arx-timeout'
+import type { AnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
 import { serializeRequest, serializeRequestWithImages } from './serialize.ts'
 import type { ImageWireLocation, RequestDefaults } from './serialize.ts'
 import { DeepSeekFileStore } from './file-store.ts'
@@ -522,12 +522,12 @@ export class DeepSeekAdapter extends LlmAdapter {
       'content-type': 'application/json',
       'accept': 'text/event-stream',
       ...attributionHeaders(),
-      'x-centurionarx-harness-user-id': String(userId),
+      'x-arx-harness-user-id': String(userId),
       ...options.sessionId !== undefined
-        ? { 'x-centurionarx-harness-session-id': String(options.sessionId) }
+        ? { 'x-arx-harness-session-id': String(options.sessionId) }
         : {},
       ...options.purpose === 'compaction'
-        ? { 'x-centurionarx-harness-compact': '1' }
+        ? { 'x-arx-harness-compact': '1' }
         : {},
     }
 

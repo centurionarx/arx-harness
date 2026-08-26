@@ -2,18 +2,18 @@
  * Harness tool schemas presented to the vendor CLI as one in-process MCP
  * server, and the name mapping that presentation forces.
  *
- * @module @centurionarx/cxh-llm-agent-cli/tools
+ * @module @arx-ai/arx-llm-agent-cli/tools
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
-import type { ToolSchema } from '@centurionarx/cxh-llm'
+import type { ToolSchema } from '@arx-ai/arx-llm'
 
 /**
  * Server name the CLI uses to namespace these tools. It is part of every name
  * the model sees, so changing it changes model-visible text.
  */
-export const MCP_SERVER_NAME = 'cxh'
+export const MCP_SERVER_NAME = 'arx'
 
 const ALIAS_PREFIX = `mcp__${MCP_SERVER_NAME}__`
 

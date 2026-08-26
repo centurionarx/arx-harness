@@ -11,7 +11,7 @@
  *
  * ```yaml
  * - id: llm
- *   name: '@centurionarx/cxh-llm-pi-ai'
+ *   name: '@arx-ai/arx-llm-pi-ai'
  *   config:
  *     providers:
  *       # Catalog route: everything but the credential comes from pi-ai.
@@ -52,14 +52,14 @@
  *               max: ultra
  * ```
  *
- * @module @centurionarx/cxh-llm-pi-ai
+ * @module @arx-ai/arx-llm-pi-ai
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { launchEnvironmentOf } from '@centurionarx/cxh-launch-environment'
-import { assertUsableApiKey, LlmError } from '@centurionarx/cxh-llm'
-import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, LlmConfigurableProvider } from '@centurionarx/cxh-llm'
-import { deepEqualJson, installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
+import type { Context } from '@arx-ai/cordis'
+import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import { assertUsableApiKey, LlmError } from '@arx-ai/arx-llm'
+import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, LlmConfigurableProvider } from '@arx-ai/arx-llm'
+import { deepEqualJson, installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 import { PiAiAdapter } from './adapter.ts'
 import { authContextFrom, credentialStoreFrom } from './auth.ts'
 import { catalogProviderIds } from './catalog.ts'

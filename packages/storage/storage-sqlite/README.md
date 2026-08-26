@@ -1,4 +1,4 @@
-# @centurionarx/cxh-storage-sqlite
+# @arx-ai/arx-storage-sqlite
 
 English | [中文](README.zh.md)
 

@@ -1,5 +1,5 @@
 /**
- * OpenTelemetry Service Provider for the CENTURIONarx Harness telemetry capability.
+ * OpenTelemetry Service Provider for the arx Harness telemetry capability.
  *
  * Composes the OTel JS SDK as-is — a `LoggerProvider` with a
  * `BatchLogRecordProcessor` and an OTLP/HTTP log exporter — and maps each
@@ -9,13 +9,13 @@
  * capture mode and an outer shutdown deadline: the SDK's export timeout does
  * not bound its preceding `forceFlush()` wait.
  *
- * @module @centurionarx/cxh-session-telemetry-otel
+ * @module @arx-ai/arx-session-telemetry-otel
  */
 
 import { createRequire } from 'node:module'
-import z from '@centurionarx/schemastery'
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-command-feedback'
+import z from '@arx-ai/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-command-feedback'
 import {
   SessionTelemetryBackend,
   SessionTelemetryCoordinator,
@@ -23,9 +23,9 @@ import {
   type SessionTelemetryRecord,
   type SessionTelemetrySeverity,
   type SessionTelemetrySharingStatus,
-} from '@centurionarx/cxh-session-telemetry'
-import { APP_IDENTITY } from '@centurionarx/cxh-llm'
-import { getOrCreateAnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
+} from '@arx-ai/arx-session-telemetry'
+import { APP_IDENTITY } from '@arx-ai/arx-llm'
+import { getOrCreateAnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
 import {
   BatchLogRecordProcessor,
   LoggerProvider,
@@ -37,7 +37,7 @@ import { SeverityNumber, type AnyValue, type Logger } from '@opentelemetry/api-l
 import { resourceFromAttributes } from '@opentelemetry/resources'
 
 // The package's own manifest is the single source of the instrumentation-scope
-// version (same pattern as cxh-llm's attribution identity).
+// version (same pattern as arx-llm's attribution identity).
 const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
 
 /** Session-sharing policy selected by {@link Config.mode}. */
@@ -85,7 +85,7 @@ function sharingStatusFor(mode: SessionTelemetryMode): SessionTelemetrySharingSt
 
 /**
  * Plugin configuration: one sharing policy, two verbatim SDK option objects,
- * and one CXH-owned shutdown bound. Uploading modes validate their endpoint
+ * and one ARX-owned shutdown bound. Uploading modes validate their endpoint
  * and shutdown deadline at plugin load; `DISABLED` reads neither.
  */
 export interface Config {
@@ -216,8 +216,8 @@ export class OpenTelemetrySessionBackend extends SessionTelemetryBackend {
         }),
       ],
     })
-    const ledger = this.provider.getLogger('@centurionarx/cxh-session-telemetry-otel', version)
-    const ops = this.provider.getLogger('@centurionarx/cxh-session-telemetry-otel/ops', version)
+    const ledger = this.provider.getLogger('@arx-ai/arx-session-telemetry-otel', version)
+    const ops = this.provider.getLogger('@arx-ai/arx-session-telemetry-otel/ops', version)
     const enqueue: SessionTelemetrySink['emit'] = (record) => {
       const logger: Logger = record.channel === 'ops' ? ops : ledger
       logger.emit({

@@ -15,19 +15,19 @@ interface CssModulePlugin {
 }
 
 /** A representative dynamic bundle using the shared client baseline. */
-const REQUESTING_PACKAGE = '@centurionarx/cxh-client-ui-conversation'
+const REQUESTING_PACKAGE = '@arx-ai/arx-client-ui-conversation'
 
 function clientConfigs(id = REQUESTING_PACKAGE) {
   return clientBundle(id, ['lib/types/index.js', 'lib/types/invariant.js'])(
-    { env: { CXH_BUILD_FACE: 'client' } },
+    { env: { ARX_BUILD_FACE: 'client' } },
   ).filter(config => config.platform === 'browser')
 }
 
 describe('client bundle build faces', () => {
   it('watches source in development and consumes emitted JavaScript in the Client build', () => {
-    const bundle = clientBundle('@centurionarx/cxh-client-test', ['lib/types/index.js'])
+    const bundle = clientBundle('@arx-ai/arx-client-test', ['lib/types/index.js'])
     const development = bundle({ env: {} }).find(config => config.platform === 'browser')
-    const artifact = bundle({ env: { CXH_BUILD_FACE: 'client' } })
+    const artifact = bundle({ env: { ARX_BUILD_FACE: 'client' } })
       .find(config => config.platform === 'browser')
 
     expect(development?.entry).toEqual({ client: 'src/client/index.ts' })
@@ -44,7 +44,7 @@ function purityResolveId(id = REQUESTING_PACKAGE): ResolveId {
   // package-invariants text check can see the invariant entry per package.
   const configs = clientConfigs(id)
   const plugins = (configs[0] as { plugins: { name: string; resolveId?: unknown }[] }).plugins
-  const gate = plugins.find(p => p.name === 'cxh-client-bundle-purity')
+  const gate = plugins.find(p => p.name === 'arx-client-bundle-purity')
   if (gate?.resolveId === undefined) throw new Error('purity plugin missing from client config')
   return gate.resolveId as ResolveId
 }
@@ -52,7 +52,7 @@ function purityResolveId(id = REQUESTING_PACKAGE): ResolveId {
 function cssModulePlugin(): CssModulePlugin {
   const configs = clientConfigs()
   const plugins = (configs[0] as { plugins: CssModulePlugin[] }).plugins
-  const plugin = plugins.find(candidate => candidate.name === 'cxh-css-modules-inline')
+  const plugin = plugins.find(candidate => candidate.name === 'arx-css-modules-inline')
   if (plugin?.resolveId === undefined || plugin.load === undefined) {
     throw new Error('CSS Modules plugin missing from client config')
   }
@@ -63,79 +63,79 @@ describe('client bundle purity gate', () => {
   const resolveId = purityResolveId()
 
   it('leaves default externals and non-scoped specifiers alone', () => {
-    expect(resolveId('@centurionarx/cxh-client-ui-slots')).toBeNull()
-    expect(resolveId('@centurionarx/cxh-client-ui-primitives')).toBeNull()
-    expect(resolveId('@centurionarx/cxh-client-runtime/client')).toBeNull()
+    expect(resolveId('@arx-ai/arx-client-ui-slots')).toBeNull()
+    expect(resolveId('@arx-ai/arx-client-ui-primitives')).toBeNull()
+    expect(resolveId('@arx-ai/arx-client-runtime/client')).toBeNull()
     expect(resolveId('react')).toBeNull()
     expect(resolveId('zod')).toBeNull()
   })
 
   it('rejects the retired web-react platform package', () => {
-    expect(() => resolveId('@centurionarx/cxh-client-web-react')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-client-web-react/store')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-web-react')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-web-react/store')).toThrow(/purity/)
   })
 
   it('lets inline-safe wire layers inline', () => {
-    expect(resolveId('@centurionarx/cxh-host-apiproxy/api')).toBeNull()
-    expect(resolveId('@centurionarx/cxh-session/surface')).toBeNull()
-    expect(resolveId('@centurionarx/cxh-brand')).toBeNull()
+    expect(resolveId('@arx-ai/arx-host-apiproxy/api')).toBeNull()
+    expect(resolveId('@arx-ai/arx-session/surface')).toBeNull()
+    expect(resolveId('@arx-ai/arx-brand')).toBeNull()
   })
 
   it('lets exact generated Remote contributions inline without admitting their package implementation', () => {
-    expect(resolveId('@centurionarx/cxh-goal/remote')).toBeNull()
-    expect(() => resolveId('@centurionarx/cxh-goal')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-goal/client')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-goal/remote/nested')).toThrow(/purity/)
+    expect(resolveId('@arx-ai/arx-goal/remote')).toBeNull()
+    expect(() => resolveId('@arx-ai/arx-goal')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-goal/client')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-goal/remote/nested')).toThrow(/purity/)
   })
 
-  it('throws on any other @centurionarx leak', () => {
-    expect(() => resolveId('@centurionarx/cxh-agent')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-client-web')).toThrow(/purity/)
+  it('throws on any other @arx-ai leak', () => {
+    expect(() => resolveId('@arx-ai/arx-agent')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-web')).toThrow(/purity/)
   })
 
   it('throws on cross-plugin value imports — bare plugin names and /client subpaths alike', () => {
-    expect(() => resolveId('@centurionarx/cxh-client-connection')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-client-runtime')).toThrow(/purity/)
-    expect(() => resolveId('@centurionarx/cxh-client-ui-layout/client')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-connection')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-runtime')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-client-ui-layout/client')).toThrow(/purity/)
   })
 
   it('admits the parser-preloaded runtime for every dynamic bundle', () => {
-    expect(resolveId('@centurionarx/cxh-client-runtime/client')).toBeNull()
-    const withoutRequest = purityResolveId('@centurionarx/cxh-client-ui-goal')
-    expect(withoutRequest('@centurionarx/cxh-client-runtime/client')).toBeNull()
+    expect(resolveId('@arx-ai/arx-client-runtime/client')).toBeNull()
+    const withoutRequest = purityResolveId('@arx-ai/arx-client-ui-goal')
+    expect(withoutRequest('@arx-ai/arx-client-runtime/client')).toBeNull()
   })
 
   it('externalizes the baseline independently of each package manifest', () => {
     const requesting = clientConfigs()[0]?.deps as { neverBundle: (specifier: string) => boolean }
-    const plain = clientConfigs('@centurionarx/cxh-client-connection')[0]?.deps as {
+    const plain = clientConfigs('@arx-ai/arx-client-connection')[0]?.deps as {
       neverBundle: (specifier: string) => boolean
     }
 
     expect(requesting.neverBundle('react')).toBe(true)
     expect(requesting.neverBundle('zod')).toBe(false)
     expect(plain.neverBundle('react')).toBe(true)
-    expect(plain.neverBundle('@centurionarx/cxh-client-runtime/client')).toBe(true)
+    expect(plain.neverBundle('@arx-ai/arx-client-runtime/client')).toBe(true)
   })
 })
 
 describe('client bundle module requests', () => {
   it('requests what the declaration lists', () => {
-    const requests = requestedExternals('@centurionarx/cxh-client-fixture', {
-      external: ['react', 'react/jsx-runtime', '@centurionarx/cxh-client-ui-slots'],
+    const requests = requestedExternals('@arx-ai/arx-client-fixture', {
+      external: ['react', 'react/jsx-runtime', '@arx-ai/arx-client-ui-slots'],
     })
 
     expect([...requests].sort()).toEqual([
-      '@centurionarx/cxh-client-ui-slots', 'react', 'react/jsx-runtime',
+      '@arx-ai/arx-client-ui-slots', 'react', 'react/jsx-runtime',
     ])
   })
 
   it('requests nothing when the declaration is absent', () => {
-    expect(requestedExternals('@centurionarx/cxh-client-fixture', {}).size).toBe(0)
+    expect(requestedExternals('@arx-ai/arx-client-fixture', {}).size).toBe(0)
   })
 
   it('rejects a malformed declaration instead of reading past it', () => {
-    expect(() => requestedExternals('@centurionarx/cxh-client-fixture', { external: 'react' }))
-      .toThrow(/cxh\.client\.external must be a string array/)
+    expect(() => requestedExternals('@arx-ai/arx-client-fixture', { external: 'react' }))
+      .toThrow(/arx\.client\.external must be a string array/)
   })
 })
 
@@ -146,7 +146,7 @@ describe('client bundle debug artifacts', () => {
   })
 
   it('maps first-party sources to their repository package paths', () => {
-    const configs = clientConfigs('@centurionarx/cxh-client-ui-goal')
+    const configs = clientConfigs('@arx-ai/arx-client-ui-goal')
     const outputOptions = configs[0]?.outputOptions
     if (typeof outputOptions !== 'object' || outputOptions === null) throw new Error('client output options missing')
     const transform = outputOptions.sourcemapPathTransform
@@ -154,12 +154,12 @@ describe('client bundle debug artifacts', () => {
 
     const source = transform('../src/client/GoalBar.tsx', clientSourceMapPath('client/ui-goal'))
     expect(source).toBe('../../../packages/client/ui-goal/src/client/GoalBar.tsx')
-    const resolved = new URL(source, 'https://cxh.test/plugins/@centurionarx/cxh-client-ui-goal/client.js.map')
+    const resolved = new URL(source, 'https://arx.test/plugins/@arx-ai/arx-client-ui-goal/client.js.map')
     expect(resolved.pathname).toBe('/packages/client/ui-goal/src/client/GoalBar.tsx')
   })
 
   it('maps dual-face host sources to the host package group', () => {
-    const configs = clientConfigs('@centurionarx/cxh-host-directory-picker-native')
+    const configs = clientConfigs('@arx-ai/arx-host-directory-picker-native')
     const outputOptions = configs[0]?.outputOptions
     if (typeof outputOptions !== 'object' || outputOptions === null) throw new Error('client output options missing')
     const transform = outputOptions.sourcemapPathTransform
@@ -170,7 +170,7 @@ describe('client bundle debug artifacts', () => {
   })
 
   it('maps inlined workspace sources to packages and leaves dependencies outside it unchanged', () => {
-    const configs = clientConfigs('@centurionarx/cxh-client-connection')
+    const configs = clientConfigs('@arx-ai/arx-client-connection')
     const outputOptions = configs[0]?.outputOptions
     if (typeof outputOptions !== 'object' || outputOptions === null) throw new Error('client output options missing')
     const transform = outputOptions.sourcemapPathTransform
@@ -179,7 +179,7 @@ describe('client bundle debug artifacts', () => {
     const sourceMapPath = clientSourceMapPath('client/connection')
     const workspaceSource = transform('../../../host/apiproxy/src/api/rpc.ts', sourceMapPath)
     expect(workspaceSource).toBe('../../../packages/host/apiproxy/src/api/rpc.ts')
-    const resolved = new URL(workspaceSource, 'https://cxh.test/plugins/@centurionarx/cxh-client-connection/client.js.map')
+    const resolved = new URL(workspaceSource, 'https://arx.test/plugins/@arx-ai/arx-client-connection/client.js.map')
     expect(resolved.pathname).toBe('/packages/host/apiproxy/src/api/rpc.ts')
 
     const dependencySource = '../../../../node_modules/.pnpm/zod@4.4.3/node_modules/zod/index.js'

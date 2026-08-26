@@ -1,4 +1,4 @@
-import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import { NS } from './locales.ts'
 import css from './SubagentReadOnlyComposer.module.css'
 

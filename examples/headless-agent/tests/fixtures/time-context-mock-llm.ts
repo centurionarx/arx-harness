@@ -1,5 +1,5 @@
-import type { Context } from '@centurionarx/cordis'
-import { LlmAdapter, type StreamChunk } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { LlmAdapter, type StreamChunk } from '@arx-ai/arx-llm'
 
 /** Deterministic one-step adapter for the time-context Loader fixture. */
 class TimeContextMockAdapter extends LlmAdapter {

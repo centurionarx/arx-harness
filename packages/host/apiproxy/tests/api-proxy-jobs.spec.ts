@@ -8,17 +8,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import type { JobOutcome } from '@centurionarx/cxh-jobs'
-import type { MuxFrame, RpcRequest } from '@centurionarx/cxh-host-apiproxy/api'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import type { JobOutcome } from '@arx-ai/arx-jobs'
+import type { MuxFrame, RpcRequest } from '@arx-ai/arx-host-apiproxy/api'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
 type JobFrame = Extract<MuxFrame, { type: 'session/jobs' }>
 

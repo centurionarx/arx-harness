@@ -2,7 +2,7 @@
  * Wire-safe question and answer types, free of cordis/service imports so browser
  * type chains (apiproxy api → client) can consume them without loading this
  * package's Context augmentation.
- * @module @centurionarx/cxh-user-questions/types
+ * @module @arx-ai/arx-user-questions/types
  */
 
 /** One selectable answer offered to the user. */

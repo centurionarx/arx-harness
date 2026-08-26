@@ -1,5 +1,5 @@
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type {} from '@centurionarx/cxh-tools/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type {} from '@arx-ai/arx-tools/types'
 import type {
   ConversationNode, RunningToolCall, ToolCallBlock, ToolResultNode,
 } from './conversation.ts'

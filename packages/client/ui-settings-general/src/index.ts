@@ -1,8 +1,8 @@
 /** Host loader entry for the browser implementation exported from `./client`. */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 
 /** Durable settings namespace for product-wide GUI onboarding facts. */
 const ONBOARDING_SETTINGS_NAMESPACE = 'ui-onboarding'

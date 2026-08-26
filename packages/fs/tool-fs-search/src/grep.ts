@@ -8,15 +8,15 @@
  * `--json` record parsing, per-line preview retention, match retention,
  * grouping, and formatting; process concerns stay behind `ctx.subprocess`.
  *
- * @module @centurionarx/cxh-tool-fs-search/grep
+ * @module @arx-ai/arx-tool-fs-search/grep
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, SearchResultView, ToolResult } from '@centurionarx/cxh-tools'
-import type { RetainedItems } from '@centurionarx/cxh-output-retention'
-import type { SpillRef } from '@centurionarx/cxh-spill'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, SearchResultView, ToolResult } from '@arx-ai/arx-tools'
+import type { RetainedItems } from '@arx-ai/arx-output-retention'
+import type { SpillRef } from '@arx-ai/arx-spill'
+import type {} from '@arx-ai/arx-system-prompt'
 import type { GrepMatch } from './search-core.ts'
 import { SearchError, previewLine, retainGrepMatches, runRipgrep, toWorkdirRelative, trySaveFormattedResult } from './search-core.ts'
 import { grepSearchMeta, searchViewFromMeta } from './presentation.ts'

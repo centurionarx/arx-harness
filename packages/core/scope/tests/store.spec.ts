@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   AnonymousEntries,
   createScope,
@@ -8,7 +8,7 @@ import {
   type Scope,
   type ScopeKey,
   type ScopeLayer,
-} from '@centurionarx/cxh-scope'
+} from '@arx-ai/arx-scope'
 
 class TestLayer implements ScopeLayer {
   readonly named: NamedEntries<number>

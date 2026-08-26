@@ -2,12 +2,12 @@
  * Fixed physical-record compression for SQLite. Schema-owned functions
  * encode logical events and decode tagged rows before persistence consumers
  * observe them.
- * @module @centurionarx/cxh-session-persistence-sqlite/compression
+ * @module @arx-ai/arx-session-persistence-sqlite/compression
  */
 
 import { TextDecoder } from 'node:util'
 import { constants, zstdCompressSync, zstdDecompressSync } from 'node:zlib'
-import type { SessionEvent, SurfaceEventType } from '@centurionarx/cxh-session'
+import type { SessionEvent, SurfaceEventType } from '@arx-ai/arx-session'
 import {
   decodeSerializedChunkRow,
   type ChunkRow,

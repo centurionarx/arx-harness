@@ -1,15 +1,15 @@
 /**
  * Durable agent session-event vocabulary shared with type-only consumers.
  *
- * @module @centurionarx/cxh-agent/types
+ * @module @arx-ai/arx-agent/types
  */
 
-import type { UserMessage } from '@centurionarx/cxh-llm/types'
+import type { UserMessage } from '@arx-ai/arx-llm/types'
 
 /** One of the two ordered pending-message lists owned by an agent. */
 export type InboxTarget = 'next-turn' | 'next-step'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * One normalized mutation of an agent's durable pending-message lists.

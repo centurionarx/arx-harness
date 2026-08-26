@@ -1,14 +1,14 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { Context } from '@centurionarx/cordis'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
 import SessionTitleService, {
   SessionTitleProviderId,
   fallbackSessionTitle,
   foldSessionTitle,
   normalizeSessionTitle,
   truncateTitleUtf8,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,

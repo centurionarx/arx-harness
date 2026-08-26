@@ -1,10 +1,10 @@
 /**
  * Configuration vocabulary for the replay-aware basic compaction backend.
  *
- * @module @centurionarx/cxh-compaction-basic/types
+ * @module @arx-ai/arx-compaction-basic/types
  */
 
-import type { LlmCallConfig } from '@centurionarx/cxh-llm'
+import type { LlmCallConfig } from '@arx-ai/arx-llm'
 
 /** Policy fields shared by the default policy and exact model overrides. */
 export interface CompactionPolicyConfig {

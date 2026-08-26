@@ -6,14 +6,14 @@
  * and a subject-less root dispatch stays unfiltered. Scope-owned listeners
  * dispose with the fiber.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import type { SessionId } from '@centurionarx/cxh-api-remotes/client'
+import type { SessionId } from '@arx-ai/arx-api-remotes/client'
 import { createScope, scopeOf } from '../src/client/agents/scope.ts'
 
 const sid = (k: string): SessionId => k as SessionId
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * Test-only routed probe event.

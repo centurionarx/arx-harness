@@ -7,8 +7,8 @@
  */
 
 import { writeFile } from 'node:fs/promises'
-import { boot, resolveConfigPath } from '@centurionarx/cxh-app-boot'
-import { CallId } from '@centurionarx/cxh-llm'
+import { boot, resolveConfigPath } from '@arx-ai/arx-app-boot'
+import { CallId } from '@arx-ai/arx-llm'
 
 const configPath = process.argv[2]
 if (configPath === undefined) throw new Error('tool-pwsh driver requires a config path')

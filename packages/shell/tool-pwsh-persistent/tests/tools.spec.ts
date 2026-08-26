@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import TerminalSessionService from '@centurionarx/cxh-terminal'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import TerminalSessionService from '@arx-ai/arx-terminal'
 import type {
   TerminalBackend,
   TerminalBackendSession,
@@ -14,10 +14,10 @@ import type {
   TerminalSessionStatus,
   TerminalSignal,
   TerminalWaitReason,
-} from '@centurionarx/cxh-terminal'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRegistry from '@centurionarx/cxh-tools'
-import * as ToolPwshPersistent from '@centurionarx/cxh-tool-pwsh-persistent'
+} from '@arx-ai/arx-terminal'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRegistry from '@arx-ai/arx-tools'
+import * as ToolPwshPersistent from '@arx-ai/arx-tool-pwsh-persistent'
 
 const contexts: Context[] = []
 let callNumber = 0
@@ -102,11 +102,11 @@ type StubMode =
   | 'exit-after-send'
   | 'prompt-collision'
 
-const START_PATTERN = /__CXH_PERSISTENT_PWSH_START_[^_]+(?:-[^_]+)*__/
-const END_PATTERN = /__CXH_PERSISTENT_PWSH_END_[^:]+:/
+const START_PATTERN = /__ARX_PERSISTENT_PWSH_START_[^_]+(?:-[^_]+)*__/
+const END_PATTERN = /__ARX_PERSISTENT_PWSH_END_[^:]+:/
 
 class StubTerminalSession implements TerminalBackendSession {
-  readonly motd = '__CXH_PERSISTENT_PWSH_PROMPT__ '
+  readonly motd = '__ARX_PERSISTENT_PWSH_PROMPT__ '
   readonly pid = 123
   statusValue: TerminalSessionStatus = { kind: 'running' }
   scrollback = this.motd
@@ -360,8 +360,8 @@ describe('tool-pwsh-persistent', () => {
     stub.sessions[0]!.mode = 'with-echo'
     const result = text(await call(ctx, owner, 'Write-Output hi'))
     expect(result).toBe('hello from stub')
-    expect(result).not.toContain('__CXH_PERSISTENT_PWSH_START_')
-    expect(result).not.toContain('__CXH_PERSISTENT_PWSH_END_')
+    expect(result).not.toContain('__ARX_PERSISTENT_PWSH_START_')
+    expect(result).not.toContain('__ARX_PERSISTENT_PWSH_END_')
     expect(result).not.toContain('Invoke-Expression')
   })
 
@@ -407,13 +407,13 @@ describe('tool-pwsh-persistent', () => {
     session.mode = 'prompt-only'
     const promptFallback = text(await call(ctx, owner, 'bad {'))
     expect(promptFallback).toContain('pwsh: synt')
-    expect(promptFallback).not.toContain('CXH_PERSISTENT_PWSH_PROMPT')
+    expect(promptFallback).not.toContain('ARX_PERSISTENT_PWSH_PROMPT')
 
     session.mode = 'prompt-crlf'
     session.scrollback = ''
     const crlfPromptFallback = text(await call(ctx, owner, 'bad {'))
     expect(crlfPromptFallback).toContain('pwsh: synt')
-    expect(crlfPromptFallback).not.toContain('CXH_PERSISTENT_PWSH_PROMPT')
+    expect(crlfPromptFallback).not.toContain('ARX_PERSISTENT_PWSH_PROMPT')
 
     session.mode = 'end-only'
     session.scrollback = ''
@@ -508,8 +508,8 @@ describe('tool-pwsh-persistent', () => {
     const result = text(await call(ctx, owner, 'bad {'))
     expect(result).toContain('partial syntax output')
     expect(result).toContain('pwsh: syntax error')
-    expect(result).not.toContain('CXH_PERSISTENT_PWSH_PROMPT')
-    expect(result).not.toContain('CXH_PERSISTENT_PWSH_START')
+    expect(result).not.toContain('ARX_PERSISTENT_PWSH_PROMPT')
+    expect(result).not.toContain('ARX_PERSISTENT_PWSH_START')
   })
 
   it('does not attribute old scrollback truncation to a complete current command', async () => {

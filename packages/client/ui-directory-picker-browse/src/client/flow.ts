@@ -5,10 +5,10 @@
  */
 import { createElement } from 'react'
 import type { ReactElement } from 'react'
-import type { DirectoryListing } from '@centurionarx/cxh-client-runtime/client'
-import type { Translate } from '@centurionarx/cxh-client-locale/client'
+import type { DirectoryListing } from '@arx-ai/arx-client-runtime/client'
+import type { Translate } from '@arx-ai/arx-client-locale/client'
 // Type-only: the owner contract of the directory-flow holes.
-import type { DirectoryFlowOwnerProps } from '@centurionarx/cxh-client-ui-workspace/client'
+import type { DirectoryFlowOwnerProps } from '@arx-ai/arx-client-ui-workspace/client'
 import { DirectoryBrowser } from './DirectoryBrowser.tsx'
 
 /** Injected face: the browse wire calls and copy the dialog drives (bound in apply's closure). */

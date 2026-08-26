@@ -32,26 +32,26 @@ const repoTsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.m
 // session-query consumer/policies, inlined so the package test owns its fixture.
 const CORDIS_YML = `
 - id: llm-deepseek
-  name: '@centurionarx/cxh-llm-deepseek'
+  name: '@arx-ai/arx-llm-deepseek'
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
 - id: acp-agent
-  name: '@centurionarx/cxh-acp-demo'
+  name: '@arx-ai/arx-acp-demo'
   config:
     provider: deepseek-official
     model: deepseek-v4-flash
     persona: 'You are a test agent.'
     workspaceContext: false
 - id: tool-session-query
-  name: '@centurionarx/cxh-tool-session-query'
+  name: '@arx-ai/arx-tool-session-query'
 - id: timeout-policy
-  name: '@centurionarx/cxh-tool-call-timeout-policy'
+  name: '@arx-ai/arx-tool-call-timeout-policy'
 - id: spill-local
-  name: '@centurionarx/cxh-spill-local'
+  name: '@arx-ai/arx-spill-local'
 - id: spill-policy
-  name: '@centurionarx/cxh-spill-policy'
+  name: '@arx-ai/arx-spill-policy'
   config:
     maxInlineBytes: 50000
 `
@@ -89,8 +89,8 @@ async function boot(): Promise<Spawned & { cwd: string }> {
         TSX_TSCONFIG_PATH: repoTsconfig,
         // Key-present check only; no prompt is sent, so the model is never called.
         DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY ?? 'keyless-acp-agent-smoke',
-        CXH_HOME: join(cwd, '.cxh'),
-        CXH_AGENTS_HOME: join(cwd, '.agents'),
+        ARX_HOME: join(cwd, '.arx'),
+        ARX_AGENTS_HOME: join(cwd, '.agents'),
       },
       stdio: ['pipe', 'pipe', 'pipe'],
     },
@@ -115,7 +115,7 @@ async function boot(): Promise<Spawned & { cwd: string }> {
   return { ...spawned, cwd }
 }
 
-describe('cxh-acp-demo real-load-path smoke (bin + Loader, keyless)', () => {
+describe('arx-acp-demo real-load-path smoke (bin + Loader, keyless)', () => {
   it('boots via its bin and exposes only fresh text sessions', async () => {
     const { client, cwd, stderr } = await boot()
     // initialize: a broken export shape (collapsed bridge plugin, dropped inject)

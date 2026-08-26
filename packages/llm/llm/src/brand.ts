@@ -1,16 +1,16 @@
 /**
- * cxh-llm's owned branded ids: tool-call correlation and provider request
+ * arx-llm's owned branded ids: tool-call correlation and provider request
  * diagnostics.
  *
- * The `Branded<B>` primitive itself lives in `@centurionarx/cxh-brand` (a
+ * The `Branded<B>` primitive itself lives in `@arx-ai/arx-brand` (a
  * zero-dependency type-only package) so every owner of a cross-boundary id can
- * brand it without depending on cxh-llm; see that package's README for the
+ * brand it without depending on arx-llm; see that package's README for the
  * nominal-typing policy.
  *
- * @module @centurionarx/cxh-llm/brand
+ * @module @arx-ai/arx-llm/brand
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Stable identity carried by one message across inbox, log, and model-request boundaries. */
 export type MessageId = Branded<'MessageId'>

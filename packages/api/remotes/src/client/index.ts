@@ -1,35 +1,35 @@
 /** Platform-neutral assembly of generated Host Remote contributions. */
 
-import type { Context } from '@centurionarx/cordis'
-import commandsRemote from '@centurionarx/cxh-commands/remote'
-import goalsRemote from '@centurionarx/cxh-goal/remote'
-import dynamicRemote from '@centurionarx/cxh-cordis-host-runner/remote'
-import fileReferencesRemote from '@centurionarx/cxh-file-reference/remote'
-import pluginInventoryRemote from '@centurionarx/cxh-host-plugin-inventory/remote'
-import messageFeedbackRemote from '@centurionarx/cxh-message-feedback/remote'
-import sessionReferencesRemote from '@centurionarx/cxh-session-reference/remote'
-import type { TypertClientRemote } from '@centurionarx/cxh-typert-protocol'
+import type { Context } from '@arx-ai/cordis'
+import commandsRemote from '@arx-ai/arx-commands/remote'
+import goalsRemote from '@arx-ai/arx-goal/remote'
+import dynamicRemote from '@arx-ai/arx-cordis-host-runner/remote'
+import fileReferencesRemote from '@arx-ai/arx-file-reference/remote'
+import pluginInventoryRemote from '@arx-ai/arx-host-plugin-inventory/remote'
+import messageFeedbackRemote from '@arx-ai/arx-message-feedback/remote'
+import sessionReferencesRemote from '@arx-ai/arx-session-reference/remote'
+import type { TypertClientRemote } from '@arx-ai/arx-typert-protocol'
 
-export type { TypertClientRemote as ClientRemote } from '@centurionarx/cxh-typert-protocol'
-export type { PluginInventorySnapshot } from '@centurionarx/cxh-host-plugin-inventory/types'
-export type {} from '@centurionarx/cxh-commands/remote'
-export type {} from '@centurionarx/cxh-file-reference/remote'
-export type {} from '@centurionarx/cxh-goal/remote'
-export type {} from '@centurionarx/cxh-host-plugin-inventory/remote'
-export type {} from '@centurionarx/cxh-message-feedback/remote'
-export type {} from '@centurionarx/cxh-session-reference/remote'
+export type { TypertClientRemote as ClientRemote } from '@arx-ai/arx-typert-protocol'
+export type { PluginInventorySnapshot } from '@arx-ai/arx-host-plugin-inventory/types'
+export type {} from '@arx-ai/arx-commands/remote'
+export type {} from '@arx-ai/arx-file-reference/remote'
+export type {} from '@arx-ai/arx-goal/remote'
+export type {} from '@arx-ai/arx-host-plugin-inventory/remote'
+export type {} from '@arx-ai/arx-message-feedback/remote'
+export type {} from '@arx-ai/arx-session-reference/remote'
 // The forwarded-event allowlist's selection seat: without it in the consumer's
 // compilation face `TypertRemoteEvent` is `never` and every `$on` call fails.
 export type { ApiRemoteForwardedEvent } from '../types.ts'
 // The owner packages' client-safe `./types` exports supply the `Events`
 // signatures `$on` hands to a listener, so a consumer reads the very
 // declaration the Host emits rather than a flattened restatement of it.
-export type {} from '@centurionarx/cxh-commands/types'
-export type {} from '@centurionarx/cxh-cordis-host-runner/types'
-export type {} from '@centurionarx/cxh-credentials/types'
-export type {} from '@centurionarx/cxh-llm/types'
-export type {} from '@centurionarx/cxh-agent-presets/types'
-export type {} from '@centurionarx/cxh-settings/types'
+export type {} from '@arx-ai/arx-commands/types'
+export type {} from '@arx-ai/arx-cordis-host-runner/types'
+export type {} from '@arx-ai/arx-credentials/types'
+export type {} from '@arx-ai/arx-llm/types'
+export type {} from '@arx-ai/arx-agent-presets/types'
+export type {} from '@arx-ai/arx-settings/types'
 
 /**
  * The carrier's Client-facing types, re-exported so a business package names one
@@ -45,9 +45,9 @@ export type {
   SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillEntry, StreamChunk,
   SubagentAddress, SubagentCatalog, JobView, ToolCallView, ToolEventView, ToolResultView,
   WorkspaceId, WorkspaceView,
-} from '@centurionarx/cxh-client-connection/client'
-export type {} from '@centurionarx/cxh-api-gateway/client'
-export type {} from '@centurionarx/cxh-cordis-host-runner/remote'
+} from '@arx-ai/arx-client-connection/client'
+export type {} from '@arx-ai/arx-api-gateway/client'
+export type {} from '@arx-ai/arx-cordis-host-runner/remote'
 
 // The payload vocabulary of the selected namespaces, re-exported so a Client
 // contribution can name what it sends and receives without importing a Host
@@ -85,17 +85,17 @@ export type {
   DynamicCordisStopResponse,
   DynamicCordisUndefineReceipt,
   RequestRunOutcome,
-} from '@centurionarx/cxh-cordis-host-runner/types'
+} from '@arx-ai/arx-cordis-host-runner/types'
 // The JSON vocabulary those payloads are built from, re-exported for the same
 // reason: a Client contribution names what it sends without importing a Host
 // package, and this assembly is where both planes legitimately meet.
-export type { JsonValue } from '@centurionarx/cxh-session/types'
+export type { JsonValue } from '@arx-ai/arx-session/types'
 // Reference-discovery result vocabulary for the fileReferences and
 // sessionReferenceResolver namespaces.
-export type { FileReferenceCandidate } from '@centurionarx/cxh-file-reference/types'
-export type { SessionReferenceMentionCandidate } from '@centurionarx/cxh-session-reference/types'
+export type { FileReferenceCandidate } from '@arx-ai/arx-file-reference/types'
+export type { SessionReferenceMentionCandidate } from '@arx-ai/arx-session-reference/types'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Generated Remote namespaces selected by this Client assembly. */
     remote: TypertClientRemote

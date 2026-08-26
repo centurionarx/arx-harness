@@ -18,7 +18,7 @@ function workspaceFixture(options: {
   readonly host: readonly string[]
   readonly client: readonly string[]
 }): string {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-project-reference-faces-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-project-reference-faces-'))
   roots.push(root)
   const shared = join(root, 'packages/core/shared')
   const split = join(root, 'packages/api/split')
@@ -26,12 +26,12 @@ function workspaceFixture(options: {
   mkdirSync(split, { recursive: true })
   writeJson(join(root, 'tsconfig.base.json'), {})
   writeJson(join(root, 'tsconfig.base.client.json'), { extends: './tsconfig.base.json' })
-  writeJson(join(shared, 'package.json'), { name: '@centurionarx/cxh-shared' })
+  writeJson(join(shared, 'package.json'), { name: '@arx-ai/arx-shared' })
   writeJson(join(shared, 'tsconfig.json'), {
     extends: '../../../tsconfig.base.json',
     references: [],
   })
-  writeJson(join(split, 'package.json'), { name: '@centurionarx/cxh-split' })
+  writeJson(join(split, 'package.json'), { name: '@arx-ai/arx-split' })
   writeJson(join(split, 'tsconfig.json'), {
     files: [],
     references: [{ path: './tsconfig.host.json' }, { path: './tsconfig.client.json' }],
@@ -79,14 +79,14 @@ describe('Project Reference compiler faces', () => {
     })
     const hostConsumer = join(root, 'packages/core/host-consumer')
     mkdirSync(hostConsumer, { recursive: true })
-    writeJson(join(hostConsumer, 'package.json'), { name: '@centurionarx/cxh-host-consumer' })
+    writeJson(join(hostConsumer, 'package.json'), { name: '@arx-ai/arx-host-consumer' })
     writeJson(join(hostConsumer, 'tsconfig.json'), {
       extends: '../../../tsconfig.base.json',
       references: [{ path: '../../api/split/tsconfig.client.json' }],
     })
     const clientConsumer = join(root, 'packages/core/client-consumer')
     mkdirSync(clientConsumer, { recursive: true })
-    writeJson(join(clientConsumer, 'package.json'), { name: '@centurionarx/cxh-client-consumer' })
+    writeJson(join(clientConsumer, 'package.json'), { name: '@arx-ai/arx-client-consumer' })
     writeJson(join(clientConsumer, 'tsconfig.json'), {
       extends: '../../../tsconfig.base.client.json',
       references: [{ path: '../../api/split/tsconfig.host.json' }],

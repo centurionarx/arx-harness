@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { SessionId } from '@centurionarx/cxh-session'
-import { WorkflowRunId } from '@centurionarx/cxh-workflow'
+import { Context } from '@arx-ai/cordis'
+import { SessionId } from '@arx-ai/arx-session'
+import { WorkflowRunId } from '@arx-ai/arx-workflow'
 import type {
   WorkflowAgentEndInfo,
   WorkflowAgentInfo,
   WorkflowResultInfo,
   WorkflowRunInfo,
-} from '@centurionarx/cxh-workflow'
-import * as WorkflowInvariant from '@centurionarx/cxh-workflow/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+} from '@arx-ai/arx-workflow'
+import * as WorkflowInvariant from '@arx-ai/arx-workflow/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

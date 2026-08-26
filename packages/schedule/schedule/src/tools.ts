@@ -1,13 +1,13 @@
 /**
  * Agent-scoped Schedule management tools over the durable session fold.
- * @module @centurionarx/cxh-schedule
+ * @module @arx-ai/arx-schedule
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView } from '@arx-ai/arx-tools'
 import {
   allocateScheduleId,
   createAfterScheduleRecord,

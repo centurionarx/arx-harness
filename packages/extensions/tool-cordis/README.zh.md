@@ -1,8 +1,8 @@
-# @centurionarx/cxh-tool-cordis
+# @arx-ai/arx-tool-cordis
 
 [English](README.md) | 中文
 
-自引用 Cordis 工具集：五个面向模型的工具，操作当前 CXH 进程中的实时运行时。注册表、vm 沙箱与浏览器广播属于 [`@centurionarx/cxh-cordis-host-runner`](../cordis-host-runner/README.zh.md)（`ctx.dynamic`），本工具集注入它——只装这些工具而不装 runner 的组合永远不会激活它们。沙箱语义、动态包生命周期与组合及既定决策详见[工具集 Agent Note](../../../.agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.zh.md)。
+自引用 Cordis 工具集：五个面向模型的工具，操作当前 ARX 进程中的实时运行时。注册表、vm 沙箱与浏览器广播属于 [`@arx-ai/arx-cordis-host-runner`](../cordis-host-runner/README.zh.md)（`ctx.dynamic`），本工具集注入它——只装这些工具而不装 runner 的组合永远不会激活它们。沙箱语义、动态包生命周期与组合及既定决策详见[工具集 Agent Note](../../../.agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.zh.md)。
 
 ## 功能
 
@@ -16,7 +16,7 @@
 
 面向模型的确切 schema 见[生成的工具目录](../../../docs/tool-catalog.zh.md)。
 
-动态包只存在于共享 CXH 进程内存中。它可跨后续轮次保持活跃，也可能影响同一进程中的其他会话，但会在 `cordis_stop`／`cordis_undefine`、工具集卸载或 CXH 重启后消失。它不会创建插件文件、安装任何包、修改 `cordis.yml` 或个人／项目配置、跨重启存续，也不能自动转为正式插件。若要保留实验结果，应让 agent（智能体）通过常规开发流程实现普通的本地、项目或仓库插件。每个动词都以会话为界：一个包只在定义它的那个会话里可见、可控。
+动态包只存在于共享 ARX 进程内存中。它可跨后续轮次保持活跃，也可能影响同一进程中的其他会话，但会在 `cordis_stop`／`cordis_undefine`、工具集卸载或 ARX 重启后消失。它不会创建插件文件、安装任何包、修改 `cordis.yml` 或个人／项目配置、跨重启存续，也不能自动转为正式插件。若要保留实验结果，应让 agent（智能体）通过常规开发流程实现普通的本地、项目或仓库插件。每个动词都以会话为界：一个包只在定义它的那个会话里可见、可控。
 
 ## 信任立场
 
@@ -24,7 +24,7 @@
 
 ## 配置
 
-无。vm 求值边界（`vmTimeoutMs`）与浏览器确认窗口（`ackTimeoutMs`）属于拥有沙箱与广播的 runner 服务——见 [`@centurionarx/cxh-cordis-host-runner`](../cordis-host-runner/README.zh.md#config)。
+无。vm 求值边界（`vmTimeoutMs`）与浏览器确认窗口（`ackTimeoutMs`）属于拥有沙箱与广播的 runner 服务——见 [`@arx-ai/arx-cordis-host-runner`](../cordis-host-runner/README.zh.md#config)。
 
 ## 生成的 client 槽目录
 
@@ -47,7 +47,7 @@
 
 ## 渲染
 
-每个工具都渲染 `generic` 卡片（`read`／`execute`／`delete`）；`cordis_define` 以 `rawInput` 携带提交的两个半，并用标签与用途作为卡片标题。presenter 是 args 的纯函数，结果保留默认文本渲染。Web 客户端注册自己的 keyed `cordis_define` 行（`@centurionarx/cxh-client-ui-cordis`），从调用参数与结果元数据里取标签、用途和铸出的标识；没有该注册的界面则退回到这张 generic 卡片。
+每个工具都渲染 `generic` 卡片（`read`／`execute`／`delete`）；`cordis_define` 以 `rawInput` 携带提交的两个半，并用标签与用途作为卡片标题。presenter 是 args 的纯函数，结果保留默认文本渲染。Web 客户端注册自己的 keyed `cordis_define` 行（`@arx-ai/arx-client-ui-cordis`），从调用参数与结果元数据里取标签、用途和铸出的标识；没有该注册的界面则退回到这张 generic 卡片。
 
 ## 导出形式
 
@@ -59,7 +59,7 @@ Namespace 插件：命名导出 `name`／`inject`／`apply`，无默认导出（
 
 #### 模型看到的内容
 
-该插件可见时，会话模型会看到生成的 [`cordis_inspect`、`cordis_define`、`cordis_run`、`cordis_stop` 和 `cordis_undefine` schema](../../../docs/tool-catalog.zh.md#centurionarxcxh-tool-cordis)。
+该插件可见时，会话模型会看到生成的 [`cordis_inspect`、`cordis_define`、`cordis_run`、`cordis_stop` 和 `cordis_undefine` schema](../../../docs/tool-catalog.zh.md#arx-aiarx-tool-cordis)。
 
 #### Token 影响
 

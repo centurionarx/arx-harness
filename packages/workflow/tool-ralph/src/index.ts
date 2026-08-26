@@ -2,19 +2,19 @@
  * Model-facing foreground Ralph loop over the workflow and subagent seams. A
  * fixed script starts one fresh structured-output child per round, carrying
  * only the immutable objective and the previous bounded handoff between them.
- * @module @centurionarx/cxh-tool-ralph
+ * @module @arx-ai/arx-tool-ralph
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session'
-import type { SubagentProvider } from '@centurionarx/cxh-subagent'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ToolCallView, ToolResultView } from '@centurionarx/cxh-tools'
-import type { WorkflowResult, WorkflowRun } from '@centurionarx/cxh-workflow'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session'
+import type { SubagentProvider } from '@arx-ai/arx-subagent'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ToolCallView, ToolResultView } from '@arx-ai/arx-tools'
+import type { WorkflowResult, WorkflowRun } from '@arx-ai/arx-workflow'
 // Declaration merge only: makes ctx.systemPrompt visible for section registration.
-import type {} from '@centurionarx/cxh-system-prompt'
+import type {} from '@arx-ai/arx-system-prompt'
 
 export const name = 'tool-ralph'
 export const inject = ['tools', 'workflowEngine', 'subagents', 'systemPrompt']

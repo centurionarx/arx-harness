@@ -21,7 +21,7 @@
  * tree propagation). Renaming the workspace directory derives a new SID —
  * the old standing ACEs are inert residue, and the next session re-propagates
  * once.
- * @module @centurionarx/cxh-sandbox-windows-acl/workspace-sid
+ * @module @arx-ai/arx-sandbox-windows-acl/workspace-sid
  */
 
 import { createHash } from 'node:crypto'

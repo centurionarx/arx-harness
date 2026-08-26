@@ -2,8 +2,8 @@
 
 import type {
   HostFrame, IApiClient, RpcError, RpcRequest, RpcResult, SessionId, WorkspaceId, WorkspaceView,
-} from '@centurionarx/cxh-api-remotes/client'
-import { transportError } from '@centurionarx/cxh-host-apiproxy/api'
+} from '@arx-ai/arx-api-remotes/client'
+import { transportError } from '@arx-ai/arx-host-apiproxy/api'
 import { Notifier } from '../sessions/notifier.ts'
 import { Workspace, type WorkspaceCreateInput } from './workspace.ts'
 

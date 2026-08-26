@@ -1,17 +1,17 @@
 /**
  * workspace domain contract. Wire projection of the host-side workspace
- * entity (@centurionarx/cxh-workspace): a stable id over a directory path,
+ * entity (@arx-ai/arx-workspace): a stable id over a directory path,
  * a display title, and the ordered session account. Method signatures are the
  * source of truth, same as the sessions domain.
  */
 
-import type { SessionId } from '@centurionarx/cxh-session/types'
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
 import type { RpcRequest, RpcResponse } from './rpc.ts'
 
 /**
  * Wire-side workspace id brand. Deliberately re-declared here rather than
- * imported from cxh-workspace: api/ must stay browser-importable with zero
+ * imported from arx-workspace: api/ must stay browser-importable with zero
  * host-package dependencies, and the brand string matches, so both sides
  * agree structurally.
  */

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-telemetry
+# @arx-ai/arx-session-telemetry
 
 [English](README.md) | 中文
 

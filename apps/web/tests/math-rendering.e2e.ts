@@ -2,9 +2,9 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import { createMessage, createUserMessage } from '@centurionarx/cxh-llm'
-import { SESSION_FORMAT_VERSION, Session, SessionId } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-session-title'
+import { createMessage, createUserMessage } from '@arx-ai/arx-llm'
+import { SESSION_FORMAT_VERSION, Session, SessionId } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-session-title'
 import {
   assertFixtureInventory,
   captureStableAria,

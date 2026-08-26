@@ -1,8 +1,8 @@
 /**
- * Generated scoped-event routing-subject resolvers for cxh-scope invariants.
+ * Generated scoped-event routing-subject resolvers for arx-scope invariants.
  * Do not edit by hand; run `pnpm run gen-scoped-events`.
  *
- * @module @centurionarx/cxh-scope/scoped-events.generated
+ * @module @arx-ai/arx-scope/scoped-events.generated
  */
 
 type ScopedSubjectResolver = (args: readonly unknown[]) => unknown

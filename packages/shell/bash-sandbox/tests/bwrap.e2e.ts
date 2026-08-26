@@ -4,18 +4,18 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { LocalSandboxProvider } from '@centurionarx/cxh-sandbox-local'
-import { SandboxPolicyService } from '@centurionarx/cxh-sandbox-policy'
-import { bwrapProfileArgs } from '@centurionarx/cxh-sandbox-local/src/profiles.ts'
-import { SandboxBashExecutor } from '@centurionarx/cxh-bash-sandbox'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+import { Context } from '@arx-ai/cordis'
+import { LocalSandboxProvider } from '@arx-ai/arx-sandbox-local'
+import { SandboxPolicyService } from '@arx-ai/arx-sandbox-policy'
+import { bwrapProfileArgs } from '@arx-ai/arx-sandbox-local/src/profiles.ts'
+import { SandboxBashExecutor } from '@arx-ai/arx-bash-sandbox'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 
 /**
  * Keyless integration of the real provider and executor through public run/start paths. With
  * no rung forced, a passing bwrap probe selects the ladder's first rung. The tests check world
  * effects and stamped facts, including EROFS classification through the wrap-carried dialect;
- * backend-only confinement is covered by `@centurionarx/cxh-sandbox-local`.
+ * backend-only confinement is covered by `@arx-ai/arx-sandbox-local`.
  *
  * Skips when bwrap or unprivileged user namespaces are unavailable. HOME-based paths are
  * intentional because bwrap replaces `/tmp`, which cannot prove the workspace-root boundary.
@@ -34,7 +34,7 @@ afterEach(async () => {
 })
 
 async function tempDir(base: string): Promise<string> {
-  const dir = await mkdtemp(join(base, 'cxh-bwrap-e2e-'))
+  const dir = await mkdtemp(join(base, 'arx-bwrap-e2e-'))
   tempDirs.push(dir)
   return dir
 }

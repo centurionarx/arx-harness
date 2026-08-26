@@ -2,7 +2,7 @@
  * Public records for exact reads and relationship traces over the
  * live-preferred logical session corpus.
  *
- * @module @centurionarx/cxh-session-query/types
+ * @module @arx-ai/arx-session-query/types
  */
 
 import type {
@@ -11,8 +11,8 @@ import type {
   SessionHeader,
   SessionId,
   SurfaceEvent,
-} from '@centurionarx/cxh-session'
-import type { SessionTitleSnapshot } from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session'
+import type { SessionTitleSnapshot } from '@arx-ai/arx-session-title'
 import type { SessionSearchCursor } from './cursor.ts'
 
 export type { SessionSearchCursor } from './cursor.ts'

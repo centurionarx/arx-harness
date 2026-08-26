@@ -1,7 +1,7 @@
 /**
- * Node half of the client module system (`cxh.client` dual-face package): scans
- * the host Loader's entries for packages declaring `cxh.client`, composes the
- * `window.__CXH_BOOT__` entry graph (wire single source: {@link WebBootEntry}
+ * Node half of the client module system (`arx.client` dual-face package): scans
+ * the host Loader's entries for packages declaring `arx.client`, composes the
+ * `window.__ARX_BOOT__` entry graph (wire single source: {@link WebBootEntry}
  * in `./client/manifest.ts`) in module-graph order, serves
  * `/plugins/<id>/client.js` and its source map, contributes the boot manifest
  * plus the parser-blocking bootstrap preloads to the webserver's index
@@ -18,7 +18,7 @@
  * expires — plugin-set changes take effect on restart; bundle content
  * changes reach the graph only through
  * {@link ClientModuleRegistry.rebuilt}.
- * @module @centurionarx/cxh-client-modules
+ * @module @arx-ai/arx-client-modules
  */
 
 import { createHash } from 'node:crypto'
@@ -27,10 +27,10 @@ import { readFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-import { Service } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cordis-plugin-loader'
-import type { IndexInjection } from '@centurionarx/cxh-host-webserver'
+import { Service } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import type { IndexInjection } from '@arx-ai/arx-host-webserver'
 import { optionalStringArray, stripClientSuffix } from './client/manifest.ts'
 import type { WebBootEntry, WebBootGraph } from './client/manifest.ts'
 
@@ -39,15 +39,15 @@ export type {
   BootManifest, BootModuleRow, BootPluginRow, WebBootEntry, WebBootGraph,
 } from './client/manifest.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** The web plugin table (provided by the client-modules node half). */
     clientModules: ClientModuleRegistry
   }
 }
 
-/** package.json `cxh.client` declaration fields, validated one by one after reading the file. */
-interface CxhClientDeclaration {
+/** package.json `arx.client` declaration fields, validated one by one after reading the file. */
+interface ArxClientDeclaration {
   inject?: string[]
   platform: string
   /** Boot phase-one prefetch mark; absent means lazy (fetched on demand). */
@@ -70,7 +70,7 @@ interface WebBootRowFields {
   immediately: boolean
 }
 
-/** Resolved package metadata for one `cxh.client` package (cached per name, never expires). */
+/** Resolved package metadata for one `arx.client` package (cached per name, never expires). */
 interface PkgMeta extends WebBootRowFields {
   clientPath: string
 }
@@ -122,20 +122,20 @@ interface WebPluginRecord {
   meta: PkgMeta
 }
 
-/** Narrow an unknown parsed JSON value to the `cxh.client` declaration, throwing on malformed fields. */
-function parseCxhClient(pkgName: string, value: unknown): CxhClientDeclaration | undefined {
+/** Narrow an unknown parsed JSON value to the `arx.client` declaration, throwing on malformed fields. */
+function parseArxClient(pkgName: string, value: unknown): ArxClientDeclaration | undefined {
   if (value === undefined) return undefined
   if (typeof value !== 'object' || value === null) {
-    throw new Error(`client-modules: ${pkgName} has a non-object cxh.client declaration`)
+    throw new Error(`client-modules: ${pkgName} has a non-object arx.client declaration`)
   }
   const decl = value as Record<string, unknown>
   if (typeof decl.platform !== 'string') {
-    throw new Error(`client-modules: ${pkgName} cxh.client.platform must be a string`)
+    throw new Error(`client-modules: ${pkgName} arx.client.platform must be a string`)
   }
-  const inject = optionalStringArray(pkgName, 'cxh.client.inject', decl.inject)
-  const external = optionalStringArray(pkgName, 'cxh.client.external', decl.external)
+  const inject = optionalStringArray(pkgName, 'arx.client.inject', decl.inject)
+  const external = optionalStringArray(pkgName, 'arx.client.external', decl.external)
   if (decl.immediately !== undefined && typeof decl.immediately !== 'boolean') {
-    throw new Error(`client-modules: ${pkgName} cxh.client.immediately must be a boolean`)
+    throw new Error(`client-modules: ${pkgName} arx.client.immediately must be a boolean`)
   }
   return {
     platform: decl.platform,
@@ -206,7 +206,7 @@ export function orderByModuleGraph(entries: readonly WebBootEntry[]): WebBootEnt
       if (dependency === entry) {
         throw new Error(
           `client-modules: "${entry.id}" requests module "${name}" that it answers itself `
-          + '— a row must not declare its own package in cxh.client.external',
+          + '— a row must not declare its own package in arx.client.external',
         )
       }
       if (dependency !== undefined) visit(dependency)
@@ -220,10 +220,10 @@ export function orderByModuleGraph(entries: readonly WebBootEntry[]): WebBootEnt
 }
 
 /** Bootstrap package whose ordinary client bundle supplies the module-system implementation. */
-const CLIENT_MODULES_ID = '@centurionarx/cxh-client-modules'
+const CLIENT_MODULES_ID = '@arx-ai/arx-client-modules'
 
 /** Dynamic package whose ordinary client bundle must be registered before plugin boot starts. */
-const CLIENT_RUNTIME_ID = '@centurionarx/cxh-client-runtime'
+const CLIENT_RUNTIME_ID = '@arx-ai/arx-client-runtime'
 
 /** Ordinary dynamic bundles the HTML parser executes before the Vite shell. */
 const PARSER_PRELOAD_IDS = [CLIENT_MODULES_ID, CLIENT_RUNTIME_ID] as const
@@ -268,12 +268,12 @@ window.__ModuleLoader__={
   return [
     { kind: 'script', placement: 'head', text: queue },
     ...preload,
-    { kind: 'global', name: '__CXH_BOOT__', value: graph },
+    { kind: 'global', name: '__ARX_BOOT__', value: graph },
   ]
 }
 
 /**
- * The web plugin table service: incremental `cxh.client` scan + wire composition
+ * The web plugin table service: incremental `arx.client` scan + wire composition
  * + bundle route + index injection rows. Construction runs the activation scan
  * synchronously — a malformed declaration or missing bundle among the
  * already-loaded entries aggregates into one loud throw (FAILED fiber; the
@@ -284,7 +284,7 @@ export class ClientModuleRegistry extends Service {
 
   private readonly table = new Map<string, WebPluginRecord>()
   // Negative verdicts (unresolvable specifier — builtins like cordis:include,
-  // subpath rows — or a package without a web `cxh.client` declaration) are
+  // subpath rows — or a package without a web `arx.client` declaration) are
   // cached as null and never expire: plugin-set changes take effect on restart.
   private readonly pkgMeta = new Map<string, PkgMeta | null>()
   private readonly rebuildListeners = new Set<(id: string, rev: string) => void>()
@@ -347,7 +347,7 @@ export class ClientModuleRegistry extends Service {
 
   /**
    * Current composed entry graph (stable object between changes).
-   * @returns the graph served as `window.__CXH_BOOT__`.
+   * @returns the graph served as `window.__ARX_BOOT__`.
    */
   graph(): WebBootGraph {
     return this.composed
@@ -439,10 +439,10 @@ export class ClientModuleRegistry extends Service {
       return null
     }
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, unknown>
-    const cxh = pkg.cxh
-    const decl = parseCxhClient(
+    const arx = pkg.arx
+    const decl = parseArxClient(
       pkgName,
-      cxh !== null && typeof cxh === 'object' ? (cxh as Record<string, unknown>).client : undefined,
+      arx !== null && typeof arx === 'object' ? (arx as Record<string, unknown>).client : undefined,
     )
     if (decl === undefined || decl.platform !== 'web') {
       this.pkgMeta.set(pkgName, null)
@@ -450,7 +450,7 @@ export class ClientModuleRegistry extends Service {
     }
     const clientRel = clientExportOf(pkgName, pkg.exports)
     if (clientRel === undefined) {
-      throw new Error(`client-modules: ${pkgName} declares cxh.client but exports no "./client" bundle`)
+      throw new Error(`client-modules: ${pkgName} declares arx.client but exports no "./client" bundle`)
     }
     const meta: PkgMeta = {
       clientPath: join(dirname(pkgPath), clientRel),

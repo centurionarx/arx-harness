@@ -1,14 +1,14 @@
 /**
  * Session-visible workspace instruction state and dynamic reconciliation.
  *
- * @module @centurionarx/cxh-agent-instructions/state
+ * @module @arx-ai/arx-agent-instructions/state
  */
 
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { Message } from '@centurionarx/cxh-llm'
-import type { Session, UserMessage } from '@centurionarx/cxh-session'
-import type { FileSystem, FsVersion } from '@centurionarx/cxh-fs'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { Message } from '@arx-ai/arx-llm'
+import type { Session, UserMessage } from '@arx-ai/arx-session'
+import type { FileSystem, FsVersion } from '@arx-ai/arx-fs'
 import type { ResolvedConfig } from './config.ts'
 import { instructionContentSha1, trimmedInstructionDigest } from './digest.ts'
 import {
@@ -45,7 +45,7 @@ export interface AgentInstructionSource {
   changes: AgentInstructionChange[]
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     'agent-instructions': AgentInstructionSource
   }

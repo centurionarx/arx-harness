@@ -27,7 +27,7 @@ function write(path: string, content: string): void {
 }
 
 function buildFixture(environment: Record<string, string>): string {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-release-build-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-release-build-'))
   roots.push(root)
   write(join(root, 'apps/web/dist/index.html'), '<main></main>')
   write(join(root, 'packages/client/example/lib/client.js'), 'module.exports = {}\n')
@@ -41,38 +41,38 @@ afterEach(() => {
 })
 
 describe('release families', () => {
-  it('excludes private experimental packages from the cxh release', () => {
-    const members = releaseFamily('cxh').members(resolve(import.meta.dirname, '../..'))
+  it('excludes private experimental packages from the arx release', () => {
+    const members = releaseFamily('arx').members(resolve(import.meta.dirname, '../..'))
 
     expect(members.some(member => member.directory.startsWith('packages/experimental/'))).toBe(false)
-    expect(members.map(member => member.name)).not.toContain('@centurionarx/cxh-experimental-agent-team')
+    expect(members.map(member => member.name)).not.toContain('@arx-ai/arx-experimental-agent-team')
   })
 
-  it('bumps private cxh packages without adding release tags', () => {
-    const root = mkdtempSync(join(tmpdir(), 'cxh-release-version-'))
+  it('bumps private arx packages without adding release tags', () => {
+    const root = mkdtempSync(join(tmpdir(), 'arx-release-version-'))
     roots.push(root)
     write(join(root, 'package.json'), '{"version":"0.0.1"}\n')
     write(join(root, 'packages/experimental/prototype/package.json'), '{"version":"0.0.1","private":true}\n')
     write(join(root, 'packages/core/unselected/package.json'), '{"version":"0.0.1"}\n')
 
-    const cxh = releaseFamily('cxh')
-    const published = member('packages/core/published', '@centurionarx/cxh-published')
-    const { planned } = planShared(cxh, root, [published], '0.0.2')
+    const arx = releaseFamily('arx')
+    const published = member('packages/core/published', '@arx-ai/arx-published')
+    const { planned } = planShared(arx, root, [published], '0.0.2')
 
     expect(planned.map(entry => ({ path: entry.manifestPath, tag: entry.tag }))).toEqual([
       { path: 'package.json', tag: undefined },
-      { path: 'packages/core/published/package.json', tag: 'cxh-v0.0.2' },
+      { path: 'packages/core/published/package.json', tag: 'arx-v0.0.2' },
       { path: 'packages/experimental/prototype/package.json', tag: undefined },
     ])
   })
 
-  it('names one tag for the whole cxh family and one per vendored package', () => {
-    const cxh = releaseFamily('cxh')
+  it('names one tag for the whole arx family and one per vendored package', () => {
+    const arx = releaseFamily('arx')
     const vendor = releaseFamily('vendor')
-    const cli = member('apps/cli', '@centurionarx/cxh')
-    const cordis = { ...member('vendor/cordis', '@centurionarx/cordis'), version: '4.0.1' }
+    const cli = member('apps/cli', '@arx-ai/arx')
+    const cordis = { ...member('vendor/cordis', '@arx-ai/cordis'), version: '4.0.1' }
 
-    expect(cxh.tagFor(cli)).toBe('cxh-v0.0.1')
+    expect(arx.tagFor(cli)).toBe('arx-v0.0.1')
     expect(vendor.tagFor(cordis)).toBe('vendor-cordis-v4.0.1')
     // The prefix is constructed, not recovered from a tag: a version with a
     // hyphen would defeat any suffix-stripping.
@@ -81,166 +81,166 @@ describe('release families', () => {
   })
 
   it('rejects a family whose members disagree on the shared version', () => {
-    const cxh = releaseFamily('cxh')
-    const members = [member('apps/cli', '@centurionarx/cxh'), { ...member('apps/web', '@centurionarx/cxh-web-frontend'), version: '0.0.2' }]
+    const arx = releaseFamily('arx')
+    const members = [member('apps/cli', '@arx-ai/arx'), { ...member('apps/web', '@arx-ai/arx-web-frontend'), version: '0.0.2' }]
 
-    expect(() => { cxh.verifyVersions(members) }).toThrow(/must share one version/)
-    expect(() => { cxh.verifyVersions([members[0]!]) }).not.toThrow()
+    expect(() => { arx.verifyVersions(members) }).toThrow(/must share one version/)
+    expect(() => { arx.verifyVersions([members[0]!]) }).not.toThrow()
   })
 
   it('accepts independent vendored versions and rejects an unpublishable one', () => {
     const vendor = releaseFamily('vendor')
     const members = [
-      { ...member('vendor/cordis', '@centurionarx/cordis'), version: '4.0.1' },
-      { ...member('vendor/cosmokit', '@centurionarx/cosmokit'), version: '1.8.2' },
+      { ...member('vendor/cordis', '@arx-ai/cordis'), version: '4.0.1' },
+      { ...member('vendor/cosmokit', '@arx-ai/cosmokit'), version: '1.8.2' },
     ]
 
     expect(() => { vendor.verifyVersions(members) }).not.toThrow()
     expect(() => { vendor.verifyVersions([{ ...members[0]!, version: 'latest' }]) }).toThrow(/unpublishable version/)
   })
 
-  it('requires a current official client build only for cxh artifacts', () => {
-    const cxh = releaseFamily('cxh')
+  it('requires a current official client build only for arx artifacts', () => {
+    const arx = releaseFamily('arx')
     const vendor = releaseFamily('vendor')
     const officialEnvironment = officialClientBuildEnvironment(resolve(import.meta.dirname, '../..'))
-    vi.stubEnv('CXH_CLIENT_COMMIT_HASH', officialEnvironment.CXH_CLIENT_COMMIT_HASH)
+    vi.stubEnv('ARX_CLIENT_COMMIT_HASH', officialEnvironment.ARX_CLIENT_COMMIT_HASH)
     const official = buildFixture(officialEnvironment)
     const defaultBuild = buildFixture({})
 
-    expect(() => { cxh.verifyBuildArtifacts(official) }).not.toThrow()
-    expect(() => { cxh.verifyBuildArtifacts(defaultBuild) }).toThrow(/CXH_CLIENT_TITLE/)
-    expect(() => { cxh.verifyBuildArtifacts(join(defaultBuild, 'missing')) }).toThrow(/record.*missing/)
+    expect(() => { arx.verifyBuildArtifacts(official) }).not.toThrow()
+    expect(() => { arx.verifyBuildArtifacts(defaultBuild) }).toThrow(/ARX_CLIENT_TITLE/)
+    expect(() => { arx.verifyBuildArtifacts(join(defaultBuild, 'missing')) }).toThrow(/record.*missing/)
     expect(() => { vendor.verifyBuildArtifacts(join(defaultBuild, 'missing')) }).not.toThrow()
 
     write(join(official, 'packages/client/example/lib/client.js'), 'module.exports = { changed: true }\n')
-    expect(() => { cxh.verifyBuildArtifacts(official) }).toThrow(/artifacts differ/)
+    expect(() => { arx.verifyBuildArtifacts(official) }).toThrow(/artifacts differ/)
   })
 
   it('publishes a dependency before its consumer, and orders ties by name', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/consumer', '@centurionarx/cxh-consumer', { dependencies: { '@centurionarx/cxh-library': 'workspace:^' } }),
-      member('packages/a/library', '@centurionarx/cxh-library'),
-      member('packages/a/zebra', '@centurionarx/cxh-zebra'),
+      member('packages/a/consumer', '@arx-ai/arx-consumer', { dependencies: { '@arx-ai/arx-library': 'workspace:^' } }),
+      member('packages/a/library', '@arx-ai/arx-library'),
+      member('packages/a/zebra', '@arx-ai/arx-zebra'),
     ]
 
-    expect(cxh.publishOrder(members).order.map(entry => entry.name)).toEqual([
-      '@centurionarx/cxh-library',
-      '@centurionarx/cxh-consumer',
-      '@centurionarx/cxh-zebra',
+    expect(arx.publishOrder(members).order.map(entry => entry.name)).toEqual([
+      '@arx-ai/arx-library',
+      '@arx-ai/arx-consumer',
+      '@arx-ai/arx-zebra',
     ])
   })
 
   it('reports a runtime dependency cycle instead of emitting an arbitrary order', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/left', '@centurionarx/cxh-left', { dependencies: { '@centurionarx/cxh-right': 'workspace:^' } }),
-      member('packages/a/right', '@centurionarx/cxh-right', { dependencies: { '@centurionarx/cxh-left': 'workspace:^' } }),
+      member('packages/a/left', '@arx-ai/arx-left', { dependencies: { '@arx-ai/arx-right': 'workspace:^' } }),
+      member('packages/a/right', '@arx-ai/arx-right', { dependencies: { '@arx-ai/arx-left': 'workspace:^' } }),
     ]
 
-    expect(() => { cxh.publishOrder(members) }).toThrow(/dependency cycle/)
+    expect(() => { arx.publishOrder(members) }).toThrow(/dependency cycle/)
   })
 
   it('publishes a peer before its consumer', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/consumer', '@centurionarx/cxh-consumer', { peerDependencies: { '@centurionarx/cxh-zebra': 'workspace:^' } }),
-      member('packages/a/zebra', '@centurionarx/cxh-zebra'),
+      member('packages/a/consumer', '@arx-ai/arx-consumer', { peerDependencies: { '@arx-ai/arx-zebra': 'workspace:^' } }),
+      member('packages/a/zebra', '@arx-ai/arx-zebra'),
     ]
 
     // Name order alone would place the consumer first; the peer edge moves it.
-    expect(cxh.publishOrder(members).order.map(entry => entry.name)).toEqual([
-      '@centurionarx/cxh-zebra',
-      '@centurionarx/cxh-consumer',
+    expect(arx.publishOrder(members).order.map(entry => entry.name)).toEqual([
+      '@arx-ai/arx-zebra',
+      '@arx-ai/arx-consumer',
     ])
   })
 
   it('orders around a peer cycle rather than refusing to publish, and reports the edge it dropped', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/left', '@centurionarx/cxh-left', { peerDependencies: { '@centurionarx/cxh-right': 'workspace:^' } }),
-      member('packages/a/right', '@centurionarx/cxh-right', { peerDependencies: { '@centurionarx/cxh-left': 'workspace:^' } }),
+      member('packages/a/left', '@arx-ai/arx-left', { peerDependencies: { '@arx-ai/arx-right': 'workspace:^' } }),
+      member('packages/a/right', '@arx-ai/arx-right', { peerDependencies: { '@arx-ai/arx-left': 'workspace:^' } }),
     ]
 
     // Sibling packages declare each other as peers, and npm treats an unmet peer
     // as a warning, so this pair has to publish rather than fail the release.
-    const plan = cxh.publishOrder(members)
+    const plan = arx.publishOrder(members)
     expect(plan.order.map(entry => entry.name)).toEqual([
-      '@centurionarx/cxh-right',
-      '@centurionarx/cxh-left',
+      '@arx-ai/arx-right',
+      '@arx-ai/arx-left',
     ])
     // One of the two edges has to give, and which one it is belongs in the log.
     expect(plan.droppedPeerEdges).toEqual([
-      { consumer: '@centurionarx/cxh-right', peer: '@centurionarx/cxh-left' },
+      { consumer: '@arx-ai/arx-right', peer: '@arx-ai/arx-left' },
     ])
   })
 
   it('honours an install edge even when a peer cycle surrounds it', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/base', '@centurionarx/cxh-base', { peerDependencies: { '@centurionarx/cxh-consumer': 'workspace:^' } }),
-      member('packages/a/consumer', '@centurionarx/cxh-consumer', {
-        dependencies: { '@centurionarx/cxh-base': 'workspace:^' },
-        peerDependencies: { '@centurionarx/cxh-base': 'workspace:^' },
+      member('packages/a/base', '@arx-ai/arx-base', { peerDependencies: { '@arx-ai/arx-consumer': 'workspace:^' } }),
+      member('packages/a/consumer', '@arx-ai/arx-consumer', {
+        dependencies: { '@arx-ai/arx-base': 'workspace:^' },
+        peerDependencies: { '@arx-ai/arx-base': 'workspace:^' },
       }),
     ]
 
     // The install edge is absolute: base publishes first, and the peer edge that
     // would reverse it is the one dropped.
-    const plan = cxh.publishOrder(members)
+    const plan = arx.publishOrder(members)
     expect(plan.order.map(entry => entry.name)).toEqual([
-      '@centurionarx/cxh-base',
-      '@centurionarx/cxh-consumer',
+      '@arx-ai/arx-base',
+      '@arx-ai/arx-consumer',
     ])
     expect(plan.droppedPeerEdges).toEqual([
-      { consumer: '@centurionarx/cxh-base', peer: '@centurionarx/cxh-consumer' },
+      { consumer: '@arx-ai/arx-base', peer: '@arx-ai/arx-consumer' },
     ])
   })
 
   it('refuses an order that would publish a consumer before a dependency it installs', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/alpha', '@centurionarx/cxh-alpha', { peerDependencies: { '@centurionarx/cxh-bravo': 'workspace:^' } }),
-      member('packages/a/bravo', '@centurionarx/cxh-bravo', { peerDependencies: { '@centurionarx/cxh-charlie': 'workspace:^' } }),
-      member('packages/a/charlie', '@centurionarx/cxh-charlie', { dependencies: { '@centurionarx/cxh-alpha': 'workspace:^' } }),
+      member('packages/a/alpha', '@arx-ai/arx-alpha', { peerDependencies: { '@arx-ai/arx-bravo': 'workspace:^' } }),
+      member('packages/a/bravo', '@arx-ai/arx-bravo', { peerDependencies: { '@arx-ai/arx-charlie': 'workspace:^' } }),
+      member('packages/a/charlie', '@arx-ai/arx-charlie', { dependencies: { '@arx-ai/arx-alpha': 'workspace:^' } }),
     ]
 
     // A cycle of two peer edges closed by one install edge: dropping a peer edge
     // would order this, and the traversal drops the install edge instead. That
     // order would publish charlie before the alpha it installs, so it is refused
     // here rather than published.
-    expect(() => { cxh.publishOrder(members) }).toThrow(/no publish order honours @centurionarx\/cxh-charlie -> @centurionarx\/cxh-alpha/)
+    expect(() => { arx.publishOrder(members) }).toThrow(/no publish order honours @arx-ai\/arx-charlie -> @arx-ai\/arx-alpha/)
   })
 
   it('ignores devDependencies when ordering', () => {
-    const cxh = releaseFamily('cxh')
+    const arx = releaseFamily('arx')
     const members = [
-      member('packages/a/alpha', '@centurionarx/cxh-alpha', { devDependencies: { '@centurionarx/cxh-zebra': 'workspace:^' } }),
-      member('packages/a/zebra', '@centurionarx/cxh-zebra'),
+      member('packages/a/alpha', '@arx-ai/arx-alpha', { devDependencies: { '@arx-ai/arx-zebra': 'workspace:^' } }),
+      member('packages/a/zebra', '@arx-ai/arx-zebra'),
     ]
 
     // A dev dependency is absent from the published package, so it must not move
     // the consumer behind it.
-    expect(cxh.publishOrder(members).order.map(entry => entry.name)).toEqual([
-      '@centurionarx/cxh-alpha',
-      '@centurionarx/cxh-zebra',
+    expect(arx.publishOrder(members).order.map(entry => entry.name)).toEqual([
+      '@arx-ai/arx-alpha',
+      '@arx-ai/arx-zebra',
     ])
   })
 
-  it('applies the harness payload policy to cxh and keeps upstream payloads for vendored packages', () => {
-    const cxh = releaseFamily('cxh')
+  it('applies the harness payload policy to arx and keeps upstream payloads for vendored packages', () => {
+    const arx = releaseFamily('arx')
     const vendor = releaseFamily('vendor')
-    const harness = member('packages/a/library', '@centurionarx/cxh-library')
-    const vendored = member('vendor/cordis', '@centurionarx/cordis')
+    const harness = member('packages/a/library', '@arx-ai/arx-library')
+    const vendored = member('vendor/cordis', '@arx-ai/cordis')
 
-    expect(() => { cxh.validatePayload(harness, ['package/lib/index.js', 'package/src/index.ts']) })
+    expect(() => { arx.validatePayload(harness, ['package/lib/index.js', 'package/src/index.ts']) })
       .toThrow(/publishes source file/)
     expect(() => { vendor.validatePayload(vendored, ['package/lib/index.js', 'package/src/index.ts']) }).not.toThrow()
     expect(() => { vendor.validatePayload(vendored, []) }).toThrow(/empty tarball/)
   })
 
   it('drives the installed entry only for the family that publishes one', () => {
-    expect(releaseFamily('cxh').installedEntry).toEqual({ packageName: '@centurionarx/cxh', binPath: 'lib/bin.js' })
+    expect(releaseFamily('arx').installedEntry).toEqual({ packageName: '@arx-ai/arx', binPath: 'lib/bin.js' })
     expect(releaseFamily('vendor').installedEntry).toBeUndefined()
   })
 
@@ -295,10 +295,10 @@ describe('version precedence', () => {
 })
 
 describe('payload change judgement', () => {
-  const sourceShipping = member('vendor/cosmokit', '@centurionarx/cosmokit', {
+  const sourceShipping = member('vendor/cosmokit', '@arx-ai/cosmokit', {
     files: ['lib/index.js', 'lib/types/**/*.d.ts', 'src'],
   })
-  const buildOutputOnly = member('vendor/cordis', '@centurionarx/cordis', {
+  const buildOutputOnly = member('vendor/cordis', '@arx-ai/cordis', {
     files: ['lib/index.js', 'lib/types/**/*.d.ts', 'bin.js'],
   })
 
@@ -323,7 +323,7 @@ describe('payload change judgement', () => {
     // unnecessary patch bump, while under-reporting fails the next publish on a
     // version whose bytes moved.
     expect(reachesPayload(sourceShipping, 'vendor/cosmokit/README.i18n.yaml')).toBe(true)
-    expect(reachesPayload(member('packages/a/library', '@centurionarx/cxh-library', { files: ['lib/index.js'] }),
+    expect(reachesPayload(member('packages/a/library', '@arx-ai/arx-library', { files: ['lib/index.js'] }),
       'packages/a/library/tests/library.spec.ts')).toBe(false)
   })
 })

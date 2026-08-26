@@ -5,19 +5,19 @@
  * Background policy is selected by this plugin's configuration: one-shot
  * calls own a plain Task, while continuable calls use
  * `ctx.subagents.startContinuable()`.
- * @module @centurionarx/cxh-tool-subagent
+ * @module @arx-ai/arx-tool-subagent
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { AgentOptions } from '@centurionarx/cxh-agent'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session'
-import { assertSubagentMaxDepth, settleRun } from '@centurionarx/cxh-subagent'
-import type { SubagentProvider, SubagentResult, SubagentRun } from '@centurionarx/cxh-subagent'
-import type { JobOutcome } from '@centurionarx/cxh-jobs'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { AgentOptions } from '@arx-ai/arx-agent'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session'
+import { assertSubagentMaxDepth, settleRun } from '@arx-ai/arx-subagent'
+import type { SubagentProvider, SubagentResult, SubagentRun } from '@arx-ai/arx-subagent'
+import type { JobOutcome } from '@arx-ai/arx-jobs'
+import type {} from '@arx-ai/arx-system-prompt'
 
 export const name = 'tool-subagent'
 export const inject = ['tools', 'subagents', 'systemPrompt']
@@ -408,7 +408,7 @@ export function apply(ctx: Context, config: Config): void {
           }
           const jobs = ctx.get('jobs')
           if (jobs === undefined) {
-            throw new Error('background jobs unavailable: load @centurionarx/cxh-jobs and @centurionarx/cxh-tool-jobs')
+            throw new Error('background jobs unavailable: load @arx-ai/arx-jobs and @arx-ai/arx-tool-jobs')
           }
           // One-shot background child: job preflight finishes before the
           // starter can spawn, and the task-owned signal covers startup.

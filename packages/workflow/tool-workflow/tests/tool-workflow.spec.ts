@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import type { ToolExecutionResult, ToolExecutionToken } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { WorkflowRunId, WorkflowEngine } from '@centurionarx/cxh-workflow'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import type { ToolExecutionResult, ToolExecutionToken } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
+import { WorkflowRunId, WorkflowEngine } from '@arx-ai/arx-workflow'
 import type {
   WorkflowAgentEndInfo, WorkflowAgentInfo, WorkflowResult, WorkflowRun,
   WorkflowRunId as WorkflowRunIdType, WorkflowStartRequest,
-} from '@centurionarx/cxh-workflow'
-import { CallId } from '@centurionarx/cxh-llm'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import WorkerThreadWorkflowEngine from '@centurionarx/cxh-workflow-worker-thread'
+} from '@arx-ai/arx-workflow'
+import { CallId } from '@arx-ai/arx-llm'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import WorkerThreadWorkflowEngine from '@arx-ai/arx-workflow-worker-thread'
 import * as toolWorkflow from '../src/index.ts'
-import { Session, SessionId } from '@centurionarx/cxh-session'
+import { Session, SessionId } from '@arx-ai/arx-session'
 
 const testToolSignal = new AbortController().signal
 
@@ -105,7 +105,7 @@ function execute(ctx: Context, args: unknown, extra?: {
   })
 }
 
-describe('cxh-tool-workflow', () => {
+describe('arx-tool-workflow', () => {
   it('starts a run with the script/args/parent/signal and renders the completed value', async () => {
     const { ctx, engine, parent } = await setup()
     const controller = new AbortController()

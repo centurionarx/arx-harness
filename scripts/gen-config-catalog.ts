@@ -55,7 +55,7 @@ interface Paste {
 
 /** One package's catalog entry. */
 export interface CatalogEntry {
-  /** npm package name, e.g. `@centurionarx/cxh-agent-loop`. */
+  /** npm package name, e.g. `@arx-ai/arx-agent-loop`. */
   pkg: string
   /** Repo-relative package dir, e.g. `packages/core/agent-loop`. */
   dir: string

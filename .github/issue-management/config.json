@@ -1,9 +1,9 @@
 {
-  "organization": "centurionarx-harness",
-  "repository": "centurionarx-harness",
+  "organization": "arx-harness",
+  "repository": "arx-harness",
   "projectNumber": 1,
-  "projectTitle": "CXH Issue Management",
-  "lifecycleActor": "cxh-issue-management",
+  "projectTitle": "ARX Issue Management",
+  "lifecycleActor": "arx-issue-management",
   "priorityField": "Priority",
   "allowUnassignedOwner": true,
   "statuses": [

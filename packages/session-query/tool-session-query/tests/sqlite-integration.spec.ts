@@ -1,20 +1,20 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage, CallId  } from '@centurionarx/cxh-llm'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage, CallId  } from '@arx-ai/arx-llm'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
   type Session,
-} from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SqliteSessionQueryEngine from '@centurionarx/cxh-session-query-sqlite'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import * as ToolSessionQuery from '@centurionarx/cxh-tool-session-query'
+} from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SqliteSessionQueryEngine from '@arx-ai/arx-session-query-sqlite'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import * as ToolSessionQuery from '@arx-ai/arx-tool-session-query'
 
 const temporaryDirectories: string[] = []
 const contexts: Context[] = []
@@ -32,7 +32,7 @@ function fakeAgent(session: Session): Agent {
 
 describe('tool-session-query with the real SQLite provider', () => {
   it('searches live prior-step history and a persisted same-workspace log', { timeout: 20_000 }, async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-tool-session-query-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-tool-session-query-'))
     temporaryDirectories.push(root)
     const ctx = new Context()
     contexts.push(ctx)
@@ -101,7 +101,7 @@ describe('tool-session-query with the real SQLite provider', () => {
   })
 
   it('passes finite fractional epoch-millisecond bounds through SQLite comparisons', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-tool-session-query-fractional-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-tool-session-query-fractional-'))
     temporaryDirectories.push(root)
     const ctx = new Context()
     contexts.push(ctx)

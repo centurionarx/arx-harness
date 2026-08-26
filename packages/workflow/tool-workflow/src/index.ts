@@ -2,29 +2,29 @@
  * The model-facing `workflow` tool: run a JavaScript orchestration script that fans out
  * subagents, and return the script's final value. It owns the model-facing schema and run lifecycle; script
  * parsing, execution, caps, and cancellation live behind `ctx.workflowEngine`
- * (`@centurionarx/cxh-workflow`), so a hardened engine swaps in without touching what the model
+ * (`@arx-ai/arx-workflow`), so a hardened engine swaps in without touching what the model
  * sees. Execution awaits `run.result` and always disposes the run; non-completed reasons become tool
  * errors, and background collection remains deferred. Presentation is an args-only generic card
  * titled from `meta.name`. Explicit-ask usage guidance is registered as the tool's own prompt
  * section rather than deployment persona prose.
- * @module @centurionarx/cxh-tool-workflow
+ * @module @arx-ai/arx-tool-workflow
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ToolCallView, ToolResultView } from '@centurionarx/cxh-tools'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JsonValue, Session, SessionEventMap } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ToolCallView, ToolResultView } from '@arx-ai/arx-tools'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JsonValue, Session, SessionEventMap } from '@arx-ai/arx-session'
 import type {
   WorkflowResult, WorkflowRun, WorkflowRunId, WorkflowStopReason,
-} from '@centurionarx/cxh-workflow'
+} from '@arx-ai/arx-workflow'
 import type {
   ToolWorkflowAgentEndData, ToolWorkflowAgentStartData,
   ToolWorkflowRunEndData, ToolWorkflowRunStartData,
 } from './types.ts'
 // Declaration merge only: makes ctx.systemPrompt visible for the section registration.
-import type {} from '@centurionarx/cxh-system-prompt'
+import type {} from '@arx-ai/arx-system-prompt'
 
 export const name = 'tool-workflow'
 export const inject = ['tools', 'workflowEngine', 'systemPrompt']

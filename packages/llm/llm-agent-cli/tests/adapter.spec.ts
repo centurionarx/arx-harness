@@ -1,8 +1,8 @@
 import { PassThrough } from 'node:stream'
 
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, LlmError, type Message, type StreamChunk } from '@centurionarx/cxh-llm'
-import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, LlmError, type Message, type StreamChunk } from '@arx-ai/arx-llm'
+import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const queryMock = vi.fn()
@@ -124,7 +124,7 @@ describe('stream', () => {
     expect(options['systemPrompt']).toBe('harness prompt')
     expect(options['includePartialMessages']).toBe(true)
     expect(options['persistSession']).toBe(false)
-    expect(options['allowedTools']).toEqual(['mcp__cxh__bash'])
+    expect(options['allowedTools']).toEqual(['mcp__arx__bash'])
     expect(options['disallowedTools']).toContain('Bash')
     expect(options['disallowedTools']).toContain('Skill')
     expect(options['disallowedTools']).toContain('ToolSearch')

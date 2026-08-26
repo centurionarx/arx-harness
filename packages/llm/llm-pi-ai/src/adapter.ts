@@ -23,7 +23,7 @@
  * so a configuration change rebuilds the collection without forgetting who is
  * signed in.
  *
- * @module cxh-llm-pi-ai/adapter
+ * @module arx-llm-pi-ai/adapter
  */
 
 import { createModels, getSupportedThinkingLevels } from '@earendil-works/pi-ai'
@@ -44,7 +44,7 @@ import {
   LlmAdapter,
   LlmError,
   ReasoningEffortId,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 import type {
   GenerateOptions,
   LlmModelInfo,
@@ -54,9 +54,9 @@ import type {
   ReasoningEffortId as ReasoningEffortIdType,
   ResolvedRetryPolicy,
   StreamChunk,
-} from '@centurionarx/cxh-llm'
-import type { AttachmentStore } from '@centurionarx/cxh-attachment'
-import { idleWatchdog, timeoutOf } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-llm'
+import type { AttachmentStore } from '@arx-ai/arx-attachment'
+import { idleWatchdog, timeoutOf } from '@arx-ai/arx-timeout'
 import type { ResolvedPiAiProviderProfile } from './config.ts'
 import { toPiContext } from './context.ts'
 import { toStreamChunks } from './stream.ts'

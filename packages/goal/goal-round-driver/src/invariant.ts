@@ -1,13 +1,13 @@
-/** Package-owned goal-round prompt invariants. @module @centurionarx/cxh-goal-round-driver/invariant */
+/** Package-owned goal-round prompt invariants. @module @arx-ai/arx-goal-round-driver/invariant */
 
 import { isDeepStrictEqual } from 'node:util'
-import type { Context } from '@centurionarx/cordis'
-import { foldGoal, type FoldedGoal, type GoalMessageSource, type GoalView } from '@centurionarx/cxh-goal'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import { foldGoal, type FoldedGoal, type GoalMessageSource, type GoalView } from '@arx-ai/arx-goal'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 import { renderGoalRoundPrompt } from './prompt.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-goal-round-driver'
+const PACKAGE_NAME = '@arx-ai/arx-goal-round-driver'
 
 /** Cordis companion plugin name. */
 export const name = 'goal-round-driver-invariant'

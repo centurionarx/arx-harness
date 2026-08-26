@@ -2,11 +2,11 @@
  * The `LlmAdapter` that drives a subscription-authenticated vendor CLI as an
  * ordinary model route.
  *
- * @module @centurionarx/cxh-llm-agent-cli/adapter
+ * @module @arx-ai/arx-llm-agent-cli/adapter
  */
 
 import { type Options, query } from '@anthropic-ai/claude-agent-sdk'
-import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@centurionarx/cxh-claude-agent-sdk-process'
+import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@arx-ai/arx-claude-agent-sdk-process'
 import {
   LlmAdapter,
   LlmError,
@@ -15,8 +15,8 @@ import {
   type LlmProviderInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
-} from '@centurionarx/cxh-llm'
-import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-llm'
+import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 
 import type { ResolvedRoute } from './config.ts'
 import { renderTranscript } from './prompt.ts'

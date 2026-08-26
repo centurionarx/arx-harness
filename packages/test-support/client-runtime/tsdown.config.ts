@@ -1,6 +1,6 @@
 import { clientLibrary } from '../../client/tsdown.client.ts'
 
 export default clientLibrary(
-  '@centurionarx/cxh-client-test-runtime',
+  '@arx-ai/arx-client-test-runtime',
   ['lib/types/index.js', 'lib/types/invariant.js'],
 )

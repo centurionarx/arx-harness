@@ -5,10 +5,10 @@
  * for. Stopping needs no helper — a host half unwinds through an ordinary
  * awaited `fiber.dispose()`, because everything the plugin registered is an
  * effect on its fiber.
- * @module @centurionarx/cxh-cordis-host-runner/lifecycle
+ * @module @arx-ai/arx-cordis-host-runner/lifecycle
  */
 
-import type { Context, Fiber, Plugin } from '@centurionarx/cordis'
+import type { Context, Fiber, Plugin } from '@arx-ai/cordis'
 import { guardedPlugin } from './guard.ts'
 
 /**

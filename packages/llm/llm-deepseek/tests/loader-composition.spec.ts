@@ -13,16 +13,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import LocalCredentialProvider from '@centurionarx/cxh-credentials-local'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
-import FileSettingsProvider from '@centurionarx/cxh-settings-file'
-import { getOrCreateAnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import LlmRuntime from '@arx-ai/arx-llm'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import LocalCredentialProvider from '@arx-ai/arx-credentials-local'
+import { settingsNamespace } from '@arx-ai/arx-settings'
+import FileSettingsProvider from '@arx-ai/arx-settings-file'
+import { getOrCreateAnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -47,8 +47,8 @@ async function loadComposition(
   // A reused root is the restart case: the same harness home, its documents
   // exactly as the previous process left them.
   const fresh = options.reuseRoot === undefined
-  root = options.reuseRoot ?? await mkdtemp(join(tmpdir(), 'cxh-llm-composition-'))
-  vi.stubEnv('CXH_HOME', root)
+  root = options.reuseRoot ?? await mkdtemp(join(tmpdir(), 'arx-llm-composition-'))
+  vi.stubEnv('ARX_HOME', root)
   const settingsPath = join(root, 'settings.yaml')
   const credentialsPath = join(root, '.credentials.yaml')
   if (options.withDynamic && fresh) {
@@ -63,19 +63,19 @@ async function loadComposition(
     ...options.withDynamic
       ? [
         '- id: settings',
-        "  name: '@centurionarx/cxh-settings-file'",
+        "  name: '@arx-ai/arx-settings-file'",
         '  config:',
         `    path: ${JSON.stringify(settingsPath)}`,
         '    debounceMs: 10',
         '- id: credentials',
-        "  name: '@centurionarx/cxh-credentials-local'",
+        "  name: '@arx-ai/arx-credentials-local'",
         '  config:',
         `    path: ${JSON.stringify(credentialsPath)}`,
         '    debounceMs: 10',
       ]
       : [],
     '- id: llm-deepseek',
-    "  name: '@centurionarx/cxh-llm-deepseek'",
+    "  name: '@arx-ai/arx-llm-deepseek'",
     '  config:',
     `    baseURL: ${JSON.stringify(options.baseURL)}`,
     '',
@@ -88,9 +88,9 @@ async function loadComposition(
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
     ['test-llm-service', LlmRuntime],
-    ['@centurionarx/cxh-settings-file', FileSettingsProvider],
-    ['@centurionarx/cxh-credentials-local', LocalCredentialProvider],
-    ['@centurionarx/cxh-llm-deepseek', LlmDeepSeek],
+    ['@arx-ai/arx-settings-file', FileSettingsProvider],
+    ['@arx-ai/arx-credentials-local', LocalCredentialProvider],
+    ['@arx-ai/arx-llm-deepseek', LlmDeepSeek],
   ])
   ctx.loader.internal = {
     version: 'v2',
@@ -117,7 +117,7 @@ describe('llm-deepseek real dynamic composition', () => {
     expect(ctx.get('settings')!.describe().map(entry => entry.ns)).toEqual([NS])
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [] })
     expect(serverA.headers[0]?.authorization).toBe('Bearer boot-key')
-    expect(serverA.headers[0]?.['x-centurionarx-harness-user-id']).toBe(getOrCreateAnonymousUserId())
+    expect(serverA.headers[0]?.['x-arx-harness-user-id']).toBe(getOrCreateAnonymousUserId())
 
     // External edits, exactly as a user or the web UI would leave them on disk.
     await writeFile(settingsPath, `llm-deepseek:\n  baseURL: ${serverB.url}\n`)

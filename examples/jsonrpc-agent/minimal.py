@@ -7,7 +7,7 @@ import argparse
 import os
 from pathlib import Path
 
-from centurionarx_harness import CENTURIONarxHarness
+from arx_harness import ArxHarness
 
 
 CONFIG = Path(__file__).with_name("minimal.cordis.yml")
@@ -18,16 +18,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("prompt", help="Task for the minimal agent")
     parser.add_argument("--workspace", type=Path, default=Path.cwd())
-    parser.add_argument("--session-root", type=Path, default=Path(".cxh-sessions"))
+    parser.add_argument("--session-root", type=Path, default=Path(".arx-sessions"))
     parser.add_argument("--session-id")
     parser.add_argument("--provider", default="deepseek-official")
-    parser.add_argument("--model", default=os.environ.get("CXH_MODEL", "deepseek-v4-flash"))
+    parser.add_argument("--model", default=os.environ.get("ARX_MODEL", "deepseek-v4-flash"))
     parser.add_argument("--max-tokens", type=int)
     args = parser.parse_args()
 
     workspace = args.workspace.resolve()
     session_root = args.session_root.resolve()
-    with CENTURIONarxHarness(
+    with ArxHarness(
         provider=args.provider,
         model=args.model,
         max_tokens=args.max_tokens,

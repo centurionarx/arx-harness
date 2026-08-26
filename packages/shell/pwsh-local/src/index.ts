@@ -10,22 +10,22 @@
  * shell-quoting layer to escape (the `bash -c` string domain has no
  * equivalent here). Native Win32 paths (`C:\...`) pass through unchanged.
  *
- * @module @centurionarx/cxh-pwsh-local
+ * @module @arx-ai/arx-pwsh-local
  */
 
-/* jscpd:ignore-start -- this executor mirrors cxh-bash-local call-for-call by
+/* jscpd:ignore-start -- this executor mirrors arx-bash-local call-for-call by
    design (see this package's README), so the two import the same seam surface */
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { SHELL_SETTINGS_NAMESPACE, ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult, CollectedOutput } from '@centurionarx/cxh-shell'
-import type { SubprocessCollect, SubprocessHandle, SubprocessOutputReader, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
-import { installSettingsSection } from '@centurionarx/cxh-settings'
-import { clampTimeout, deadline, MAX_TIMER_DELAY_MS, timeoutOf } from '@centurionarx/cxh-timeout'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { SHELL_SETTINGS_NAMESPACE, ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult, CollectedOutput } from '@arx-ai/arx-shell'
+import type { SubprocessCollect, SubprocessHandle, SubprocessOutputReader, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
+import { installSettingsSection } from '@arx-ai/arx-settings'
+import { clampTimeout, deadline, MAX_TIMER_DELAY_MS, timeoutOf } from '@arx-ai/arx-timeout'
 /* jscpd:ignore-end */
 import { resolvePwshPath } from './resolve.ts'
 
-/* jscpd:ignore-start -- deliberate call-for-call mirror of cxh-bash-local (Agent Note: pwsh-tool-and-executor). */
+/* jscpd:ignore-start -- deliberate call-for-call mirror of arx-bash-local (Agent Note: pwsh-tool-and-executor). */
 /**
  * Model-friendly environment overrides for PowerShell: disable colors and
  * pagers that would garble tool output. `TERM=dumb` is a POSIX concept and is
@@ -203,7 +203,7 @@ export class PwshLocalExecutor extends ShellExecutor {
       ...request.signal ? { signal: request.signal } : {},
       ...request.stdin !== undefined ? { stdin: request.stdin } : {},
       ...request.env !== undefined ? { env: request.env } : {},
-      ...request.cxhEnv !== undefined ? { cxhEnv: request.cxhEnv } : {},
+      ...request.arxEnv !== undefined ? { arxEnv: request.arxEnv } : {},
       sandboxPolicy: request.sandboxPolicy,
     }
   }
@@ -211,8 +211,8 @@ export class PwshLocalExecutor extends ShellExecutor {
   /**
    * The pwsh invocation argv for one resolved spec — the argv-level seam a
    * confining subclass wraps through `ctx.sandbox.confine` (the pwsh twin of
-   * `cxh-bash-local`'s `runArgv`/`startArgv` hooks; see
-   * `@centurionarx/cxh-pwsh-sandbox`).
+   * `arx-bash-local`'s `runArgv`/`startArgv` hooks; see
+   * `@arx-ai/arx-pwsh-sandbox`).
    */
   protected argv(spec: ShellExecSpec): string[] {
     return [this.pwshPath, '-NoLogo', '-NoProfile', '-NonInteractive', '-Command', `${ENCODING_PREAMBLE}${spec.command}`]
@@ -237,7 +237,7 @@ export class PwshLocalExecutor extends ShellExecutor {
       },
       graceMs: this.config.graceMs,
       signal,
-      env: { ...ENV_OVERRIDES, ...spec.env, ...spec.cxhEnv },
+      env: { ...ENV_OVERRIDES, ...spec.env, ...spec.arxEnv },
     }
   }
 
@@ -349,8 +349,8 @@ export class PwshLocalExecutor extends ShellExecutor {
   /**
    * Settlement hook for subclasses that attach execution facts to a process.
    * The base implementation is intentionally empty. Mirrored from
-   * `cxh-bash-local` (whose sandboxing subclass consumes the same hook); the
-   * pwsh-confining consumer is `@centurionarx/cxh-pwsh-sandbox`.
+   * `arx-bash-local` (whose sandboxing subclass consumes the same hook); the
+   * pwsh-confining consumer is `@arx-ai/arx-pwsh-sandbox`.
    * @param _proc - the settled process handle.
    * @param _stderr - the process's retained stderr tail used by subclasses for settlement classification.
    * @param _spawnFailed - whether the spawn rejected before any process existed.

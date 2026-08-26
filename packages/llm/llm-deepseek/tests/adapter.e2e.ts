@@ -4,10 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, CallId, ReasoningEffortId, createMessage } from '@centurionarx/cxh-llm'
-import type { Message, ToolSchema } from '@centurionarx/cxh-llm'
-import AttachmentStore, { AttachmentId, ImageVariantId } from '@centurionarx/cxh-attachment'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, CallId, ReasoningEffortId, createMessage } from '@arx-ai/arx-llm'
+import type { Message, ToolSchema } from '@arx-ai/arx-llm'
+import AttachmentStore, { AttachmentId, ImageVariantId } from '@arx-ai/arx-attachment'
 import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
@@ -15,10 +15,10 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import { LocalCredentialProvider } from '@centurionarx/cxh-credentials-local'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
-import type { Config } from '@centurionarx/cxh-llm-deepseek'
+} from '@arx-ai/arx-attachment'
+import { LocalCredentialProvider } from '@arx-ai/arx-credentials-local'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import type { Config } from '@arx-ai/arx-llm-deepseek'
 import { assemble, type AssembledResult } from './assemble.ts'
 
 /**
@@ -90,8 +90,8 @@ class E2eAttachmentStore extends AttachmentStore {
 }
 
 beforeEach(async () => {
-  identityHome = await mkdtemp(join(tmpdir(), 'cxh-e2e-user-id-'))
-  vi.stubEnv('CXH_HOME', identityHome)
+  identityHome = await mkdtemp(join(tmpdir(), 'arx-e2e-user-id-'))
+  vi.stubEnv('ARX_HOME', identityHome)
 })
 
 async function harness(_model: string, config: Partial<Config> = {}) {
@@ -183,7 +183,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('llm-deepseek e2e (real API)', ()
   it('serves a real request with the key held only by a credentials-local document', async () => {
     const key = process.env.DEEPSEEK_API_KEY
     if (key === undefined) throw new Error('e2e ran without DEEPSEEK_API_KEY')
-    const dir = await mkdtemp(join(tmpdir(), 'cxh-e2e-credentials-'))
+    const dir = await mkdtemp(join(tmpdir(), 'arx-e2e-credentials-'))
     try {
       // JSON.stringify quotes the value: YAML is a JSON superset, so a real
       // key survives whatever characters it happens to carry.

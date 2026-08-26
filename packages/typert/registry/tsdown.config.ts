@@ -1,3 +1,3 @@
 import { clientBundle } from '../../client/tsdown.client.ts'
 
-export default clientBundle('@centurionarx/cxh-typert-registry', ['lib/types/index.js', 'lib/types/invariant.js'])
+export default clientBundle('@arx-ai/arx-typert-registry', ['lib/types/index.js', 'lib/types/invariant.js'])

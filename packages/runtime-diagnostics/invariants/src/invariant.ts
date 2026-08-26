@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-invariants`.
- * @module @centurionarx/cxh-invariants/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-invariants`.
+ * @module @arx-ai/arx-invariants/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type { InvariantInstaller } from './index.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-invariants'
+const PACKAGE_NAME = '@arx-ai/arx-invariants'
 
 /** Cordis companion plugin name. */
 export const name = 'invariants-invariant'

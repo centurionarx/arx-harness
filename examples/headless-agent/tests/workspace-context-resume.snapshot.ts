@@ -7,19 +7,19 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import { normalizeSessionSnapshot, type NormalizeContext } from '@centurionarx/cxh-acp-snapshot'
-import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@centurionarx/cxh-loader-smoke'
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import { normalizeSessionSnapshot, type NormalizeContext } from '@arx-ai/arx-acp-snapshot'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@arx-ai/arx-loader-smoke'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
   type SessionEvent,
   type SessionHeader,
-} from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import { renderWorkspaceContext } from '@centurionarx/cxh-agent-instructions'
-import { resolveConfig, workspaceBaselineIdentity } from '@centurionarx/cxh-agent-instructions/src/config.ts'
+} from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import { renderWorkspaceContext } from '@arx-ai/arx-agent-instructions'
+import { resolveConfig, workspaceBaselineIdentity } from '@arx-ai/arx-agent-instructions/src/config.ts'
 import { describe, expect, it } from 'vitest'
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), 'workspace-context-resume-snapshots/offline-edit')
@@ -31,7 +31,7 @@ const configPath = fileURLToPath(new URL('../workspace-context-resume.cordis.sna
 const binScript = fileURLToPath(new URL('./fixtures/headless-driver.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
 const sessionId = SessionId('workspace-context-resume')
-const refreshing = process.env.CXH_SNAPSHOT === 'refresh'
+const refreshing = process.env.ARX_SNAPSHOT === 'refresh'
 const oldInstruction = 'Old workspace instruction.'
 const newInstruction = 'New workspace instruction after offline edit.'
 
@@ -62,7 +62,7 @@ async function seedVisibleBaseline(
     content: file.content,
   })), { maxBytes: 65536 })
   const config = resolveConfig({
-    cxhHome: join(cwd, '.cxh'),
+    arxHome: join(cwd, '.arx'),
     maxBytes: 65536,
     ...options.instructionFileCandidates === undefined
       ? {}
@@ -117,15 +117,15 @@ describe('agent-instructions resume snapshot', () => {
     let sessionPath = ''
     const result = await runLoaderSmoke({
       label: 'agent-instructions resume headless stream-json snapshot',
-      tempDirPrefix: 'cxh-workspace-context-resume-',
+      tempDirPrefix: 'arx-workspace-context-resume-',
       binScript,
       libBinScript: binScript,
       configPath,
       binArgs: [configPath, 'Acknowledge the current workspace instruction.'],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT_FILE: replayFixture,
-        CXH_SNAPSHOT_OVERRIDE: replayOverride,
+        ARX_SNAPSHOT_FILE: replayFixture,
+        ARX_SNAPSHOT_OVERRIDE: replayOverride,
       },
       prepare: async (runCwd) => {
         cwd = runCwd
@@ -174,15 +174,15 @@ describe('agent-instructions resume snapshot', () => {
     let sessionPath = ''
     const result = await runLoaderSmoke({
       label: 'agent-instructions precedence-change resume snapshot',
-      tempDirPrefix: 'cxh-workspace-context-precedence-',
+      tempDirPrefix: 'arx-workspace-context-precedence-',
       binScript,
       libBinScript: binScript,
       configPath,
       binArgs: [configPath, 'Acknowledge the current workspace instruction.'],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT_FILE: replayFixture,
-        CXH_SNAPSHOT_OVERRIDE: replayOverride,
+        ARX_SNAPSHOT_FILE: replayFixture,
+        ARX_SNAPSHOT_OVERRIDE: replayOverride,
       },
       prepare: async (runCwd) => {
         cwd = runCwd

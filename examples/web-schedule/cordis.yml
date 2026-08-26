@@ -3,7 +3,7 @@
 
 - insert:
     - id: time-context
-      name: '@centurionarx/cxh-time-context'
+      name: '@arx-ai/arx-time-context'
 
     - id: schedule
-      name: '@centurionarx/cxh-schedule'
+      name: '@arx-ai/arx-schedule'

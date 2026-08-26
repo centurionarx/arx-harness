@@ -5,9 +5,9 @@ import {
 import {
   DisclosureRow, IconChevronRightOutline14, StateDot,
   type DisclosureRowProps, type StateDotState,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import { shallowEqual, type SessionId, type SessionListState } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import { shallowEqual, type SessionId, type SessionListState } from '@arx-ai/arx-client-runtime/client'
 import type { WorkflowRunKey } from './locales.ts'
 import type {
   WorkflowRunMemberData, WorkflowRunPhaseData, WorkflowRunStatus,

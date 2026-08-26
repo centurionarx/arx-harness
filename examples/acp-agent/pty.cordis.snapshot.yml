@@ -1,23 +1,23 @@
 # Keyless replay counterpart to pty.cordis.yml.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - insert:
           - id: pty
-            name: '@centurionarx/cxh-terminal'
+            name: '@arx-ai/arx-terminal'
           - id: pty-snapshot-backend
             name: './pty-snapshot-backend.mjs'
           - id: tool-terminal
-            name: '@centurionarx/cxh-tool-terminal'
+            name: '@arx-ai/arx-tool-terminal'
             config:
               maxResultBytes: 64
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official

@@ -9,16 +9,16 @@ import {
 
 const experimental: WorkspaceManifest = {
   dir: 'packages/experimental/prototype',
-  manifest: { name: '@centurionarx/cxh-experimental-prototype', private: true },
+  manifest: { name: '@arx-ai/arx-experimental-prototype', private: true },
 }
 
 describe('experimental workspace constraints', () => {
   it('requires the experimental package-name prefix', () => {
     expect(checkExperimentalManifest({
       ...experimental,
-      manifest: { ...experimental.manifest, name: '@centurionarx/cxh-prototype' },
+      manifest: { ...experimental.manifest, name: '@arx-ai/arx-prototype' },
     })).toEqual([
-      '@centurionarx/cxh-prototype: experimental package name must start with "@centurionarx/cxh-experimental-"',
+      '@arx-ai/arx-prototype: experimental package name must start with "@arx-ai/arx-experimental-"',
     ])
   })
 
@@ -28,8 +28,8 @@ describe('experimental workspace constraints', () => {
       ...experimental,
       manifest: { ...experimental.manifest, private: false, publishConfig: { access: 'public' } },
     })).toEqual([
-      '@centurionarx/cxh-experimental-prototype: experimental package must set "private": true',
-      '@centurionarx/cxh-experimental-prototype: experimental package must omit publishConfig',
+      '@arx-ai/arx-experimental-prototype: experimental package must set "private": true',
+      '@arx-ai/arx-experimental-prototype: experimental package must omit publishConfig',
     ])
   })
 
@@ -39,11 +39,11 @@ describe('experimental workspace constraints', () => {
       expect(checkExperimentalDependencyIsolation([experimental, {
         dir: 'packages/core/consumer',
         manifest: {
-          name: '@centurionarx/cxh-consumer',
-          [section]: { '@centurionarx/cxh-experimental-prototype': 'workspace:^' },
+          name: '@arx-ai/arx-consumer',
+          [section]: { '@arx-ai/arx-experimental-prototype': 'workspace:^' },
         },
       }])).toEqual([
-        `@centurionarx/cxh-consumer: ${section}.@centurionarx/cxh-experimental-prototype must not reference an experimental package`,
+        `@arx-ai/arx-consumer: ${section}.@arx-ai/arx-experimental-prototype must not reference an experimental package`,
       ])
     },
   )
@@ -52,25 +52,25 @@ describe('experimental workspace constraints', () => {
     const manifests: WorkspaceManifest[] = [experimental, {
       dir: 'packages/core/test-only',
       manifest: {
-        name: '@centurionarx/cxh-test-only',
-        devDependencies: { '@centurionarx/cxh-experimental-prototype': 'workspace:^' },
+        name: '@arx-ai/arx-test-only',
+        devDependencies: { '@arx-ai/arx-experimental-prototype': 'workspace:^' },
       },
     }, {
       dir: 'packages/experimental/consumer',
       manifest: {
-        name: '@centurionarx/cxh-experimental-consumer',
-        dependencies: { '@centurionarx/cxh-experimental-prototype': 'workspace:^' },
+        name: '@arx-ai/arx-experimental-consumer',
+        dependencies: { '@arx-ai/arx-experimental-prototype': 'workspace:^' },
       },
     }, {
       dir: 'python/sdk-runtime',
       manifest: {
-        name: '@centurionarx/cxh-python-runtime',
-        dependencies: { '@centurionarx/cxh-experimental-prototype': 'workspace:^' },
+        name: '@arx-ai/arx-python-runtime',
+        dependencies: { '@arx-ai/arx-experimental-prototype': 'workspace:^' },
       },
     }]
 
     expect(checkExperimentalDependencyIsolation(manifests)).toEqual([
-      '@centurionarx/cxh-python-runtime: dependencies.@centurionarx/cxh-experimental-prototype must not reference an experimental package',
+      '@arx-ai/arx-python-runtime: dependencies.@arx-ai/arx-experimental-prototype must not reference an experimental package',
     ])
   })
 })

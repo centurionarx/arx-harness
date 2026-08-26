@@ -14,9 +14,9 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import type { IApiClient } from '@centurionarx/cxh-api-remotes/client'
-import { Button, IconPlusOutline16, Modal } from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace } from '@centurionarx/cxh-client-ui-slots'
+import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
+import { Button, IconPlusOutline16, Modal } from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace } from '@arx-ai/arx-client-ui-slots'
 import { CustomProviderCard } from './CustomProviderCard.tsx'
 import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'

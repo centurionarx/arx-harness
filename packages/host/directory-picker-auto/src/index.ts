@@ -8,13 +8,13 @@
  * entries, so the surface is discovered exactly as a config-row's would be
  * and one resolved choice still swaps both faces; pinning an interaction
  * remains composing that pair directly instead of this row.
- * @module @centurionarx/cxh-host-directory-picker-auto
+ * @module @arx-ai/arx-host-directory-picker-auto
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 // Empty type imports carry the `loader` and `webServer` Context merges for the reads below.
-import type {} from '@centurionarx/cordis-plugin-loader'
-import type {} from '@centurionarx/cxh-host-webserver'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import type {} from '@arx-ai/arx-host-webserver'
 import { canExecute, hasLinuxChooserBinary } from './probe.ts'
 import type { DirectoryPickerBackendKind } from './resolve.ts'
 import { resolveDirectoryPickerBackend } from './resolve.ts'
@@ -35,8 +35,8 @@ export const inject = ['webServer', 'loader']
  * app composing this chooser to declare both values as dependencies.
  */
 export const BACKEND_PACKAGES: Record<DirectoryPickerBackendKind, string> = {
-  native: '@centurionarx/cxh-host-directory-picker-native',
-  browse: '@centurionarx/cxh-host-directory-picker-browse',
+  native: '@arx-ai/arx-host-directory-picker-native',
+  browse: '@arx-ai/arx-host-directory-picker-browse',
 }
 
 /**
@@ -48,8 +48,8 @@ export const BACKEND_PACKAGES: Record<DirectoryPickerBackendKind, string> = {
  * workspace.
  */
 export const SURFACE_PACKAGES: Record<DirectoryPickerBackendKind, string> = {
-  native: '@centurionarx/cxh-client-ui-directory-picker-native',
-  browse: '@centurionarx/cxh-client-ui-directory-picker-browse',
+  native: '@arx-ai/arx-client-ui-directory-picker-native',
+  browse: '@arx-ai/arx-client-ui-directory-picker-browse',
 }
 
 /**

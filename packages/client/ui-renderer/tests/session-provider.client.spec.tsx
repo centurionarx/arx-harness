@@ -9,8 +9,8 @@
 import { useEffect, useRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { act, render } from '@testing-library/react'
-import type { SessionMaybeProvideInfo, StoredEntry } from '@centurionarx/cxh-client-ui-slots'
-import type { SessionProvideInfo, SlotRendererHost } from '@centurionarx/cxh-client-ui-renderer/client'
+import type { SessionMaybeProvideInfo, StoredEntry } from '@arx-ai/arx-client-ui-slots'
+import type { SessionProvideInfo, SlotRendererHost } from '@arx-ai/arx-client-ui-renderer/client'
 import { createSlotRenderer } from '../src/client/scoped-slots.tsx'
 import { SessionProvider } from '../src/client/session-provider.tsx'
 

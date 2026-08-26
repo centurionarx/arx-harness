@@ -2,9 +2,9 @@ import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Storage, { storageBackendServiceKey } from '@centurionarx/cxh-storage'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import Storage, { storageBackendServiceKey } from '@arx-ai/arx-storage'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import { runKvBackendContract } from '../../storage/tests/contract.ts'
 import { Config, JsonStorageBackend, apply } from '../src/index.ts'
 import * as InvariantCompanion from '../src/invariant.ts'
@@ -12,7 +12,7 @@ import * as InvariantCompanion from '../src/invariant.ts'
 const roots: string[] = []
 
 async function freshRoot(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'cxh-storage-json-'))
+  const root = await mkdtemp(join(tmpdir(), 'arx-storage-json-'))
   roots.push(root)
   return root
 }

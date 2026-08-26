@@ -7,14 +7,14 @@
  * document. The plugin also registers the Appearance preference row into the
  * settings General section — the theme feature owns its own settings surface.
  */
-import type { Context } from '@centurionarx/cordis'
-import type { BoundActions } from '@centurionarx/cxh-client-ui-slots'
-import type { ClientContext, SettingsScope } from '@centurionarx/cxh-client-runtime/client'
+import type { Context } from '@arx-ai/cordis'
+import type { BoundActions } from '@arx-ai/arx-client-ui-slots'
+import type { ClientContext, SettingsScope } from '@arx-ai/arx-client-runtime/client'
 // Type-only: the ctx.settingsScope Context merge. Cross-plugin collaboration
 // goes through the service, never a value import (client bundle purity gate).
-import type {} from '@centurionarx/cxh-client-ui-settings/client'
+import type {} from '@arx-ai/arx-client-ui-settings/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import type { AppearanceRowInjected } from './AppearanceRow.tsx'
 import { AppearanceRow } from './AppearanceRow.tsx'
 import { createAppearanceRowStore } from './settings-store.ts'
@@ -33,7 +33,7 @@ export type { ThemePreference, ThemeSettings } from '../theme-settings.ts'
 /** Namespace owning this feature's settings-row copy. */
 export const SETTINGS_NS = 'settings.theme'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The Appearance settings row's copy. */
     'settings.theme': ThemeKey
@@ -101,7 +101,7 @@ export interface ThemeTokenInspection {
   cssVariable?: string
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     theme: ThemeRuntime
   }

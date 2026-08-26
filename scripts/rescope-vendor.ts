@@ -1,5 +1,5 @@
 /**
- * Rescope the vendored Cordis packages into the `@centurionarx` scope, and undo
+ * Rescope the vendored Cordis packages into the `@arx-ai` scope, and undo
  * that rescope with `--reverse`. Every harness package declares `cordis` as a
  * peer dependency, so publication carries this framework layer too; publishing
  * it under the upstream names would squat them on the registry
@@ -11,7 +11,7 @@
  * scalar. A match needs a quote (or `name: `) immediately left and the matching
  * quote — optionally after a `/subpath` — immediately right, which excludes
  * `cordis.yml`, the Loader's `cordis:` builtin prefix, `cordis-config-entry`,
- * `@centurionarx/cxh-tool-cordis`, and `cordiverse/cordis`, and makes the
+ * `@arx-ai/arx-tool-cordis`, and `cordiverse/cordis`, and makes the
  * rewrite idempotent because the scoped name's `cordis` is preceded by `/`.
  * Markdown follows the rename inside every fence, and in `docs/` prose too:
  * a tutorial that teaches an unresolvable name is wrong, while prose elsewhere
@@ -44,15 +44,15 @@ interface Rename {
 
 /** The mapping this codemod applies; `vendor/README.md` carries the same table. */
 const RENAMES: readonly Rename[] = [
-  { directory: 'cordis', upstream: 'cordis', scoped: '@centurionarx/cordis' },
-  { directory: 'cosmokit', upstream: 'cosmokit', scoped: '@centurionarx/cosmokit' },
-  { directory: 'schemastery', upstream: 'schemastery', scoped: '@centurionarx/schemastery' },
-  { directory: 'loader', upstream: '@cordisjs/plugin-loader', scoped: '@centurionarx/cordis-plugin-loader' },
-  { directory: 'include', upstream: '@cordisjs/plugin-include', scoped: '@centurionarx/cordis-plugin-include' },
-  { directory: 'group', upstream: '@cordisjs/plugin-group', scoped: '@centurionarx/cordis-plugin-group' },
-  { directory: 'timer', upstream: '@cordisjs/plugin-timer', scoped: '@centurionarx/cordis-plugin-timer' },
-  { directory: 'hmr', upstream: '@cordisjs/plugin-hmr', scoped: '@centurionarx/cordis-plugin-hmr' },
-  { directory: 'logger-console', upstream: '@cordisjs/plugin-logger-console', scoped: '@centurionarx/cordis-plugin-logger-console' },
+  { directory: 'cordis', upstream: 'cordis', scoped: '@arx-ai/cordis' },
+  { directory: 'cosmokit', upstream: 'cosmokit', scoped: '@arx-ai/cosmokit' },
+  { directory: 'schemastery', upstream: 'schemastery', scoped: '@arx-ai/schemastery' },
+  { directory: 'loader', upstream: '@cordisjs/plugin-loader', scoped: '@arx-ai/cordis-plugin-loader' },
+  { directory: 'include', upstream: '@cordisjs/plugin-include', scoped: '@arx-ai/cordis-plugin-include' },
+  { directory: 'group', upstream: '@cordisjs/plugin-group', scoped: '@arx-ai/cordis-plugin-group' },
+  { directory: 'timer', upstream: '@cordisjs/plugin-timer', scoped: '@arx-ai/cordis-plugin-timer' },
+  { directory: 'hmr', upstream: '@cordisjs/plugin-hmr', scoped: '@arx-ai/cordis-plugin-hmr' },
+  { directory: 'logger-console', upstream: '@cordisjs/plugin-logger-console', scoped: '@arx-ai/cordis-plugin-logger-console' },
 ]
 
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.tpl', '.json', '.yml', '.yaml', '.md'] as const
@@ -143,17 +143,17 @@ interface PostCondition {
 }
 
 const POSTCONDITIONS: readonly PostCondition[] = [
-  { file: 'vendor/cordis/package.json', text: '"name": "@centurionarx/cordis"', count: 1 },
-  { file: 'vendor/hmr/package.json', text: '"name": "@centurionarx/cordis-plugin-hmr"', count: 1 },
-  { file: 'scripts/cordis-walk.ts', text: '@centurionarx\\/cordis', count: 1 },
-  { file: 'scripts/cordis-walk.ts', text: '!== \'@centurionarx/cordis\'', count: 1 },
-  { file: 'scripts/gen-scoped-events.ts', text: '=== \'@centurionarx/cordis\'', count: 1 },
-  { file: 'packages/typert/generator/src/analyzer.ts', text: '!== \'@centurionarx/cordis\'', count: 2 },
-  { file: 'scripts/check-workspace-constraints.ts', text: '?.[\'@centurionarx/cordis\']', count: 2 },
-  { file: 'packages/boot/app-boot/tsdown.config.ts', text: '[\'@centurionarx/cordis-plugin-include\']', count: 1 },
-  { file: 'tsconfig.base.json', text: '"@centurionarx/cordis-plugin-loader": ["./vendor/loader/src"]', count: 1 },
+  { file: 'vendor/cordis/package.json', text: '"name": "@arx-ai/cordis"', count: 1 },
+  { file: 'vendor/hmr/package.json', text: '"name": "@arx-ai/cordis-plugin-hmr"', count: 1 },
+  { file: 'scripts/cordis-walk.ts', text: '@arx-ai\\/cordis', count: 1 },
+  { file: 'scripts/cordis-walk.ts', text: '!== \'@arx-ai/cordis\'', count: 1 },
+  { file: 'scripts/gen-scoped-events.ts', text: '=== \'@arx-ai/cordis\'', count: 1 },
+  { file: 'packages/typert/generator/src/analyzer.ts', text: '!== \'@arx-ai/cordis\'', count: 2 },
+  { file: 'scripts/check-workspace-constraints.ts', text: '?.[\'@arx-ai/cordis\']', count: 2 },
+  { file: 'packages/boot/app-boot/tsdown.config.ts', text: '[\'@arx-ai/cordis-plugin-include\']', count: 1 },
+  { file: 'tsconfig.base.json', text: '"@arx-ai/cordis-plugin-loader": ["./vendor/loader/src"]', count: 1 },
   // The vendored README owns this required entry; reject its deletion or duplication.
-  { file: 'vendor/README.md', text: '17. **`@centurionarx` rescope**', count: 1 },
+  { file: 'vendor/README.md', text: '17. **`@arx-ai` rescope**', count: 1 },
   { file: 'knip.json', text: '@cordisjs', count: 0 },
   { file: 'pnpm-workspace.yaml', text: 'cordis@4.0.0-rc.7', count: 0 },
   // The preset ids in this table are product data, not package names.
@@ -174,7 +174,7 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     id: 'cordis-walk-merge-head',
     file: 'scripts/cordis-walk.ts',
     find: 'const MERGE_HEAD = /declare module [\'"](?:cordis|\\.\\/context\\.ts)[\'"]/',
-    replace: 'const MERGE_HEAD = /declare module [\'"](?:@centurionarx\\/cordis|\\.\\/context\\.ts)[\'"]/',
+    replace: 'const MERGE_HEAD = /declare module [\'"](?:@arx-ai\\/cordis|\\.\\/context\\.ts)[\'"]/',
     expect: 1,
   },
   {
@@ -187,27 +187,27 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     if (!dev) errors.push(\`\${label}: cordis must also be a devDependency\`)
     if (peer && dev && peer !== dev) {
       errors.push(\`\${label}: cordis peer (\${peer}) and dev (\${dev}) ranges must match\`)`,
-    replace: `    const peer = manifest.peerDependencies?.['@centurionarx/cordis']
-    const dev = manifest.devDependencies?.['@centurionarx/cordis']
+    replace: `    const peer = manifest.peerDependencies?.['@arx-ai/cordis']
+    const dev = manifest.devDependencies?.['@arx-ai/cordis']
 
-    if (!peer) errors.push(\`\${label}: @centurionarx/cordis must be a peerDependency\`)
-    if (!dev) errors.push(\`\${label}: @centurionarx/cordis must also be a devDependency\`)
+    if (!peer) errors.push(\`\${label}: @arx-ai/cordis must be a peerDependency\`)
+    if (!dev) errors.push(\`\${label}: @arx-ai/cordis must also be a devDependency\`)
     if (peer && dev && peer !== dev) {
-      errors.push(\`\${label}: @centurionarx/cordis peer (\${peer}) and dev (\${dev}) ranges must match\`)`,
+      errors.push(\`\${label}: @arx-ai/cordis peer (\${peer}) and dev (\${dev}) ranges must match\`)`,
     expect: 1,
   },
   {
-    // The rescoped name is already covered by the `@centurionarx/.+` pattern beside it.
+    // The rescoped name is already covered by the `@arx-ai/.+` pattern beside it.
     id: 'knip-logger-console',
     file: 'knip.json',
     find: `      "ignoreDependencies": [
         "@cordisjs/plugin-logger-console",
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     },
     "packages/util/home": {`,
     replace: `      "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     },
     "packages/util/home": {`,
@@ -218,12 +218,12 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     file: 'knip.json',
     find: `    "packages/bundle/base": {
       "ignoreDependencies": [
-        "@centurionarx/.+",
+        "@arx-ai/.+",
         "@cordisjs/.+"
       ]`,
     replace: `    "packages/bundle/base": {
       "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]`,
     expect: 1,
   },
@@ -243,24 +243,24 @@ const EXACT_EDITS: readonly ExactEdit[] = [
   {
     id: 'publication-set-scope-assertion',
     file: 'scripts/publish-npm-baseline.ts',
-    find: '      if (!isVendored && !name.startsWith(\'@centurionarx/\')) {',
+    find: '      if (!isVendored && !name.startsWith(\'@arx-ai/\')) {',
     replace: `      // Vendored packages are rescoped too (vendor/README.md), so publication
       // never carries an upstream name that would squat it on the registry.
-      if (!name.startsWith('@centurionarx/')) {`,
+      if (!name.startsWith('@arx-ai/')) {`,
     expect: 1,
   },
   {
     id: 'vendor-readme-preamble',
     file: 'vendor/README.md',
     find: 'All vendored packages keep their **original npm names** and are marked `private: true` — they are never published from this repo. `pnpm-workspace.yaml#linkWorkspacePackages` makes matching upstream semver ranges resolve these pinned workspaces, including imports from built `lib/`; disabling it substitutes npm copies behind the same names.',
-    replace: 'All vendored packages are **renamed into the `@centurionarx` scope** (`cordis` → `@centurionarx/cordis`, `@cordisjs/plugin-<x>` → `@centurionarx/cordis-plugin-<x>`): every harness package declares `cordis` as a peer dependency, so publishing the harness publishes this framework layer too, and a publication under the upstream names would squat them on the registry. Directory names and upstream version numbers are deliberately unchanged, so the manifest below still reads as an upstream snapshot. `pnpm-workspace.yaml#linkWorkspacePackages` makes those preserved semver ranges resolve these pinned workspaces, including imports from built `lib/`.',
+    replace: 'All vendored packages are **renamed into the `@arx-ai` scope** (`cordis` → `@arx-ai/cordis`, `@cordisjs/plugin-<x>` → `@arx-ai/cordis-plugin-<x>`): every harness package declares `cordis` as a peer dependency, so publishing the harness publishes this framework layer too, and a publication under the upstream names would squat them on the registry. Directory names and upstream version numbers are deliberately unchanged, so the manifest below still reads as an upstream snapshot. `pnpm-workspace.yaml#linkWorkspacePackages` makes those preserved semver ranges resolve these pinned workspaces, including imports from built `lib/`.',
     expect: 1,
   },
   {
     id: 'vendor-readme-schemastery-note',
     file: 'vendor/README.md',
     find: 'whose lazy `require(\'cosmokit\')` can race',
-    replace: 'whose lazy `require(\'@centurionarx/cosmokit\')` can race',
+    replace: 'whose lazy `require(\'@arx-ai/cosmokit\')` can race',
     expect: 1,
   },
   {
@@ -275,14 +275,14 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     id: 'agent-spine-demo-mounted-tree',
     file: 'packages/examples/agent-spine-demo/README.md',
     find: '@cordisjs/plugin-timer            timer service',
-    replace: '@centurionarx/cordis-plugin-timer  timer service',
+    replace: '@arx-ai/cordis-plugin-timer  timer service',
     expect: 1,
   },
   {
     id: 'agent-spine-demo-mounted-tree-zh',
     file: 'packages/examples/agent-spine-demo/README.zh.md',
     find: '@cordisjs/plugin-timer            timer service',
-    replace: '@centurionarx/cordis-plugin-timer  timer service',
+    replace: '@arx-ai/cordis-plugin-timer  timer service',
     expect: 1,
   },
   {
@@ -290,11 +290,11 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     id: 'root-agents-vendored-name-contract',
     file: 'AGENTS.md',
     find: 'vendored packages keep upstream names and are `private: true`. `cordis` is a peerDependency (+ dev) of every harness package.',
-    replace: 'vendored packages are rescoped ([mapping](docs/rescope.md)) and `private: true`. `@centurionarx/cordis` is a peerDependency (+ dev) of every harness package.',
+    replace: 'vendored packages are rescoped ([mapping](docs/rescope.md)) and `private: true`. `@arx-ai/cordis` is a peerDependency (+ dev) of every harness package.',
     expect: 1,
   },
   {
-    // The client purity gate reads `@centurionarx/` as "another plugin package".
+    // The client purity gate reads `@arx-ai/` as "another plugin package".
     // The rescope moves the vendored framework and its libraries into that
     // namespace, where the gate would reject the library imports client
     // bundles have always inlined, so it needs their names.
@@ -302,12 +302,12 @@ const EXACT_EDITS: readonly ExactEdit[] = [
     file: 'packages/client/tsdown.client.ts',
     find: '/** Generated descriptor/codec contribution with no shared runtime identity. */',
     replace: `/**
- * Vendored framework libraries: rescoped into @centurionarx, so the gate below
+ * Vendored framework libraries: rescoped into @arx-ai, so the gate below
  * would read them as plugin packages. They carry no cross-plugin runtime
  * identity to share — the framework itself is a requested module-table row
  * (external), while these are ordinary libraries a browser bundle inlines.
  */
-const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
+const VENDORED_LIBRARY = /^@arx-ai\\/(cosmokit|schemastery)(\\/|$)/
 
 /** Generated descriptor/codec contribution with no shared runtime identity. */`,
     expect: 1,
@@ -356,14 +356,14 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
     id: 'agent-preset-spec-framework-import',
     file: 'packages/client/ui-agent-preset/tests/apply.client.spec.ts',
     find: "import { Context } from 'cordis'",
-    replace: "import { Context } from '@centurionarx/cordis'",
+    replace: "import { Context } from '@arx-ai/cordis'",
     expect: 1,
   },
   {
     id: 'web-agent-presets-e2e-framework-import',
     file: 'apps/cli/tests/web-agent-presets.e2e.ts',
     find: "import { Context } from 'cordis'",
-    replace: "import { Context } from '@centurionarx/cordis'",
+    replace: "import { Context } from '@arx-ai/cordis'",
     expect: 1,
   },
   {
@@ -401,7 +401,7 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
     id: 'notices-vendored-section',
     file: 'scripts/gen-third-party-notices.ts',
     find: 'The Cordis framework and its foundation libraries are source-vendored into this repository rather than consumed from npm. All are MIT-licensed',
-    replace: 'The Cordis framework and its foundation libraries are source-vendored into this repository rather than consumed from npm, and republished under the \\`@centurionarx\\` scope. All are MIT-licensed',
+    replace: 'The Cordis framework and its foundation libraries are source-vendored into this repository rather than consumed from npm, and republished under the \\`@arx-ai\\` scope. All are MIT-licensed',
     expect: 1,
   },
   {
@@ -420,7 +420,7 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
     file: 'scripts/gen-third-party-notices.spec.ts',
     find: '    expect(rows).toContainEqual({ npmName: \'cordis\', upstream: \'https://github.com/cordiverse/cordis\' })',
     replace: `    expect(rows).toContainEqual({
-      npmName: '@centurionarx/cordis',
+      npmName: '@arx-ai/cordis',
       upstreamName: 'cordis',
       upstream: 'https://github.com/cordiverse/cordis',
     })`,
@@ -430,7 +430,7 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
     id: 'notices-spec-shape-fixture',
     file: 'scripts/gen-third-party-notices.spec.ts',
     find: 'parseVendoredRows(\'| `cordis/` | cordis | 4.0.0 | https://example.com | `abc123` |\\n\')',
-    replace: 'parseVendoredRows(\'| `cordis/` | `@centurionarx/cordis` | cordis | 4.0.0 | https://example.com | `abc123` |\\n\')',
+    replace: 'parseVendoredRows(\'| `cordis/` | `@arx-ai/cordis` | cordis | 4.0.0 | https://example.com | `abc123` |\\n\')',
     expect: 1,
   },
   {
@@ -442,7 +442,7 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
 ]`,
     replace: `  'packages/runtime-diagnostics/invariants',
   // The framework and the vendored packages the closure declares outright:
-  // rescoped into @centurionarx, so the consumer installs this repository's
+  // rescoped into @arx-ai, so the consumer installs this repository's
   // copies. Schemastery is a hard dependency of three members above, not a
   // peer, so npm resolves it while installing them.
   'vendor/cordis',
@@ -456,11 +456,11 @@ const VENDORED_LIBRARY = /^@centurionarx\\/(cosmokit|schemastery)(\\/|$)/
     file: 'packages/sandbox/sandbox-local/tests/packed-install.e2e.ts',
     find: `    // Peer ranges resolve to the tarballs; Cordis is pinned to their peer range. Do not omit optional
     // dependencies because the launcher selects its OS/CPU package through one.
-    writeFileSync(join(consumerDir, 'package.json'), JSON.stringify({ name: 'cxh-packed-consumer', private: true, type: 'module' }))
+    writeFileSync(join(consumerDir, 'package.json'), JSON.stringify({ name: 'arx-packed-consumer', private: true, type: 'module' }))
     const install = spawnSync('npm', ['install', '--no-audit', '--no-fund', ...tarballs, 'cordis@4.0.0-rc.7'], {`,
     replace: `    // Peer ranges resolve to the tarballs, the framework peer included. Do not omit optional
     // dependencies because the launcher selects its OS/CPU package through one.
-    writeFileSync(join(consumerDir, 'package.json'), JSON.stringify({ name: 'cxh-packed-consumer', private: true, type: 'module' }))
+    writeFileSync(join(consumerDir, 'package.json'), JSON.stringify({ name: 'arx-packed-consumer', private: true, type: 'module' }))
     const install = spawnSync('npm', ['install', '--no-audit', '--no-fund', ...tarballs], {`,
     expect: 1,
   },

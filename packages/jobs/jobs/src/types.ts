@@ -1,11 +1,11 @@
 /**
  * Types shared by job producers, the registry, and controllers. The
  * service implementation lives in `./index.ts`.
- * @module @centurionarx/cxh-jobs/types
+ * @module @arx-ai/arx-jobs/types
  */
 
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { SessionId } from '@arx-ai/arx-session'
 import type { JobId } from './brand.ts'
 
 export { JobId } from './brand.ts'

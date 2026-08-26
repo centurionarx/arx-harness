@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-27-dispose-ladder-to-consumer.md
-2026-07-27-dispose-ladder-to-consumer.md: 33114dc9ccaa0f3183923f3b79e47eb57e70565c
-2026-07-27-dispose-ladder-to-consumer.zh.md: fc36d27985881dea87b33144b74df931e719bfa5
+2026-07-27-dispose-ladder-to-consumer.md: e2800cad5e883ddd796e4d9201540177e1a1e9aa
+2026-07-27-dispose-ladder-to-consumer.zh.md: 4b7797a193bddc2e32093e86fa74e8beeef0bd41

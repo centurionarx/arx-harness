@@ -4,12 +4,12 @@
  * removal — HMR safety), the inert node entry, and the invariant companion's
  * ownership reservation.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
-import { apply as applyLocale, inject as localeInject } from '@centurionarx/cxh-client-locale/client'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
+import { apply as applyLocale, inject as localeInject } from '@arx-ai/arx-client-locale/client'
 import { apply, inject } from '../src/client/index.ts'
 import { apply as applyNode } from '../src/index.ts'
 import * as JobInvariant from '../src/invariant.ts'

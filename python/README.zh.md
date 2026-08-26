@@ -1,15 +1,15 @@
-# CENTURIONarx Harness Python SDK
+# arx Harness Python SDK
 
 [English](README.md) | 中文
 
-用于以子进程方式驱动 CENTURIONarx Harness 的 Python 包。客户端 SDK 通过 stdio 使用按行分隔的 JSON-RPC 与内置运行时通信。
+用于以子进程方式驱动 arx Harness 的 Python 包。客户端 SDK 通过 stdio 使用按行分隔的 JSON-RPC 与内置运行时通信。
 
 ## 包
 
 | 目录 | 分发名／模块 | 职责 |
 |---|---|---|
-| [sdk](sdk/README.zh.md) | `centurionarx-harness-sdk` / `centurionarx_harness` | 高层轮次 API 与低层 JSON-RPC 客户端 |
-| [sdk-runtime](sdk-runtime/README.zh.md) | `centurionarx-harness-runtime-bin` / `centurionarx_harness_runtime` | 内置运行时二进制与默认 agent（智能体）配置 |
+| [sdk](sdk/README.zh.md) | `arx-harness-sdk` / `arx_harness` | 高层轮次 API 与低层 JSON-RPC 客户端 |
+| [sdk-runtime](sdk-runtime/README.zh.md) | `arx-harness-runtime-bin` / `arx_harness_runtime` | 内置运行时二进制与默认 agent（智能体）配置 |
 
 ## 行为
 

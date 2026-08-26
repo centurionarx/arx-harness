@@ -3,16 +3,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import LlmRuntime, { createUserMessage, LlmAdapter, LlmError, resolveRetryPolicy  } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, ResolvedRetryPolicy, StreamChunk } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import AgentRegistry from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import LlmRuntime, { createUserMessage, LlmAdapter, LlmError, resolveRetryPolicy  } from '@arx-ai/arx-llm'
+import type { GenerateOptions, ResolvedRetryPolicy, StreamChunk } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
 import * as retry from '../src/index.ts'
 
 let root: string | undefined
@@ -49,7 +49,7 @@ afterEach(async () => {
 })
 
 async function loadYaml(lines: readonly string[]): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-llm-retry-loader-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-llm-retry-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [...lines, ''].join('\n'))
 
@@ -58,13 +58,13 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-llm', LlmRuntime],
-    ['@centurionarx/cxh-session', SessionStore],
-    ['@centurionarx/cxh-system-prompt', SystemPrompt],
-    ['@centurionarx/cxh-tools', ToolRuntime],
-    ['@centurionarx/cxh-agent', AgentRegistry],
-    ['@centurionarx/cxh-llm-retry', retry],
-    ['@centurionarx/cxh-agent-loop', AgentLoop],
+    ['@arx-ai/arx-llm', LlmRuntime],
+    ['@arx-ai/arx-session', SessionStore],
+    ['@arx-ai/arx-system-prompt', SystemPrompt],
+    ['@arx-ai/arx-tools', ToolRuntime],
+    ['@arx-ai/arx-agent', AgentRegistry],
+    ['@arx-ai/arx-llm-retry', retry],
+    ['@arx-ai/arx-agent-loop', AgentLoop],
   ])
   context.loader.internal = {
     version: 'v2',
@@ -87,13 +87,13 @@ describe('real Loader composition', () => {
   // to trip the default 5s budget on cold caches.
   it('loads provider-supplied policy and records recovery through the shipping loop', { timeout: 60_000 }, async () => {
     const loaded = await loadYaml([
-      "- name: '@centurionarx/cxh-llm'",
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-system-prompt'",
-      "- name: '@centurionarx/cxh-tools'",
-      "- name: '@centurionarx/cxh-agent'",
-      "- name: '@centurionarx/cxh-llm-retry'",
-      "- name: '@centurionarx/cxh-agent-loop'",
+      "- name: '@arx-ai/arx-llm'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-system-prompt'",
+      "- name: '@arx-ai/arx-tools'",
+      "- name: '@arx-ai/arx-agent'",
+      "- name: '@arx-ai/arx-llm-retry'",
+      "- name: '@arx-ai/arx-agent-loop'",
     ])
 
     const unloaded = [...loaded.loader.entries()]

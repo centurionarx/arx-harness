@@ -11,18 +11,18 @@
  * process. One row per composition, not one per session.
  *
  * A code mode needs a TypeScript code runtime, which is a host-plane service
- * ([`cxh-code-runtime-worker-thread`](../../code-runtime/code-runtime-worker/README.md)).
+ * ([`arx-code-runtime-worker-thread`](../../code-runtime/code-runtime-worker/README.md)).
  * This row therefore waits for it rather than assuming it: a preset selecting
  * Code Mode against a deployment that composes no runtime fails at mount, named
  * in the preset's own activation audit, instead of at the first prompt.
- * @module @centurionarx/cxh-agent-tool-presentation
+ * @module @arx-ai/arx-agent-tool-presentation
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { ToolPresentationMode } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ToolPresentationMode } from '@arx-ai/arx-tools'
 // Type-only: brings the `ctx.tools` Context merge into this program.
-import type {} from '@centurionarx/cxh-tools'
+import type {} from '@arx-ai/arx-tools'
 
 /** Cordis plugin name. */
 export const name = 'tool-presentation'
@@ -65,7 +65,7 @@ export function apply(ctx: Context, config: Config): void {
     return
   }
   // The wait is the loud failure: an entry still pending on `codeRuntime` is
-  // what `cxh-agent-presets` reports as an unusable row, naming this id.
+  // what `arx-agent-presets` reports as an unusable row, naming this id.
   ctx.inject(['codeRuntime'], (runtimeCtx: Context) => {
     runtimeCtx.tools.presentAs(config.mode)
   })

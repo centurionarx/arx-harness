@@ -12,10 +12,10 @@
 - text: Reply with a one-sentence description of event sourcing, then stop. {{clock}}
 - button "Copy":
   - img
-- button "Context injection @centurionarx/cxh-system-prompt":
+- button "Context injection @arx-ai/arx-system-prompt":
   - img
   - img
-  - text: Context injection @centurionarx/cxh-system-prompt
+  - text: Context injection @arx-ai/arx-system-prompt
 - status:
   - text: This turn failedAPI key is invalid
   - code: AUTH

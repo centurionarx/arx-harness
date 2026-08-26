@@ -1,13 +1,13 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SqliteSessionPersistence from '@centurionarx/cxh-session-persistence-sqlite'
-import SessionTitleService, { foldSessionTitle } from '@centurionarx/cxh-session-title'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
+import SessionTitleService, { foldSessionTitle } from '@arx-ai/arx-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,
@@ -52,7 +52,7 @@ async function expectPersistedTitle(ctx: Context, id: ReturnType<typeof SessionI
 
 describe('session title persistence round trips', () => {
   it('round-trips through a remounted JSONL backend', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-title-jsonl-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-title-jsonl-'))
     roots.push(root)
     const id = SessionId('title-jsonl')
     const writer = new Context()
@@ -70,7 +70,7 @@ describe('session title persistence round trips', () => {
   })
 
   it('round-trips through a remounted SQLite backend', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-title-sqlite-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-title-sqlite-'))
     roots.push(root)
     const path = join(root, 'sessions.db')
     const id = SessionId('title-sqlite')

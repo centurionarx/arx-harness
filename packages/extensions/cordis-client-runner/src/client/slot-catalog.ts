@@ -10,7 +10,7 @@
  * mounted for the seat to exist. Data only — this module is the one legitimate
  * meeting point of the two planes, so it carries strings, never client imports.
  *
- * @module @centurionarx/cxh-cordis-client-runner/client/slot-catalog
+ * @module @arx-ai/arx-cordis-client-runner/client/slot-catalog
  */
 
 /* jscpd:ignore-start */

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { FsTargetKey, FsVersion } from '@centurionarx/cxh-fs'
-import type { FsTarget } from '@centurionarx/cxh-fs'
-import * as FsInvariant from '@centurionarx/cxh-fs/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import { FsTargetKey, FsVersion } from '@arx-ai/arx-fs'
+import type { FsTarget } from '@arx-ai/arx-fs'
+import * as FsInvariant from '@arx-ai/arx-fs/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

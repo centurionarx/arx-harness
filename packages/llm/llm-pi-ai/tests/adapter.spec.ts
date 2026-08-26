@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { AttachmentId, AttachmentStore, ImageVariantId } from '@centurionarx/cxh-attachment'
+import { Context } from '@arx-ai/cordis'
+import { AttachmentId, AttachmentStore, ImageVariantId } from '@arx-ai/arx-attachment'
 import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
@@ -8,11 +8,11 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import LlmRuntime, { createUserMessage, CONTEXT_WINDOW_EXCEEDED_CODE, LlmError, ReasoningEffortId, userAgent } from '@centurionarx/cxh-llm'
-import * as LlmPiAi from '@centurionarx/cxh-llm-pi-ai'
-import { PiAiAdapter } from '@centurionarx/cxh-llm-pi-ai'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-attachment'
+import LlmRuntime, { createUserMessage, CONTEXT_WINDOW_EXCEEDED_CODE, LlmError, ReasoningEffortId, userAgent } from '@arx-ai/arx-llm'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
+import { PiAiAdapter } from '@arx-ai/arx-llm-pi-ai'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 import { DEFAULT_MAX_REQUEST_IMAGE_BYTES, resolveProfiles } from '../src/config.ts'
 import { memoryAuth } from './auth-double.ts'

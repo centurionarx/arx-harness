@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import JobRegistry, { JobId } from '@centurionarx/cxh-jobs'
-import type { JobDoneListener, JobSnapshot } from '@centurionarx/cxh-jobs'
-import * as JobsInvariant from '@centurionarx/cxh-jobs/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import JobRegistry, { JobId } from '@arx-ai/arx-jobs'
+import type { JobDoneListener, JobSnapshot } from '@arx-ai/arx-jobs'
+import * as JobsInvariant from '@arx-ai/arx-jobs/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 const BASE: JobSnapshot = {
   id: JobId('bash-1'),

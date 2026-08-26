@@ -1,6 +1,6 @@
 .split {
-  --cxh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
-  --cxh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  --arx-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --arx-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 
   position: relative;
   display: flex;
@@ -18,7 +18,7 @@
   min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: var(--cxh-trajectory-bottom-clearance, 0px);
+  padding-bottom: var(--arx-trajectory-bottom-clearance, 0px);
   container: trajectory-table / inline-size;
 }
 
@@ -1020,7 +1020,7 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: var(--cxh-trajectory-bottom-clearance, 0px);
+  padding-bottom: var(--arx-trajectory-bottom-clearance, 0px);
   scrollbar-gutter: stable;
 }
 
@@ -1028,7 +1028,7 @@
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
-  padding-bottom: calc(12px + var(--cxh-trajectory-bottom-clearance, 0px));
+  padding-bottom: calc(12px + var(--arx-trajectory-bottom-clearance, 0px));
   overflow: hidden;
 }
 
@@ -1046,14 +1046,14 @@
 }
 
 .summaryScrollRegion {
-  --cxh-scrollbar-thumb: transparent;
-  --cxh-scrollbar-thumb-hover: transparent;
+  --arx-scrollbar-thumb: transparent;
+  --arx-scrollbar-thumb-hover: transparent;
 }
 
 .summaryScrollRegion:hover,
 .summaryScrollRegion:focus-within {
-  --cxh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
-  --cxh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  --arx-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --arx-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
 .compactedSummary .markdownPayload {

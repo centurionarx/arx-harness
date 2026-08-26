@@ -1,10 +1,10 @@
-/** Package-owned durable todo-snapshot invariants. @module @centurionarx/cxh-tool-todo/invariant */
+/** Package-owned durable todo-snapshot invariants. @module @arx-ai/arx-tool-todo/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tool-todo'
+const PACKAGE_NAME = '@arx-ai/arx-tool-todo'
 const TODO_STATUSES = new Set(['pending', 'in_progress', 'completed'])
 
 /** Cordis companion plugin name. */

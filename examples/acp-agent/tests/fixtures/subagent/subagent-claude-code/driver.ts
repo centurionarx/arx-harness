@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /** Inspect the public Claude Code Bundle composition without invoking the product. */
 
-import { boot, loadOverlayPatches, resolveConfigPath } from '@centurionarx/cxh-app-boot'
-import type {} from '@centurionarx/cxh-subagent'
-import type {} from '@centurionarx/cxh-tools'
+import { boot, loadOverlayPatches, resolveConfigPath } from '@arx-ai/arx-app-boot'
+import type {} from '@arx-ai/arx-subagent'
+import type {} from '@arx-ai/arx-tools'
 
 const configPath = process.argv[2]
 const bundlePatchPath = process.argv[3]

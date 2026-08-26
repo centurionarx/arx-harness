@@ -5,7 +5,7 @@
     {
       "op": "promptAndCancel",
       "text": "Start a long task; this turn will be cancelled mid-stream.",
-      "waitForFile": { "path": ".cxh-snapshot-stream-ready" }
+      "waitForFile": { "path": ".arx-snapshot-stream-ready" }
     },
     { "op": "waitForTurnEnd" }
   ]

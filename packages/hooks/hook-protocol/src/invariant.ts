@@ -1,11 +1,11 @@
-/** Package-owned hook invocation/result stream invariants. @module @centurionarx/cxh-hook-protocol/invariant */
+/** Package-owned hook invocation/result stream invariants. @module @arx-ai/arx-hook-protocol/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type {} from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-hook-protocol'
+const PACKAGE_NAME = '@arx-ai/arx-hook-protocol'
 
 /** Cordis companion plugin name. */
 export const name = 'hook-protocol-invariant'

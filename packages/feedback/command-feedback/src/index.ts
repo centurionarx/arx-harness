@@ -3,14 +3,14 @@
  * appends one authoritative log-only event and does not start model work. The
  * append is eager but unflushed, so acknowledgement reports that the entry is
  * logged, not that it reached disk.
- * @module @centurionarx/cxh-command-feedback
+ * @module @arx-ai/arx-command-feedback
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { CommandInvocation, CommandResult } from '@centurionarx/cxh-commands'
-import type { SessionTelemetryBackend, SessionTelemetrySharingStatus } from '@centurionarx/cxh-session-telemetry'
-import type { Session } from '@centurionarx/cxh-session'
-import { getOrCreateAnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
+import type { Context } from '@arx-ai/cordis'
+import type { CommandInvocation, CommandResult } from '@arx-ai/arx-commands'
+import type { SessionTelemetryBackend, SessionTelemetrySharingStatus } from '@arx-ai/arx-session-telemetry'
+import type { Session } from '@arx-ai/arx-session'
+import { getOrCreateAnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
 
 export const name = 'command-feedback'
 export const inject = ['commands']
@@ -53,7 +53,7 @@ function sharingDisclosure(telemetry: SessionTelemetryBackend | undefined): stri
   return sharingSentence(telemetry.sharing)
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * One recorded human remark about this session. Log-only and independent

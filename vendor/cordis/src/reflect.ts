@@ -1,5 +1,5 @@
-import { defineProperty, isNullable } from '@centurionarx/cosmokit'
-import type { Dict } from '@centurionarx/cosmokit'
+import { defineProperty, isNullable } from '@arx-ai/cosmokit'
+import type { Dict } from '@arx-ai/cosmokit'
 import { Context } from './context.ts'
 import { getTraceable, symbols, withProps } from './utils.ts'
 import { Fiber, FiberState } from './fiber.ts'

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, CallId, LlmError, StreamChunk, errorChain  } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId, TurnEndReason } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, CallId, LlmError, StreamChunk, errorChain  } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId, TurnEndReason } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
 
 function driverDone(agent: Agent): Promise<void> {
@@ -213,7 +213,7 @@ describe('disposed vs aborted branching', () => {
 
 describe('structured tool error propagation (the runtime-validation Agent Note, part 2)', () => {
   it('forwards a tool HarnessError onto the tool/result session event', async () => {
-    const { HarnessError } = await import('@centurionarx/cxh-llm')
+    const { HarnessError } = await import('@arx-ai/arx-llm')
     // First model turn calls the tool; second turn (after the tool result is
     // fed back) ends with plain text so the loop settles.
     const adapter = new MockAdapter([
@@ -243,7 +243,7 @@ describe('structured tool error propagation (the runtime-validation Agent Note, 
 
 describe('request-error action edges', () => {
   it('ignores a retry action returned after the turn was aborted', async () => {
-    const { LlmError } = await import('@centurionarx/cxh-llm')
+    const { LlmError } = await import('@arx-ai/arx-llm')
     const adapter = new MockAdapter([
       () => { throw new LlmError('busy', 'RATE_LIMIT') },
       textResponse('never used'),
@@ -265,7 +265,7 @@ describe('request-error action edges', () => {
   })
 
   it('completed recovery does not retry when cancellation raced the waterfall', async () => {
-    const { LlmError } = await import('@centurionarx/cxh-llm')
+    const { LlmError } = await import('@arx-ai/arx-llm')
     const adapter = new MockAdapter([
       () => { throw new LlmError('busy', 'RATE_LIMIT') },
     ])
@@ -362,7 +362,7 @@ describe('persistent step-close rejection', () => {
 
 describe('tool result meta persistence', () => {
   it('records a presentationMeta payload on the tool/result event', async () => {
-    const { defineTool } = await import('@centurionarx/cxh-tools')
+    const { defineTool } = await import('@arx-ai/arx-tools')
     const adapter = new MockAdapter([
       toolCallResponse('c1', 'meta-tool', {}),
       textResponse('done'),
@@ -420,7 +420,7 @@ describe('turn close failure containment', () => {
 
 describe('recovery without a retry action', () => {
   it('a completed recovery that returns no action leaves the failed turn terminal', async () => {
-    const { LlmError } = await import('@centurionarx/cxh-llm')
+    const { LlmError } = await import('@arx-ai/arx-llm')
     const adapter = new MockAdapter([
       () => { throw new LlmError('down', 'SERVICE_UNAVAILABLE') },
     ])
@@ -441,7 +441,7 @@ describe('recovery without a retry action', () => {
 
 describe('unrenderable failure settlement', () => {
   it('drops the rendered message when the error chain cannot be rendered', async () => {
-    const { LlmError } = await import('@centurionarx/cxh-llm')
+    const { LlmError } = await import('@arx-ai/arx-llm')
     const adapter = new MockAdapter([
       () => {
         const error = new LlmError('will become hostile', 'SERVER')
@@ -505,7 +505,7 @@ describe('driver bookkeeping edges', () => {
   })
 
   it('a request failure that concludes recovery after step/end closed keeps the boundary balanced', async () => {
-    const { LlmError } = await import('@centurionarx/cxh-llm')
+    const { LlmError } = await import('@arx-ai/arx-llm')
     // The failure finish-chunk path returns request-failed AFTER step() has
     // already appended step/end, so the request-failed branch's own
     // step-close guard must see stepOpen === false and skip the append.

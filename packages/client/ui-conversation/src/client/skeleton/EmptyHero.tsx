@@ -8,8 +8,8 @@ import { useId } from 'react'
 import type { ReactNode, RefObject } from 'react'
 import {
   FishLogo, IconChevronDownOutline14, IconFolderClose16, IconFolderOpen16,
-} from '@centurionarx/cxh-client-ui-primitives'
-import { workspaceTitleOf } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import { workspaceTitleOf } from '@arx-ai/arx-client-runtime/client'
 import type { ConversationSlotProps } from '../contract/slots.ts'
 import css from './HeroShell.module.css'
 

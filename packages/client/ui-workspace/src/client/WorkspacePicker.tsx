@@ -12,11 +12,11 @@ import type { ReactNode, RefObject } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import {
   Button, IconFolderClose16, IconPlusOutline16, Menu, Modal, type MenuEntry,
-} from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-ui-primitives'
 import type {
   WorkspaceId, WorkspaceListState, WorkspaceView,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { SnapshotSelectorHook } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-runtime/client'
+import type { SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
 import type { DirectoryFlowOwnerProps, WorkspacePickerProps } from './contract/slots.ts'
 import css from './WorkspacePicker.module.css'
 

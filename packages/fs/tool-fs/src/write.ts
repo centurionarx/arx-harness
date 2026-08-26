@@ -2,15 +2,15 @@
  * Model-facing full-file write. It obtains an optional intent from the single policy slot, calls
  * `ctx.fs.writeText` without a stat, then records the resulting version; no policy means an
  * unconditional atomic create-or-overwrite.
- * @module @centurionarx/cxh-tool-fs/src/write
+ * @module @arx-ai/arx-tool-fs/src/write
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { DiffCallView, DiffResultView, ToolResult } from '@centurionarx/cxh-tools'
-import type { FsWriteOutcome } from '@centurionarx/cxh-fs'
-import type {} from '@centurionarx/cxh-fs'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { DiffCallView, DiffResultView, ToolResult } from '@arx-ai/arx-tools'
+import type { FsWriteOutcome } from '@arx-ai/arx-fs'
+import type {} from '@arx-ai/arx-fs'
+import type {} from '@arx-ai/arx-system-prompt'
 import { computeHunkDiffs, diffsFromMeta } from './diff.ts'
 import { remediateFsError } from './error.ts'
 import { sessionResolveOptions } from './session-cwd.ts'

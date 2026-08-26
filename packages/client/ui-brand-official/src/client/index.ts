@@ -1,7 +1,7 @@
-/** Official CENTURIONarx Harness occupants for the generic browser-brand slots. */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
-import type {} from '@centurionarx/cxh-client-ui-sidebar/client'
+/** Official arx Harness occupants for the generic browser-brand slots. */
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-sidebar/client'
 import { OfficialBrandMark, OfficialBrandName } from './Brand.tsx'
 
 /** Required service: the UI slot registry. */
@@ -12,7 +12,7 @@ export const inject = ['slots']
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {
-  if (process.env.CXH_CLIENT_BUILD_PROFILE !== 'official') return
+  if (process.env.ARX_CLIENT_BUILD_PROFILE !== 'official') return
   ctx.slots.inject('sidebar.brand.mark', () =>
     ctx.slots.inject('sidebar.brand.name', () =>
       ctx.slots.inject('conversation.hero.brand.mark', function* () {

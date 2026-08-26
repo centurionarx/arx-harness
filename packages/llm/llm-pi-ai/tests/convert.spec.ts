@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { AttachmentId, ImageVariantId } from '@centurionarx/cxh-attachment'
-import type { AttachmentStore, ImageAttachmentRef, ImageRequestPolicy, RequestImageAttachment } from '@centurionarx/cxh-attachment'
-import { createUserMessage, CallId, CONTEXT_WINDOW_EXCEEDED_CODE, EMPTY_RESPONSE_CODE, createMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, StreamChunk } from '@centurionarx/cxh-llm'
+import { AttachmentId, ImageVariantId } from '@arx-ai/arx-attachment'
+import type { AttachmentStore, ImageAttachmentRef, ImageRequestPolicy, RequestImageAttachment } from '@arx-ai/arx-attachment'
+import { createUserMessage, CallId, CONTEXT_WINDOW_EXCEEDED_CODE, EMPTY_RESPONSE_CODE, createMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, StreamChunk } from '@arx-ai/arx-llm'
 import type { AssistantMessage, AssistantMessageEvent, Usage } from '@earendil-works/pi-ai'
 import { toPiContext } from '../src/context.ts'
 import { toPiReplayState } from '../src/replay.ts'
@@ -243,7 +243,7 @@ describe('toPiContext', () => {
     })
     expect(context.messages[0]).toMatchObject({
       role: 'assistant',
-      api: 'cxh-foreign',
+      api: 'arx-foreign',
       provider: 'deepseek',
       model: 'old-model',
     })
@@ -468,7 +468,7 @@ describe('toPiContext', () => {
     }, undefined, onDegrade)
     expect(context.messages[0]).toMatchObject({
       role: 'assistant',
-      api: 'cxh-foreign',
+      api: 'arx-foreign',
       provider: 'deepseek',
       model: 'old',
       content: [{ type: 'text', text: 'done' }],
@@ -502,7 +502,7 @@ describe('toPiContext', () => {
         },
       })],
     }, undefined, onDegrade)
-    expect(context.messages[0]).toMatchObject({ role: 'assistant', api: 'cxh-foreign' })
+    expect(context.messages[0]).toMatchObject({ role: 'assistant', api: 'arx-foreign' })
     expect(onDegrade).toHaveBeenCalledWith(expect.stringContaining('expected a response object'))
   })
 
@@ -523,7 +523,7 @@ describe('toPiContext', () => {
     }, undefined, onDegrade)
     expect(context.messages[0]).toMatchObject({
       role: 'assistant',
-      api: 'cxh-foreign',
+      api: 'arx-foreign',
       content: [{ type: 'thinking', thinking: 'done' }],
     })
     expect(onDegrade).toHaveBeenCalledWith(expect.stringContaining('block 0 does not match assistant content'))
@@ -546,7 +546,7 @@ describe('toPiContext', () => {
     }, undefined, onDegrade)
     expect(context.messages[0]).toMatchObject({
       role: 'assistant',
-      api: 'cxh-foreign',
+      api: 'arx-foreign',
       provider: 'deepseek',
       model: 'deepseek-v4-flash',
       content: [{ type: 'text', text: 'done' }],
@@ -582,7 +582,7 @@ describe('toPiContext', () => {
     }, undefined, onDegrade)
     expect(context.messages[0]).toMatchObject({
       role: 'assistant',
-      api: 'cxh-foreign',
+      api: 'arx-foreign',
       content: [{ type: 'text', text: 'done' }],
     })
     expect(onDegrade).toHaveBeenCalledWith(expect.stringContaining(message))

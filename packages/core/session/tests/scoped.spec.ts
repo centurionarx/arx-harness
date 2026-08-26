@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createScope, scopeOf } from '@centurionarx/cxh-scope'
-import type { Scope, ScopeKey } from '@centurionarx/cxh-scope'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import { createScope, scopeOf } from '@arx-ai/arx-scope'
+import type { Scope, ScopeKey } from '@arx-ai/arx-scope'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
 
 async function mount(): Promise<Context> {
   const ctx = new Context()

@@ -6,14 +6,14 @@
  * session's workspace), the never-reject result settlement, and the standard
  * run-handle publication. Backends compose these with their own wire drivers;
  * the process machinery itself (spawn, env scrub, tree-scoped teardown)
- * belongs to the `cxh-subprocess` seam.
+ * belongs to the `arx-subprocess` seam.
  *
- * @module @centurionarx/cxh-subagent/out-of-process
+ * @module @arx-ai/arx-subagent/out-of-process
  */
 
 import { accessSync, constants, statSync } from 'node:fs'
 import { isAbsolute, resolve } from 'node:path'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
 import type { SubagentCapabilities, SubagentResult, SubagentRun, SubagentStopReason } from './types.ts'
 
 /** Maximum UTF-8 size of {@link SubagentResult.diagnostic}. */

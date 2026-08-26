@@ -1,4 +1,4 @@
-# cxh-authorization
+# arx-authorization
 
 English | [中文](README.zh.md)
 
@@ -13,9 +13,9 @@ Authorization Service Definition (`ctx.authorization`). Some credentials cannot 
 ## Surface
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import { AuthorizationDeclinedError, type AuthorizationSession } from '@centurionarx/cxh-authorization'
-import { credentialKey } from '@centurionarx/cxh-credentials'
+import type { Context } from '@arx-ai/cordis'
+import { AuthorizationDeclinedError, type AuthorizationSession } from '@arx-ai/arx-authorization'
+import { credentialKey } from '@arx-ai/arx-credentials'
 
 declare const ctx: Context
 declare const exchange: (signal: AbortSignal) => Promise<void>

@@ -1,21 +1,21 @@
 /** Browser plugin owning Session export download state and its shared modal. */
 
-import type { ClientContext, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-locale/client'
-import type {} from '@centurionarx/cxh-client-ui-commands/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-locale/client'
+import type {} from '@arx-ai/arx-client-ui-commands/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { SessionLogDownloadController } from './controller.ts'
 import type { SessionLogDownloadDialogInjected } from './Dialog.tsx'
 import { SessionLogDownloadHeaderAction } from './HeaderAction.tsx'
 import { en, NS, zh, type SessionLogDownloadKey } from './locales.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionLogDownload: SessionLogDownloadController
   }
 }
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     'session-log-download': SessionLogDownloadKey
   }

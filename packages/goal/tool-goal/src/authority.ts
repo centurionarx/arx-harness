@@ -1,11 +1,11 @@
 /** Execution-time authority checks for the model-facing goal tools. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { GoalView } from '@centurionarx/cxh-goal'
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import type { ToolRunContext } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { GoalView } from '@arx-ai/arx-goal'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import type { ToolRunContext } from '@arx-ai/arx-tools'
 
 type TurnStartEvent = Extract<SessionEvent, { type: 'turn/start' }>
 

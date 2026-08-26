@@ -9,12 +9,12 @@
  * document language rather than merely looking untidy.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply, inject } from '@centurionarx/cxh-client-locale/client'
-import type { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
+import { Context } from '@arx-ai/cordis'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply, inject } from '@arx-ai/arx-client-locale/client'
+import type { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
 import { LOCALE_SETTINGS_NAMESPACE, LocaleSettingsSchema } from '../src/locale-settings.ts'
 
 /** Boot the plugin over a stub Host settings document. */

@@ -14,11 +14,11 @@ interface CssPlugin {
   load?: (this: { addWatchFile(id: string): void }, id: string) => Promise<string | null>
 }
 
-function cssPlugin(name: 'cxh-css-modules-inline' | 'cxh-css-global-inline' | 'cxh-css-text-inline'): CssPlugin {
+function cssPlugin(name: 'arx-css-modules-inline' | 'arx-css-global-inline' | 'arx-css-text-inline'): CssPlugin {
   const configs = clientBundle(
-    '@centurionarx/cxh-client-test',
+    '@arx-ai/arx-client-test',
     ['lib/types/index.js', 'lib/types/invariant.js'],
-  )({ env: { CXH_BUILD_FACE: 'client' } })
+  )({ env: { ARX_BUILD_FACE: 'client' } })
   const client = configs.find(config => config.platform === 'browser')
   if (client === undefined) throw new Error('client config missing')
   const plugins = (client as { plugins: CssPlugin[] }).plugins
@@ -29,12 +29,12 @@ function cssPlugin(name: 'cxh-css-modules-inline' | 'cxh-css-global-inline' | 'c
 
 describe('client bundle CSS Modules', () => {
   it('registers the source stylesheet as a watch dependency', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-client-css-watch-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-client-css-watch-'))
     try {
       const stylesheet = join(root, 'Fixture.module.css')
       const importer = join(root, 'index.ts')
       await writeFile(stylesheet, '.root { color: red; }\n')
-      const plugin = cssPlugin('cxh-css-modules-inline')
+      const plugin = cssPlugin('arx-css-modules-inline')
       const virtualId = plugin.resolveId?.('./Fixture.module.css', importer)
       if (typeof virtualId !== 'string' || plugin.load === undefined) {
         throw new Error('CSS Modules plugin hooks are incomplete')
@@ -53,12 +53,12 @@ describe('client bundle CSS Modules', () => {
 
 describe('client bundle global CSS', () => {
   it('compiles a side-effect stylesheet into a watched style injector', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-client-global-css-watch-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-client-global-css-watch-'))
     try {
       const stylesheet = join(root, 'base.css')
       const importer = join(root, 'index.ts')
       await writeFile(stylesheet, 'body { color: red; }\n')
-      const plugin = cssPlugin('cxh-css-global-inline')
+      const plugin = cssPlugin('arx-css-global-inline')
       const virtualId = plugin.resolveId?.('./base.css', importer)
       if (typeof virtualId !== 'string' || plugin.load === undefined) {
         throw new Error('global CSS plugin hooks are incomplete')
@@ -76,12 +76,12 @@ describe('client bundle global CSS', () => {
   })
 
   it('compiles inline stylesheets as watched text without a module side effect', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-client-inline-css-watch-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-client-inline-css-watch-'))
     try {
       const stylesheet = join(root, 'base.css')
       const importer = join(root, 'index.ts')
       await writeFile(stylesheet, 'body { color: red; }\n')
-      const plugin = cssPlugin('cxh-css-text-inline')
+      const plugin = cssPlugin('arx-css-text-inline')
       const virtualId = plugin.resolveId?.('./base.css?inline', importer)
       if (typeof virtualId !== 'string' || plugin.load === undefined) {
         throw new Error('inline CSS plugin hooks are incomplete')

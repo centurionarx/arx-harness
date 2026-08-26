@@ -1,8 +1,8 @@
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-agent'
-import { CompactionId, compactCheckpointSource } from '@centurionarx/cxh-compaction'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type {} from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-agent'
+import { CompactionId, compactCheckpointSource } from '@arx-ai/arx-compaction'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type {} from '@arx-ai/arx-tools'
 
 export const name = 'workspace-context-compaction'
 

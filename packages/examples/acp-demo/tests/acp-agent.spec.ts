@@ -3,16 +3,16 @@ import { randomUUID } from 'node:crypto'
 import { mkdtemp } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { agentEvents } from '@centurionarx/cxh-agent'
-import { TOOL_ORDER_REST } from '@centurionarx/cxh-system-prompt'
-import type { Message } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { agentEvents } from '@arx-ai/arx-agent'
+import { TOOL_ORDER_REST } from '@arx-ai/arx-system-prompt'
+import type { Message } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import * as acpAgent from '../src/index.ts'
 
 /**
- * In-process unit coverage for the @centurionarx/cxh-acp-demo composition:
+ * In-process unit coverage for the @arx-ai/arx-acp-demo composition:
  * mounting it brings up the agent-spine-demo spine + JSONL persistence + the ACP
  * bridge in one `ctx.plugin`. It loads no Loader-only plugin (no hmr), so it
  * mounts in a plain Context.
@@ -31,15 +31,15 @@ async function mount(config: acpAgent.Config, withBash = false): Promise<Context
       start() { throw new Error('composition test does not execute bash') },
     })
   }
-  config.persistenceRoot ??= await mkdtemp(join(tmpdir(), 'cxh-acp-demo-persistence-'))
+  config.persistenceRoot ??= await mkdtemp(join(tmpdir(), 'arx-acp-demo-persistence-'))
   await ctx.plugin(acpAgent, config)
   return ctx
 }
 
 async function isolatedSkillsConfig(catalogDescriptionMaxLength?: number): Promise<NonNullable<acpAgent.Config['skills']>> {
-  const home = await mkdtemp(join(tmpdir(), 'cxh-acp-demo-skills-'))
+  const home = await mkdtemp(join(tmpdir(), 'arx-acp-demo-skills-'))
   return {
-    filesystem: { cxhHome: join(home, '.cxh'), agentsHome: join(home, '.agents') },
+    filesystem: { arxHome: join(home, '.arx'), agentsHome: join(home, '.agents') },
     ...catalogDescriptionMaxLength !== undefined ? { tool: { catalogDescriptionMaxLength } } : {},
   }
 }
@@ -60,34 +60,34 @@ async function composePrefix(ctx: Context): Promise<Message[]> {
 }
 
 async function withIsolatedSkillHomes<T>(run: () => Promise<T>): Promise<T> {
-  const oldCxhHome = process.env.CXH_HOME
-  const oldAgentsHome = process.env.CXH_AGENTS_HOME
-  const home = await mkdtemp(join(tmpdir(), 'cxh-acp-demo-default-skills-'))
-  process.env.CXH_HOME = join(home, '.cxh')
-  process.env.CXH_AGENTS_HOME = join(home, '.agents')
+  const oldArxHome = process.env.ARX_HOME
+  const oldAgentsHome = process.env.ARX_AGENTS_HOME
+  const home = await mkdtemp(join(tmpdir(), 'arx-acp-demo-default-skills-'))
+  process.env.ARX_HOME = join(home, '.arx')
+  process.env.ARX_AGENTS_HOME = join(home, '.agents')
   try {
     return await run()
   } finally {
-    if (oldCxhHome === undefined) {
-      delete process.env.CXH_HOME
+    if (oldArxHome === undefined) {
+      delete process.env.ARX_HOME
     } else {
-      process.env.CXH_HOME = oldCxhHome
+      process.env.ARX_HOME = oldArxHome
     }
     if (oldAgentsHome === undefined) {
-      delete process.env.CXH_AGENTS_HOME
+      delete process.env.ARX_AGENTS_HOME
     } else {
-      process.env.CXH_AGENTS_HOME = oldAgentsHome
+      process.env.ARX_AGENTS_HOME = oldAgentsHome
     }
   }
 }
 
-describe('cxh-acp-demo composition', () => {
+describe('arx-acp-demo composition', () => {
   it('brings up the spine + persistence + the ACP bridge', async () => {
     const ctx = await mount({
       provider: 'mock',
       model: 'mock',
       persona: 'hi',
-      persistenceRoot: await mkdtemp(join(tmpdir(), 'cxh-acp-demo-test-')),
+      persistenceRoot: await mkdtemp(join(tmpdir(), 'arx-acp-demo-test-')),
       persistenceCompression: 'none',
       skills: await isolatedSkillsConfig(),
       workspaceContext: false,
@@ -143,7 +143,7 @@ describe('cxh-acp-demo composition', () => {
       provider: 'mock',
       model: 'mock',
       persona: 'hi',
-      persistenceRoot: await mkdtemp(join(tmpdir(), 'cxh-acp-demo-workspace-context-')),
+      persistenceRoot: await mkdtemp(join(tmpdir(), 'arx-acp-demo-workspace-context-')),
       workspaceContext: false,
     })
     expect(ctx.get('agents')).toBeDefined()
@@ -161,9 +161,9 @@ describe('cxh-acp-demo composition', () => {
     })
   })
 
-  it('forwards skill config and cxhHome into agent-spine-demo', async () => {
+  it('forwards skill config and arxHome into agent-spine-demo', async () => {
     const skills = await isolatedSkillsConfig(6)
-    const ctx = await mount({ provider: 'mock', model: 'mock', persona: 'hi', cxhHome: skills.filesystem!.cxhHome!, skills, workspaceContext: false })
+    const ctx = await mount({ provider: 'mock', model: 'mock', persona: 'hi', arxHome: skills.filesystem!.arxHome!, skills, workspaceContext: false })
     ctx.skills.register({ name: 'acp-skill', description: 'ACP skill', source: 'runtime', content: 'body' })
     expect(JSON.stringify(await composePrefix(ctx))).toContain('- `acp-skill`: ACP...')
     await ctx.fiber.dispose()
@@ -174,7 +174,7 @@ describe('cxh-acp-demo composition', () => {
       provider: 'mock',
       model: 'mock',
       maxParallelToolCalls: 3,
-      persistenceRoot: await mkdtemp(join(tmpdir(), 'cxh-acp-demo-test-parallel-')),
+      persistenceRoot: await mkdtemp(join(tmpdir(), 'arx-acp-demo-test-parallel-')),
       skills: await isolatedSkillsConfig(),
       workspaceContext: false,
     })
@@ -232,7 +232,7 @@ describe('cxh-acp-demo composition', () => {
       provider: 'mock',
       model: 'mock',
       toolOrder: ['zulu', TOOL_ORDER_REST],
-      persistenceRoot: await mkdtemp(join(tmpdir(), 'cxh-acp-demo-test-tool-order-')),
+      persistenceRoot: await mkdtemp(join(tmpdir(), 'arx-acp-demo-test-tool-order-')),
       workspaceContext: false,
     })
     // The bundle's own bash tools pend on the absent `ctx.shell` executor in

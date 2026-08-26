@@ -2,7 +2,7 @@
  * TypeScript project analyzer for the compiler-independent Typert model.
  * Programs, symbols, and syntax nodes remain extraction-only implementation
  * details; callers receive only the model declared in {@link ./model.ts}.
- * @module @centurionarx/cxh-typert-generator/analyzer
+ * @module @arx-ai/arx-typert-generator/analyzer
  */
 
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
@@ -653,7 +653,7 @@ class FaceAnalyzer {
       for (const statement of sourceFile.statements) {
         if (!ts.isModuleDeclaration(statement)
           || !ts.isStringLiteral(statement.name)
-          || statement.name.text !== '@centurionarx/cordis'
+          || statement.name.text !== '@arx-ai/cordis'
           || statement.body === undefined
           || !ts.isModuleBlock(statement.body)) continue
         for (const member of statement.body.statements) {
@@ -1348,7 +1348,7 @@ class FaceAnalyzer {
       for (const statement of sourceFile.statements) {
         if (!ts.isModuleDeclaration(statement)
           || !ts.isStringLiteral(statement.name)
-          || statement.name.text !== '@centurionarx/cxh-typert-protocol'
+          || statement.name.text !== '@arx-ai/arx-typert-protocol'
           || statement.body === undefined
           || !ts.isModuleBlock(statement.body)) continue
         for (const nested of statement.body.statements) {
@@ -1810,11 +1810,11 @@ class FaceAnalyzer {
     const declaration = preferredDeclaration(resolved)
     if (declaration === undefined) return false
     const registration = this.registrationForFile(declaration.getSourceFile().fileName)
-    if (registration?.name === '@centurionarx/cxh-typert-protocol') return true
+    if (registration?.name === '@arx-ai/arx-typert-protocol') return true
     for (let current: ts.Node | undefined = declaration; current !== undefined; current = optionalParent(current)) {
       if (ts.isModuleDeclaration(current)
         && ts.isStringLiteral(current.name)
-        && current.name.text === '@centurionarx/cxh-typert-protocol') return true
+        && current.name.text === '@arx-ai/arx-typert-protocol') return true
     }
     return false
   }
@@ -2608,7 +2608,7 @@ function sourceFileHasSurface(sourceFile: ts.SourceFile): boolean {
     }
     if (!ts.isModuleDeclaration(statement)
       || !ts.isStringLiteral(statement.name)
-      || statement.name.text !== '@centurionarx/cordis'
+      || statement.name.text !== '@arx-ai/cordis'
       || statement.body === undefined
       || !ts.isModuleBlock(statement.body)) continue
     if (statement.body.statements.some(member => ts.isInterfaceDeclaration(member)
@@ -2627,9 +2627,9 @@ function hasPackageSurface(model: PackageModel): boolean {
 }
 
 function isDualFacePackage(manifest: Record<string, unknown>): boolean {
-  const cxh = manifest.cxh
-  const client = cxh !== null && typeof cxh === 'object'
-    ? (cxh as Record<string, unknown>).client
+  const arx = manifest.arx
+  const client = arx !== null && typeof arx === 'object'
+    ? (arx as Record<string, unknown>).client
     : undefined
   return client !== null
     && typeof client === 'object'
@@ -2887,7 +2887,7 @@ function stringLiteralValue(node: ts.Node | undefined): string | undefined {
 }
 
 function isRemoteSegment(value: string): boolean {
-  // Generation bootstraps workspace artifacts before cxh-typert-protocol is built,
+  // Generation bootstraps workspace artifacts before arx-typert-protocol is built,
   // so this extraction-only copy must mirror isTypertRemoteSegment().
   return value !== '.' && value !== '..' && /^[A-Za-z0-9_$.-]+$/.test(value)
 }

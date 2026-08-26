@@ -1,4 +1,4 @@
-# @centurionarx/cxh-user-approval
+# @arx-ai/arx-user-approval
 
 English | [中文](README.zh.md)
 

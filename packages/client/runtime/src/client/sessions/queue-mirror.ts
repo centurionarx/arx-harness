@@ -1,6 +1,6 @@
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { MuxFrame } from '@centurionarx/cxh-api-remotes/client'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { MuxFrame } from '@arx-ai/arx-api-remotes/client'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 import type { QueuedMessage } from './conversation.ts'
 
 const QUEUE_PREVIEW_CHARS = 200

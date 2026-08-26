@@ -5,10 +5,10 @@ import react from '@vitejs/plugin-react'
 import { clientBuildEnvironmentDefines } from '../../scripts/client-build-environment.ts'
 
 const src = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url))
-const STANDALONE_ERROR = 'apps/web is not a standalone application: bare Vite cannot inject window.__CXH_BOOT__. '
-  + 'From a repository checkout, run `pnpm cxh web`; an installed package uses `cxh web`. '
-  + 'For client-plugin HMR, run `pnpm cxh web` together with `pnpm run dev:web`.'
-const DEFAULT_CLIENT_TITLE = 'CXH Local Build'
+const STANDALONE_ERROR = 'apps/web is not a standalone application: bare Vite cannot inject window.__ARX_BOOT__. '
+  + 'From a repository checkout, run `pnpm arx web`; an installed package uses `arx web`. '
+  + 'For client-plugin HMR, run `pnpm arx web` together with `pnpm run dev:web`.'
+const DEFAULT_CLIENT_TITLE = 'ARX Local Build'
 
 /** Escape build-time text before placing it in the HTML title element. */
 function escapeHtmlText(value: string): string {
@@ -17,11 +17,11 @@ function escapeHtmlText(value: string): string {
 
 /** Project the public build title into the initial HTML document. */
 function clientDocumentTitle(): Plugin {
-  const title = escapeHtmlText(process.env.CXH_CLIENT_TITLE ?? DEFAULT_CLIENT_TITLE)
+  const title = escapeHtmlText(process.env.ARX_CLIENT_TITLE ?? DEFAULT_CLIENT_TITLE)
   return {
-    name: 'cxh-client-document-title',
+    name: 'arx-client-document-title',
     transformIndexHtml(html) {
-      return html.replace('<title>CXH Local Build</title>', `<title>${title}</title>`)
+      return html.replace('<title>ARX Local Build</title>', `<title>${title}</title>`)
     },
   }
 }
@@ -29,7 +29,7 @@ function clientDocumentTitle(): Plugin {
 /** Fail before a Vite dev or preview server can expose the boot-manifest-free shell. */
 function rejectStandaloneServe(): Plugin {
   return {
-    name: 'cxh-reject-standalone-web-serve',
+    name: 'arx-reject-standalone-web-serve',
     config(_config, env) {
       if (env.command === 'serve') throw new Error(STANDALONE_ERROR)
     },

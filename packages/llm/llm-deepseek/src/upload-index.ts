@@ -1,12 +1,12 @@
-/** Durable DeepSeek attachment-to-file-id index. @module cxh-llm-deepseek/upload-index */
+/** Durable DeepSeek attachment-to-file-id index. @module arx-llm-deepseek/upload-index */
 
 import { createHash } from 'node:crypto'
 import { readFile, mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { withFileLock, writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { resolveCxhHome } from '@centurionarx/cxh-home-paths'
-import { ImageVariantId } from '@centurionarx/cxh-attachment'
-import type { AttachmentId, ImageVariantId as ImageVariantIdType } from '@centurionarx/cxh-attachment'
+import { withFileLock, writeFileAtomic } from '@arx-ai/arx-atomic-write'
+import { resolveArxHome } from '@arx-ai/arx-home-paths'
+import { ImageVariantId } from '@arx-ai/arx-attachment'
+import type { AttachmentId, ImageVariantId as ImageVariantIdType } from '@arx-ai/arx-attachment'
 import { DeepSeekFileId, DeepSeekFileScope } from './file-id.ts'
 import type { DeepSeekFileId as DeepSeekFileIdType, DeepSeekFileScope as DeepSeekFileScopeType } from './file-id.ts'
 
@@ -108,15 +108,15 @@ function reusable(record: DeepSeekUploadRecord, now: number, refreshMarginMs: nu
   return record.expiresAt - now > refreshMarginMs
 }
 
-/** Atomic local index shared by every DeepSeek session in this CXH home. */
+/** Atomic local index shared by every DeepSeek session in this ARX home. */
 export class DeepSeekUploadIndex {
   /** Absolute owner-private JSON index path. */
   readonly path: string
 
   /**
-   * @param path - explicit test path; omission uses `CXH_HOME/llm-deepseek/files-v3.json`.
+   * @param path - explicit test path; omission uses `ARX_HOME/llm-deepseek/files-v3.json`.
    */
-  constructor(path = join(resolveCxhHome(), 'llm-deepseek', 'files-v3.json')) {
+  constructor(path = join(resolveArxHome(), 'llm-deepseek', 'files-v3.json')) {
     this.path = path
   }
 

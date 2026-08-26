@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { CommandDefinition, CommandInvocation } from '@centurionarx/cxh-commands'
+import { Context } from '@arx-ai/cordis'
+import type { CommandDefinition, CommandInvocation } from '@arx-ai/arx-commands'
 import * as SessionLogDownload from '../src/index.ts'
 
 describe('/export Web download command', () => {

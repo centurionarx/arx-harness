@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import type { Agent } from '@centurionarx/cxh-agent'
-import CommandRuntime from '@centurionarx/cxh-commands'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import type { Agent } from '@arx-ai/arx-agent'
+import CommandRuntime from '@arx-ai/arx-commands'
 import {
   CompactionId,
   CompactionEngine,
@@ -15,9 +15,9 @@ import {
   type CompactionResult,
   type CompactionTrigger,
   type ManualCompactAgentContext,
-} from '@centurionarx/cxh-compaction'
-import * as commandCompact from '@centurionarx/cxh-command-compact'
-import { Session, SessionId } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-compaction'
+import * as commandCompact from '@arx-ai/arx-command-compact'
+import { Session, SessionId } from '@arx-ai/arx-session'
 
 const COMPACTION_ID = CompactionId('loader-command-compact-test')
 
@@ -81,12 +81,12 @@ afterEach(async () => {
 
 describe('command-compact real Loader composition', () => {
   it('discovers and executes /compact through the assembled command plane', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-command-compact-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-command-compact-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-commands'",
+      "- name: '@arx-ai/arx-commands'",
       "- name: '@test/compact-backend'",
-      "- name: '@centurionarx/cxh-command-compact'",
+      "- name: '@arx-ai/arx-command-compact'",
       '',
     ].join('\n'))
 
@@ -95,9 +95,9 @@ describe('command-compact real Loader composition', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@centurionarx/cxh-commands', CommandRuntime],
+      ['@arx-ai/arx-commands', CommandRuntime],
       ['@test/compact-backend', LoaderCompactionEngine],
-      ['@centurionarx/cxh-command-compact', commandCompact],
+      ['@arx-ai/arx-command-compact', commandCompact],
     ])
     context.loader.internal = {
       version: 'v2',

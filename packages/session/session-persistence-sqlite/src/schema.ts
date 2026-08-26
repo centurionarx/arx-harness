@@ -1,6 +1,6 @@
 /**
  * SQLite schema ownership and durable-row validation.
- * @module @centurionarx/cxh-session-persistence-sqlite/schema
+ * @module @arx-ai/arx-session-persistence-sqlite/schema
  */
 
 import { randomUUID } from 'node:crypto'
@@ -11,12 +11,12 @@ import { setTimeout as delay } from 'node:timers/promises'
 import {
   SessionId,
   type SessionHeader,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import { sql } from './sql.ts'
 
 /** Current physical-record schema with packed and compressed event rows. */
 export const SCHEMA_VERSION = 17
-/** Application id reserved for CENTURIONarx Harness SQLite session databases. */
+/** Application id reserved for arx Harness SQLite session databases. */
 export const SESSION_PERSISTENCE_SQLITE_APPLICATION_ID = 0x44534850
 
 /** A materialized session's metadata and monotonic revision. */

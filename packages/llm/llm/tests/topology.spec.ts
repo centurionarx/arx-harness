@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { LlmAdapter, LlmError } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, LlmConfigurableProvider, StreamChunk } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { LlmAdapter, LlmError } from '@arx-ai/arx-llm'
+import type { GenerateOptions, LlmConfigurableProvider, StreamChunk } from '@arx-ai/arx-llm'
 
 class NoopAdapter extends LlmAdapter {
 

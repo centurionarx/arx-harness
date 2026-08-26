@@ -1,10 +1,10 @@
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { describe, expect, it } from 'vitest'
-import { Context, Service, symbols } from '@centurionarx/cordis'
+import { Context, Service, symbols } from '@arx-ai/cordis'
 import { z } from 'zod'
-import { apply as applyConnection, inject as connectionInject } from '@centurionarx/cxh-client-connection'
-import type { WebServer, WebRoute } from '@centurionarx/cxh-host-webserver'
+import { apply as applyConnection, inject as connectionInject } from '@arx-ai/arx-client-connection'
+import type { WebServer, WebRoute } from '@arx-ai/arx-host-webserver'
 import {
   bindTypertRemote,
   Remote,
@@ -14,9 +14,9 @@ import {
   type TypertContext,
   type TypertLookup,
   type TypertLookupProvider,
-} from '@centurionarx/cxh-typert-protocol'
-import TypertRegistry, { type TypertContribution } from '@centurionarx/cxh-typert-registry'
-import TypertGatewayService, { TypertGatewayError } from '@centurionarx/cxh-api-gateway'
+} from '@arx-ai/arx-typert-protocol'
+import TypertRegistry, { type TypertContribution } from '@arx-ai/arx-typert-registry'
+import TypertGatewayService, { TypertGatewayError } from '@arx-ai/arx-api-gateway'
 
 interface FixtureAgent {
   readonly id: string
@@ -26,7 +26,7 @@ interface MarkedContext extends Context {
   readonly fixtureScope?: string
 }
 
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   interface TypertLookupMap {
     gatewayFixture: TypertLookup<FixtureAgent, string>
     gatewayFixtureAlias: TypertLookup<FixtureAgent, string>

@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { apply as nodeApply } from '@centurionarx/cxh-client-locale'
-import { apply as clientApply, COMMON_NS, LocaleRuntime, inject } from '@centurionarx/cxh-client-locale/client'
-import * as LocaleInvariant from '@centurionarx/cxh-client-locale/invariant'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import { stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { apply as nodeApply } from '@arx-ai/arx-client-locale'
+import { apply as clientApply, COMMON_NS, LocaleRuntime, inject } from '@arx-ai/arx-client-locale/client'
+import * as LocaleInvariant from '@arx-ai/arx-client-locale/invariant'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 
 describe('invariant companion', () => {
   it('registers under the package name with an empty installer', async () => {

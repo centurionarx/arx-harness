@@ -1,8 +1,8 @@
-# @centurionarx/cxh-session-log-export
+# @arx-ai/arx-session-log-export
 
 [English](README.md) | 中文
 
-Web Session 日志下载控制，使用 `cxh-host-apiproxy` 拥有的 Host 流式 ZIP 端点。Host 半包注册 `/export`；浏览器半包在 Session Header 中提供 111×32 的 `Session log` 操作，以及一个供该按钮与斜杠命令共用的下载控制器和弹窗。ZIP 生成、原始 JSONL/zstd 读取、子 Session、附件、背压和 HTTP 错误语义仍由 [ApiProxy 下载实现](../../host/apiproxy/README.zh.md)负责。
+Web Session 日志下载控制，使用 `arx-host-apiproxy` 拥有的 Host 流式 ZIP 端点。Host 半包注册 `/export`；浏览器半包在 Session Header 中提供 111×32 的 `Session log` 操作，以及一个供该按钮与斜杠命令共用的下载控制器和弹窗。ZIP 生成、原始 JSONL/zstd 读取、子 Session、附件、背压和 HTTP 错误语义仍由 [ApiProxy 下载实现](../../host/apiproxy/README.zh.md)负责。
 
 ## 命令约定
 
@@ -21,10 +21,10 @@ Host 下载端点会在 `readRaw` 前 flush 活动的根 Session，因此斜杠�
 
 ```yaml
 - id: session-log-download
-  name: '@centurionarx/cxh-session-log-export'
+  name: '@arx-ai/arx-session-log-export'
 ```
 
-Web bundle 将本包与 `cxh-host-apiproxy`、`cxh-commands`、`cxh-client-ui-commands` 和 `cxh-client-ui-conversation` 一起挂载。本包把按钮和弹窗贡献到最右侧的 `conversation.session.header.utilities` 列表，与标题旁 `conversation.session.header.actions` 中的模式、Subagent 和 Task 配置项相互独立；Trajectory 不包含导出入口。
+Web bundle 将本包与 `arx-host-apiproxy`、`arx-commands`、`arx-client-ui-commands` 和 `arx-client-ui-conversation` 一起挂载。本包把按钮和弹窗贡献到最右侧的 `conversation.session.header.utilities` 列表，与标题旁 `conversation.session.header.actions` 中的模式、Subagent 和 Task 配置项相互独立；Trajectory 不包含导出入口。
 
 ## 模型体验
 

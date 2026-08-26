@@ -34,7 +34,7 @@ const DEPENDENCY_SECTIONS = [
   'peerDependencies',
 ] as const
 const RELEASE_MANIFEST_NAME = 'manifest.json'
-const RELEASE_ENTRY_PACKAGE = '@centurionarx/cxh'
+const RELEASE_ENTRY_PACKAGE = '@arx-ai/arx'
 const LATEST_DIST_TAG = 'latest'
 const POSIX_WEB_PROBE = String.raw`
 import errno, os, pty, select, signal, sys, time
@@ -62,7 +62,7 @@ while time.monotonic() < deadline:
             output.extend(chunk)
 
     snapshot = bytes(output)
-    if not termination_sent and b"cxh web: http://127.0.0.1:" in snapshot:
+    if not termination_sent and b"arx web: http://127.0.0.1:" in snapshot:
         ready_seen = True
         os.kill(pid, signal.SIGTERM)
         termination_sent = True
@@ -77,11 +77,11 @@ if status is None:
     _, status = os.waitpid(pid, 0)
 sys.stdout.buffer.write(output)
 if not ready_seen:
-    sys.stderr.write("installed cxh web did not reach its ready URL\n")
+    sys.stderr.write("installed arx web did not reach its ready URL\n")
     sys.exit(124)
 actual_exit = os.waitstatus_to_exitcode(status)
 if actual_exit != 0:
-    sys.stderr.write(f"installed cxh web exited {actual_exit}, expected 0\n")
+    sys.stderr.write(f"installed arx web exited {actual_exit}, expected 0\n")
     sys.exit(125)
 `
 
@@ -209,7 +209,7 @@ class DetachedWorktree {
   ) {}
 
   static create(repositoryRoot: string, commit: string, runner: CommandRunner): DetachedWorktree {
-    const temporaryRoot = mkdtempSync(join(tmpdir(), 'cxh-npm-baseline-'))
+    const temporaryRoot = mkdtempSync(join(tmpdir(), 'arx-npm-baseline-'))
     const path = join(temporaryRoot, 'worktree')
     try {
       runner.run('git', ['worktree', 'add', '--detach', path, commit], repositoryRoot)
@@ -260,10 +260,10 @@ class WorkspacePackageSet {
       const isVendored = manifestPath.startsWith('vendor/')
       // Vendored packages are rescoped too (vendor/README.md), so publication
       // never carries an upstream name that would squat it on the registry.
-      if (!name.startsWith('@centurionarx/')) {
-        throw new Error(`${manifestPath} must name an @centurionarx package`)
+      if (!name.startsWith('@arx-ai/')) {
+        throw new Error(`${manifestPath} must name an @arx-ai package`)
       }
-      if (name === '@centurionarx/cxh-root') {
+      if (name === '@arx-ai/arx-root') {
         throw new Error(`${manifestPath} unexpectedly selected the workspace root`)
       }
       if (names.has(name)) throw new Error(`duplicate package name: ${name}`)
@@ -422,7 +422,7 @@ class ReleaseBundle {
   }
 }
 
-/** Installs one complete bundle outside the workspace and probes the shipped cxh entry. */
+/** Installs one complete bundle outside the workspace and probes the shipped arx entry. */
 class InstalledBundleSmoke {
   constructor(
     private readonly bundle: ReleaseBundle,
@@ -430,14 +430,14 @@ class InstalledBundleSmoke {
   ) {}
 
   run(): void {
-    const consumerRoot = mkdtempSync(join(tmpdir(), 'cxh-npm-consumer-'))
+    const consumerRoot = mkdtempSync(join(tmpdir(), 'arx-npm-consumer-'))
     try {
       const dependencies = Object.fromEntries(this.bundle.manifest.packages.map(pkg => [
         pkg.name,
         pathToFileURL(this.bundle.tarballPath(pkg)).href,
       ]))
       writeFileSync(resolve(consumerRoot, 'package.json'), `${JSON.stringify({
-        name: 'cxh-npm-baseline-consumer',
+        name: 'arx-npm-baseline-consumer',
         version: '0.0.0',
         private: true,
         dependencies,
@@ -454,8 +454,8 @@ class InstalledBundleSmoke {
         `--registry=${this.bundle.manifest.registry}`,
       ], consumerRoot, npmClientEnvironment())
 
-      const bin = resolve(consumerRoot, 'node_modules/@centurionarx/cxh/lib/bin.js')
-      assertPathWithin(consumerRoot, bin, 'installed cxh bin')
+      const bin = resolve(consumerRoot, 'node_modules/@arx-ai/arx/lib/bin.js')
+      assertPathWithin(consumerRoot, bin, 'installed arx bin')
       const environment = installedArtifactEnvironment(consumerRoot)
       const version = this.runner.capture(
         process.execPath,
@@ -465,12 +465,12 @@ class InstalledBundleSmoke {
       )
       if (version !== this.bundle.manifest.version) {
         throw new Error(
-          `installed cxh --version returned ${JSON.stringify(version)}; `
+          `installed arx --version returned ${JSON.stringify(version)}; `
           + `expected ${this.bundle.manifest.version}`,
         )
       }
       this.probeWeb(bin, consumerRoot, environment)
-      console.log('publish-npm-baseline: installed cxh entry and Web startup probes passed')
+      console.log('publish-npm-baseline: installed arx entry and Web startup probes passed')
     } finally {
       rmSync(consumerRoot, { recursive: true, force: true })
     }
@@ -478,7 +478,7 @@ class InstalledBundleSmoke {
 
   private probeWeb(bin: string, consumerRoot: string, environment: NodeJS.ProcessEnv): void {
     if (process.platform === 'win32') {
-      throw new Error('installed cxh Web probe requires a POSIX host with python3')
+      throw new Error('installed arx Web probe requires a POSIX host with python3')
     }
     const result = this.runner.result(
       'python3',
@@ -487,7 +487,7 @@ class InstalledBundleSmoke {
       environment,
     )
     if (result.status !== 0) {
-      throw commandFailure('python3', ['installed-cxh-web-probe'], result)
+      throw commandFailure('python3', ['installed-arx-web-probe'], result)
     }
   }
 }
@@ -805,7 +805,7 @@ function parsePackedPackage(value: unknown, index: number): PackedPackage {
   if (origin !== 'harness' && origin !== 'vendor') {
     throw new Error(`invalid package origin in release manifest: ${JSON.stringify(origin)}`)
   }
-  if (origin === 'harness' && (!name.startsWith('@centurionarx/') || name === '@centurionarx/cxh-root')) {
+  if (origin === 'harness' && (!name.startsWith('@arx-ai/') || name === '@arx-ai/arx-root')) {
     throw new Error(`invalid package name in release manifest: ${name}`)
   }
   return {
@@ -912,9 +912,9 @@ function installedArtifactEnvironment(consumerRoot: string): NodeJS.ProcessEnv {
   const environment = npmClientEnvironment()
   delete environment.NODE_OPTIONS
   delete environment.NODE_PATH
-  environment.CXH_HOME = resolve(consumerRoot, '.cxh')
-  environment.CXH_AGENTS_HOME = resolve(consumerRoot, '.agents')
-  environment.CXH_TELEMETRY_DISABLED = '1'
+  environment.ARX_HOME = resolve(consumerRoot, '.arx')
+  environment.ARX_AGENTS_HOME = resolve(consumerRoot, '.agents')
+  environment.ARX_TELEMETRY_DISABLED = '1'
   environment.DEEPSEEK_API_KEY = 'keyless-installed-web-no-call'
   environment.LANG = 'en_US.UTF-8'
   environment.LC_ALL = 'en_US.UTF-8'

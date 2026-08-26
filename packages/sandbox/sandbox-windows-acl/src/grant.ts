@@ -8,7 +8,7 @@
  * Fail-closed: `add` throws on any grant failure and the caller disposes the
  * instance (revoking every path granted so far); `dispose` revokes every
  * standing grant and reports every cleanup failure.
- * @module @centurionarx/cxh-sandbox-windows-acl/grant
+ * @module @arx-ai/arx-sandbox-windows-acl/grant
  */
 
 import { grantWrite, revokeWrite } from './acl.ts'

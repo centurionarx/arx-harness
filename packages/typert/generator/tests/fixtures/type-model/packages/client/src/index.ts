@@ -1,4 +1,4 @@
-import { Service } from '@centurionarx/cordis'
+import { Service } from '@arx-ai/cordis'
 import type HostDefault from '@fixture/host'
 import type * as Host from '@fixture/host'
 import type { AgentPhase } from '@fixture/host'
@@ -30,7 +30,7 @@ export class ClientBridge extends Service {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     clientBridge: ClientBridge
   }

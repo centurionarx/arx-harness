@@ -5,20 +5,20 @@
  * and opener wiring, and the plugin registrations' fiber-teardown removal
  * (HMR safety) against the real SlotRegistry.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { act, cleanup, fireEvent, render, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ConversationEventRegistry, ConversationNodeAssembler, SlotRegistry,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   ConversationEventInput, ConversationLocationDataStore, ConversationMatch, ConversationNodeDefinition,
   ConversationTimelineSnapshot, ConversationTurnDataMap, ConversationViewDefinition,
   ConversationViewNode, ToolResultNode, TurnLocation,
-} from '@centurionarx/cxh-client-runtime/client'
-import { apply as applyLocale, inject as localeInject } from '@centurionarx/cxh-client-locale/client'
-import type { ChatFileMentions, TurnTailOwnerProps } from '@centurionarx/cxh-client-ui-conversation/client'
-import { makeTranslate, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+} from '@arx-ai/arx-client-runtime/client'
+import { apply as applyLocale, inject as localeInject } from '@arx-ai/arx-client-locale/client'
+import type { ChatFileMentions, TurnTailOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
+import { makeTranslate, stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import {
   fitProducedFiles, ProducedFiles, type ProducedFilesProps,
 } from '../src/client/ProducedFiles.tsx'
@@ -445,7 +445,7 @@ describe('package shells', () => {
       register: (pkg: string) => { registered.push(pkg); return () => {} },
     } as never)
     const dispose = await applyInvariant(ctx)
-    expect(registered).toEqual(['@centurionarx/cxh-client-ui-deliverables'])
+    expect(registered).toEqual(['@arx-ai/arx-client-ui-deliverables'])
     expect(dispose).toBeTypeOf('function')
   })
 })

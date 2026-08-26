@@ -1,4 +1,4 @@
-# `@centurionarx/cxh-file-reference-local`
+# `@arx-ai/arx-file-reference-local`
 
 [English](README.md) | 中文
 

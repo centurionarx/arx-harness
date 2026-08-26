@@ -5,14 +5,14 @@
  * contract (double install / not installed / non-root key), store instance
  * resolution and lifecycle on the ledger axis, and the entry-unload cascade.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
 import type { FC } from 'react'
-import type { SlotRendererHost } from '@centurionarx/cxh-client-ui-slots'
+import type { SlotRendererHost } from '@arx-ai/arx-client-ui-slots'
 import { SlotRegistry } from '../src/client/slots.ts'
 
 // Test-only slot keys (merged so the typed entries/spec faces accept them).
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     't.host': { kind: 'single'; scope: 'root' }
     't.panel': { kind: 'single'; scope: 'session' }

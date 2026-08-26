@@ -1,10 +1,10 @@
-/** Package-owned subagent registry and lifecycle invariants. @module @centurionarx/cxh-subagent/invariant */
+/** Package-owned subagent registry and lifecycle invariants. @module @arx-ai/arx-subagent/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { SubagentProvider, SubagentRunEndInfo, SubagentRunInfo } from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-subagent'
+const PACKAGE_NAME = '@arx-ai/arx-subagent'
 
 /** Cordis companion plugin name. */
 export const name = 'subagent-invariant'

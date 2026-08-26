@@ -7,10 +7,10 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
-import { resolveRgPath, runRipgrep } from '@centurionarx/cxh-tool-fs-search'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import type { ToolExecution } from '@arx-ai/arx-tools'
+import { resolveRgPath, runRipgrep } from '@arx-ai/arx-tool-fs-search'
 
 // Any access to the mocked module's surface throws — the shape a missing
 // platform package produces at module evaluation.

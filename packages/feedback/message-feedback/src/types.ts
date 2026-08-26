@@ -2,12 +2,12 @@
  * Public request, value, and failure vocabulary for per-message feedback.
  * This module contains types only so generated Remote clients can consume it
  * without importing Host runtime code.
- * @module @centurionarx/cxh-message-feedback/types
+ * @module @arx-ai/arx-message-feedback/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /** Opaque compare-and-set token for one exact feedback item revision. */
 export type MessageFeedbackVersion = Branded<'MessageFeedbackVersion'>
