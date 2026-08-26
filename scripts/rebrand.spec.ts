@@ -5,47 +5,45 @@ import { rebrandText } from './rebrand.ts'
 /**
  * The rebrand is a classifier, not a substitution: most `deepseek` spans name
  * the DeepSeek model, provider, credential, or third-party repository and must
- * survive untouched. Each case pins one span the rewrite owns or one it must
- * not reach.
+ * survive untouched, while every span carrying this product's own identity
+ * moves. Each case pins one span the rewrite owns or one it must not reach.
  */
 const CHANGED: readonly (readonly [string, string])[] = [
   // npm scope and package prefix
-  ['@deepseek-ai/dsh-session', '@centurionarx/cxh-session'],
-  ['@deepseek-ai/cordis', '@centurionarx/cordis'],
-  ['@deepseek-ai/schemastery', '@centurionarx/schemastery'],
-  ['@deepseek-ai/dsh-llm-deepseek', '@centurionarx/cxh-llm-deepseek'],
+  ['@centurionarx/cxh-session', '@arx-ai/arx-session'],
+  ['@centurionarx/cordis', '@arx-ai/cordis'],
+  ['@centurionarx/schemastery', '@arx-ai/schemastery'],
+  ['@centurionarx/cxh-llm-deepseek', '@arx-ai/arx-llm-deepseek'],
   // product identity in prose, paths, and identifiers
-  ['DeepSeek Harness (`dsh`) is an open-source', 'CENTURIONarx Harness (`cxh`) is an open-source'],
-  ['a DeepSeek-Harness PR', 'a CENTURIONarx-Harness PR'],
-  ['DeepSeekHarnessConfig', 'CENTURIONarxHarnessConfig'],
-  ['deepseek harness architecture', 'centurionarx harness architecture'],
-  ['deepseek_harness_runtime_bin', 'centurionarx_harness_runtime_bin'],
+  ['CENTURIONarx Harness (`cxh`) is an open-source', 'arx Harness (`arx`) is an open-source'],
+  ['a CENTURIONarx-Harness PR', 'a arx-Harness PR'],
+  ['CENTURIONarxHarnessConfig', 'ArxHarnessConfig'],
+  ['centurionarx harness architecture', 'arx harness architecture'],
+  ['centurionarx_harness_runtime_bin', 'arx_harness_runtime_bin'],
+  // the owner standing alone, which must not fragment the compounds above
+  ['the centurionarx organization', 'the arx-ai organization'],
+  ['CENTURIONarx ships nothing', 'arx ships nothing'],
   // the product's own repository
   [
-    'https://github.com/deepseek-ai/deepseek-harness.git',
     'https://github.com/centurionarx/centurionarx-harness.git',
-  ],
-  // the same repository as the fork org spelled it, in the native packages
-  [
-    'git+https://github.com/deepseek-harness/deepseek-harness.git',
-    'git+https://github.com/centurionarx/centurionarx-harness.git',
+    'https://github.com/arx-ai/arx-harness.git',
   ],
   // environment and identifier prefixes a word boundary would hide
-  ['window.__DSH_BOOT__', 'window.__CXH_BOOT__'],
-  ['_dsh_base_agent_default_model', '_cxh_base_agent_default_model'],
-  ['_dshWebServer', '_cxhWebServer'],
-  ['DshWindow', 'CxhWindow'],
-  ['isInternalDsh(name)', 'isInternalCxh(name)'],
-  ['resolveDshHome', 'resolveCxhHome'],
-  ['extensions.dshUnknown', 'extensions.cxhUnknown'],
-  ['DSH_HOME', 'CXH_HOME'],
+  ['window.__CXH_BOOT__', 'window.__ARX_BOOT__'],
+  ['_cxh_base_agent_default_model', '_arx_base_agent_default_model'],
+  ['_cxhWebServer', '_arxWebServer'],
+  ['CxhWindow', 'ArxWindow'],
+  ['isInternalCxh(name)', 'isInternalArx(name)'],
+  ['resolveCxhHome', 'resolveArxHome'],
+  ['extensions.cxhUnknown', 'extensions.arxUnknown'],
+  ['CXH_HOME', 'ARX_HOME'],
   // a prefix glued to a preceding word or escape: only the separator identifies it
-  ['Skilldsh-manage-issues', 'Skillcxh-manage-issues'],
-  ['CXH_CRED_TEST: a\\nDSH_CRED_OTHER: [b]', 'CXH_CRED_TEST: a\\nCXH_CRED_OTHER: [b]'],
-  ['[type: shell]\\ndsh> ', '[type: shell]\\ncxh> '],
-  ['```sh\\ndsh plugin --profile <name> add', '```sh\\ncxh plugin --profile <name> add'],
+  ['Skillcxh-manage-issues', 'Skillarx-manage-issues'],
+  ['CXH_CRED_TEST: a\\nCXH_CRED_OTHER: [b]', 'ARX_CRED_TEST: a\\nARX_CRED_OTHER: [b]'],
+  ['[type: shell]\\ncxh> ', '[type: shell]\\narx> '],
+  ['```sh\\ncxh plugin --profile <name> add', '```sh\\narx plugin --profile <name> add'],
   // generated catalog anchors fuse scope and prefix; hand-written docs link to them
-  ['<a id="deepseek-aidsh-tool-bash"></a>', '<a id="centurionarxcxh-tool-bash"></a>'],
+  ['<a id="centurionarxcxh-tool-bash"></a>', '<a id="arx-aiarx-tool-bash"></a>'],
 ]
 
 const PRESERVED: readonly string[] = [
@@ -60,24 +58,22 @@ const PRESERVED: readonly string[] = [
   'thinkingFormat: deepseek',
   'deepSeekReadiness',
   'The DeepSeek adapter. Shipped default',
-  'packages/llm/llm-deepseek/src/adapter.ts',
   // the MIT notice names the original copyright holder
   'Copyright (c) 2026 DeepSeek',
   // third-party repositories: the vendor manifest pins their commits and the
   // notes cite their pull requests, so a rename points both at nothing
+  'https://github.com/deepseek-ai/deepseek-harness',
   'https://github.com/deepseek-harness/cordis',
   'https://github.com/deepseek-harness/cosmokit',
   'https://github.com/deepseek-harness/schemastery',
   'https://github.com/deepseek-harness/deepseek-harness/pull/436',
   'https://github.com/deepseek-harness/deepseek-harness/issues/2488',
-  "repository: 'deepseekharness/dsh-test'",
-  // archived notes are frozen, so links into them keep the old file names
+  // archived notes are frozen, so links into them keep the file names they had
   '../../archived/architecture/2026-07-28-dsh-native-typescript-source-launch.md',
   '[note](../../archived/feature/2026-08-08-dsh-run-headless-command.zh.md)',
-  // an unrelated word that merely contains the prefix
+  // words that merely contain a prefix-shaped run
   'handshake',
   'spreadsheet',
-  'headShare',
   'CardShell',
 ]
 
@@ -90,10 +86,12 @@ describe('rebrandText', () => {
     expect(rebrandText(input)).toBe(input)
   })
 
-  it('rewrites the product repository without touching the third-party one', () => {
-    const mixed = 'see https://github.com/deepseek-ai/deepseek-harness and https://github.com/deepseek-harness/cordis'
+  it('rewrites the product repository without touching either third-party one', () => {
+    const mixed = 'see https://github.com/centurionarx/centurionarx-harness,'
+      + ' https://github.com/deepseek-ai/deepseek-harness and https://github.com/deepseek-harness/cordis'
     expect(rebrandText(mixed)).toBe(
-      'see https://github.com/centurionarx/centurionarx-harness and https://github.com/deepseek-harness/cordis',
+      'see https://github.com/arx-ai/arx-harness,'
+      + ' https://github.com/deepseek-ai/deepseek-harness and https://github.com/deepseek-harness/cordis',
     )
   })
 

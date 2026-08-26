@@ -32,10 +32,11 @@ export interface Brand {
 }
 
 /**
- * The target identity. `prefix` is the one naming choice still open: changing
- * it here and re-running is the whole cost of picking `carx` or `cah` instead.
+ * The identity the tree currently carries. Rules derive their source patterns
+ * from it, so a later rename costs two constants rather than a rewritten rule
+ * table.
  */
-const BRAND: Brand = {
+const SOURCE: Brand = {
   scope: 'centurionarx',
   prefix: 'cxh',
   slug: 'centurionarx-harness',
@@ -44,11 +45,16 @@ const BRAND: Brand = {
   pascal: 'CENTURIONarxHarness',
 }
 
-/**
- * Spans naming the DeepSeek model, provider, credential, or endpoint. Masked
- * before the rules run, so rule ordering can never corrupt them. Every entry
- * is global and must not capture surrounding product text.
- */
+/** The identity the tree is moving to. */
+const BRAND: Brand = {
+  scope: 'arx-ai',
+  prefix: 'arx',
+  slug: 'arx-harness',
+  prose: 'arx Harness',
+  owner: 'arx-ai',
+  pascal: 'ArxHarness',
+}
+
 const PROTECTED: readonly RegExp[] = [
   /[A-Za-z0-9_./-]*archived\/[a-z-]+\/\d{4}-\d{2}-\d{2}-[A-Za-z0-9_-]+\.(?:zh\.)?md/g,
   /github\.com\/deepseek-harness\/(?!deepseek-harness\.git)[A-Za-z0-9_.-]+/g,
@@ -66,67 +72,92 @@ const PROTECTED: readonly RegExp[] = [
 /** Repository paths excluded from rewriting entirely. */
 const EXCLUDED: readonly RegExp[] = [/^\.agents\/notes\/archived\//]
 
+/** Escape a brand literal for use inside a regular expression. */
+function quote(literal: string): string {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** The capitalized stem of a prose product name (`CENTURIONarx Harness` -> `CENTURIONarx`). */
+function stem(prose: string): string {
+  const [first] = prose.split(' ')
+  if (first === undefined || first.length === 0) throw new Error(`brand prose ${JSON.stringify(prose)} has no stem`)
+  return first
+}
+
 /**
  * Ordered rewrite rules applied to masked text.
- * @param brand - target identity.
+ *
+ * Order is load-bearing in one direction: every compound carrying the owner
+ * (`<owner>-harness`, `<owner>Harness`) must be rewritten before the bare
+ * owner rule, which would otherwise fragment them.
+ * @param source - identity the tree currently carries.
+ * @param target - identity to move to.
  * @returns pattern/replacement pairs in application order.
  */
-function rules(brand: Brand): readonly (readonly [RegExp, string])[] {
-  const upper = brand.prefix.toUpperCase()
-  const pascalPrefix = brand.prefix.slice(0, 1).toUpperCase() + brand.prefix.slice(1)
-  // No rule anchors its left edge: `\b` fails wherever an escape sequence
-  // puts a word character against the match (`\\nDeepSeek Harness` in escaped
-  // JSON, `\\0dsh-css`), and every product literal here is unambiguous.
-  // A separator after the prefix is itself the evidence: no English word
-  // spells `dsh-`, `dsh_`, or `DSH_`, so those rules need no left guard at
-  // all - and without one they still reach a prefix glued to a preceding
-  // word (`Skilldsh-manage-issues` in a rendered test expectation) or to an
-  // escape (`\\nDSH_CRED_OTHER` inside a string literal). The guard survives on
-  // exactly one rule: the case where a lowercase letter follows, which is
-  // where `handshake` and `spreadsheet` live. No word ends a `dsh` run at a
-  // word boundary or continues it in uppercase, so those rules need no guard
-  // either - and without one they reach `\\ndsh> ` and `\\ndsh plugin`, where
-  // an escape's letter sits against the prefix inside a recorded transcript.
-  // `\b` is likewise NOT used for the prefix rules: `_` and digits are
-  // word characters, so a boundary hides `__DSH_BOOT__`, `_dshWebServer`, and
-  // the `\0dsh-css:` virtual-module prefixes. Excluding only letters reaches
-  // them, and the tree holds no digit- or underscore-prefixed `dsh` that names
-  // anything but this product.
+function rules(source: Brand, target: Brand): readonly (readonly [RegExp, string])[] {
+  const upper = target.prefix.toUpperCase()
+  const pascalPrefix = target.prefix.slice(0, 1).toUpperCase() + target.prefix.slice(1)
+  const from = {
+    prefix: quote(source.prefix),
+    upper: quote(source.prefix.toUpperCase()),
+    pascalPrefix: quote(source.prefix.slice(0, 1).toUpperCase() + source.prefix.slice(1)),
+    owner: quote(source.owner),
+    scope: quote(source.scope),
+    slug: quote(source.slug),
+    pascal: quote(source.pascal),
+    prose: quote(source.prose),
+    stem: quote(stem(source.prose)),
+  }
+  const underscored = (slug: string): string => slug.replace(/-/g, '_')
+  const spaced = (slug: string): string => slug.replace('-', ' ')
+
+  // No rule anchors its left edge. `\b` fails wherever an escape sequence puts
+  // a word character against the match (`\\nCENTURIONarx Harness` in escaped
+  // JSON, `\\0cxh-css`), and every product literal here is unambiguous: no
+  // English word contains the prefix, and none spells the owner. `\b` is also
+  // wrong on the right of a prefix rule, because `_` and digits are word
+  // characters and a boundary would hide `__CXH_BOOT__`, `_cxhWebServer`, and
+  // the `\0cxh-css:` virtual-module prefixes.
+  //
+  // The lowercase-follows rule keeps its left guard on principle rather than
+  // on evidence: it is the shape that hid `handshake` and `spreadsheet` from
+  // the previous source prefix, and dropping it here would leave the tree
+  // defenceless if a future prefix collides with a real word.
   return [
-    // The product's own clone URL, spelled with the fork org that hosted it.
-    [/github\.com\/deepseek-harness\/deepseek-harness\.git/g, `github.com/${brand.owner}/${brand.slug}.git`],
-    // Generated catalog anchors slugify `@deepseek-ai/dsh-x` by dropping `@`
-    // and `/`, so the scope and prefix fuse. Hand-written docs cross-reference
+    // The product's own clone URL.
+    [new RegExp(`github\\.com/${from.owner}/${from.slug}\\.git`, 'g'), `github.com/${target.owner}/${target.slug}.git`],
+    // Generated catalog anchors slugify `@<scope>/<prefix>-x` by dropping `@`
+    // and `/`, so scope and prefix fuse. Hand-written docs cross-reference
     // those anchors, and a missed one becomes a dead link at `website:build`.
-    [/deepseek-aidsh-/g, `${brand.owner}${brand.prefix}-`],
-    [/@deepseek-ai\b/g, `@${brand.scope}`],
-    [/deepseek-ai\b/g, brand.owner],
-    [/DeepSeekHarness/g, brand.pascal],
-    [/deepseekharness/g, brand.pascal.toLowerCase()],
-    [/deepseek-harness/g, brand.slug],
+    [new RegExp(`${from.scope}${from.prefix}-`, 'g'), `${target.scope}${target.prefix}-`],
+    [new RegExp(`@${from.scope}\\b`, 'g'), `@${target.scope}`],
+    // Every owner compound precedes the bare owner rule below.
+    [new RegExp(from.pascal, 'g'), target.pascal],
+    [new RegExp(quote(source.pascal.toLowerCase()), 'g'), target.pascal.toLowerCase()],
+    [new RegExp(from.slug, 'g'), target.slug],
     // No trailing `\b`: the Python distributions extend the module name
-    // (`deepseek_harness_runtime`, `deepseek_harness_sdk`) and `_` is a word
-    // character, so a boundary would hide every one of them.
-    [/deepseek_harness/g, brand.slug.replace(/-/g, '_')],
-    [/DeepSeek Harness/g, brand.prose],
-    [/deepseek harness/g, brand.slug.replace('-', ' ')],
-    [/DeepSeek-Harness/g, brand.prose.replace(' ', '-')],
-    [/dsh-/g, `${brand.prefix}-`],
-    [/dsh(?=[A-Z])/g, brand.prefix],
-    [/dsh_/g, `${brand.prefix}_`],
-    // git lowercases config keys, so the `extensions.dshUnknown` namespace also
-    // appears as `extensions.dshunknown`; both must move together.
-    [/(?<![A-Za-z])dsh(?=[a-z])/g, brand.prefix],
-    [/dsh\b/g, brand.prefix],
-    [/Dsh(?=[A-Z])/g, pascalPrefix],
-    [/Dsh\b/g, pascalPrefix],
-    [/DSH_/g, `${upper}_`],
-    [/DSH\b/g, upper],
+    // (`<slug>_runtime`, `<slug>_sdk`) and `_` is a word character, so a
+    // boundary would hide every one of them.
+    [new RegExp(quote(underscored(source.slug)), 'g'), underscored(target.slug)],
+    [new RegExp(from.prose, 'g'), target.prose],
+    [new RegExp(quote(spaced(source.slug)), 'g'), spaced(target.slug)],
+    [new RegExp(quote(source.prose.replace(' ', '-')), 'g'), target.prose.replace(' ', '-')],
+    [new RegExp(`${from.stem}\\b`, 'g'), stem(target.prose)],
+    [new RegExp(`${from.owner}\\b`, 'g'), target.owner],
+    [new RegExp(`${from.prefix}-`, 'g'), `${target.prefix}-`],
+    [new RegExp(`${from.prefix}(?=[A-Z])`, 'g'), target.prefix],
+    [new RegExp(`${from.prefix}_`, 'g'), `${target.prefix}_`],
+    // git lowercases config keys, so an `extensions.<prefix>Unknown` namespace
+    // also appears fully lowercased; both must move together.
+    [new RegExp(`(?<![A-Za-z])${from.prefix}(?=[a-z])`, 'g'), target.prefix],
+    [new RegExp(`${from.prefix}\\b`, 'g'), target.prefix],
+    [new RegExp(`${from.pascalPrefix}(?=[A-Z])`, 'g'), pascalPrefix],
+    [new RegExp(`${from.pascalPrefix}\\b`, 'g'), pascalPrefix],
+    [new RegExp(`${from.upper}_`, 'g'), `${upper}_`],
+    [new RegExp(`${from.upper}\\b`, 'g'), upper],
   ]
 }
 
-// U+0001 delimits a mask. No text file in the tree contains it, and binary
-// files never reach the rewriter, so a mask cannot collide with real content.
 const MARK = '\u0001'
 const RESTORE = /\u0001(\d+)\u0001/g
 const UTF8 = new TextDecoder('utf-8', { fatal: true })
@@ -143,7 +174,7 @@ export function rebrandText(text: string, brand: Brand = BRAND): string {
   for (const pattern of PROTECTED) {
     masked = masked.replace(pattern, match => `${MARK}${held.push(match) - 1}${MARK}`)
   }
-  for (const [pattern, replacement] of rules(brand)) masked = masked.replace(pattern, replacement)
+  for (const [pattern, replacement] of rules(SOURCE, brand)) masked = masked.replace(pattern, replacement)
   return masked.replace(RESTORE, (_, index: string) => held[Number(index)] ?? '')
 }
 
