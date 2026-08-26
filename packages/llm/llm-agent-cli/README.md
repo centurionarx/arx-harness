@@ -91,6 +91,7 @@ None of its own; the response does not change the request prefix.
 
 ## Known Limitations and Deferred Work
 
+- **One vendor today** — the package is named for the shape, not the roster: it drives the Claude Agent SDK and nothing else, so a Claude subscription is the only login it serves. A second vendor is a second SDK with its own protocol and its own process projection; whether that arrives as another package or as a seam inside this one is undecided, and the name should not be read as a promise either way.
 - **Images cannot reach the vendor CLI** — a request carrying an image block fails with `UNSUPPORTED_CONTENT` rather than being sent without it.
 - **Affinity is in-memory** — the pairing is not written to the session log, so it does not survive a restart. A durable variant could carry it in the `finish` chunk's `ReplayEnvelope`.
 - **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`cxh-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).
