@@ -39,7 +39,7 @@ export interface AgentCliAdapterSpec {
 /** The vendor CLI's own tools, refused so only harness tools reach the model. */
 const VENDOR_TOOLS = [
   'Bash', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'Read', 'Task', 'TodoWrite', 'WebFetch', 'WebSearch', 'Write',
-  'AskUserQuestion', 'ExitPlanMode',
+  'AskUserQuestion', 'ExitPlanMode', 'Skill',
 ] as const
 
 /**
@@ -135,6 +135,12 @@ export class AgentCliAdapter extends LlmAdapter {
       model: options.model,
       ...options.system === undefined ? {} : { systemPrompt: options.system },
       ...resume === undefined ? {} : { resume },
+      // Omitting `skills` is not "skills off": the SDK documents that the
+      // CLI's own defaults still apply, so the host's skill directories would
+      // reach the model through a tool the harness never registered and never
+      // logs. Skills reach a harness model through `ctx.skills`, whose loading
+      // the session records.
+      skills: [],
       mcpServers: { [MCP_SERVER_NAME]: { type: 'sdk', name: MCP_SERVER_NAME, instance: createToolServer(tools) } },
       allowedTools: tools.map(tool => toolAlias(tool.name)),
       disallowedTools: [...VENDOR_TOOLS],

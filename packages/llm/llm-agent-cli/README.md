@@ -16,6 +16,7 @@ The vendor CLI is an agent with a tool loop of its own. Four settings reduce it 
 | `mcpServers` ← one in-process server | The only supported way for the model to see the harness tool schemas. |
 | `disallowedTools` ← the CLI's built-ins, `canUseTool` ← deny | A tool the model asks for cannot run inside the CLI, where the harness would see neither the call nor its result. |
 | `maxTurns: 1` | One assistant turn and stop — exactly `stream()`'s contract. |
+| `skills: []` | Omitting it is not "skills off": the SDK documents that the CLI's own defaults still apply, so the host's skill directories would reach the model through a tool the harness never registered. Skills reach a harness model through `ctx.skills` instead, where loading is a logged tool call. |
 
 `settingSources` stays unset, so the SDK reads the host's normal Claude settings and native account state. That inheritance *is* the authentication.
 

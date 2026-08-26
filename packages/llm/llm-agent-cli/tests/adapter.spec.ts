@@ -114,6 +114,10 @@ describe('stream', () => {
     expect(options['persistSession']).toBe(false)
     expect(options['allowedTools']).toEqual(['mcp__cxh__bash'])
     expect(options['disallowedTools']).toContain('Bash')
+    // Omitting `skills` would leave the CLI's own defaults in force, so the
+    // host's skill directories would reach the model unlogged.
+    expect(options['skills']).toEqual([])
+    expect(options['disallowedTools']).toContain('Skill')
     await expect((options['canUseTool'] as () => Promise<{ behavior: string }>)())
       .resolves.toMatchObject({ behavior: 'deny' })
   })
