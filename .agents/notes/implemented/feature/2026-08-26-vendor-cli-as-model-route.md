@@ -32,17 +32,17 @@ The CLI presents an in-process server's tools as `mcp__<server>__<tool>`. The mo
 
 The vendor's own turn cap cannot bound one model call: reaching it makes the SDK throw an error result, so `maxTurns: 1` turned every ordinary tool-calling turn into a failure. The finish reason is derived from the emitted content — any `tool_use` block means `tool-calls` — and translation ends at the assistant turn rather than waiting for a result the vendor reports about a run this call already finished with.
 
-## One live conversation per session
+## One vendor run per step
 
-`LlmAdapter` is stateless and receives the whole history each call; a vendor run is not, and holds its own. Replaying the transcript every step would flatten roles, lose the vendor's prefix cache, and spend subscription quota re-reading what the run already knows.
+`LlmAdapter` is stateless and receives the whole history each call; a vendor run is not, and holds its own. Each call therefore opens its own run with the transcript as its prompt, and releases it when the turn ends.
 
-Each harness session therefore keeps one vendor run alive across turns. The run's input is a channel the adapter pushes into: the opening turn delivers the history the run must know, and every later turn delivers only what it adds, carried as real `tool_result` blocks. Continuing is valid only while history still extends what that run consumed, which a per-message digest list decides; anything else disposes the run and opens a fresh one with a labelled replay.
+Carrying a run across steps was implemented first, and it deadlocks. The harness executes tools, so the CLI is started with every tool refused. Refusal is final on that side: the CLI writes its own denial result and moves on, so the harness's real result arrives for a call the run already closed. The third real run stopped there — `step/start {turn: 1, step: 2}` with no `turn/end`, 58 events and no error. Holding the CLI's `tools/call` open until the harness answers is not the escape: `MCP_TOOL_TIMEOUT` is a hard wall-clock limit per call that progress notifications do not extend, so a tool awaiting human approval would fail on the clock.
 
-The vendor's own `resume` cannot serve this. Resuming requires `persistSession`, which writes a copy of every conversation to the host's Claude directory — outside this harness's control and lifetime, duplicating the log it already keeps. The first implementation asked for both at once and neither worked: `persistSession: false` with a `resume` id produced `No conversation found with session ID` on the second turn of the first real run.
+Replaying costs what keeping a run alive would have saved: roles flatten into labelled text, the vendor's prefix cache is lost, and subscription quota is spent re-reading what the previous run knew — growing with the conversation. That is the price of turns that terminate, and closing this gap needs the vendor to accept a tool result the host produced.
 
-Keeping the iterator open is what makes this work, and it constrains the translation: leaving a `for await` calls `return()` on the vendor run, ending the conversation the next turn continues. The translator pulls with `next()` instead.
+The vendor's own `resume` would not have removed it either. Resuming requires `persistSession`, which writes a copy of every conversation to the host's Claude directory — outside this harness's control and lifetime, duplicating the log it already keeps. The first implementation asked for both at once and neither worked: `persistSession: false` with a `resume` id produced `No conversation found with session ID` on the second turn of the first real run.
 
-A run owns a CLI process tree, so it is released on divergence, on a cancelled or failed turn, and when the plugin unloads.
+A run owns a CLI process tree, so it is released when its turn ends, fails, or is cancelled.
 
 ## Alternatives considered
 
