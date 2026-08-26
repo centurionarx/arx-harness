@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-tool-lsp`.
- * @module @deepseek-ai/dsh-tool-lsp/invariant
+ * Package-owned invariant companion for `@centurionarx/cxh-tool-lsp`.
+ * @module @centurionarx/cxh-tool-lsp/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-tool-lsp'
+const PACKAGE_NAME = '@centurionarx/cxh-tool-lsp'
 
 /** Cordis companion plugin name. */
 export const name = 'tool-lsp-invariant'

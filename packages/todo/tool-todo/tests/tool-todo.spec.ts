@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import type { TodoItem } from '@deepseek-ai/dsh-session'
-import { type Agent } from '@deepseek-ai/dsh-agent'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import { CallId } from '@centurionarx/cxh-llm'
+import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import ToolRuntime from '@centurionarx/cxh-tools'
+import { Session, SessionId } from '@centurionarx/cxh-session'
+import type { TodoItem } from '@centurionarx/cxh-session'
+import { type Agent } from '@centurionarx/cxh-agent'
 
 import * as tool from '../src/index.ts'
 
 const testToolSignal = new AbortController().signal
 
 /**
- * Drives the REAL plugin body: mounts `dsh-tool-todo` on a real `ToolRuntime`
+ * Drives the REAL plugin body: mounts `cxh-tool-todo` on a real `ToolRuntime`
  * and invokes the registered `todo_write` tool through `ctx.tools.execute`,
  * with a fake parent Agent carrying a real `Session` — so the append the tool
  * makes is observable on a genuine session log (only the agent wrapper is a
@@ -50,7 +50,7 @@ function text(result: { content: { type: string; text?: string }[] }): string {
   return result.content.filter(b => b.type === 'text').map(b => b.text).join('')
 }
 
-describe('dsh-tool-todo', () => {
+describe('cxh-tool-todo', () => {
   it('registers a `todo_write` tool whose schema is an array of {content,status}', async () => {
     const ctx = await setup(true)
     const schema = ctx.tools.schemas().find(s => s.name === 'todo_write')

@@ -1,21 +1,21 @@
 /**
- * Shared filesystem path helpers for DeepSeek Harness user data.
+ * Shared filesystem path helpers for CENTURIONarx Harness user data.
  *
- * @module @deepseek-ai/dsh-home-paths
+ * @module @centurionarx/cxh-home-paths
  */
 
 import { opendir, realpath } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 
-/** Directory name for the default DeepSeek Harness home under the OS home. */
-export const DSH_HOME_DIR_NAME = '.dsh'
+/** Directory name for the default CENTURIONarx Harness home under the OS home. */
+export const CXH_HOME_DIR_NAME = '.cxh'
 
-/** Stable user-facing display form for the default DeepSeek Harness home. */
-export const DEFAULT_DSH_HOME_DISPLAY = `~/${DSH_HOME_DIR_NAME}`
+/** Stable user-facing display form for the default CENTURIONarx Harness home. */
+export const DEFAULT_CXH_HOME_DISPLAY = `~/${CXH_HOME_DIR_NAME}`
 
-/** Environment variable that overrides the default DeepSeek Harness home. */
-export const DSH_HOME_ENV = 'DSH_HOME'
+/** Environment variable that overrides the default CENTURIONarx Harness home. */
+export const CXH_HOME_ENV = 'CXH_HOME'
 
 /**
  * Give a native filesystem watcher one canonical spelling of a path, even
@@ -55,11 +55,11 @@ export async function canonicalizeWatchPath(path: string): Promise<string> {
 }
 
 /**
- * Resolve the default DeepSeek Harness home using Node's platform path rules.
+ * Resolve the default CENTURIONarx Harness home using Node's platform path rules.
  * @returns the absolute default harness home path.
  */
-export function defaultDshHome(): string {
-  return join(homedir(), DSH_HOME_DIR_NAME)
+export function defaultCxhHome(): string {
+  return join(homedir(), CXH_HOME_DIR_NAME)
 }
 
 /**
@@ -74,39 +74,39 @@ export function expandHomePath(path: string): string {
 }
 
 /**
- * Resolve the single-root DeepSeek Harness home.
+ * Resolve the single-root CENTURIONarx Harness home.
  *
- * Precedence, highest first: an explicit configured path, `$DSH_HOME`, then
- * `~/.dsh`. The harness keeps all user data under one root. An empty or
- * whitespace-only `$DSH_HOME` is treated as unset, so a blank override never
+ * Precedence, highest first: an explicit configured path, `$CXH_HOME`, then
+ * `~/.cxh`. The harness keeps all user data under one root. An empty or
+ * whitespace-only `$CXH_HOME` is treated as unset, so a blank override never
  * resolves the home to the current working directory.
  * @param configured - explicit harness-home override, which has highest precedence.
- * @param env - environment mapping used to read `DSH_HOME`.
+ * @param env - environment mapping used to read `CXH_HOME`.
  * @returns the normalized absolute harness home path.
  */
-export function resolveDshHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
-  const fromEnv = env[DSH_HOME_ENV]
-  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultDshHome())
+export function resolveCxhHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
+  const fromEnv = env[CXH_HOME_ENV]
+  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultCxhHome())
   return resolve(expandHomePath(selected))
 }
 
 /**
- * Join path segments onto the resolved DeepSeek Harness home.
+ * Join path segments onto the resolved CENTURIONarx Harness home.
  * @param segments - path segments appended to the Harness home; an empty list returns the home itself.
  * @returns the normalized absolute joined path.
  */
-export function dshHomePath(...segments: string[]): string {
-  return join(resolveDshHome(), ...segments)
+export function cxhHomePath(...segments: string[]): string {
+  return join(resolveCxhHome(), ...segments)
 }
 
 /**
  * Describe a resolved harness home symbolically for user-facing display.
  *
  * It never returns an absolute machine path: the default home is labelled
- * `~/.dsh`, and any configured home is labelled `$DSH_HOME`.
- * @param resolvedHome - the absolute path returned by {@link resolveDshHome}.
- * @returns `~/.dsh` for the default home, otherwise `$DSH_HOME`.
+ * `~/.cxh`, and any configured home is labelled `$CXH_HOME`.
+ * @param resolvedHome - the absolute path returned by {@link resolveCxhHome}.
+ * @returns `~/.cxh` for the default home, otherwise `$CXH_HOME`.
  */
-export function dshHomeDisplay(resolvedHome: string): string {
-  return resolvedHome === resolve(defaultDshHome()) ? DEFAULT_DSH_HOME_DISPLAY : `$${DSH_HOME_ENV}`
+export function cxhHomeDisplay(resolvedHome: string): string {
+  return resolvedHome === resolve(defaultCxhHome()) ? DEFAULT_CXH_HOME_DISPLAY : `$${CXH_HOME_ENV}`
 }

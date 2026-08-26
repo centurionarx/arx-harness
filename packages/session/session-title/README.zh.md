@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-title
+# @centurionarx/cxh-session-title
 
 [English](README.md) | 中文
 

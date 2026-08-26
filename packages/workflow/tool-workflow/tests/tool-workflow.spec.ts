@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@deepseek-ai/dsh-tools'
-import type { ToolExecutionResult, ToolExecutionToken } from '@deepseek-ai/dsh-tools'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { WorkflowRunId, WorkflowEngine } from '@deepseek-ai/dsh-workflow'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
+import type { ToolExecutionResult, ToolExecutionToken } from '@centurionarx/cxh-tools'
+import type { Agent } from '@centurionarx/cxh-agent'
+import { WorkflowRunId, WorkflowEngine } from '@centurionarx/cxh-workflow'
 import type {
   WorkflowAgentEndInfo, WorkflowAgentInfo, WorkflowResult, WorkflowRun,
   WorkflowRunId as WorkflowRunIdType, WorkflowStartRequest,
-} from '@deepseek-ai/dsh-workflow'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import SubagentRuntime from '@deepseek-ai/dsh-subagent'
-import WorkerThreadWorkflowEngine from '@deepseek-ai/dsh-workflow-worker-thread'
+} from '@centurionarx/cxh-workflow'
+import { CallId } from '@centurionarx/cxh-llm'
+import SubagentRuntime from '@centurionarx/cxh-subagent'
+import WorkerThreadWorkflowEngine from '@centurionarx/cxh-workflow-worker-thread'
 import * as toolWorkflow from '../src/index.ts'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
+import { Session, SessionId } from '@centurionarx/cxh-session'
 
 const testToolSignal = new AbortController().signal
 
@@ -105,7 +105,7 @@ function execute(ctx: Context, args: unknown, extra?: {
   })
 }
 
-describe('dsh-tool-workflow', () => {
+describe('cxh-tool-workflow', () => {
   it('starts a run with the script/args/parent/signal and renders the completed value', async () => {
     const { ctx, engine, parent } = await setup()
     const controller = new AbortController()

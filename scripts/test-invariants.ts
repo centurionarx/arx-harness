@@ -6,16 +6,16 @@
  */
 
 import { expect } from 'vitest'
-import { FiberState, Inject, RegistryService, ValidationError } from '@deepseek-ai/cordis'
-import type { Context, Plugin } from '@deepseek-ai/cordis'
-import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
+import { FiberState, Inject, RegistryService, ValidationError } from '@centurionarx/cordis'
+import type { Context, Plugin } from '@centurionarx/cordis'
+import { AttachmentStore } from '@centurionarx/cxh-attachment'
 import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@deepseek-ai/dsh-attachment'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
+} from '@centurionarx/cxh-attachment'
+import InvariantRegistry from '@centurionarx/cxh-invariants'
 
 declare global {
   interface ImportMeta {

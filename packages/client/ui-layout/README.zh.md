@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-layout
+# @centurionarx/cxh-client-ui-layout
 
 [English](README.md) | 中文
 

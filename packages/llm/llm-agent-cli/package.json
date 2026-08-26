@@ -1,0 +1,52 @@
+{
+  "name": "@centurionarx/cxh-llm-agent-cli",
+  "description": "LLM adapter that drives a subscription-authenticated vendor CLI as an ordinary model route",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "directory": "packages/llm/llm-agent-cli"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-subprocess": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.220",
+    "@centurionarx/cxh-claude-agent-sdk-process": "workspace:^",
+    "@centurionarx/schemastery": "workspace:^",
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-subprocess": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
+  }
+}

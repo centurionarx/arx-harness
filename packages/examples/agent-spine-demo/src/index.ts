@@ -5,37 +5,37 @@
  * deployments still choose the LLM adapter, bash executor, and presentation.
  * The plugin intentionally exposes named exports only because Loader default
  * unwrapping would discard its `Config` schema (see docs/postmortem/0001).
- * @module @deepseek-ai/dsh-agent-spine-demo
+ * @module @centurionarx/cxh-agent-spine-demo
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import Timer from '@deepseek-ai/cordis-plugin-timer'
-import z from '@deepseek-ai/schemastery'
-import LlmRuntime from '@deepseek-ai/dsh-llm'
-import SessionStore from '@deepseek-ai/dsh-session'
-import SessionTitleService, { type Config as SessionTitleConfig } from '@deepseek-ai/dsh-session-title'
-import SystemPrompt, { type Config as SystemPromptConfig } from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime, { type Config as ToolsConfig } from '@deepseek-ai/dsh-tools'
-import SkillRegistry, { type Config as SkillRegistryConfig } from '@deepseek-ai/dsh-skill'
-import * as SkillFileSystem from '@deepseek-ai/dsh-skill-filesystem'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import GoalService, { type Config as GoalDomainConfig } from '@deepseek-ai/dsh-goal'
-import * as goalSession from '@deepseek-ai/dsh-goal-round-driver'
-import * as toolGoal from '@deepseek-ai/dsh-tool-goal'
-import LocalJobRegistry, { type Config as JobsConfig } from '@deepseek-ai/dsh-jobs-local'
-import InvariantRegistry, { type Config as InvariantConfig } from '@deepseek-ai/dsh-invariants'
-import * as sessionInvariant from '@deepseek-ai/dsh-session/invariant'
-import * as agentInvariant from '@deepseek-ai/dsh-agent/invariant'
-import * as scopeInvariant from '@deepseek-ai/dsh-scope/invariant'
-import * as agentLoopInvariant from '@deepseek-ai/dsh-agent-loop/invariant'
-import * as toolBash from '@deepseek-ai/dsh-tool-bash'
-import * as bashEnv from '@deepseek-ai/dsh-shell-env'
-import * as workspaceContext from '@deepseek-ai/dsh-agent-instructions'
-import * as toolSkill from '@deepseek-ai/dsh-tool-skill'
-import * as toolJobs from '@deepseek-ai/dsh-tool-jobs'
-import AgentLoop, { type Config as AgentLoopConfig } from '@deepseek-ai/dsh-agent-loop'
-import * as llmRetry from '@deepseek-ai/dsh-llm-retry'
-import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+import type { Context } from '@centurionarx/cordis'
+import Timer from '@centurionarx/cordis-plugin-timer'
+import z from '@centurionarx/schemastery'
+import LlmRuntime from '@centurionarx/cxh-llm'
+import SessionStore from '@centurionarx/cxh-session'
+import SessionTitleService, { type Config as SessionTitleConfig } from '@centurionarx/cxh-session-title'
+import SystemPrompt, { type Config as SystemPromptConfig } from '@centurionarx/cxh-system-prompt'
+import ToolRuntime, { type Config as ToolsConfig } from '@centurionarx/cxh-tools'
+import SkillRegistry, { type Config as SkillRegistryConfig } from '@centurionarx/cxh-skill'
+import * as SkillFileSystem from '@centurionarx/cxh-skill-filesystem'
+import AgentRegistry from '@centurionarx/cxh-agent'
+import GoalService, { type Config as GoalDomainConfig } from '@centurionarx/cxh-goal'
+import * as goalSession from '@centurionarx/cxh-goal-round-driver'
+import * as toolGoal from '@centurionarx/cxh-tool-goal'
+import LocalJobRegistry, { type Config as JobsConfig } from '@centurionarx/cxh-jobs-local'
+import InvariantRegistry, { type Config as InvariantConfig } from '@centurionarx/cxh-invariants'
+import * as sessionInvariant from '@centurionarx/cxh-session/invariant'
+import * as agentInvariant from '@centurionarx/cxh-agent/invariant'
+import * as scopeInvariant from '@centurionarx/cxh-scope/invariant'
+import * as agentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
+import * as toolBash from '@centurionarx/cxh-tool-bash'
+import * as bashEnv from '@centurionarx/cxh-shell-env'
+import * as workspaceContext from '@centurionarx/cxh-agent-instructions'
+import * as toolSkill from '@centurionarx/cxh-tool-skill'
+import * as toolJobs from '@centurionarx/cxh-tool-jobs'
+import AgentLoop, { type Config as AgentLoopConfig } from '@centurionarx/cxh-agent-loop'
+import * as llmRetry from '@centurionarx/cxh-llm-retry'
+import { resolveCxhHome } from '@centurionarx/cxh-home-paths'
 
 export const name = 'agent-spine-demo'
 
@@ -73,7 +73,7 @@ export interface GoalConfig {
  * `persona`, and `toolOrder` to the system-prompt plugin (the fixed opener,
  * dynamic-context policy, deployment persona, and explicit model-facing tool
  * order), the `tools` object to the tool registry (its presentation `mode`),
- * `dshHome` to bash environment and local skill discovery, `sessionTitle` to
+ * `cxhHome` to bash environment and local skill discovery, `sessionTitle` to
  * the fallback title service, `skills` to the
  * skill registry/local provider/tool consumer, `workspaceContext` to the
  * agent-instructions loader, `jobs` to the process-local job provider, and
@@ -90,7 +90,7 @@ export interface GoalConfig {
  * `bash` name.
  */
 export interface Config {
-  /** The agent-loop `agents` list (see dsh-agent-loop's `Config`). */
+  /** The agent-loop `agents` list (see cxh-agent-loop's `Config`). */
   agents?: AgentLoopConfig['agents']
   /** Agent-loop concurrency cap; `1` is serial. */
   maxParallelToolCalls?: AgentLoopConfig['maxParallelToolCalls']
@@ -98,14 +98,14 @@ export interface Config {
   includeHarnessIdentity?: SystemPromptConfig['includeHarnessIdentity']
   /** Whether model history includes dynamic runtime-context snapshots (default true). */
   includeRuntimeContext?: SystemPromptConfig['includeRuntimeContext']
-  /** The deployment persona (see dsh-system-prompt's `Config`). */
+  /** The deployment persona (see cxh-system-prompt's `Config`). */
   persona?: SystemPromptConfig['persona']
-  /** The explicit model-facing tool order (see dsh-system-prompt's `Config`). */
+  /** The explicit model-facing tool order (see cxh-system-prompt's `Config`). */
   toolOrder?: SystemPromptConfig['toolOrder']
-  /** The tool registry's config — its presentation `mode` (see dsh-tools' `Config`). */
+  /** The tool registry's config — its presentation `mode` (see cxh-tools' `Config`). */
   tools?: ToolsConfig
-  /** DeepSeek Harness home directory shared by shell context and local skill discovery. */
-  dshHome?: string
+  /** CENTURIONarx Harness home directory shared by shell context and local skill discovery. */
+  cxhHome?: string
   /** Deterministic fallback and accepted-title limits; omission uses the bundle's example policy. */
   sessionTitle?: SessionTitleConfig
   /** Workspace-context loader controls with an explicit byte budget; set `false` for hermetic prompts. */
@@ -162,7 +162,7 @@ export const Config = z.intersect([
   SystemPrompt.Config,
   z.object({
     tools: ToolRuntime.Config,
-    dshHome: z.string(),
+    cxhHome: z.string(),
     sessionTitle: SessionTitleConfigSchema,
     skills: SkillConfigSchema,
     workspaceContext: z.union([z.const(false), workspaceContext.Config]).required(),
@@ -171,7 +171,7 @@ export const Config = z.intersect([
     toolJobs: z.union([z.const(false), ToolJobsConfigSchema]),
     invariants: InvariantRegistry.Config,
     goals: z.union([z.const(false), GoalConfigSchema]),
-  }) as unknown as z<Pick<Config, 'tools' | 'dshHome' | 'sessionTitle' | 'skills' | 'workspaceContext' | 'toolBash' | 'jobs' | 'toolJobs' | 'invariants' | 'goals'>>,
+  }) as unknown as z<Pick<Config, 'tools' | 'cxhHome' | 'sessionTitle' | 'skills' | 'workspaceContext' | 'toolBash' | 'jobs' | 'toolJobs' | 'invariants' | 'goals'>>,
 ]) as unknown as z<Config>
 
 /**
@@ -187,7 +187,7 @@ export function pickSpineConfig(config: Omit<Config, 'agents'>): Omit<Config, 'a
     ...config.persona !== undefined ? { persona: config.persona } : {},
     ...config.toolOrder !== undefined ? { toolOrder: config.toolOrder } : {},
     ...config.tools !== undefined ? { tools: config.tools } : {},
-    ...config.dshHome !== undefined ? { dshHome: config.dshHome } : {},
+    ...config.cxhHome !== undefined ? { cxhHome: config.cxhHome } : {},
     ...config.sessionTitle !== undefined ? { sessionTitle: config.sessionTitle } : {},
     workspaceContext: config.workspaceContext,
     ...config.skills !== undefined ? { skills: config.skills } : {},
@@ -210,12 +210,12 @@ export function pickSpineConfig(config: Omit<Config, 'agents'>): Omit<Config, 'a
  * seams, then the loop that drives them.
  */
 export function apply(ctx: Context, config: Config): void {
-  const nestedDshHome = config.skills?.filesystem?.dshHome
-  if (config.dshHome !== undefined && nestedDshHome !== undefined
-    && resolveDshHome(config.dshHome) !== resolveDshHome(nestedDshHome)) {
-    throw new Error('agent-spine-demo: dshHome and skills.filesystem.dshHome must resolve to the same directory')
+  const nestedCxhHome = config.skills?.filesystem?.cxhHome
+  if (config.cxhHome !== undefined && nestedCxhHome !== undefined
+    && resolveCxhHome(config.cxhHome) !== resolveCxhHome(nestedCxhHome)) {
+    throw new Error('agent-spine-demo: cxhHome and skills.filesystem.cxhHome must resolve to the same directory')
   }
-  const dshHome = resolveDshHome(config.dshHome ?? nestedDshHome)
+  const cxhHome = resolveCxhHome(config.cxhHome ?? nestedCxhHome)
 
   ctx.plugin(Timer)
   ctx.plugin(LlmRuntime)
@@ -232,7 +232,7 @@ export function apply(ctx: Context, config: Config): void {
   const skillsEnabled = config.skills?.enabled ?? true
   if (skillsEnabled) {
     ctx.plugin(SkillRegistry, config.skills?.registry ?? {})
-    ctx.plugin(SkillFileSystem, Object.assign({}, config.skills?.filesystem, { dshHome }))
+    ctx.plugin(SkillFileSystem, Object.assign({}, config.skills?.filesystem, { cxhHome }))
   }
   ctx.plugin(AgentRegistry)
   ctx.plugin(llmRetry)
@@ -248,7 +248,7 @@ export function apply(ctx: Context, config: Config): void {
   ctx.plugin(scopeInvariant)
   ctx.plugin(agentLoopInvariant)
   if (config.toolBash !== false) {
-    ctx.plugin(bashEnv, { dshHome })
+    ctx.plugin(bashEnv, { cxhHome })
     ctx.plugin(toolBash, config.toolBash ?? {})
   }
   if (config.workspaceContext !== false) {

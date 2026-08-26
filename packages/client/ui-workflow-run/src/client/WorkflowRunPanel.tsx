@@ -5,9 +5,9 @@ import {
 import {
   DisclosureRow, IconChevronRightOutline14, StateDot,
   type DisclosureRowProps, type StateDotState,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { shallowEqual, type SessionId, type SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
+} from '@centurionarx/cxh-client-ui-primitives'
+import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import { shallowEqual, type SessionId, type SessionListState } from '@centurionarx/cxh-client-runtime/client'
 import type { WorkflowRunKey } from './locales.ts'
 import type {
   WorkflowRunMemberData, WorkflowRunPhaseData, WorkflowRunStatus,

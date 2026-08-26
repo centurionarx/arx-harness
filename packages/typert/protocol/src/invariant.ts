@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-typert-protocol`.
- * @module @deepseek-ai/dsh-typert-protocol/invariant
+ * Package-owned invariant companion for `@centurionarx/cxh-typert-protocol`.
+ * @module @centurionarx/cxh-typert-protocol/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-typert-protocol'
+const PACKAGE_NAME = '@centurionarx/cxh-typert-protocol'
 
 /** Cordis companion plugin name. */
 export const name = 'typert-protocol-invariant'

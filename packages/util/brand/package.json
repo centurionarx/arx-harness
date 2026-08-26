@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-brand",
-  "description": "Type-only Branded<B> nominal-typing primitive for the DeepSeek Harness",
+  "name": "@centurionarx/cxh-brand",
+  "description": "Type-only Branded<B> nominal-typing primitive for the CENTURIONarx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/util/brand"
   },
   "type": "module",
@@ -32,11 +32,11 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

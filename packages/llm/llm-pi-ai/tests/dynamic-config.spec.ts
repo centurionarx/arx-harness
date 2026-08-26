@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@centurionarx/cordis'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import LlmRuntime, { LlmAdapter } from '@deepseek-ai/dsh-llm'
-import { credentialRef } from '@deepseek-ai/dsh-credentials'
-import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
-import { FileSettingsProvider } from '@deepseek-ai/dsh-settings-file'
-import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
-import AuthorizationService from '@deepseek-ai/dsh-authorization'
+import LlmRuntime, { LlmAdapter } from '@centurionarx/cxh-llm'
+import { credentialRef } from '@centurionarx/cxh-credentials'
+import { LocalCredentialProvider } from '@centurionarx/cxh-credentials-local'
+import { settingsNamespace } from '@centurionarx/cxh-settings'
+import { FileSettingsProvider } from '@centurionarx/cxh-settings-file'
+import * as LlmPiAi from '@centurionarx/cxh-llm-pi-ai'
+import AuthorizationService from '@centurionarx/cxh-authorization'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -32,7 +32,7 @@ afterEach(async () => {
 })
 
 async function home(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-pi-dynamic-'))
+  const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-dynamic-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }

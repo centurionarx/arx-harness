@@ -3,22 +3,22 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
-import { CallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import TerminalSessionService from '@deepseek-ai/dsh-terminal'
-import SandboxProvider from '@deepseek-ai/dsh-sandbox'
-import type { ConfinedArgv, SandboxPolicy } from '@deepseek-ai/dsh-sandbox'
-import SandboxPolicyService from '@deepseek-ai/dsh-sandbox-policy'
-import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
-import * as TerminalLocal from '@deepseek-ai/dsh-terminal-bash'
-import * as ToolPty from '@deepseek-ai/dsh-tool-terminal'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import Include from '@centurionarx/cordis-plugin-include'
+import { CallId } from '@centurionarx/cxh-llm'
+import { Session, SessionId } from '@centurionarx/cxh-session'
+import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
+import type { Agent } from '@centurionarx/cxh-agent'
+import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import ToolRuntime from '@centurionarx/cxh-tools'
+import TerminalSessionService from '@centurionarx/cxh-terminal'
+import SandboxProvider from '@centurionarx/cxh-sandbox'
+import type { ConfinedArgv, SandboxPolicy } from '@centurionarx/cxh-sandbox'
+import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
+import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+import * as TerminalLocal from '@centurionarx/cxh-terminal-bash'
+import * as ToolPty from '@centurionarx/cxh-tool-terminal'
 
 let root: string | undefined
 let context: Context | undefined
@@ -61,20 +61,20 @@ const suite = process.platform === 'linux' || process.platform === 'darwin' ? de
 
 suite('terminal real Loader composition through cordis.yml', () => {
   it('boots cordis.yml and preserves shell state across real tool calls', async () => {
-    root = await mkdtemp(join(tmpdir(), 'dsh-pty-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'cxh-pty-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@deepseek-ai/dsh-agent'",
-      "- name: '@deepseek-ai/dsh-system-prompt'",
-      "- name: '@deepseek-ai/dsh-tools'",
-      "- name: '@deepseek-ai/dsh-terminal'",
-      "- name: '@deepseek-ai/dsh-test-sandbox'",
-      "- name: '@deepseek-ai/dsh-sandbox-policy'",
+      "- name: '@centurionarx/cxh-agent'",
+      "- name: '@centurionarx/cxh-system-prompt'",
+      "- name: '@centurionarx/cxh-tools'",
+      "- name: '@centurionarx/cxh-terminal'",
+      "- name: '@centurionarx/cxh-test-sandbox'",
+      "- name: '@centurionarx/cxh-sandbox-policy'",
       '  config:',
       '    mode: danger-full-access',
       `    workspaceRoot: ${JSON.stringify(root)}`,
-      "- name: '@deepseek-ai/dsh-subprocess-local'",
-      "- name: '@deepseek-ai/dsh-terminal-bash'",
+      "- name: '@centurionarx/cxh-subprocess-local'",
+      "- name: '@centurionarx/cxh-terminal-bash'",
       '  config:',
       '    pollIntervalMs: 10',
       '    exactProbeAfterMs: 20',
@@ -82,7 +82,7 @@ suite('terminal real Loader composition through cordis.yml', () => {
       '    handoffGraceMs: 250',
       '    timeoutMs: 2000',
       '    disposeGraceMs: 500',
-      "- name: '@deepseek-ai/dsh-tool-terminal'",
+      "- name: '@centurionarx/cxh-tool-terminal'",
       '',
     ].join('\n'))
 
@@ -91,15 +91,15 @@ suite('terminal real Loader composition through cordis.yml', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@deepseek-ai/dsh-agent', AgentRegistry],
-      ['@deepseek-ai/dsh-system-prompt', SystemPrompt],
-      ['@deepseek-ai/dsh-tools', ToolRuntime],
-      ['@deepseek-ai/dsh-terminal', TerminalSessionService],
-      ['@deepseek-ai/dsh-test-sandbox', PassthroughSandbox],
-      ['@deepseek-ai/dsh-sandbox-policy', SandboxPolicyService],
-      ['@deepseek-ai/dsh-subprocess-local', LocalSubprocessRuntime],
-      ['@deepseek-ai/dsh-terminal-bash', TerminalLocal],
-      ['@deepseek-ai/dsh-tool-terminal', ToolPty],
+      ['@centurionarx/cxh-agent', AgentRegistry],
+      ['@centurionarx/cxh-system-prompt', SystemPrompt],
+      ['@centurionarx/cxh-tools', ToolRuntime],
+      ['@centurionarx/cxh-terminal', TerminalSessionService],
+      ['@centurionarx/cxh-test-sandbox', PassthroughSandbox],
+      ['@centurionarx/cxh-sandbox-policy', SandboxPolicyService],
+      ['@centurionarx/cxh-subprocess-local', LocalSubprocessRuntime],
+      ['@centurionarx/cxh-terminal-bash', TerminalLocal],
+      ['@centurionarx/cxh-tool-terminal', ToolPty],
     ])
     context.loader.internal = {
       version: 'v2',

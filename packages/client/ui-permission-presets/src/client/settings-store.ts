@@ -8,13 +8,13 @@
 
 import type {
   IApiClient, SettingsNamespaceView,
-} from '@deepseek-ai/dsh-api-remotes/client'
+} from '@centurionarx/cxh-api-remotes/client'
 import {
   createSnapshotStore, type SnapshotStore,
-} from '@deepseek-ai/dsh-client-runtime/client'
+} from '@centurionarx/cxh-client-runtime/client'
 import type {
   SchemaNode, SettingsDescribeFace, SettingsSchemaService,
-} from '@deepseek-ai/dsh-client-ui-settings/client'
+} from '@centurionarx/cxh-client-ui-settings/client'
 import { displayPermissionPreset } from './presentation.ts'
 
 /** Permission's settings namespace on the host wire. */

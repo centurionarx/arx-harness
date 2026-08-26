@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/cookbook/responding-to-pr-review-on-a-stack.md
-responding-to-pr-review-on-a-stack.md: 6bb7be3daf8613666f02f21e96bf7b1ac8cb3606
-responding-to-pr-review-on-a-stack.zh.md: ca030741ece4c729fe21c3944d291ee4c322dcbb
+responding-to-pr-review-on-a-stack.md: 3e1ae88b8bbac009130645466f1483862f245910
+responding-to-pr-review-on-a-stack.zh.md: 4fc40d99b9de4a484360dfcfde59acd7961d37ba

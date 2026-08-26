@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-telemetry
+# @centurionarx/cxh-session-telemetry
 
 English | [中文](README.zh.md)
 

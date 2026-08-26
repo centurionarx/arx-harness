@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-input-trigger
+# @centurionarx/cxh-client-ui-input-trigger
 
 [English](README.md) | 中文
 
