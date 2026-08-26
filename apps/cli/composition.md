@@ -42,6 +42,8 @@ flowchart LR
   cfg --> plugin_cxh_base_credentials
   plugin_cxh_base_llm_pi_ai["llm-pi-ai<br/>@centurionarx/cxh-llm-pi-ai"]
   cfg --> plugin_cxh_base_llm_pi_ai
+  plugin_cxh_base_llm_agent_cli["llm-agent-cli<br/>@centurionarx/cxh-llm-agent-cli"]
+  cfg --> plugin_cxh_base_llm_agent_cli
   plugin_cxh_base_session_persistence_jsonl["session-persistence-jsonl<br/>@centurionarx/cxh-session-persistence-jsonl"]
   cfg --> plugin_cxh_base_session_persistence_jsonl
   plugin_cxh_base_attachment_local["attachment-local<br/>@centurionarx/cxh-attachment-local"]
@@ -185,6 +187,7 @@ flowchart LR
 | `settings` | `@centurionarx/cxh-settings-file` |
 | `credentials` | `@centurionarx/cxh-credentials-local` |
 | `llm-pi-ai` | `@centurionarx/cxh-llm-pi-ai` |
+| `llm-agent-cli` | `@centurionarx/cxh-llm-agent-cli` |
 | `session-persistence-jsonl` | `@centurionarx/cxh-session-persistence-jsonl` |
 | `attachment-local` | `@centurionarx/cxh-attachment-local` |
 | `session-query-sqlite` | `@centurionarx/cxh-session-query-sqlite` |

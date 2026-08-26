@@ -61,6 +61,7 @@
     "@centurionarx/cxh-goal-round-driver": "workspace:^",
     "@centurionarx/cxh-api-gateway": "workspace:^",
     "@centurionarx/cxh-llm": "workspace:^",
+    "@centurionarx/cxh-llm-agent-cli": "workspace:^",
     "@centurionarx/cxh-llm-deepseek": "workspace:^",
     "@centurionarx/cxh-llm-pi-ai": "workspace:^",
     "@centurionarx/cxh-llm-retry": "workspace:^",

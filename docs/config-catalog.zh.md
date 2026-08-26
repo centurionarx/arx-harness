@@ -908,6 +908,58 @@ export interface Config {
 
 来源：[`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
 
+<a id="centurionarxcxh-llm-agent-cli"></a>
+
+## `@centurionarx/cxh-llm-agent-cli`
+
+需要：`llm` · `subprocess`
+
+```ts config-catalog
+/** Plugin configuration: provider routes keyed by route id. */
+export interface Config {
+  /**
+   * Routes this adapter serves, keyed by the route id requests name. An empty
+   * section leaves the plugin mounted and holding no route, so a deployment
+   * that has not logged the host CLI in offers nothing to select.
+   */
+  providers?: Record<string, AgentCliProfile>
+  /**
+   * Workspace the vendor CLI runs in. The adapter serves requests from every
+   * session in one process, so this is a deployment fact rather than a session
+   * one; absent, the CLI runs where the harness process runs.
+   */
+  cwd?: string
+}
+
+/** One provider route backed by a subscription-authenticated vendor CLI. */
+export interface AgentCliProfile {
+  /** Human-readable provider name for selectors and diagnostics. */
+  displayName?: string
+  /** Grace between subprocess termination tiers for this route's CLI. */
+  disposeGraceMs?: number
+  /** Models this route serves. */
+  models?: AgentCliModel[]
+}
+
+/** One model this adapter serves on a route. */
+export interface AgentCliModel {
+  /** Model id callers pass as `GenerateOptions.model`. */
+  id: string
+  /**
+   * Maximum combined request and response context. Required: automatic
+   * compaction refuses to run against a route whose adapter advertises no
+   * capacity, and the vendor CLI discloses none.
+   */
+  contextWindow: number
+  /** Per-request output cap materialized when a caller omits one. */
+  maxTokens?: number
+  /** Human-readable name for selectors. */
+  name?: string
+}
+```
+
+来源：[`packages/llm/llm-agent-cli/src/config.ts:36`](../packages/llm/llm-agent-cli/src/config.ts)
+
 <a id="centurionarxcxh-llm-deepseek"></a>
 
 ## `@centurionarx/cxh-llm-deepseek`
