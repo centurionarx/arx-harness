@@ -39,7 +39,7 @@ import {
   claudeSpawnSpec,
   ManagedClaudeCodeProcess,
   sdkEnvironmentOverlay,
-} from '../src/process.ts'
+} from '@centurionarx/cxh-claude-agent-sdk-process'
 import {
   CLAUDE_CODE_PERMISSION_MODES,
   DEFAULT_CLAUDE_CODE_PERMISSION_MODE,

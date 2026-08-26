@@ -29,7 +29,7 @@ Groups hold `packages/<group>/<pkg>/`; names stay `@centurionarx/cxh-<pkg>`. **G
 | [`skill/`](skill/README.md) | Skill capability family: the provider registry, local provider, and model-facing catalog/loader | Product — stable API |
 | [`compaction/`](compaction/README.md) | Compaction capability family: Service Definition + basic provider + command Consumer | Product — stable API |
 | [`context/`](context/README.md) | Model-visible request context, including workspace instructions and time context | Product — stable API |
-| [`subagent/`](subagent/README.md) | Subagent capability family: the provider-registry contract and the model-facing delegation tool | Product — stable API |
+| [`subagent/`](subagent/README.md) | Subagent capability family: the provider-registry contract, the model-facing delegation tool, and the shared Claude Agent SDK process library | Product — stable API |
 | [`jobs/`](jobs/README.md) | Generic background-job runtime and model-facing `job_*` control tools | Product — stable API |
 | [`experimental/`](experimental/README.md) | Private prototypes and internal-only plugins | Unreleased |
 | [`workflow/`](workflow/README.md) | Workflow seam, worker-thread engine, and model-facing `workflow`/`ralph` tools | Product — stable API |
