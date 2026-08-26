@@ -63,20 +63,26 @@ function blockTypeOf(kind: string): ContentBlockType {
  * One `stream()` call is one assistant turn, and the translation ends the
  * moment that turn does. The CLI's own turn cap cannot express this: reaching
  * it makes the SDK throw an error result rather than finish, so the cap would
- * turn every ordinary tool-calling turn into a failure. Ending here instead
- * leaves the vendor run to the caller, which interrupts it.
+ * turn every ordinary tool-calling turn into a failure.
+ *
+ * The iterator is pulled rather than iterated with `for await`, because the
+ * conversation outlives this turn: leaving a `for await` calls `return()` on
+ * the vendor run, ending the very conversation the next turn continues.
  *
  * The finish reason comes from the emitted content: a turn that asked for a
  * tool reports `tool-calls`, whatever the vendor would have said about it.
- * @param messages - the SDK's message stream for one query.
- * @returns the harness chunk stream for that query.
+ * @param messages - the live vendor message iterator, positioned at this turn.
+ * @returns the harness chunk stream for that turn.
  */
-export async function* translate(messages: AsyncIterable<SDKMessage>): AsyncIterable<StreamChunk> {
+export async function* translate(messages: AsyncIterator<SDKMessage>): AsyncIterable<StreamChunk> {
   const open = new Map<number, OpenBlock>()
   let sawToolCall = false
   let failure: string | undefined
 
-  for await (const message of messages) {
+  for (;;) {
+    const pulled = await messages.next()
+    if (pulled.done === true) break
+    const message = pulled.value
     if (message.type === 'result') {
       if (message.subtype !== 'success' && message.subtype !== 'error_max_turns') {
         failure = message.subtype

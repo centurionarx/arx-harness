@@ -5,8 +5,6 @@
  * @module @centurionarx/cxh-llm-agent-cli/adapter
  */
 
-import { Readable } from 'node:stream'
-
 import { type Options, query } from '@anthropic-ai/claude-agent-sdk'
 import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@centurionarx/cxh-claude-agent-sdk-process'
 import {
@@ -22,7 +20,7 @@ import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-su
 
 import type { ResolvedRoute } from './config.ts'
 import { toVendorMessages, renderTranscript } from './prompt.ts'
-import { SessionAffinity } from './session.ts'
+import { ConversationInput, ConversationRegistry, type LiveConversation } from './session.ts'
 import { translate } from './stream.ts'
 import { createToolServer, MCP_SERVER_NAME, toolAlias } from './tools.ts'
 
@@ -53,7 +51,7 @@ const VENDOR_TOOLS = [
  * which is exactly `stream()`'s contract.
  */
 export class AgentCliAdapter extends LlmAdapter {
-  private readonly affinity = new SessionAffinity()
+  private readonly conversations = new ConversationRegistry()
 
   constructor(private readonly spec: AgentCliAdapterSpec) {
     super()
@@ -116,14 +114,12 @@ export class AgentCliAdapter extends LlmAdapter {
    * Build the fixed SDK options that make one CLI run behave as one model call.
    * @param options - the assembled harness request.
    * @param route - the resolved route serving it.
-   * @param resume - vendor session to continue, when affinity holds one.
    * @param capture - receives the managed child the SDK spawns.
    * @returns options for one `query()` call.
    */
   private queryOptions(
     options: GenerateOptions,
     route: ResolvedRoute,
-    resume: string | undefined,
     capture: (child: SubprocessHandle) => void,
   ): Options {
     const tools = options.tools ?? []
@@ -133,7 +129,6 @@ export class AgentCliAdapter extends LlmAdapter {
       includePartialMessages: true,
       model: options.model,
       ...options.system === undefined ? {} : { systemPrompt: options.system },
-      ...resume === undefined ? {} : { resume },
       // Omitting `skills` is not "skills off": the SDK documents that the
       // CLI's own defaults still apply, so the host's skill directories would
       // reach the model through a tool the harness never registered and never
@@ -159,6 +154,38 @@ export class AgentCliAdapter extends LlmAdapter {
   }
 
   /**
+   * Start one vendor run for a harness session.
+   *
+   * The run stays open across turns: its input is a channel this adapter keeps
+   * pushing into, so the vendor holds the conversation and no turn replays
+   * what the previous one already delivered.
+   * @param options - the assembled harness request opening the conversation.
+   * @param route - the resolved route serving it.
+   * @returns the live conversation, positioned before its first turn.
+   */
+  private startConversation(options: GenerateOptions, route: ResolvedRoute): LiveConversation {
+    const input = new ConversationInput()
+    const controller = new AbortController()
+    let child: SubprocessHandle | undefined
+    const run = query({
+      prompt: input as never,
+      options: {
+        ...this.queryOptions(options, route, (handle) => { child = handle }),
+        abortController: controller,
+      },
+    })
+    return {
+      input,
+      messages: run,
+      dispose: () => {
+        input.close()
+        controller.abort()
+        child?.terminate()
+      },
+    }
+  }
+
+  /**
    * Stream one model call through the vendor CLI.
    * @param options - the fully assembled harness request.
    * @returns the harness chunk stream for that call.
@@ -166,35 +193,40 @@ export class AgentCliAdapter extends LlmAdapter {
   async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     const route = this.route(options.provider)
     const sessionId = options.sessionId as string | undefined
-    const continuation = this.affinity.resolve(sessionId, options.messages)
-    const controller = new AbortController()
-    options.signal?.addEventListener('abort', () => { controller.abort() }, { once: true })
+    const continuation = this.conversations.resolve(sessionId, options.messages)
+    const opening = continuation.live === undefined
+    const live = continuation.live ?? this.startConversation(options, route)
 
-    let child: SubprocessHandle | undefined
-    const run = query({
-      prompt: continuation.resume === undefined
-        ? renderTranscript(continuation.deliver)
-        : Readable.from(toVendorMessages(continuation.deliver)) as never,
-      options: {
-        ...this.queryOptions(options, route, continuation.resume, (handle) => { child = handle }),
-        abortController: controller,
-      },
-    })
-
-    let vendorSessionId: string | undefined
-    try {
-      yield* translate((async function* () {
-        for await (const message of run) {
-          const carried = message as { session_id?: string }
-          if (carried.session_id !== undefined) vendorSessionId = carried.session_id
-          yield message
-        }
-      })())
-      if (vendorSessionId !== undefined) this.affinity.commit(sessionId, vendorSessionId, continuation.digests)
-    } finally {
-      // The SDK owns protocol shutdown; the subprocess handle owns the tree.
-      await run.interrupt().catch(() => {})
-      child?.terminate()
+    // A fresh run receives the history it must know; a continuing one receives
+    // only what this turn adds, as the user-role messages it accepts.
+    if (opening) {
+      live.input.push({
+        type: 'user',
+        message: { role: 'user', content: [{ type: 'text', text: renderTranscript(continuation.deliver) }] },
+        parent_tool_use_id: null,
+      })
+    } else {
+      for (const message of toVendorMessages(continuation.deliver)) live.input.push(message)
     }
+
+    const abort = (): void => { this.conversations.forget(sessionId); live.dispose() }
+    options.signal?.addEventListener('abort', abort, { once: true })
+    try {
+      yield* translate(live.messages)
+      this.conversations.commit(sessionId, live, continuation.digests)
+    } catch (error) {
+      // A turn that failed leaves the run at an unknown point in its own
+      // conversation, so the next turn must not continue it.
+      this.conversations.forget(sessionId)
+      live.dispose()
+      throw error
+    } finally {
+      options.signal?.removeEventListener('abort', abort)
+    }
+  }
+
+  /** Release every vendor run this adapter still holds. */
+  dispose(): void {
+    this.conversations.disposeAll()
   }
 }
