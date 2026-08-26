@@ -60,9 +60,14 @@ function blockTypeOf(kind: string): ContentBlockType {
 /**
  * Convert the SDK message stream into harness chunks.
  *
- * The finish reason comes from the emitted content rather than the SDK's own
- * result subtype: this adapter caps the CLI at one assistant turn, so a turn
- * that asked for a tool reports the cap it hit, not the request it made.
+ * One `stream()` call is one assistant turn, and the translation ends the
+ * moment that turn does. The CLI's own turn cap cannot express this: reaching
+ * it makes the SDK throw an error result rather than finish, so the cap would
+ * turn every ordinary tool-calling turn into a failure. Ending here instead
+ * leaves the vendor run to the caller, which interrupts it.
+ *
+ * The finish reason comes from the emitted content: a turn that asked for a
+ * tool reports `tool-calls`, whatever the vendor would have said about it.
  * @param messages - the SDK's message stream for one query.
  * @returns the harness chunk stream for that query.
  */
@@ -142,7 +147,12 @@ export async function* translate(messages: AsyncIterable<SDKMessage>): AsyncIter
     if (event.type === 'message_delta') {
       const message_delta = event as unknown as { usage?: Parameters<typeof usageChunk>[0] }
       if (message_delta.usage !== undefined) yield { type: 'usage', usage: usageChunk(message_delta.usage) }
+      continue
     }
+
+    // The assistant turn is over. Reading further would consume the vendor's
+    // next turn, which this call did not ask for.
+    if (event.type === 'message_stop') break
   }
 
   if (failure !== undefined) {

@@ -16,7 +16,7 @@ What does authenticate by subscription, expose native tool calling, and speak an
 
 [`cxh-llm-agent-cli`](../../../../packages/llm/llm-agent-cli/README.md) registers vendor-CLI routes on the shared `llm` service. The harness keeps its loop, tools, sandbox, and session log; only the transport to the model changes.
 
-The CLI is an agent with a tool loop of its own, so four settings reduce one run to one model call: the harness system prompt replaces the CLI's, the harness tool schemas arrive over an in-process MCP server while the CLI's own tools are refused by name, every permission request is denied so no tool can execute where the harness would not see it, and a one-turn cap ends the run exactly where `stream()` ends.
+The CLI is an agent with a tool loop of its own, so four settings reduce one run to one model call: the harness system prompt replaces the CLI's, the harness tool schemas arrive over an in-process MCP server while the CLI's own tools are refused by name, every permission request is denied so no tool can execute where the harness would not see it, and translation ends at the assistant turn, which is exactly where `stream()` ends.
 
 `settingSources` stays unset. The SDK then reads the host's normal settings and native account state, and that inheritance is the authentication — no credential passes through this harness at all, and [`scrubbedParentEnv`](../../../../packages/subprocess/subprocess/README.md) removes credential-shaped names from the child, so an ambient API key cannot be picked up by accident.
 
@@ -30,7 +30,7 @@ The SDK's `tool()` helper takes a **Zod shape**, so presenting the harness tool 
 
 The CLI presents an in-process server's tools as `mcp__<server>__<tool>`. The model therefore emits `mcp__cxh__bash`, which the adapter maps back before the harness sees the call. This is model-visible: a system prompt naming tools describes them by their harness names while the model reads the prefixed ones.
 
-A turn that requests a tool reports the turn cap it hit, not the request it made, so the finish reason is derived from the emitted content — any `tool_use` block means `tool-calls` — rather than from the SDK's own result subtype.
+The vendor's own turn cap cannot bound one model call: reaching it makes the SDK throw an error result, so `maxTurns: 1` turned every ordinary tool-calling turn into a failure. The finish reason is derived from the emitted content — any `tool_use` block means `tool-calls` — and translation ends at the assistant turn rather than waiting for a result the vendor reports about a run this call already finished with.
 
 ## Session affinity
 

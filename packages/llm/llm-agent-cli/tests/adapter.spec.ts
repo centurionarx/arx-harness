@@ -108,7 +108,9 @@ describe('stream', () => {
       tools: [{ name: 'bash', description: 'run', parameters: { type: 'object' } }],
     }))
     const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
-    expect(options['maxTurns']).toBe(1)
+    // The vendor's own turn cap makes reaching it an error result, so the
+    // adapter ends the turn by ending translation instead.
+    expect(options['maxTurns']).toBeUndefined()
     expect(options['systemPrompt']).toBe('harness prompt')
     expect(options['includePartialMessages']).toBe(true)
     expect(options['persistSession']).toBe(false)
@@ -118,6 +120,7 @@ describe('stream', () => {
     // host's skill directories would reach the model unlogged.
     expect(options['skills']).toEqual([])
     expect(options['disallowedTools']).toContain('Skill')
+    expect(options['disallowedTools']).toContain('ToolSearch')
     await expect((options['canUseTool'] as () => Promise<{ behavior: string }>)())
       .resolves.toMatchObject({ behavior: 'deny' })
   })

@@ -43,7 +43,13 @@ describe('createToolServer', () => {
     })._requestHandlers.get(ListToolsRequestSchema.shape.method.value)
     const listed = await handler?.({ method: 'tools/list', params: {} }, {})
     expect(listed?.tools).toEqual([
-      { name: 'bash', description: 'run a command', inputSchema: { type: 'object', properties: { command: { type: 'string' } } } },
+      {
+        name: 'bash',
+        description: 'run a command',
+        inputSchema: { type: 'object', properties: { command: { type: 'string' } } },
+        // Without this the CLI hides the tool behind its own tool search.
+        _meta: { 'anthropic/alwaysLoad': true },
+      },
     ])
   })
 
@@ -166,6 +172,38 @@ describe('translate', () => {
     ])
     expect(out[1]).toEqual({ type: 'tool-call-delta', index: 0, id: CallId(''), argumentsDelta: '{}' })
     expect(out[2]).toEqual({ type: 'block-end', index: 0, block: { type: 'tool-call', id: CallId(''), name: '', arguments: '{}' } })
+  })
+
+  it('ends the turn where the assistant message ends', async () => {
+    expect(await chunks([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'first' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      event({ type: 'message_stop' }),
+      // A vendor that keeps going belongs to the next call, not this one.
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'second' } }),
+    ])).toEqual([
+      { type: 'block-start', index: 0, blockType: 'text' },
+      { type: 'text-delta', index: 0, text: 'first' },
+      { type: 'block-end', index: 0, block: { type: 'text', text: 'first' } },
+      { type: 'finish', reason: { kind: 'stop' } },
+    ])
+  })
+
+  it('passes over vendor events it has no projection for', async () => {
+    expect(await chunks([
+      { type: 'system', subtype: 'init' },
+      event({ type: 'message_start', message: {} }),
+      event({ type: 'ping' }),
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      event({ type: 'message_stop' }),
+    ])).toEqual([
+      { type: 'block-start', index: 0, blockType: 'text' },
+      { type: 'block-end', index: 0, block: { type: 'text', text: '' } },
+      { type: 'finish', reason: { kind: 'stop' } },
+    ])
   })
 
   it('ignores a delta kind it carries no projection for', async () => {

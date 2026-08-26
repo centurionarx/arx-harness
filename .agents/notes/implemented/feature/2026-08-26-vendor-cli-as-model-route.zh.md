@@ -16,7 +16,7 @@ Status: implemented
 
 [`cxh-llm-agent-cli`](../../../../packages/llm/llm-agent-cli/README.zh.md) 在共享的 `llm` 服务上注册厂商 CLI 路由。harness 保留自己的循环、工具、沙箱与会话日志；改变的只是通往模型的传输层。
 
-该 CLI 本身是带工具循环的 agent，因此四项设置把一次运行压缩为一次模型调用：harness 的系统提示词替换 CLI 自己的；harness 工具 schema 经进程内 MCP 服务抵达，同时按名称拒绝 CLI 自带工具；每个权限请求都被拒绝，使任何工具都无法在 harness 看不到的地方执行；单回合上限让运行恰好终止在 `stream()` 终止之处。
+该 CLI 本身是带工具循环的 agent，因此四项设置把一次运行压缩为一次模型调用：harness 的系统提示词替换 CLI 自己的；harness 工具 schema 经进程内 MCP 服务抵达，同时按名称拒绝 CLI 自带工具；每个权限请求都被拒绝，使任何工具都无法在 harness 看不到的地方执行；翻译在 assistant 回合处结束，那正是 `stream()` 终止之处。
 
 `settingSources` 保持未设置。于是 SDK 读取宿主机的常规设置与原生账户状态，而这份继承就是认证本身——没有任何凭据经过本 harness，并且 [`scrubbedParentEnv`](../../../../packages/subprocess/subprocess/README.zh.md) 会从子进程移除形似凭据的名称，因此环境中的 API 密钥不会被意外取用。
 
@@ -30,7 +30,7 @@ SDK 的 `tool()` 辅助函数接受 **Zod shape**，因此经由它呈现 harnes
 
 CLI 把进程内服务的工具呈现为 `mcp__<服务>__<工具>`。因此模型发出的是 `mcp__cxh__bash`，适配器在 harness 看到该调用之前将其映射回去。这对模型可见：一份点名工具的系统提示词用的是 harness 名称，而模型读到的是带前缀的名称。
 
-请求了工具的那个回合，报告的是它撞上的回合上限，而不是它发出的请求，因此完成原因由已发出的内容推导——出现任何 `tool_use` 块即为 `tool-calls`——而不取自 SDK 自己的 result subtype。
+厂商自身的回合上限无法界定一次模型调用：触达它会让 SDK 抛出 error result，因此 `maxTurns: 1` 把每个普通的工具调用回合都变成了失败。完成原因由已发出的内容推导——出现任何 `tool_use` 块即为 `tool-calls`——并且翻译在 assistant 回合处结束，而不等待厂商对一次本调用已经完成的运行所作的报告。
 
 ## 会话亲和
 
