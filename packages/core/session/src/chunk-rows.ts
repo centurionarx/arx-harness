@@ -15,11 +15,11 @@
  * data. The decoder validates before expanding and fails loud on a malformed
  * row-tagged value instead of silently dropping a whole run.
  *
- * @module @centurionarx/cxh-session/chunk-rows
+ * @module @arx-ai/arx-session/chunk-rows
  */
 
-import { CallId, assertNever } from '@centurionarx/cxh-llm'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
+import { CallId, assertNever } from '@arx-ai/arx-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
 import type { SessionEvent } from './types.ts'
 
 /** The chunk kinds that may pack; block boundaries, usage, and finish chunks always stay one event per line. */

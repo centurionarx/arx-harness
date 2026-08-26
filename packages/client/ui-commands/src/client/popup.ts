@@ -9,9 +9,9 @@
  * Input side owns the span/bare-token CAS guard) and focuses the composer;
  * the controller never touches the input machine.
  */
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { TokenSpan } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { TokenSpan } from '@arx-ai/arx-client-ui-input-trigger/client'
 import type { SelectOption } from './contract.ts'
 
 /**

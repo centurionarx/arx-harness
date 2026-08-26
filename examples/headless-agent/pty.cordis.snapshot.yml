@@ -1,24 +1,24 @@
 # Keyless opt-in PTY composition for the headless stream-json snapshot.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - insert:
           - id: sandbox-policy
-            name: '@centurionarx/cxh-sandbox-policy'
+            name: '@arx-ai/arx-sandbox-policy'
             config:
               mode: danger-full-access
           - id: pty
-            name: '@centurionarx/cxh-terminal'
+            name: '@arx-ai/arx-terminal'
           - id: pty-snapshot-backend
             name: '../acp-agent/pty-snapshot-backend.mjs'
           - id: tool-terminal
-            name: '@centurionarx/cxh-tool-terminal'
+            name: '@arx-ai/arx-tool-terminal'
             config:
               maxResultBytes: 64
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId, type Session } from '@centurionarx/cxh-session'
-import { createUserMessage, ProviderRequestId } from '@centurionarx/cxh-llm'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as RetryInvariant from '@centurionarx/cxh-llm-retry/invariant'
-import { RetryId } from '@centurionarx/cxh-llm-retry'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId, type Session } from '@arx-ai/arx-session'
+import { createUserMessage, ProviderRequestId } from '@arx-ai/arx-llm'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as RetryInvariant from '@arx-ai/arx-llm-retry/invariant'
+import { RetryId } from '@arx-ai/arx-llm-retry'
 import { providerForOpenStep } from '../src/history.ts'
 
 async function setup(): Promise<Context> {

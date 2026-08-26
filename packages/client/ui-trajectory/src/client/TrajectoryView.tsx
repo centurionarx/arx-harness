@@ -1,12 +1,12 @@
 /** Trajectory view: compact summary over a turn-aware event ledger. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ConvViewProps } from '@centurionarx/cxh-client-ui-conversation/client'
-import type { InjectFace, PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+import type { ConvViewProps } from '@arx-ai/arx-client-ui-conversation/client'
+import type { InjectFace, PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import type {
   AssistantBlock, AssistantMessageNode, ConversationSnapshot,
   SnapshotStore,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import {
   TrajectoryTable,
   type TrajectoryRequestNumber,

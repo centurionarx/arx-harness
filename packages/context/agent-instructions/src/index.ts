@@ -6,15 +6,15 @@
  * Plugin lifecycle reads use the optional `ctx.fs` provider, so providerless products
  * mount it as a no-op.
  *
- * @module @centurionarx/cxh-agent-instructions
+ * @module @arx-ai/arx-agent-instructions
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { isDeepStrictEqual } from 'node:util'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { Session, UserMessage } from '@centurionarx/cxh-session'
-import type { ToolExecution, ToolExecutionResult, ToolExecutionToken } from '@centurionarx/cxh-tools'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { Session, UserMessage } from '@arx-ai/arx-session'
+import type { ToolExecution, ToolExecutionResult, ToolExecutionToken } from '@arx-ai/arx-tools'
 import { Config, resolveConfig, workspaceBaselineIdentity, type ResolvedConfig } from './config.ts'
 import { findProjectRoot, loadBaselineInstructionSet } from './files.ts'
 import {
@@ -136,7 +136,7 @@ export function apply(ctx: Context, config: Config): void {
       const replacePreviousBaseline = baselinePresent && !keepVisibleBaseline
       const instructions = await loadBaselineInstructionSet({
         cwd,
-        cxhHome: resolved.cxhHome,
+        arxHome: resolved.arxHome,
         projectRootMarkers: resolved.projectRootMarkers,
         maxBytes: resolved.maxBytes,
         maxSourceBytes: resolved.maxSourceBytes,

@@ -53,10 +53,10 @@ jobs:
         if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested' }}
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          client-id: ${{ vars.CXH_ISSUE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.CXH_ISSUE_APP_PRIVATE_KEY }}
-          owner: centurionarx-harness
-          repositories: centurionarx-harness
+          client-id: ${{ vars.ARX_ISSUE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.ARX_ISSUE_APP_PRIVATE_KEY }}
+          owner: arx-harness
+          repositories: arx-harness
       - name: Handle repository event
         if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested' }}
         env:

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { z } from 'zod'
-import Storage from '@centurionarx/cxh-storage'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import * as DomainInvariantCompanion from '@centurionarx/cxh-storage-domain/invariant'
+import Storage from '@arx-ai/arx-storage'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import * as DomainInvariantCompanion from '@arx-ai/arx-storage-domain/invariant'
 import { DomainFacility, defineDomain, domainTable } from '../src/index.ts'
 import type { DomainChanged } from '../src/events.ts'
 import { MemoryStorageBackend } from './helpers/memory-backend.ts'
@@ -31,7 +31,7 @@ async function setup() {
 
 const invariantViolation: unknown = expect.objectContaining<Partial<InvariantError>>({
   code: 'INVARIANT',
-  packageName: '@centurionarx/cxh-storage-domain',
+  packageName: '@arx-ai/arx-storage-domain',
 })
 
 describe('domain change-event invariants', () => {

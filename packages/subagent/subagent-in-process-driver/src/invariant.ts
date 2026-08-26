@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-subagent-in-process-driver`.
- * @module @centurionarx/cxh-subagent-in-process-driver/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-subagent-in-process-driver`.
+ * @module @arx-ai/arx-subagent-in-process-driver/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-subagent-in-process-driver'
+const PACKAGE_NAME = '@arx-ai/arx-subagent-in-process-driver'
 
 /** Cordis companion plugin name. */
 export const name = 'subagent-in-process-driver-invariant'

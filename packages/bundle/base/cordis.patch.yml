@@ -1,4 +1,4 @@
-# The cxh-base bundle patch: the shared core of every cxh profile, applied as
+# The arx-base bundle patch: the shared core of every arx profile, applied as
 # ONE insert over the empty profile root. Later bundle patches and the user's
 # profile cordis.patch.yml address these rows by id, with the last write
 # winning per row.
@@ -14,37 +14,37 @@
 
 - insert:
     - id: timer
-      name: '@centurionarx/cordis-plugin-timer'
+      name: '@arx-ai/cordis-plugin-timer'
 
     - id: hmr
-      name: '@centurionarx/cordis-plugin-hmr'
+      name: '@arx-ai/cordis-plugin-hmr'
       config:
         root: ['.']
 
     - id: llm
-      name: '@centurionarx/cxh-llm'
+      name: '@arx-ai/arx-llm'
 
     - id: session
-      name: '@centurionarx/cxh-session'
+      name: '@arx-ai/arx-session'
 
     - id: typert
-      name: '@centurionarx/cxh-typert-registry'
+      name: '@arx-ai/arx-typert-registry'
 
     - id: typert-loader
-      name: '@centurionarx/cxh-typert-loader'
+      name: '@arx-ai/arx-typert-loader'
 
     - id: typert-gateway
-      name: '@centurionarx/cxh-api-gateway'
+      name: '@arx-ai/arx-api-gateway'
 
     - id: session-title
-      name: '@centurionarx/cxh-session-title'
+      name: '@arx-ai/arx-session-title'
       config:
         fallbackMaxWords: 5
         fallbackMaxBytes: 40
         maxTitleBytes: 80
 
     - id: session-title-llm
-      name: '@centurionarx/cxh-session-title-first-prompt-llm'
+      name: '@arx-ai/arx-session-title-first-prompt-llm'
       config:
         targetWords: 5
         targetCjkCharacters: 10
@@ -53,37 +53,37 @@
         timeoutMs: 60000
 
     - id: user-questions
-      name: '@centurionarx/cxh-user-questions'
+      name: '@arx-ai/arx-user-questions'
 
     - id: agent
-      name: '@centurionarx/cxh-agent'
+      name: '@arx-ai/arx-agent'
 
     # The transport-independent default for Agents created by entry points.
     # Settings may supply a saved selection; consumers read it at creation time.
     - id: agent-default-model
-      name: '@centurionarx/cxh-agent-default-model'
+      name: '@arx-ai/arx-agent-default-model'
       config:
         provider: deepseek-official
         model: deepseek-v4-flash
 
     - id: jobs
-      name: '@centurionarx/cxh-jobs-local'
+      name: '@arx-ai/arx-jobs-local'
 
     - id: llm-retry
-      name: '@centurionarx/cxh-llm-retry'
+      name: '@arx-ai/arx-llm-retry'
 
-    # User-settings document (`$CXH_HOME/settings.yaml`, hot-reloaded): a
+    # User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): a
     # `llm-deepseek:` or `llm-pi-ai:` section there overrides the adapter entries
     # below without a restart, and is what the web Models page writes.
     - id: settings
-      name: '@centurionarx/cxh-settings-file'
+      name: '@arx-ai/arx-settings-file'
 
     # Credential sources: inherited environment over the managed
-    # `$CXH_HOME/.credentials.yaml`, with project and user `.env` fallbacks.
+    # `$ARX_HOME/.credentials.yaml`, with project and user `.env` fallbacks.
     # Adapters resolve references per request; the Models page writes only the
     # managed document, which is never materialized into the process environment.
     - id: credentials
-      name: '@centurionarx/cxh-credentials-local'
+      name: '@arx-ai/arx-credentials-local'
 
     # The pi-ai multi-provider twin, mounted dormant: zero routes (and no extra
     # models in the picker) until a `llm-pi-ai:` settings section supplies provider
@@ -93,7 +93,7 @@
     # adapters exist is composition; which providers run is the user's settings
     # document.
     - id: llm-pi-ai
-      name: '@centurionarx/cxh-llm-pi-ai'
+      name: '@arx-ai/arx-llm-pi-ai'
 
     # A subscription-authenticated vendor CLI as an ordinary model route,
     # mounted dormant like the adapter above: no configured provider means no
@@ -101,18 +101,18 @@
     # host may never have logged in to. Configuring one is a deployment
     # decision, because the login it inherits belongs to the host.
     - id: llm-agent-cli
-      name: '@centurionarx/cxh-llm-agent-cli'
+      name: '@arx-ai/arx-llm-agent-cli'
 
     - id: session-persistence-jsonl
-      name: '@centurionarx/cxh-session-persistence-jsonl'
+      name: '@arx-ai/arx-session-persistence-jsonl'
       config:
-        root: !!js cxhHomePath('sessions')
+        root: !!js arxHomePath('sessions')
 
     # Durable image bytes live outside the append-only session log. Messages
     # keep content-addressed references that this shared backend resolves for
     # provider requests and authorized history reads.
     - id: attachment-local
-      name: '@centurionarx/cxh-attachment-local'
+      name: '@arx-ai/arx-attachment-local'
 
     # Full-text session search is opt-in. `openAt: never` keeps
     # ctx.sessionQuery mounted — exact reads, titles, and lineage traces
@@ -123,7 +123,7 @@
     # `first-search` or `startup` in a later patch layer (profile
     # cordis.patch.yml or a --patch overlay), typically with a durable `path`.
     - id: session-query-sqlite
-      name: '@centurionarx/cxh-session-query-sqlite'
+      name: '@arx-ai/arx-session-query-sqlite'
       config:
         path: ':memory:'
         openAt: never
@@ -132,17 +132,17 @@
     # through its registered units, so the `list_agents` surface below fails
     # loud without it; web layers reuse this same mount for list rows.
     - id: session-projection
-      name: '@centurionarx/cxh-session-projection'
+      name: '@arx-ai/arx-session-projection'
 
-    # Session telemetry is mounted but disabled by default. CXH_TELEMETRY_MODE
+    # Session telemetry is mounted but disabled by default. ARX_TELEMETRY_MODE
     # explicitly opts into FULL or FEEDBACK_ONLY reporting; uploading mirrors
     # session-log records onto OTLP/HTTP logs with no session-telemetry/record redaction
     # rule, so exports are the raw captured copy. The deployment stance, env
     # seams, and follow-ups are pinned in the default-off Agent Note.
-    # CXH_TELEMETRY_OTLP_URL overrides the production endpoint. A non-empty
-    # CXH_TELEMETRY_DISABLED — any value, including '0'/'false' — opts the
+    # ARX_TELEMETRY_OTLP_URL overrides the production endpoint. A non-empty
+    # ARX_TELEMETRY_DISABLED — any value, including '0'/'false' — opts the
     # process out (the launchers patch the row disabled; config cannot disable
-    # a row). Exports carry the harness home's anonymous user id ($CXH_HOME/.anonymous-user-id,
+    # a row). Exports carry the harness home's anonymous user id ($ARX_HOME/.anonymous-user-id,
     # random UUID; delete the file to reset the identity) as the Resource's
     # user.id. The exporter/processor values normally bound the shutdown drain
     # to ~1s against an unreachable collector: exporter.timeoutMillis is both
@@ -154,12 +154,12 @@
     # promise never settles. Every CLI exit path drains it by disposing the root
     # on SIGINT/SIGTERM.
     - id: session-telemetry-otel
-      name: '@centurionarx/cxh-session-telemetry-otel'
+      name: '@arx-ai/arx-session-telemetry-otel'
       config:
-        mode: !!js process.env.CXH_TELEMETRY_MODE || 'DISABLED'
+        mode: !!js process.env.ARX_TELEMETRY_MODE || 'DISABLED'
         shutdownTimeoutMillis: 3000
         exporter:
-          url: !!js process.env.CXH_TELEMETRY_OTLP_URL ?? 'https://harness-telemetry.deepseeksvc.com/v1/logs'
+          url: !!js process.env.ARX_TELEMETRY_OTLP_URL ?? 'https://harness-telemetry.deepseeksvc.com/v1/logs'
           compression: gzip
           timeoutMillis: 1000
         processor:
@@ -169,37 +169,37 @@
           exportTimeoutMillis: 1500
 
     - id: subprocess
-      name: '@centurionarx/cxh-subprocess-local'
+      name: '@arx-ai/arx-subprocess-local'
 
     # Every shipped CLI mode starts with the same file-effect boundary.
     # The environment remains an explicit deployment override; otherwise fresh
     # sessions pin workspace-write + ask through the permission service below.
     - id: sandbox
-      name: '@centurionarx/cxh-sandbox-local'
+      name: '@arx-ai/arx-sandbox-local'
 
     - id: sandbox-policy
-      name: '@centurionarx/cxh-sandbox-policy'
+      name: '@arx-ai/arx-sandbox-policy'
       config:
-        mode: !!js process.env.CXH_PERMISSION_MODE ?? 'workspace-write'
+        mode: !!js process.env.ARX_PERMISSION_MODE ?? 'workspace-write'
         workspaceRoot: !!js process.cwd()
 
     - id: bash-sandbox
-      name: '@centurionarx/cxh-bash-sandbox'
+      name: '@arx-ai/arx-bash-sandbox'
       disabled: !!js process.platform === 'win32'
       config:
         timeoutMs: 60000
 
     - id: pwsh-sandbox
-      name: '@centurionarx/cxh-pwsh-sandbox'
+      name: '@arx-ai/arx-pwsh-sandbox'
       disabled: !!js process.platform !== 'win32'
 
     - id: approval
-      name: '@centurionarx/cxh-user-approval'
+      name: '@arx-ai/arx-user-approval'
       config:
-        policy: !!js "(process.env.CXH_PERMISSION_MODE ?? 'workspace-write') === 'danger-full-access' ? 'never' : 'ask'"
+        policy: !!js "(process.env.ARX_PERMISSION_MODE ?? 'workspace-write') === 'danger-full-access' ? 'never' : 'ask'"
 
     - id: permission
-      name: '@centurionarx/cxh-permission-presets'
+      name: '@arx-ai/arx-permission-presets'
       config:
         presets:
           read-only:
@@ -213,65 +213,65 @@
             approval: never
 
     - id: shell-env
-      name: '@centurionarx/cxh-shell-env'
+      name: '@arx-ai/arx-shell-env'
 
     - id: tool-bash
-      name: '@centurionarx/cxh-tool-bash'
+      name: '@arx-ai/arx-tool-bash'
       disabled: !!js process.platform === 'win32'
 
     - id: tool-pwsh
-      name: '@centurionarx/cxh-tool-pwsh'
+      name: '@arx-ai/arx-tool-pwsh'
       disabled: !!js process.platform !== 'win32'
 
     - id: tool-jobs
-      name: '@centurionarx/cxh-tool-jobs'
+      name: '@arx-ai/arx-tool-jobs'
 
     - id: fs-observation-policy
-      name: '@centurionarx/cxh-fs-observation-policy'
+      name: '@arx-ai/arx-fs-observation-policy'
 
     - id: tool-fs
-      name: '@centurionarx/cxh-tool-fs'
+      name: '@arx-ai/arx-tool-fs'
 
     - id: tool-fs-search
-      name: '@centurionarx/cxh-tool-fs-search'
+      name: '@arx-ai/arx-tool-fs-search'
       config:
         sampleOverCapGlobResults: false
 
     - id: agent-instructions
-      name: '@centurionarx/cxh-agent-instructions'
+      name: '@arx-ai/arx-agent-instructions'
       config:
         maxBytes: 65536
 
     - id: skill
-      name: '@centurionarx/cxh-skill'
+      name: '@arx-ai/arx-skill'
 
     - id: skill-filesystem
-      name: '@centurionarx/cxh-skill-filesystem'
+      name: '@arx-ai/arx-skill-filesystem'
 
     - id: skill-badge
-      name: '@centurionarx/cxh-skill-badge'
+      name: '@arx-ai/arx-skill-badge'
       disabled: true
 
     - id: tool-skill
-      name: '@centurionarx/cxh-tool-skill'
+      name: '@arx-ai/arx-tool-skill'
 
     - id: commands
-      name: '@centurionarx/cxh-commands'
+      name: '@arx-ai/arx-commands'
 
     - id: command-feedback
-      name: '@centurionarx/cxh-command-feedback'
+      name: '@arx-ai/arx-command-feedback'
 
     - id: goal
-      name: '@centurionarx/cxh-goal'
+      name: '@arx-ai/arx-goal'
 
     - id: goal-round-driver
-      name: '@centurionarx/cxh-goal-round-driver'
+      name: '@arx-ai/arx-goal-round-driver'
 
     - id: command-goal
-      name: '@centurionarx/cxh-command-goal'
+      name: '@arx-ai/arx-command-goal'
 
     - id: plan-mode
-      name: '@centurionarx/cxh-plan-mode'
+      name: '@arx-ai/arx-plan-mode'
       config:
         section: |
               You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
@@ -287,39 +287,39 @@
               When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
 
     - id: token-meter
-      name: '@centurionarx/cxh-token-meter'
+      name: '@arx-ai/arx-token-meter'
 
     - id: compaction-basic
-      name: '@centurionarx/cxh-compaction-basic'
+      name: '@arx-ai/arx-compaction-basic'
 
     # Human `/compact`: one useful reduction below the automatic threshold. Backend
     # independent, so it follows whichever compaction service this leaf mounts.
     - id: command-compact
-      name: '@centurionarx/cxh-command-compact'
+      name: '@arx-ai/arx-command-compact'
 
     - id: subagent
-      name: '@centurionarx/cxh-subagent'
+      name: '@arx-ai/arx-subagent'
 
     - id: subagent-spawn-in-process
-      name: '@centurionarx/cxh-subagent-spawn-in-process'
+      name: '@arx-ai/arx-subagent-spawn-in-process'
       config:
         providerName: spawn
 
     - id: subagent-fork-in-process
-      name: '@centurionarx/cxh-subagent-fork-in-process'
+      name: '@arx-ai/arx-subagent-fork-in-process'
       config:
         providerName: fork
 
     # Continuable background children are selected per delegation tool. The
     # separately loaded follow-up tool registers the one global `send_message`.
     - id: tool-subagent-control
-      name: '@centurionarx/cxh-tool-subagent-control'
+      name: '@arx-ai/arx-tool-subagent-control'
 
     - id: tool-subagent-list-agents
-      name: '@centurionarx/cxh-tool-subagent-control/list-agents'
+      name: '@arx-ai/arx-tool-subagent-control/list-agents'
 
     - id: tool-subagent
-      name: '@centurionarx/cxh-tool-subagent'
+      name: '@arx-ai/arx-tool-subagent'
       config:
         provider: spawn
         toolName: subagent
@@ -330,7 +330,7 @@
     # fork children install neither, keeping the parent's request prefix.
     # See .agents/notes/implemented/architecture/2026-08-10-fork-children-stay-one-shot.md.
     - id: tool-subagent-fork
-      name: '@centurionarx/cxh-tool-subagent'
+      name: '@arx-ai/arx-tool-subagent'
       config:
         provider: fork
         toolName: subagent_fork
@@ -338,65 +338,65 @@
 
     # Optional direct-child return channel; absent from roots and one-shot agents.
     - id: tool-subagent-report
-      name: '@centurionarx/cxh-tool-subagent-report'
+      name: '@arx-ai/arx-tool-subagent-report'
 
     - id: workflow-worker-thread
-      name: '@centurionarx/cxh-workflow-worker-thread'
+      name: '@arx-ai/arx-workflow-worker-thread'
       config:
         provider: spawn
 
     - id: tool-workflow
-      name: '@centurionarx/cxh-tool-workflow'
+      name: '@arx-ai/arx-tool-workflow'
 
     - id: timeout-policy
-      name: '@centurionarx/cxh-tool-call-timeout-policy'
+      name: '@arx-ai/arx-tool-call-timeout-policy'
 
     - id: spill-local
-      name: '@centurionarx/cxh-spill-local'
+      name: '@arx-ai/arx-spill-local'
 
     - id: spill-policy
-      name: '@centurionarx/cxh-spill-policy'
+      name: '@arx-ai/arx-spill-policy'
       config:
         maxInlineBytes: 50000
 
     # Durability checkpoints before each model request and top-level dispatch.
     - id: session-checkpoint-policy
-      name: '@centurionarx/cxh-session-checkpoint-policy'
+      name: '@arx-ai/arx-session-checkpoint-policy'
 
     # Compacts oversized tool results before the broader conversation compactor
     # runs, preserving the model-visible result within the configured budget.
     - id: tool-result-pruner
-      name: '@centurionarx/cxh-compaction-tool-result-pruner'
+      name: '@arx-ai/arx-compaction-tool-result-pruner'
       config:
         thresholdChars: 8192
         headChars: 4096
         tailChars: 1024
 
     - id: tool-todo
-      name: '@centurionarx/cxh-tool-todo'
+      name: '@arx-ai/arx-tool-todo'
       config:
         allowParallelInProgress: true
 
     # Persisted same-session goals reach the model and the slash menu here; the
     # domain, driver, and `/goal` command are above.
     - id: tool-goal
-      name: '@centurionarx/cxh-tool-goal'
+      name: '@arx-ai/arx-tool-goal'
 
     # Fresh-agent Ralph iteration over a build-time-fixed script.
     - id: tool-ralph
-      name: '@centurionarx/cxh-tool-ralph'
+      name: '@arx-ai/arx-tool-ralph'
       config:
         subagentProvider: spawn
         maxRounds: 64
 
     - id: tool-str-replace-editor
-      name: '@centurionarx/cxh-tool-str-replace-editor'
+      name: '@arx-ai/arx-tool-str-replace-editor'
       config:
         maxOutputChars: 16000
 
     # Consecutive-repeat reminders on the tool chain.
     - id: repeat-tool-reminder
-      name: '@centurionarx/cxh-repeat-tool-reminder'
+      name: '@arx-ai/arx-repeat-tool-reminder'
       config:
         thresholds: [3, 5, 8]
         argumentsPreviewChars: 500
@@ -410,17 +410,17 @@
     # auxiliary model request with server-side retrieval, so this shipped DeepSeek
     # route gets 60s while the provider-neutral tool default remains 30s.
     - id: web
-      name: '@centurionarx/cxh-web'
+      name: '@arx-ai/arx-web'
       config:
         searchProvider: deepseek-official
 
     - id: web-search-deepseek
-      name: '@centurionarx/cxh-web-search-deepseek'
+      name: '@arx-ai/arx-web-search-deepseek'
       config:
         apiKeyEnv: DEEPSEEK_API_KEY
 
     - id: tool-web
-      name: '@centurionarx/cxh-tool-web'
+      name: '@arx-ai/arx-tool-web'
       config:
         fetch: false
         searchTimeoutMs: 60000
@@ -430,30 +430,30 @@
     # The tool registry. Presentation mode is a deployment choice; omitting it here
     # keeps the schema default (native).
     - id: tools
-      name: '@centurionarx/cxh-tools'
+      name: '@arx-ai/arx-tools'
 
     # The deployment persona is a deployment choice; plan-mode and tool plugins own
     # their own prompt sections.
     - id: system-prompt
-      name: '@centurionarx/cxh-system-prompt'
+      name: '@arx-ai/arx-system-prompt'
       config:
         persona: ''
 
     # Agents created at startup. The base stays empty; raw overlays may create
     # agents, while Web creates sessions on client request.
     - id: agent-loop
-      name: '@centurionarx/cxh-agent-loop'
+      name: '@arx-ai/arx-agent-loop'
       config:
         agents: []
 
     # The sandboxed filesystem provider. `cwd` defaults to `process.cwd()`; an
     # overlay can pin another workspace.
     - id: fs-sandbox
-      name: '@centurionarx/cxh-fs-sandbox'
+      name: '@arx-ai/arx-fs-sandbox'
 
     # The native DeepSeek adapter. No key or endpoint is inlined: both resolve per
     # request from the `llm-deepseek:` settings section over this entry, with the
     # key coming from the credential store below. Thinking defaults are a deployment
     # choice.
     - id: llm-deepseek
-      name: '@centurionarx/cxh-llm-deepseek'
+      name: '@arx-ai/arx-llm-deepseek'

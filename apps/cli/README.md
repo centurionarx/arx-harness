@@ -1,42 +1,42 @@
-# `@centurionarx/cxh`
+# `@arx-ai/arx`
 
 English | [中文](README.zh.md)
 
-The `cxh` command is the product launcher for profiles: ordered stacks of plugin-bundle patch layers under the user's own overrides. [`src/args.ts`](src/args.ts) owns the command grammar, and [`src/bin.ts`](src/bin.ts) loads only the selected runner. Invalid commands, options from another mode, configuration errors, and boot failures exit nonzero.
+The `arx` command is the product launcher for profiles: ordered stacks of plugin-bundle patch layers under the user's own overrides. [`src/args.ts`](src/args.ts) owns the command grammar, and [`src/bin.ts`](src/bin.ts) loads only the selected runner. Invalid commands, options from another mode, configuration errors, and boot failures exit nonzero.
 
 ## Entry modes
 
 | Command | Purpose |
 |---|---|
-| `cxh --profile <name>` | Boot the named profile under `$CXH_HOME/profiles/<name>`. |
-| `cxh --profile headless "job"` | Run one fresh persisted session, print the final answer, and exit. |
-| `cxh web` | Alias of `--profile web`. |
-| `cxh plugin --profile <name> <pnpm args>` | Manage a profile's plugins by forwarding to pnpm in the profile directory. |
+| `arx --profile <name>` | Boot the named profile under `$ARX_HOME/profiles/<name>`. |
+| `arx --profile headless "job"` | Run one fresh persisted session, print the final answer, and exit. |
+| `arx web` | Alias of `--profile web`. |
+| `arx plugin --profile <name> <pnpm args>` | Manage a profile's plugins by forwarding to pnpm in the profile directory. |
 
-The invoking directory is the default workspace root. The `web` and `headless` profiles auto-initialize on first use from shipped templates; any other profile must be created through `cxh plugin`.
+The invoking directory is the default workspace root. The `web` and `headless` profiles auto-initialize on first use from shipped templates; any other profile must be created through `arx plugin`.
 
 ## App arguments
 
-The launcher parses only its own flags and hands everything after them to the booted profile, where any injected app plugin may parse the shared immutable snapshot ([`cxh-cmdline`](../../packages/boot/cmdline/README.md)). Launcher flags therefore come first, and the first token the launcher does not recognize starts the app's arguments:
+The launcher parses only its own flags and hands everything after them to the booted profile, where any injected app plugin may parse the shared immutable snapshot ([`arx-cmdline`](../../packages/boot/cmdline/README.md)). Launcher flags therefore come first, and the first token the launcher does not recognize starts the app's arguments:
 
 ```sh
-cxh --profile web --port 8080       # --port belongs to the web app
-cxh --profile tui --resume <id>     # example, assuming the tui profile is installed; --resume belongs to the terminal app
-cxh --profile headless "run the tests"
-cxh --profile web --help            # the web app's flags, not the launcher's
-cxh --help                          # the launcher's own help
+arx --profile web --port 8080       # --port belongs to the web app
+arx --profile tui --resume <id>     # example, assuming the tui profile is installed; --resume belongs to the terminal app
+arx --profile headless "run the tests"
+arx --profile web --help            # the web app's flags, not the launcher's
+arx --help                          # the launcher's own help
 ```
 
 ## Profiles
 
-A profile directory holds a `package.json` (out-of-tree plugin dependencies plus the profile manifest `cxh.profile` with its ordered `bundles` list) and a `cordis.patch.yml` (the user's own patch layer).
+A profile directory holds a `package.json` (out-of-tree plugin dependencies plus the profile manifest `arx.profile` with its ordered `bundles` list) and a `cordis.patch.yml` (the user's own patch layer).
 
 The tree composes over an empty root:
-- each bundle's patch in `cxh.profile.bundles` order
-- then the profile's `cordis.patch.yml`, then the home-level `$CXH_HOME/cordis.patch.yml`
+- each bundle's patch in `arx.profile.bundles` order
+- then the profile's `cordis.patch.yml`, then the home-level `$ARX_HOME/cordis.patch.yml`
 - then `--patch` overlays
 
-Bundles named in `cxh.profile.bundles` resolve from the cxh installation first (`@centurionarx/cxh-base`, `@centurionarx/cxh-web-app`, `@centurionarx/cxh-headless`), then from the profile's own `node_modules`, where pnpm installs out-of-tree plugins.
+Bundles named in `arx.profile.bundles` resolve from the arx installation first (`@arx-ai/arx-base`, `@arx-ai/arx-web-app`, `@arx-ai/arx-headless`), then from the profile's own `node_modules`, where pnpm installs out-of-tree plugins.
 
 Use `--dump-default-config` and `--dump-config` to inspect the composed tree without booting it.
 
@@ -44,4 +44,4 @@ The [CLI behavior reference](reference/README.md) owns exact layer precedence, f
 
 ## Development
 
-Production runs require built package and frontend artifacts. From the repository root, run `pnpm run build` separately, then use `pnpm cxh <args...>` to run the TypeScript entry and forward every argument; the [source-execution reference](reference/README.md#source-execution) owns the module-resolution contract.
+Production runs require built package and frontend artifacts. From the repository root, run `pnpm run build` separately, then use `pnpm arx <args...>` to run the TypeScript entry and forward every argument; the [source-execution reference](reference/README.md#source-execution) owns the module-resolution contract.

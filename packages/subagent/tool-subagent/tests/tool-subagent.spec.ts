@@ -2,30 +2,30 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import { assembleContextFor, type Agent } from '@centurionarx/cxh-agent'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentStartRequest } from '@centurionarx/cxh-subagent'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import { assembleContextFor, type Agent } from '@arx-ai/arx-agent'
+import AgentRegistry from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentStartRequest } from '@arx-ai/arx-subagent'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as mock from './scripted-provider.ts'
 import * as tool from '../src/index.ts'
-import { SessionId } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
 
 const testToolSignal = new AbortController().signal
 
 /**
- * Drives the REAL plugin body: mounts `cxh-tool-subagent` on a real
+ * Drives the REAL plugin body: mounts `arx-tool-subagent` on a real
  * `ToolRuntime` + `SubagentRuntime`, with a package-local scripted child
  * boundary, and invokes the registered `subagent` tool through
  * `ctx.tools.execute`. Everything downstream of the child boundary is the
@@ -67,7 +67,7 @@ function text(result: { content: { type: string; text?: string }[] }): string {
   return result.content.filter(b => b.type === 'text').map(b => b.text).join('')
 }
 
-describe('cxh-tool-subagent', () => {
+describe('arx-tool-subagent', () => {
   it('rejects continuable background policy when the provider cannot prepare continuable children', async () => {
     let failure: unknown
     try {
@@ -773,7 +773,7 @@ describe('cxh-tool-subagent', () => {
   })
 })
 
-describe('cxh-tool-subagent background mode', () => {
+describe('arx-tool-subagent background mode', () => {
   /** A live parent with a dedicated scope fiber for structural task cleanup. */
   function ownerAgent(ctx: Context, sessionId: string, inject: (...args: unknown[]) => void = () => {}): Agent {
     const scopeFiber = ctx.plugin(() => {})
@@ -902,7 +902,7 @@ describe('cxh-tool-subagent background mode', () => {
     const ctx = await setup({ provider: 'mock' })
     const result = await callSubagent(ctx, { description: 'd', prompt: 'p', run_in_background: true })
     expect(result.isError).toBe(true)
-    expect(text(result)).toContain('background jobs unavailable: load @centurionarx/cxh-jobs')
+    expect(text(result)).toContain('background jobs unavailable: load @arx-ai/arx-jobs')
   })
 
   it('skips background startup when the tool signal is already aborted', async () => {
@@ -1074,7 +1074,7 @@ describe('cxh-tool-subagent background mode', () => {
 
 })
 
-describe('cxh-tool-subagent continuable background mode', () => {
+describe('arx-tool-subagent continuable background mode', () => {
   const roots: string[] = []
   afterEach(() => {
     for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
@@ -1084,7 +1084,7 @@ describe('cxh-tool-subagent continuable background mode', () => {
   async function continuableSetup() {
     const ctx = new Context()
     await mountAgentLoopTestDependencies(ctx)
-    const root = mkdtempSync(path.join(tmpdir(), 'cxh-tool-subagent-continuable-'))
+    const root = mkdtempSync(path.join(tmpdir(), 'arx-tool-subagent-continuable-'))
     roots.push(root)
     await ctx.plugin(JsonlSessionPersistence, { root })
     await ctx.plugin(AgentLoop, { agents: [] })

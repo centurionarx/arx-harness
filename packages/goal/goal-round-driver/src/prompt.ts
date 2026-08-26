@@ -1,7 +1,7 @@
 /** Model-visible continuation prompt for one same-session goal round. */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { GoalView } from '@centurionarx/cxh-goal'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { GoalView } from '@arx-ai/arx-goal'
 
 /**
  * Render the complete goal-round instruction retained in session history.

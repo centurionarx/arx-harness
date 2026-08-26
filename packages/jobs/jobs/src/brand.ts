@@ -1,16 +1,16 @@
 /**
- * cxh-jobs' owned branded id, carried across the registry, the model-facing
+ * arx-jobs' owned branded id, carried across the registry, the model-facing
  * control surface, and the client wire.
  *
  * It lives in its own leaf because the package root and `./types` both reach
- * `cxh-agent` through the owner and listener signatures, which a Client program
+ * `arx-agent` through the owner and listener signatures, which a Client program
  * cannot resolve even as a type. A browser-safe consumer imports the id here;
- * `Branded<B>` itself comes from the zero-dependency `@centurionarx/cxh-brand`.
+ * `Branded<B>` itself comes from the zero-dependency `@arx-ai/arx-brand`.
  *
- * @module @centurionarx/cxh-jobs/brand
+ * @module @arx-ai/arx-jobs/brand
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /**
  * Identifies a background job. The registry generates `<kind>-N`; predictable

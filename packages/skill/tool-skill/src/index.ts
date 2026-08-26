@@ -1,16 +1,16 @@
 /**
  * Durable session skill catalog and model-facing `skill` loader tool.
  *
- * @module @centurionarx/cxh-tool-skill
+ * @module @arx-ai/arx-tool-skill
  */
 
 import { createHash } from 'node:crypto'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { defineTool } from '@centurionarx/cxh-tools'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { defineTool } from '@arx-ai/arx-tools'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-session'
 import {
   escapeText,
   isModelInvocable,
@@ -19,7 +19,7 @@ import {
   renderSkillContent,
   type SkillInvocationSource,
   type SkillSummary,
-} from '@centurionarx/cxh-skill'
+} from '@arx-ai/arx-skill'
 
 export const name = 'tool-skill'
 export const inject = ['agents', 'tools', 'skills']
@@ -40,7 +40,7 @@ export interface SkillCatalogSource {
   readonly entries: readonly { readonly name: string; readonly description: string }[]
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     'skill-catalog': SkillCatalogSource
   }

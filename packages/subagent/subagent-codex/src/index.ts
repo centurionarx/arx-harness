@@ -3,12 +3,12 @@
  * fresh official package-local Codex wrapper with `app-server --stdio` in the
  * delegating Session's workspace and publishes only after an ephemeral thread exists.
  *
- * @module @centurionarx/cxh-subagent-codex
+ * @module @arx-ai/arx-subagent-codex
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import {
   assertPositiveFinite,
   NO_START_CAPABILITIES,
@@ -16,7 +16,7 @@ import {
   type ResolvedSubagentStartRequest,
   type SubagentCapabilities,
   type SubagentProvider,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import {
   CODEX_PERMISSION_MODES,
   DEFAULT_CODEX_PERMISSION_MODE,

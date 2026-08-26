@@ -1,14 +1,14 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-workspace`.
- * @module @centurionarx/cxh-workspace/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-workspace`.
+ * @module @arx-ai/arx-workspace/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { DomainChanged } from '@centurionarx/cxh-storage-domain'
-import { WorkspaceId } from '@centurionarx/cxh-workspace'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { DomainChanged } from '@arx-ai/arx-storage-domain'
+import { WorkspaceId } from '@arx-ai/arx-workspace'
 
-const PACKAGE_NAME = '@centurionarx/cxh-workspace'
+const PACKAGE_NAME = '@arx-ai/arx-workspace'
 
 /** Cordis companion plugin name. */
 export const name = 'workspace-invariant'

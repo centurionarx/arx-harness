@@ -2,8 +2,8 @@
 
 import type {
   IApiClient, RpcResult, WorkspaceView,
-} from '@centurionarx/cxh-api-remotes/client'
-import { transportError } from '@centurionarx/cxh-host-apiproxy/api'
+} from '@arx-ai/arx-api-remotes/client'
+import { transportError } from '@arx-ai/arx-host-apiproxy/api'
 import type { ObservableSnapshot } from '../contract/store.ts'
 import { Notifier } from '../sessions/notifier.ts'
 

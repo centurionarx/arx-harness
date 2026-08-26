@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as ModelsInvariant from '@centurionarx/cxh-client-ui-settings-models/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import * as ModelsInvariant from '@arx-ai/arx-client-ui-settings-models/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import { ModelsSection } from '../src/client/ModelsSection.tsx'
 
 describe('invariant companion', () => {
@@ -12,7 +12,7 @@ describe('invariant companion', () => {
   })
 
   it('node-half apply is a no-op host placeholder', async () => {
-    const { apply } = await import('@centurionarx/cxh-client-ui-settings-models')
+    const { apply } = await import('@arx-ai/arx-client-ui-settings-models')
     apply()
     expect(true).toBe(true) // reaching here without throw is the contract
   })

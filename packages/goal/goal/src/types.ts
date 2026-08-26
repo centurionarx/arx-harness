@@ -1,16 +1,16 @@
 /**
  * Pure types of the goal domain: the ONE home of the `goal` projection-key
  * declaration plus the durable payload vocabulary it carries, free of this
- * package's host-side imports (cordis events, cxh-agent, cxh-llm, the
+ * package's host-side imports (cordis events, arx-agent, arx-llm, the
  * service). Two namespace projections serve it — `./types` for host
  * consumers, `./client` (the browser half-entry's re-export) for client
  * aggregates — with zero content duplication. Host-coupled domain
  * vocabulary (message sources, events, fold shapes) lives in ./domain.ts.
  *
- * @module @centurionarx/cxh-goal/types
+ * @module @arx-ai/arx-goal/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Identifies one goal across its durable revisions. */
 export type GoalId = Branded<'GoalId'>
@@ -99,7 +99,7 @@ export interface GoalProjection {
   readonly updatedAt: number
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     goal: GoalProjection | null
   }

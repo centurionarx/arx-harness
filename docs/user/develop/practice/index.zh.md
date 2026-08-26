@@ -12,13 +12,13 @@
 
 以 Bash 执行能力为例：
 
-- **Service Definition** (`cxh-shell`)：定义 Cordis 服务以及 Bash 请求和结果类型
-- **Service Provider** (`cxh-bash-local`)：在本地计算机上执行命令
-- **Consumer** (`cxh-tool-bash`)：将该能力公开为模型可调用的工具
+- **Service Definition** (`arx-shell`)：定义 Cordis 服务以及 Bash 请求和结果类型
+- **Service Provider** (`arx-bash-local`)：在本地计算机上执行命令
+- **Consumer** (`arx-tool-bash`)：将该能力公开为模型可调用的工具
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌──────────────┐
-│  cxh-shell   │────▶│  cxh-bash-local  │     │ cxh-tool-bash│
+│  arx-shell   │────▶│  arx-bash-local  │     │ arx-tool-bash│
 │(definition) │     │    (provider)     │     │(consumer/tool)│
 └─────────────┘     └──────────────────┘     └──────────────┘
        ▲                                            │
@@ -34,7 +34,7 @@
 
 ```yaml
 # Local execution
-- name: '@centurionarx/cxh-bash-local'
+- name: '@arx-ai/arx-bash-local'
 
 # Replace this row with another package that provides the same service.
 ```
@@ -61,9 +61,9 @@
 
 ```ts ignore-check
 // packages/my-cap/my-cap/src/index.ts
-import { Service, type Context } from '@centurionarx/cordis'
+import { Service, type Context } from '@arx-ai/cordis'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     myCap: MyCapService
   }
@@ -91,8 +91,8 @@ export interface MyCapResult {
 
 ```ts ignore-check
 // packages/my-cap/my-cap-local/src/index.ts
-import type { Context } from '@centurionarx/cordis'
-import { MyCapService, type MyCapRequest, type MyCapResult } from '@centurionarx/cxh-my-cap'
+import type { Context } from '@arx-ai/cordis'
+import { MyCapService, type MyCapRequest, type MyCapResult } from '@arx-ai/arx-my-cap'
 
 class MyCapLocal extends MyCapService {
   async execute(request: MyCapRequest): Promise<MyCapResult> {
@@ -112,8 +112,8 @@ export function apply(ctx: Context) {
 
 ```ts ignore-check
 // packages/my-cap/tool-my-cap/src/index.ts
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
 
 export const name = 'tool-my-cap'
 export const inject = ['tools', 'myCap']
@@ -140,8 +140,8 @@ export function apply(ctx: Context) {
 ### 在 cordis.yml 中组合
 
 ```yaml
-- name: '@centurionarx/cxh-my-cap-local'
-- name: '@centurionarx/cxh-tool-my-cap'
+- name: '@arx-ai/arx-my-cap-local'
+- name: '@arx-ai/arx-tool-my-cap'
 ```
 
 ## 设计要点

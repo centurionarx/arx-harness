@@ -1,21 +1,21 @@
 /**
  * Basic replay-aware compaction backend.
  *
- * @module @centurionarx/cxh-compaction-basic
+ * @module @arx-ai/arx-compaction-basic
  */
 
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { CompactionEngine, ManualCompactionError } from '@centurionarx/cxh-compaction'
-import type { CompactionResult, CompactionTrigger } from '@centurionarx/cxh-compaction'
-import type { TokenMeter } from '@centurionarx/cxh-token-meter'
-import type { Session } from '@centurionarx/cxh-session'
-import { CONTEXT_WINDOW_EXCEEDED_CODE, assertNever } from '@centurionarx/cxh-llm'
-import type { LlmCallConfig } from '@centurionarx/cxh-llm'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { CompactionEngine, ManualCompactionError } from '@arx-ai/arx-compaction'
+import type { CompactionResult, CompactionTrigger } from '@arx-ai/arx-compaction'
+import type { TokenMeter } from '@arx-ai/arx-token-meter'
+import type { Session } from '@arx-ai/arx-session'
+import { CONTEXT_WINDOW_EXCEEDED_CODE, assertNever } from '@arx-ai/arx-llm'
+import type { LlmCallConfig } from '@arx-ai/arx-llm'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
 // Type-only: makes the optional sibling service available to `ctx.get()`.
-import type {} from '@centurionarx/cxh-compaction-tool-result-pruner'
+import type {} from '@arx-ai/arx-compaction-tool-result-pruner'
 import {
   resolveCompactSpec,
   resolveConfig,

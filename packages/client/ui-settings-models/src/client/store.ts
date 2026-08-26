@@ -8,10 +8,10 @@
 
 import type {
   ConfigurableProviderView, CredentialView, IApiClient, SettingsNamespaceView,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { SettingsDescribeFace } from '@centurionarx/cxh-client-ui-settings/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 
 /**

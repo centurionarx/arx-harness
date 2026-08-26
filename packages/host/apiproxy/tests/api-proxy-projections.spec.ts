@@ -8,22 +8,22 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { z } from 'zod'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import { AttachmentStore } from '@centurionarx/cxh-attachment'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { MuxFrame, RpcRequest } from '@centurionarx/cxh-host-apiproxy/api'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import { AttachmentStore } from '@arx-ai/arx-attachment'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { MuxFrame, RpcRequest } from '@arx-ai/arx-host-apiproxy/api'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/last-user': LastUserState
     'test/internal-count': number

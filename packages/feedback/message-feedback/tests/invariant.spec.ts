@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import * as MessageFeedbackInvariant from '../src/invariant.ts'
 import { setupHarness } from './helpers.ts'
 
@@ -11,7 +11,7 @@ describe('message-feedback invariant companion', () => {
       const fiber = await harness.ctx.plugin(MessageFeedbackInvariant)
 
       expect(() => {
-        harness.ctx.invariants.register('@centurionarx/cxh-message-feedback', () => {})
+        harness.ctx.invariants.register('@arx-ai/arx-message-feedback', () => {})
       }).toThrow(/already registered/u)
 
       await fiber.dispose()

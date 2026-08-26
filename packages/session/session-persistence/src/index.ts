@@ -2,16 +2,16 @@
  * Durable session-persistence Service Definition (`ctx.sessionPersistence`). Backends store
  * {@link SessionEvent}s as the event-sourced log and carry non-replayable
  * {@link SessionHeader} metadata separately.
- * @module @centurionarx/cxh-session-persistence
+ * @module @arx-ai/arx-session-persistence
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { SessionPreparation } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionId, SessionHeader } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import { SessionPreparation } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionId, SessionHeader } from '@arx-ai/arx-session'
 import type { SessionPersistenceRevision } from './revision.ts'
 
 // Re-export the metadata vocabulary so Consumers import it from the Service Definition.
-export type { SessionHeader } from '@centurionarx/cxh-session'
+export type { SessionHeader } from '@arx-ai/arx-session'
 export { SessionPersistenceRevision } from './revision.ts'
 
 /** Lightweight immutable source identity returned without loading a full log. */
@@ -57,7 +57,7 @@ export type {
   StoredSuffix,
 } from './coordinator.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionPersistence: SessionPersistence
   }

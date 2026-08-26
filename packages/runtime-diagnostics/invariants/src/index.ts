@@ -3,13 +3,13 @@
  * Every workspace package registers checks from a `./invariant` companion;
  * ordinary package entrypoints stay independent of diagnostics.
  *
- * @module @centurionarx/cxh-invariants
+ * @module @arx-ai/arx-invariants
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { Inject } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type Schema from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Inject } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type Schema from '@arx-ai/schemastery'
 
 /** Runtime invariant selection configured on the service plugin. */
 export interface Config {
@@ -65,7 +65,7 @@ export class InvariantError extends Error {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     invariants: InvariantRegistry
   }

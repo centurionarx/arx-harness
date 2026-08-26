@@ -1,16 +1,16 @@
 /** What the browser half registers, and that it all leaves with the fiber. */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { resolveSlotLabel } from '@centurionarx/cxh-client-ui-slots'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-settings-plugins/client'
+import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-settings-plugins/client'
 import type {
   ConfigurablePluginsTabFace, PluginsSettingsSectionInjected,
-} from '@centurionarx/cxh-client-ui-settings-plugins/client'
+} from '@arx-ai/arx-client-ui-settings-plugins/client'
 
 // These specs assert the shipped Chinese copy. The lane has no jsdom `window`,
 // so browser-language detection never runs and a fresh LocaleRuntime opens on

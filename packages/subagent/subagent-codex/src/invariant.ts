@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-subagent-codex`.
- * @module @centurionarx/cxh-subagent-codex/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-subagent-codex`.
+ * @module @arx-ai/arx-subagent-codex/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-subagent-codex'
+const PACKAGE_NAME = '@arx-ai/arx-subagent-codex'
 
 /** Cordis companion plugin name. */
 export const name = 'subagent-codex-invariant'

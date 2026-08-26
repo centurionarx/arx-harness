@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { agentEvents, Inbox, type Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@centurionarx/cxh-shell'
-import * as tmuxContext from '@centurionarx/cxh-tmux-context'
-import type { Config } from '@centurionarx/cxh-tmux-context'
+import { Context } from '@arx-ai/cordis'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { agentEvents, Inbox, type Agent } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from '@arx-ai/arx-shell'
+import * as tmuxContext from '@arx-ai/arx-tmux-context'
+import type { Config } from '@arx-ai/arx-tmux-context'
 
 const SIGNAL = new AbortController().signal
 

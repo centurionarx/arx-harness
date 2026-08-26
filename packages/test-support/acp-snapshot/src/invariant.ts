@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-acp-snapshot`.
- * @module @centurionarx/cxh-acp-snapshot/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-acp-snapshot`.
+ * @module @arx-ai/arx-acp-snapshot/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-acp-snapshot'
+const PACKAGE_NAME = '@arx-ai/arx-acp-snapshot'
 
 /** Cordis companion plugin name. */
 export const name = 'acp-snapshot-invariant'

@@ -7,17 +7,17 @@
  * composing this plugin out of cordis.yml removes both surfaces entirely;
  * the owning view renders an empty chain and inert prose at zero cost.
  */
-import type { ConnectionHandle } from '@centurionarx/cxh-client-connection/client'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { ChatFileMentions } from '@centurionarx/cxh-client-ui-conversation/client'
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { ChatFileMentions } from '@arx-ai/arx-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import { ProducedFiles } from './ProducedFiles.tsx'
 import { en, NS, zh, type DeliverablesKey } from './locales.ts'
 import {
   deliverablesDefinition, producedFileMentions, selectProducedFiles,
 } from './turn-deliverables.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Produced-files row copy. */
     'deliverables': DeliverablesKey

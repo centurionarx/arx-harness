@@ -4,23 +4,23 @@
  * matchers, snake_case payloads without a trailing newline, no hook environment
  * or command substitution, and no pre-tool approval or rewrite path; only
  * blocking decisions are honored. Shared execution and parsing live in
- * `cxh-hook-protocol`; see the
+ * `arx-hook-protocol`; see the
  * [hook-bridges Agent Note](../../../../.agents/notes/implemented/feature/2026-06-30-hook-bridges.md).
- * @module @centurionarx/cxh-hooks-codex
+ * @module @arx-ai/arx-hooks-codex
  */
 
 // Each dialect bridge keeps its complete dependency list visible at the entry
 // point; a cross-package facade for imports alone would add indirection.
 /* jscpd:ignore-start */
 import { readFileSync } from 'node:fs'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, MessageSource } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-session-persistence'
-import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, MessageSource } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-session-persistence'
+import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@arx-ai/arx-tools'
 import {
   appendHookInvoked,
   appendHookResult,
@@ -33,7 +33,7 @@ import {
   type HookOutput,
   type MatcherGroup,
   type MergedHookOutcome,
-} from '@centurionarx/cxh-hook-protocol'
+} from '@arx-ai/arx-hook-protocol'
 import { parseCodexConfig, type CodexHookConfig } from './config.ts'
 /* jscpd:ignore-end */
 

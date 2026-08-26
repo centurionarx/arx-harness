@@ -1,27 +1,27 @@
 # Minimal tool-pwsh composition: real app boot path, real pwsh executor, real
 # foreground + background tool calls; driven by the package's loader.spec.ts.
 - id: system-prompt
-  name: '@centurionarx/cxh-system-prompt'
+  name: '@arx-ai/arx-system-prompt'
 
 - id: tools
-  name: '@centurionarx/cxh-tools'
+  name: '@arx-ai/arx-tools'
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-pwsh-local'
+  name: '@arx-ai/arx-pwsh-local'
   config:
     graceMs: 200
 
 - id: shell-env
-  name: '@centurionarx/cxh-shell-env'
+  name: '@arx-ai/arx-shell-env'
 
 - id: tasks
-  name: '@centurionarx/cxh-jobs-local'
+  name: '@arx-ai/arx-jobs-local'
 
 - id: tool-jobs
-  name: '@centurionarx/cxh-tool-jobs'
+  name: '@arx-ai/arx-tool-jobs'
 
 - id: tool-pwsh
-  name: '@centurionarx/cxh-tool-pwsh'
+  name: '@arx-ai/arx-tool-pwsh'

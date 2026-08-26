@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-layout
+# @arx-ai/arx-client-ui-layout
 
 English | [中文](README.zh.md)
 

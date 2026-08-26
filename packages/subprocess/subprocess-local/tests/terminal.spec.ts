@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { IDisposable, IPty } from 'node-pty'
-import { LocalTerminalHandle } from '@centurionarx/cxh-subprocess-local/src/terminal.ts'
+import { LocalTerminalHandle } from '@arx-ai/arx-subprocess-local/src/terminal.ts'
 import type {
   ProcessIdentity,
   ProcessInspector,
-} from '@centurionarx/cxh-subprocess-local/src/process-inspector.ts'
-import type { SubprocessTerminalSignal } from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-subprocess-local/src/process-inspector.ts'
+import type { SubprocessTerminalSignal } from '@arx-ai/arx-subprocess'
 
 class FakePty {
   pid = 123

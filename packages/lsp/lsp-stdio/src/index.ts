@@ -8,18 +8,18 @@
  *
  * Namespace plugin (named exports, no default export). Lifecycle is effect-scoped: disposal
  * unregisters from `ctx.lsp` and tears down every live server.
- * @module @centurionarx/cxh-lsp-stdio
+ * @module @arx-ai/arx-lsp-stdio
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { LspError, LspProviderId } from '@centurionarx/cxh-lsp'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { LspError, LspProviderId } from '@arx-ai/arx-lsp'
 import type {
   LspProvider,
   LspProviderQuery,
   LspQueryResult,
-} from '@centurionarx/cxh-lsp'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-lsp'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import { abortable, abortError } from './abort.ts'
 import { canonicalizeWorkspace, readHostSource } from './host.ts'
 import type { HostWorkspace } from './host.ts'

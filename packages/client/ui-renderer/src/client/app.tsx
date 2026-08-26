@@ -3,10 +3,10 @@
  * `root` slot, which is the only ctx-level slot render in the application.
  */
 import type { ReactNode } from 'react'
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { bindSnapshotSelector } from './bind.ts'
 import { DocumentTitle } from './DocumentTitle.tsx'
-import type {} from '@centurionarx/cxh-client-runtime/client'
+import type {} from '@arx-ai/arx-client-runtime/client'
 
 /** Inputs available after the UI renderer's inject set activates. */
 export interface AssemblyDeps {

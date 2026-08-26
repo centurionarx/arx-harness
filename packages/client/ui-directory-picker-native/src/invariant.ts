@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-ui-directory-picker-native`.
- * @module @centurionarx/cxh-client-ui-directory-picker-native/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-ui-directory-picker-native`.
+ * @module @arx-ai/arx-client-ui-directory-picker-native/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-ui-directory-picker-native'
+const PACKAGE_NAME = '@arx-ai/arx-client-ui-directory-picker-native'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-directory-picker-native-invariant'

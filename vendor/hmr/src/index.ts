@@ -1,18 +1,18 @@
-import { Context, Service, type Plugin } from '@centurionarx/cordis'
-import type { Dict } from '@centurionarx/cosmokit'
-import { ModuleLoader, type ModuleJob, type ResolveResult } from '@centurionarx/cordis-plugin-loader'
-import type { Include } from '@centurionarx/cordis-plugin-include'
+import { Context, Service, type Plugin } from '@arx-ai/cordis'
+import type { Dict } from '@arx-ai/cosmokit'
+import { ModuleLoader, type ModuleJob, type ResolveResult } from '@arx-ai/cordis-plugin-loader'
+import type { Include } from '@arx-ai/cordis-plugin-include'
 import { FSWatcher, watch, type ChokidarOptions } from 'chokidar'
 import { dirname, relative, resolve } from 'node:path'
 import { realpath, stat } from 'node:fs/promises'
 import { handleError } from './error.ts'
-import type {} from '@centurionarx/cordis-plugin-timer'
+import type {} from '@arx-ai/cordis-plugin-timer'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createRequire } from 'node:module'
 import picomatch from 'picomatch'
-import z from '@centurionarx/schemastery'
+import z from '@arx-ai/schemastery'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     hmr: Hmr
   }
@@ -568,7 +568,7 @@ namespace Hmr {
     ]),
     debounce: z.natural().role('ms').default(100),
   })
-  // [centurionarx-harness] vendored modification: removed `.i18n({ 'en-US': enUS, 'zh-CN': zhCN })`
+  // [arx-harness] vendored modification: removed `.i18n({ 'en-US': enUS, 'zh-CN': zhCN })`
   // and the corresponding `./locales/*.yml` imports, to avoid a runtime YAML import hook
   // (@cordisjs/unyaml) that we don't vendor. See vendor/README.md.
 }

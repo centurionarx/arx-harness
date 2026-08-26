@@ -5,7 +5,7 @@
  */
 import {
   createSnapshotStore, type SettingsScope, type SnapshotStore,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   BusyEnterBehavior, ComposerSubmitGesture, InputSubmitMode,
 } from '../contract/composer-submission.ts'

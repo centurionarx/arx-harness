@@ -12,7 +12,7 @@
     },
     {
       "op": "waitForFile",
-      "path": ".cxh-snapshot-subagent-settled"
+      "path": ".arx-snapshot-subagent-settled"
     },
     {
       "op": "waitForTurnStart",

@@ -2,20 +2,20 @@
  * The sandbox-escalation API shared by the `write` and `edit` tools: the
  * per-call policy resolution, the advertised escalation fields, and the denial-marker
  * mapping — all delegating the vocabulary and the fail-closed approval
- * sequence to `@centurionarx/cxh-sandbox` (the same pieces `@centurionarx/cxh-tool-bash`
+ * sequence to `@arx-ai/arx-sandbox` (the same pieces `@arx-ai/arx-tool-bash`
  * uses), so bash and fs escalate identically. Built ONCE per plugin from
  * `ctx.fs.sandboxMode` (the capability fact — is a confining backend mounted?)
  * and shared by both mutating tools.
  *
- * @module @centurionarx/cxh-tool-fs/sandbox
+ * @module @arx-ai/arx-tool-fs/sandbox
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
-import type { SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
-import { ESCALATION_TARGETS, approveEscalation, escalationHintMarker, sandboxDenialMarker, validateEscalationArgs } from '@centurionarx/cxh-sandbox'
-import type { SandboxPolicyService } from '@centurionarx/cxh-sandbox-policy'
-import { FsError } from '@centurionarx/cxh-fs'
+import type { Context } from '@arx-ai/cordis'
+import type { ToolExecution } from '@arx-ai/arx-tools'
+import type { SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
+import { ESCALATION_TARGETS, approveEscalation, escalationHintMarker, sandboxDenialMarker, validateEscalationArgs } from '@arx-ai/arx-sandbox'
+import type { SandboxPolicyService } from '@arx-ai/arx-sandbox-policy'
+import { FsError } from '@arx-ai/arx-fs'
 
 /** The two escalation arguments a mutating tool may carry (advertised only under a confining backend). */
 export interface FsEscalationArgs {

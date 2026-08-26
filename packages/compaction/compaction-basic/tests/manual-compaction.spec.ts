@@ -1,37 +1,37 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import { CommandId } from '@centurionarx/cxh-commands/brand'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as AgentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
-import * as CompactionInvariant from '@centurionarx/cxh-compaction/invariant'
-import * as CompactionBasicInvariant from '@centurionarx/cxh-compaction-basic/invariant'
-import { BasicCompactionEngine } from '@centurionarx/cxh-compaction-basic'
-import { CompactionId, isCompactCheckpointSource, ManualCompactionError } from '@centurionarx/cxh-compaction'
-import type { CompactionResult } from '@centurionarx/cxh-compaction'
+import { Context } from '@arx-ai/cordis'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import { CommandId } from '@arx-ai/arx-commands/brand'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import * as AgentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
+import * as CompactionInvariant from '@arx-ai/arx-compaction/invariant'
+import * as CompactionBasicInvariant from '@arx-ai/arx-compaction-basic/invariant'
+import { BasicCompactionEngine } from '@arx-ai/arx-compaction-basic'
+import { CompactionId, isCompactCheckpointSource, ManualCompactionError } from '@arx-ai/arx-compaction'
+import type { CompactionResult } from '@arx-ai/arx-compaction'
 import {
   createAssistantMessage,
   createUserMessage,
   LlmAdapter,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 import type {
   ContentBlock,
   LlmResolvedModelInfo,
   Message,
   StreamChunk,
   TokenUsage,
-} from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import type { Agent } from '@centurionarx/cxh-agent'
+} from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import LlmRuntime from '@arx-ai/arx-llm'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import type { Agent } from '@arx-ai/arx-agent'
 import type {
   SummarizationInput,
   SummaryResult,
-} from '@centurionarx/cxh-compaction-basic/src/summarizer.ts'
+} from '@arx-ai/arx-compaction-basic/src/summarizer.ts'
 
 const MODEL = 'mock'
 const SIGNAL = new AbortController().signal

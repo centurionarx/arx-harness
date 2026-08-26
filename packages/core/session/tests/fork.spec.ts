@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId , createMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionForkError, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, TurnEndReason } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId , createMessage } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionForkError, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, TurnEndReason } from '@arx-ai/arx-session'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     'test/log-only': { value: string }
     /** Stands in for a plugin's open/close bracket (`compaction/start`). */

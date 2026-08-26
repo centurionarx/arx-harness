@@ -1,5 +1,5 @@
 /** Shared agent-loop scheduler defaults.
- * @module cxh-agent-loop/constants
+ * @module arx-agent-loop/constants
  */
 
 /** Default maximum in-flight parallel-safe calls per agent step. */

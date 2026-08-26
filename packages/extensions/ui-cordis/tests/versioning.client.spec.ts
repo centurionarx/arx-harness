@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { DynamicCordisLivePackage } from '@centurionarx/cxh-cordis-client-runner/client'
+import type { DynamicCordisLivePackage } from '@arx-ai/arx-cordis-client-runner/client'
 import type {
   CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
   DynamicCordisInventoryRow,

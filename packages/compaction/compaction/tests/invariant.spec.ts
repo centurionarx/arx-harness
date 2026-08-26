@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { CompactionId, compactCheckpointSource } from '@centurionarx/cxh-compaction'
-import * as CompactionInvariant from '@centurionarx/cxh-compaction/invariant'
-import { CommandId } from '@centurionarx/cxh-commands/brand'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { CompactionId, compactCheckpointSource } from '@arx-ai/arx-compaction'
+import * as CompactionInvariant from '@arx-ai/arx-compaction/invariant'
+import { CommandId } from '@arx-ai/arx-commands/brand'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

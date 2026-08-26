@@ -2,15 +2,15 @@
 # seam, model-facing tool, and tripwire provider while replacing DeepSeek with
 # per-session replay.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: sandbox
-        name: '@centurionarx/cxh-sandbox-local'
+        name: '@arx-ai/arx-sandbox-local'
         config:
           runnerCommand:
             - bash
@@ -20,11 +20,11 @@
           runnerFailureSignatures:
             - 'passthrough-runner: profile rejected'
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:
             maxBytes: 65536
@@ -34,7 +34,7 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official
@@ -43,8 +43,8 @@
                     - id: deepseek-v4-flash
                     - id: deepseek-v4-pro
           - id: user-questions
-            name: '@centurionarx/cxh-user-questions'
+            name: '@arx-ai/arx-user-questions'
           - id: tool-ask-user
-            name: '@centurionarx/cxh-tool-ask-user'
+            name: '@arx-ai/arx-tool-ask-user'
           - id: child-question-tripwire
             name: './tests/fixtures/child-question-tripwire.ts'

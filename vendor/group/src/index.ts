@@ -1,3 +1,3 @@
-import { Group } from '@centurionarx/cordis-plugin-loader'
+import { Group } from '@arx-ai/cordis-plugin-loader'
 
 export default Group

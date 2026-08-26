@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@centurionarx/cxh-llm'
-import { toolPairingBalancedAfter, toolPairingBalancedBefore } from '@centurionarx/cxh-compaction'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@arx-ai/arx-llm'
+import { toolPairingBalancedAfter, toolPairingBalancedBefore } from '@arx-ai/arx-compaction'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 const SURFACE = { surfaceOp: 'append' as const }
 

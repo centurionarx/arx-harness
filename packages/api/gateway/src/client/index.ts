@@ -4,9 +4,9 @@
  * participates in method lookup, invocation, or type exposure.
  */
 
-import { Service } from '@centurionarx/cordis'
-import type { Context, Events } from '@centurionarx/cordis'
-import type { ConnectionHandle } from '@centurionarx/cxh-client-connection/client'
+import { Service } from '@arx-ai/cordis'
+import type { Context, Events } from '@arx-ai/cordis'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 import type {
   InvocationDescriptor,
   TypertClientRemote,
@@ -15,7 +15,7 @@ import type {
   TypertDisposer,
   TypertRemoteContribution,
   TypertRemoteEvent,
-} from '@centurionarx/cxh-typert-protocol'
+} from '@arx-ai/arx-typert-protocol'
 
 interface MountToken {
   active: boolean
@@ -63,7 +63,7 @@ interface InstalledMethod {
 /** Typed Remote service augmented by generated direct namespaces. */
 export type ClientRemote = TypertClientRemote
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Generated Remote namespaces selected by the Client assembly. */
     remote: ClientRemote

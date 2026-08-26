@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { renderPrompt } from '@centurionarx/cxh-system-prompt'
+import { Context } from '@arx-ai/cordis'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { renderPrompt } from '@arx-ai/arx-system-prompt'
 import { mountAgentLoopTestDependencies } from '../src/index.ts'
 
-describe('cxh-agent-loop-testkit', () => {
+describe('arx-agent-loop-testkit', () => {
   it('mounts a configurable prerequisite spine that can activate AgentLoop', async () => {
     const ctx = new Context()
     await mountAgentLoopTestDependencies(ctx, {

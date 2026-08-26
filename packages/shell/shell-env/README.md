@@ -1,8 +1,8 @@
-# @centurionarx/cxh-shell-env
+# @arx-ai/arx-shell-env
 
 English | [中文](README.zh.md)
 
-The tool-independent shell environment plugin: owns the `ctx.shellEnv` registry of trusted, per-execution `CXH_*` variables that the model-facing shell tools (`cxh-tool-bash`, `cxh-tool-pwsh`) collect into every shell call's environment. Built-in shell facts (`CXH_HOME`, `CXH_SHELL=1`, `CXH_SESSION_ID`) are owned by the registry itself; other plugins register additional enumerable facts with effect-scoped disposal, and duplicate ownership or undeclared runtime keys fail loudly.
+The tool-independent shell environment plugin: owns the `ctx.shellEnv` registry of trusted, per-execution `ARX_*` variables that the model-facing shell tools (`arx-tool-bash`, `arx-tool-pwsh`) collect into every shell call's environment. Built-in shell facts (`ARX_HOME`, `ARX_SHELL=1`, `ARX_SESSION_ID`) are owned by the registry itself; other plugins register additional enumerable facts with effect-scoped disposal, and duplicate ownership or undeclared runtime keys fail loudly.
 
 The package root exports the Cordis plugin contract (`name`, `inject`, `Config`, `apply`) plus the `ShellEnvRegistry` service class and its contributor types; consumers use `ctx.shellEnv` after loading this plugin.
 
@@ -10,37 +10,37 @@ The package root exports the Cordis plugin contract (`name`, `inject`, `Config`,
 
 ```yaml
 - id: shell-env
-  name: '@centurionarx/cxh-shell-env'
+  name: '@arx-ai/arx-shell-env'
   config:
-    cxhHome: C:\Users\me\.cxh   # default: $CXH_HOME, then ~/.cxh
+    arxHome: C:\Users\me\.arx   # default: $ARX_HOME, then ~/.arx
 ```
 
 ## Managed environment
 
-Every foreground and background model shell call receives a newly collected trusted `CXH_*` environment. `CXH_HOME` is the absolute Harness home resolved by [`@centurionarx/cxh-home-paths`](../../util/home-paths/README.md) (`cxhHome` config, then ambient `$CXH_HOME`, then `~/.cxh`) and `CXH_SHELL=1` identifies the managed child. Agent calls additionally receive `CXH_SESSION_ID=agent.session.header.id`; when the active persistence seam locates a JSONL artifact they also receive `CXH_SESSION_JSONL=<absolute target path>`. The JSONL path is a location hint: it may not exist before the first flush or contain the current buffered turn, and it is not an authorization credential.
+Every foreground and background model shell call receives a newly collected trusted `ARX_*` environment. `ARX_HOME` is the absolute Harness home resolved by [`@arx-ai/arx-home-paths`](../../util/home-paths/README.md) (`arxHome` config, then ambient `$ARX_HOME`, then `~/.arx`) and `ARX_SHELL=1` identifies the managed child. Agent calls additionally receive `ARX_SESSION_ID=agent.session.header.id`; when the active persistence seam locates a JSONL artifact they also receive `ARX_SESSION_JSONL=<absolute target path>`. The JSONL path is a location hint: it may not exist before the first flush or contain the current buffered turn, and it is not an authorization credential.
 
-`ctx.shellEnv` owns collection. Other plugins can register an effect-scoped contributor with a stable name, declared keys/descriptions, and `resolve(execution: ToolExecution)`; duplicate ownership and undeclared runtime keys fail loudly, while `list()` enumerates declarations without executing providers. Harness built-ins reserve `CXH_HOME`, `CXH_SHELL`, and `CXH_SESSION_ID`; this plugin's persistence translator owns `CXH_SESSION_JSONL` by reading the backend-neutral `sessionPersistence.locate()` seam.
+`ctx.shellEnv` owns collection. Other plugins can register an effect-scoped contributor with a stable name, declared keys/descriptions, and `resolve(execution: ToolExecution)`; duplicate ownership and undeclared runtime keys fail loudly, while `list()` enumerates declarations without executing providers. Harness built-ins reserve `ARX_HOME`, `ARX_SHELL`, and `ARX_SESSION_ID`; this plugin's persistence translator owns `ARX_SESSION_JSONL` by reading the backend-neutral `sessionPersistence.locate()` seam.
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-shell-env'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-shell-env'
 
 export const inject = ['shellEnv']
 
 export function apply(ctx: Context): void {
   ctx.shellEnv.register({
     name: 'deployment-region',
-    variables: { CXH_DEPLOYMENT_REGION: { description: 'Current deployment region.' } },
-    resolve: execution => execution.agent === undefined ? {} : { CXH_DEPLOYMENT_REGION: 'cn-north' },
+    variables: { ARX_DEPLOYMENT_REGION: { description: 'Current deployment region.' } },
+    resolve: execution => execution.agent === undefined ? {} : { ARX_DEPLOYMENT_REGION: 'cn-north' },
   })
 }
 ```
 
-The overlay is computed from the current `ToolExecution` and passed through the dedicated `ShellExecRequest.cxhEnv` channel. The local executors remove all inherited `CXH_*` before merging that snapshot, so nested harnesses and concurrent parent/child agents cannot leak stale identities. `process.env` is never modified. The shell tools' descriptions teach the generic `$CXH_*` convention rather than naming persistence-specific variables or adding a permanent system-prompt section.
+The overlay is computed from the current `ToolExecution` and passed through the dedicated `ShellExecRequest.arxEnv` channel. The local executors remove all inherited `ARX_*` before merging that snapshot, so nested harnesses and concurrent parent/child agents cannot leak stale identities. `process.env` is never modified. The shell tools' descriptions teach the generic `$ARX_*` convention rather than naming persistence-specific variables or adding a permanent system-prompt section.
 
 ## Model Experience
 
-Indirectly, through the shell tools (`cxh-tool-bash`, `cxh-tool-pwsh`), which collect this registry's managed `CXH_*` snapshot into every shell-tool call.
+Indirectly, through the shell tools (`arx-tool-bash`, `arx-tool-pwsh`), which collect this registry's managed `ARX_*` snapshot into every shell-tool call.
 
 #### KV Cache effect
 
@@ -48,4 +48,4 @@ No direct invalidation; the named consumers own any request-prefix changes.
 
 ## Known Limitations and Deferred Work
 
-- **`list()` enumerates contributor-declared variables only** — registry-owned built-ins (`CXH_HOME`, `CXH_SHELL`, `CXH_SESSION_ID`) are not included, so diagnostics, prompt, or UI code must not treat `list()` as an exhaustive environment catalog.
+- **`list()` enumerates contributor-declared variables only** — registry-owned built-ins (`ARX_HOME`, `ARX_SHELL`, `ARX_SESSION_ID`) are not included, so diagnostics, prompt, or UI code must not treat `list()` as an exhaustive environment catalog.

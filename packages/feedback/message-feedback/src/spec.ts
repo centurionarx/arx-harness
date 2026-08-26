@@ -1,12 +1,12 @@
 /**
  * Durable storage-domain declaration for lifecycle-bound message feedback.
- * @module @centurionarx/cxh-message-feedback/src/spec
+ * @module @arx-ai/arx-message-feedback/src/spec
  */
 
 import { z } from 'zod'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { SessionId } from '@centurionarx/cxh-session/types'
-import { defineDomain, domainTable } from '@centurionarx/cxh-storage-domain'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
+import { defineDomain, domainTable } from '@arx-ai/arx-storage-domain'
 import type { MessageFeedbackItem, MessageFeedbackRating, MessageFeedbackVersion } from './types.ts'
 
 const nonNegativeSafeInteger = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)

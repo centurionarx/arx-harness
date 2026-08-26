@@ -13,7 +13,7 @@ import { publint, type Message, type PackFile } from 'publint'
 import { formatMessage } from 'publint/utils'
 import ts from 'typescript'
 
-const CONCURRENCY_ENV = 'CXH_PUBLINT_CONCURRENCY'
+const CONCURRENCY_ENV = 'ARX_PUBLINT_CONCURRENCY'
 const repositoryRoot = resolve(import.meta.dirname, '..')
 const { values: options } = parseArgs({
   args: process.argv.slice(2),

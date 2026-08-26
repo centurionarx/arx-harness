@@ -5,9 +5,9 @@
  * one-shot convenience method.
  */
 
-import { BlockAssembler } from '@centurionarx/cxh-llm'
-import type { Context } from '@centurionarx/cordis'
-import type { FinishReason, GenerateOptions, Message, TokenUsage } from '@centurionarx/cxh-llm'
+import { BlockAssembler } from '@arx-ai/arx-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { FinishReason, GenerateOptions, Message, TokenUsage } from '@arx-ai/arx-llm'
 
 export interface AssembledResult {
   message: Message

@@ -7,9 +7,9 @@
 // yet) and a non-read result render the summary row alone: the read intent is
 // result-side only, so there is no running-state read card to draw.
 
-import type { Context } from '@centurionarx/cordis'
-import { IconBrowseOutline16 } from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+import type { Context } from '@arx-ai/cordis'
+import { IconBrowseOutline16 } from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallViewProps } from '../../contract/slots.ts'
 import { readCardModel } from '../models/read-card-model.ts'
 import { toolRowModel } from '../models/tool-call-model.ts'

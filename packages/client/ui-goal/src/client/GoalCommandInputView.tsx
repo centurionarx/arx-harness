@@ -1,6 +1,6 @@
 import { memo } from 'react'
-import { MessageText } from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import { MessageText } from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import type { GoalCommandInputData } from './goal-command-input.ts'
 import css from './GoalCommandInputView.module.css'
 

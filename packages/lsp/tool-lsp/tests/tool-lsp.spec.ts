@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import Lsp, { LspProviderId, type LspProvider, type LspProviderQuery, type LspQueryResult } from '@centurionarx/cxh-lsp'
-import * as ToolLsp from '@centurionarx/cxh-tool-lsp'
-import { DEFAULT_LSP_TOOL_TIMEOUT_MS, LSP_PROMPT_TEXT } from '@centurionarx/cxh-tool-lsp'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import { Context } from '@arx-ai/cordis'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import Lsp, { LspProviderId, type LspProvider, type LspProviderQuery, type LspQueryResult } from '@arx-ai/arx-lsp'
+import * as ToolLsp from '@arx-ai/arx-tool-lsp'
+import { DEFAULT_LSP_TOOL_TIMEOUT_MS, LSP_PROMPT_TEXT } from '@arx-ai/arx-tool-lsp'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 
 /** A scripted provider recording queries; `respond` yields the result or throws. */
 function stubProvider(

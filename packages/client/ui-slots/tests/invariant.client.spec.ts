@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as SlotsInvariant from '@centurionarx/cxh-client-ui-slots/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import * as SlotsInvariant from '@arx-ai/arx-client-ui-slots/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 describe('invariant companion', () => {
   it('registers under the package name with an empty installer', async () => {

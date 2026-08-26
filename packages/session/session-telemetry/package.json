@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-session-telemetry",
-  "description": "SessionTelemetryBackend seam for the CENTURIONarx Harness: session-event capture, projection, redaction, and handoff to a reporting backend",
+  "name": "@arx-ai/arx-session-telemetry",
+  "description": "SessionTelemetryBackend seam for the arx Harness: session-event capture, projection, redaction, and handoff to a reporting backend",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/session/session-telemetry"
   },
   "type": "module",
@@ -32,15 +32,15 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

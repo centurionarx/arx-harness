@@ -1,16 +1,16 @@
 /**
- * `@centurionarx/cxh-web-search-perplexity`: registers a Perplexity-backed
+ * `@arx-ai/arx-web-search-perplexity`: registers a Perplexity-backed
  * `WebSearchProvider` with `ctx.web`. A function/namespace plugin (NOT a
  * default-export service): it registers INTO the seam's provider registry, like
- * `@centurionarx/cxh-llm-deepseek` registers an adapter into `ctx.llm`.
+ * `@arx-ai/arx-llm-deepseek` registers an adapter into `ctx.llm`.
  *
- * @module @centurionarx/cxh-web-search-perplexity
+ * @module @arx-ai/arx-web-search-perplexity
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { launchEnvironmentOf } from '@centurionarx/cxh-launch-environment'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-web'
+import type { Context } from '@arx-ai/cordis'
+import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-web'
 import { PerplexitySearchProvider, PERPLEXITY_DEFAULT_BASE_URL, PERPLEXITY_DEFAULT_MAX_TOKENS, PERPLEXITY_DEFAULT_MODEL } from './provider.ts'
 
 export {

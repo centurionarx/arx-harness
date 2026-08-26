@@ -1,4 +1,4 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 /**
  * Loop-level tool-order determinism: the request/header event — and therefore the frozen
  * request the adapter receives — carries the assembly's canonical tool order (system-prompt's
@@ -8,15 +8,15 @@ import { createUserMessage } from '@centurionarx/cxh-llm'
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId, foldRequestHeader } from '@centurionarx/cxh-session'
-import SystemPrompt, { TOOL_ORDER_REST } from '@centurionarx/cxh-system-prompt'
-import type { Config as SystemPromptConfig } from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SessionId, foldRequestHeader } from '@arx-ai/arx-session'
+import SystemPrompt, { TOOL_ORDER_REST } from '@arx-ai/arx-system-prompt'
+import type { Config as SystemPromptConfig } from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
 
 async function harness(adapter: MockAdapter, toolOrder?: SystemPromptConfig['toolOrder']) {

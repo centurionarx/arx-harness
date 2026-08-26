@@ -1,17 +1,17 @@
 /**
  * Durable, lifecycle-bound feedback for finalized assistant messages.
- * @module @centurionarx/cxh-message-feedback
+ * @module @arx-ai/arx-message-feedback
  */
 
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
-import { Context, Service } from '@centurionarx/cordis'
-import s from '@centurionarx/schemastery'
-import { deriveEventMessage, isAppendSurfaceEvent } from '@centurionarx/cxh-session/surface'
-import type { SessionHeader, SessionId } from '@centurionarx/cxh-session/types'
-import type { SessionInspection } from '@centurionarx/cxh-session-persistence'
-import type { KvTable } from '@centurionarx/cxh-storage-domain'
-import { TypertRemoteService, Remote } from '@centurionarx/cxh-typert-protocol'
+import { Context, Service } from '@arx-ai/cordis'
+import s from '@arx-ai/schemastery'
+import { deriveEventMessage, isAppendSurfaceEvent } from '@arx-ai/arx-session/surface'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session/types'
+import type { SessionInspection } from '@arx-ai/arx-session-persistence'
+import type { KvTable } from '@arx-ai/arx-storage-domain'
+import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 import { messageFeedbackDomainSpec } from './spec.ts'
 import type { MessageFeedbackRow, MessageFeedbackSessionIdentity } from './spec.ts'
 import type {
@@ -51,7 +51,7 @@ export interface Config {
   readonly maxNoteBytes: number
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     messageFeedback: MessageFeedbackService
   }

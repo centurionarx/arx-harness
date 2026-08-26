@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-07-29-durable-last-activity-index.md
-2026-07-29-durable-last-activity-index.md: d906b75c4e22ff01f8827c55d03409e74bac6e14
-2026-07-29-durable-last-activity-index.zh.md: e72c31747ce058809948eb0153a2637df1af69c5
+2026-07-29-durable-last-activity-index.md: 289b1fe297485244e8321ad1e7668ff6e9ab9703
+2026-07-29-durable-last-activity-index.zh.md: 78dcc334f52b02952f899acd2dfd611110fe8506

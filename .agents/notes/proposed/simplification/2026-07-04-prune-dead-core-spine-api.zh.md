@@ -34,12 +34,12 @@ Status: proposed
 
 ### 分组辅助导出清单
 
-- `cxh-llm-deepseek`：`httpErrorCode`、`serializeMessages`、`serializeRequest`、`DONE`、`parseSse`、`mapFinishReason`、`mapUsage` 与 `translate`；`cxh-llm-pi-ai`：`buildModel`、`mapStopReason`、`mapUsage`、`toPiContext` 与 `toStreamChunks`。
-- `cxh-bash-local`：`DEFAULT_GRACE_MS`、`ENV_OVERRIDES`、`killGroup`、`OutputCollector` 与 `runBash`；`cxh-bash-sandbox`：`shellQuote`、`classifyDenial` 与 `classifyRunnerFailure`；`cxh-sandbox-local`：`bwrapProfileArgs`、`landlockProfileArgs` 与 `seatbeltProfileArgs`。公开的可变测试注入字段及其类型不在本提案范围内。
-- `cxh-fs-local`：`applyLiteralEdit`、`listDirectory`、`probe`、`readForEdit`、`readTextForDiff`、`readWholeText`、`resolveLocalTarget`、`restoreLineEndings`、`streamWholeText` 与 `writeFileAtomic`。
-- `cxh-web-fetch-http`：`classifyContentType`、`decoderForCharset`、`isSameOrigin`、`parseCharset` 与 `validateFetchUrl`；`cxh-web-search-exa`：`mapExaResponse` 与 `mapExaResult`；`cxh-web-search-deepseek`：`citationSnippets` 与 `mapAnthropicResponse`；`cxh-web-search-perplexity`：`mapPerplexityResponse` 与 `mapPerplexityResult`。
-- `cxh-tool-fs`：`READ_LIMIT`、`STREAM_MIN_SIZE`、`READ_MAX_BYTES`、`READ_MAX_LINE_LENGTH`、`DIFF_CONTEXT`、`applyReadTool`、`parseReadArgs`、`applyWriteTool`、`formatWriteOutput`、`parseWriteArgs`、`applyEditTool`、`formatEditOutput`、`parseEditArgs`、`buildWindow`、`formatReadOutput`、`computeHunkDiffs` 与 `diffsFromMeta`。
-- `cxh-tool-web`：`WEB_SEARCH_MAX_RESULTS`、`applyWebSearchTool`、`formatSearchOutput`、`parseSearchArgs`、`presentSearchCall`、`applyWebFetchTool`、`formatFetchOutput`、`parseFetchArgs`、`presentFetchCall`、`renderBody` 与 `htmlToMarkdown`；`cxh-tool-call-timeout-policy`：`toolTimeoutResult`；`cxh-compaction-basic`：`resolveConfig`；`cxh-tool-bash`：`renderResult`。
+- `arx-llm-deepseek`：`httpErrorCode`、`serializeMessages`、`serializeRequest`、`DONE`、`parseSse`、`mapFinishReason`、`mapUsage` 与 `translate`；`arx-llm-pi-ai`：`buildModel`、`mapStopReason`、`mapUsage`、`toPiContext` 与 `toStreamChunks`。
+- `arx-bash-local`：`DEFAULT_GRACE_MS`、`ENV_OVERRIDES`、`killGroup`、`OutputCollector` 与 `runBash`；`arx-bash-sandbox`：`shellQuote`、`classifyDenial` 与 `classifyRunnerFailure`；`arx-sandbox-local`：`bwrapProfileArgs`、`landlockProfileArgs` 与 `seatbeltProfileArgs`。公开的可变测试注入字段及其类型不在本提案范围内。
+- `arx-fs-local`：`applyLiteralEdit`、`listDirectory`、`probe`、`readForEdit`、`readTextForDiff`、`readWholeText`、`resolveLocalTarget`、`restoreLineEndings`、`streamWholeText` 与 `writeFileAtomic`。
+- `arx-web-fetch-http`：`classifyContentType`、`decoderForCharset`、`isSameOrigin`、`parseCharset` 与 `validateFetchUrl`；`arx-web-search-exa`：`mapExaResponse` 与 `mapExaResult`；`arx-web-search-deepseek`：`citationSnippets` 与 `mapAnthropicResponse`；`arx-web-search-perplexity`：`mapPerplexityResponse` 与 `mapPerplexityResult`。
+- `arx-tool-fs`：`READ_LIMIT`、`STREAM_MIN_SIZE`、`READ_MAX_BYTES`、`READ_MAX_LINE_LENGTH`、`DIFF_CONTEXT`、`applyReadTool`、`parseReadArgs`、`applyWriteTool`、`formatWriteOutput`、`parseWriteArgs`、`applyEditTool`、`formatEditOutput`、`parseEditArgs`、`buildWindow`、`formatReadOutput`、`computeHunkDiffs` 与 `diffsFromMeta`。
+- `arx-tool-web`：`WEB_SEARCH_MAX_RESULTS`、`applyWebSearchTool`、`formatSearchOutput`、`parseSearchArgs`、`presentSearchCall`、`applyWebFetchTool`、`formatFetchOutput`、`parseFetchArgs`、`presentFetchCall`、`renderBody` 与 `htmlToMarkdown`；`arx-tool-call-timeout-policy`：`toolTimeoutResult`；`arx-compaction-basic`：`resolveConfig`；`arx-tool-bash`：`renderResult`。
 
 ## 提案
 

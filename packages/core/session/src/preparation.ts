@@ -1,6 +1,6 @@
 /**
  * Ownership of one unpublished Session before registry publication.
- * @module @centurionarx/cxh-session/preparation
+ * @module @arx-ai/arx-session/preparation
  */
 
 import type { Session } from './index.ts'

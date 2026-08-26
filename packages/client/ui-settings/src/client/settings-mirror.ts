@@ -9,8 +9,8 @@
  * through {@link SettingsDescribeMirror.acceptView}.
  */
 
-import type { IApiClient, SettingsNamespaceView } from '@centurionarx/cxh-api-remotes/client'
-import { createSnapshotStore, type SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { IApiClient, SettingsNamespaceView } from '@arx-ai/arx-api-remotes/client'
+import { createSnapshotStore, type SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 
 type SettingsFace = Pick<IApiClient, 'settings'>
 

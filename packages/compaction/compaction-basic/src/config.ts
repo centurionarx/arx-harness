@@ -1,11 +1,11 @@
 /**
  * Load-time validation and routed-model policy resolution for compaction-basic.
  *
- * @module @centurionarx/cxh-compaction-basic/config
+ * @module @arx-ai/arx-compaction-basic/config
  */
 
-import { deepFreeze } from '@centurionarx/cxh-llm'
-import type { LlmCallConfig } from '@centurionarx/cxh-llm'
+import { deepFreeze } from '@arx-ai/arx-llm'
+import type { LlmCallConfig } from '@arx-ai/arx-llm'
 import type {
   BasicCompactionConfig,
   CompactionPolicyConfig,

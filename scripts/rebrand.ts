@@ -69,8 +69,18 @@ const PROTECTED: readonly RegExp[] = [
   /(?<![a-zA-Z0-9_.@/-])deepseek(?![a-zA-Z0-9_.-])(?! harness)/g,
 ]
 
-/** Repository paths excluded from rewriting entirely. */
-const EXCLUDED: readonly RegExp[] = [/^\.agents\/notes\/archived\//]
+/**
+ * Repository paths excluded from rewriting entirely.
+ *
+ * The classifier and its spec exclude themselves. A run that rewrites them
+ * collapses `SOURCE` onto the target, which costs the ability to re-run, and
+ * rewrites the spec's input/expected pairs into identities that assert
+ * nothing — a silently disarmed test suite is worse than a failing one.
+ */
+const EXCLUDED: readonly RegExp[] = [
+  /^\.agents\/notes\/archived\//,
+  /^scripts\/rebrand(?:\.spec)?\.ts$/,
+]
 
 /** Escape a brand literal for use inside a regular expression. */
 function quote(literal: string): string {

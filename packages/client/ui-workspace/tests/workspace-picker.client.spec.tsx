@@ -3,11 +3,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type {
   SessionListState, WorkspaceId, WorkspaceListState, WorkspaceView,
-} from '@centurionarx/cxh-client-runtime/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { DirectoryFlowOwnerProps, WorkspacePickerProps } from '../src/client/contract/slots.ts'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import { WorkspacePicker } from '../src/client/WorkspacePicker.tsx'
 import { zh } from '../src/client/locales.ts'
 

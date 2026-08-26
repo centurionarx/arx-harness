@@ -1,10 +1,10 @@
 /**
  * Pure translation between the harness lifecycle and the automation-only ACP wire.
- * @module @centurionarx/cxh-acp/codec
+ * @module @arx-ai/arx-acp/codec
  */
 
 import type { StopReason } from '@agentclientprotocol/sdk'
-import type { TurnEndReason } from '@centurionarx/cxh-session'
+import type { TurnEndReason } from '@arx-ai/arx-session'
 
 /**
  * Map a harness turn ending to ACP's terminal reason vocabulary.

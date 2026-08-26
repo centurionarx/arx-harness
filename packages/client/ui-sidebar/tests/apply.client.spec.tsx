@@ -1,10 +1,10 @@
 /** Sidebar shell slot registration and its plain runtime/layout callbacks. */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-sidebar/client'
-import type { SidebarRootInjected } from '@centurionarx/cxh-client-ui-sidebar/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-sidebar/client'
+import type { SidebarRootInjected } from '@arx-ai/arx-client-ui-sidebar/client'
 
 async function bench(declare = true) {
   const ctx = new Context()

@@ -1,15 +1,15 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { bindScopeParent, createScope, scopeOf } from '@centurionarx/cxh-scope'
-import type { ScopeKey } from '@centurionarx/cxh-scope'
-import { JobId } from '@centurionarx/cxh-jobs'
-import type { JobHooks, JobKind, JobOutcome, JobSnapshot, JobStart } from '@centurionarx/cxh-jobs'
-import LocalJobRegistry, { type Config as JobsConfig } from '@centurionarx/cxh-jobs-local'
+import { Context } from '@arx-ai/cordis'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import { bindScopeParent, createScope, scopeOf } from '@arx-ai/arx-scope'
+import type { ScopeKey } from '@arx-ai/arx-scope'
+import { JobId } from '@arx-ai/arx-jobs'
+import type { JobHooks, JobKind, JobOutcome, JobSnapshot, JobStart } from '@arx-ai/arx-jobs'
+import LocalJobRegistry, { type Config as JobsConfig } from '@arx-ai/arx-jobs-local'
 
-declare module '@centurionarx/cxh-jobs' {
+declare module '@arx-ai/arx-jobs' {
   interface JobKindMap {
     workflow: 'workflow'
   }
@@ -119,7 +119,7 @@ describe('LocalJobRegistry.start', () => {
     const ctx = new Context()
     await ctx.plugin(LocalJobRegistry)
     expect(() => ctx.jobs.start(producer().spec))
-      .toThrow('background jobs unavailable: no job controller serves this agent (load @centurionarx/cxh-tool-jobs in its composition)')
+      .toThrow('background jobs unavailable: no job controller serves this agent (load @arx-ai/arx-tool-jobs in its composition)')
   })
 
   it('refuses an owner whose own composition attaches no controller', async () => {

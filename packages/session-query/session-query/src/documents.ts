@@ -1,7 +1,7 @@
 /** Shared event metadata and semantic-document projection. */
 
-import { foldSurface } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionId } from '@centurionarx/cxh-session'
+import { foldSurface } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionId } from '@arx-ai/arx-session'
 import type { SessionEventRecord, SessionEventSearchDocument, SessionEventSurface } from './types.ts'
 import { SessionQueryError } from './config.ts'
 import { extractSessionEventText } from './extraction.ts'

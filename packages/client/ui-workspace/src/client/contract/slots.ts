@@ -22,15 +22,15 @@
  * and a hole has exactly one declaring entry — they carry the same owner
  * contract and the same occupant.
  */
-import type { HostDescriptionSource } from '@centurionarx/cxh-client-connection/client'
-import type { HostObservable, PropsHooks, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore } from '@centurionarx/cxh-client-ui-slots'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
+import type { HostObservable, PropsHooks, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
 // Type-only: pull the owner SlotMap merges into programs that resolve the
 // runtime shares below.
-import type {} from '@centurionarx/cxh-client-ui-sidebar/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-sidebar/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type {
   SessionId, SessionSearchResultItem, WorkspaceId, WorkspaceView,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type { createWorkspaceViewStore } from '../stores.ts'
 
 /**
@@ -51,7 +51,7 @@ export interface DirectoryFlowOwnerProps {
   onError: (message: string) => void
 }
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /** Directory-flow hole under the conversation empty-state picker (declared by the WorkspacePicker entry). */
     'conversation.hero.workspace.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }

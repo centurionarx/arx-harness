@@ -1,14 +1,14 @@
 /**
  * Vocabulary for the spill storage Service Definition. Types only — the abstract service
  * lives in `./index.ts`, implementations in sibling packages
- * (`@centurionarx/cxh-spill-local` first).
+ * (`@arx-ai/arx-spill-local` first).
  *
- * @module @centurionarx/cxh-spill/types
+ * @module @arx-ai/arx-spill/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { CallId } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { CallId } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
 
 /**
  * Opaque model-facing handle for one spilled artifact. A local backend may use a

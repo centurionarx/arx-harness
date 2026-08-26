@@ -1,4 +1,4 @@
-/** Durable attachment vocabulary. @module @centurionarx/cxh-attachment/types */
+/** Durable attachment vocabulary. @module @arx-ai/arx-attachment/types */
 
 import type { AttachmentId, ImageVariantId } from './brand.ts'
 

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { fileURLToPath } from 'node:url'
-import { LspConnection } from '@centurionarx/cxh-lsp-stdio'
-import type { ConnectionWriter } from '@centurionarx/cxh-lsp-stdio/src/connection.ts'
-import { scrubbedParentEnv } from '@centurionarx/cxh-subprocess'
-import { spawnSubprocess } from '@centurionarx/cxh-subprocess-local/src/spawn.ts'
+import { LspConnection } from '@arx-ai/arx-lsp-stdio'
+import type { ConnectionWriter } from '@arx-ai/arx-lsp-stdio/src/connection.ts'
+import { scrubbedParentEnv } from '@arx-ai/arx-subprocess'
+import { spawnSubprocess } from '@arx-ai/arx-subprocess-local/src/spawn.ts'
 
 const fixtureServer = fileURLToPath(new URL('./fixture-server.ts', import.meta.url))
 
@@ -51,11 +51,11 @@ describe('LspConnection', () => {
     expect(conn.pid).toBeGreaterThan(0)
   })
 
-  it('forwards explicit CXH_* env entries to the child', async () => {
-    // A configured CXH_* fact must reach the child: the seam scrubs only the
+  it('forwards explicit ARX_* env entries to the child', async () => {
+    // A configured ARX_* fact must reach the child: the seam scrubs only the
     // ambient namespace, and the explicit entry merges after that scrub. The
     // fixture echoes the named variable back as hover text.
-    const conn = connect({ LSP_FAKE_ECHO_ENV: 'CXH_LSP_TEST_FACT', CXH_LSP_TEST_FACT: 'managed' })
+    const conn = connect({ LSP_FAKE_ECHO_ENV: 'ARX_LSP_TEST_FACT', ARX_LSP_TEST_FACT: 'managed' })
     await conn.request('initialize', { capabilities: {} })
     expect(await conn.request('textDocument/hover', {})).toEqual({ contents: 'managed' })
   })

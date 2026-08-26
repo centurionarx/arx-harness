@@ -7,9 +7,9 @@
 // session snapshot — no data of its own.
 
 import { Fragment } from 'react'
-import { CodeBlock } from '@centurionarx/cxh-client-ui-primitives'
-import { shallowEqual } from '@centurionarx/cxh-client-runtime/client'
-import type { ConversationSnapshot, RunningToolCall, ToolCallBlock, ToolResultNode } from '@centurionarx/cxh-client-runtime/client'
+import { CodeBlock } from '@arx-ai/arx-client-ui-primitives'
+import { shallowEqual } from '@arx-ai/arx-client-runtime/client'
+import type { ConversationSnapshot, RunningToolCall, ToolCallBlock, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
 import type { DetailsSlotProps } from '../contract/slots.ts'
 import { findToolCall } from '../chat/tool-node-reader.ts'
 import css from './DetailsPanel.module.css'

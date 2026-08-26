@@ -7,12 +7,12 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import type { PlanProjection } from '@centurionarx/cxh-plan-mode/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import type { PlanProjection } from '@arx-ai/arx-plan-mode/client'
 import { PlanChip, type PlanChipProps } from '../src/client/PlanModeControl.tsx'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import { zh } from '../src/client/locales.ts'
 
 afterEach(cleanup)

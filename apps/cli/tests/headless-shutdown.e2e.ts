@@ -4,9 +4,9 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
-import { LOADER_SMOKE_TEST_TIMEOUT_MS, resolveExampleLaunch } from '@centurionarx/cxh-loader-smoke'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, resolveExampleLaunch } from '@arx-ai/arx-loader-smoke'
 
-const cxhBinScript = fileURLToPath(new URL('../src/bin.ts', import.meta.url))
+const arxBinScript = fileURLToPath(new URL('../src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
 const neverDisposePlugin = pathToFileURL(
   fileURLToPath(new URL('./fixtures/never-dispose.mjs', import.meta.url)),
@@ -22,7 +22,7 @@ if pid == 0:
     os.chdir(cwd)
     os.execvpe(node, [node, *json.loads(launch_args_json)], env)
 
-markers = [b"cxh-test: never-dispose ready", b"cxh-test: never-dispose started"]
+markers = [b"arx-test: never-dispose ready", b"arx-test: never-dispose started"]
 output = bytearray()
 marker_index = 0
 deadline = time.monotonic() + float(timeout_seconds)
@@ -62,18 +62,18 @@ if actual_exit != 130:
 `
 
 async function runHeadlessPtySmoke(): Promise<string> {
-  const cwd = await mkdtemp(join(tmpdir(), 'cxh-headless-shutdown-'))
+  const cwd = await mkdtemp(join(tmpdir(), 'arx-headless-shutdown-'))
   try {
-    const home = join(cwd, '.cxh')
+    const home = join(cwd, '.arx')
     // Pre-initialize the headless profile with the never-dispose row in its
     // user patch layer (the same file a long-lived profile boot hot-reloads).
     const profileDir = join(home, 'profiles', 'headless')
     await mkdir(profileDir, { recursive: true })
     await writeFile(join(profileDir, 'package.json'), JSON.stringify({
-      name: 'cxh-profile-headless',
+      name: 'arx-profile-headless',
       private: true,
       dependencies: {},
-      cxh: { profile: { bundles: ['@centurionarx/cxh-base', '@centurionarx/cxh-headless'] } },
+      arx: { profile: { bundles: ['@arx-ai/arx-base', '@arx-ai/arx-headless'] } },
     }, undefined, 2))
     await writeFile(join(profileDir, 'cordis.patch.yml'), [
       '- insert:',
@@ -82,15 +82,15 @@ async function runHeadlessPtySmoke(): Promise<string> {
       '',
     ].join('\n'))
     const launch = resolveExampleLaunch({
-      srcBin: cxhBinScript,
+      srcBin: arxBinScript,
       configArgs: ['--profile', 'headless', 'never complete'],
       tsconfigPath,
       env: {
-        CXH_HOME: home,
-        CXH_AGENTS_HOME: join(cwd, '.agents'),
+        ARX_HOME: home,
+        ARX_AGENTS_HOME: join(cwd, '.agents'),
         DEEPSEEK_API_KEY: 'keyless-shutdown-no-call',
-        CXH_TELEMETRY_DISABLED: '1',
-        CXH_TEST_SHUTDOWN_ARM_FILE: join(cwd, 'shutdown-armed'),
+        ARX_TELEMETRY_DISABLED: '1',
+        ARX_TEST_SHUTDOWN_ARM_FILE: join(cwd, 'shutdown-armed'),
       },
     })
     const timeoutMs = 15_000
@@ -110,10 +110,10 @@ async function runHeadlessPtySmoke(): Promise<string> {
       stripFinalNewline: false,
     })
     if (result.timedOut) {
-      throw new Error(`cxh headless PTY driver did not exit. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+      throw new Error(`arx headless PTY driver did not exit. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
     }
     if (result.failed) {
-      throw new Error(`cxh headless PTY driver exited ${String(result.exitCode)}. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+      throw new Error(`arx headless PTY driver exited ${String(result.exitCode)}. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
     }
     return result.stdout
   } finally {
@@ -124,8 +124,8 @@ async function runHeadlessPtySmoke(): Promise<string> {
 describe.skipIf(process.platform === 'win32')('headless process shutdown (real Loader tree in a PTY)', () => {
   it('lets a second Ctrl+C force exit while the first signal is draining', async () => {
     const output = await runHeadlessPtySmoke()
-    expect(output).not.toContain('cxh: observing at ')
-    expect(output).toContain('cxh-test: never-dispose ready')
-    expect(output).toContain('cxh-test: never-dispose started')
+    expect(output).not.toContain('arx: observing at ')
+    expect(output).toContain('arx-test: never-dispose ready')
+    expect(output).toContain('arx-test: never-dispose started')
   }, LOADER_SMOKE_TEST_TIMEOUT_MS)
 })

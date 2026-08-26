@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-storage-json`.
- * @module @centurionarx/cxh-storage-json/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-storage-json`.
+ * @module @arx-ai/arx-storage-json/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-storage-json'
+const PACKAGE_NAME = '@arx-ai/arx-storage-json'
 
 /** Cordis companion plugin name. */
 export const name = 'storage-json-invariant'

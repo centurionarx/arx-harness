@@ -2,7 +2,7 @@
  * Worker-side execution logic, written as plain functions over an injected port so the unit
  * suite can run every line IN-PROCESS against a fake port (a real worker thread is a separate
  * V8 isolate the coverage provider cannot observe).
- * @module @centurionarx/cxh-code-runtime-worker-thread/src/bootstrap
+ * @module @arx-ai/arx-code-runtime-worker-thread/src/bootstrap
  */
 
 import { inspect } from 'node:util'

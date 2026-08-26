@@ -6,18 +6,18 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import SessionStore from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import LlmRuntime, { LlmAdapter } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, StreamChunk } from '@centurionarx/cxh-llm'
-import { SettingsProvider, settingsNamespace } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import { CredentialProvider } from '@centurionarx/cxh-credentials'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import AgentRegistry from '@arx-ai/arx-agent'
+import SessionStore from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import LlmRuntime, { LlmAdapter } from '@arx-ai/arx-llm'
+import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, StreamChunk } from '@arx-ai/arx-llm'
+import { SettingsProvider, settingsNamespace } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import { CredentialProvider } from '@arx-ai/arx-credentials'
 import type {
   CredentialInfo,
   CredentialKey,
@@ -26,11 +26,11 @@ import type {
   CredentialRecordInfo,
   CredentialRef,
   ResolvedCredential,
-} from '@centurionarx/cxh-credentials'
+} from '@arx-ai/arx-credentials'
 import type { HostFrame } from '../src/api/index.ts'
 import type { RpcRequest, RpcResponse } from '../src/api/rpc.ts'
 import { RpcId } from '../src/api/rpc.ts'
-import { AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE } from '@centurionarx/cxh-agent-default-model'
+import { AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE } from '@arx-ai/arx-agent-default-model'
 import { createApiProxy } from '../src/api-proxy.ts'
 
 const DEFAULTS = { defaultModelSelection: () => ({ provider: 'p', model: 'm' }), cwd: '/tmp' }
@@ -273,7 +273,7 @@ describe('settings domain', () => {
     const api = createApiProxy(ctx, DEFAULTS)
     const error = expectErr(await api.settings.describe(request({})))
     expect(error.code).toBe('internal')
-    expect(error.message).toContain('cxh-settings-file')
+    expect(error.message).toContain('arx-settings-file')
   })
 
   it('describes layered redacted namespaces with their secret slots', async () => {
@@ -616,7 +616,7 @@ describe('credentials domain', () => {
     const api = createApiProxy(ctx, DEFAULTS)
     const error = expectErr(await api.credentials.describe(request({ refs: ['A'] })))
     expect(error.code).toBe('internal')
-    expect(error.message).toContain('cxh-credentials-local')
+    expect(error.message).toContain('arx-credentials-local')
   })
 
   it('describes value-free views and flips state through set/unset with frames', async () => {

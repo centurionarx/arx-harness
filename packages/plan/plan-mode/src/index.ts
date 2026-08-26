@@ -20,22 +20,22 @@
  * Agent Note:
  * - .agents/notes/implemented/simplification/2026-07-22-plan-specific-collaboration-state.md
  *
- * @module @centurionarx/cxh-plan-mode
+ * @module @arx-ai/arx-plan-mode
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { z as zod } from 'zod'
 import type { ZodType } from 'zod'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { Session, SessionEvent, UserMessage } from '@centurionarx/cxh-session'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-system-prompt'
-import { UserQuestionError } from '@centurionarx/cxh-user-questions'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { Session, SessionEvent, UserMessage } from '@arx-ai/arx-session'
+import { defineTool } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-system-prompt'
+import { UserQuestionError } from '@arx-ai/arx-user-questions'
 // Type-only edge: resolves `ctx.commands` for the optional command child.
-import type { CommandId } from '@centurionarx/cxh-commands'
+import type { CommandId } from '@arx-ai/arx-commands'
 // Type-only: resolves ctx.sessionProjections for the optional unit child.
-import type {} from '@centurionarx/cxh-session-projection'
+import type {} from '@arx-ai/arx-session-projection'
 import type { PlanProjection } from './types.ts'
 // The `plan` projection-key declaration lives in src/types.ts (its one home);
 // this re-export projects the type face onto the package root AND keeps the
@@ -43,7 +43,7 @@ import type { PlanProjection } from './types.ts'
 // declarations still receive the SessionProjectionMap merge.
 export type * from './types.ts'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Whether plan mode is in force from this point on: log-only, non-surface,
@@ -54,7 +54,7 @@ declare module '@centurionarx/cxh-session/types' {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     planMode: PlanModeController
   }
@@ -151,7 +151,7 @@ interface PlanUnitState {
   running: { commandId: CommandId; wanted: boolean } | null
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     plan: PlanUnitState
   }
@@ -231,14 +231,14 @@ export class PlanModeController extends Service {
       try {
         this.onBoundary(agent.session)
       } catch (error) {
-        ctx.logger.warn('cxh-plan-mode: failed to append selected plan mode at step start: %o', error)
+        ctx.logger.warn('arx-plan-mode: failed to append selected plan mode at step start: %o', error)
         return decision
       }
       return !pending.narrate || narration === undefined
         ? decision
         : { ...decision, messages: [...decision.messages, narration] }
     })
-    ctx.effect(() => () => { disposed = true }, 'cxh-plan-mode: close service lifetime')
+    ctx.effect(() => () => { disposed = true }, 'arx-plan-mode: close service lifetime')
 
     ctx.systemPrompt.section({
       name: 'plan:policy',

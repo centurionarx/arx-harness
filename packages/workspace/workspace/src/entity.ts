@@ -5,12 +5,12 @@
  * `updatedAt` stamping and invalid-account pruning happen exactly once.
  * Not re-exported from the package entrypoint — consumers see only the
  * `Workspace` interface.
- * @module @centurionarx/cxh-workspace/src/entity
+ * @module @arx-ai/arx-workspace/src/entity
  */
 
 import { stat } from 'node:fs/promises'
-import type { SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type { KvTable } from '@centurionarx/cxh-storage-domain'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type { KvTable } from '@arx-ai/arx-storage-domain'
 import type { WorkspaceRecord } from './spec.ts'
 import type { Workspace, WorkspaceId } from './types.ts'
 import { realpathNormalize } from './paths.ts'

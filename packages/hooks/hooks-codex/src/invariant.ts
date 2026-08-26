@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-hooks-codex`.
- * @module @centurionarx/cxh-hooks-codex/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-hooks-codex`.
+ * @module @arx-ai/arx-hooks-codex/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-hooks-codex'
+const PACKAGE_NAME = '@arx-ai/arx-hooks-codex'
 
 /** Cordis companion plugin name. */
 export const name = 'hooks-codex-invariant'

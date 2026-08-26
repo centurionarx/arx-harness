@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@arx-ai/arx-llm'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   SessionId,
-} from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
 import {
   buildSessionEventRecords,
   buildSessionEventSearchDocuments,
@@ -16,7 +16,7 @@ import {
   materializeSessionEventResultFilters,
   materializeSessionResultFilters,
   type SessionQueryErrorCode,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 import { TestSessionQueryEngine } from './test-service.ts'
 
 const id = SessionId('session')

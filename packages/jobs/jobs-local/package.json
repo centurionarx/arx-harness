@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-jobs-local",
-  "description": "Process-local implementation of the CENTURIONarx Harness background job registry seam",
+  "name": "@arx-ai/arx-jobs-local",
+  "description": "Process-local implementation of the arx Harness background job registry seam",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/jobs/jobs-local"
   },
   "type": "module",
@@ -32,26 +32,26 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cordis-plugin-include": "workspace:^",
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

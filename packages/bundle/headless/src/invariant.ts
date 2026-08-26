@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-headless`.
- * @module @centurionarx/cxh-headless/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-headless`.
+ * @module @arx-ai/arx-headless/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-headless'
+const PACKAGE_NAME = '@arx-ai/arx-headless'
 
 /** Cordis companion plugin name. */
 export const name = 'headless-invariant'

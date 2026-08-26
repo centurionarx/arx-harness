@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/postmortem/0002-js-expression-disabled-filesystem-tools.md
-0002-js-expression-disabled-filesystem-tools.md: 1c62623f18943fb40ebbb8402de8b8fc6ec39949
-0002-js-expression-disabled-filesystem-tools.zh.md: d4850712f9b1762aa03c5f38af52368a76d738b1
+0002-js-expression-disabled-filesystem-tools.md: 04a280b317083b8e330b31159dd7f82300abf6bc
+0002-js-expression-disabled-filesystem-tools.zh.md: a4f4febeff0cb4c95c7e3270a9ec6910b5c5c42a

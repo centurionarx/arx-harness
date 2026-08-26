@@ -3,11 +3,11 @@
  * consumes and produces, plus the fields in the `workflow/*` event payloads.
  * Types only (plus the id-brand factory), per the package convention.
  *
- * @module @centurionarx/cxh-workflow/types
+ * @module @arx-ai/arx-workflow/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /** Identifies one workflow run. */
 export type WorkflowRunId = Branded<'WorkflowRunId'>

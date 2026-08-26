@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-cordis-host-runner",
+  "name": "@arx-ai/arx-cordis-host-runner",
   "description": "Dynamic package definition registry, host-half sandbox lifecycle, and invoke handler table for model-mounted dual-half packages",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/extensions/cordis-host-runner"
   },
   "type": "module",
@@ -49,30 +49,30 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cxh-typert-protocol": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cordis-plugin-timer": "workspace:^",
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cxh-typert-protocol": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/cordis-plugin-timer": "workspace:^",
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^"
   }
 }

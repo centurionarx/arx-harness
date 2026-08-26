@@ -5,10 +5,10 @@
  * capacity. */
 
 import { useEffect, useRef, useState } from 'react'
-import type { UseProjection } from '@centurionarx/cxh-client-runtime/client'
+import type { UseProjection } from '@arx-ai/arx-client-runtime/client'
 // Type-only: the `contextPressure` / `contextBreakdown` projection key merges.
-import type {} from '@centurionarx/cxh-token-meter/client'
-import { Tooltip } from '@centurionarx/cxh-client-ui-primitives'
+import type {} from '@arx-ai/arx-token-meter/client'
+import { Tooltip } from '@arx-ai/arx-client-ui-primitives'
 import type { ComposerBarProps } from '../contract/slots.ts'
 import { contextOccupancy, formatTokens } from '../chat/StatsLine.tsx'
 import css from './ContextMeter.module.css'

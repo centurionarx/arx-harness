@@ -1,5 +1,5 @@
-import { composeError, Context } from '@centurionarx/cordis'
-import { isNonNullable, type Dict } from '@centurionarx/cosmokit'
+import { composeError, Context } from '@arx-ai/cordis'
+import { isNonNullable, type Dict } from '@arx-ai/cosmokit'
 import { Entry, type EntryOptions } from './entry.ts'
 import { EntryGroup } from './group.ts'
 

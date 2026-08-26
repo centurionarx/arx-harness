@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import WebRuntime, {
   WebError,
   type WebFetchProvider,
@@ -7,7 +7,7 @@ import WebRuntime, {
   type WebSearchProvider,
   type WebSearchRequest,
   type WebSearchResult,
-} from '@centurionarx/cxh-web'
+} from '@arx-ai/arx-web'
 
 /** A scripted search provider for contract tests. */
 function makeSearchProvider(

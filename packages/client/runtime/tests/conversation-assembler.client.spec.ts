@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 import { ConversationNodeAssembler } from '../src/client/sessions/conversation-assembler.ts'
 import type {
   ConversationEventInput, ConversationMatch, ConversationNodeContext,

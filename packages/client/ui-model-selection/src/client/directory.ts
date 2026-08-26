@@ -7,9 +7,9 @@
  */
 import type {
   IApiClient, ModelCatalogFailure, ModelProviderGroup, ModelSelection, SessionId, SessionModels,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 
 /** Directory snapshot both entries render from. */
 export interface ModelDirectoryState {

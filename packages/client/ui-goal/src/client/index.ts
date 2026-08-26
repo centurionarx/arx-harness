@@ -8,15 +8,15 @@
  * their CAS ref reads the session's current projected value at call time.
  * Goal creation stays on the /goal host command.
  */
-import type { ClientContext, SessionId } from '@centurionarx/cxh-client-runtime/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
-import type {} from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.dock entry).
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 // Type-only: the `goal` SessionProjectionMap key merge (single source, the domain's pure outlet).
-import type { GoalProjection, GoalRef } from '@centurionarx/cxh-goal/client'
+import type { GoalProjection, GoalRef } from '@arx-ai/arx-goal/client'
 import type { GoalActionResult, GoalBarActions } from './slots.ts'
 import { GoalDock } from './GoalBar.tsx'
 import { GoalCommandInputView } from './GoalCommandInputView.tsx'
@@ -27,7 +27,7 @@ export { GoalBar, GoalDock } from './GoalBar.tsx'
 export type { GoalActionResult, GoalBarActions } from './slots.ts'
 export type { GoalKey } from './locales.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The goal strip's copy. */
     goal: GoalKey

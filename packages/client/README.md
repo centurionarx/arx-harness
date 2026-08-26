@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-The browser side of the cxh web GUI: shell boot, browser-host communication, shared UI services, and feature plugins. Authoring rules live in [AGENTS.md](AGENTS.md); the host half is [`host/`](../host/README.md). All except `test-runtime` are **product** packages named `@centurionarx/cxh-client-<name>`.
+The browser side of the arx web GUI: shell boot, browser-host communication, shared UI services, and feature plugins. Authoring rules live in [AGENTS.md](AGENTS.md); the host half is [`host/`](../host/README.md). All except `test-runtime` are **product** packages named `@arx-ai/arx-client-<name>`.
 
 | Package | Purpose |
 |---|---|

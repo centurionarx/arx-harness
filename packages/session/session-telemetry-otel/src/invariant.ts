@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-session-telemetry-otel`.
- * @module @centurionarx/cxh-session-telemetry-otel/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-session-telemetry-otel`.
+ * @module @arx-ai/arx-session-telemetry-otel/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session-telemetry-otel'
+const PACKAGE_NAME = '@arx-ai/arx-session-telemetry-otel'
 
 /** Cordis companion plugin name. */
 export const name = 'session-telemetry-otel-invariant'

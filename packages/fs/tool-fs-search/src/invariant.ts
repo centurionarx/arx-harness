@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-tool-fs-search`.
- * @module @centurionarx/cxh-tool-fs-search/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-tool-fs-search`.
+ * @module @arx-ai/arx-tool-fs-search/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tool-fs-search'
+const PACKAGE_NAME = '@arx-ai/arx-tool-fs-search'
 
 /** Cordis companion plugin name. */
 export const name = 'tool-fs-search-invariant'

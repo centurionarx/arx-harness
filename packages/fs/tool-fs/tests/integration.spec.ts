@@ -9,13 +9,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import { LocalFileSystem } from '@centurionarx/cxh-fs-local'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import { LocalFileSystem } from '@arx-ai/arx-fs-local'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
 
 const testToolSignal = new AbortController().signal
 
@@ -48,9 +48,9 @@ afterEach(async () => {
 // --------------------------------------------------------------------------
 // DEFAULT deployment: the policy gate plugin is loaded.
 // --------------------------------------------------------------------------
-describe('default deployment (with cxh-fs-observation-policy)', () => {
+describe('default deployment (with arx-fs-observation-policy)', () => {
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-tool-fs-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-tool-fs-'))
     ctx = new Context()
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
@@ -310,9 +310,9 @@ describe('default deployment (with cxh-fs-observation-policy)', () => {
 // --------------------------------------------------------------------------
 // BARE deployment: the tool suite WITHOUT the policy gate.
 // --------------------------------------------------------------------------
-describe('bare provider (no cxh-fs-observation-policy)', () => {
+describe('bare provider (no arx-fs-observation-policy)', () => {
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-tool-fs-bare-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-tool-fs-bare-'))
     ctx = new Context()
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
@@ -375,12 +375,12 @@ describe('bare provider (no cxh-fs-observation-policy)', () => {
 
 // Per-session cwd: a relative file_path resolves against the calling session's workspace
 // (`exec.agent.session.header.cwd`), not the backend's config.cwd, so the
-// caller-selected session workspace wins, matching cxh-tool-bash.
+// caller-selected session workspace wins, matching arx-tool-bash.
 describe('per-session cwd', () => {
   let sessionDir: string
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-tool-fs-cfg-'))
-    sessionDir = await mkdtemp(join(tmpdir(), 'cxh-tool-fs-session-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-tool-fs-cfg-'))
+    sessionDir = await mkdtemp(join(tmpdir(), 'arx-tool-fs-session-'))
     ctx = new Context()
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
@@ -425,7 +425,7 @@ describe('per-session cwd', () => {
 // --------------------------------------------------------------------------
 describe('signal, concurrency, and the fs/observed contract', () => {
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-tool-fs-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-tool-fs-'))
     ctx = new Context()
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)

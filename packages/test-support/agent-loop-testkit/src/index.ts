@@ -2,17 +2,17 @@
  * Shared mounting for the services required before tests load the concrete
  * agent loop. The caller retains ownership of the context, loop, adapters,
  * optional plugins, and teardown.
- * @module @centurionarx/cxh-agent-loop-testkit
+ * @module @arx-ai/arx-agent-loop-testkit
  */
 
-import type { Context } from '@centurionarx/cordis'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import type { Config as SystemPromptConfig } from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import type { Config as ToolRuntimeConfig } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import AgentRegistry from '@arx-ai/arx-agent'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import type { Config as SystemPromptConfig } from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import type { Config as ToolRuntimeConfig } from '@arx-ai/arx-tools'
 
 /** Configuration forwarded to the prerequisite service plugins. */
 export interface AgentLoopTestDependenciesOptions {

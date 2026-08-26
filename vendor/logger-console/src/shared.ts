@@ -1,6 +1,6 @@
-import { Context, Exporter, Formatter, Logger, Message } from '@centurionarx/cordis'
-import { Time } from '@centurionarx/cosmokit'
-import z from '@centurionarx/schemastery'
+import { Context, Exporter, Formatter, Logger, Message } from '@arx-ai/cordis'
+import { Time } from '@arx-ai/cosmokit'
+import z from '@arx-ai/schemastery'
 
 /** Terminal color support level compatible with supports-color. */
 export type ColorSupportLevel = 0 | 1 | 2 | 3

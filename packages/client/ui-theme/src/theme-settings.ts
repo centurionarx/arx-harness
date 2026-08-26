@@ -1,6 +1,6 @@
 /** Theme preferences stored in the Host user-settings document. */
 
-import z from '@centurionarx/schemastery'
+import z from '@arx-ai/schemastery'
 
 /** Built-in preferences accepted at the registry and settings boundaries. */
 export const THEME_PREFERENCES = ['light', 'dark', 'system'] as const

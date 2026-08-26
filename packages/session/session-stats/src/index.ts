@@ -6,10 +6,10 @@
  * compaction cannot change. The plugin owns only the fold; delivery is the
  * seam's.
  *
- * @module @centurionarx/cxh-session-stats
+ * @module @arx-ai/arx-session-stats
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { sessionStatsProjectionDefinition } from './projection.ts'
 
 export type * from './types.ts'

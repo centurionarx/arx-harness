@@ -1,10 +1,10 @@
 /**
  * Public configuration and measurement vocabulary for replay token metering.
  *
- * @module @centurionarx/cxh-token-meter/types
+ * @module @arx-ai/arx-token-meter/types
  */
 
-import type { TokenUsage } from '@centurionarx/cxh-llm'
+import type { TokenUsage } from '@arx-ai/arx-llm'
 
 export type { ContextBreakdownProjection, ContextPressureProjection, TokenUsageProjection } from './projection.ts'
 

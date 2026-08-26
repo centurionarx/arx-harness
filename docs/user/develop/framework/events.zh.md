@@ -85,9 +85,9 @@ waterfall 监听器**必须调用 `next()`**。不调用 `next` 会短路整个�
 Harness 使用 TypeScript 声明合并来为事件提供类型安全：
 
 ```ts
-import '@centurionarx/cordis'
+import '@arx-ai/cordis'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     'my-plugin/ready': (payload: { id: string }) => void
     'my-plugin/check': (input: string) => boolean | undefined
@@ -121,8 +121,8 @@ export function apply(ctx: Context) {
 这个插件记录工具调用和工具结果：
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import '@arx-ai/arx-tools'
 
 export const name = 'tool-logger'
 

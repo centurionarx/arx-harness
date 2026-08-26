@@ -5,10 +5,10 @@
 import type {
   IApiClient, HostFrame, MuxFrame, RpcError, RpcRequest, RpcResult, SessionId,
   SessionSummary, SubagentAddress, SubagentCatalog, JobView, WorkspaceId,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 // Value import from the inline-safe wire layer (not the connection plugin):
 // plugin-to-plugin value imports are a bundle purity error.
-import { transportError } from '@centurionarx/cxh-host-apiproxy/api'
+import { transportError } from '@arx-ai/arx-host-apiproxy/api'
 import { mergeOrderedBaseline } from '../ordered-baseline.ts'
 import type { ConversationRuntime } from './conversation-assembler.ts'
 import type { SessionListEntry, TitledSessionSummary } from './lineage.ts'
@@ -17,7 +17,7 @@ import type { PendingInteractionStatus } from './pending.ts'
 // Type-only merge edge: the title domain's client-namespace outlet declares
 // the 'title' projection key this manager projects into list rows (and any
 // useProjection('title') consumer reads). Zero value imports by construction.
-import type {} from '@centurionarx/cxh-session-title/client'
+import type {} from '@arx-ai/arx-session-title/client'
 import { Notifier } from './notifier.ts'
 import { ProjectionValueStore } from './projection-store.ts'
 import { Session } from './session.ts'

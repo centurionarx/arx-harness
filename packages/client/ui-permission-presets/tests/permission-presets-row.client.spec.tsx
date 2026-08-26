@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import type { SettingsNamespaceView } from '@centurionarx/cxh-api-remotes/client'
-import { SettingsSchemaService } from '@centurionarx/cxh-client-ui-settings/src/client/schema.ts'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import type { SettingsNamespaceView } from '@arx-ai/arx-api-remotes/client'
+import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
 import { PermissionRow, type PermissionRowProps } from '../src/client/PermissionRow.tsx'
 import { en } from '../src/client/locales.ts'
-import { SettingsDescribeMirror } from '@centurionarx/cxh-client-ui-settings/src/client/settings-mirror.ts'
+import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import { PermissionPresetSettingsController } from '../src/client/settings-store.ts'
 
 const schema = new SettingsSchemaService(new Context())

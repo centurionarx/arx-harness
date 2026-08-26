@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-tool-str-replace-editor",
+  "name": "@arx-ai/arx-tool-str-replace-editor",
   "description": "Model-facing view, create, literal replace, and line insert tool over the Harness filesystem service",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/fs/tool-str-replace-editor"
   },
   "type": "module",
@@ -31,29 +31,29 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-fs": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-fs": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-fs": "workspace:^",
-    "@centurionarx/cxh-fs-local": "workspace:^",
-    "@centurionarx/cxh-fs-observation-policy": "workspace:^",
-    "@centurionarx/cxh-fs-sandbox": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-fs": "workspace:^",
+    "@arx-ai/arx-fs-local": "workspace:^",
+    "@arx-ai/arx-fs-observation-policy": "workspace:^",
+    "@arx-ai/arx-fs-sandbox": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render } from '@testing-library/react'
 import { afterEach } from 'vitest'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import type { DirectoryFlowOwnerProps } from '@centurionarx/cxh-client-ui-workspace/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import type { DirectoryFlowOwnerProps } from '@arx-ai/arx-client-ui-workspace/client'
 import { apply, inject } from '../src/client/index.ts'
 import { NativeDirectoryFlow } from '../src/client/flow.ts'
 import { apply as nodeApply } from '../src/index.ts'

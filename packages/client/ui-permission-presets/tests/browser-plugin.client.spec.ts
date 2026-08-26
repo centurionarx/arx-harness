@@ -8,14 +8,14 @@
  * disposal removes the contribution (HMR safety). The same plugin registers
  * its Settings row and invalidates that row on host settings changes.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SlotRegistry, type SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import type { CommandDecoration } from '@centurionarx/cxh-client-ui-commands/client'
-import type { PermissionSelect } from '@centurionarx/cxh-permission-presets/client'
+import { SlotRegistry, type SessionId } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import type { CommandDecoration } from '@arx-ai/arx-client-ui-commands/client'
+import type { PermissionSelect } from '@arx-ai/arx-permission-presets/client'
 import {
   PermissionRow, type PermissionRowInjected,
 } from '../src/client/PermissionRow.tsx'

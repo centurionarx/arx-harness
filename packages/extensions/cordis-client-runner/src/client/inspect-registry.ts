@@ -1,11 +1,11 @@
 /** Browser registry for read-only Cordis capability providers. */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   CordisInspectProviderManifest, CordisInspectQueryRequest, CordisInspectQueryResolution,
   CordisInspectRequestId, JsonValue,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
 
 /** Context supplied to a Client inspect provider query. */
 export interface ClientCordisInspectQueryContext {
@@ -133,7 +133,7 @@ export class ClientCordisInspectRegistry {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Browser registry for pre-definition Cordis capability discovery. */
     cordisInspect: ClientCordisInspectRegistry

@@ -9,10 +9,10 @@
 // The block union's defining home is runtime (fold-product types); this
 // contract only forwards it (type-definition authority stays with the layer
 // that produces the values).
-import { abbreviateHomePath } from '@centurionarx/cxh-client-runtime/client'
-import type { ToolCallBlock, ToolResultNode } from '@centurionarx/cxh-client-runtime/client'
+import { abbreviateHomePath } from '@arx-ai/arx-client-runtime/client'
+import type { ToolCallBlock, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
 
-export type { ToolCallBlock } from '@centurionarx/cxh-client-runtime/client'
+export type { ToolCallBlock } from '@arx-ai/arx-client-runtime/client'
 
 /** Tool-call row variants selected by the generic atomic renderer. */
 export type ToolRowVariant = 'search' | 'read' | 'bash' | 'write' | 'edit' | 'code' | 'others'

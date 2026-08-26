@@ -7,15 +7,15 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createScope } from '@centurionarx/cxh-scope'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import { CodeRuntime } from '@centurionarx/cxh-code-runtime'
-import type { CodeRunRequest, CodeRunResult } from '@centurionarx/cxh-code-runtime'
-import ToolRuntime, { RUN_CODE_NAME, defineTool } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import { apply, Config, inject, name } from '@centurionarx/cxh-agent-tool-presentation'
+import { Context } from '@arx-ai/cordis'
+import { createScope } from '@arx-ai/arx-scope'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import { CodeRuntime } from '@arx-ai/arx-code-runtime'
+import type { CodeRunRequest, CodeRunResult } from '@arx-ai/arx-code-runtime'
+import ToolRuntime, { RUN_CODE_NAME, defineTool } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import { apply, Config, inject, name } from '@arx-ai/arx-agent-tool-presentation'
 
 /** A runtime that never runs anything: presentation never dispatches. */
 class StubRuntime extends CodeRuntime {
@@ -103,7 +103,7 @@ describe('the tool-presentation row', () => {
 
     const { agent, row } = await mount(ctx, { mode: 'code' })
 
-    // Pending, not applied: `cxh-agent-presets` rejects a mount holding a row
+    // Pending, not applied: `arx-agent-presets` rejects a mount holding a row
     // that never reached a usable state, naming this id — so the preset fails
     // where the operator can act, instead of at the first request.
     expect(row.ctx.get('codeRuntime')).toBeUndefined()

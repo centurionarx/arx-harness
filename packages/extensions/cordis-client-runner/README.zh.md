@@ -1,4 +1,4 @@
-# @centurionarx/cxh-cordis-client-runner
+# @arx-ai/arx-cordis-client-runner
 
 [English](README.md) | 中文
 

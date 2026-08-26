@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 vi.mock('node:zlib', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:zlib')>()

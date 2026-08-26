@@ -1,4 +1,4 @@
-# @centurionarx/cxh-fs
+# @arx-ai/arx-fs
 
 English | [中文](README.zh.md)
 
@@ -8,10 +8,10 @@ This package owns the Service Definition and provider contract layer of the four
 
 | Layer | Package | Role |
 |---|---|---|
-| tool / executor | `@centurionarx/cxh-tool-fs` | model-facing `read`/`write`/`edit` schemas + read windowing + text rendering; reads/writes/edits via `ctx.fs`, dispatches the `fs/*` events |
-| policy | `@centurionarx/cxh-fs-observation-policy` | observed-state + read-before-edit + version-guarded write/edit, contributed through the `fs/*` event gate (no service) |
-| provider contract | `@centurionarx/cxh-fs` (this) | `ctx.fs`: execution-world paths, text IO, and atomic mutation primitives (optional version guard); owns the `fs/*` event vocabulary |
-| provider | `@centurionarx/cxh-fs-local` | the host-filesystem implementation |
+| tool / executor | `@arx-ai/arx-tool-fs` | model-facing `read`/`write`/`edit` schemas + read windowing + text rendering; reads/writes/edits via `ctx.fs`, dispatches the `fs/*` events |
+| policy | `@arx-ai/arx-fs-observation-policy` | observed-state + read-before-edit + version-guarded write/edit, contributed through the `fs/*` event gate (no service) |
+| provider contract | `@arx-ai/arx-fs` (this) | `ctx.fs`: execution-world paths, text IO, and atomic mutation primitives (optional version guard); owns the `fs/*` event vocabulary |
+| provider | `@arx-ai/arx-fs-local` | the host-filesystem implementation |
 
 `fs-sandbox` and `fs-e2b` implement this interface without touching the policy/tool layers.
 
@@ -38,11 +38,11 @@ The mutation runs inside the backend's per-target lock either way, so an uncondi
 
 ## The `fs/*` policy events
 
-This package declares three events (see the generated region of [filesystem.md](../../../docs/subsystems/filesystem.md#cordis-surface)) so the emitter (`@centurionarx/cxh-tool-fs`) and the policy listener (`@centurionarx/cxh-fs-observation-policy`) share a vocabulary without the emitter depending on the policy plugin. `fs/write-intent` and `fs/edit-intent` are single-slot decision waterfalls (the listener fully decides, never calling `next()`); `fs/observed` is a fire-and-forget recording event carrying an `FsObservation` discriminated union: present with a version or confirmed absent. They carry only `cxh-fs` vocabulary plus an opaque `object` actor — no model-facing concepts and no agent/session owner structure.
+This package declares three events (see the generated region of [filesystem.md](../../../docs/subsystems/filesystem.md#cordis-surface)) so the emitter (`@arx-ai/arx-tool-fs`) and the policy listener (`@arx-ai/arx-fs-observation-policy`) share a vocabulary without the emitter depending on the policy plugin. `fs/write-intent` and `fs/edit-intent` are single-slot decision waterfalls (the listener fully decides, never calling `next()`); `fs/observed` is a fire-and-forget recording event carrying an `FsObservation` discriminated union: present with a version or confirmed absent. They carry only `arx-fs` vocabulary plus an opaque `object` actor — no model-facing concepts and no agent/session owner structure.
 
 ## A provider contract, not the policy layer
 
-`ctx.fs` is deliberately close to fsspec-style storage primitives — half a level above byte-level `cat`/`open`, because it decodes text and rejects binaries so the policy layer never touches raw bytes. It owns UTF-8 decoding, binary rejection, atomic writes, and the literal-edit critical section. It does **not** own line windows, numbered lines, rendered footers, or observed-state. Observed-state, read-before-edit, and version-guarded write/edit are policy a plugin (`@centurionarx/cxh-fs-observation-policy`) ADDS by supplying the optional guard — not provider behavior — so a sandboxed/remote backend inherits no model-facing observation policy.
+`ctx.fs` is deliberately close to fsspec-style storage primitives — half a level above byte-level `cat`/`open`, because it decodes text and rejects binaries so the policy layer never touches raw bytes. It owns UTF-8 decoding, binary rejection, atomic writes, and the literal-edit critical section. It does **not** own line windows, numbered lines, rendered footers, or observed-state. Observed-state, read-before-edit, and version-guarded write/edit are policy a plugin (`@arx-ai/arx-fs-observation-policy`) ADDS by supplying the optional guard — not provider behavior — so a sandboxed/remote backend inherits no model-facing observation policy.
 
 `editText` stays on this seam (not composed in the policy layer from a read plus a write) because version guard + literal match + atomic rewrite must stay inside one critical section for correct error attribution and one-wins/one-stale concurrency, and a remote backend may implement it as a native compare-and-edit.
 
@@ -52,7 +52,7 @@ This package declares three events (see the generated region of [filesystem.md](
 
 ## Model Experience
 
-Indirectly, through `cxh-tool-fs`, which renders provider text and errors as bounded, retained filesystem tool results.
+Indirectly, through `arx-tool-fs`, which renders provider text and errors as bounded, retained filesystem tool results.
 
 #### KV Cache effect
 

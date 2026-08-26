@@ -8,12 +8,12 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { Context } from '@centurionarx/cordis'
-import type { PatchOptions } from '@centurionarx/cordis-plugin-include'
-import { boot, loadOverlayPatches } from '@centurionarx/cxh-app-boot'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import * as McpClient from '@centurionarx/cxh-mcp-client/src/index.ts'
+import type { Context } from '@arx-ai/cordis'
+import type { PatchOptions } from '@arx-ai/cordis-plugin-include'
+import { boot, loadOverlayPatches } from '@arx-ai/arx-app-boot'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import * as McpClient from '@arx-ai/arx-mcp-client/src/index.ts'
 
 interface ExampleContract {
   file: string
@@ -87,7 +87,7 @@ describe('third-party memory MCP example overlays', () => {
     const row = insertedRow(loadOverlayPatches('memory-mcp-config-test', file))
 
     expect(row.id).toBe(contract.id)
-    expect(row.name).toBe('@centurionarx/cxh-mcp-client')
+    expect(row.name).toBe('@arx-ai/arx-mcp-client')
     expect(row.config?.serverName).toBe(contract.serverName)
     expect(row.config?.transport).toBe(contract.transport)
     expect(source.split('\n', 1)[0]).toContain(contract.pin)

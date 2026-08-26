@@ -2,13 +2,13 @@
  * Browser-safe durable workflow-record events written by the model-facing
  * workflow tool into its calling parent Session.
  *
- * @module @centurionarx/cxh-tool-workflow/types
+ * @module @arx-ai/arx-tool-workflow/types
  */
 
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type {
   WorkflowAgentOutcome, WorkflowRunId, WorkflowStopReason,
-} from '@centurionarx/cxh-workflow/types'
+} from '@arx-ai/arx-workflow/types'
 
 /** Opens one durable top-level workflow run record. */
 export interface ToolWorkflowRunStartData {
@@ -38,7 +38,7 @@ export interface ToolWorkflowRunEndData {
   readonly stopReason: WorkflowStopReason
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Opens one top-level workflow record.

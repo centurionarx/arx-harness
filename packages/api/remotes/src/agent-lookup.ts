@@ -1,11 +1,11 @@
 /** Host BFF policy for resolving Remote Agent and Session identities. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent, AgentOptions, AgentSetup } from '@centurionarx/cxh-agent'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-session-persistence'
-import { TypertLookupFailure } from '@centurionarx/cxh-typert-protocol'
-import type {} from '@centurionarx/cxh-typert-registry'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent, AgentOptions, AgentSetup } from '@arx-ai/arx-agent'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-session-persistence'
+import { TypertLookupFailure } from '@arx-ai/arx-typert-protocol'
+import type {} from '@arx-ai/arx-typert-registry'
 
 /** Caller-facing failures preserved by the Gateway's RPC adapter. */
 export type ApiRemoteLookupError =
@@ -97,7 +97,7 @@ export async function inspectApiRemoteSession(
 ): Promise<{ meta: SessionHeader; events: SessionEvent[] }> {
   const persistence = ctx.get('sessionPersistence')
   if (persistence === undefined) {
-    throw new Error('session persistence is not configured (load a cxh-session-persistence backend)')
+    throw new Error('session persistence is not configured (load a arx-session-persistence backend)')
   }
   const meta = (await persistence.list()).find(candidate => candidate.id === sessionId)
   if (meta === undefined || meta.cwd === undefined) {

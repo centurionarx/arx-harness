@@ -1,7 +1,7 @@
 /** Reconstruct durable steering identity from the event-sourced agent inbox. */
 
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type { InboxTarget } from '@centurionarx/cxh-agent/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type { InboxTarget } from '@arx-ai/arx-agent/types'
 
 /** Minimal pending identity retained while replaying durable inbox splices. */
 interface PendingIdentity {

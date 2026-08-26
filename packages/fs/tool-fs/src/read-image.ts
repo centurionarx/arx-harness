@@ -5,17 +5,17 @@
  * image-reading tool is useful only when the exact calling route can inspect
  * its result, so unknown capability refuses instead of relying on an adapter
  * failure after filesystem and attachment work.
- * @module @centurionarx/cxh-tool-fs/src/read-image
+ * @module @arx-ai/arx-tool-fs/src/read-image
  */
 
 import { basename, extname } from 'node:path'
-import type { Context } from '@centurionarx/cordis'
-import { AttachmentError, AttachmentId } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentRef, ImageMediaType } from '@centurionarx/cxh-attachment'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, ToolExecution } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-fs'
+import type { Context } from '@arx-ai/cordis'
+import { AttachmentError, AttachmentId } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentRef, ImageMediaType } from '@arx-ai/arx-attachment'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, ToolExecution } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-fs'
 import { resolveRegularReadTarget } from './read-target.ts'
 
 /** Extensions `read_image` accepts; magic-byte validation at the attachment service stays authoritative. */

@@ -33,7 +33,7 @@ The filesystem discovers the tool-package inventory and the completeness guard r
 
 ### Scope
 
-Shipped product tool packages under `packages/*/tool-*`, each booted with its default config, including `cxh-tool-bash` (`bash`), `cxh-tool-jobs` (`job_output`, `job_list`, `job_kill`), and `cxh-tool-subagent` (`subagent`). Example-only tools are excluded.
+Shipped product tool packages under `packages/*/tool-*`, each booted with its default config, including `arx-tool-bash` (`bash`), `arx-tool-jobs` (`job_output`, `job_list`, `job_kill`), and `arx-tool-subagent` (`subagent`). Example-only tools are excluded.
 
 The catalog unit is a package, not every configured tool instance. Each package boots once with default config; load-time aliases such as `subagent_fork` are noted without enumerating every deployment permutation. A deployment inventory is a separate, unbounded surface.
 

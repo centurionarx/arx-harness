@@ -1,6 +1,6 @@
 /** First-party semantic text extraction for session-query consumers. */
 
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /**
  * Extract searchable semantic text from one first-party session event.

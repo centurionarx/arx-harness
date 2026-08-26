@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { pathToFileURL } from 'node:url'
-import Loader from '@centurionarx/cordis-plugin-loader'
+import Loader from '@arx-ai/cordis-plugin-loader'
 
 const ctx = new Context()
 ctx.baseUrl = pathToFileURL(process.cwd()).href + '/'
 
 await ctx.plugin(Loader)
 await ctx.loader.create({
-  name: '@centurionarx/cordis-plugin-include',
+  name: '@arx-ai/cordis-plugin-include',
   config: {
     path: './cordis.yml',
   },

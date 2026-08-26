@@ -23,7 +23,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { CredentialView, IApiClient, SettingsNamespaceView, SettingsPathOpView } from '@centurionarx/cxh-api-remotes/client'
+import type { CredentialView, IApiClient, SettingsNamespaceView, SettingsPathOpView } from '@arx-ai/arx-api-remotes/client'
 import {
   DeepSeekModelsEditor, modelDrafts, validateDeepSeekModels,
 } from './DeepSeekModelsEditor.tsx'

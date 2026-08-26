@@ -1,10 +1,10 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import LlmRuntime, { createUserMessage, LlmAdapter  } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import SessionTitleService from '@centurionarx/cxh-session-title'
-import * as providerPlugin from '@centurionarx/cxh-session-title-all-prompts-llm'
+import LlmRuntime, { createUserMessage, LlmAdapter  } from '@arx-ai/arx-llm'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import SessionTitleService from '@arx-ai/arx-session-title'
+import * as providerPlugin from '@arx-ai/arx-session-title-all-prompts-llm'
 
 class RecordingAdapter extends LlmAdapter {
   readonly requests: GenerateOptions[] = []

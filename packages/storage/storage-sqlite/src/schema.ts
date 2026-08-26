@@ -3,13 +3,13 @@
  * layout version, the database open/configure sequence (permissions, pragmas,
  * version stamp/reject), and the unit metadata tables. Unit record tables are
  * created per descriptor in `unit.ts`.
- * @module @centurionarx/cxh-storage-sqlite/schema
+ * @module @arx-ai/arx-storage-sqlite/schema
  */
 
 import { DatabaseSync } from 'node:sqlite'
 import { mkdir, open } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { StorageError } from '@centurionarx/cxh-storage'
+import { StorageError } from '@arx-ai/arx-storage'
 
 /**
  * The on-disk physical layout version, stored in `PRAGMA user_version`.

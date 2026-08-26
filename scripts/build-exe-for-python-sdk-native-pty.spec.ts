@@ -36,7 +36,7 @@ describe('resolveLinuxNodePtyAddon', () => {
 })
 
 function temporaryPackage(): string {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-node-pty-addon-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-node-pty-addon-'))
   roots.push(root)
   return root
 }

@@ -3,10 +3,10 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import Include from '@centurionarx/cordis-plugin-include'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
+import { Context } from '@arx-ai/cordis'
+import Include from '@arx-ai/cordis-plugin-include'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
 
 let root: string | undefined
 let context: Context | undefined
@@ -20,10 +20,10 @@ afterEach(async () => {
 
 describe('jobs-local through a real Loader composition', () => {
   it('applies the provider-owned admission config from a Cordis row', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-jobs-local-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-jobs-local-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-jobs-local'",
+      "- name: '@arx-ai/arx-jobs-local'",
       '  config:',
       '    maxConcurrentJobsPerOwner: 1',
       '',
@@ -36,7 +36,7 @@ describe('jobs-local through a real Loader composition', () => {
     context.loader.internal = {
       version: 'v2',
       async import(specifier: string) {
-        if (specifier === '@centurionarx/cxh-jobs-local') return LocalJobRegistry
+        if (specifier === '@arx-ai/arx-jobs-local') return LocalJobRegistry
         throw new Error(`unexpected Loader import: ${specifier}`)
       },
     } as unknown as NonNullable<typeof context.loader.internal>

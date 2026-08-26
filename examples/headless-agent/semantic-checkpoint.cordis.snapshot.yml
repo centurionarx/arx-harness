@@ -3,31 +3,31 @@
 # turn over stream-json; the replay adapter supplies the deterministic response.
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
     compression: none
 
 - id: checkpoint
-  name: '@centurionarx/cxh-session-checkpoint-policy'
+  name: '@arx-ai/arx-session-checkpoint-policy'
 
 - id: replay
-  name: '@centurionarx/cxh-llm-replay'
+  name: '@arx-ai/arx-llm-replay'
   config:
-    file: !!js process.env.CXH_SNAPSHOT_FILE
-    overrideFile: !!js process.env.CXH_SNAPSHOT_OVERRIDE
+    file: !!js process.env.ARX_SNAPSHOT_FILE
+    overrideFile: !!js process.env.ARX_SNAPSHOT_OVERRIDE
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
   config:
     timeoutMs: 60000
 
 - id: agent
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents: []
     workspaceContext: false

@@ -1,4 +1,4 @@
-import { Binary, clone, deepEqual, filterKeys, isNullable, isPlainObject, pick, valueMap, type Dict } from '@centurionarx/cosmokit'
+import { Binary, clone, deepEqual, filterKeys, isNullable, isPlainObject, pick, valueMap, type Dict } from '@arx-ai/cosmokit'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 
 const kSchema = Symbol.for('schemastery')

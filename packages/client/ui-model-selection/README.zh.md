@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-model-selection
+# @arx-ai/arx-client-ui-model-selection
 
 [English](README.md) | 中文
 

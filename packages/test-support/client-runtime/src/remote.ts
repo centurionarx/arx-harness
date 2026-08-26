@@ -1,5 +1,5 @@
 /** Test-owned Remote face: `$on` subscriptions driven by the internal forwarded-event plumbing. */
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 
 /**
  * Remote service test double for the forwarded-event path. Feature specs need

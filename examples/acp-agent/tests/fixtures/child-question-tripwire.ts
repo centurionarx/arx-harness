@@ -1,5 +1,5 @@
-import type { Context } from '@centurionarx/cordis'
-import '@centurionarx/cxh-user-questions'
+import type { Context } from '@arx-ai/cordis'
+import '@arx-ai/arx-user-questions'
 
 /** Snapshot-only provider whose invocation means the child guard failed. */
 export const name = 'child-question-tripwire'

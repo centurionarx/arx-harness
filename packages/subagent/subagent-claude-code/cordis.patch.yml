@@ -3,4 +3,4 @@
 
 - insert:
     - id: subagent-claude-code
-      name: '@centurionarx/cxh-subagent-claude-code'
+      name: '@arx-ai/arx-subagent-claude-code'

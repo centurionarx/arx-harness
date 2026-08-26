@@ -3,11 +3,11 @@
  * conversion, workspace-grouped location rendering with `file:`-URI resolution, complete-result
  * capping, and UI presentation. No I/O — a UI may call the presenter on live streaming and on
  * replay, so it depends only on the tool arguments.
- * @module @centurionarx/cxh-tool-lsp/render
+ * @module @arx-ai/arx-tool-lsp/render
  */
 
-import type { GenericCallView } from '@centurionarx/cxh-tools'
-import type { LspHover, LspLocation, LspOperation, LspPosition } from '@centurionarx/cxh-lsp'
+import type { GenericCallView } from '@arx-ai/arx-tools'
+import type { LspHover, LspLocation, LspOperation, LspPosition } from '@arx-ai/arx-lsp'
 import { posix, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 

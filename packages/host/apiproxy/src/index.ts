@@ -1,5 +1,5 @@
 /**
- * @centurionarx/cxh-host-apiproxy — the API gateway every client shape shares:
+ * @arx-ai/arx-host-apiproxy — the API gateway every client shape shares:
  * the ApiProxy contract (api/: types + zod schemas, browser-safe), the fetch
  * carrier pair (fetch/: toFetchHandler on the host side, AbstractApiClient +
  * platform subclasses on the client side), and the host-side implementation
@@ -12,9 +12,9 @@
  * service; sessions that have already logged a selection remain unchanged.
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-agent-default-model'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-agent-default-model'
 import type { ApiProxy } from './api/index.ts'
 import { createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from './api-proxy.ts'
 import {
@@ -30,7 +30,7 @@ export type { IApiClient } from './fetch/client.ts'
 export { createApiProxy } from './api-proxy.ts'
 export type { ApiProxyDefaults } from './api-proxy.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** The host-side ApiProxy implementation (the transport-agnostic gateway face). */
     apiProxy: ApiProxy

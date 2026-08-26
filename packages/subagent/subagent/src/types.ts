@@ -6,14 +6,14 @@
  * continuation host in `./continuation.ts` — so this module stays the published
  * surface rather than a bag of everything type-shaped.
  *
- * @module @centurionarx/cxh-subagent/types
+ * @module @arx-ai/arx-subagent/types
  */
 
-import type { Agent, AgentOptions } from '@centurionarx/cxh-agent'
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SessionEvent, SessionId } from '@centurionarx/cxh-session'
-import type { ObjectJsonSchema, ToolRestriction } from '@centurionarx/cxh-tools'
+import type { Agent, AgentOptions } from '@arx-ai/arx-agent'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SessionEvent, SessionId } from '@arx-ai/arx-session'
+import type { ObjectJsonSchema, ToolRestriction } from '@arx-ai/arx-tools'
 import type { SubagentDescriptorData } from './descriptor.ts'
 
 /** Identifies one accepted subagent run across its lifecycle event pair. */

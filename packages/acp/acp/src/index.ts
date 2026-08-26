@@ -6,15 +6,15 @@
  * and one-shot permission decisions; presentation and human-interaction
  * features stay with the harness's UI modules.
  *
- * @module @centurionarx/cxh-acp
+ * @module @arx-ai/arx-acp
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { randomUUID } from 'node:crypto'
 import { isAbsolute } from 'node:path'
 import { Readable, Writable } from 'node:stream'
-import Schema from '@centurionarx/schemastery'
-import { createUserMessage, errorChain } from '@centurionarx/cxh-llm'
+import Schema from '@arx-ai/schemastery'
+import { createUserMessage, errorChain } from '@arx-ai/arx-llm'
 import {
   AgentSideConnection,
   ndJsonStream,
@@ -33,10 +33,10 @@ import {
   type StopReason,
   type Stream,
 } from '@agentclientprotocol/sdk'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { SessionId, type SessionEvent, type TurnEndReason } from '@centurionarx/cxh-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import { SessionId, type SessionEvent, type TurnEndReason } from '@arx-ai/arx-session'
 // Side-effect type import: declaration-merges the approval waterfall answered below.
-import type {} from '@centurionarx/cxh-user-approval'
+import type {} from '@arx-ai/arx-user-approval'
 import { AcpContentError, admitAcpPrompt, assistantBlockToAcp, supportsAcpImagePrompts } from './content.ts'
 import { turnEndToStopReason } from './codec.ts'
 
@@ -266,7 +266,7 @@ export function apply(ctx: Context, config: AcpConfig): void {
   })
 
   // Permission requests are a machine policy channel for ACP clients such as
-  // cxh-subagent-acp. The bridge offers one-shot choices only and never infers a
+  // arx-subagent-acp. The bridge offers one-shot choices only and never infers a
   // durable grant from an unknown client response.
   ctx.on('approval/request', (request, next) => {
     const record = ownedRecord(request.agent)
@@ -293,7 +293,7 @@ export function apply(ctx: Context, config: AcpConfig): void {
         imagePromptEnabled = await supportsAcpImagePrompts(ctx, config.provider, config.model)
         return {
           protocolVersion: PROTOCOL_VERSION,
-          agentInfo: { name: 'centurionarx-harness-acp', version: '0.0.1' },
+          agentInfo: { name: 'arx-harness-acp', version: '0.0.1' },
           agentCapabilities: {
             promptCapabilities: { image: imagePromptEnabled, audio: false, embeddedContext: false },
           },
@@ -312,7 +312,7 @@ export function apply(ctx: Context, config: AcpConfig): void {
         // No preset composition: the ACP bundle keeps the model-facing rows in
         // the host plane, so this agent reads them from the global layer. A
         // deployment that configures a roster has to join one here first
-        // (@centurionarx/cxh-agent-presets README, "Composing a child agent").
+        // (@arx-ai/arx-agent-presets README, "Composing a child agent").
         const handle = await agents.create({
           sessionId,
           meta: { cwd: params.cwd },

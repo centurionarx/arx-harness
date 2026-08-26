@@ -1,14 +1,14 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-commands`:
+ * Package-owned invariant companion for `@arx-ai/arx-commands`:
  * command lifecycle events pair by commandId within one session log.
- * @module @centurionarx/cxh-commands/invariant
+ * @module @arx-ai/arx-commands/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-commands'
+const PACKAGE_NAME = '@arx-ai/arx-commands'
 
 /** Cordis companion plugin name. */
 export const name = 'commands-invariant'

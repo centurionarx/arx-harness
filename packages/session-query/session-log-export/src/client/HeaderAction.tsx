@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { IconDownloadOutline16 } from '@centurionarx/cxh-client-ui-primitives'
+import { IconDownloadOutline16 } from '@arx-ai/arx-client-ui-primitives'
 import { SessionLogDownloadDialog, type SessionLogDownloadDialogProps } from './Dialog.tsx'
 import css from './HeaderAction.module.css'
 

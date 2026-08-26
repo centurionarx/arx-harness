@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-message-feedback",
-  "description": "Lifecycle-bound per-message rating and note sidecar for the CENTURIONarx Harness",
+  "name": "@arx-ai/arx-message-feedback",
+  "description": "Lifecycle-bound per-message rating and note sidecar for the arx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/feedback/message-feedback"
   },
   "type": "module",
@@ -49,32 +49,32 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-storage-domain": "workspace:^",
-    "@centurionarx/cxh-typert-protocol": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@centurionarx/cordis-plugin-include": "workspace:^",
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-session-persistence-jsonl": "workspace:^",
-    "@centurionarx/cxh-storage": "workspace:^",
-    "@centurionarx/cxh-storage-domain": "workspace:^",
-    "@centurionarx/cxh-storage-json": "workspace:^",
-    "@centurionarx/cxh-typert-protocol": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
+    "@arx-ai/arx-storage": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-storage-json": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

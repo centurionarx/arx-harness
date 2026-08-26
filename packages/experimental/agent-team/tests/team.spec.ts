@@ -2,16 +2,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { SessionId, type Session } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SubagentService from '@centurionarx/cxh-subagent'
-import * as SubagentFork from '@centurionarx/cxh-subagent-fork-in-process'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { SessionId, type Session } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SubagentService from '@arx-ai/arx-subagent'
+import * as SubagentFork from '@arx-ai/arx-subagent-fork-in-process'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import TeamService, { foldTeam, TeamError, TeamId, TeamMessageId, TeamTaskId } from '../src/index.ts'
 import { TeamRuntimeLifecycle } from '../src/lifecycle.ts'
@@ -45,7 +45,7 @@ async function setup(
 ) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  const storageRoot = mkdtempSync(join(tmpdir(), 'cxh-team-'))
+  const storageRoot = mkdtempSync(join(tmpdir(), 'arx-team-'))
   roots.push(storageRoot)
   await ctx.plugin(JsonlSessionPersistence, { root: storageRoot })
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -136,7 +136,7 @@ describe('Team identity and provisioning', () => {
   it('supports direct-constructor defaults and recovers roots that already exist', async () => {
     const ctx = new Context()
     await mountAgentLoopTestDependencies(ctx)
-    const storageRoot = mkdtempSync(join(tmpdir(), 'cxh-team-direct-'))
+    const storageRoot = mkdtempSync(join(tmpdir(), 'arx-team-direct-'))
     roots.push(storageRoot)
     await ctx.plugin(JsonlSessionPersistence, { root: storageRoot })
     await ctx.plugin(AgentLoop, { agents: [] })
@@ -1246,7 +1246,7 @@ describe('Team mailbox and waiting', () => {
   it('waits for one change, supports cancellation, times out, and releases waiters on HMR disposal', async () => {
     const ctx = new Context()
     await mountAgentLoopTestDependencies(ctx)
-    const storageRoot = mkdtempSync(join(tmpdir(), 'cxh-team-wait-'))
+    const storageRoot = mkdtempSync(join(tmpdir(), 'arx-team-wait-'))
     roots.push(storageRoot)
     await ctx.plugin(JsonlSessionPersistence, { root: storageRoot })
     await ctx.plugin(AgentLoop, { agents: [] })

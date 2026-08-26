@@ -2,22 +2,22 @@
 # discovery inside the scenario's temporary cwd. The app config patch replaces
 # the whole base config, so the base fields are restated verbatim.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-pro
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
-          persistenceCompression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
           workspaceContext:
             maxBytes: 65536
-            cxhHome: !!js process.cwd() + '/.cxh'
+            arxHome: !!js process.cwd() + '/.arx'
             projectRootMarkers:
-              - .cxh-project
+              - .arx-project
           persona: |
             You are a coding assistant powered by the {{model}} model. Your working directory is {{cwd}}.
 

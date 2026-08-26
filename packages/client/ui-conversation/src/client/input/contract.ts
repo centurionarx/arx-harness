@@ -5,12 +5,12 @@
  * conversation wiring layer alone sees the full SessionInput. InputMachine
  * (machine.ts) is package-private and never exported.
  */
-import type { ClientContext, SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { ClientContext, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { Branded } from '@arx-ai/arx-brand'
 import type {
   ArbitrateKey, ArbitrateOutcome, CommandClaim, ConsumeTokenRequest, PickOutcome,
   ReferenceInsert, SubmitOutcome, TokenSpan,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
 import type { QueueRow } from '../contract/queue.ts'
 import type { InputSubmitMode } from '../contract/composer-submission.ts'
 

@@ -1,18 +1,18 @@
-import { createAssistantMessage, createUserMessage } from '@centurionarx/cxh-llm'
+import { createAssistantMessage, createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@centurionarx/cordis'
+import { Context, type Fiber } from '@arx-ai/cordis'
 import { DatabaseSync } from 'node:sqlite'
 import { chmod, mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader, SessionId as SessionIdType } from '@centurionarx/cxh-session'
-import SessionPersistence, { SessionPersistenceRevision } from '@centurionarx/cxh-session-persistence'
-import type { SessionPersistenceSnapshot } from '@centurionarx/cxh-session-persistence'
-import SqliteSessionPersistence from '@centurionarx/cxh-session-persistence-sqlite'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader, SessionId as SessionIdType } from '@arx-ai/arx-session'
+import SessionPersistence, { SessionPersistenceRevision } from '@arx-ai/arx-session-persistence'
+import type { SessionPersistenceSnapshot } from '@arx-ai/arx-session-persistence'
+import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
 import SqliteSessionQueryEngine, {
   SESSION_QUERY_SQLITE_SCHEMA_VERSION,
-} from '@centurionarx/cxh-session-query-sqlite'
+} from '@arx-ai/arx-session-query-sqlite'
 import {
   SESSION_QUERY_DEFAULT_PERSISTED_INSPECT_CONCURRENCY,
   SessionQueryError,
@@ -20,7 +20,7 @@ import {
   type SessionAvailability,
   type SessionQueryErrorCode,
   type SessionSearchRequest,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 
 const temporaryDirectories: string[] = []
 
@@ -31,7 +31,7 @@ afterEach(async () => {
 })
 
 async function temporaryPath(name = 'search.db'): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), 'cxh-session-search-'))
+  const directory = await mkdtemp(join(tmpdir(), 'arx-session-search-'))
   temporaryDirectories.push(directory)
   return join(directory, name)
 }

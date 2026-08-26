@@ -1,11 +1,11 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ChatConversationViewNode, ChatLocationNodeIndex, ChatNodeStore, ChatSnapshot,
   ConversationLocation, ConversationNode, ConversationTimelineSnapshot,
   ConversationViewBuilder, ConversationViewDefinition, LegacyConversationSlice,
   PartialAssistant, RunningToolCall,
-} from '@centurionarx/cxh-client-runtime/client'
-import { sessionRecallLabels } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
+import { sessionRecallLabels } from '@arx-ai/arx-client-runtime/client'
 import type { ChatNode } from '../contract/chat-nodes.ts'
 import { isRunningTool } from '../contract/chat-nodes.ts'
 

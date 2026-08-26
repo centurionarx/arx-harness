@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-session-checkpoint-policy`.
- * @module @centurionarx/cxh-session-checkpoint-policy/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-session-checkpoint-policy`.
+ * @module @arx-ai/arx-session-checkpoint-policy/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session-checkpoint-policy'
+const PACKAGE_NAME = '@arx-ai/arx-session-checkpoint-policy'
 
 /** Cordis companion plugin name. */
 export const name = 'session-checkpoint-policy-invariant'

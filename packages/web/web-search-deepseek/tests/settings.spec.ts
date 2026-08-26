@@ -1,13 +1,13 @@
 /** The `web-search-deepseek` settings section layered over the composition entry. */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import WebRuntime from '@centurionarx/cxh-web'
-import * as deepseekPlugin from '@centurionarx/cxh-web-search-deepseek'
-import { WEB_SEARCH_DEEPSEEK_SETTINGS_NAMESPACE } from '@centurionarx/cxh-web-search-deepseek'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import WebRuntime from '@arx-ai/arx-web'
+import * as deepseekPlugin from '@arx-ai/arx-web-search-deepseek'
+import { WEB_SEARCH_DEEPSEEK_SETTINGS_NAMESPACE } from '@arx-ai/arx-web-search-deepseek'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {

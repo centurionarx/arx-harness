@@ -1,18 +1,18 @@
 /**
  * Harness request-history conversion into pi-ai's Context vocabulary.
  *
- * @module cxh-llm-pi-ai/context
+ * @module arx-llm-pi-ai/context
  */
 
-import { CallId, contentHasImage, LlmError, offloadRequestImagesWithPolicy, requestImageHandleText } from '@centurionarx/cxh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@centurionarx/cxh-llm'
+import { CallId, contentHasImage, LlmError, offloadRequestImagesWithPolicy, requestImageHandleText } from '@arx-ai/arx-llm'
+import type { ContentBlock, GenerateOptions, Message } from '@arx-ai/arx-llm'
 import type {
   AttachmentId,
   AttachmentStore,
   ImageAttachmentRef,
   ImageRequestPolicy,
   RequestImageAttachment,
-} from '@centurionarx/cxh-attachment'
+} from '@arx-ai/arx-attachment'
 import type { Context as PiContext, ImageContent, Message as PiMessage, TextContent, Tool as PiTool } from '@earendil-works/pi-ai'
 import { toPiAssistant } from './replay.ts'
 import { DEFAULT_REQUEST_IMAGE_MAX_BYTES, DEFAULT_REQUEST_IMAGE_PIXEL_BUDGET } from './config.ts'

@@ -1,21 +1,21 @@
 /**
- * Shared filesystem path helpers for CENTURIONarx Harness user data.
+ * Shared filesystem path helpers for arx Harness user data.
  *
- * @module @centurionarx/cxh-home-paths
+ * @module @arx-ai/arx-home-paths
  */
 
 import { opendir, realpath } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 
-/** Directory name for the default CENTURIONarx Harness home under the OS home. */
-export const CXH_HOME_DIR_NAME = '.cxh'
+/** Directory name for the default arx Harness home under the OS home. */
+export const ARX_HOME_DIR_NAME = '.arx'
 
-/** Stable user-facing display form for the default CENTURIONarx Harness home. */
-export const DEFAULT_CXH_HOME_DISPLAY = `~/${CXH_HOME_DIR_NAME}`
+/** Stable user-facing display form for the default arx Harness home. */
+export const DEFAULT_ARX_HOME_DISPLAY = `~/${ARX_HOME_DIR_NAME}`
 
-/** Environment variable that overrides the default CENTURIONarx Harness home. */
-export const CXH_HOME_ENV = 'CXH_HOME'
+/** Environment variable that overrides the default arx Harness home. */
+export const ARX_HOME_ENV = 'ARX_HOME'
 
 /**
  * Give a native filesystem watcher one canonical spelling of a path, even
@@ -55,11 +55,11 @@ export async function canonicalizeWatchPath(path: string): Promise<string> {
 }
 
 /**
- * Resolve the default CENTURIONarx Harness home using Node's platform path rules.
+ * Resolve the default arx Harness home using Node's platform path rules.
  * @returns the absolute default harness home path.
  */
-export function defaultCxhHome(): string {
-  return join(homedir(), CXH_HOME_DIR_NAME)
+export function defaultArxHome(): string {
+  return join(homedir(), ARX_HOME_DIR_NAME)
 }
 
 /**
@@ -74,39 +74,39 @@ export function expandHomePath(path: string): string {
 }
 
 /**
- * Resolve the single-root CENTURIONarx Harness home.
+ * Resolve the single-root arx Harness home.
  *
- * Precedence, highest first: an explicit configured path, `$CXH_HOME`, then
- * `~/.cxh`. The harness keeps all user data under one root. An empty or
- * whitespace-only `$CXH_HOME` is treated as unset, so a blank override never
+ * Precedence, highest first: an explicit configured path, `$ARX_HOME`, then
+ * `~/.arx`. The harness keeps all user data under one root. An empty or
+ * whitespace-only `$ARX_HOME` is treated as unset, so a blank override never
  * resolves the home to the current working directory.
  * @param configured - explicit harness-home override, which has highest precedence.
- * @param env - environment mapping used to read `CXH_HOME`.
+ * @param env - environment mapping used to read `ARX_HOME`.
  * @returns the normalized absolute harness home path.
  */
-export function resolveCxhHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
-  const fromEnv = env[CXH_HOME_ENV]
-  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultCxhHome())
+export function resolveArxHome(configured?: string, env: Record<string, string | undefined> = process.env): string {
+  const fromEnv = env[ARX_HOME_ENV]
+  const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultArxHome())
   return resolve(expandHomePath(selected))
 }
 
 /**
- * Join path segments onto the resolved CENTURIONarx Harness home.
+ * Join path segments onto the resolved arx Harness home.
  * @param segments - path segments appended to the Harness home; an empty list returns the home itself.
  * @returns the normalized absolute joined path.
  */
-export function cxhHomePath(...segments: string[]): string {
-  return join(resolveCxhHome(), ...segments)
+export function arxHomePath(...segments: string[]): string {
+  return join(resolveArxHome(), ...segments)
 }
 
 /**
  * Describe a resolved harness home symbolically for user-facing display.
  *
  * It never returns an absolute machine path: the default home is labelled
- * `~/.cxh`, and any configured home is labelled `$CXH_HOME`.
- * @param resolvedHome - the absolute path returned by {@link resolveCxhHome}.
- * @returns `~/.cxh` for the default home, otherwise `$CXH_HOME`.
+ * `~/.arx`, and any configured home is labelled `$ARX_HOME`.
+ * @param resolvedHome - the absolute path returned by {@link resolveArxHome}.
+ * @returns `~/.arx` for the default home, otherwise `$ARX_HOME`.
  */
-export function cxhHomeDisplay(resolvedHome: string): string {
-  return resolvedHome === resolve(defaultCxhHome()) ? DEFAULT_CXH_HOME_DISPLAY : `$${CXH_HOME_ENV}`
+export function arxHomeDisplay(resolvedHome: string): string {
+  return resolvedHome === resolve(defaultArxHome()) ? DEFAULT_ARX_HOME_DISPLAY : `$${ARX_HOME_ENV}`
 }

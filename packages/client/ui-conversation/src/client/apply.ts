@@ -1,15 +1,15 @@
 /** Registers the conversation components, shared store, and service callbacks. */
-import type { Context } from '@centurionarx/cordis'
-import { resolveSlotLabel, type BoundActions } from '@centurionarx/cxh-client-ui-slots'
+import type { Context } from '@arx-ai/cordis'
+import { resolveSlotLabel, type BoundActions } from '@arx-ai/arx-client-ui-slots'
 import {
   resolveWorkspacePath, type ISessions, type SessionId,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 // Type-only: the ctx.settingsScope Context merge. Cross-plugin collaboration
 // goes through the service, never a value import (client bundle purity gate).
-import type {} from '@centurionarx/cxh-client-ui-settings/client'
-import type {} from '@centurionarx/cxh-client-ui-layout/client'
+import type {} from '@arx-ai/arx-client-ui-settings/client'
+import type {} from '@arx-ai/arx-client-ui-layout/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import type { ViewTab } from './contract/views.ts'
 import type {
   ApprovalWait, ChatNodeTurnDataInjected, ChatScrollPosition, ChatViewInjected, ComposerBarInjected,
@@ -40,7 +40,7 @@ import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
 import { CONVERSATION_SETTINGS_NAMESPACE, type ConversationSettings } from '../submission-settings.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The conversation skeleton, chat flow, commands, details, and docks copy. */
     conversation: ConversationKey

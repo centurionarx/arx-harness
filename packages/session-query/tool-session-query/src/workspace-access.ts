@@ -1,22 +1,22 @@
 /**
  * Caller identity, workspace authorization, and visible lineage projection.
  *
- * @module @centurionarx/cxh-tool-session-query/workspace-access
+ * @module @arx-ai/arx-tool-session-query/workspace-access
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
 import {
   SessionId,
   type SessionEvent,
   type SessionHeader,
   type SessionId as SessionIdValue,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import type {
   SessionLineageNode,
   SessionRecord,
-} from '@centurionarx/cxh-session-query'
-import type { ToolRunContext } from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-session-query'
+import type { ToolRunContext } from '@arx-ai/arx-tools'
 import { serviceBoundary } from './service-boundary.ts'
 
 interface Caller {

@@ -18,8 +18,8 @@ import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import {
   SESSION_FORMAT_VERSION, SessionId as sessionId, type SessionEvent, type SessionId,
-} from '@centurionarx/cxh-session'
-import { snapshotSubagentDescriptor } from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-session'
+import { snapshotSubagentDescriptor } from '@arx-ai/arx-subagent'
 import {
   captureStableAria, compareOrRefreshGolden, launchWebScaffold, seedSession, watchConsole,
   webSnapshotMode, type WebScaffold,

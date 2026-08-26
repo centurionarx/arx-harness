@@ -1,4 +1,4 @@
-import SessionQueryEngine from '@centurionarx/cxh-session-query'
+import SessionQueryEngine from '@arx-ai/arx-session-query'
 import type {
   SessionEventSearchPage,
   SessionEventSearchRequest,
@@ -6,7 +6,7 @@ import type {
   SessionSearchHit,
   SessionSearchPage,
   SessionSearchRequest,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 
 /** Test-only concrete query service for backend-independent behavior. */
 export class TestSessionQueryEngine extends SessionQueryEngine {

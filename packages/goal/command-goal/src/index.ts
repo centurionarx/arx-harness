@@ -1,13 +1,13 @@
 /**
  * Human-facing `/goal` command over the persisted same-session goal domain.
- * @module @centurionarx/cxh-command-goal
+ * @module @arx-ai/arx-command-goal
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { CommandInvocation, CommandResult } from '@centurionarx/cxh-commands'
-import { GoalError } from '@centurionarx/cxh-goal'
-import type { GoalPhase, GoalRef, GoalView } from '@centurionarx/cxh-goal'
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { CommandInvocation, CommandResult } from '@arx-ai/arx-commands'
+import { GoalError } from '@arx-ai/arx-goal'
+import type { GoalPhase, GoalRef, GoalView } from '@arx-ai/arx-goal'
+import { createUserMessage } from '@arx-ai/arx-llm'
 
 export const name = 'command-goal'
 export const inject = ['commands', 'goals']

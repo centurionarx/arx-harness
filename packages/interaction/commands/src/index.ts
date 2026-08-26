@@ -1,17 +1,17 @@
 /**
  * Plugin-owned human-command registry shared by interactive UI adapters.
- * @module @centurionarx/cxh-commands
+ * @module @arx-ai/arx-commands
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { AttachmentError, admitEncodedImages } from '@centurionarx/cxh-attachment'
-import type { EncodedImageAttachment } from '@centurionarx/cxh-attachment/types'
-import type { ImageBlock } from '@centurionarx/cxh-llm'
-import { NamedEntries, ScopedLayers } from '@centurionarx/cxh-scope'
-import type { ScopeKey, ScopeLayer } from '@centurionarx/cxh-scope'
-import type { Session, SessionEvent, SessionEventMap } from '@centurionarx/cxh-session'
-import { TypertRemoteService, Remote } from '@centurionarx/cxh-typert-protocol'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { AttachmentError, admitEncodedImages } from '@arx-ai/arx-attachment'
+import type { EncodedImageAttachment } from '@arx-ai/arx-attachment/types'
+import type { ImageBlock } from '@arx-ai/arx-llm'
+import { NamedEntries, ScopedLayers } from '@arx-ai/arx-scope'
+import type { ScopeKey, ScopeLayer } from '@arx-ai/arx-scope'
+import type { Session, SessionEvent, SessionEventMap } from '@arx-ai/arx-session'
+import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 import { CommandId } from './brand.ts'
 import type {
   CommandDescriptor,
@@ -101,7 +101,7 @@ class CommandLayer implements ScopeLayer {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     commands: CommandRuntime
   }

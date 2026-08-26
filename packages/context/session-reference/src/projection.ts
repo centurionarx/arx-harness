@@ -1,9 +1,9 @@
 /** Current-surface projection and byte-bounded rendering. */
 
-import { isCompactCheckpointSource } from '@centurionarx/cxh-compaction'
-import type { SessionSurfaceSnapshot } from '@centurionarx/cxh-session-query'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { TextRetainer } from '@centurionarx/cxh-output-retention'
+import { isCompactCheckpointSource } from '@arx-ai/arx-compaction'
+import type { SessionSurfaceSnapshot } from '@arx-ai/arx-session-query'
+import { assertNever } from '@arx-ai/arx-llm'
+import { TextRetainer } from '@arx-ai/arx-output-retention'
 import { stringifyTagSafeJson } from './serialization.ts'
 import type { ReferencedConversationItem } from './types.ts'
 

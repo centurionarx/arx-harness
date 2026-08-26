@@ -5,9 +5,9 @@
  * settings surface.
  */
 import { useState } from 'react'
-import type { PropsLocale, PropsRuntime, PropsStore } from '@centurionarx/cxh-client-ui-slots'
-import { IconChevronDownOutline14, Menu } from '@centurionarx/cxh-client-ui-primitives'
-import type {} from '@centurionarx/cxh-client-ui-settings/client'
+import type { PropsLocale, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
+import { IconChevronDownOutline14, Menu } from '@arx-ai/arx-client-ui-primitives'
+import type {} from '@arx-ai/arx-client-ui-settings/client'
 import type { createLanguageRowStore } from './settings-store.ts'
 import css from './LanguageRow.module.css'
 

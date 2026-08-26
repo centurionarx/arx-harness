@@ -2,31 +2,31 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import { ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult } from '@centurionarx/cxh-shell'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED, TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
-import ApprovalService from '@centurionarx/cxh-user-approval'
-import type { ApprovalOutcome } from '@centurionarx/cxh-user-approval'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import * as ToolBash from '@centurionarx/cxh-tool-bash'
-import * as BashEnvPlugin from '@centurionarx/cxh-shell-env'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import { ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult } from '@arx-ai/arx-shell'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED, TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
+import ApprovalService from '@arx-ai/arx-user-approval'
+import type { ApprovalOutcome } from '@arx-ai/arx-user-approval'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import * as ToolBash from '@arx-ai/arx-tool-bash'
+import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 import { processOutcome } from '../src/background.ts'
 import { renderProcessRead, renderResult } from '../src/render.ts'
 
 const testToolSignal = new AbortController().signal
 
-const spillDir = mkdtempSync(join(tmpdir(), 'cxh-tool-bash-spec-'))
+const spillDir = mkdtempSync(join(tmpdir(), 'arx-tool-bash-spec-'))
 
 /** Foreground-only harness: no job runtime (backgrounding fails loud here). */
 async function setup() {
@@ -300,7 +300,7 @@ describe('bash tool', () => {
 
   it('surfaces spawn failures as isError', async () => {
     const ctx = await setup()
-    const result = await call(ctx, 'bash', { command: 'true', description: 'test command', workdir: '/nonexistent-cxh' })
+    const result = await call(ctx, 'bash', { command: 'true', description: 'test command', workdir: '/nonexistent-arx' })
     expect(result.isError).toBe(true)
     expect(text(result)).toMatch(/ENOENT/)
   })
@@ -492,7 +492,7 @@ describe('background execution through the job runtime', () => {
     const ctx = await setup() // no LocalJobRegistry / ToolTasks
     const result = await call(ctx, 'bash', { command: 'sleep 60', description: 'test command', run_in_background: true })
     expect(result.isError).toBe(true)
-    expect(text(result)).toContain('background jobs unavailable: load @centurionarx/cxh-jobs and @centurionarx/cxh-tool-jobs')
+    expect(text(result)).toContain('background jobs unavailable: load @arx-ai/arx-jobs and @arx-ai/arx-tool-jobs')
   })
 
   it('a pre-aborted call is skipped before the process starts', async () => {
@@ -1051,7 +1051,7 @@ describe('tool-owned UI presentation (presentCall / presentResult)', () => {
 })
 
 describe('the model-facing bash tool builds its request from named args only (no {...args} forward)', () => {
-  const recordingCxhHome = join(spillDir, 'cxh-home')
+  const recordingArxHome = join(spillDir, 'arx-home')
 
   /**
    * Records every {@link ShellExecRequest} the consumer hands to `resolve()`, so a
@@ -1062,7 +1062,7 @@ describe('the model-facing bash tool builds its request from named args only (no
    * future refactor that blindly forwards `...args` — which would silently thread
    * model input into the post-scrub `env` merge or per-run capture budget — NOT
    * to defend a trust boundary
-   * (the credential scrub in cxh-bash-local is the security control; see the
+   * (the credential scrub in arx-bash-local is the security control; see the
    * bash-stdin-env Agent Note). Foreground `run()` returns a canned result; `start()`
    * hands back an already-settled fake handle so the task registration completes.
    */
@@ -1078,7 +1078,7 @@ describe('the model-facing bash tool builds its request from named args only (no
         ...request.signal ? { signal: request.signal } : {},
         ...request.stdin !== undefined ? { stdin: request.stdin } : {},
         ...request.env !== undefined ? { env: request.env } : {},
-        ...request.cxhEnv !== undefined ? { cxhEnv: request.cxhEnv } : {},
+        ...request.arxEnv !== undefined ? { arxEnv: request.arxEnv } : {},
         sandboxPolicy: request.sandboxPolicy,
       }
     }
@@ -1111,7 +1111,7 @@ describe('the model-facing bash tool builds its request from named args only (no
     }
     await ctx.plugin(LocalJobRegistry)
     await ctx.plugin(ToolTasks)
-    await ctx.plugin(BashEnvPlugin, { cxhHome: recordingCxhHome })
+    await ctx.plugin(BashEnvPlugin, { arxHome: recordingArxHome })
     await ctx.plugin(RecordingBashExecutor)
     await ctx.plugin(ToolBash)
     return { ctx, bash: ctx.shell as RecordingBashExecutor }
@@ -1120,8 +1120,8 @@ describe('the model-facing bash tool builds its request from named args only (no
   it('describes the managed harness environment namespace to the model', async () => {
     const { ctx } = await setupRecording()
     const description = ctx.tools.get('bash')?.description ?? ''
-    expect(description).toContain('$CXH_*')
-    expect(description).not.toContain('CXH_SESSION_JSONL')
+    expect(description).toContain('$ARX_*')
+    expect(description).not.toContain('ARX_SESSION_JSONL')
   })
 
   it('injects the session id and JSONL target path into a foreground request', async () => {
@@ -1137,11 +1137,11 @@ describe('the model-facing bash tool builds its request from named args only (no
       agent,
     })
 
-    expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingCxhHome,
-      CXH_SESSION_ID: 'request-fg',
-      CXH_SESSION_JSONL: path,
-      CXH_SHELL: '1',
+    expect(bash.requests[0]?.arxEnv).toEqual({
+      ARX_HOME: recordingArxHome,
+      ARX_SESSION_ID: 'request-fg',
+      ARX_SESSION_JSONL: path,
+      ARX_SHELL: '1',
     })
   })
 
@@ -1158,24 +1158,24 @@ describe('the model-facing bash tool builds its request from named args only (no
         command: 'sleep 1',
         description: 'run command',
         run_in_background: true,
-        env: { CXH_SESSION_ID: 'spoofed', CXH_SESSION_JSONL: '/tmp/spoofed' },
+        env: { ARX_SESSION_ID: 'spoofed', ARX_SESSION_JSONL: '/tmp/spoofed' },
       },
       agent,
     })
 
     expect(bash.requests[0]?.env).toBeUndefined()
-    expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingCxhHome,
-      CXH_SESSION_ID: 'request-bg',
-      CXH_SESSION_JSONL: path,
-      CXH_SHELL: '1',
+    expect(bash.requests[0]?.arxEnv).toEqual({
+      ARX_HOME: recordingArxHome,
+      ARX_SESSION_ID: 'request-bg',
+      ARX_SESSION_JSONL: path,
+      ARX_SHELL: '1',
     })
   })
 
   it('injects built-ins and the stable session id when no JSONL locator is available', async () => {
     const { ctx, bash } = await setupRecording()
     const agent = registerFakeAgent(ctx, 'request-id-only', () => undefined)
-    const ambient = process.env.CXH_SESSION_ID
+    const ambient = process.env.ARX_SESSION_ID
 
     await ctx.tools.execute({
       signal: testToolSignal,
@@ -1185,12 +1185,12 @@ describe('the model-facing bash tool builds its request from named args only (no
       agent,
     })
 
-    expect(bash.requests[0]?.cxhEnv).toEqual({
-      CXH_HOME: recordingCxhHome,
-      CXH_SESSION_ID: 'request-id-only',
-      CXH_SHELL: '1',
+    expect(bash.requests[0]?.arxEnv).toEqual({
+      ARX_HOME: recordingArxHome,
+      ARX_SESSION_ID: 'request-id-only',
+      ARX_SHELL: '1',
     })
-    expect(process.env.CXH_SESSION_ID).toBe(ambient)
+    expect(process.env.ARX_SESSION_ID).toBe(ambient)
   })
 
   it('keeps parent and child agent session environments isolated', async () => {
@@ -1208,21 +1208,21 @@ describe('the model-facing bash tool builds its request from named args only (no
       })
     }
 
-    expect(bash.requests.map(request => request.cxhEnv)).toEqual([
+    expect(bash.requests.map(request => request.arxEnv)).toEqual([
       {
-        CXH_HOME: recordingCxhHome,
-        CXH_SESSION_ID: 'request-parent',
-        CXH_SESSION_JSONL: ctx.sessionPersistence.locate(parent.session.header)?.path,
-        CXH_SHELL: '1',
+        ARX_HOME: recordingArxHome,
+        ARX_SESSION_ID: 'request-parent',
+        ARX_SESSION_JSONL: ctx.sessionPersistence.locate(parent.session.header)?.path,
+        ARX_SHELL: '1',
       },
       {
-        CXH_HOME: recordingCxhHome,
-        CXH_SESSION_ID: 'request-child',
-        CXH_SESSION_JSONL: ctx.sessionPersistence.locate(child.session.header)?.path,
-        CXH_SHELL: '1',
+        ARX_HOME: recordingArxHome,
+        ARX_SESSION_ID: 'request-child',
+        ARX_SESSION_JSONL: ctx.sessionPersistence.locate(child.session.header)?.path,
+        ARX_SHELL: '1',
       },
     ])
-    expect(bash.requests[0]?.cxhEnv?.CXH_SESSION_JSONL).not.toBe(bash.requests[1]?.cxhEnv?.CXH_SESSION_JSONL)
+    expect(bash.requests[0]?.arxEnv?.ARX_SESSION_JSONL).not.toBe(bash.requests[1]?.arxEnv?.ARX_SESSION_JSONL)
   })
 
   it('does not forward trusted-only fields even when the model includes them as extra arguments', async () => {

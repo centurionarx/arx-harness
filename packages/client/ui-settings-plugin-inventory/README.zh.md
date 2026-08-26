@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-settings-plugin-inventory
+# @arx-ai/arx-client-ui-settings-plugin-inventory
 
 [English](README.md) | 中文
 

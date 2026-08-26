@@ -3,10 +3,10 @@
  * one pure decision from sampled host facts to a concrete backend kind. The
  * caller samples exactly once per boot, so the mounted capability stays
  * stable for the service lifetime as the seam requires.
- * @module @centurionarx/cxh-host-directory-picker-auto/resolve
+ * @module @arx-ai/arx-host-directory-picker-auto/resolve
  */
 
-import type { Config as HttpServerConfig } from '@centurionarx/cxh-host-webserver'
+import type { Config as HttpServerConfig } from '@arx-ai/arx-host-webserver'
 
 /** Concrete interaction backend the resolver chooses between. */
 export type DirectoryPickerBackendKind = 'native' | 'browse'

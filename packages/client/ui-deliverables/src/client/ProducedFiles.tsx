@@ -5,9 +5,9 @@
 // Host machine.
 
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { HostDescriptionSource } from '@centurionarx/cxh-client-connection/client'
-import type { InjectFace, PropsLocale } from '@centurionarx/cxh-client-ui-slots'
-import type { TurnTailOwnerProps } from '@centurionarx/cxh-client-ui-conversation/client'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
+import type { InjectFace, PropsLocale } from '@arx-ai/arx-client-ui-slots'
+import type { TurnTailOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
 import { basename } from './turn-deliverables.ts'
 import type { NS } from './locales.ts'
 import css from './ProducedFiles.module.css'

@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId , createMessage, createToolResultMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import { CallId , createMessage, createToolResultMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
 import SessionStore, {
   Session,
   SessionId,
-} from '@centurionarx/cxh-session'
-import type { SurfaceEvent } from '@centurionarx/cxh-session'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import TokenMeter from '@centurionarx/cxh-token-meter'
+} from '@arx-ai/arx-session'
+import type { SurfaceEvent } from '@arx-ai/arx-session'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import TokenMeter from '@arx-ai/arx-token-meter'
 import ToolResultPruner, {
   codePointLength,
   DEFAULTS,
   PRUNE_MARKER,
   resolveConfig,
-} from '@centurionarx/cxh-compaction-tool-result-pruner'
-import type { ToolResultPruneConfig } from '@centurionarx/cxh-compaction-tool-result-pruner'
+} from '@arx-ai/arx-compaction-tool-result-pruner'
+import type { ToolResultPruneConfig } from '@arx-ai/arx-compaction-tool-result-pruner'
 
 const MODEL = 'test-model'
 const SMALL: ToolResultPruneConfig = {

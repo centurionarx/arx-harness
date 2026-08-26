@@ -11,7 +11,7 @@ describe('repository link policy', () => {
     const jsonEscapedRepository = unavailableRepository.replace('/', '\\/')
     const unicodeEscapedRepository = unavailableRepository.replace('/', String.raw`\u002f`)
     const source = [
-      'https://github.com/centurionarx/centurionarx-harness',
+      'https://github.com/arx-ai/arx-harness',
       `https://github.com/${unavailableRepository.toUpperCase()}/issues/1`,
       `https://github.com/${encodedRepository}/issues/2`,
       `https://github.com/${htmlEncodedRepository}/issues/3`,

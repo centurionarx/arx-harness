@@ -3,24 +3,24 @@
  * spill backend does — persist a tool's oversized text and return a model-facing
  * locator plus retrieval guidance — without saying HOW. Implementations
  * subclass {@link SpillStore} and register as the `spillStore` service;
- * `@centurionarx/cxh-spill-local` (host filesystem) is the first.
+ * `@arx-ai/arx-spill-local` (host filesystem) is the first.
  *
  * The Service Definition is deliberately minimal: `saveText` and nothing else. It owns NO
- * retention policy (that is `@centurionarx/cxh-output-retention`), NO tool-result
- * replacement (that is `@centurionarx/cxh-spill-policy`), and NO retrieval or
+ * retention policy (that is `@arx-ai/arx-output-retention`), NO tool-result
+ * replacement (that is `@arx-ai/arx-spill-policy`), and NO retrieval or
  * search API. The backend supplies the locator and retrieval hint appropriate
  * for its storage substrate.
  *
- * @module @centurionarx/cxh-spill
+ * @module @arx-ai/arx-spill
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import type { SaveTextSpill, SpillRef } from './types.ts'
 
 export { SpillLocator } from './types.ts'
 export type { SaveTextSpill, SpillOwner, SpillRef, SpillSource } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     spillStore: SpillStore
   }

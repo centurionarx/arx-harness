@@ -5,11 +5,11 @@
  * observed-state policy stay in consumer and policy plugins; `editText`
  * remains here so version check, literal match, and rewrite share one critical
  * section.
- * @module @centurionarx/cxh-fs
+ * @module @arx-ai/arx-fs
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
+import { Context, Service } from '@arx-ai/cordis'
+import type { SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -41,7 +41,7 @@ export type {
   FsWriteOutcome,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     fs: FileSystem
   }
@@ -93,7 +93,7 @@ export abstract class FileSystem extends Service {
    * `undefined` when it does not confine at all — the capability fact the tool
    * layer reads to advertise the escalation fields honestly (mirrors
    * `ShellExecutor.sandboxMode`). The base class and the bare local backend
-   * report `undefined`; a sandboxing backend (`@centurionarx/cxh-fs-sandbox`)
+   * report `undefined`; a sandboxing backend (`@arx-ai/arx-fs-sandbox`)
    * overrides it with the deployment default. A session override may make the
    * effective mode narrower or wider, so strict escalation widening is checked
    * per call rather than encoded in this default-relative fact.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import {
   ScheduleId,
   createEveryScheduleRecord,

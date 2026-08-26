@@ -1,5 +1,5 @@
 import type { SpawnOptions } from '@anthropic-ai/claude-agent-sdk'
-import { scrubbedParentEnv } from '@centurionarx/cxh-subprocess'
+import { scrubbedParentEnv } from '@arx-ai/arx-subprocess'
 import { describe, expect, it } from 'vitest'
 
 import { claudeSpawnSpec, sdkEnvironmentOverlay } from '../src/index.ts'

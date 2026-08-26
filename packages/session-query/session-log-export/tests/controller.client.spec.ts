@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 import {
   downloadUrl, SessionLogDownloadController, sessionLogZipFilename,
 } from '../src/client/controller.ts'
@@ -29,7 +29,7 @@ describe('SessionLogDownloadController', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal)
     expect(save).toHaveBeenCalledWith(
       url.toString(),
-      'cxh-session-session-export-controller.zip',
+      'arx-session-session-export-controller.zip',
     )
     expect(controller.store.getSnapshot().bySession[SID]).toEqual({
       open: true, status: 'success', error: null,
@@ -108,7 +108,7 @@ describe('SessionLogDownloadController', () => {
 
     await controller.download(SID)
 
-    expect((fetcher.mock.calls[0]?.[0] as URL).origin).toBe('http://cxh.internal')
+    expect((fetcher.mock.calls[0]?.[0] as URL).origin).toBe('http://arx.internal')
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'HEAD' })
     expect(click).toHaveBeenCalledOnce()
   })
@@ -136,7 +136,7 @@ describe('browser download helpers', () => {
   it('sanitizes the archive filename and hands the URL to a download anchor', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
-    expect(sessionLogZipFilename('a/b' as SessionId)).toBe('cxh-session-a_b.zip')
+    expect(sessionLogZipFilename('a/b' as SessionId)).toBe('arx-session-a_b.zip')
     downloadUrl('http://host/api/session.export?sessionId=a', 'archive.zip')
     expect(click).toHaveBeenCalledOnce()
     const anchor = click.mock.instances[0] as HTMLAnchorElement

@@ -1,4 +1,4 @@
-import { Context, CordisError, FiberState, type Fiber } from '@centurionarx/cordis'
+import { Context, CordisError, FiberState, type Fiber } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
 
 /**

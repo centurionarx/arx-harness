@@ -11,22 +11,22 @@ import {
 import { dirname, resolve } from 'node:path'
 
 /** Prefix reserved for build-time values that may be embedded in browser artifacts. */
-const CLIENT_BUILD_ENV_PREFIX = 'CXH_CLIENT_'
+const CLIENT_BUILD_ENV_PREFIX = 'ARX_CLIENT_'
 
 /** Non-public selector used by build orchestration to request a named client profile. */
-export const CLIENT_BUILD_PROFILE_SELECTOR = 'CXH_BUILD_CLIENT_PROFILE'
+export const CLIENT_BUILD_PROFILE_SELECTOR = 'ARX_BUILD_CLIENT_PROFILE'
 
-/** Public client environment required by official CXH artifacts. */
+/** Public client environment required by official ARX artifacts. */
 const OFFICIAL_CLIENT_BUILD_ENVIRONMENT = {
-  CXH_CLIENT_BUILD_PROFILE: 'official',
-  CXH_CLIENT_TITLE: 'CENTURIONarx Harness',
+  ARX_CLIENT_BUILD_PROFILE: 'official',
+  ARX_CLIENT_TITLE: 'arx Harness',
 } as const
 
 /** Public variable carrying the source commit embedded in client artifacts. */
-const CLIENT_COMMIT_HASH_VARIABLE = 'CXH_CLIENT_COMMIT_HASH'
+const CLIENT_COMMIT_HASH_VARIABLE = 'ARX_CLIENT_COMMIT_HASH'
 
 /** Repository-relative path of the complete client build record. */
-export const CLIENT_BUILD_RECORD_PATH = '.cxh-build/client-build-environment.json'
+export const CLIENT_BUILD_RECORD_PATH = '.arx-build/client-build-environment.json'
 
 const CLIENT_BUILD_RECORD_FORMAT = 1
 const CLIENT_ARTIFACT_PATTERNS = [
@@ -66,9 +66,9 @@ export function repositoryCommitHash(root: string, environment: NodeJS.ProcessEn
 export function officialClientBuildEnvironment(
   root: string,
   environment: NodeJS.ProcessEnv = process.env,
-): Readonly<Record<`CXH_CLIENT_${string}`, string>> {
+): Readonly<Record<`ARX_CLIENT_${string}`, string>> {
   return {
-    CXH_CLIENT_COMMIT_HASH: repositoryCommitHash(root, environment),
+    ARX_CLIENT_COMMIT_HASH: repositoryCommitHash(root, environment),
     ...OFFICIAL_CLIENT_BUILD_ENVIRONMENT,
   }
 }
@@ -94,7 +94,7 @@ export interface ClientBuildRecord {
 /**
  * Collect the public client environment in deterministic key order.
  * @param environment - environment inherited by the build process.
- * @returns defined `CXH_CLIENT_*` values only.
+ * @returns defined `ARX_CLIENT_*` values only.
  */
 function clientBuildEnvironment(environment: NodeJS.ProcessEnv): ClientBuildEnvironment {
   return Object.fromEntries(Object.entries(environment)
@@ -118,7 +118,7 @@ export function resolveClientBuildEnvironment(
     if (commitHash === undefined) {
       throw new Error(`${CLIENT_COMMIT_HASH_VARIABLE} is required for the official client build profile`)
     }
-    return { CXH_CLIENT_COMMIT_HASH: commitHash, ...OFFICIAL_CLIENT_BUILD_ENVIRONMENT }
+    return { ARX_CLIENT_COMMIT_HASH: commitHash, ...OFFICIAL_CLIENT_BUILD_ENVIRONMENT }
   }
   throw new Error(`unknown client build profile ${JSON.stringify(profile)}; expected "official"`)
 }
@@ -153,7 +153,7 @@ export function clientBuildProcessEnvironment(
  */
 export function assertClientBuildEnvironment(
   environment: Readonly<Record<string, string | undefined>>,
-  expected: Readonly<Record<`CXH_CLIENT_${string}`, string>>,
+  expected: Readonly<Record<`ARX_CLIENT_${string}`, string>>,
 ): void {
   const actual = Object.fromEntries(Object.entries(environment)
     .filter(([name, value]) => name.startsWith(CLIENT_BUILD_ENV_PREFIX) && value !== undefined)
@@ -217,7 +217,7 @@ export function writeClientBuildRecord(
  */
 export function readClientBuildRecord(
   root: string,
-  expected?: Readonly<Record<`CXH_CLIENT_${string}`, string>>,
+  expected?: Readonly<Record<`ARX_CLIENT_${string}`, string>>,
 ): ClientBuildRecord {
   const path = resolve(root, CLIENT_BUILD_RECORD_PATH)
   if (!existsSync(path)) {

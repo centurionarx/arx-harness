@@ -1,8 +1,8 @@
-import { createUserMessage, createMessage, createToolResultMessage, CallId } from '@centurionarx/cxh-llm'
+import { createUserMessage, createMessage, createToolResultMessage, CallId } from '@arx-ai/arx-llm'
 // Minimal SessionEvent builders for orchestration tests (shape mirrors what the
 // host emits; only the fields the object layer reads).
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 
 /** One text content block (local helper). */
 const text = (t: string): ContentBlock[] => [{ type: 'text', text: t }]

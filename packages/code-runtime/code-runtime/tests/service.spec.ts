@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CodeRuntime } from '@centurionarx/cxh-code-runtime'
-import type { CodeRunRequest, CodeRunResult } from '@centurionarx/cxh-code-runtime'
+import { Context } from '@arx-ai/cordis'
+import { CodeRuntime } from '@arx-ai/arx-code-runtime'
+import type { CodeRunRequest, CodeRunResult } from '@arx-ai/arx-code-runtime'
 
 /**
  * Minimal concrete runtime: records requests, "executes" by invoking every

@@ -1,11 +1,11 @@
 /**
  * The writable root is this package's own, not an assembly fact each app must
  * remember: a roster configured with only a `system` root still discovers and
- * authors into `<cxhHome>/.agent-presets`, the way `cxh-skill-filesystem` owns
- * `<cxhHome>/skills`. `includeUserRoot: false` is how a deployment — or a test
+ * authors into `<arxHome>/.agent-presets`, the way `arx-skill-filesystem` owns
+ * `<arxHome>/skills`. `includeUserRoot: false` is how a deployment — or a test
  * pinning an exact roster — opts out.
  *
- * `$CXH_HOME` is repointed per test because the derived root is resolved in the
+ * `$ARX_HOME` is repointed per test because the derived root is resolved in the
  * constructor: the plugin must be mounted while the environment names the
  * temporary home, or it would reach the developer's real one.
  */
@@ -15,11 +15,11 @@ import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import AgentPresets, { COMPOSITION_FILE, type Config } from '@centurionarx/cxh-agent-presets'
+import AgentPresets, { COMPOSITION_FILE, type Config } from '@arx-ai/arx-agent-presets'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
 const SYSTEM_ROOT = join(FIXTURES, 'system')
@@ -31,14 +31,14 @@ let home: string
 let previousHome: string | undefined
 
 beforeEach(async () => {
-  home = await mkdtemp(join(tmpdir(), 'cxh-preset-home-'))
-  previousHome = process.env.CXH_HOME
-  process.env.CXH_HOME = home
+  home = await mkdtemp(join(tmpdir(), 'arx-preset-home-'))
+  previousHome = process.env.ARX_HOME
+  process.env.ARX_HOME = home
 })
 
 afterEach(() => {
-  if (previousHome === undefined) delete process.env.CXH_HOME
-  else process.env.CXH_HOME = previousHome
+  if (previousHome === undefined) delete process.env.ARX_HOME
+  else process.env.ARX_HOME = previousHome
 })
 
 /** Boot a roster over the fixture system root, with the derived root left to the plugin. */
@@ -115,7 +115,7 @@ describe('the harness-home preset root', () => {
   })
 
   it('yields to a configured user root for authoring, which writableRoot takes first', async () => {
-    const explicit = await mkdtemp(join(tmpdir(), 'cxh-preset-explicit-'))
+    const explicit = await mkdtemp(join(tmpdir(), 'arx-preset-explicit-'))
     const ctx = await roster({
       roots: [
         { path: SYSTEM_ROOT, trust: 'system' as const },

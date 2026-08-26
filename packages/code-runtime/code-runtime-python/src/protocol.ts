@@ -3,7 +3,7 @@
  * travel on the child's fd 3 (one JSON object per line), leaving stdout/stderr free for the
  * program's own output. Host treats every inbound frame as hostile because model code can post
  * anything through the same fd; the Python bootstrap trusts host replies.
- * @module @centurionarx/cxh-code-runtime-python/src/protocol
+ * @module @arx-ai/arx-code-runtime-python/src/protocol
  */
 
 /**
@@ -264,7 +264,7 @@ export const WIRE_FRAME_FIELDS =
  * @returns the marker line.
  */
 export function logTruncationMarker(maxBytes: number): string {
-  return `[cxh-code-runtime-python] log capture truncated at ${maxBytes} bytes`
+  return `[arx-code-runtime-python] log capture truncated at ${maxBytes} bytes`
 }
 
 /**

@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { access, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import LlmRuntime, { createUserMessage, INVALID_CREDENTIAL_CODE } from '@centurionarx/cxh-llm'
-import AttachmentStore, { AttachmentId, ImageVariantId } from '@centurionarx/cxh-attachment'
+import LlmRuntime, { createUserMessage, INVALID_CREDENTIAL_CODE } from '@arx-ai/arx-llm'
+import AttachmentStore, { AttachmentId, ImageVariantId } from '@arx-ai/arx-attachment'
 import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
@@ -12,12 +12,12 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import { LocalCredentialProvider } from '@centurionarx/cxh-credentials-local'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
-import { FileSettingsProvider } from '@centurionarx/cxh-settings-file'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
+} from '@arx-ai/arx-attachment'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import { LocalCredentialProvider } from '@arx-ai/arx-credentials-local'
+import { settingsNamespace } from '@arx-ai/arx-settings'
+import { FileSettingsProvider } from '@arx-ai/arx-settings-file'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -82,7 +82,7 @@ afterEach(async () => {
 })
 
 async function home(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-llm-dynamic-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-llm-dynamic-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }
@@ -99,7 +99,7 @@ interface Harness {
  * file watching is the providers' own covered concern.
  */
 async function boot(dir: string, config: object): Promise<Harness> {
-  vi.stubEnv('CXH_HOME', dir)
+  vi.stubEnv('ARX_HOME', dir)
   const ctx = new Context()
   cleanups.push(async () => {
     await ctx.fiber.dispose()

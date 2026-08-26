@@ -1,15 +1,15 @@
-import { createUserMessage, createMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage, createMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it, vi } from 'vitest'
-import { Context, type Fiber } from '@centurionarx/cordis'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader, SessionId as SessionIdType } from '@centurionarx/cxh-session'
-import SessionPersistence, { SessionPersistenceCorruptionError, SessionPersistenceRevision } from '@centurionarx/cxh-session-persistence'
+import { Context, type Fiber } from '@arx-ai/cordis'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader, SessionId as SessionIdType } from '@arx-ai/arx-session'
+import SessionPersistence, { SessionPersistenceCorruptionError, SessionPersistenceRevision } from '@arx-ai/arx-session-persistence'
 import SessionQueryEngine, {
   SESSION_QUERY_DEFAULT_PERSISTED_INSPECT_CONCURRENCY,
   type SessionEventSurface,
   type SessionQueryErrorCode,
-} from '@centurionarx/cxh-session-query'
-import { SessionTitleProviderId } from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-query'
+import { SessionTitleProviderId } from '@arx-ai/arx-session-title'
 import { TestSessionQueryEngine } from './test-service.ts'
 
 function header(id: string, createdAt = 1, extra: Partial<SessionHeader> = {}): SessionHeader {

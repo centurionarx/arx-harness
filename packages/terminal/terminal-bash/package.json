@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-terminal-bash",
-  "description": "Persistent shell PTY backend over the CENTURIONarx Harness subprocess terminal primitive",
+  "name": "@arx-ai/arx-terminal-bash",
+  "description": "Persistent shell PTY backend over the arx Harness subprocess terminal primitive",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/terminal/terminal-bash"
   },
   "type": "module",
@@ -32,28 +32,28 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-terminal": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-terminal": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/cxh-pwsh-local": "workspace:^",
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/arx-pwsh-local": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-terminal": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-subprocess-local": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-terminal": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-subprocess-local": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

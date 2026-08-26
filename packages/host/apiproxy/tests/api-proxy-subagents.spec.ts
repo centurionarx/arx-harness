@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import { SubagentError } from '@centurionarx/cxh-subagent'
+import { Context } from '@arx-ai/cordis'
+import type { SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import { SubagentError } from '@arx-ai/arx-subagent'
 import { RpcId } from '../src/api/rpc.ts'
 import type { RpcRequest } from '../src/api/rpc.ts'
 import { createApiProxy } from '../src/api-proxy.ts'
@@ -235,12 +235,12 @@ describe('subagent gateway', () => {
 
   it('maps the missing projections capability to one wire face on list, history, and prompt', async () => {
     const listError = () => new SubagentError(
-      'listing subagents requires the sessionProjections registry (load @centurionarx/cxh-session-projection)',
+      'listing subagents requires the sessionProjections registry (load @arx-ai/arx-session-projection)',
       'SUBAGENT_CONTROL_PROJECTIONS_UNAVAILABLE',
     )
     const expected = {
       code: 'internal',
-      message: 'subagent catalog is unavailable: this deployment does not mount the sessionProjections registry (load @centurionarx/cxh-session-projection)',
+      message: 'subagent catalog is unavailable: this deployment does not mount the sessionProjections registry (load @arx-ai/arx-session-projection)',
     }
 
     const list = bench({ listError: listError() })

@@ -7,18 +7,18 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { z } from 'zod'
-import Storage from '@centurionarx/cxh-storage'
-import { DomainFacility } from '@centurionarx/cxh-storage-domain'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import Storage from '@arx-ai/arx-storage'
+import { DomainFacility } from '@arx-ai/arx-storage-domain'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
 import { MemoryMediaPool, MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 import SessionProjectionCache from '../src/index.ts'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     'cache-test/marks': MarksState
     'cache-test/marks2': Map<string, string>
@@ -28,7 +28,7 @@ declare module '@centurionarx/cxh-session-projection/types' {
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     'cache-test/mark': { marks: string[] }
   }

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { bindScopeParent, createScope, scopeOf } from '@centurionarx/cxh-scope'
+import { Context } from '@arx-ai/cordis'
+import { bindScopeParent, createScope, scopeOf } from '@arx-ai/arx-scope'
 import SkillRegistry, {
   isModelInvocable,
   isUserInvocable,
@@ -11,7 +11,7 @@ import SkillRegistry, {
   type SkillLookupOptions,
   type SkillProvider,
   type SkillProviderObservation,
-} from '@centurionarx/cxh-skill'
+} from '@arx-ai/arx-skill'
 
 function memorySkill(name: string, description: string, rank: number, body = `${name} body.`): SkillCandidate {
   return {

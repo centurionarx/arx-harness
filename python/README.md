@@ -1,15 +1,15 @@
-# CENTURIONarx Harness Python SDK
+# arx Harness Python SDK
 
 English | [中文](README.zh.md)
 
-Python packages for driving CENTURIONarx Harness as a subprocess. The client SDK communicates with the bundled runtime over newline-delimited JSON-RPC on stdio.
+Python packages for driving arx Harness as a subprocess. The client SDK communicates with the bundled runtime over newline-delimited JSON-RPC on stdio.
 
 ## Packages
 
 | Directory | Dist / module | Role |
 |---|---|---|
-| [sdk](sdk/README.md) | `centurionarx-harness-sdk` / `centurionarx_harness` | High-level turns API and lower-level JSON-RPC client |
-| [sdk-runtime](sdk-runtime/README.md) | `centurionarx-harness-runtime-bin` / `centurionarx_harness_runtime` | Bundled runtime binaries and default agent configuration |
+| [sdk](sdk/README.md) | `arx-harness-sdk` / `arx_harness` | High-level turns API and lower-level JSON-RPC client |
+| [sdk-runtime](sdk-runtime/README.md) | `arx-harness-runtime-bin` / `arx_harness_runtime` | Bundled runtime binaries and default agent configuration |
 
 ## Behavior
 

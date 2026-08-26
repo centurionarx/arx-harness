@@ -15,14 +15,14 @@
  * absent `ctx.shell`, or a failed query is a no-op, never an error: an executor
  * rejection is contained and logged as a warning so the turn continues.
  *
- * @module @centurionarx/cxh-tmux-context
+ * @module @arx-ai/arx-tmux-context
  */
 
-import type { Context, LoggerService } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import type { ShellExecutor, ShellRunResult } from '@centurionarx/cxh-shell'
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import type { Context, LoggerService } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import type { ShellExecutor, ShellRunResult } from '@arx-ai/arx-shell'
+import { createUserMessage } from '@arx-ai/arx-llm'
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'tmux-context'

@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-client-ui-settings-general",
+  "name": "@arx-ai/arx-client-ui-settings-general",
   "description": "Settings ownerless-copy and product onboarding plugin: the General section, shell trigger/header chrome content, settings dictionaries, and the versioned welcome notice",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/ui-settings-general"
   },
   "type": "module",
@@ -29,15 +29,15 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-ui-settings",
-        "@centurionarx/cxh-client-locale",
-        "@centurionarx/cxh-client-connection",
-        "@centurionarx/cxh-api-remotes",
-        "@centurionarx/cxh-client-ui-sidebar"
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-ui-settings",
+        "@arx-ai/arx-client-locale",
+        "@arx-ai/arx-client-connection",
+        "@arx-ai/arx-api-remotes",
+        "@arx-ai/arx-client-ui-sidebar"
       ],
       "platform": "web"
     }
@@ -48,35 +48,35 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^",
     "clsx": "^2.0.0"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-api-remotes": "workspace:^",
-    "@centurionarx/cxh-client-connection": "workspace:^",
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-settings": "workspace:^",
-    "@centurionarx/cxh-client-ui-sidebar": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-client-connection": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-settings": "workspace:^",
+    "@arx-ai/arx-client-ui-sidebar": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-api-remotes": "workspace:^",
-    "@centurionarx/cxh-client-connection": "workspace:^",
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-test-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-settings": "workspace:^",
-    "@centurionarx/cxh-client-ui-sidebar": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-client-connection": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-settings": "workspace:^",
+    "@arx-ai/arx-client-ui-sidebar": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "@types/react": "~18.3.1",
     "react": "^18.2.0",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "files": [
     "lib/index.js",

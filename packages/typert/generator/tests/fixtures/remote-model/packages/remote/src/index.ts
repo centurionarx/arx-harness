@@ -1,4 +1,4 @@
-import { TypertRemoteService, Remote, RemoteScope } from '@centurionarx/cxh-typert-protocol'
+import { TypertRemoteService, Remote, RemoteScope } from '@arx-ai/arx-typert-protocol'
 import type { Agent } from '@fixture/domain'
 import type {
   CreateGoalRequest,

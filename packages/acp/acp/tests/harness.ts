@@ -1,6 +1,6 @@
 /** In-memory ACP transport fixture over the real agent factory and loop. */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { createHash } from 'node:crypto'
 import {
   ClientSideConnection,
@@ -12,11 +12,11 @@ import {
   type SessionNotification,
   type Stream,
 } from '@agentclientprotocol/sdk'
-import AttachmentStore, { AttachmentError, AttachmentId } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentLimits, ImageAttachmentRef, SaveImageAttachment, StoredImageAttachment } from '@centurionarx/cxh-attachment'
-import { type GenerateOptions, LlmAdapter, type LlmResolvedModelInfo, type StreamChunk } from '@centurionarx/cxh-llm'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
+import AttachmentStore, { AttachmentError, AttachmentId } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentLimits, ImageAttachmentRef, SaveImageAttachment, StoredImageAttachment } from '@arx-ai/arx-attachment'
+import { type GenerateOptions, LlmAdapter, type LlmResolvedModelInfo, type StreamChunk } from '@arx-ai/arx-llm'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
 import * as AcpPlugin from '../src/index.ts'
 import type { AcpConfig } from '../src/index.ts'
 

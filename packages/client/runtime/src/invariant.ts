@@ -1,6 +1,6 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-runtime`.
- * @module @centurionarx/cxh-client-runtime/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-runtime`.
+ * @module @arx-ai/arx-client-runtime/invariant
  */
 
 /* jscpd:ignore-start */
@@ -8,11 +8,11 @@
  * `keyof SlotMap & string` is the declare-merge key pattern: SlotMap is empty
  * in this compilation unit (intersection reads `never`) but consumers merge
  * keys in; the rule fires on the empty-map view, not on real redundancy. */
-import type { Context } from '@centurionarx/cordis'
-import type { SlotMap } from '@centurionarx/cxh-client-ui-slots'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { SlotMap } from '@arx-ai/arx-client-ui-slots'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-runtime'
+const PACKAGE_NAME = '@arx-ai/arx-client-runtime'
 
 /** Cordis companion plugin name. */
 export const name = 'client-runtime-invariant'

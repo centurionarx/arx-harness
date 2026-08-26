@@ -1,11 +1,11 @@
 /**
  * Owner-scoped persistent PTY registry. Backends own terminal mechanics while
  * this service owns ids, publication, authorization, and awaited cleanup.
- * @module @centurionarx/cxh-terminal
+ * @module @arx-ai/arx-terminal
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
 import { TerminalBackendCleanupError } from './types.ts'
 import type {
   TerminalBackend,
@@ -45,7 +45,7 @@ export { TerminalBackendCleanupError } from './types.ts'
 /** Opaque identity minted by {@link TerminalSessionService} for one live PTY session. */
 export type TerminalSessionId = TerminalSessionIdValue
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     terminals: TerminalSessionService
   }

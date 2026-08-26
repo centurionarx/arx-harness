@@ -1,8 +1,8 @@
 /** Package-local scripted child boundary for deterministic tool-subagent tests. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import type {
   SubagentCapabilities,
   SubagentProvider,
@@ -10,7 +10,7 @@ import type {
   SubagentRun,
   SubagentStartRequest,
   SubagentStopReason,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 
 const DEFAULT_CAPABILITIES: SubagentCapabilities = {
   outputSchema: true,

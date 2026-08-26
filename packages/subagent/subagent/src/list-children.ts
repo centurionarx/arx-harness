@@ -13,14 +13,14 @@
  * error. The module owns no catalog state and does not consult Activation,
  * Agent-registry, continuation-manager, or provider state.
  *
- * @module @centurionarx/cxh-subagent
+ * @module @arx-ai/arx-subagent
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type { SessionPersistence } from '@centurionarx/cxh-session-persistence'
-import type { SessionProjectionRegistry } from '@centurionarx/cxh-session-projection'
-import type { SessionProjectionCache } from '@centurionarx/cxh-session-projection-cache'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
+import type { SessionProjectionRegistry } from '@arx-ai/arx-session-projection'
+import type { SessionProjectionCache } from '@arx-ai/arx-session-projection-cache'
 import { SubagentError } from './error.ts'
 import type { SubagentIdentityProjection } from './projection-types.ts'
 
@@ -191,7 +191,7 @@ async function prepareListing(
   // deployment configuration error, never an empty success.
   if (projections === undefined) {
     throw new SubagentError(
-      'listing subagents requires the sessionProjections registry (load @centurionarx/cxh-session-projection)',
+      'listing subagents requires the sessionProjections registry (load @arx-ai/arx-session-projection)',
       'SUBAGENT_CONTROL_PROJECTIONS_UNAVAILABLE',
     )
   }
@@ -201,7 +201,7 @@ async function prepareListing(
   const sessions = ctx.get('sessions')
   if (sessions === undefined) {
     throw new SubagentError(
-      'listing subagents requires the session store (load @centurionarx/cxh-session)',
+      'listing subagents requires the session store (load @arx-ai/arx-session)',
       'SUBAGENT_CONTROL_SESSION_STORE_UNAVAILABLE',
     )
   }

@@ -1,7 +1,7 @@
 /** Registers the sidebar shell into the layout-owned slot. */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import type { SidebarRootInjected } from './contract/slots.ts'
 import { SidebarRoot } from './SidebarRoot.tsx'
 import { en, zh, type SidebarKey } from './locales.ts'
@@ -12,7 +12,7 @@ export type {
 } from './contract/slots.ts'
 export type { SidebarKey } from './locales.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Sidebar shell controls copy. */
     sidebar: SidebarKey

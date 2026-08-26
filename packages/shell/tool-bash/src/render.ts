@@ -1,12 +1,12 @@
 /**
  * Model-facing result rendering for the bash tool.
  *
- * @module @centurionarx/cxh-tool-bash/render
+ * @module @arx-ai/arx-tool-bash/render
  */
 
-import type { ShellProcessRead, ShellRunResult, ShellSandboxInfo, CollectedOutput } from '@centurionarx/cxh-shell'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
-import { escalationHintMarker, sandboxDenialMarker } from '@centurionarx/cxh-sandbox'
+import type { ShellProcessRead, ShellRunResult, ShellSandboxInfo, CollectedOutput } from '@arx-ai/arx-shell'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
+import { escalationHintMarker, sandboxDenialMarker } from '@arx-ai/arx-sandbox'
 
 /** Append the truncation notice (with the full-output spill path) to a stream's text. */
 function streamText(output: CollectedOutput): string {
@@ -96,8 +96,8 @@ export function renderProcessRead(
 
 /**
  * The exit-status parse is the shared marker-contract half of the shell-tool
- * rendering story, owned by `@centurionarx/cxh-shell` so `cxh-tool-pwsh` reuses
+ * rendering story, owned by `@arx-ai/arx-shell` so `arx-tool-pwsh` reuses
  * it (its renderer emits the same markers). Re-exported here to keep
  * `../src/render.ts` a single import root for bash-tool consumers.
  */
-export { parseExitStatus, type ParsedExitStatus } from '@centurionarx/cxh-shell'
+export { parseExitStatus, type ParsedExitStatus } from '@arx-ai/arx-shell'

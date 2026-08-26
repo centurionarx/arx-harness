@@ -5,15 +5,15 @@
 // views. callId/approvalId stay plain string here (narrow to real brands when
 // convenient).
 
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { ImageAttachmentRef } from '@centurionarx/cxh-attachment'
-import type { LlmRetryEventData } from '@centurionarx/cxh-llm-retry/types'
-import type { TodoItem } from '@centurionarx/cxh-session/types'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { ImageAttachmentRef } from '@arx-ai/arx-attachment'
+import type { LlmRetryEventData } from '@arx-ai/arx-llm-retry/types'
+import type { TodoItem } from '@arx-ai/arx-session/types'
 import type {
   RpcError, SessionId, SubagentAddress, ToolCallView, ToolResultView,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 import type { PendingInteraction } from './pending.ts'
 import type { ContextProvenanceView, KnownContextForm } from './context-provenance.ts'
 import type {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import InvariantService, { InvariantError } from '@centurionarx/cxh-invariants'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import InvariantService, { InvariantError } from '@arx-ai/arx-invariants'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import * as TeamInvariant from '../src/invariant.ts'
 import { TeamId, TeamTaskId } from '../src/types.ts'
 
@@ -38,7 +38,7 @@ describe('Agent Teams stream invariant', () => {
       })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-experimental-agent-team',
+      packageName: '@arx-ai/arx-experimental-agent-team',
     }))
     expect(invalid.events).toEqual([])
   })
@@ -63,7 +63,7 @@ describe('Agent Teams stream invariant', () => {
       })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-experimental-agent-team',
+      packageName: '@arx-ai/arx-experimental-agent-team',
     }))
     expect(session.events).toEqual([])
   })

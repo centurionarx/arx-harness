@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { credentialKey } from '@centurionarx/cxh-credentials'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import AuthorizationService from '@centurionarx/cxh-authorization'
+import { Context } from '@arx-ai/cordis'
+import { credentialKey } from '@arx-ai/arx-credentials'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import AuthorizationService from '@arx-ai/arx-authorization'
 import * as AuthorizationInvariant from '../src/invariant.ts'
 import { MemoryCredentials } from './memory.ts'
 
@@ -81,7 +81,7 @@ describe('authorization invariant companion', () => {
     await ctx.plugin(AuthorizationInvariant)
 
     expect(() => {
-      ctx.invariants.register('@centurionarx/cxh-authorization', () => {})
+      ctx.invariants.register('@arx-ai/arx-authorization', () => {})
     }).toThrow(/already registered/)
   })
 })

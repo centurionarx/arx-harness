@@ -1,5 +1,5 @@
-import { Context, Fiber, Inject } from '@centurionarx/cordis'
-import { deepEqual, isNullable } from '@centurionarx/cosmokit'
+import { Context, Fiber, Inject } from '@arx-ai/cordis'
+import { deepEqual, isNullable } from '@arx-ai/cosmokit'
 import { Loader } from '../index.ts'
 import { EntryGroup } from './group.ts'
 import { EntryTree } from './tree.ts'

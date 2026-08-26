@@ -8,14 +8,14 @@
  * (and the reverse), the one-shared-state contract of the dual entry.
  * Scope disposal drops the directory (HMR safety).
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { createScope } from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import type { ModelSelection } from '@centurionarx/cxh-api-remotes/client'
-import type { CommandContribution, SelectOption } from '@centurionarx/cxh-client-ui-commands/client'
+import { createScope } from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import type { ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { CommandContribution, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 import type { ModelSelectInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { zh } from '../src/client/locales.ts'

@@ -4,8 +4,8 @@
  * @module park-parent
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { SessionId } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { SessionId } from '@arx-ai/arx-session'
 
 /**
  * Reject every step of the stand-in parent. Each child settlement wakes its

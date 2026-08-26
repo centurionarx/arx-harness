@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-typert-generator`.
- * @module @centurionarx/cxh-typert-generator/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-typert-generator`.
+ * @module @arx-ai/arx-typert-generator/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-typert-generator'
+const PACKAGE_NAME = '@arx-ai/arx-typert-generator'
 
 /** Cordis companion plugin name. */
 export const name = 'typert-generator-invariant'

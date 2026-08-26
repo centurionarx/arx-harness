@@ -9,17 +9,17 @@
  * settings scope, which keeps them unaware of one another and of other tabs.
  */
 
-import type { ConnectionHandle } from '@centurionarx/cxh-client-connection/client'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 // Type-only: the settings shell's SlotMap merge (the 'settings.section' entry)
 // and the ctx.settingsScope Context merge. Cross-plugin collaboration goes
 // through the service, never a value import (client bundle purity gate).
-import type {} from '@centurionarx/cxh-client-ui-settings/client'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import { resolveSlotLabel } from '@centurionarx/cxh-client-ui-slots'
+import type {} from '@arx-ai/arx-client-ui-settings/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
 // Type-only: the ctx.remote Context merge and the forwarded-event key face.
-import type {} from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
 import { AgentLoopCard } from './AgentLoopCard.tsx'
 import { BashCard } from './BashCard.tsx'
 import { ConfigurablePluginsTab } from './ConfigurablePluginsTab.tsx'

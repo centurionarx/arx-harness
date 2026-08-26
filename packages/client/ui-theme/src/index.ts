@@ -1,8 +1,8 @@
 /** Host registration for the browser theme preference and pre-plugin palette. */
 
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-host-webserver'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-host-webserver'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 import { bootThemeInjection } from './boot-theme.ts'
 import {
   DEFAULT_PREFERENCE, THEME_SETTINGS_NAMESPACE, ThemeSettingsSchema,

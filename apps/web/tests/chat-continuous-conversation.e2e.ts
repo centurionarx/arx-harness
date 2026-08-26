@@ -9,9 +9,9 @@ import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import { CallId, type StreamChunk } from '@centurionarx/cxh-llm'
-import type { ReplayEntry, ReplayOverrideDoc } from '@centurionarx/cxh-llm-replay'
-import type { SessionEvent, SessionId } from '@centurionarx/cxh-session'
+import { CallId, type StreamChunk } from '@arx-ai/arx-llm'
+import type { ReplayEntry, ReplayOverrideDoc } from '@arx-ai/arx-llm-replay'
+import type { SessionEvent, SessionId } from '@arx-ai/arx-session'
 import {
   launchWebScaffold,
   watchConsole,
@@ -179,7 +179,7 @@ describe('web e2e: continuous conversation grown through the composer', () => {
   const specs = Array.from({ length: TURN_COUNT }, (_, offset) => turnSpec(offset + 1))
 
   beforeAll(async () => {
-    replayDir = await mkdtemp(join(tmpdir(), 'cxh-continuous-chat-replay-'))
+    replayDir = await mkdtemp(join(tmpdir(), 'arx-continuous-chat-replay-'))
     const replayOverride = join(replayDir, 'replay.override.json')
     await writeFile(replayOverride, JSON.stringify(replayScript(specs)))
     scaffold = await launchWebScaffold({

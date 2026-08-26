@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import UserQuestionService, { type AskUserQuestionRequest } from '@centurionarx/cxh-user-questions'
-import * as toolAskUser from '@centurionarx/cxh-tool-ask-user'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import UserQuestionService, { type AskUserQuestionRequest } from '@arx-ai/arx-user-questions'
+import * as toolAskUser from '@arx-ai/arx-tool-ask-user'
 
 const testToolSignal = new AbortController().signal
 

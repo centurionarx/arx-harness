@@ -1,11 +1,11 @@
 /**
  * Service Definition for the workflow capability seam. Service Providers execute orchestration scripts;
  * observe-only lifecycle events never expose run control.
- * @module @centurionarx/cxh-workflow
+ * @module @arx-ai/arx-workflow
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import { Context, Service } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
 import type {
   WorkflowAgentEndInfo,
   WorkflowAgentInfo,
@@ -28,7 +28,7 @@ export type {
 } from './types.ts'
 export type { WorkflowRun, WorkflowStartRequest } from './runtime-types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     workflowEngine: WorkflowEngine
   }

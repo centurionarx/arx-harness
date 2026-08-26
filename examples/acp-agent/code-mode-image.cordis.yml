@@ -2,17 +2,17 @@
 # store so a nested read_image result can cross the generic rich-result bridge.
 # The live config selects the shipped vision route for manual use.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash-vision-exp
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
-          persistenceCompression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
           workspaceContext:
             maxBytes: 65536
           tools:
@@ -23,6 +23,6 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: attachment-local
-            name: '@centurionarx/cxh-attachment-local'
+            name: '@arx-ai/arx-attachment-local'
           - id: code-runtime
-            name: '@centurionarx/cxh-code-runtime-worker-thread'
+            name: '@arx-ai/arx-code-runtime-worker-thread'

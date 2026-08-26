@@ -10,11 +10,11 @@
  */
 import { statSync } from 'node:fs'
 import type { ServerResponse } from 'node:http'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 // Empty type imports carry the clientModuleHost/webServer Context merges.
-import type {} from '@centurionarx/cxh-client-modules'
-import type {} from '@centurionarx/cxh-host-webserver'
+import type {} from '@arx-ai/arx-client-modules'
+import type {} from '@arx-ai/arx-host-webserver'
 import type { PluginsEventFrame } from './events.ts'
 import { EVENTS_ENDPOINT } from './events.ts'
 

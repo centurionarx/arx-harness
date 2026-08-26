@@ -1,10 +1,10 @@
 /** WorkspaceRuntime projects the Workspace object manager for UI consumers. */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   DirectoryListing, IApiClient, RpcError,
   SessionId, WorkspaceId, WorkspaceView,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 import type { SnapshotStore } from '../contract/store.ts'
 import { createSnapshotStore } from '../contract/store.ts'
 import type { SessionsPort, SessionsPortList } from '../contract/sessions-port.ts'

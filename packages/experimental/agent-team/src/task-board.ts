@@ -1,6 +1,6 @@
 /** Shared Team task DAG commands and runtime-enriched views. */
 
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Agent } from '@arx-ai/arx-agent'
 import type { TeamMembership } from './roster.ts'
 import { TeamError } from './error.ts'
 import type { TeamFoldState } from './fold.ts'

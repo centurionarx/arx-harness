@@ -1,18 +1,18 @@
 /**
  * Persistent shell PTY backend over the subprocess terminal primitive, shared
  * sandbox policy, bounded output, and provider-owned session cleanup.
- * @module @centurionarx/cxh-terminal-bash
+ * @module @arx-ai/arx-terminal-bash
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import { TerminalBackendCleanupError } from '@centurionarx/cxh-terminal'
-import type { TerminalBackend, TerminalBackendSpawnSpec } from '@centurionarx/cxh-terminal'
-import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@centurionarx/cxh-subprocess'
-import type { SandboxExecutionPolicy } from '@centurionarx/cxh-sandbox'
-import { effectiveSandboxMode } from '@centurionarx/cxh-sandbox-policy'
-import { ENCODING_PREAMBLE } from '@centurionarx/cxh-pwsh-local'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import { TerminalBackendCleanupError } from '@arx-ai/arx-terminal'
+import type { TerminalBackend, TerminalBackendSpawnSpec } from '@arx-ai/arx-terminal'
+import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@arx-ai/arx-subprocess'
+import type { SandboxExecutionPolicy } from '@arx-ai/arx-sandbox'
+import { effectiveSandboxMode } from '@arx-ai/arx-sandbox-policy'
+import { ENCODING_PREAMBLE } from '@arx-ai/arx-pwsh-local'
 import { type Config, type ResolvedConfig, resolveConfig, type ShellDialect, validateConfig } from './config.ts'
 import { LocalPtySession } from './session.ts'
 import { CONTROLLED_PROMPT } from './sanitize.ts'
@@ -60,9 +60,9 @@ function childEnvironment(spec: TerminalBackendSpawnSpec, dialect: ShellDialect)
     TERM: 'dumb',
     PAGER: 'cat',
     GIT_PAGER: 'cat',
-    CXH_SHELL: '1',
-    CXH_SESSION_ID: spec.owner.id,
-    CXH_PTY_SESSION_ID: spec.sessionId,
+    ARX_SHELL: '1',
+    ARX_SESSION_ID: spec.owner.id,
+    ARX_PTY_SESSION_ID: spec.sessionId,
   }
   if (dialect === 'pwsh') {
     // pwsh ignores PS1/PROMPT_COMMAND; its prompt is installed by the startup

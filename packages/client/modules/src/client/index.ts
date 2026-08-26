@@ -8,9 +8,9 @@
  * its bootstrap export, which constructs the system and retains the same
  * exports for this package's graph row. The plugin face only enrolls that
  * pre-existing instance by providing it as `ctx.modules`.
- * @module @centurionarx/cxh-client-modules/client
+ * @module @arx-ai/arx-client-modules/client
  */
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { ClientModuleSystem } from './system.ts'
 import { parseBootManifest } from './manifest.ts'
 import type {
@@ -22,7 +22,7 @@ export { parseBootManifest, stripClientSuffix } from './manifest.ts'
 export type {
   BootManifest, BootModuleRow, BootPluginRow, ClientBootstrapModule, ClientBundleRegistration,
   ClientModuleCreateOptions, ClientModuleLoader, ClientModuleLoaderTarget, ClientModuleRecord,
-  ClientModuleSystemOptions, CxhWindow,
+  ClientModuleSystemOptions, ArxWindow,
   WebBootEntry, WebBootGraph,
 } from './manifest.ts'
 

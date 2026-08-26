@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-tool-str-replace-editor`.
- * @module @centurionarx/cxh-tool-str-replace-editor/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-tool-str-replace-editor`.
+ * @module @arx-ai/arx-tool-str-replace-editor/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tool-str-replace-editor'
+const PACKAGE_NAME = '@arx-ai/arx-tool-str-replace-editor'
 
 /** Cordis companion plugin name. */
 export const name = 'tool-str-replace-editor-invariant'

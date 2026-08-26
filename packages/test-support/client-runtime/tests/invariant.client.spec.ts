@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as TestRuntimeInvariant from '@centurionarx/cxh-client-test-runtime/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import * as TestRuntimeInvariant from '@arx-ai/arx-client-test-runtime/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 describe('invariant companion', () => {
   it('registers under the package name with an empty installer', async () => {

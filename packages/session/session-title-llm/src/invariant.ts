@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-session-title-llm`.
- * @module @centurionarx/cxh-session-title-llm/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-session-title-llm`.
+ * @module @arx-ai/arx-session-title-llm/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session-title-llm'
+const PACKAGE_NAME = '@arx-ai/arx-session-title-llm'
 
 /** Cordis companion plugin name. */
 export const name = 'session-title-llm-invariant'

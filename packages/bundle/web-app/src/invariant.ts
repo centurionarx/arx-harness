@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-web-app`.
- * @module @centurionarx/cxh-web-app/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-web-app`.
+ * @module @arx-ai/arx-web-app/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-web-app'
+const PACKAGE_NAME = '@arx-ai/arx-web-app'
 
 /** Cordis companion plugin name. */
 export const name = 'web-app-invariant'

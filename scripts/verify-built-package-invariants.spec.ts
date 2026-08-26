@@ -17,12 +17,12 @@ function fixture(options: {
   invariantExport?: string
   runtimeChunk?: string
 } = {}): { root: string; loaderUrl: string } {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-built-package-invariants-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-built-package-invariants-'))
   roots.push(root)
   const packageDir = join(root, 'packages/core/probe')
   mkdirSync(join(packageDir, 'lib'), { recursive: true })
   writeFileSync(join(packageDir, 'package.json'), `${JSON.stringify({
-    name: '@centurionarx/cxh-probe',
+    name: '@arx-ai/arx-probe',
     type: 'module',
     files: ['lib/invariant.js'],
     exports: {
@@ -73,7 +73,7 @@ describe('built package invariant verifier', () => {
     const brokenExport = fixture({ invariantExport: './lib/missing.js' })
     const exportResult = verify(brokenExport.root, brokenExport.loaderUrl)
     expect(exportResult.status).toBe(1)
-    expect(exportResult.stderr).toContain('@centurionarx/cxh-probe')
+    expect(exportResult.stderr).toContain('@arx-ai/arx-probe')
   })
 
   it('rejects an invariant bundle that needs an unstaged runtime chunk', () => {

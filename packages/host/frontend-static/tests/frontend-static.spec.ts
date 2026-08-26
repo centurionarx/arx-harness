@@ -11,10 +11,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import HttpServer from '@centurionarx/cxh-host-webserver'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import HttpServer from '@arx-ai/arx-host-webserver'
 import * as FrontendStatic from '../src/index.ts'
 
 let root: string | undefined
@@ -29,7 +29,7 @@ afterEach(async () => {
 
 /** Write a dist fixture and a two-row cordis.yml, then boot it through the real Loader. */
 async function loadComposition(): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-frontend-static-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-frontend-static-'))
   const dist = join(root, 'dist')
   await mkdir(dist)
   const distIndex = join(dist, 'index.html')
@@ -40,12 +40,12 @@ async function loadComposition(): Promise<Context> {
   await mkdir(join(dist, 'empty'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@centurionarx/cxh-host-webserver'",
+    "- name: '@arx-ai/arx-host-webserver'",
     '  config:',
     "    host: '127.0.0.1'",
     '    port: 0',
     '- id: frontend',
-    "  name: '@centurionarx/cxh-host-frontend-static'",
+    "  name: '@arx-ai/arx-host-frontend-static'",
     '  config:',
     `    distIndex: '${distIndex}'`,
     '',
@@ -56,8 +56,8 @@ async function loadComposition(): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-host-webserver', HttpServer],
-    ['@centurionarx/cxh-host-frontend-static', FrontendStatic],
+    ['@arx-ai/arx-host-webserver', HttpServer],
+    ['@arx-ai/arx-host-frontend-static', FrontendStatic],
   ])
   context.loader.internal = {
     version: 'v2',

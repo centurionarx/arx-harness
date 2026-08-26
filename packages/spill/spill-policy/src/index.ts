@@ -7,7 +7,7 @@
  * locator and retrieval guidance.
  *
  * It registers NO service and owns NO storage or preview mechanics: preview is
- * `@centurionarx/cxh-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
+ * `@arx-ai/arx-output-retention` (`TextRetainer`), storage is `ctx.spillStore`.
  * The policy only decides WHEN to spill and composes the notice.
  *
  * A second arm applies the SAME cap to the durable log: the
@@ -40,18 +40,18 @@
  * replaced content still has its replacement bounded, and value replacements
  * and `block` decisions pass through unchanged.
  *
- * @module @centurionarx/cxh-spill-policy
+ * @module @arx-ai/arx-spill-policy
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { TextRetainer, describeOmitted } from '@centurionarx/cxh-output-retention'
-import type { Omitted } from '@centurionarx/cxh-output-retention'
-import type { SaveTextSpill, SpillRef } from '@centurionarx/cxh-spill'
-import type { SessionId } from '@centurionarx/cxh-session'
-import type { CallId } from '@centurionarx/cxh-llm'
-import type { PostToolDecision, ToolExecution } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { TextRetainer, describeOmitted } from '@arx-ai/arx-output-retention'
+import type { Omitted } from '@arx-ai/arx-output-retention'
+import type { SaveTextSpill, SpillRef } from '@arx-ai/arx-spill'
+import type { SessionId } from '@arx-ai/arx-session'
+import type { CallId } from '@arx-ai/arx-llm'
+import type { PostToolDecision, ToolExecution } from '@arx-ai/arx-tools'
 import type { SpillPolicyExec } from './types.ts'
 
 export type { SpillPolicyExec } from './types.ts'

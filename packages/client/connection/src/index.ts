@@ -1,10 +1,10 @@
 /** Host HTTP bridge for browser-client RPC. */
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-attachment'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-attachment'
 // Activates the webServer Context merge used below.
-import type { WebRoute, WebUpgradeRoute } from '@centurionarx/cxh-host-webserver'
-import { toFetchHandler } from '@centurionarx/cxh-host-apiproxy'
+import type { WebRoute, WebUpgradeRoute } from '@arx-ai/arx-host-webserver'
+import { toFetchHandler } from '@arx-ai/arx-host-apiproxy'
 import { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
 import { bridge, DEFAULT_MAX_REQUEST_BODY_BYTES } from './http-bridge.ts'
 import { assertTrustedAuthority, isTrustedApiRequest } from './api-request-trust.ts'
@@ -53,7 +53,7 @@ export interface ConnectionConfig {
    * port-less `host` matching any port. The /api trust fence refuses any
    * request whose Host is neither loopback nor listed here, so a
    * non-loopback (`0.0.0.0`) deployment must declare the names it is reached
-   * by (the cxh CLI derives the machine's LAN IP literals itself). An entry
+   * by (the arx CLI derives the machine's LAN IP literals itself). An entry
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]

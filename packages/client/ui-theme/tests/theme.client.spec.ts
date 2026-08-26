@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { stubSettingsScope, type StubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { stubSettingsScope, type StubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import type {
   ThemeSettings,
   ThemeSnapshot,
   ThemeTokenOverrides,
-} from '@centurionarx/cxh-client-ui-theme/client'
-import { ThemeRuntime } from '@centurionarx/cxh-client-ui-theme/client'
+} from '@arx-ai/arx-client-ui-theme/client'
+import { ThemeRuntime } from '@arx-ai/arx-client-ui-theme/client'
 
 const make = (host = stubSettingsScope<ThemeSettings>()): {
   ctx: Context

@@ -1,8 +1,8 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it } from 'vitest'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
+import ToolRuntime from '@arx-ai/arx-tools'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import UserQuestionService from '@arx-ai/arx-user-questions'
 import { apply } from '../src/index.ts'
 
 let ctx: Context | undefined

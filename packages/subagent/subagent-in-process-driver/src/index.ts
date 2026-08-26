@@ -8,15 +8,15 @@
  * composes and drives them directly, so this driver owns exactly one turn with
  * one result.
  *
- * @module @centurionarx/cxh-subagent-in-process-driver
+ * @module @arx-ai/arx-subagent-in-process-driver
  */
 
 import { randomUUID } from 'node:crypto'
-import type { Context } from '@centurionarx/cordis'
-import { foldConsumedWork } from '@centurionarx/cxh-agent'
-import type { Agent, AgentHandle } from '@centurionarx/cxh-agent'
-import { SessionId, type SessionEvent, type TurnEndReason } from '@centurionarx/cxh-session'
-import { createUserMessage, type ContentBlock } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { foldConsumedWork } from '@arx-ai/arx-agent'
+import type { Agent, AgentHandle } from '@arx-ai/arx-agent'
+import { SessionId, type SessionEvent, type TurnEndReason } from '@arx-ai/arx-session'
+import { createUserMessage, type ContentBlock } from '@arx-ai/arx-llm'
 import {
   appendDelegatedPolicyOverrides,
   applyChildComposition,
@@ -26,14 +26,14 @@ import {
   finalAssistantOutput,
   resolveChildAgentOptions,
   resolveChildDepth,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import type {
   ResolvedSubagentStartRequest,
   SubagentDescriptorData,
   SubagentResult,
   SubagentRun,
   SubagentStopReason,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import {
   attachStructuredRuntime,
   type StructuredAttachment,

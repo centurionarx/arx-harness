@@ -1,10 +1,10 @@
 import { writeFile } from 'node:fs/promises'
-import { Context } from '@centurionarx/cordis'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { createUserMessage, CallId, type GenerateOptions, LlmAdapter, type StreamChunk  } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
+import { Context } from '@arx-ai/cordis'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { createUserMessage, CallId, type GenerateOptions, LlmAdapter, type StreamChunk  } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
 import * as checkpointPolicy from '../../src/index.ts'
 
 function waitForCrash(): Promise<never> {

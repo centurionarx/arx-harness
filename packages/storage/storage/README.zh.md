@@ -1,4 +1,4 @@
-# @centurionarx/cxh-storage
+# @arx-ai/arx-storage
 
 [English](README.md) | 中文
 

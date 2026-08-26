@@ -4,7 +4,7 @@
  * per push.
  */
 
-import type { JobId } from '@centurionarx/cxh-jobs/brand'
+import type { JobId } from '@arx-ai/arx-jobs/brand'
 
 /**
  * One background job as the client sees it.

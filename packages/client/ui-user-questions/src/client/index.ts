@@ -12,10 +12,10 @@
  * separate chain entry per shape would race the same carrier, so the shape
  * choice lives inside this entry — see QuestionComposer.
  */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { ComposerChainProps } from '@centurionarx/cxh-client-ui-conversation/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { ComposerChainProps } from '@arx-ai/arx-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import type { QuestionWait } from './contract/slots.ts'
 import { QuestionComposer } from './QuestionComposer.tsx'
 import { en, zh, type QuestionKey } from './locales.ts'
@@ -26,7 +26,7 @@ export type {
 } from './contract/slots.ts'
 export type { QuestionKey } from './locales.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The question composer's copy. */
     question: QuestionKey

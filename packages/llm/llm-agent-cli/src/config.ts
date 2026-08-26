@@ -1,10 +1,10 @@
 /**
  * Per-route configuration for the vendor-CLI model adapter.
  *
- * @module @centurionarx/cxh-llm-agent-cli/config
+ * @module @arx-ai/arx-llm-agent-cli/config
  */
 
-import z from '@centurionarx/schemastery'
+import z from '@arx-ai/schemastery'
 
 /** One model this adapter serves on a route. */
 export interface AgentCliModel {

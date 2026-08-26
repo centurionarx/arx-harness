@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { TerminalSessionId } from '@centurionarx/cxh-terminal'
-import { boundTerminalText, renderList, renderRead, renderSend, renderSendRead, renderSpawn } from '@centurionarx/cxh-tool-terminal/src/render.ts'
+import { TerminalSessionId } from '@arx-ai/arx-terminal'
+import { boundTerminalText, renderList, renderRead, renderSend, renderSendRead, renderSpawn } from '@arx-ai/arx-tool-terminal/src/render.ts'
 
 describe('tool-terminal rendering', () => {
   it('renders spawn with and without names or MOTD', () => {

@@ -6,22 +6,22 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { agentEvents } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AttachmentStore from '@centurionarx/cxh-attachment'
-import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { agentEvents } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import AttachmentStore from '@arx-ai/arx-attachment'
+import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@arx-ai/arx-llm'
 import type {
   GenerateOptions, LlmCallConfig, LlmModelInfo, LlmModelReasoningInfo, LlmProviderInfo,
   LlmResolvedModelInfo, StreamChunk,
   UserMessage,
-} from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import type { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { RpcRequest } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
+} from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import type { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
 import { createApiProxy } from '../src/api-proxy.ts'
 
 let nextRpc = 1

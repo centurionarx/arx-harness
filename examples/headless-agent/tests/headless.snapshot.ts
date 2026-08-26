@@ -13,12 +13,12 @@ import {
   tokenizeSessionFixtureCwd,
   type HarvestedLog,
   type NormalizeContext,
-} from '@centurionarx/cxh-acp-snapshot'
-import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@centurionarx/cxh-loader-smoke'
+} from '@arx-ai/arx-acp-snapshot'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@arx-ai/arx-loader-smoke'
 import {
   decompressZstdFrame,
   scanZstdFrames,
-} from '@centurionarx/cxh-session-persistence-jsonl/src/zstd.ts'
+} from '@arx-ai/arx-session-persistence-jsonl/src/zstd.ts'
 import { describe, expect, it } from 'vitest'
 
 const snapshotsDir = join(dirname(fileURLToPath(import.meta.url)), 'snapshots')
@@ -52,7 +52,7 @@ const teamConfigPath = fileURLToPath(new URL('../team.cordis.snapshot.yml', impo
 const startupFailureConfigPath = fileURLToPath(new URL('./fixtures/startup-activation-error/cordis.yml', import.meta.url))
 const startupFailureExpected = join(snapshotsDir, 'startup-activation-error', 'stderr.expected.txt')
 const binScript = fileURLToPath(new URL('./fixtures/headless-driver.ts', import.meta.url))
-const cxhBinScript = fileURLToPath(new URL('../../../apps/cli/src/bin.ts', import.meta.url))
+const arxBinScript = fileURLToPath(new URL('../../../apps/cli/src/bin.ts', import.meta.url))
 const tsconfigPath = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
 const reasoningConfigPath = fileURLToPath(new URL('./fixtures/cli.cordis.yml', import.meta.url))
 const deepseekDefaultsConfigPath = fileURLToPath(new URL('./fixtures/deepseek-defaults.cordis.yml', import.meta.url))
@@ -60,7 +60,7 @@ const headlessOverlayPath = fileURLToPath(new URL('./fixtures/headless-profile.c
 const headlessSessionExpected = join(snapshotsDir, 'headless-profile', 'session.expected.jsonl')
 const headlessFailureExpected = join(snapshotsDir, 'headless-profile', 'stderr.expected.txt')
 const cliMockLlmPluginPath = fileURLToPath(new URL('./fixtures/cli-mock-llm.ts', import.meta.url))
-const refreshing = process.env.CXH_SNAPSHOT === 'refresh'
+const refreshing = process.env.ARX_SNAPSHOT === 'refresh'
 
 interface JsonObject {
   [key: string]: unknown
@@ -234,7 +234,7 @@ async function persistedLogs(cwd: string, root: string = join(cwd, '.sessions'))
 
 /** Install the keyless product-CLI adapter into the temporary headless profile. */
 async function prepareCliMockFixture(cwd: string): Promise<void> {
-  const fixtureDir = join(cwd, '.cxh', 'profiles', 'headless', 'snapshot-fixtures')
+  const fixtureDir = join(cwd, '.arx', 'profiles', 'headless', 'snapshot-fixtures')
   await mkdir(fixtureDir, { recursive: true })
   await Promise.all([
     copyFile(cliMockLlmPluginPath, join(fixtureDir, 'cli-mock-llm.ts')),
@@ -248,18 +248,18 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'product headless profile snapshot',
       tempDirPrefix: 'headless-snapshot-profile-',
-      binScript: cxhBinScript,
+      binScript: arxBinScript,
       configPath: headlessOverlayPath,
       binArgs: ['--profile', 'headless', '--patch', headlessOverlayPath, task],
       tsconfigPath,
       env: {
-        CXH_PERMISSION_MODE: 'danger-full-access',
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_PERMISSION_MODE: 'danger-full-access',
+        ARX_TELEMETRY_DISABLED: '1',
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: prepareCliMockFixture,
       inspect: async (cwd) => {
-        const logs = await persistedLogs(cwd, join(cwd, '.cxh', 'sessions'))
+        const logs = await persistedLogs(cwd, join(cwd, '.arx', 'sessions'))
         expect(logs).toHaveLength(1)
         const actual = logs[0]
         if (actual === undefined) throw new Error('the headless profile did not persist its session')
@@ -280,14 +280,14 @@ describe('headless stream-json snapshots', () => {
     const result = await runLoaderSmoke({
       label: 'product headless profile model failure snapshot',
       tempDirPrefix: 'headless-snapshot-profile-failure-',
-      binScript: cxhBinScript,
+      binScript: arxBinScript,
       configPath: headlessOverlayPath,
       binArgs: ['--profile', 'headless', '--patch', headlessOverlayPath, 'Trigger the keyless model failure.'],
       tsconfigPath,
       expectedExitCode: 1,
       env: {
-        CXH_CLI_MOCK_FAILURE: '1',
-        CXH_TELEMETRY_DISABLED: '1',
+        ARX_CLI_MOCK_FAILURE: '1',
+        ARX_TELEMETRY_DISABLED: '1',
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: prepareCliMockFixture,
@@ -325,7 +325,7 @@ describe('headless stream-json snapshots', () => {
       binArgs: [retryConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT: 'replay',
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: (cwd) => { runCwd = cwd },
@@ -366,8 +366,8 @@ describe('headless stream-json snapshots', () => {
       binArgs: [compactionConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: compactionSessionFixture,
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: compactionSessionFixture,
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: (cwd) => { runCwd = cwd },
@@ -435,7 +435,7 @@ describe('headless stream-json snapshots', () => {
       binArgs: [credentialsConfigPath, 'say pong'],
       tsconfigPath,
       env: {
-        // First-run posture: no key in the environment, none under ./.cxh.
+        // First-run posture: no key in the environment, none under ./.arx.
         DEEPSEEK_API_KEY: '',
         DEEPSEEK_BASE_URL: '',
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
@@ -557,7 +557,7 @@ describe('headless stream-json snapshots', () => {
           // Configuration carries only the reference; the key rides the
           // launching environment, which is the whole credential plane here.
           DEEPSEEK_API_KEY: 'snapshot-key',
-          CXH_SNAPSHOT_BASE_URL: server.url,
+          ARX_SNAPSHOT_BASE_URL: server.url,
           NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
         },
       })
@@ -610,9 +610,9 @@ describe('headless stream-json snapshots', () => {
       binArgs: [advancedConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: advancedSessionFixture,
-        CXH_SNAPSHOT_CHILD_FILES: [
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: advancedSessionFixture,
+        ARX_SNAPSHOT_CHILD_FILES: [
           join(advancedScenarioDir, 'session.1.jsonl'),
           join(advancedScenarioDir, 'session.2.jsonl'),
         ].join(delimiter),
@@ -684,7 +684,7 @@ describe('headless stream-json snapshots', () => {
       tsconfigPath,
       processTimeoutMs: 60_000,
       env: {
-        CXH_SNAPSHOT: 'team',
+        ARX_SNAPSHOT: 'team',
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       inspect: async (cwd) => {
@@ -761,9 +761,9 @@ describe('headless stream-json snapshots', () => {
       binArgs: [goalConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: join(goalScenarioDir, 'session.jsonl'),
-        CXH_SNAPSHOT_OVERRIDE: join(goalScenarioDir, 'replay.override.json'),
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: join(goalScenarioDir, 'session.jsonl'),
+        ARX_SNAPSHOT_OVERRIDE: join(goalScenarioDir, 'replay.override.json'),
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: (cwd) => { runCwd = cwd },
@@ -818,10 +818,10 @@ describe('headless stream-json snapshots', () => {
       binArgs: [ralphConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: join(ralphScenarioDir, 'session.jsonl'),
-        CXH_SNAPSHOT_OVERRIDE: join(ralphScenarioDir, 'replay.override.json'),
-        CXH_SNAPSHOT_CHILD_FILES: [
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: join(ralphScenarioDir, 'session.jsonl'),
+        ARX_SNAPSHOT_OVERRIDE: join(ralphScenarioDir, 'replay.override.json'),
+        ARX_SNAPSHOT_CHILD_FILES: [
           join(ralphScenarioDir, 'session.1.jsonl'),
           join(ralphScenarioDir, 'session.2.jsonl'),
         ].join(delimiter),
@@ -902,9 +902,9 @@ describe('headless stream-json snapshots', () => {
       env: {
         // The override fully supplies the parent script; the child fixture
         // remains separate so replay binds it to the fresh child Session.
-        CXH_SNAPSHOT_FILE: parentReplay,
-        CXH_SNAPSHOT_OVERRIDE: parentOverride,
-        CXH_SNAPSHOT_CHILD_FILES: childReplay,
+        ARX_SNAPSHOT_FILE: parentReplay,
+        ARX_SNAPSHOT_OVERRIDE: parentOverride,
+        ARX_SNAPSHOT_CHILD_FILES: childReplay,
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: (cwd) => { runCwd = cwd },
@@ -971,8 +971,8 @@ describe('headless stream-json snapshots', () => {
       binArgs: [ptyConfigPath, prompt],
       tsconfigPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: ptySessionFixture,
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: ptySessionFixture,
         NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
       },
       prepare: (cwd) => { runCwd = cwd },

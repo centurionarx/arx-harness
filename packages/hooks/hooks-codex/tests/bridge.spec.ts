@@ -1,18 +1,18 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as HooksCodex from '@centurionarx/cxh-hooks-codex'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import { defineContentToolFixture } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as HooksCodex from '@arx-ai/arx-hooks-codex'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 
 /**
@@ -25,7 +25,7 @@ const dirs: string[] = []
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }) })
 
 function configDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'cxh-hooks-codex-'))
+  const dir = mkdtempSync(join(tmpdir(), 'arx-hooks-codex-'))
   dirs.push(dir)
   return dir
 }

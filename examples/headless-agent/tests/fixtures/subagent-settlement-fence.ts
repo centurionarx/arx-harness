@@ -3,9 +3,9 @@
  * @module subagent-settlement-fence
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-agent-loop'
-import type {} from '@centurionarx/cxh-subagent'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-agent-loop'
+import type {} from '@arx-ai/arx-subagent'
 
 /** Fixture plugin name. */
 export const name = 'subagent-settlement-fence'

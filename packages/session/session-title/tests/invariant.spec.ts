@@ -1,10 +1,10 @@
 // Title-source invariant: `messageSeqs` is empty iff `source.kind` is `user`.
 // — the durable relationship every appended session/title event must keep.
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as SessionTitleInvariantCompanion from '@centurionarx/cxh-session-title/invariant'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import * as SessionTitleInvariantCompanion from '@arx-ai/arx-session-title/invariant'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()
@@ -31,13 +31,13 @@ describe('session-title source invariant', () => {
       session.append('session/title', { title: 'auto', messageSeqs: [], source: { kind: 'fallback' } })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-session-title',
+      packageName: '@arx-ai/arx-session-title',
     }))
     expect(() => {
       session.append('session/title', { title: 'named', messageSeqs: [1], source: { kind: 'user' } })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-session-title',
+      packageName: '@arx-ai/arx-session-title',
     }))
     expect(session.seq).toBe(0)
   })

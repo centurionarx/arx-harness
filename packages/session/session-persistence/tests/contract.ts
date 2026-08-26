@@ -5,13 +5,13 @@
  * to the same append-only / contiguous-seq / lazy-materialization / crash
  * semantics. The JSONL backend's own spec adds file-specific tests on top.
  *
- * @module @centurionarx/cxh-session-persistence/tests/contract
+ * @module @arx-ai/arx-session-persistence/tests/contract
  */
 
 import { describe, expect, it } from 'vitest'
-import { SESSION_FORMAT_VERSION, Session, SessionId, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader, SurfaceEventType, SurfaceIntent } from '@centurionarx/cxh-session'
-import { CallId, MessageId, createMessage, freezeMessage } from '@centurionarx/cxh-llm'
+import { SESSION_FORMAT_VERSION, Session, SessionId, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader, SurfaceEventType, SurfaceIntent } from '@arx-ai/arx-session'
+import { CallId, MessageId, createMessage, freezeMessage } from '@arx-ai/arx-llm'
 import type { SessionPersistence } from '../src/index.ts'
 
 /** A backend under test plus its teardown. */

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, createEvent, fireEvent, render, screen } from '@testing-library/react'
-import type { SessionId, WorkspaceId } from '@centurionarx/cxh-client-runtime/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import type { SessionId, WorkspaceId } from '@arx-ai/arx-client-runtime/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { RowDragProps } from '../src/client/rows/Rows.tsx'
 import { ProjectRowItem, SearchResultItem, SessionNodeItem } from '../src/client/rows/Rows.tsx'
 import type { GroupNode, SearchResultNode, SessionNode } from '../src/client/tree.ts'

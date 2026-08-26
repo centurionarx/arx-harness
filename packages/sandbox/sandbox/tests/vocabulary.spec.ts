@@ -2,12 +2,12 @@
  * Vocabulary-contract tests for the sandbox seam: the fail-closed error's
  * structured identity is what tool results and consumers key on, so its
  * shape is pinned here, next to the vocabulary that owns it. Provider
- * behavior is each implementation's suite (`cxh-sandbox-local`); consumer
- * behavior is each consumer's (`cxh-bash-sandbox`).
+ * behavior is each implementation's suite (`arx-sandbox-local`); consumer
+ * behavior is each consumer's (`arx-bash-sandbox`).
  */
 
 import { describe, expect, it } from 'vitest'
-import { SANDBOX_UNAVAILABLE, SandboxUnavailableError } from '@centurionarx/cxh-sandbox'
+import { SANDBOX_UNAVAILABLE, SandboxUnavailableError } from '@arx-ai/arx-sandbox'
 
 describe('SandboxUnavailableError', () => {
   it('carries the structured { name, code } identity consumers key on', () => {

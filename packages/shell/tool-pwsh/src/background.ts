@@ -1,13 +1,13 @@
 /**
  * Generic-task adaptation for background pwsh process handles — the shell-agnostic
- * twin of `cxh-tool-bash`'s background adaptation.
+ * twin of `arx-tool-bash`'s background adaptation.
  *
- * @module @centurionarx/cxh-tool-pwsh/background
+ * @module @arx-ai/arx-tool-pwsh/background
  */
 
-import type { ShellProcess } from '@centurionarx/cxh-shell'
+import type { ShellProcess } from '@arx-ai/arx-shell'
 
-/* jscpd:ignore-start -- deliberate twin of cxh-tool-bash/background.ts (Agent Note). */
+/* jscpd:ignore-start -- deliberate twin of arx-tool-bash/background.ts (Agent Note). */
 
 /**
  * Map a settled background process onto the generic task-outcome vocabulary:

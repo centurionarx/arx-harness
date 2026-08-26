@@ -1,12 +1,12 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context, Service, symbols } from '@centurionarx/cordis'
-import { createUserMessage, freezeMessage } from '@centurionarx/cxh-llm'
-import { Session, SessionId, type UserMessage } from '@centurionarx/cxh-session'
+import { Context, Service, symbols } from '@arx-ai/cordis'
+import { createUserMessage, freezeMessage } from '@arx-ai/arx-llm'
+import { Session, SessionId, type UserMessage } from '@arx-ai/arx-session'
 import AgentRegistry, {
   agentEvents,
   Inbox,
-} from '@centurionarx/cxh-agent'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+} from '@arx-ai/arx-agent'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 
 import type {
   Agent,
@@ -15,7 +15,7 @@ import type {
   AgentStatus,
   CreateAgentOptions,
   ResumeAgentOptions,
-} from '@centurionarx/cxh-agent'
+} from '@arx-ai/arx-agent'
 
 function stubAgent(rawId: string, overrides: Partial<Agent> = {}): Agent {
   const id = SessionId(rawId)
@@ -155,8 +155,8 @@ describe('AgentRegistry', () => {
     expect(lookup).toMatchObject({
       parameter: 'agent',
       wire: 'agentId',
-      hostTypeSymbol: '@centurionarx/cxh-agent#Agent',
-      wireTypeSymbol: '@centurionarx/cxh-session/types#SessionId',
+      hostTypeSymbol: '@arx-ai/arx-agent#Agent',
+      wireTypeSymbol: '@arx-ai/arx-session/types#SessionId',
     })
     expect(lookup?.resolve(agent.id)).toBe(agent)
     expect(ctx.typert.contexts.getHost('agent')?.resolve(agent.id)).toBe(agent.ctx)

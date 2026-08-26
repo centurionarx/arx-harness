@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-llm'
 import {
   deriveBrowserTimeZoneContext,
   renderBrowserTimeZoneContext,

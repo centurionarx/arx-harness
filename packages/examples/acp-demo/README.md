@@ -1,18 +1,18 @@
-# @centurionarx/cxh-acp-demo
+# @arx-ai/arx-acp-demo
 
 English | [中文](README.zh.md)
 
-ACP automation server app: the default agent spine, client-created agents through [`@centurionarx/cxh-acp`](../../acp/acp/README.md), JSONL persistence, and semantic checkpointing behind one JSON-RPC stdio bin. Programmatic clients create fresh sessions; this package mounts no human UI.
+ACP automation server app: the default agent spine, client-created agents through [`@arx-ai/arx-acp`](../../acp/acp/README.md), JSONL persistence, and semantic checkpointing behind one JSON-RPC stdio bin. Programmatic clients create fresh sessions; this package mounts no human UI.
 
 ## Composition
 
 | Plugin | Role |
 |---|---|
-| `@centurionarx/cxh-agent-spine-demo` | Providerless agent spine with no pre-created agents; `session/new` creates each agent. |
-| `@centurionarx/cxh-session-persistence-jsonl` | Durable session logs used by checkpointing, observability, and snapshot replay. |
-| `@centurionarx/cxh-session-checkpoint-policy` | Durability barriers before model calls and top-level tool effects, plus completed-step checkpoints. |
-| `@centurionarx/cxh-session-query-sqlite` | Derived exact/FTS session-query service, opened before the ACP transport so leaf consumers are ready for the first model request. |
-| `@centurionarx/cxh-acp` | Automation-only ACP transport over stdin/stdout. |
+| `@arx-ai/arx-agent-spine-demo` | Providerless agent spine with no pre-created agents; `session/new` creates each agent. |
+| `@arx-ai/arx-session-persistence-jsonl` | Durable session logs used by checkpointing, observability, and snapshot replay. |
+| `@arx-ai/arx-session-checkpoint-policy` | Durability barriers before model calls and top-level tool effects, plus completed-step checkpoints. |
+| `@arx-ai/arx-session-query-sqlite` | Derived exact/FTS session-query service, opened before the ACP transport so leaf consumers are ready for the first model request. |
+| `@arx-ai/arx-acp` | Automation-only ACP transport over stdin/stdout. |
 
 The app does not install commands, user interaction, session navigation, configuration pickers, or a stdout logger. It owns these plugins through one ordered effect so the query service is ready before ACP accepts work and ACP sessions quiesce before checkpointing and persistence detach. Leaf configurations supply LLM, executor, sandbox, approval, filesystem, and model-facing tool plugins.
 
@@ -23,10 +23,10 @@ The app does not install commands, user interaction, session navigation, configu
 | `provider` | required | Provider route for each ACP-created agent. |
 | `model` | required | Model for each ACP-created agent. |
 | `maxParallelToolCalls` | agent-loop default | Positive-integer tool-call concurrency cap; `1` is serial. |
-| `persona` | — | Deployment persona template for `cxh-system-prompt`. |
-| `toolOrder` | lexicographic | Explicit model-facing tool order for `cxh-system-prompt`. |
+| `persona` | — | Deployment persona template for `arx-system-prompt`. |
+| `toolOrder` | lexicographic | Explicit model-facing tool order for `arx-system-prompt`. |
 | `tools` | `{ mode: 'native' }` | Native, Code Mode, or combined model tool transport. |
-| `cxhHome` | `$CXH_HOME` or `~/.cxh` | Harness home shared by bash and local skill discovery. |
+| `arxHome` | `$ARX_HOME` or `~/.arx` | Harness home shared by bash and local skill discovery. |
 | `sessionTitle` | spine example limits | Durable fallback-title limits; titles remain off the ACP wire. |
 | `persistenceRoot` | `./.sessions` | JSONL backend root and parent directory of the derived `session-query.db` index. |
 | `packChunks` | `true` | Pack consecutive delta-chunk events in storage. |
@@ -42,11 +42,11 @@ The shipped [`examples/acp-agent/cordis.yml`](../../../examples/acp-agent/cordis
 
 ## Bin
 
-`cxh-acp-demo [--config path-to-cordis.yml]` (short form `-c`; default `./cordis.yml`) loads the gitignored `.env`, except in replay mode; `CXH_SNAPSHOT=replay` selects the sibling `cordis.snapshot.yml`; stdin EOF disposes the context and flushes sessions before exit. Loader's installed optional `node-addon-require-builtin` peer resolves bare plugin specifiers for the built bin under plain Node. Diagnostics use stderr because stdout is the ACP wire.
+`arx-acp-demo [--config path-to-cordis.yml]` (short form `-c`; default `./cordis.yml`) loads the gitignored `.env`, except in replay mode; `ARX_SNAPSHOT=replay` selects the sibling `cordis.snapshot.yml`; stdin EOF disposes the context and flushes sessions before exit. Loader's installed optional `node-addon-require-builtin` peer resolves bare plugin specifiers for the built bin under plain Node. Diagnostics use stderr because stdout is the ACP wire.
 
 ## Model Experience
 
-Indirectly, through `cxh-agent-spine-demo` and the leaf's model-facing plugins. ACP prompt text becomes the ordinary logged user message; protocol metadata and permission choices do not enter the model request.
+Indirectly, through `arx-agent-spine-demo` and the leaf's model-facing plugins. ACP prompt text becomes the ordinary logged user message; protocol metadata and permission choices do not enter the model request.
 
 #### KV Cache effect
 

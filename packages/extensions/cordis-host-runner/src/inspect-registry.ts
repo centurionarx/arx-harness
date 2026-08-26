@@ -1,12 +1,12 @@
 /** Host registry for model-visible, read-only Cordis capability queries. */
 
-import { Service } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { snapshotJsonValue } from '@centurionarx/cxh-session'
-import type { JsonValue } from '@centurionarx/cxh-session/types'
-import { assertSupportedJsonSchema, validateJsonSchemaValue } from '@centurionarx/cxh-tools'
-import type { JsonSchemaNode } from '@centurionarx/cxh-tools'
+import { Service } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { snapshotJsonValue } from '@arx-ai/arx-session'
+import type { JsonValue } from '@arx-ai/arx-session/types'
+import { assertSupportedJsonSchema, validateJsonSchemaValue } from '@arx-ai/arx-tools'
+import type { JsonSchemaNode } from '@arx-ai/arx-tools'
 import type {
   CordisInspectMethodManifest, CordisInspectPlatform, CordisInspectProviderManifest,
   CordisInspectProviderView, CordisInspectQueryRequest, CordisInspectQueryResolution,
@@ -35,7 +35,7 @@ interface PendingClientQuery {
   settle(resolution: CordisInspectQueryResolution): void
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Host registry for Cordis inspect providers and Client manifest/query routing. */
     cordisInspect: CordisInspectRegistryService

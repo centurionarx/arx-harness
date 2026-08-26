@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context, Service } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { agentEvents } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { CallId } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { agentEvents } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { CallId } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import * as toolSchedule from '../src/index.ts'
 
 class PersistenceProbe extends Service {

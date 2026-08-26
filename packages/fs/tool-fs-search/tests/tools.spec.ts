@@ -11,18 +11,18 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { join, sep } from 'node:path'
-import { createUserMessage, CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt, { renderPrompt } from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecution, type ToolExecutionToken } from '@centurionarx/cxh-tools'
-import { SubprocessRuntime } from '@centurionarx/cxh-subprocess'
-import type { SubprocessCollectedOutputs, SubprocessHandle, SubprocessOutcome, SubprocessOutputRead, SubprocessOutputReader, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import { createUserMessage, CallId } from '@arx-ai/arx-llm'
+import SystemPrompt, { renderPrompt } from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecution, type ToolExecutionToken } from '@arx-ai/arx-tools'
+import { SubprocessRuntime } from '@arx-ai/arx-subprocess'
+import type { SubprocessCollectedOutputs, SubprocessHandle, SubprocessOutcome, SubprocessOutputRead, SubprocessOutputReader, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import { rgPath } from '@vscode/ripgrep'
-import { SpillLocator, SpillStore } from '@centurionarx/cxh-spill'
-import type { SaveTextSpill, SpillRef } from '@centurionarx/cxh-spill'
-import * as ToolFsSearch from '@centurionarx/cxh-tool-fs-search'
+import { SpillLocator, SpillStore } from '@arx-ai/arx-spill'
+import type { SaveTextSpill, SpillRef } from '@arx-ai/arx-spill'
+import * as ToolFsSearch from '@arx-ai/arx-tool-fs-search'
 import {
   buildGlobCommand,
   buildGrepCommand,
@@ -37,7 +37,7 @@ import {
   runRipgrep,
   sampleAcrossTopLevel,
   toWorkdirRelative,
-} from '@centurionarx/cxh-tool-fs-search'
+} from '@arx-ai/arx-tool-fs-search'
 
 const testToolSignal = new AbortController().signal
 

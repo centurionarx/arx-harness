@@ -6,7 +6,7 @@ import {
   createUserMessage,
   freezeMessage,
   MessageId,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 
 describe('message construction', () => {
   it('assigns identity immediately and returns a detached deep-frozen message', () => {

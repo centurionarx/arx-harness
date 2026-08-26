@@ -4,16 +4,16 @@
  * `ctx.subagents.interrupt()`. They perform no lifecycle routing of their own —
  * residency, cold resume, and interrupt authorization belong to the subagent
  * service — and they live apart from the provider-bound
- * `@centurionarx/cxh-tool-subagent` instances so multiple delegation tools share
+ * `@arx-ai/arx-tool-subagent` instances so multiple delegation tools share
  * one control API.
- * @module @centurionarx/cxh-tool-subagent-control
+ * @module @arx-ai/arx-tool-subagent-control
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-subagent'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-subagent'
 
 export const name = 'tool-subagent-control'
 export const inject = ['tools', 'subagents']

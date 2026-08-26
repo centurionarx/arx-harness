@@ -1,4 +1,4 @@
-# @centurionarx/cxh-tool-jobs
+# @arx-ai/arx-tool-jobs
 
 English | [中文](README.zh.md)
 
@@ -63,7 +63,7 @@ Prefix-stable while the plugin scope and guidance text are unchanged. Activation
 
 #### What the model sees
 
-The generated [`job_output`, `job_list`, and `job_kill` schemas](../../../docs/tool-catalog.md#centurionarxcxh-tool-jobs) while this tool set is visible.
+The generated [`job_output`, `job_list`, and `job_kill` schemas](../../../docs/tool-catalog.md#arx-aiarx-tool-jobs) while this tool set is visible.
 
 #### Token effect
 

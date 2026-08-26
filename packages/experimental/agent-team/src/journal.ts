@@ -1,8 +1,8 @@
 /** Serialized Team transactions over the exact live Lead Session log. */
 
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { Context } from '@centurionarx/cordis'
-import type { SessionEventMap, SessionId } from '@centurionarx/cxh-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { Context } from '@arx-ai/cordis'
+import type { SessionEventMap, SessionId } from '@arx-ai/arx-session'
 import { foldTeam } from './fold.ts'
 import type { TeamEventType, TeamFoldState } from './fold.ts'
 

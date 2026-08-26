@@ -6,9 +6,9 @@
 // when the user dismissed the whole set — because the questions themselves
 // render in the composer takeover.
 
-import { IconQuestionOutline14 } from '@centurionarx/cxh-client-ui-primitives'
-import type { Context } from '@centurionarx/cordis'
-import type { PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+import { IconQuestionOutline14 } from '@arx-ai/arx-client-ui-primitives'
+import type { Context } from '@arx-ai/cordis'
+import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallViewProps } from '../../contract/slots.ts'
 import { toolRowModel } from '../models/tool-call-model.ts'
 import { ToolRow } from '../components/ToolRow.tsx'

@@ -14,8 +14,8 @@ import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterEach, describe, expect, it, onTestFailed } from 'vitest'
-import type { ReplayOverrideDoc } from '@centurionarx/cxh-llm-replay'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { ReplayOverrideDoc } from '@arx-ai/arx-llm-replay'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden, fixtureUserPrompts,
   launchWebScaffold, recordFixture, watchConsole, webSnapshotMode, type WebScaffold,
@@ -63,7 +63,7 @@ describe('web e2e: assistant IconActions wait for the turn to end', () => {
     sessionEvents = []
     let overridePath: string | undefined
     if (buildOverride !== undefined) {
-      sidecarDir = await mkdtemp(join(tmpdir(), 'cxh-web-e2e-sidecar-'))
+      sidecarDir = await mkdtemp(join(tmpdir(), 'arx-web-e2e-sidecar-'))
       overridePath = join(sidecarDir, 'replay.override.json')
       await writeFile(overridePath, JSON.stringify(buildOverride(sidecarDir)))
     }

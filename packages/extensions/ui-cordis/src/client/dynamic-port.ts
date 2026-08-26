@@ -1,6 +1,6 @@
 /** Host operations used directly by the frame-wide Cordis panel. */
 
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
 import type {
   CordisDynamicPluginId, DynamicCordisInventoryRow,
 } from './events.ts'

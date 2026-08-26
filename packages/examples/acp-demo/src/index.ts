@@ -1,29 +1,29 @@
 /**
  * The ACP automation server app: the default agent spine
- * ({@link @centurionarx/cxh-agent-spine-demo}), JSONL session persistence, and
- * the {@link @centurionarx/cxh-acp} bridge. The app owns those plugins through one
+ * ({@link @arx-ai/arx-agent-spine-demo}), JSONL session persistence, and
+ * the {@link @arx-ai/arx-acp} bridge. The app owns those plugins through one
  * ordered lifecycle so ACP sessions quiesce before persistence detaches. It
  * writes nothing to stdout.
  * It pre-creates no agents and leaves adapters, executors, and optional tools to
  * the leaf, which must likewise avoid stdout loggers. Named exports are
  * required so Loader retains this plugin's `Config` schema (see
  * docs/postmortem/0001).
- * @module @centurionarx/cxh-acp-demo
+ * @module @arx-ai/arx-acp-demo
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { join } from 'node:path'
-import z from '@centurionarx/schemastery'
-import * as acp from '@centurionarx/cxh-acp'
-import * as agentCore from '@centurionarx/cxh-agent-spine-demo'
-import * as workspaceContext from '@centurionarx/cxh-agent-instructions'
-import ToolRuntime, { type Config as ToolsConfig } from '@centurionarx/cxh-tools'
+import z from '@arx-ai/schemastery'
+import * as acp from '@arx-ai/arx-acp'
+import * as agentCore from '@arx-ai/arx-agent-spine-demo'
+import * as workspaceContext from '@arx-ai/arx-agent-instructions'
+import ToolRuntime, { type Config as ToolsConfig } from '@arx-ai/arx-tools'
 import JsonlSessionPersistence, {
   JsonlCompressionSchema,
   type JsonlCompression,
-} from '@centurionarx/cxh-session-persistence-jsonl'
-import * as sessionCheckpointPolicy from '@centurionarx/cxh-session-checkpoint-policy'
-import SqliteSessionQueryEngine from '@centurionarx/cxh-session-query-sqlite'
+} from '@arx-ai/arx-session-persistence-jsonl'
+import * as sessionCheckpointPolicy from '@arx-ai/arx-session-checkpoint-policy'
+import SqliteSessionQueryEngine from '@arx-ai/arx-session-query-sqlite'
 
 export const name = 'acp-demo'
 const DEFAULT_PERSISTENCE_ROOT = './.sessions'
@@ -45,12 +45,12 @@ export interface Config {
   maxParallelToolCalls?: number
   /** Deployment persona (the system-prompt plugin's `persona` config). */
   persona?: string
-  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see cxh-system-prompt). */
+  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see arx-system-prompt). */
   toolOrder?: string[]
-  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see cxh-tools). */
+  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see arx-tools). */
   tools?: ToolsConfig
-  /** CENTURIONarx Harness home directory exposed to bash and used for local skill discovery. */
-  cxhHome?: string
+  /** arx Harness home directory exposed to bash and used for local skill discovery. */
+  arxHome?: string
   /** Fallback session-title limits forwarded through agent-spine-demo. */
   sessionTitle?: NonNullable<agentCore.Config['sessionTitle']>
   /** Directory for JSONL sessions and the derived query index. Defaults to `./.sessions`. */
@@ -82,11 +82,11 @@ export const Config: z<Config> = z.object({
   maxParallelToolCalls: z.number().step(1).min(1),
   persona: z.string(),
   // The array default is forced to undefined: ABSENT means "lexicographic
-  // order" (the owning cxh-system-prompt schema does the same), while
+  // order" (the owning arx-system-prompt schema does the same), while
   // schemastery's native [] default would read as an invalid configured list.
   toolOrder: z.array(z.string()).default(undefined as unknown as string[]),
   tools: ToolRuntime.Config,
-  cxhHome: z.string(),
+  arxHome: z.string(),
   sessionTitle: agentCore.SessionTitleConfigSchema,
   persistenceRoot: z.string().default(DEFAULT_PERSISTENCE_ROOT),
   packChunks: z.boolean().default(true),

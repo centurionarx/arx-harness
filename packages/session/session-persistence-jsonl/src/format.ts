@@ -5,13 +5,13 @@
  * per-project/session directory layout, header-line (de)serialization, and the
  * truncation-repair offset computation.
  *
- * @module cxh-session-persistence-jsonl/format
+ * @module arx-session-persistence-jsonl/format
  */
 
 import { join } from 'node:path'
-import { decodeStorageRecord, packChunkRuns, SESSION_FORMAT_VERSION } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader, SessionId, StorageRecord } from '@centurionarx/cxh-session'
-import { SessionFormatUnsupportedError, sessionFormatVersionRefusal } from '@centurionarx/cxh-session-persistence'
+import { decodeStorageRecord, packChunkRuns, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader, SessionId, StorageRecord } from '@arx-ai/arx-session'
+import { SessionFormatUnsupportedError, sessionFormatVersionRefusal } from '@arx-ai/arx-session-persistence'
 
 /** Physical encoding selected for JSONL session artifacts. */
 export type JsonlCompression = 'zstd' | 'none'

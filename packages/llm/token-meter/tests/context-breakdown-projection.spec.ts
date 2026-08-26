@@ -2,15 +2,15 @@
 // plus the shared estimator's pricing branches.
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createMessage, createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, ToolSchema } from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import type { ContextBreakdownProjection } from '@centurionarx/cxh-token-meter/client'
-import { CompactionId } from '@centurionarx/cxh-compaction'
+import { Context } from '@arx-ai/cordis'
+import { createMessage, createUserMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, ToolSchema } from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import type { ContextBreakdownProjection } from '@arx-ai/arx-token-meter/client'
+import { CompactionId } from '@arx-ai/arx-compaction'
 import { contextBreakdownProjectionDefinition } from '../src/breakdown-projection.ts'
 import {
   estimateContent,

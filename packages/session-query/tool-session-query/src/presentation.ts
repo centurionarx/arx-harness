@@ -1,7 +1,7 @@
 /**
  * Model text rendering and generic tool-call presentation.
  *
- * @module @centurionarx/cxh-tool-session-query/presentation
+ * @module @arx-ai/arx-tool-session-query/presentation
  */
 
 import {
@@ -12,12 +12,12 @@ import {
   type SessionLineageTrace,
   type SessionRecord,
   type SessionSearchHit,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 import type {
   SessionEvent,
   SessionId,
-} from '@centurionarx/cxh-session'
-import type { GenericCallView } from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-session'
+import type { GenericCallView } from '@arx-ai/arx-tools'
 import { workspaceAccess } from './workspace-access.ts'
 
 type TitleView = Awaited<ReturnType<typeof workspaceAccess.readTitle>>

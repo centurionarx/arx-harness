@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import sharp from 'sharp'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CompressionLimiter } from '../src/compression-limiter.ts'
@@ -10,9 +10,9 @@ import LocalAttachmentStore, { requestImageDimensions } from '../src/index.ts'
 const homes: string[] = []
 
 async function store(): Promise<LocalAttachmentStore> {
-  const cxhHome = await mkdtemp(join(tmpdir(), 'cxh-request-image-'))
-  homes.push(cxhHome)
-  return new LocalAttachmentStore(new Context(), { cxhHome })
+  const arxHome = await mkdtemp(join(tmpdir(), 'arx-request-image-'))
+  homes.push(arxHome)
+  return new LocalAttachmentStore(new Context(), { arxHome })
 }
 
 async function image(width: number, height: number): Promise<Uint8Array> {

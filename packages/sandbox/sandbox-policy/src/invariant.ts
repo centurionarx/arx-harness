@@ -1,11 +1,11 @@
-/** Package-owned session-event invariants for sandbox policy. @module @centurionarx/cxh-sandbox-policy/invariant */
+/** Package-owned session-event invariants for sandbox policy. @module @arx-ai/arx-sandbox-policy/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import { SANDBOX_MODES } from './session-mode.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-sandbox-policy'
+const PACKAGE_NAME = '@arx-ai/arx-sandbox-policy'
 
 /** Cordis companion plugin name. */
 export const name = 'sandbox-policy-invariant'

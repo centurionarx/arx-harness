@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-client-ui-workflow-run",
-  "description": "Durable workflow-run Conversation Node and nested member disclosure for cxh web",
+  "name": "@arx-ai/arx-client-ui-workflow-run",
+  "description": "Durable workflow-run Conversation Node and nested member disclosure for arx web",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/ui-workflow-run"
   },
   "type": "module",
@@ -29,12 +29,12 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-locale",
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-ui-conversation"
+        "@arx-ai/arx-client-locale",
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-ui-conversation"
       ],
       "platform": "web"
     }
@@ -51,28 +51,28 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-tool-workflow": "workspace:^",
-    "@centurionarx/cxh-workflow": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-tool-workflow": "workspace:^",
+    "@arx-ai/arx-workflow": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-test-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-tool-workflow": "workspace:^",
-    "@centurionarx/cxh-workflow": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-tool-workflow": "workspace:^",
+    "@arx-ai/arx-workflow": "workspace:^",
     "@types/react": "~18.3.1",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0"
   }
 }

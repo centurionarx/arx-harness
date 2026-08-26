@@ -1,11 +1,11 @@
 /** Injected faces and the Package-owned `tool.view.cordis` slot declaration. */
 
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
-import type { HostObservable } from '@centurionarx/cxh-client-ui-slots'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
+import type { HostObservable } from '@arx-ai/arx-client-ui-slots'
 import type {
   CordisRunActivity, CordisRunFailure, CordisUserRunRequest, DynamicCordisLivePackage,
   DynamicCordisRenderFailure,
-} from '@centurionarx/cxh-cordis-client-runner/client'
+} from '@arx-ai/arx-cordis-client-runner/client'
 import type { CordisActionResult } from './dynamic-port.ts'
 import type { CordisInventory } from './inventory.ts'
 import type { CordisRunCardPointer, CordisRunCardStore } from './run-card-index.ts'
@@ -20,7 +20,7 @@ export interface CordisToolViewOwnerProps {
   readonly pluginRunId: CordisDynamicPluginRunId
 }
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /**
      * Interactive Package-owned region rendered inside the latest eligible

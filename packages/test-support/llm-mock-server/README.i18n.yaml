@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/test-support/llm-mock-server/README.md
-README.md: 7a6b2e421257e3a93c6b419e0dc4d6b051ec20b1
-README.zh.md: f42e463e07852d754f5ba6a96c46406270f00074
+README.md: 7cc675f5d215d59064d91758864d33d67b101700
+README.zh.md: 0d40f84e2dcb231baef6475c00291248703a7540

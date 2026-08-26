@@ -1,12 +1,12 @@
 /**
  * Internal platform-profile builders for the local sandbox provider.
  *
- * @module @centurionarx/cxh-sandbox-local/profiles
+ * @module @arx-ai/arx-sandbox-local/profiles
  */
 
-import { grantArgs as landlockGrantArgs } from '@centurionarx/node-addon-landlock-run'
-import { writableRoots } from '@centurionarx/cxh-sandbox'
-import type { SandboxPolicy } from '@centurionarx/cxh-sandbox'
+import { grantArgs as landlockGrantArgs } from '@arx-ai/node-addon-landlock-run'
+import { writableRoots } from '@arx-ai/arx-sandbox'
+import type { SandboxPolicy } from '@arx-ai/arx-sandbox'
 
 /**
  * Build the bwrap profile arguments for one file-effect policy.
@@ -44,7 +44,7 @@ function sbplString(path: string): string {
  * Build the sandbox-exec arguments and SBPL profile for one policy. The
  * writable roots come from the shared {@link writableRoots} helper (canonical,
  * deduplicated) so the Seatbelt grant and the in-process fs fence
- * (`@centurionarx/cxh-fs-sandbox`) can never drift apart.
+ * (`@arx-ai/arx-fs-sandbox`) can never drift apart.
  * @param policy - file-effect policy to express as an SBPL profile.
  * @returns sandbox-exec arguments before the trailing separator and command argv.
  */

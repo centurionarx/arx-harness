@@ -4,12 +4,12 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { AgentHandle } from '@centurionarx/cxh-agent'
-import { createUserMessage, LlmAdapter } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import { SessionId, type SessionId as SessionIdValue } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-subagent'
-import type {} from '@centurionarx/cxh-workspace'
+import type { AgentHandle } from '@arx-ai/arx-agent'
+import { createUserMessage, LlmAdapter } from '@arx-ai/arx-llm'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import { SessionId, type SessionId as SessionIdValue } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-subagent'
+import type {} from '@arx-ai/arx-workspace'
 import {
   assertFixtureInventory,
   captureStableAria,

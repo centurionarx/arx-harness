@@ -1,10 +1,10 @@
 /**
  * Shared insertion-ordered storage and effect ownership for scope-aware registries.
  *
- * @module @centurionarx/cxh-scope
+ * @module @arx-ai/arx-scope
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { scopeChainOf, scopeOf } from './index.ts'
 import type { ScopeKey } from './index.ts'
 

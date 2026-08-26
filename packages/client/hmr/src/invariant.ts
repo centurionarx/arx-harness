@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-hmr`.
- * @module @centurionarx/cxh-client-hmr/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-hmr`.
+ * @module @arx-ai/arx-client-hmr/invariant
  */
 
-import type { Context, Fiber } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context, Fiber } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-hmr'
+const PACKAGE_NAME = '@arx-ai/arx-client-hmr'
 
 /** Cordis companion plugin name. */
 export const name = 'client-hmr-invariant'

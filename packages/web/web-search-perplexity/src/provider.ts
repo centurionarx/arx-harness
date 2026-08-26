@@ -3,16 +3,16 @@
  * becomes `content`; sources prefer structured `search_results[]` and fall back to URL-only
  * `citations[]`. The wire format and native `fetch` client are provider-private and do not use
  * `ctx.llm`.
- * @module @centurionarx/cxh-web-search-perplexity/provider
+ * @module @arx-ai/arx-web-search-perplexity/provider
  */
 
-import { WebError } from '@centurionarx/cxh-web'
+import { WebError } from '@arx-ai/arx-web'
 import type {
   WebSearchProvider,
   WebSearchRequest,
   WebSearchResult,
   WebSearchSource,
-} from '@centurionarx/cxh-web'
+} from '@arx-ai/arx-web'
 import type { PerplexityError, PerplexityResponse, PerplexitySearchResult } from './types.ts'
 
 /** Stable id this provider registers under. */
@@ -31,7 +31,7 @@ export const PERPLEXITY_DEFAULT_MAX_TOKENS = 1024
 export type PerplexityRecency = 'day' | 'week' | 'month' | 'year'
 
 /** Attribution header sent on every request. Bump with the package version. */
-const USER_AGENT = 'centurionarx-harness/0.0.1'
+const USER_AGENT = 'arx-harness/0.0.1'
 
 /** Resolved provider options (the plugin's `apply` supplies env-var and constant defaults). */
 export interface PerplexitySearchProviderOptions {

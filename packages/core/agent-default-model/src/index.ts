@@ -1,16 +1,16 @@
 /**
  * Default model selection for an Agent without a session-specific selection.
  *
- * @module @centurionarx/cxh-agent-default-model
+ * @module @arx-ai/arx-agent-default-model
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { ModelSelection } from '@centurionarx/cxh-agent'
-import { ReasoningEffortId } from '@centurionarx/cxh-llm'
-import { installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ModelSelection } from '@arx-ai/arx-agent'
+import { ReasoningEffortId } from '@arx-ai/arx-llm'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Default model selection for Agents created without an explicit model. */
     agentDefaultModel: AgentDefaultModelConfig

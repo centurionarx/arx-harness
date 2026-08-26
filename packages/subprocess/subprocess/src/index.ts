@@ -4,20 +4,20 @@
  * collected stdio, and one terminal-process primitive. Command defaulting,
  * shell semantics, deadlines, protocol framing, terminal readiness, and
  * presentation belong to consumers. The local implementation lives in
- * `@centurionarx/cxh-subprocess-local`.
- * @module @centurionarx/cxh-subprocess
+ * `@arx-ai/arx-subprocess-local`.
+ * @module @arx-ai/arx-subprocess
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { CXH_ENV_PREFIX } from './types.ts'
+import { Context, Service } from '@arx-ai/cordis'
+import { ARX_ENV_PREFIX } from './types.ts'
 import type { SubprocessHandle, SubprocessSpawnSpec } from './types.ts'
 import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from './types.ts'
 
-export { CXH_ENV_PREFIX } from './types.ts'
+export { ARX_ENV_PREFIX } from './types.ts'
 export type {
   CollectedOutput,
-  CxhEnvironment,
-  CxhEnvironmentKey,
+  ArxEnvironment,
+  ArxEnvironmentKey,
   SubprocessCollect,
   SubprocessCollectedOutputs,
   SubprocessHandle,
@@ -45,14 +45,14 @@ export const SENSITIVE_ENV_PATTERN = /KEY|PASSWORD|SECRET|TOKEN/i
 
 /**
  * The ambient parent environment minus credential-shaped names and minus all
- * `CXH_*` names — the canonical base every harness child starts from. `PATH`,
+ * `ARX_*` names — the canonical base every harness child starts from. `PATH`,
  * `HOME`, locale, and proxy variables survive, so child CLIs run normally;
  * harness identity never leaks implicitly (a deliberately forwarded
- * credential or current `CXH_*` fact goes through the spec's explicit `env`,
+ * credential or current `ARX_*` fact goes through the spec's explicit `env`,
  * which merges after this scrub). Both scrubs match case-insensitively:
- * Windows environment names are case-insensitive, so a parent `cxh_*` entry
- * would otherwise survive and read back as `$env:CXH_*` in the child;
- * deliberate lowercase `cxh_*` names on POSIX are implausible. Exported as a plain function so spawners
+ * Windows environment names are case-insensitive, so a parent `arx_*` entry
+ * would otherwise survive and read back as `$env:ARX_*` in the child;
+ * deliberate lowercase `arx_*` names on POSIX are implausible. Exported as a plain function so spawners
  * that cannot route through the service (node-pty backends, SDK-managed
  * transports) share the one scrub definition.
  * @returns a fresh environment object safe to hand to a child spawn.
@@ -60,12 +60,12 @@ export const SENSITIVE_ENV_PATTERN = /KEY|PASSWORD|SECRET|TOKEN/i
 export function scrubbedParentEnv(): Record<string, string> {
   const env: Record<string, string> = {}
   for (const [key, value] of Object.entries(process.env)) {
-    if (value !== undefined && !SENSITIVE_ENV_PATTERN.test(key) && !key.toUpperCase().startsWith(CXH_ENV_PREFIX)) env[key] = value
+    if (value !== undefined && !SENSITIVE_ENV_PATTERN.test(key) && !key.toUpperCase().startsWith(ARX_ENV_PREFIX)) env[key] = value
   }
   return env
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     subprocess: SubprocessRuntime
   }

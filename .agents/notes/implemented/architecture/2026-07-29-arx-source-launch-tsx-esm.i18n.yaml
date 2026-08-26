@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-29-arx-source-launch-tsx-esm.md
+2026-07-29-arx-source-launch-tsx-esm.md: 18c3e59f7a3109bd751378215470a418df504af9
+2026-07-29-arx-source-launch-tsx-esm.zh.md: 2b1662bdbd72e5ea16b926d5bbbd097af554e2b1

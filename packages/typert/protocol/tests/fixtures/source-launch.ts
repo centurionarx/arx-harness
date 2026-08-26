@@ -1,10 +1,10 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   TypertRemoteService,
   Remote,
   RemoteScope,
   remoteMethods,
-} from '@centurionarx/cxh-typert-protocol'
+} from '@arx-ai/arx-typert-protocol'
 
 class Goals extends TypertRemoteService {
   constructor(ctx: Context) {

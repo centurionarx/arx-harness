@@ -2,17 +2,17 @@
  * Cross-session snapshot preparation. Hosts adapt mentions into structured
  * references; this service owns exact reads, projection, budgets, and durable context.
  *
- * @module @centurionarx/cxh-session-reference
+ * @module @arx-ai/arx-session-reference
  */
 
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { Remote, TypertRemoteService } from '@centurionarx/cxh-typert-protocol'
-import { createUserMessage, freezeMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, UserMessage } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
-import type { SessionSurfaceSnapshot, SessionTitleObservationResult } from '@centurionarx/cxh-session-query'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { Remote, TypertRemoteService } from '@arx-ai/arx-typert-protocol'
+import { createUserMessage, freezeMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, UserMessage } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
+import type { SessionSurfaceSnapshot, SessionTitleObservationResult } from '@arx-ai/arx-session-query'
 import {
   DEFAULT_CANDIDATE_LIMIT,
   DEFAULT_MAX_REFERENCE_BYTES,
@@ -55,7 +55,7 @@ user explicitly repeats them.
 `
 const PROMPT_SUFFIX = '\n</referenced-sessions>'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionReferenceResolver: SessionReferenceResolver
   }

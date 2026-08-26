@@ -1,6 +1,6 @@
-/** DeepSeek Files API identifiers. @module cxh-llm-deepseek/file-id */
+/** DeepSeek Files API identifiers. @module arx-llm-deepseek/file-id */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Opaque identifier returned by the DeepSeek Files API. */
 export type DeepSeekFileId = Branded<'DeepSeekFileId'>

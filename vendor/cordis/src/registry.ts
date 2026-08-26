@@ -1,5 +1,5 @@
-import { defineProperty } from '@centurionarx/cosmokit'
-import type { Dict } from '@centurionarx/cosmokit'
+import { defineProperty } from '@arx-ai/cosmokit'
+import type { Dict } from '@arx-ai/cosmokit'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import { Context } from './context.ts'
 import { Fiber } from './fiber.ts'

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

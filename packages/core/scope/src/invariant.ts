@@ -1,11 +1,11 @@
-/** Package-owned scoped-dispatch invariants. @module @centurionarx/cxh-scope/invariant */
+/** Package-owned scoped-dispatch invariants. @module @arx-ai/arx-scope/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
-import { carrierKeyOf, isScopeCarrier } from '@centurionarx/cxh-scope'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
+import { carrierKeyOf, isScopeCarrier } from '@arx-ai/arx-scope'
 import { scopedSubjectResolverFor } from './scoped-events.generated.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-scope'
+const PACKAGE_NAME = '@arx-ai/arx-scope'
 
 /** Cordis companion plugin name. */
 export const name = 'scope-invariant'

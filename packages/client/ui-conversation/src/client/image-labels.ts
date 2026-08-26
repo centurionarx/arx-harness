@@ -1,7 +1,7 @@
 /** Attachment error and limit copy owned by the conversation input flow. */
 
-import type { ImageAttachmentLimits } from '@centurionarx/cxh-attachment'
-import type { Translate } from '@centurionarx/cxh-client-ui-slots'
+import type { ImageAttachmentLimits } from '@arx-ai/arx-attachment'
+import type { Translate } from '@arx-ai/arx-client-ui-slots'
 import type { ConversationKey } from './locales.ts'
 
 /**

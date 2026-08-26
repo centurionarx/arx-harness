@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-jobs-local`.
- * @module @centurionarx/cxh-jobs-local/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-jobs-local`.
+ * @module @arx-ai/arx-jobs-local/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-jobs-local'
+const PACKAGE_NAME = '@arx-ai/arx-jobs-local'
 
 /** Cordis companion plugin name. */
 export const name = 'jobs-local-invariant'
@@ -15,7 +15,7 @@ export const name = 'jobs-local-invariant'
 export const inject = ['invariants']
 
 /**
- * No runtime invariant: `@centurionarx/cxh-jobs/invariant` owns per-snapshot identity, status,
+ * No runtime invariant: `@arx-ai/arx-jobs/invariant` owns per-snapshot identity, status,
  * timestamp, and owner checks. This provider's admission decision uses private configuration and
  * must fail before a backend starter runs; `LocalJobRegistry.start()` enforces it synchronously
  * for current producers. Repeating an aggregate after publication would expose private

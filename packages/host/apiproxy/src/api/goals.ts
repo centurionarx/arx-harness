@@ -9,8 +9,8 @@
  * every client through the mux stream carrying the same whole value).
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type { RpcRequest, RpcResponse } from './rpc.ts'
 
 /** Identifies one goal across its durable revisions. */

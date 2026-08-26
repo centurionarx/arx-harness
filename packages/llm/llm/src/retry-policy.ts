@@ -2,13 +2,13 @@
  * Provider-owned request-retry policy configuration and resolution.
  *
  * Adapters expose one resolved policy per registered provider route; the
- * optional cxh-llm-retry plugin executes it on the agent's failed-step extension point.
+ * optional arx-llm-retry plugin executes it on the agent's failed-step extension point.
  *
- * @module @centurionarx/cxh-llm/retry-policy
+ * @module @arx-ai/arx-llm/retry-policy
  */
 
-import z from '@centurionarx/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import z from '@arx-ai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import { EMPTY_RESPONSE_CODE } from './error.ts'
 
 const DEFAULT_MAX_RETRIES = 5

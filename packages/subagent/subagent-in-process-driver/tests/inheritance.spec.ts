@@ -7,17 +7,17 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mkdtemp, readFile, realpath, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import SandboxedFileSystem from '@centurionarx/cxh-fs-sandbox'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import SandboxPolicyService, { setSandboxMode } from '@centurionarx/cxh-sandbox-policy'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
-import ApprovalService from '@centurionarx/cxh-user-approval'
-import { snapshotSubagentDescriptor } from '@centurionarx/cxh-subagent'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import SandboxedFileSystem from '@arx-ai/arx-fs-sandbox'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import SandboxPolicyService, { setSandboxMode } from '@arx-ai/arx-sandbox-policy'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
+import ApprovalService from '@arx-ai/arx-user-approval'
+import { snapshotSubagentDescriptor } from '@arx-ai/arx-subagent'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import { startInProcessRun } from '../src/index.ts'
 
@@ -28,7 +28,7 @@ const contexts: Context[] = []
 let workspace: string
 
 beforeEach(async () => {
-  workspace = await realpath(await mkdtemp(join(tmpdir(), 'cxh-inherit-')))
+  workspace = await realpath(await mkdtemp(join(tmpdir(), 'arx-inherit-')))
 })
 
 afterEach(async () => {
@@ -114,7 +114,7 @@ describe('in-process policy inheritance', () => {
       const runtimeContext = child.session.events.find(
         (event): event is SessionEvent<'user/message'> => event.type === 'user/message'
           && event.data.source.kind === 'plugin'
-          && event.data.source.plugin === '@centurionarx/cxh-system-prompt',
+          && event.data.source.plugin === '@arx-ai/arx-system-prompt',
       )
       if (request === undefined || runtimeContext === undefined) throw new Error('child request lacks its runtime policy context')
       expect(runtimeContext.seq).toBeLessThan(request.seq)
@@ -122,7 +122,7 @@ describe('in-process policy inheritance', () => {
         .filter((block): block is Extract<ContentBlock, { type: 'text' }> => block.type === 'text')
         .map(block => block.text)
         .join('\n')
-      expect(contextText).toContain('Current CXH file policy: read-only')
+      expect(contextText).toContain('Current ARX file policy: read-only')
       expect(contextText).toContain('Approval prompts are disabled')
       // The statement rides runtime context; the system prompt stays uniform.
       expect(contextText).toContain('You are a delegated subagent')

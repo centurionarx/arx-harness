@@ -2,8 +2,8 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { type SessionEvent } from '@centurionarx/cxh-session'
-import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@centurionarx/cxh-loader-smoke'
+import { type SessionEvent } from '@arx-ai/arx-session'
+import { LOADER_SMOKE_TEST_TIMEOUT_MS, runLoaderSmoke } from '@arx-ai/arx-loader-smoke'
 
 // Keep the Loader config under examples so both modes exercise the same deployable
 // topology: local fixture source plus bare plugins owned by the examples workspace.

@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { PropsRenderSlots, PropsRuntime, PropsStore } from '@centurionarx/cxh-client-ui-slots'
+import type { PropsRenderSlots, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
 import { computeColumns, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT } from './columns.ts'
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'

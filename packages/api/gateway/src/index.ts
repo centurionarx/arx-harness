@@ -1,11 +1,11 @@
 /**
  * Live Typert Remote dispatch over Cordis Services and registered providers.
  * Transport, request correlation, and response envelopes belong to Connection.
- * @module @centurionarx/cxh-api-gateway
+ * @module @arx-ai/arx-api-gateway
  */
 
-import { Context, Service, symbols } from '@centurionarx/cordis'
-import type { ConnectionRpcHandler } from '@centurionarx/cxh-client-connection'
+import { Context, Service, symbols } from '@arx-ai/cordis'
+import type { ConnectionRpcHandler } from '@arx-ai/arx-client-connection'
 import {
   remoteMethods,
   TypertLookupFailure,
@@ -13,7 +13,7 @@ import {
   type InvocationParameterDescriptor,
   type TypertCodec,
   type TypertGatewayBinding,
-} from '@centurionarx/cxh-typert-protocol'
+} from '@arx-ai/arx-typert-protocol'
 import type {
   InvokeRemoteRequest,
   TypertGateway,

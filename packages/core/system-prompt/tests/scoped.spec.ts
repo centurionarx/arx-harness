@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createScope, scopeOf } from '@centurionarx/cxh-scope'
-import type { Scope, ScopeKey } from '@centurionarx/cxh-scope'
-import SystemPrompt, { TOOL_ORDER_REST, renderContextSnapshot, renderPrompt } from '@centurionarx/cxh-system-prompt'
-import type { Config, PromptAssembly } from '@centurionarx/cxh-system-prompt'
+import { Context } from '@arx-ai/cordis'
+import { createScope, scopeOf } from '@arx-ai/arx-scope'
+import type { Scope, ScopeKey } from '@arx-ai/arx-scope'
+import SystemPrompt, { TOOL_ORDER_REST, renderContextSnapshot, renderPrompt } from '@arx-ai/arx-system-prompt'
+import type { Config, PromptAssembly } from '@arx-ai/arx-system-prompt'
 
 async function mount(config: Config = {}): Promise<Context> {
   const ctx = new Context()

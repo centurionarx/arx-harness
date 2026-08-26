@@ -4,19 +4,19 @@
  * producers. It also delivers unreported completions to the owning agent:
  * injected into a busy owner's next step, or opening a turn on an idle one
  * under the default `wakeup` delivery, bounded per owner.
- * @module @centurionarx/cxh-tool-jobs
+ * @module @arx-ai/arx-tool-jobs
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { boundContextSummary, createUserMessage, type ContentBlock } from '@centurionarx/cxh-llm'
-import { TextRetainer } from '@centurionarx/cxh-output-retention'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, ToolDefinition, ToolExecution } from '@centurionarx/cxh-tools'
-import { JobId } from '@centurionarx/cxh-jobs'
-import type { JobSnapshot } from '@centurionarx/cxh-jobs'
-import type {} from '@centurionarx/cxh-system-prompt'
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { boundContextSummary, createUserMessage, type ContentBlock } from '@arx-ai/arx-llm'
+import { TextRetainer } from '@arx-ai/arx-output-retention'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, ToolDefinition, ToolExecution } from '@arx-ai/arx-tools'
+import { JobId } from '@arx-ai/arx-jobs'
+import type { JobSnapshot } from '@arx-ai/arx-jobs'
+import type {} from '@arx-ai/arx-system-prompt'
+import type { Agent } from '@arx-ai/arx-agent'
 
 export const name = 'tool-jobs'
 export const inject = ['tools', 'jobs', 'systemPrompt']

@@ -9,11 +9,11 @@
  */
 
 import { useEffect } from 'react'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import { IconAgentPresetOutline16 } from '@centurionarx/cxh-client-ui-primitives'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import { IconAgentPresetOutline16 } from '@arx-ai/arx-client-ui-primitives'
 // Type-only: pulls the ui-conversation SlotMap merge (the header actions).
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type { AgentPresetSettingsState } from './settings-store.ts'
 import { presetDisplayText } from './locales.ts'
 import css from './AgentPresetLabel.module.css'

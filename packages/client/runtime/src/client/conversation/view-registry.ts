@@ -1,4 +1,4 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type { ConversationViewDefinition } from '../contract/conversation.ts'
 import { ConversationDefinitionRegistry } from './definition-registry.ts'
 

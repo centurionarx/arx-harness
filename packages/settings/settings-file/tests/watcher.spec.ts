@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 import { FileSettingsProvider } from '../src/index.ts'
 
 // chokidar is the nondeterministic OS boundary: faking it lets these tests
@@ -51,7 +51,7 @@ afterEach(async () => {
 })
 
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-settings-watch-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-settings-watch-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }

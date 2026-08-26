@@ -1,10 +1,10 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
-import type { PluginInventorySnapshot } from '@centurionarx/cxh-api-remotes/client'
+import type { PluginInventorySnapshot } from '@arx-ai/arx-api-remotes/client'
 import {
   IconChevronDownOutline14,
   IconSearchOutline16,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import type { PluginInventoryLocaleKey } from './locales.ts'
 import css from './PluginInventorySettingsTab.module.css'
 
@@ -50,7 +50,7 @@ function moduleShortName(moduleName: string): string {
   return unscoped
     .replace(/^cordis:/, '')
     .replace(/^cordis-plugin-/, '')
-    .replace(/^cxh-(?:host-|client-)?/, '')
+    .replace(/^arx-(?:host-|client-)?/, '')
 }
 
 /** Whether an inventory row matches the local catalog query. */

@@ -1,8 +1,8 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ConversationNodeDefinition, ConversationPreviousContext,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { InboxTarget } from '@centurionarx/cxh-agent/types'
+} from '@arx-ai/arx-client-runtime/client'
+import type { InboxTarget } from '@arx-ai/arx-agent/types'
 
 interface InboxIdentity {
   readonly id: string

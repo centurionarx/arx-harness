@@ -9,7 +9,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   IconChevronDownOutline14, IconChevronRightOutline14, IconPlusOutline16, IconTrashOutline16,
-} from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-ui-primitives'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
 

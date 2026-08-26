@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-tmux-context`.
- * @module @centurionarx/cxh-tmux-context/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-tmux-context`.
+ * @module @arx-ai/arx-tmux-context/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tmux-context'
+const PACKAGE_NAME = '@arx-ai/arx-tmux-context'
 
 /** Cordis companion plugin name. */
 export const name = 'tmux-context-invariant'

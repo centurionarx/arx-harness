@@ -11,13 +11,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
-import type { ISession, SessionId, ToolResultNode } from '@centurionarx/cxh-client-runtime/client'
-import type { PropsRenderSlots } from '@centurionarx/cxh-client-ui-slots'
-import { SlotTestRuntime, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { apply as applyConversation, inject as injectConversation } from '@centurionarx/cxh-client-ui-conversation/client'
-import { apply as applyTool, inject as injectTool } from '@centurionarx/cxh-client-ui-tool/client'
-import type { ToolCallViewProps } from '@centurionarx/cxh-client-ui-tool/client'
+import type { ISession, SessionId, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
+import type { PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
+import { SlotTestRuntime, stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { apply as applyConversation, inject as injectConversation } from '@arx-ai/arx-client-ui-conversation/client'
+import { apply as applyTool, inject as injectTool } from '@arx-ai/arx-client-ui-tool/client'
+import type { ToolCallViewProps } from '@arx-ai/arx-client-ui-tool/client'
 import { toolChatSnapshot } from './tool-details-render.client.tsx'
 
 const SID = 's1' as SessionId

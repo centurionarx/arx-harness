@@ -1,18 +1,18 @@
 /**
  * Model-facing `str_replace_editor` over the Harness filesystem seam.
- * @module @centurionarx/cxh-tool-str-replace-editor
+ * @module @arx-ai/arx-tool-str-replace-editor
  */
 
 import { isAbsolute } from 'node:path'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { FsError } from '@centurionarx/cxh-fs'
-import type { FsInfo, FsTarget, FsWriteIntent } from '@centurionarx/cxh-fs'
-import { sandboxDenialMarker } from '@centurionarx/cxh-sandbox'
-import type { SandboxExecutionPolicy } from '@centurionarx/cxh-sandbox'
-import type { SandboxPolicyService } from '@centurionarx/cxh-sandbox-policy'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { ToolCallView, ToolRunContext } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { FsError } from '@arx-ai/arx-fs'
+import type { FsInfo, FsTarget, FsWriteIntent } from '@arx-ai/arx-fs'
+import { sandboxDenialMarker } from '@arx-ai/arx-sandbox'
+import type { SandboxExecutionPolicy } from '@arx-ai/arx-sandbox'
+import type { SandboxPolicyService } from '@arx-ai/arx-sandbox-policy'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { ToolCallView, ToolRunContext } from '@arx-ai/arx-tools'
 
 const TRUNCATED_MESSAGE = '<response clipped><NOTE>To save on context only part of this file has been shown to you. You should retry this tool after you have searched inside the file with `grep -n` in order to find the line numbers of what you are looking for.</NOTE>'
 

@@ -9,7 +9,7 @@
  * path), copying and deleting still rearrange what the deployment offers.
  */
 
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type { RpcRequest, RpcResponse } from './rpc.ts'
 
 /** One preset the deployment can compose a session's agent from. */

@@ -1,17 +1,17 @@
 # Add Code Mode and Cordis tools to the base spawn/workflow stack, exercising
 # all four boundaries in one ACP snapshot.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-pro
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
-          persistenceCompression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
           workspaceContext:
             maxBytes: 65536
           tools:
@@ -22,8 +22,8 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: code-runtime
-            name: '@centurionarx/cxh-code-runtime-worker-thread'
+            name: '@arx-ai/arx-code-runtime-worker-thread'
           - id: cordis-host-runner
-            name: '@centurionarx/cxh-cordis-host-runner'
+            name: '@arx-ai/arx-cordis-host-runner'
           - id: tool-cordis
-            name: '@centurionarx/cxh-tool-cordis'
+            name: '@arx-ai/arx-tool-cordis'

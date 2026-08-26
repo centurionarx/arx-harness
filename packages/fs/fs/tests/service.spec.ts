@@ -1,13 +1,13 @@
 /**
  * Tests for the filesystem Service Definition: registration, duplicate-service
  * behavior, disposal, and the branded id factories. The provider primitives and
- * policy live in `cxh-fs-local` and `cxh-fs-observation-policy`; this seam owns only the
+ * policy live in `arx-fs-local` and `arx-fs-observation-policy`; this seam owns only the
  * abstract service contract, so a minimal fake backend exercises it.
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { FileSystem, FsError, FsTargetKey, FsVersion } from '@centurionarx/cxh-fs'
+import { Context } from '@arx-ai/cordis'
+import { FileSystem, FsError, FsTargetKey, FsVersion } from '@arx-ai/arx-fs'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -17,7 +17,7 @@ import type {
   FsTarget,
   FsWriteIntent,
   FsWriteOutcome,
-} from '@centurionarx/cxh-fs'
+} from '@arx-ai/arx-fs'
 
 /** A minimal in-memory fake implementing the provider primitives. */
 class FakeFileSystem extends FileSystem {

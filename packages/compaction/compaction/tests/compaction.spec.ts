@@ -1,16 +1,16 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   CompactionId,
   CompactionEngine,
   compactCheckpointSource,
   isCompactCheckpointSource,
-} from '@centurionarx/cxh-compaction'
-import type { CompactionResult, CompactionTrigger } from '@centurionarx/cxh-compaction'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import type { CompactionAgentContext } from '@centurionarx/cxh-compaction'
-import type { ManualCompactAgentContext } from '@centurionarx/cxh-compaction'
+} from '@arx-ai/arx-compaction'
+import type { CompactionResult, CompactionTrigger } from '@arx-ai/arx-compaction'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import type { CompactionAgentContext } from '@arx-ai/arx-compaction'
+import type { ManualCompactAgentContext } from '@arx-ai/arx-compaction'
 
 /**
  * A trivial concrete CompactionEngine implementing the abstract contract. The

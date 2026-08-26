@@ -7,14 +7,14 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render } from '@testing-library/react'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import {
   createSnapshotStore, EMPTY_CHAT_SNAPSHOT, EMPTY_CONVERSATION_VIEWS,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ClientContext, ConversationSnapshot, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type { SubmitImageAttachment, SubmitOutcome } from '@centurionarx/cxh-client-ui-input-trigger/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ClientContext, ConversationSnapshot, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type { SubmitImageAttachment, SubmitOutcome } from '@arx-ai/arx-client-ui-input-trigger/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { DraftAttachmentId } from '../src/client/input/contract.ts'
 import { SessionInputShell } from '../src/client/input/facade.ts'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'

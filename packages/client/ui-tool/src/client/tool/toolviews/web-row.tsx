@@ -9,9 +9,9 @@
 // no web card (the tools keep a generic pending view), so a running row is the
 // summary line alone.
 
-import type { Context } from '@centurionarx/cordis'
-import { IconBrowseOutline16, IconGlobeOutline14 } from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+import type { Context } from '@arx-ai/cordis'
+import { IconBrowseOutline16, IconGlobeOutline14 } from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallViewProps } from '../../contract/slots.ts'
 import { webCardModel } from '../models/web-card-model.ts'
 import { toolRowModel } from '../models/tool-call-model.ts'

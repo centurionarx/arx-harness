@@ -2,19 +2,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import * as SubagentFork from '@centurionarx/cxh-subagent-fork-in-process'
-import type { GenerateOptions, MessageId, StreamChunk } from '@centurionarx/cxh-llm'
-import { CallId, createUserMessage, LlmAdapter } from '@centurionarx/cxh-llm'
-import { defineTool } from '@centurionarx/cxh-tools'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import * as SubagentFork from '@arx-ai/arx-subagent-fork-in-process'
+import type { GenerateOptions, MessageId, StreamChunk } from '@arx-ai/arx-llm'
+import { CallId, createUserMessage, LlmAdapter } from '@arx-ai/arx-llm'
+import { defineTool } from '@arx-ai/arx-tools'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import { MockAdapter, maxTokensResponse, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import SubagentRuntime, {
   SubagentError,
@@ -71,7 +71,7 @@ async function setupWith(adapter: LlmAdapter, options: { persistence?: boolean }
   let disposePersistence: (() => Promise<void>) | undefined
   let root: string | undefined
   if (options.persistence !== false) {
-    root = mkdtempSync(join(tmpdir(), 'cxh-subagent-continuation-'))
+    root = mkdtempSync(join(tmpdir(), 'arx-subagent-continuation-'))
     const persistedRoot = root
     const persistenceFiber = await ctx.plugin(JsonlSessionPersistence, { root })
     disposePersistence = () => persistenceFiber.dispose()
@@ -1764,7 +1764,7 @@ describe('continuable settlement delivery', () => {
       { chunks: textResponse('parent ack') },
     ])
     const { ctx, parent } = await setupWith(adapter)
-    // The shipped durability checkpoint (`cxh-session-checkpoint-policy`) is
+    // The shipped durability checkpoint (`arx-session-checkpoint-policy`) is
     // fail-closed at the step boundary, so a rejected write ends the turn after
     // it claimed its messages and before it entered a step.
     ctx.on('agent/pre-step', async ({ agent: subject, turn }, next) => {
@@ -2446,7 +2446,7 @@ describe('continuable errors', () => {
     const adapter = new GatedAdapter([{ chunks: textResponse('child'), gate: hold.promise }])
     const ctx = new Context()
     await mountAgentLoopTestDependencies(ctx)
-    const root = mkdtempSync(join(tmpdir(), 'cxh-subagent-continuation-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-subagent-continuation-'))
     const persistenceFiber = await ctx.plugin(JsonlSessionPersistence, { root })
     cleanups.push(async () => {
       await persistenceFiber.dispose()

@@ -13,13 +13,13 @@
  * projections. Direct driving is deliberate: this spec owns only the
  * source's own contract.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { InputTriggerService } from '@centurionarx/cxh-client-ui-input-trigger/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import type { ClientSessionContext, InputTriggerSource } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { InputTriggerService } from '@arx-ai/arx-client-ui-input-trigger/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import type { ClientSessionContext, InputTriggerSource } from '@arx-ai/arx-client-ui-input-trigger/client'
 import { apply, inject } from '../src/client/index.ts'
 import { SkillRow as SkillToolRow } from '../src/client/SkillRow.tsx'
 

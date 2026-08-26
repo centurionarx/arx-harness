@@ -2,8 +2,8 @@
  * Native directory-picker surface, node half. Pure UI plugin: the empty apply
  * exists so the plugin appears in the host cordis.yml / Loader; the browser
  * half ships via exports["./client"], discovered through the package.json
- * cxh.client declaration. The OS chooser it drives lives in
- * `@centurionarx/cxh-host-directory-picker-native`.
+ * arx.client declaration. The OS chooser it drives lives in
+ * `@arx-ai/arx-host-directory-picker-native`.
  */
 
 /** Host plugin body — no host-side behavior for this surface plugin. */

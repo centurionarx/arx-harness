@@ -1,12 +1,12 @@
 /**
  * Shared path resolution and regular-file validation for model-facing read tools.
- * @module @centurionarx/cxh-tool-fs/src/read-target
+ * @module @arx-ai/arx-tool-fs/src/read-target
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { FsError } from '@centurionarx/cxh-fs'
-import type { FsInfo, FsTarget } from '@centurionarx/cxh-fs'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { FsError } from '@arx-ai/arx-fs'
+import type { FsInfo, FsTarget } from '@arx-ai/arx-fs'
+import type { ToolExecution } from '@arx-ai/arx-tools'
 import { sessionResolveOptions } from './session-cwd.ts'
 
 /**

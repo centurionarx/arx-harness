@@ -17,16 +17,16 @@ import type {
   SDKMessage,
   SDKSystemMessage,
 } from '@anthropic-ai/claude-agent-sdk'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SubagentRuntime from '@arx-ai/arx-subagent'
 import type {
   SubprocessHandle,
   SubprocessOutcome,
   SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+} from '@arx-ai/arx-subprocess'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as claudeCode from '../src/index.ts'
 import type { ClaudeCodePermissionMode } from '../src/run.ts'
 import {
@@ -92,8 +92,8 @@ const claudeBin = join(
   platformRoot,
   process.platform === 'win32' ? 'claude.exe' : 'claude',
 )
-const settingsModel = 'cxh-settings-inheritance-marker'
-const fakeKey = 'cxh-fake-anthropic-key'
+const settingsModel = 'arx-settings-inheritance-marker'
+const fakeKey = 'arx-fake-anthropic-key'
 
 const roots: string[] = []
 const fixtures: MessagesFixture[] = []
@@ -144,7 +144,7 @@ async function realInstanceFixture(
   behavior: MessagesBehavior,
   nativeAllow: readonly string[] = [],
 ): Promise<RealInstanceFixture> {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-claude-code-real-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-claude-code-real-'))
   roots.push(root)
   const workspace = join(root, 'workspace')
   const claudeConfig = join(root, 'claude-config')
@@ -346,7 +346,7 @@ describe('real Claude Agent SDK 0.3.220 and its distributed Claude Code 2.1.220 
   })
 
   it('maps a real SDK max-turns result to safe query-run facts', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'cxh-claude-code-max-turns-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-claude-code-max-turns-'))
     roots.push(root)
     const target = join(root, 'max-turns.txt')
     sdkTestOverrides.maxTurns = 1
@@ -470,7 +470,7 @@ describe('real Claude Agent SDK 0.3.220 and its distributed Claude Code 2.1.220 
   })
 
   it('overrides interactive settings, denies a write, and returns a safe diagnostic', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'cxh-claude-code-denied-target-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-claude-code-denied-target-'))
     roots.push(root)
     const target = join(root, 'denied.txt')
     const { harness } = await realHarness({
@@ -505,7 +505,7 @@ describe('real Claude Agent SDK 0.3.220 and its distributed Claude Code 2.1.220 
   })
 
   it('runs an explicitly selected bypass write in the isolated workspace', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'cxh-claude-code-bypass-target-'))
+    const root = mkdtempSync(join(tmpdir(), 'arx-claude-code-bypass-target-'))
     roots.push(root)
     const target = join(root, 'bypass.txt')
     const { harness } = await realHarness({

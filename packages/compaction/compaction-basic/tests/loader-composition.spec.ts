@@ -3,14 +3,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import BasicCompactionEngine from '@centurionarx/cxh-compaction-basic'
-import ToolResultPruner from '@centurionarx/cxh-compaction-tool-result-pruner'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import BasicCompactionEngine from '@arx-ai/arx-compaction-basic'
+import ToolResultPruner from '@arx-ai/arx-compaction-tool-result-pruner'
 
 let root: string | undefined
 let context: Context | undefined
@@ -23,7 +23,7 @@ afterEach(async () => {
 })
 
 async function loadYaml(lines: readonly string[]): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-token-meter-loader-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-token-meter-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [...lines, ''].join('\n'))
 
@@ -32,11 +32,11 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-llm', LlmRuntime],
-    ['@centurionarx/cxh-session', SessionStore],
-    ['@centurionarx/cxh-token-meter', TokenMeter],
-    ['@centurionarx/cxh-compaction-tool-result-pruner', ToolResultPruner],
-    ['@centurionarx/cxh-compaction-basic', BasicCompactionEngine],
+    ['@arx-ai/arx-llm', LlmRuntime],
+    ['@arx-ai/arx-session', SessionStore],
+    ['@arx-ai/arx-token-meter', TokenMeter],
+    ['@arx-ai/arx-compaction-tool-result-pruner', ToolResultPruner],
+    ['@arx-ai/arx-compaction-basic', BasicCompactionEngine],
   ])
   context.loader.internal = {
     version: 'v2',
@@ -56,15 +56,15 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
 describe('real Loader composition', () => {
   it('loads the shipped token-meter, pruning, and compaction-basic YAML order', async () => {
     const loaded = await loadYaml([
-      "- name: '@centurionarx/cxh-llm'",
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-token-meter'",
-      "- name: '@centurionarx/cxh-compaction-tool-result-pruner'",
+      "- name: '@arx-ai/arx-llm'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-token-meter'",
+      "- name: '@arx-ai/arx-compaction-tool-result-pruner'",
       '  config:',
       '    thresholdChars: 100',
       '    headChars: 20',
       '    tailChars: 10',
-      "- name: '@centurionarx/cxh-compaction-basic'",
+      "- name: '@arx-ai/arx-compaction-basic'",
       '  config:',
       '    thresholdRatio: 0.5',
       '    retainRatio: 0.125',

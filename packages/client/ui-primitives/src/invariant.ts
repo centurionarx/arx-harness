@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-ui-primitives`.
- * @module @centurionarx/cxh-client-ui-primitives/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-ui-primitives`.
+ * @module @arx-ai/arx-client-ui-primitives/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-ui-primitives'
+const PACKAGE_NAME = '@arx-ai/arx-client-ui-primitives'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-primitives-invariant'

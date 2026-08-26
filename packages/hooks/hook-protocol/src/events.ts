@@ -3,10 +3,10 @@
  * intent and must remain turn-enclosed and invoked/result paired. Mid-turn hook
  * points satisfy that boundary; SessionStart records injected context instead
  * and does not append `hook/*` outside a turn.
- * @module @centurionarx/cxh-hook-protocol/events
+ * @module @arx-ai/arx-hook-protocol/events
  */
 
-import type { Session } from '@centurionarx/cxh-session'
+import type { Session } from '@arx-ai/arx-session'
 import type { HookDialect, HookOutput } from './types.ts'
 
 /** What identifies a hook invocation across its invoked/result pair. */

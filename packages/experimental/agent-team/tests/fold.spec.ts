@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionEventMap, SessionEventType } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionEventMap, SessionEventType } from '@arx-ai/arx-session'
 import {
   applyTeamEvent,
   emptyTeamFoldState,

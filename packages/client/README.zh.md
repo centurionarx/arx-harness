@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-cxh web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 UI 服务和功能插件。编写规则见 [AGENTS.md](AGENTS.md)；宿主半侧是 [`host/`](../host/README.zh.md)。除 `test-runtime` 外，均为名为 `@centurionarx/cxh-client-<name>` 的**产品**包。
+arx web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 UI 服务和功能插件。编写规则见 [AGENTS.md](AGENTS.md)；宿主半侧是 [`host/`](../host/README.zh.md)。除 `test-runtime` 外，均为名为 `@arx-ai/arx-client-<name>` 的**产品**包。
 
 | 包 | 目的 |
 |---|---|

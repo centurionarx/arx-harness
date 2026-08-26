@@ -10,12 +10,12 @@
  * preset decides the tool schemas and prompt sections the model sees.
  *
  * Reconstruction reads {@link resolveSessionPreset}, never the header alone.
- * @module @centurionarx/cxh-agent-presets/session
+ * @module @arx-ai/arx-agent-presets/session
  */
 
-import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
+import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * The session's agent preset was chosen after creation, while the session

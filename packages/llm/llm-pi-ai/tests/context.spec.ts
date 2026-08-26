@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { AttachmentId, ImageVariantId } from '@centurionarx/cxh-attachment'
+import { AttachmentId, ImageVariantId } from '@arx-ai/arx-attachment'
 import type {
   AttachmentStore,
   ImageAttachmentRef,
   ImageRequestPolicy,
   RequestImageAttachment,
-} from '@centurionarx/cxh-attachment'
-import { CallId, createMessage, createUserMessage, OFFLOADED_IMAGE_TEXT } from '@centurionarx/cxh-llm'
-import type { ContentBlock, GenerateOptions, Message } from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-attachment'
+import { CallId, createMessage, createUserMessage, OFFLOADED_IMAGE_TEXT } from '@arx-ai/arx-llm'
+import type { ContentBlock, GenerateOptions, Message } from '@arx-ai/arx-llm'
 import { toPiContext } from '../src/context.ts'
 import { toPiAssistant } from '../src/replay.ts'
 

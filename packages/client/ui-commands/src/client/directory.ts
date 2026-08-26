@@ -5,10 +5,10 @@
  * / epoch-guard behavior of the original global cache; the session-key axis
  * is the only extra dimension.
  */
-import type { CommandDescriptor } from '@centurionarx/cxh-commands/types'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
+import type { CommandDescriptor } from '@arx-ai/arx-commands/types'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 
-export type { CommandDescriptor } from '@centurionarx/cxh-commands/types'
+export type { CommandDescriptor } from '@arx-ai/arx-commands/types'
 
 /**
  * cold = never pulled; pending = pull in flight with nothing servable;

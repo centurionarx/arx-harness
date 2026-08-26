@@ -9,9 +9,9 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import { WEB_SEARCH_MAX_RESULTS } from '@centurionarx/cxh-tool-web'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import { WEB_SEARCH_MAX_RESULTS } from '@arx-ai/arx-tool-web'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden, fixtureUserPrompts,
   launchWebScaffold, recordFixture, watchConsole, webSnapshotMode, type WebScaffold,
@@ -22,9 +22,9 @@ const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/web-search-round', impor
 const FIXTURE = fileURLToPath(new URL('./snapshots/web-search-round/session.jsonl', import.meta.url))
 const UI_EXPECTED = fileURLToPath(new URL('./snapshots/web-search-round/ui.expected.md', import.meta.url))
 const MODE = webSnapshotMode()
-const QUERIES = ['CENTURIONarx Harness snapshot search', 'CENTURIONarx Harness multi-query search'] as const
+const QUERIES = ['arx Harness snapshot search', 'arx Harness multi-query search'] as const
 const PROMPT = `Use web_search once with queries ${JSON.stringify(QUERIES)}. Then reply exactly SEARCH_DONE and stop.`
-const SEARCH_CREDENTIAL_REF = credentialRef('CXH_WEB_SEARCH_E2E_KEY')
+const SEARCH_CREDENTIAL_REF = credentialRef('ARX_WEB_SEARCH_E2E_KEY')
 const SEARCH_CREDENTIAL = 'snapshot-search-key'
 
 /**

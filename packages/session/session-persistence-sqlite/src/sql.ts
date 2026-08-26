@@ -1,6 +1,6 @@
 /**
  * Closed, package-owned SQL resource loading for SQLite.
- * @module @centurionarx/cxh-session-persistence-sqlite/sql
+ * @module @arx-ai/arx-session-persistence-sqlite/sql
  */
 
 import { readFileSync } from 'node:fs'

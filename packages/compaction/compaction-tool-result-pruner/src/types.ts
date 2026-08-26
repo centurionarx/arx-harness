@@ -1,4 +1,4 @@
-import type { CallId } from '@centurionarx/cxh-llm'
+import type { CallId } from '@arx-ai/arx-llm'
 
 /** Character-budget policy for deterministic tool-result pruning. */
 export interface ToolResultPruneConfig {

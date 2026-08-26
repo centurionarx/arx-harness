@@ -1,6 +1,6 @@
 import {
   createSnapshotStore, type SnapshotStore,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 
 /**
  * Create the browser-wide trajectory duration preference source.
@@ -8,6 +8,6 @@ import {
  */
 export function createTrajectoryDurationStore(): SnapshotStore<boolean> {
   return createSnapshotStore(false, {
-    persist: { name: 'cxh.trajectory.duration' },
+    persist: { name: 'arx.trajectory.duration' },
   })
 }

@@ -2,19 +2,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { assembleContextFor } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { CallId, LlmAdapter, createUserMessage } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import * as control from '@centurionarx/cxh-tool-subagent-control'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { assembleContextFor } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { CallId, LlmAdapter, createUserMessage } from '@arx-ai/arx-llm'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import * as control from '@arx-ai/arx-tool-subagent-control'
 import { textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as tool from '../src/index.ts'
 
@@ -65,7 +65,7 @@ afterEach(async () => {
 async function setup(options: { load?: boolean; config?: tool.Config } = {}) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  const root = mkdtempSync(join(tmpdir(), 'cxh-tool-subagent-report-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-tool-subagent-report-'))
   await ctx.plugin(JsonlSessionPersistence, { root })
   await ctx.plugin(AgentLoop, { agents: [] })
   await ctx.plugin(SubagentRuntime)
@@ -159,7 +159,7 @@ async function sectionNames(ctx: Context, agent: Agent): Promise<string[]> {
   return assembly.sections.map(section => section.name)
 }
 
-describe('cxh-tool-subagent-report', () => {
+describe('arx-tool-subagent-report', () => {
   it('registers report only in continuable child scopes', async () => {
     const { ctx, parent } = await setup()
     expect(ctx.tools.schemas().map(schema => schema.name)).not.toContain('report')
@@ -587,7 +587,7 @@ function userTexts(events: readonly SessionEvent[]): string[] {
     : [])
 }
 
-describe('cxh-tool-subagent-report result independence', () => {
+describe('arx-tool-subagent-report result independence', () => {
   it('does not report a final assistant answer automatically or create Jobs', async () => {
     const { ctx, parent, adapter } = await setup()
     const { started } = await startChild(ctx, parent)

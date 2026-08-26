@@ -64,8 +64,8 @@ it('keeps scenario-owned snapshot spill root length stable across platforms', ()
   const fixtureFile = '/fixtures/scenario/session.jsonl'
   const posix = snapshotSpillRoot(fixtureFile, 'linux')
   const windows = snapshotSpillRoot(fixtureFile, 'win32')
-  expect(posix).toMatch(/^\/tmp\/cxh-acp-snap-[0-9a-f]{9}$/)
-  expect(windows).toMatch(/^\/t\/cxh-acp-snap-[0-9a-f]{9}$/)
+  expect(posix).toMatch(/^\/tmp\/arx-acp-snap-[0-9a-f]{9}$/)
+  expect(windows).toMatch(/^\/t\/arx-acp-snap-[0-9a-f]{9}$/)
   expect(windows.length + 2).toBe(posix.length)
 })
 
@@ -104,9 +104,9 @@ describe('runScenario', () => {
       cwd: dir,
       configPath: AGENT.configPath,
       env: {
-        CXH_SNAPSHOT: 'replay',
-        CXH_SNAPSHOT_FILE: fixtureFile,
-        CXH_SNAPSHOT_SESSIONS_ROOT: sessionsRoot,
+        ARX_SNAPSHOT: 'replay',
+        ARX_SNAPSHOT_FILE: fixtureFile,
+        ARX_SNAPSHOT_SESSIONS_ROOT: sessionsRoot,
       },
     })
     await launched.client.initialize({ protocolVersion: PROTOCOL_VERSION, clientCapabilities: {} })
@@ -147,7 +147,7 @@ describe('runScenario', () => {
     const launched = launchAcpTestAgent({
       agent: AGENT,
       cwd: dir,
-      env: { CXH_SNAPSHOT_FILE: fixtureFile },
+      env: { ARX_SNAPSHOT_FILE: fixtureFile },
     })
     await launched.client.initialize({ protocolVersion: PROTOCOL_VERSION, clientCapabilities: {} })
     await launched.client.newSession({ cwd: dir, mcpServers: [] })
@@ -326,7 +326,7 @@ describe('runScenario', () => {
     const launched = launchAcpTestAgent({
       agent: AGENT,
       cwd: dir,
-      env: { CXH_SNAPSHOT_FILE: fixtureFile },
+      env: { ARX_SNAPSHOT_FILE: fixtureFile },
       async requestPermission() {
         markPermissionStarted?.()
         await permissionReleased
@@ -361,7 +361,7 @@ describe('runScenario', () => {
 
   it('preserves launch-resolution errors when no child process exists', async () => {
     const { dir, fixtureFile } = await scenario({})
-    vi.stubEnv('CXH_EXAMPLE_MODE', 'lib')
+    vi.stubEnv('ARX_EXAMPLE_MODE', 'lib')
     try {
       await expect(runScenario(
         { steps: [] },

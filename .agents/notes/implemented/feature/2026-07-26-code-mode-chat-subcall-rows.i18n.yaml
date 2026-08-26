@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-26-code-mode-chat-subcall-rows.md
-2026-07-26-code-mode-chat-subcall-rows.md: 28c6c919f4d6ca493c4e552332a2ee449fd30cb4
-2026-07-26-code-mode-chat-subcall-rows.zh.md: 31f9379673bc52179c2477f177128fde0496e675
+2026-07-26-code-mode-chat-subcall-rows.md: 2ed32ae9a07d48a7ce4bbc215bed41f980dec94a
+2026-07-26-code-mode-chat-subcall-rows.zh.md: 7b00c3cea963a0aa6bca3a2c3c16be1d7faf9213

@@ -1,15 +1,15 @@
 /**
  * Default one-shot summarization and durable checkpoint framing.
  *
- * @module @centurionarx/cxh-compaction-basic/summarizer
+ * @module @arx-ai/arx-compaction-basic/summarizer
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { contentHasImage, createUserMessage, BlockAssembler, LlmError } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { contentHasImage, createUserMessage, BlockAssembler, LlmError } from '@arx-ai/arx-llm'
 import type {
   ContentBlock, FinishReason, GenerateOptions, Message, TokenUsage, ToolSchema,
-} from '@centurionarx/cxh-llm'
-import type { Agent } from '@centurionarx/cxh-agent'
+} from '@arx-ai/arx-llm'
+import type { Agent } from '@arx-ai/arx-agent'
 
 interface SummaryConfig {
   readonly summarizationProvider: string
@@ -147,7 +147,7 @@ export async function summarizeWithLlm(
     ...input.messages,
     createUserMessage({
       content: [{ type: 'text', text: COMPACTION_INSTRUCTION }],
-      source: { kind: 'plugin', plugin: 'cxh-compaction-basic' },
+      source: { kind: 'plugin', plugin: 'arx-compaction-basic' },
     }),
   ]
   const options: GenerateOptions = {

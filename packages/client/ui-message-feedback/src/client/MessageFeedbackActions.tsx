@@ -7,7 +7,7 @@
  * viewport, and an inline element pushed the branch action and clock out of the
  * conversation column. Portaling out of the column also escapes its `overflow`
  * clip, so the panel cannot be cropped or detached from the message it annotates.
- * @module @centurionarx/cxh-client-ui-message-feedback/client/MessageFeedbackActions
+ * @module @arx-ai/arx-client-ui-message-feedback/client/MessageFeedbackActions
  */
 
 import {
@@ -17,8 +17,8 @@ import {
 import { createPortal } from 'react-dom'
 import {
   IconDislikeOutline16, IconLikeOutline16, Tooltip, useAnchoredPosition,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { MessageFeedbackRating } from '@centurionarx/cxh-message-feedback/types'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { MessageFeedbackRating } from '@arx-ai/arx-message-feedback/types'
 import type { MessageFeedbackActionProps } from './slots.ts'
 import css from './MessageFeedbackActions.module.css'
 

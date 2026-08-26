@@ -2,11 +2,11 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SqliteSessionPersistence from '@centurionarx/cxh-session-persistence-sqlite'
-import { RetryId } from '@centurionarx/cxh-llm-retry'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
+import { RetryId } from '@arx-ai/arx-llm-retry'
 import type {} from '../src/index.ts'
 
 const dirs: string[] = []
@@ -19,7 +19,7 @@ async function backend(kind: 'jsonl' | 'sqlite'): Promise<Context> {
   const ctx = new Context()
   await ctx.plugin(SessionStore)
   if (kind === 'jsonl') {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-llm-retry-jsonl-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-llm-retry-jsonl-'))
     dirs.push(root)
     await ctx.plugin(JsonlSessionPersistence, { root })
   } else {

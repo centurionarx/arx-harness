@@ -4,10 +4,10 @@
  * projection, and snapshot reference stability.
  */
 import { describe, expect, it } from 'vitest'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, UserMessage } from '@centurionarx/cxh-llm/types'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type { MessageId, MuxFrame, RpcId, SessionId } from '@centurionarx/cxh-api-remotes/client'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, UserMessage } from '@arx-ai/arx-llm/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type { MessageId, MuxFrame, RpcId, SessionId } from '@arx-ai/arx-api-remotes/client'
 import { Session } from '../src/client/sessions/session.ts'
 import { SessionManager } from '../src/client/sessions/manager.ts'
 import { FakeApiClient, fakeRemote } from './fake-api.client.ts'

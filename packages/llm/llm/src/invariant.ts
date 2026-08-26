@@ -1,10 +1,10 @@
-/** Package-owned LLM stream-protocol invariants. @module @centurionarx/cxh-llm/invariant */
+/** Package-owned LLM stream-protocol invariants. @module @arx-ai/arx-llm/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { ContentBlockType, StreamChunk } from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-llm'
+const PACKAGE_NAME = '@arx-ai/arx-llm'
 
 /** Cordis companion plugin name. */
 export const name = 'llm-invariant'

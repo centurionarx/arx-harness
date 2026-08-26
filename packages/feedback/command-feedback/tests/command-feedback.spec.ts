@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentStatus } from '@centurionarx/cxh-agent'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import SessionStore, { foldSurface, Session, SessionId } from '@centurionarx/cxh-session'
-import { SessionTelemetryBackend, type SessionTelemetrySharingStatus } from '@centurionarx/cxh-session-telemetry'
-import * as commandFeedback from '@centurionarx/cxh-command-feedback'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentStatus } from '@arx-ai/arx-agent'
+import CommandRuntime from '@arx-ai/arx-commands'
+import SessionStore, { foldSurface, Session, SessionId } from '@arx-ai/arx-session'
+import { SessionTelemetryBackend, type SessionTelemetrySharingStatus } from '@arx-ai/arx-session-telemetry'
+import * as commandFeedback from '@arx-ai/arx-command-feedback'
 
 const { USER_ID, getOrCreateAnonymousUserId } = vi.hoisted(() => {
   const USER_ID = '01234567-89ab-4cde-8f01-23456789abcd'
   return { USER_ID, getOrCreateAnonymousUserId: vi.fn(() => USER_ID) }
 })
 
-vi.mock('@centurionarx/cxh-anonymous-user-id', () => ({
+vi.mock('@arx-ai/arx-anonymous-user-id', () => ({
   getOrCreateAnonymousUserId,
 }))
 
@@ -99,7 +99,7 @@ function feedbackTexts(session: Session): string[] {
     .map(event => event.data.text)
 }
 
-describe('@centurionarx/cxh-command-feedback registration', () => {
+describe('@arx-ai/arx-command-feedback registration', () => {
   it('registers one global command with Loader-safe exports and disposes it', async () => {
     const test = await harness()
     expect(commandFeedback.name).toBe('command-feedback')

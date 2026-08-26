@@ -4,13 +4,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type {
   ChatConversationViewNode, ChatSnapshot, ConversationEventInput,
   ConversationNodeDefinition, ConversationViewDefinition,
-} from '@centurionarx/cxh-client-runtime/client'
-import { ConversationNodeAssembler } from '@centurionarx/cxh-client-runtime/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import { commandDefinition } from '@centurionarx/cxh-client-ui-conversation/src/client/conversation-nodes/command.ts'
-import { chatViewDefinition } from '@centurionarx/cxh-client-ui-conversation/src/client/conversation-nodes/chat-snapshot-builder.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import { ConversationNodeAssembler } from '@arx-ai/arx-client-runtime/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import { commandDefinition } from '@arx-ai/arx-client-ui-conversation/src/client/conversation-nodes/command.ts'
+import { chatViewDefinition } from '@arx-ai/arx-client-ui-conversation/src/client/conversation-nodes/chat-snapshot-builder.ts'
 import { GoalCommandInputView } from '../src/client/GoalCommandInputView.tsx'
 import {
   goalCommandInputDefinition, goalCommandText,

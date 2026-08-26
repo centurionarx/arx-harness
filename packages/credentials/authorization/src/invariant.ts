@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-authorization`.
- * @module @centurionarx/cxh-authorization/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-authorization`.
+ * @module @arx-ai/arx-authorization/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-authorization'
+const PACKAGE_NAME = '@arx-ai/arx-authorization'
 
 /** Cordis companion plugin name. */
 export const name = 'authorization-invariant'

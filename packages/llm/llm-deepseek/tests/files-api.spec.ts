@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { userAgent } from '@centurionarx/cxh-llm'
+import { userAgent } from '@arx-ai/arx-llm'
 import { DeepSeekFileId } from '../src/file-id.ts'
 import {
   DeepSeekFilesClient,

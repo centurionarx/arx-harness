@@ -1,25 +1,25 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SESSION_FORMAT_VERSION, Session, SessionId, SessionPreparation } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SESSION_FORMAT_VERSION, Session, SessionId, SessionPreparation } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
 
 const dirs: string[] = []
 afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }) })
 
 async function persistentHarness(adapter: MockAdapter): Promise<{ ctx: Context; root: string }> {
-  const root = await mkdtemp(join(tmpdir(), 'cxh-resume-'))
+  const root = await mkdtemp(join(tmpdir(), 'arx-resume-'))
   dirs.push(root)
   return { ctx: await mountPersistentHarness(root, adapter), root }
 }

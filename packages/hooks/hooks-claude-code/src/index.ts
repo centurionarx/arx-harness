@@ -2,22 +2,22 @@
  * Bridge for unmodified Claude Code command hooks on harness interception
  * extension points. It supports SessionStart, prompt/tool pre/post, Stop, and subagent
  * start/stop. It owns Claude payloads, environment, substitution, and decision
- * mapping; shared execution and parsing live in `cxh-hook-protocol`.
+ * mapping; shared execution and parsing live in `arx-hook-protocol`.
  * `updatedInput` is logged and warned but not honored. Bespoke behavior should
  * use typed native plugins on the same extension points; see the
  * [hook-bridges Agent Note](../../../../.agents/notes/implemented/feature/2026-06-30-hook-bridges.md).
- * @module @centurionarx/cxh-hooks-claude-code
+ * @module @arx-ai/arx-hooks-claude-code
  */
 
 import { readFileSync } from 'node:fs'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, MessageSource } from '@centurionarx/cxh-llm'
-import type { UserMessage } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-session-persistence'
-import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, MessageSource } from '@arx-ai/arx-llm'
+import type { UserMessage } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-session-persistence'
+import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@arx-ai/arx-tools'
 import {
   appendHookInvoked,
   appendHookResult,
@@ -30,10 +30,10 @@ import {
   type HookOutput,
   type MatcherGroup,
   type MergedHookOutcome,
-} from '@centurionarx/cxh-hook-protocol'
+} from '@arx-ai/arx-hook-protocol'
 // Pulls in the declaration-merged subagent events and the identity pairing their
 // start/end edges.
-import type { SubagentRunId } from '@centurionarx/cxh-subagent'
+import type { SubagentRunId } from '@arx-ai/arx-subagent'
 import { parseClaudeCodeConfig, type ClaudeCodeHookConfig } from './config.ts'
 
 export const name = 'hooks-claude-code'

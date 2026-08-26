@@ -1,4 +1,4 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 /**
  * The `session-telemetry/record` waterfall contract: pass-through when no listener is
  * mounted, listener stacking and replacement, ops-record coverage, the
@@ -6,8 +6,8 @@ import { createUserMessage } from '@centurionarx/cxh-llm'
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import {
   SessionTelemetryCoordinator,
   type SessionTelemetrySink,

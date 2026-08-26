@@ -1,19 +1,19 @@
 /**
  * Concrete session-query service with SQLite FTS5 over the live-preferred corpus.
  *
- * @module @centurionarx/cxh-session-query-sqlite
+ * @module @arx-ai/arx-session-query-sqlite
  */
 
 import { createHash, randomUUID } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
-import { Context, Service, type Fiber } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type SessionPersistence from '@centurionarx/cxh-session-persistence'
+import { Context, Service, type Fiber } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type SessionPersistence from '@arx-ai/arx-session-persistence'
 import type {
   SessionPersistenceRevision,
   SessionPersistenceSnapshot,
-} from '@centurionarx/cxh-session-persistence'
+} from '@arx-ai/arx-session-persistence'
 import SessionQueryEngine, {
   SESSION_QUERY_DEFAULT_PERSISTED_INSPECT_CONCURRENCY,
   SESSION_QUERY_READ_WINDOW_MAX,
@@ -21,7 +21,7 @@ import SessionQueryEngine, {
   SessionSearchCursor,
   assertSessionHeadersCompatible,
   buildSessionEventSearchDocuments,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 import type {
   Config as SessionQueryConfig,
   SessionEventSearchDocument,
@@ -33,7 +33,7 @@ import type {
   SessionSearchCursor as SessionSearchCursorValue,
   SessionSearchPage,
   SessionSearchRequest,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 import {
   type JournalMode,
   openSearchDatabase,
@@ -65,7 +65,7 @@ export {
 /** Boot-context slot for a launcher-owned absolute path to this process's derived query index. */
 export const SESSION_QUERY_SQLITE_PATH_KEY = 'launcherSessionQueryPath'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Launcher-owned absolute path to this process's disposable derived query index. */
     launcherSessionQueryPath?: string

@@ -4,13 +4,13 @@
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
 
 - id: goal
-  name: '@centurionarx/cxh-goal'
+  name: '@arx-ai/arx-goal'
   config:
     defaultMaxGoalRounds: 11
 
@@ -18,7 +18,7 @@
   name: './seed-goal.ts'
 
 - id: agent-spine
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents:
       - id: main
@@ -29,10 +29,10 @@
     workspaceContext: false
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
     compression: none
 
 - id: checkpoint-policy
-  name: '@centurionarx/cxh-session-checkpoint-policy'
+  name: '@arx-ai/arx-session-checkpoint-policy'

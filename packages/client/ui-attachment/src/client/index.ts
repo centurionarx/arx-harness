@@ -1,6 +1,6 @@
 /** Browser attachment plugin: fills conversation's composer and message-image slots. */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { ComposerAttachments } from './ComposerAttachments.tsx'
 import { MessageImages } from './MessageImages.tsx'
 

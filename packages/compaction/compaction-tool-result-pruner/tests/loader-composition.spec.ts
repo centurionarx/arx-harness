@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import ToolResultPruner from '@centurionarx/cxh-compaction-tool-result-pruner'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import ToolResultPruner from '@arx-ai/arx-compaction-tool-result-pruner'
 
 let root: string | undefined
 let context: Context | undefined
@@ -21,11 +21,11 @@ afterEach(async () => {
 
 describe('compaction-tool-result-pruner real Loader composition', () => {
   it('loads and resolves the flat YAML plugin shape', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-compact-tool-result-prune-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-compact-tool-result-prune-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-token-meter'",
-      "- name: '@centurionarx/cxh-compaction-tool-result-pruner'",
+      "- name: '@arx-ai/arx-token-meter'",
+      "- name: '@arx-ai/arx-compaction-tool-result-pruner'",
       '  config:',
       '    thresholdChars: 100',
       '    headChars: 20',
@@ -40,8 +40,8 @@ describe('compaction-tool-result-pruner real Loader composition', () => {
     context.loader.internal = {
       version: 'v2',
       async import(specifier: string) {
-        if (specifier === '@centurionarx/cxh-token-meter') return TokenMeter
-        if (specifier === '@centurionarx/cxh-compaction-tool-result-pruner') return ToolResultPruner
+        if (specifier === '@arx-ai/arx-token-meter') return TokenMeter
+        if (specifier === '@arx-ai/arx-compaction-tool-result-pruner') return ToolResultPruner
         throw new Error(`unexpected Loader import: ${specifier}`)
       },
     } as unknown as NonNullable<typeof context.loader.internal>

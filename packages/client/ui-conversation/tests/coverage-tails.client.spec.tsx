@@ -3,10 +3,10 @@
 // without a settings service and AssistantMarkdown reasoning/unknown block arms.
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { cleanup, render } from '@testing-library/react'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import { apply as nodeApply } from '../src/index.ts'
 import { AssistantMarkdown, type AssistantMarkdownProps } from '../src/client/chat/AssistantMarkdown.tsx'
 import { zh } from '../src/client/locales.ts'

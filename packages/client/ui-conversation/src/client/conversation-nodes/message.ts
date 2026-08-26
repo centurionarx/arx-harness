@@ -1,10 +1,10 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ContextMessageNode, ConversationNodeDefinition, SteeringMessageNode, UserMessageNode,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import {
   contextForm, contextProvenance, isAppendSurfaceEvent, isReplacementSurfaceEvent,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type { InboxState } from './inbox.ts'
 import { chatNode } from './common.ts'
 
@@ -20,7 +20,7 @@ interface ReferencedSteeringMessageNode extends SteeringMessageNode {
 
 type MessageNode = ReferencedUserMessageNode | ReferencedSteeringMessageNode | ContextMessageNode
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Ordinary turn-opening user message. */
     user: ReferencedUserMessageNode

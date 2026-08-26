@@ -1,5 +1,5 @@
 /**
- * Real-load-path guard for @centurionarx/cxh-tool-fs-search. `tool-fs-search` is
+ * Real-load-path guard for @arx-ai/arx-tool-fs-search. `tool-fs-search` is
  * a NAMESPACE plugin with `inject` — so a stray `export default apply` would
  * make the cordis Loader's `unwrapExports` (`exports.default ?? exports`)
  * collapse the module to the bare `apply` function, DROPPING `inject`. The
@@ -15,14 +15,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as toolFsSearch from '@centurionarx/cxh-tool-fs-search'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as toolFsSearch from '@arx-ai/arx-tool-fs-search'
 
-describe('cxh-tool-fs-search real-load-path guard', () => {
+describe('arx-tool-fs-search real-load-path guard', () => {
   it('has no default export and keeps name/inject/Config through unwrapExports', () => {
     expect('default' in toolFsSearch).toBe(false)
 

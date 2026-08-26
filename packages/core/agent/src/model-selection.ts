@@ -1,10 +1,10 @@
 /**
  * Agent-scoped model selection shared by runtime entry points.
- * @module @centurionarx/cxh-agent/model-selection
+ * @module @arx-ai/arx-agent/model-selection
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { LlmCallConfig, ReasoningEffortId } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { LlmCallConfig, ReasoningEffortId } from '@arx-ai/arx-llm'
 
 /** Complete provider, model, and optional reasoning effort selected for one live Agent. */
 export interface ModelSelection {

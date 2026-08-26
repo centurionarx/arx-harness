@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { ShellExecutor } from '@centurionarx/cxh-shell'
-import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult } from '@centurionarx/cxh-shell'
+import { Context } from '@arx-ai/cordis'
+import { ShellExecutor } from '@arx-ai/arx-shell'
+import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, ShellRunResult } from '@arx-ai/arx-shell'
 
 /**
  * Minimal concrete executor: canned foreground results, a hand-built process

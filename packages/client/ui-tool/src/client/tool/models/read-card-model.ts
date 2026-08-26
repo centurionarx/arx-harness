@@ -13,8 +13,8 @@
  * until the result arrives.
  * @module
  */
-import { abbreviateHomePath } from '@centurionarx/cxh-client-runtime/client'
-import type { ReadBlockLine, ReadBlockProps } from '@centurionarx/cxh-client-ui-primitives'
+import { abbreviateHomePath } from '@arx-ai/arx-client-runtime/client'
+import type { ReadBlockLine, ReadBlockProps } from '@arx-ai/arx-client-ui-primitives'
 import { relativizeToCwd, type ToolCallBlock } from './tool-call-model.ts'
 
 /**

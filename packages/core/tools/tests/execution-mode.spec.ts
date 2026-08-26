@@ -1,15 +1,15 @@
 /** Covers fail-closed per-call classification and model-schema isolation. */
 
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
 import ToolRuntime, {
   defineContentToolFixture,
   type ToolDefinition,
   type ToolExecutionInput,
   type ToolExecutionMode,
-} from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-tools'
 
 const testToolSignal = new AbortController().signal
 

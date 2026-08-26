@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-code-runtime-python`.
- * @module @centurionarx/cxh-code-runtime-python/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-code-runtime-python`.
+ * @module @arx-ai/arx-code-runtime-python/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-code-runtime-python'
+const PACKAGE_NAME = '@arx-ai/arx-code-runtime-python'
 
 /** Cordis companion plugin name. */
 export const name = 'code-runtime-python-invariant'

@@ -2,10 +2,10 @@
  * Shared buffering, serialization, adoption, repair, and disposal orchestration
  * for first-party backends. Third-party backends may implement the public
  * persistence seam directly.
- * @module @centurionarx/cxh-session-persistence/coordinator
+ * @module @arx-ai/arx-session-persistence/coordinator
  */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   adoptSessionEvent,
   interruptedTurnClosers,
@@ -14,9 +14,9 @@ import {
   SessionPreparation,
   snapshotJsonValue,
   snapshotSessionEvent,
-} from '@centurionarx/cxh-session'
-import type { Session, SessionEvent, SessionId, SessionHeader } from '@centurionarx/cxh-session'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionId, SessionHeader } from '@arx-ai/arx-session'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import type { SessionInspection, SessionLocation } from './index.ts'
 import type { SessionPersistenceRevision } from './revision.ts'
 import { observeQueuedAbort, SessionPreparations } from './preparations.ts'
@@ -1132,7 +1132,7 @@ export class PersistenceCoordinator<TornMarker = unknown> {
     ctx.on('session/disposed', (session) => { this.retire(session) })
 
     // HMR: a hot reload does not replay session/created, so seed existing live
-    // sessions (mirrors cxh-invariants).
+    // sessions (mirrors arx-invariants).
     for (const session of ctx.sessions.list()) void this.initFor(session)
   }
 

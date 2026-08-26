@@ -6,10 +6,10 @@
 
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { CallId } from '@centurionarx/cxh-llm'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import { decodeStorageRecord, packChunkRuns } from '@centurionarx/cxh-session'
-import type { ChunkRow, SessionEvent, StorageRecord } from '@centurionarx/cxh-session'
+import { CallId } from '@arx-ai/arx-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import { decodeStorageRecord, packChunkRuns } from '@arx-ai/arx-session'
+import type { ChunkRow, SessionEvent, StorageRecord } from '@arx-ai/arx-session'
 
 /** Build an `assistant/chunk` event with the exact live-append shape. */
 function chunkEvent(seq: number, time: number, chunk: StreamChunk, turn = 1, step = 1): SessionEvent {

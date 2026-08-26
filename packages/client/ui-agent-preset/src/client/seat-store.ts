@@ -10,10 +10,10 @@
  * deployment default again, matching the workspace picker beside it.
  */
 
-import type { IApiClient } from '@centurionarx/cxh-api-remotes/client'
+import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import {
   createSnapshotStore, type SessionId, type SnapshotStore,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import { messageOf, presetOptions } from './settings-store.ts'
 import type { AgentPresetOption } from './settings-store.ts'
 

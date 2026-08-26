@@ -2,19 +2,19 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { FsVersion } from '@centurionarx/cxh-fs'
-import { CallId } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import SandboxedFileSystem from '@centurionarx/cxh-fs-sandbox'
-import SandboxPolicy from '@centurionarx/cxh-sandbox-policy'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import * as ToolStrReplaceEditor from '@centurionarx/cxh-tool-str-replace-editor'
+import { Context } from '@arx-ai/cordis'
+import { FsVersion } from '@arx-ai/arx-fs'
+import { CallId } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import SandboxedFileSystem from '@arx-ai/arx-fs-sandbox'
+import SandboxPolicy from '@arx-ai/arx-sandbox-policy'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import * as ToolStrReplaceEditor from '@arx-ai/arx-tool-str-replace-editor'
 
 const contexts: Context[] = []
 const roots: string[] = []
@@ -66,7 +66,7 @@ async function setup(
   config: ToolStrReplaceEditor.Config = {},
   options: { fsPolicy?: boolean; sandboxMode?: 'read-only' | 'workspace-write' | 'danger-full-access' } = {},
 ) {
-  const root = await mkdtemp(join(tmpdir(), 'cxh-tool-str-replace-editor-'))
+  const root = await mkdtemp(join(tmpdir(), 'arx-tool-str-replace-editor-'))
   roots.push(root)
   const ctx = new Context()
   contexts.push(ctx)
@@ -526,7 +526,7 @@ describe('tool-str-replace-editor', () => {
   })
 
   it('reports missing sandbox-policy composition during plugin startup', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-tool-str-replace-editor-missing-policy-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-tool-str-replace-editor-missing-policy-'))
     roots.push(root)
     const ctx = new Context()
     contexts.push(ctx)

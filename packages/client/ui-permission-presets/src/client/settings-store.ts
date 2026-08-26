@@ -8,13 +8,13 @@
 
 import type {
   IApiClient, SettingsNamespaceView,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 import {
   createSnapshotStore, type SnapshotStore,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   SchemaNode, SettingsDescribeFace, SettingsSchemaService,
-} from '@centurionarx/cxh-client-ui-settings/client'
+} from '@arx-ai/arx-client-ui-settings/client'
 import { displayPermissionPreset } from './presentation.ts'
 
 /** Permission's settings namespace on the host wire. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
 import {
   settleRun,
   settleRunResult,

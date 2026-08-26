@@ -49,7 +49,7 @@ function complete(
   event(response, 'message_start', {
     type: 'message_start',
     message: {
-      id: 'msg_cxh_fixture',
+      id: 'msg_arx_fixture',
       type: 'message',
       role: 'assistant',
       model,
@@ -102,7 +102,7 @@ function toolUse(
   event(response, 'message_start', {
     type: 'message_start',
     message: {
-      id: 'msg_cxh_fixture_tool_use',
+      id: 'msg_arx_fixture_tool_use',
       type: 'message',
       role: 'assistant',
       model,
@@ -122,7 +122,7 @@ function toolUse(
     index: 0,
     content_block: {
       type: 'tool_use',
-      id: 'toolu_cxh_fixture',
+      id: 'toolu_arx_fixture',
       name: toolName,
       input: {},
     },

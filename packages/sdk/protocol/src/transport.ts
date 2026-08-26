@@ -3,7 +3,7 @@
  * `method` are requests, `id` alone is a response, and `method` alone is a
  * notification. Malformed lines are ignored; handler failures become error frames.
  *
- * @module @centurionarx/cxh-sdk-protocol/transport
+ * @module @arx-ai/arx-sdk-protocol/transport
  */
 
 import { randomUUID } from 'node:crypto'

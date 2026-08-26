@@ -1,11 +1,11 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import * as ToolTodo from '@centurionarx/cxh-tool-todo'
+import { Context } from '@arx-ai/cordis'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import * as ToolTodo from '@arx-ai/arx-tool-todo'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 
 /**

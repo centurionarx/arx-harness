@@ -10,12 +10,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import * as SessionStatsPlugin from '@centurionarx/cxh-session-stats'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import * as SessionStatsPlugin from '@arx-ai/arx-session-stats'
 
 let root: string | undefined
 let context: Context | undefined
@@ -28,7 +28,7 @@ afterEach(async () => {
 })
 
 async function loadYaml(lines: readonly string[]): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-session-stats-loader-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-session-stats-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [...lines, ''].join('\n'))
 
@@ -37,9 +37,9 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-session', SessionStore],
-    ['@centurionarx/cxh-session-projection', SessionProjectionRegistry],
-    ['@centurionarx/cxh-session-stats', SessionStatsPlugin],
+    ['@arx-ai/arx-session', SessionStore],
+    ['@arx-ai/arx-session-projection', SessionProjectionRegistry],
+    ['@arx-ai/arx-session-stats', SessionStatsPlugin],
   ])
   context.loader.internal = {
     version: 'v2',
@@ -59,9 +59,9 @@ async function loadYaml(lines: readonly string[]): Promise<Context> {
 describe('real Loader composition', () => {
   it('loads the shipped session-stats YAML shape and serves whole-log counts', async () => {
     const loaded = await loadYaml([
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-session-projection'",
-      "- name: '@centurionarx/cxh-session-stats'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-session-projection'",
+      "- name: '@arx-ai/arx-session-stats'",
     ])
 
     const unloaded = [...loaded.loader.entries()]

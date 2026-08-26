@@ -1,4 +1,4 @@
-import type { TypertContext, TypertLookup } from '@centurionarx/cxh-typert-protocol'
+import type { TypertContext, TypertLookup } from '@arx-ai/arx-typert-protocol'
 import type { AgentId } from './types.ts'
 
 /** Host-only live Agent object. */
@@ -6,7 +6,7 @@ export class Agent {
   constructor(readonly id: AgentId) {}
 }
 
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   interface TypertLookupMap {
     agent: TypertLookup<Agent, AgentId>
   }

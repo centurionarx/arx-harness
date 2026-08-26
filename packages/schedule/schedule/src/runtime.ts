@@ -1,11 +1,11 @@
 /**
  * Disposable live timer projection for one exact root agent.
- * @module @centurionarx/cxh-schedule
+ * @module @arx-ai/arx-schedule
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import type { EveryScheduleRecord, OneShotScheduleRecord } from './types.ts'
 import {
   foldScheduleEvents,

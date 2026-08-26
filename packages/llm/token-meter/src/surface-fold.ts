@@ -8,11 +8,11 @@
  * price is derived from THIS fold's nodes by the replace producer. A
  * projection replacement without a claim deliberately folds with zero delta.
  *
- * @module @centurionarx/cxh-token-meter/surface-fold
+ * @module @arx-ai/arx-token-meter/surface-fold
  */
 
-import { deriveEventMessage } from '@centurionarx/cxh-session'
-import type { SurfaceEvent } from '@centurionarx/cxh-session'
+import { deriveEventMessage } from '@arx-ai/arx-session'
+import type { SurfaceEvent } from '@arx-ai/arx-session'
 import type { TokenSurfaceNode } from './types.ts'
 import { estimateMessage } from './estimate.ts'
 

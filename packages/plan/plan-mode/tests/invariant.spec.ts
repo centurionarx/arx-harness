@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { Session, SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import * as PlanModeInvariant from '@centurionarx/cxh-plan-mode/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { Session, SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import * as PlanModeInvariant from '@arx-ai/arx-plan-mode/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

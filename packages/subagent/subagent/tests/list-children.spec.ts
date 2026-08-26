@@ -3,25 +3,25 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { z } from 'zod'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
-import SessionProjectionCache from '@centurionarx/cxh-session-projection-cache'
-import Storage from '@centurionarx/cxh-storage'
-import { DomainFacility } from '@centurionarx/cxh-storage-domain'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
+import SessionProjectionCache from '@arx-ai/arx-session-projection-cache'
+import Storage from '@arx-ai/arx-storage'
+import { DomainFacility } from '@arx-ai/arx-storage-domain'
 import { MemoryMediaPool, MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 import SubagentRuntime, {
   SUBAGENT_DESCRIPTOR_VERSION,
   SubagentError,
-} from '@centurionarx/cxh-subagent'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import * as SubagentFork from '@centurionarx/cxh-subagent-fork-in-process'
+} from '@arx-ai/arx-subagent'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import * as SubagentFork from '@arx-ai/arx-subagent-fork-in-process'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 
 type Script = ConstructorParameters<typeof MockAdapter>[0]
@@ -38,7 +38,7 @@ async function setup(
 ) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  const root = mkdtempSync(join(tmpdir(), 'cxh-subagent-list-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-subagent-list-'))
   roots.push(root)
   await ctx.plugin(JsonlSessionPersistence, { root })
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -117,7 +117,7 @@ function descriptorPayload(label: string, version = SUBAGENT_DESCRIPTOR_VERSION)
   return { version, mode: 'continuable' as const, provider: 'spawn', label }
 }
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     subagentListHostileProbe: { poisoned?: boolean | undefined }
   }

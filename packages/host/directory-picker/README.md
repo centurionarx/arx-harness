@@ -1,4 +1,4 @@
-# @centurionarx/cxh-host-directory-picker
+# @arx-ai/arx-host-directory-picker
 
 English | [中文](README.zh.md)
 

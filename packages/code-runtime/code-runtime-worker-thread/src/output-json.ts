@@ -1,6 +1,6 @@
-/** JSON string-prefix accounting for the outer-output ledger. @module @centurionarx/cxh-code-runtime-worker-thread/output-json */
+/** JSON string-prefix accounting for the outer-output ledger. @module @arx-ai/arx-code-runtime-worker-thread/output-json */
 
-import type { CodeJsonValue } from '@centurionarx/cxh-code-runtime'
+import type { CodeJsonValue } from '@arx-ai/arx-code-runtime'
 
 type IntrinsicCallable = (this: unknown, ...args: unknown[]) => unknown
 

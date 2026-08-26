@@ -1,20 +1,20 @@
 /**
  * Log-backed session title service, deterministic fallback, and provider contract.
- * @module @centurionarx/cxh-session-title
+ * @module @arx-ai/arx-session-title
  */
 
-import { Context, FiberState, Service, type Fiber } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context, FiberState, Service, type Fiber } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { z as zod } from 'zod'
-import type { Branded } from '@centurionarx/cxh-brand'
-import { assertNever, deepFreeze, isAgentLoopRequest } from '@centurionarx/cxh-llm'
-import type { GenerateOptions } from '@centurionarx/cxh-llm'
+import type { Branded } from '@arx-ai/arx-brand'
+import { assertNever, deepFreeze, isAgentLoopRequest } from '@arx-ai/arx-llm'
+import type { GenerateOptions } from '@arx-ai/arx-llm'
 import type {
   Session,
   SessionEvent,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 // Type-only: resolves ctx.sessionProjections for the optional unit child.
-import type {} from '@centurionarx/cxh-session-projection'
+import type {} from '@arx-ai/arx-session-projection'
 // The `title` projection-key declaration lives in src/types.ts (its one home);
 // this re-export projects the type face onto the package root AND keeps the
 // module edge in the emitted index.d.ts, so aggregate programs consuming the
@@ -85,13 +85,13 @@ export interface Config {
   readonly maxTitleBytes: number
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionTitle: SessionTitleService
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Latest-wins session title snapshot. Log-only: it never enters the model

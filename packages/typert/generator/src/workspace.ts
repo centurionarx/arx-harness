@@ -1,6 +1,6 @@
 /**
  * Workspace-level discovery and model-driven Typert generation.
- * @module @centurionarx/cxh-typert-generator/workspace
+ * @module @arx-ai/arx-typert-generator/workspace
  */
 
 import { readFileSync } from 'node:fs'

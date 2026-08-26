@@ -5,11 +5,11 @@
  * while ensuring no chunk follows `finish`.
  *
  * Translate DeepSeek wire chunks into the harness `StreamChunk` protocol.
- * @module cxh-llm-deepseek/translate
+ * @module arx-llm-deepseek/translate
  */
 
-import { CallId, EMPTY_RESPONSE_CODE, LlmError } from '@centurionarx/cxh-llm'
-import type { ContentBlock, FinishReason, StreamChunk, TokenUsage } from '@centurionarx/cxh-llm'
+import { CallId, EMPTY_RESPONSE_CODE, LlmError } from '@arx-ai/arx-llm'
+import type { ContentBlock, FinishReason, StreamChunk, TokenUsage } from '@arx-ai/arx-llm'
 import { DONE } from './sse.ts'
 import type { WireChunk, WireUsage } from './types.ts'
 

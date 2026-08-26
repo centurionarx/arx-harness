@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-client-ui-input-trigger",
+  "name": "@arx-ai/arx-client-ui-input-trigger",
   "description": "Input trigger pipeline: '/' and '@' detection, candidate menu, pick routing to registered sources",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/ui-input-trigger"
   },
   "type": "module",
@@ -29,11 +29,11 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-locale"
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-locale"
       ],
       "platform": "web"
     }
@@ -47,23 +47,23 @@
     "clsx": "^2.0.0"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-file-reference": "workspace:^"
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-file-reference": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-test-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
     "@types/react": "~18.3.1",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
-    "@centurionarx/cxh-file-reference": "workspace:^"
+    "@arx-ai/arx-file-reference": "workspace:^"
   },
   "files": [
     "lib/index.js",

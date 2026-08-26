@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as UserIdInvariant from '@centurionarx/cxh-anonymous-user-id/invariant'
+import { Context } from '@arx-ai/cordis'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as UserIdInvariant from '@arx-ai/arx-anonymous-user-id/invariant'
 
 describe('invariant companion', () => {
   it('registers the package ownership with an empty installer', async () => {

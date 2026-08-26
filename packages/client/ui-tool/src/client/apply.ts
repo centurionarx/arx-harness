@@ -1,7 +1,7 @@
 /** Register the Tool call tree, details renderer, and built-in atomic views. */
-import type { ConnectionHandle } from '@centurionarx/cxh-client-connection/client'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { ToolCallTree } from './tool/ToolCallTree.tsx'
 import { ToolDetails } from './tool/ToolDetails.tsx'
 import { CONVERSATION_NS as NS } from './locale.ts'

@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-workspace",
-  "description": "Workspace entity registry (ctx.workspaceRegistry): durable workspace records with validated session attachment over the domain data form for the CENTURIONarx Harness",
+  "name": "@arx-ai/arx-workspace",
+  "description": "Workspace entity registry (ctx.workspaceRegistry): durable workspace records with validated session attachment over the domain data form for the arx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/workspace/workspace"
   },
   "type": "module",
@@ -37,24 +37,24 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-storage-domain": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-storage": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-storage": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-storage-domain": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-storage": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-storage": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

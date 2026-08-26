@@ -1,4 +1,4 @@
-# @centurionarx/cxh-token-meter
+# @arx-ai/arx-token-meter
 
 English | [中文](README.zh.md)
 
@@ -46,15 +46,15 @@ The [Agent Note](../../../.agents/notes/implemented/architecture/2026-07-29-proj
 ## Composition
 
 ```yaml
-- name: '@centurionarx/cxh-token-meter'
-- name: '@centurionarx/cxh-compaction-basic'
+- name: '@arx-ai/arx-token-meter'
+- name: '@arx-ai/arx-compaction-basic'
 ```
 
-Both plugins have usable defaults. The meter remains independent of model routing and optional compaction. A deployment configures capacity on its LLM adapter and compaction policy on `cxh-compaction-basic`.
+Both plugins have usable defaults. The meter remains independent of model routing and optional compaction. A deployment configures capacity on its LLM adapter and compaction policy on `arx-compaction-basic`.
 
 ## Model Experience
 
-Indirectly, through consumers such as `cxh-compaction-basic`; the service itself adds no prompt, message, schema, tool, or model call.
+Indirectly, through consumers such as `arx-compaction-basic`; the service itself adds no prompt, message, schema, tool, or model call.
 
 #### KV Cache effect
 

@@ -1572,12 +1572,12 @@
     },
     {
       "doc": "docs/subsystems/subprocess.md",
-      "symbol": "CxhEnvironmentKey",
+      "symbol": "ArxEnvironmentKey",
       "source": "packages/subprocess/subprocess/src/types.ts"
     },
     {
       "doc": "docs/subsystems/subprocess.md",
-      "symbol": "CxhEnvironment",
+      "symbol": "ArxEnvironment",
       "source": "packages/subprocess/subprocess/src/types.ts"
     },
     {

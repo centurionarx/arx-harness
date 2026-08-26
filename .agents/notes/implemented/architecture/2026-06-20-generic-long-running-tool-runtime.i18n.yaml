@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-20-generic-long-running-tool-runtime.md
-2026-06-20-generic-long-running-tool-runtime.md: 9c19577e0c93f0366261c50ad6d1d72ab762ca7a
-2026-06-20-generic-long-running-tool-runtime.zh.md: 2180a36de9458471c741f60150afc5fbbc5594fa
+2026-06-20-generic-long-running-tool-runtime.md: 0866ed9f371e0f9243312405fa78a7f884790888
+2026-06-20-generic-long-running-tool-runtime.zh.md: ca227062d4fa400523937b2189873b0317219ca9

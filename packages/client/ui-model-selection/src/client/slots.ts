@@ -4,8 +4,8 @@
  * entry; this package only contributes the single occupant, so no SlotMap
  * merge lives here.
  */
-import type { ModelSelection } from '@centurionarx/cxh-api-remotes/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { ModelDirectoryState } from './directory.ts'
 
 /** Injected business face of the composer model seat. */

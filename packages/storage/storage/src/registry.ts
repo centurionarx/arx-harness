@@ -1,6 +1,6 @@
 /**
  * Named backend registry of the storage hub.
- * @module @centurionarx/cxh-storage/src/registry
+ * @module @arx-ai/arx-storage/src/registry
  */
 
 import type { StorageBackend } from './backend.ts'

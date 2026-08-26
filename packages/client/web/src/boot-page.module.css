@@ -1,26 +1,26 @@
 /* The framework-free boot page cannot depend on theme delivery succeeding. */
 
 .boot {
-  --cxh-boot-bg: #fff;
-  --cxh-boot-label-primary: #0f1115;
-  --cxh-boot-label-secondary: #61666b;
-  --cxh-boot-label-tertiary: #81858c;
-  --cxh-boot-border: rgb(0 0 0 / 10%);
-  --cxh-boot-brand: #0f1115;
+  --arx-boot-bg: #fff;
+  --arx-boot-label-primary: #0f1115;
+  --arx-boot-label-secondary: #61666b;
+  --arx-boot-label-tertiary: #81858c;
+  --arx-boot-border: rgb(0 0 0 / 10%);
+  --arx-boot-brand: #0f1115;
 
   height: 100%;
   display: grid;
   place-items: center;
-  background: var(--dsw-alias-bg-base, var(--cxh-boot-bg));
+  background: var(--dsw-alias-bg-base, var(--arx-boot-bg));
 }
 
 :global(body[data-ds-dark-theme]) .boot {
-  --cxh-boot-bg: #151517;
-  --cxh-boot-label-primary: #f9fafb;
-  --cxh-boot-label-secondary: #cfd3d6;
-  --cxh-boot-label-tertiary: #adb2b8;
-  --cxh-boot-border: rgb(255 255 255 / 12%);
-  --cxh-boot-brand: #f9fafb;
+  --arx-boot-bg: #151517;
+  --arx-boot-label-primary: #f9fafb;
+  --arx-boot-label-secondary: #cfd3d6;
+  --arx-boot-label-tertiary: #adb2b8;
+  --arx-boot-border: rgb(255 255 255 / 12%);
+  --arx-boot-brand: #f9fafb;
 }
 
 .card {
@@ -35,13 +35,13 @@
   line-height: 24px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--dsw-alias-label-primary, var(--cxh-boot-label-primary));
+  color: var(--dsw-alias-label-primary, var(--arx-boot-label-primary));
 }
 
 .hint {
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-label-tertiary, var(--cxh-boot-label-tertiary));
+  color: var(--dsw-alias-label-tertiary, var(--arx-boot-label-tertiary));
 }
 
 .spinner {
@@ -49,7 +49,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid var(--dsw-alias-border-l2, var(--cxh-boot-border));
+  border: 2px solid var(--dsw-alias-border-l2, var(--arx-boot-border));
   animation: spin 0.8s linear infinite;
 }
 
@@ -59,7 +59,7 @@
   inset: -2px;
   border-radius: inherit;
   background: conic-gradient(
-    var(--dsw-alias-brand-primary, var(--cxh-boot-brand)) var(--cxh-boot-arc, 72deg),
+    var(--dsw-alias-brand-primary, var(--arx-boot-brand)) var(--arx-boot-arc, 72deg),
     transparent 0
   );
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
@@ -81,7 +81,7 @@
   font-size: 14px;
   line-height: 22px;
   font-weight: 600;
-  color: var(--dsw-alias-label-primary, var(--cxh-boot-label-primary));
+  color: var(--dsw-alias-label-primary, var(--arx-boot-label-primary));
 }
 
 .failedItem {
@@ -99,6 +99,6 @@
   );
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-label-secondary, var(--cxh-boot-label-secondary));
+  color: var(--dsw-alias-label-secondary, var(--arx-boot-label-secondary));
   white-space: pre-wrap;
 }

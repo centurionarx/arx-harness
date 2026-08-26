@@ -1,7 +1,7 @@
 /** Session-local ownership index for Package business views on `cordis_run` cards. */
 
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
-import type { HostObservable } from '@centurionarx/cxh-client-ui-slots'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
+import type { HostObservable } from '@arx-ai/arx-client-ui-slots'
 import type {
   CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
 } from './events.ts'

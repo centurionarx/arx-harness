@@ -1,11 +1,11 @@
-/** Package-owned durable workflow-record invariants. @module @centurionarx/cxh-tool-workflow/invariant */
+/** Package-owned durable workflow-record invariants. @module @arx-ai/arx-tool-workflow/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type {} from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tool-workflow'
+const PACKAGE_NAME = '@arx-ai/arx-tool-workflow'
 
 /** Cordis companion plugin name. */
 export const name = 'tool-workflow-invariant'

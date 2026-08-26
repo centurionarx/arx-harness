@@ -1,11 +1,11 @@
-import { freezeMessage, MessageId } from '@centurionarx/cxh-llm'
+import { freezeMessage, MessageId } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Events } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import * as ScopeInvariant from '@centurionarx/cxh-scope/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { Events } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import * as ScopeInvariant from '@arx-ai/arx-scope/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

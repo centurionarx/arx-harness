@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { parseCxhArgs } from '../src/args.ts'
+import { parseArxArgs } from '../src/args.ts'
 
-const parse = (argv: string[]) => parseCxhArgs(argv, '1.2.3')
+const parse = (argv: string[]) => parseArxArgs(argv, '1.2.3')
 
 /** Capture the process exit code while muting Commander's output. */
 function exitCode(argv: string[]): number {
@@ -20,7 +20,7 @@ function exitCode(argv: string[]): number {
 
 afterEach(() => { vi.restoreAllMocks() })
 
-describe('parseCxhArgs', () => {
+describe('parseArxArgs', () => {
   it('routes profile boots and the web alias, handing the rest to the app', () => {
     expect(parse(['--profile', 'tui'])).toEqual({ mode: 'profile', profile: 'tui', patches: [], args: [] })
     expect(parse(['--profile', 'tui', '--patch', 'a.yml', '--patch', 'b.yml']))
@@ -50,8 +50,8 @@ describe('parseCxhArgs', () => {
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['add', 'turtle-ui'] })
     expect(parse(['plugin', '--profile', 'tui', 'remove', 'turtle-ui']))
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['remove', 'turtle-ui'] })
-    expect(parse(['plugin', '--profile', 'tui', 'why', '@centurionarx/cordis']))
-      .toEqual({ mode: 'plugin', profile: 'tui', args: ['why', '@centurionarx/cordis'] })
+    expect(parse(['plugin', '--profile', 'tui', 'why', '@arx-ai/cordis']))
+      .toEqual({ mode: 'plugin', profile: 'tui', args: ['why', '@arx-ai/cordis'] })
     // Unknown pnpm flags forward verbatim.
     expect(parse(['plugin', '--profile', 'tui', 'add', '--save-dev', 'x']))
       .toEqual({ mode: 'plugin', profile: 'tui', args: ['add', '--save-dev', 'x'] })

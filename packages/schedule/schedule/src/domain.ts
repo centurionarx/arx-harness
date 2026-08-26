@@ -1,9 +1,9 @@
 /**
  * Strict Schedule decoding, replay, time validation, and framing.
- * @module @centurionarx/cxh-schedule
+ * @module @arx-ai/arx-schedule
  */
 
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import type {
   AfterScheduleRecord,
   AtInput,

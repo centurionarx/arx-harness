@@ -1,20 +1,20 @@
 /**
  * Same-session goal domain: event-sourced state, compare-and-set mutations,
  * and process-local continuation activation.
- * @module @centurionarx/cxh-goal
+ * @module @arx-ai/arx-goal
  */
 
 import { randomUUID } from 'node:crypto'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { z as zod } from 'zod'
 import type { ZodType } from 'zod'
-import { agentEvents } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import { TypertRemoteService, Remote } from '@centurionarx/cxh-typert-protocol'
+import { agentEvents } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 // Type-only: resolves ctx.sessionProjections for the optional unit child.
-import type {} from '@centurionarx/cxh-session-projection'
+import type {} from '@arx-ai/arx-session-projection'
 import {
   applyGoalEvent,
   decodeGoalChange,
@@ -56,7 +56,7 @@ export type * from './domain.ts'
 export { GOAL_CHANGE_VERSION, GoalError, GoalId } from './runtime.ts'
 export { decodeGoalChange, foldGoal, goalChangeRef } from './fold.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     goals: GoalService
   }

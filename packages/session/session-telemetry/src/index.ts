@@ -1,5 +1,5 @@
 /**
- * SessionTelemetryBackend Service Definition for the CENTURIONarx Harness.
+ * SessionTelemetryBackend Service Definition for the arx Harness.
  *
  * This package owns the CAPTURE side of session-event reporting — which records
  * exist (the chunk projection), what they carry (the logical record), when
@@ -11,12 +11,12 @@
  * design and its trade-offs are pinned in
  * .agents/notes/implemented/feature/2026-07-23-session-telemetry-otel-revival.md.
  *
- * @module @centurionarx/cxh-session-telemetry
+ * @module @arx-ai/arx-session-telemetry
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionTelemetry: SessionTelemetryBackend
   }

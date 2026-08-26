@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { jsonSchemaToPy, renderToolsSdkPy } from '@centurionarx/cxh-tools/src/py-types.ts'
-import { parameterSchemaSpecToJsonSchema } from '@centurionarx/cxh-tools'
-import type { ToolSdkSchema } from '@centurionarx/cxh-tools/src/ts-types.ts'
+import { jsonSchemaToPy, renderToolsSdkPy } from '@arx-ai/arx-tools/src/py-types.ts'
+import { parameterSchemaSpecToJsonSchema } from '@arx-ai/arx-tools'
+import type { ToolSdkSchema } from '@arx-ai/arx-tools/src/ts-types.ts'
 
 describe('jsonSchemaToPy', () => {
   it('maps the defineTool DSL subset', () => {

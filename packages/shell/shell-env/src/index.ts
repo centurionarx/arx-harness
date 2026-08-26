@@ -1,22 +1,22 @@
 /**
  * Tool-independent shell environment plugin: owns the `ctx.shellEnv` registry of
- * trusted, per-execution `CXH_*` variables consumed by the model-facing shell
- * tools (`cxh-tool-bash`, `cxh-tool-pwsh`). Built-in shell facts are owned by
+ * trusted, per-execution `ARX_*` variables consumed by the model-facing shell
+ * tools (`arx-tool-bash`, `arx-tool-pwsh`). Built-in shell facts are owned by
  * the registry itself while plugins can register additional, enumerable facts
  * with effect-scoped disposal.
  *
- * @module @centurionarx/cxh-shell-env
+ * @module @arx-ai/arx-shell-env
  */
 
-import { Service, type Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { CXH_ENV_PREFIX } from '@centurionarx/cxh-shell'
-import type { CxhEnvironment, CxhEnvironmentKey } from '@centurionarx/cxh-shell'
-import { CXH_HOME_ENV, resolveCxhHome } from '@centurionarx/cxh-home-paths'
-import type { ToolExecution } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-session-persistence'
+import { Service, type Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { ARX_ENV_PREFIX } from '@arx-ai/arx-shell'
+import type { ArxEnvironment, ArxEnvironmentKey } from '@arx-ai/arx-shell'
+import { ARX_HOME_ENV, resolveArxHome } from '@arx-ai/arx-home-paths'
+import type { ToolExecution } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-session-persistence'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     shellEnv: ShellEnvRegistry
   }
@@ -27,16 +27,16 @@ export const inject: string[] = []
 
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
-  /** CENTURIONarx Harness home directory exposed as `CXH_HOME`; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** arx Harness home directory exposed as `ARX_HOME`; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
 }
 
 /** Runtime configuration schema for the shell-env plugin. */
 export const Config: z<Config> = z.object({
-  cxhHome: z.string(),
+  arxHome: z.string(),
 })
 
-/** Model-visible metadata for one managed `CXH_*` environment variable. */
+/** Model-visible metadata for one managed `ARX_*` environment variable. */
 export interface BashEnvVariable {
   /** Concise description of the environment fact represented by the variable. */
   description: string
@@ -50,37 +50,37 @@ export interface BashEnvVariable {
 export interface BashEnvContributor {
   /** Stable contributor name used in diagnostics and duplicate detection. */
   name: string
-  /** Complete set of `CXH_*` keys this contributor may return. */
-  variables: Readonly<Record<CxhEnvironmentKey, BashEnvVariable>>
+  /** Complete set of `ARX_*` keys this contributor may return. */
+  variables: Readonly<Record<ArxEnvironmentKey, BashEnvVariable>>
   /**
    * Resolve this contributor's available values for one tool execution.
    * @param execution - the shell tool execution and its optional calling agent.
    * @returns a partial map containing only keys declared in {@link variables}.
    */
-  resolve(execution: ToolExecution): Readonly<Partial<Record<CxhEnvironmentKey, string>>>
+  resolve(execution: ToolExecution): Readonly<Partial<Record<ArxEnvironmentKey, string>>>
 }
 
 /** An enumerable declaration returned by {@link ShellEnvRegistry.list}. */
 export interface BashEnvVariableInfo extends BashEnvVariable {
   /** Contributor that owns the variable. */
   contributor: string
-  /** Declared `CXH_*` environment variable name. */
-  key: CxhEnvironmentKey
+  /** Declared `ARX_*` environment variable name. */
+  key: ArxEnvironmentKey
 }
 
-const CXH_SHELL_KEY = `${CXH_ENV_PREFIX}SHELL` as const
-const CXH_SESSION_ID_KEY = `${CXH_ENV_PREFIX}SESSION_ID` as const
-const CXH_SESSION_JSONL_KEY = `${CXH_ENV_PREFIX}SESSION_JSONL` as const
-const RESERVED_BASH_ENV_KEYS = new Set<CxhEnvironmentKey>([
-  CXH_HOME_ENV,
-  CXH_SHELL_KEY,
-  CXH_SESSION_ID_KEY,
+const ARX_SHELL_KEY = `${ARX_ENV_PREFIX}SHELL` as const
+const ARX_SESSION_ID_KEY = `${ARX_ENV_PREFIX}SESSION_ID` as const
+const ARX_SESSION_JSONL_KEY = `${ARX_ENV_PREFIX}SESSION_JSONL` as const
+const RESERVED_BASH_ENV_KEYS = new Set<ArxEnvironmentKey>([
+  ARX_HOME_ENV,
+  ARX_SHELL_KEY,
+  ARX_SESSION_ID_KEY,
 ])
 const BASH_ENV_KEY_SUFFIX = /^[A-Z][A-Z0-9_]*$/
 
 /**
- * Registry (`ctx.shellEnv`) for trusted, per-execution `CXH_*` variables.
- * The namespace is rebuilt for every model shell call: ambient `CXH_*` values
+ * Registry (`ctx.shellEnv`) for trusted, per-execution `ARX_*` variables.
+ * The namespace is rebuilt for every model shell call: ambient `ARX_*` values
  * are discarded by the executor, then the registry's current snapshot is
  * injected. Built-in shell facts remain owned by the registry itself while
  * plugins can register additional, enumerable facts with effect-scoped
@@ -88,8 +88,8 @@ const BASH_ENV_KEY_SUFFIX = /^[A-Z][A-Z0-9_]*$/
  */
 export class ShellEnvRegistry extends Service {
   private readonly contributors = new Map<string, BashEnvContributor>()
-  private readonly keyOwners = new Map<CxhEnvironmentKey, string>()
-  private readonly cxhHome: string
+  private readonly keyOwners = new Map<ArxEnvironmentKey, string>()
+  private readonly arxHome: string
 
   /**
    * Create and install the `ctx.shellEnv` service.
@@ -98,7 +98,7 @@ export class ShellEnvRegistry extends Service {
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'shellEnv')
-    this.cxhHome = resolveCxhHome(config.cxhHome)
+    this.arxHome = resolveArxHome(config.arxHome)
   }
 
   /**
@@ -116,10 +116,10 @@ export class ShellEnvRegistry extends Service {
         throw new Error(`bash env contributor "${contributor.name}" is already registered`)
       }
 
-      const variables = Object.entries(contributor.variables) as [CxhEnvironmentKey, BashEnvVariable][]
+      const variables = Object.entries(contributor.variables) as [ArxEnvironmentKey, BashEnvVariable][]
       for (const [key, variable] of variables) {
-        if (!key.startsWith(CXH_ENV_PREFIX)
-          || !BASH_ENV_KEY_SUFFIX.test(key.slice(CXH_ENV_PREFIX.length))) {
+        if (!key.startsWith(ARX_ENV_PREFIX)
+          || !BASH_ENV_KEY_SUFFIX.test(key.slice(ARX_ENV_PREFIX.length))) {
           throw new Error(`bash env contributor "${contributor.name}" declared invalid key "${key}"`)
         }
         if (RESERVED_BASH_ENV_KEYS.has(key)) {
@@ -145,23 +145,23 @@ export class ShellEnvRegistry extends Service {
   }
 
   /**
-   * Build the trusted `CXH_*` snapshot for one shell tool execution.
+   * Build the trusted `ARX_*` snapshot for one shell tool execution.
    * @param execution - the current tool execution.
    * @returns an immutable environment overlay containing built-ins and current contributions.
    */
-  collect(execution: ToolExecution): CxhEnvironment {
-    const values: Record<CxhEnvironmentKey, string> = {
-      [CXH_HOME_ENV]: this.cxhHome,
-      [CXH_SHELL_KEY]: '1',
+  collect(execution: ToolExecution): ArxEnvironment {
+    const values: Record<ArxEnvironmentKey, string> = {
+      [ARX_HOME_ENV]: this.arxHome,
+      [ARX_SHELL_KEY]: '1',
     }
     if (execution.agent !== undefined) {
-      values[CXH_SESSION_ID_KEY] = execution.agent.session.header.id
+      values[ARX_SESSION_ID_KEY] = execution.agent.session.header.id
     }
 
     for (const contributor of [...this.contributors.values()].sort((left, right) => left.name.localeCompare(right.name))) {
       const resolved = contributor.resolve(execution)
       for (const [rawKey, value] of Object.entries(resolved)) {
-        const key = rawKey as CxhEnvironmentKey
+        const key = rawKey as ArxEnvironmentKey
         if (!Object.hasOwn(contributor.variables, key)) {
           throw new Error(`bash env contributor "${contributor.name}" returned undeclared key "${key}"`)
         }
@@ -186,7 +186,7 @@ export class ShellEnvRegistry extends Service {
       .flatMap(contributor => Object.entries(contributor.variables).map(([key, variable]) => ({
         contributor: contributor.name,
         description: variable.description,
-        key: key as CxhEnvironmentKey,
+        key: key as ArxEnvironmentKey,
       })))
       .sort((left, right) => left.key.localeCompare(right.key))
   }
@@ -194,7 +194,7 @@ export class ShellEnvRegistry extends Service {
 
 /**
  * Load the shell-env plugin: register the `ctx.shellEnv` service and the
- * shell-agnostic persistence contributor (`CXH_SESSION_JSONL`).
+ * shell-agnostic persistence contributor (`ARX_SESSION_JSONL`).
  * @param ctx - Cordis context that owns the service and registrations.
  * @param config - home-directory configuration for the built-in variables.
  */
@@ -203,7 +203,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   registry.register({
     name: 'session-persistence',
     variables: {
-      [CXH_SESSION_JSONL_KEY]: {
+      [ARX_SESSION_JSONL_KEY]: {
         description: 'Absolute target path of the current session JSONL when the active persistence backend provides one.',
       },
     },
@@ -211,7 +211,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       const agent = execution.agent
       if (agent === undefined) return {}
       const location = ctx.get('sessionPersistence')?.locate(agent.session.header)
-      return location?.kind === 'jsonl' ? { [CXH_SESSION_JSONL_KEY]: location.path } : {}
+      return location?.kind === 'jsonl' ? { [ARX_SESSION_JSONL_KEY]: location.path } : {}
     },
   })
 }

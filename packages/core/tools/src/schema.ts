@@ -1,8 +1,8 @@
-/** Unified JSON-value schema DSL, inference, compilation, and typed tool helper. @module cxh-tools/schema */
+/** Unified JSON-value schema DSL, inference, compilation, and typed tool helper. @module arx-tools/schema */
 
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session'
 import type { ToolDefinition, ToolExecution, ToolExecutionResult, ToolRunContext, ToolResult } from './index.ts'
 import { assertSupportedJsonSchema, isJsonSchemaRecord, isPlainJsonArray, JsonSchemaError, validateJsonSchemaValue } from './json-schema.ts'
 import type { JsonSchemaNode, JsonSchemaScalar, ObjectJsonSchema } from './json-schema.ts'

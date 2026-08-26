@@ -1,4 +1,4 @@
-import { CallId, createUserMessage, LlmError, type Message, type StreamChunk } from '@centurionarx/cxh-llm'
+import { CallId, createUserMessage, LlmError, type Message, type StreamChunk } from '@arx-ai/arx-llm'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { describe, expect, it } from 'vitest'
 
@@ -23,8 +23,8 @@ function event(body: Record<string, unknown>): Record<string, unknown> {
 
 describe('tool naming', () => {
   it('namespaces a harness tool the way the CLI presents it', () => {
-    expect(toolAlias('bash')).toBe('mcp__cxh__bash')
-    expect(harnessToolName('mcp__cxh__bash')).toBe('bash')
+    expect(toolAlias('bash')).toBe('mcp__arx__bash')
+    expect(harnessToolName('mcp__arx__bash')).toBe('bash')
   })
 
   it('leaves an unprefixed name alone rather than guessing at it', () => {
@@ -89,7 +89,7 @@ describe('translate', () => {
 
   it('recovers the harness tool name and finishes on tool calls', async () => {
     const out = await chunks([
-      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":"ls"}' } }),
       event({ type: 'content_block_stop', index: 0 }),
       { type: 'result', subtype: 'error_max_turns' },
@@ -101,10 +101,10 @@ describe('translate', () => {
 
   it('carries every tool a turn requested, not just the first', async () => {
     const out = await chunks([
-      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":"ls"}' } }),
       event({ type: 'content_block_stop', index: 0 }),
-      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-2', name: 'mcp__cxh__read' } }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-2', name: 'mcp__arx__read' } }),
       event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"path":"a.ts"}' } }),
       event({ type: 'content_block_stop', index: 1 }),
       { type: 'result', subtype: 'error_max_turns' },
@@ -119,7 +119,7 @@ describe('translate', () => {
   it('keeps interleaved blocks apart by their own index', async () => {
     const out = await chunks([
       event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
-      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{}' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'running' } }),
       event({ type: 'content_block_stop', index: 1 }),

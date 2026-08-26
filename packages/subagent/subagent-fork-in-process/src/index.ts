@@ -4,21 +4,21 @@
  * parent's session log — so the child inherits the parent's conversation context instead of
  * starting fresh. The seed ends at the last `turn/end`: the current tool-call turn is
  * unbalanced and cannot be replayed as a valid child session.
- * @module @centurionarx/cxh-subagent-fork-in-process
+ * @module @arx-ai/arx-subagent-fork-in-process
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import type { Agent } from '@arx-ai/arx-agent'
 import type {
   ContinuableCreateRequest,
   ContinuableCreateSpec,
   ResolvedSubagentStartRequest,
   SubagentCapabilities,
   SubagentProvider,
-} from '@centurionarx/cxh-subagent'
-import { startInProcessRun } from '@centurionarx/cxh-subagent-in-process-driver'
+} from '@arx-ai/arx-subagent'
+import { startInProcessRun } from '@arx-ai/arx-subagent-in-process-driver'
 
 export const name = 'subagent-fork-in-process'
 // `tools` is deliberately NOT injected — same rationale as subagent-spawn-in-process: the

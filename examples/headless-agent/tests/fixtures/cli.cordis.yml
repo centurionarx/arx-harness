@@ -2,15 +2,15 @@
   name: './cli-mock-llm.ts'
 
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ../../cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: agent-spine
-        name: '@centurionarx/cxh-agent-spine-demo'
+        name: '@arx-ai/arx-agent-spine-demo'
         config:
           agents:
             - id: main
@@ -18,12 +18,12 @@
               model: cli-mock
               cwd: !!js process.cwd()
           workspaceContext: false
-          cxhHome: './.cxh-home'
+          arxHome: './.arx-home'
           skills:
             filesystem:
               agentsHome: './.agents-home'
           persona: 'Keyless headless-agent smoke.'
       - id: persistence
-        name: '@centurionarx/cxh-session-persistence-jsonl'
+        name: '@arx-ai/arx-session-persistence-jsonl'
         config:
           root: './.sessions'

@@ -2,10 +2,10 @@
  * Dialect-neutral vocabulary and log-only events shared by the Claude Code and
  * Codex hook bridges. Payload construction, matching differences, environment,
  * and extension-point-specific decision mapping remain owned by each bridge.
- * @module @centurionarx/cxh-hook-protocol/types
+ * @module @arx-ai/arx-hook-protocol/types
  */
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * A hook command was invoked at a hook point — a log-only record (like

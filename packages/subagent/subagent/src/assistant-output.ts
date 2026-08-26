@@ -7,11 +7,11 @@
  * select the accumulated assistant text. Selection is independent of the
  * run's stop reason.
  *
- * @module @centurionarx/cxh-subagent/assistant-output
+ * @module @arx-ai/arx-subagent/assistant-output
  */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /**
  * Incremental fold of the selection rule, for backends that observe a child's

@@ -1,12 +1,12 @@
 /** Models section registration: slot declaration injection, the locale-following label thunk, and HMR recovery. */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { resolveSlotLabel } from '@centurionarx/cxh-client-ui-slots'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import { apply as settingsApply, inject as settingsInject } from '@centurionarx/cxh-client-ui-settings/client'
-import { apply, inject, refreshIfLoaded } from '@centurionarx/cxh-client-ui-settings-models/client'
+import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
+import { apply, inject, refreshIfLoaded } from '@arx-ai/arx-client-ui-settings-models/client'
 import {
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../src/onboarding-copy.ts'

@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-bash-local",
-  "description": "Local-subprocess implementation of the CENTURIONarx Harness bash executor seam",
+  "name": "@arx-ai/arx-bash-local",
+  "description": "Local-subprocess implementation of the arx Harness bash executor seam",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/shell/bash-local"
   },
   "type": "module",
@@ -32,23 +32,23 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-shell": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-shell": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-shell": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-subprocess-local": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cordis": "workspace:^",
-    "@centurionarx/cxh-settings": "workspace:^"
+    "@arx-ai/arx-shell": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-subprocess-local": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   }
 }

@@ -1,6 +1,6 @@
 /** Agent-scoped serialization for Schedule reads and durable mutations. */
 
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Agent } from '@arx-ai/arx-agent'
 
 const tails = new WeakMap<Agent, Promise<void>>()
 

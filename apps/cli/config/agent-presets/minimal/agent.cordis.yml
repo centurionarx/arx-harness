@@ -7,7 +7,7 @@
 # `str_replace_editor`. Context compaction is absent.
 
 - id: persona
-  name: '@centurionarx/cxh-persona'
+  name: '@arx-ai/arx-persona'
   config:
     text: You are a helpful software engineer assistant.
     complete: true
@@ -25,16 +25,16 @@
     terminals: true
   config:
     - id: pty
-      name: '@centurionarx/cxh-terminal'
+      name: '@arx-ai/arx-terminal'
 
     - id: terminal-bash
-      name: '@centurionarx/cxh-terminal-bash'
+      name: '@arx-ai/arx-terminal-bash'
       disabled: !!js process.platform === 'win32'
       config:
         timeoutMs: 300000
 
     - id: persistent-bash
-      name: '@centurionarx/cxh-tool-bash-persistent'
+      name: '@arx-ai/arx-tool-bash-persistent'
       disabled: !!js process.platform === 'win32'
       config:
         timeoutMs: 300000
@@ -49,14 +49,14 @@
           * Please run long lived commands in the background, e.g. 'sleep 10 &' or start a server in the background.
 
     - id: terminal-pwsh
-      name: '@centurionarx/cxh-terminal-bash'
+      name: '@arx-ai/arx-terminal-bash'
       disabled: !!js process.platform !== 'win32'
       config:
         shellDialect: pwsh
         timeoutMs: 300000
 
     - id: persistent-pwsh
-      name: '@centurionarx/cxh-tool-pwsh-persistent'
+      name: '@arx-ai/arx-tool-pwsh-persistent'
       disabled: !!js process.platform !== 'win32'
       config:
         timeoutMs: 300000
@@ -78,11 +78,11 @@
     fs: true
   config:
     - id: fs-local
-      name: '@centurionarx/cxh-fs-local'
+      name: '@arx-ai/arx-fs-local'
       config:
-        cwd: !!js process.env.CXH_CWD ?? process.cwd()
+        cwd: !!js process.env.ARX_CWD ?? process.cwd()
 
     - id: str-replace-editor
-      name: '@centurionarx/cxh-tool-str-replace-editor'
+      name: '@arx-ai/arx-tool-str-replace-editor'
       config:
         maxOutputChars: 16000

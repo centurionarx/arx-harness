@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-trajectory
+# @arx-ai/arx-client-ui-trajectory
 
 [English](README.md) | 中文
 

@@ -4,28 +4,28 @@ import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 
 /**
- * Keyless smoke for SOURCE `cxh` execution: run `apps/cli/src/bin.ts`
+ * Keyless smoke for SOURCE `arx` execution: run `apps/cli/src/bin.ts`
  * with the exact production runtime vector (`node --import tsx/esm`, the
- * vector the root `cxh` script invokes directly) and assert the
+ * vector the root `arx` script invokes directly) and assert the
  * required-config diagnostic. The Node compatibility matrix runs this
  * WHOLE file, so a Node release changing module hooks or TypeScript handling
- * breaks this gate instead of every developer's `pnpm cxh`; the built-bin
+ * breaks this gate instead of every developer's `pnpm arx`; the built-bin
  * suite covers the published `lib/` entry, not this source chain.
  */
 
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
-const cxhSourceBin = 'apps/cli/src/bin.ts'
+const arxSourceBin = 'apps/cli/src/bin.ts'
 
-describe('cxh SOURCE launcher (node --import tsx/esm)', () => {
+describe('arx SOURCE launcher (node --import tsx/esm)', () => {
   it('launches the source CLI without building', async () => {
     const rootPackage = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8')) as {
       readonly scripts?: Record<string, string>
     }
-    expect(rootPackage.scripts?.cxh).toBe('node --import tsx/esm apps/cli/src/bin.ts')
+    expect(rootPackage.scripts?.arx).toBe('node --import tsx/esm apps/cli/src/bin.ts')
   })
 
   it('boots the source entry and requires a profile', async () => {
-    const result = await execa(process.execPath, ['--import', 'tsx/esm', cxhSourceBin], {
+    const result = await execa(process.execPath, ['--import', 'tsx/esm', arxSourceBin], {
       cwd: repoRoot,
       input: '',
       timeout: 25_000,
@@ -33,7 +33,7 @@ describe('cxh SOURCE launcher (node --import tsx/esm)', () => {
       reject: false,
     })
     if (result.timedOut) {
-      throw new Error(`cxh source launch did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
+      throw new Error(`arx source launch did not exit within 25s. stdout:\n${result.stdout}\nstderr:\n${result.stderr}`)
     }
     expect(result.exitCode).not.toBe(0)
     expect(result.stderr).toContain('--profile <name> is required')

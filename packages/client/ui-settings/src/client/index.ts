@@ -11,13 +11,13 @@
  * ui-sidebar would close a reference cycle through ui-layout and ui-theme.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { ConnectionHandle } from '@centurionarx/cxh-api-remotes/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { ConnectionHandle } from '@arx-ai/arx-api-remotes/client'
 // Type-only pair supplying `$on` and its key face without dragging a build
 // artifact into the Host graph (rationale beside the same pair in
 // settings-scope.ts).
-import type {} from '@centurionarx/cxh-api-remotes/types'
-import type {} from '@centurionarx/cxh-settings/types'
+import type {} from '@arx-ai/arx-api-remotes/types'
+import type {} from '@arx-ai/arx-settings/types'
 import { SettingsSchemaService } from './schema.ts'
 import { SettingsScopeBinder } from './settings-scope.ts'
 import { SettingsDescribeMirror } from './settings-mirror.ts'

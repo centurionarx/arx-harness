@@ -6,12 +6,12 @@
  * sink). Package-private; the hub alone constructs it and wires the scoped
  * event listeners onto it.
  */
-import type { ClientContext, ObservableSnapshot, SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { ClientContext, ObservableSnapshot, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type {
   ArbitrateKey, ArbitrateOutcome, CommandClaim, ConsumeTokenRequest, PickOutcome,
   ReferenceInsert, InputTriggerController, SubmitImageAttachment, SubmitOutcome, TokenSpan,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
 import type {
   DraftAttachmentId, EditRange, EditSelection, InputActions, InputEffect, InputNotice, InputState,
   PasteComponent, QueuedMessage, SessionInput, SubmitAttempt,

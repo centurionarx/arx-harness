@@ -1,9 +1,9 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@centurionarx/cxh-settings'
+import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@arx-ai/arx-settings'
 import {
   CONVERSATION_SETTINGS_NAMESPACE, DEFAULT_BUSY_ENTER_BEHAVIOR, apply,
-} from '@centurionarx/cxh-client-ui-conversation'
+} from '@arx-ai/arx-client-ui-conversation'
 
 class MemorySettings extends SettingsProvider {
   readonly writable = true

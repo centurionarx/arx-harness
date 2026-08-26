@@ -1,9 +1,9 @@
-/** Package-owned invariant companion for the subprocess seam. @module @centurionarx/cxh-subprocess/invariant */
+/** Package-owned invariant companion for the subprocess seam. @module @arx-ai/arx-subprocess/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-subprocess'
+const PACKAGE_NAME = '@arx-ai/arx-subprocess'
 
 /** Cordis companion plugin name. */
 export const name = 'subprocess-invariant'

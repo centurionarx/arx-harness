@@ -13,13 +13,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import LlmRuntime, { createMessage, createUserMessage } from '@centurionarx/cxh-llm'
-import LocalCredentialProvider from '@centurionarx/cxh-credentials-local'
-import FileSettingsProvider from '@centurionarx/cxh-settings-file'
-import * as LlmPiAi from '@centurionarx/cxh-llm-pi-ai'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import LlmRuntime, { createMessage, createUserMessage } from '@arx-ai/arx-llm'
+import LocalCredentialProvider from '@arx-ai/arx-credentials-local'
+import FileSettingsProvider from '@arx-ai/arx-settings-file'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import { assemble } from './assemble.ts'
 import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
@@ -46,7 +46,7 @@ afterEach(async () => {
 
 /** Boot the dormant composition: a bare `llm-pi-ai` row with no config at all. */
 async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-pi-composition-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-pi-composition-'))
   const settingsPath = join(root, 'settings.yaml')
   await writeFile(settingsPath, '# personal settings\n')
   await writeFile(join(root, '.credentials.yaml'), 'version: 1\nrefs:\n  PI_COMPOSITION_KEY: key-from-store\n', { mode: 0o600 })
@@ -56,17 +56,17 @@ async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }
     '- id: llm',
     "  name: 'test-llm-service'",
     '- id: settings',
-    "  name: '@centurionarx/cxh-settings-file'",
+    "  name: '@arx-ai/arx-settings-file'",
     '  config:',
     `    path: ${JSON.stringify(settingsPath)}`,
     '    debounceMs: 10',
     '- id: credentials',
-    "  name: '@centurionarx/cxh-credentials-local'",
+    "  name: '@arx-ai/arx-credentials-local'",
     '  config:',
     `    path: ${JSON.stringify(join(root, '.credentials.yaml'))}`,
     '    debounceMs: 10',
     '- id: llm-pi-ai',
-    "  name: '@centurionarx/cxh-llm-pi-ai'",
+    "  name: '@arx-ai/arx-llm-pi-ai'",
     '',
   ].join('\n'))
 
@@ -77,9 +77,9 @@ async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
     ['test-llm-service', LlmRuntime],
-    ['@centurionarx/cxh-settings-file', FileSettingsProvider],
-    ['@centurionarx/cxh-credentials-local', LocalCredentialProvider],
-    ['@centurionarx/cxh-llm-pi-ai', LlmPiAi],
+    ['@arx-ai/arx-settings-file', FileSettingsProvider],
+    ['@arx-ai/arx-credentials-local', LocalCredentialProvider],
+    ['@arx-ai/arx-llm-pi-ai', LlmPiAi],
   ])
   ctx.loader.internal = {
     version: 'v2',

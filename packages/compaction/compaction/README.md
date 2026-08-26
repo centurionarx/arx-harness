@@ -1,4 +1,4 @@
-# @centurionarx/cxh-compaction
+# @arx-ai/arx-compaction
 
 English | [中文](README.zh.md)
 
@@ -8,11 +8,11 @@ This package owns the Service Definition role of the compaction capability, spli
 
 | Package | Role |
 |---|---|
-| `@centurionarx/cxh-compaction` (this) | Service Definition: abstract service + `compaction/*` events + `CompactionResult` + correlated checkpoint-source constructor + tool-pairing boundary helpers |
-| `@centurionarx/cxh-compaction-basic` | Service Provider: `ctx.tokenMeter` pressure + token-budget retention + `llm.stream()` summarization |
-| `@centurionarx/cxh-command-compact` | Consumer: the human `/compact` command over `ctx.compaction.compactNow()` |
+| `@arx-ai/arx-compaction` (this) | Service Definition: abstract service + `compaction/*` events + `CompactionResult` + correlated checkpoint-source constructor + tool-pairing boundary helpers |
+| `@arx-ai/arx-compaction-basic` | Service Provider: `ctx.tokenMeter` pressure + token-budget retention + `llm.stream()` summarization |
+| `@arx-ai/arx-command-compact` | Consumer: the human `/compact` command over `ctx.compaction.compactNow()` |
 
-Unlike the bash seam, this Service Definition depends on `@centurionarx/cxh-session` and `@centurionarx/cxh-llm` — the contract's verbs are defined over a `Session` and its output is the `ContentBlock` vocabulary, so they cannot be expressed without naming those packages. That deviation from the "Service Definition depends only on cordis" guidance is intentional and recorded in the [compaction capability-seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.md).
+Unlike the bash seam, this Service Definition depends on `@arx-ai/arx-session` and `@arx-ai/arx-llm` — the contract's verbs are defined over a `Session` and its output is the `ContentBlock` vocabulary, so they cannot be expressed without naming those packages. That deviation from the "Service Definition depends only on cordis" guidance is intentional and recorded in the [compaction capability-seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.md).
 
 ## Service API (`ctx.compaction`)
 
@@ -68,7 +68,7 @@ Subclass `CompactionEngine`, implement `compactIfNeeded`, `compactNow`, and `com
 
 ## Recognizing a checkpoint outside the host program (`./checkpoint`)
 
-`compactCheckpointSource()`, `CompactionCheckpointSource`, and `isCompactCheckpointSource()` are declared on the `@centurionarx/cxh-compaction/checkpoint` subpath and re-exported from the root, so host-side consumers keep reading them from the root. The constructor requires the owning `CompactionId`, preventing backends from writing an uncorrelated marker that the package invariant must reject. The leaf imports no cordis and declares no module augmentation (the [`cxh-commands/brand`](../../interaction/commands/README.md) shape), which is what lets a client or wire program name the checkpoint source: the package **root** cannot enter such a program at all, because it reaches `cxh-session`'s root and that `Context` merge declares the host `sessions` service against the client's own (`TS2717` — one program per side, per [development.md](../../../docs/development.md#typescript-project-layout)). The web client's transcript adapter pins its plugin literal to the leaf's source type, so renaming the plugin id there is a compile error here.
+`compactCheckpointSource()`, `CompactionCheckpointSource`, and `isCompactCheckpointSource()` are declared on the `@arx-ai/arx-compaction/checkpoint` subpath and re-exported from the root, so host-side consumers keep reading them from the root. The constructor requires the owning `CompactionId`, preventing backends from writing an uncorrelated marker that the package invariant must reject. The leaf imports no cordis and declares no module augmentation (the [`arx-commands/brand`](../../interaction/commands/README.md) shape), which is what lets a client or wire program name the checkpoint source: the package **root** cannot enter such a program at all, because it reaches `arx-session`'s root and that `Context` merge declares the host `sessions` service against the client's own (`TS2717` — one program per side, per [development.md](../../../docs/development.md#typescript-project-layout)). The web client's transcript adapter pins its plugin literal to the leaf's source type, so renaming the plugin id there is a compile error here.
 
 ## Model Experience
 
@@ -88,6 +88,6 @@ A successful backend replacement invalidates reuse from the first shadowed histo
 
 ## Known Limitations and Deferred Work
 
-- **Human command, not a model tool** — `@centurionarx/cxh-command-compact` exposes argument-free `/compact` through `ctx.commands`; no model-facing compaction tool is registered.
+- **Human command, not a model tool** — `@arx-ai/arx-command-compact` exposes argument-free `/compact` through `ctx.commands`; no model-facing compaction tool is registered.
 - **Some single-unit overflow is out of contract** — balanced summary compaction cannot split one indivisible unit. The optional pruning companion can still repair a closed tool pair when text-bearing tool-result bulk is removable; a large non-tool node or a tool unit whose non-prunable remainder is oversized cannot be compacted.
 - **An envelope that alone approaches the window is not surface-compaction work** — compaction shrinks derived history, never the system prompt, tools, or session prefix.

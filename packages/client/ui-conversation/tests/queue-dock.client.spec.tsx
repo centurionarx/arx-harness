@@ -8,13 +8,13 @@ import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react
 import { useSyncExternalStore } from 'react'
 import {
   EMPTY_CHAT_SNAPSHOT, EMPTY_CONVERSATION_VIEWS,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   ConversationSnapshot, QueuedMessage, SessionId, SessionListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { SnapshotSelectorHook } from '@centurionarx/cxh-client-ui-slots'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import type { SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { QueueItemId } from '../src/client/contract/queue.ts'
 import type { InputState } from '../src/client/input/contract.ts'
 import { zh } from '../src/client/locales.ts'

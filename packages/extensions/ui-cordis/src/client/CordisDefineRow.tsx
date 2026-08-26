@@ -3,9 +3,9 @@
 import { useId, useState, type ReactNode } from 'react'
 import {
   CodeBlock, DisclosureRow, IconCodeOutline16, IconInspectOutline12, StateDot,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale } from '@centurionarx/cxh-client-ui-slots'
-import type { ToolCallViewProps } from '@centurionarx/cxh-client-ui-tool/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale } from '@arx-ai/arx-client-ui-slots'
+import type { ToolCallViewProps } from '@arx-ai/arx-client-ui-tool/client'
 import { cordisDefineCard, type CordisToolState } from './card-model.ts'
 import type { CordisCardFace } from './slots.ts'
 import { cordisVisibleStatus, type CordisVisibleStatus } from './status.ts'

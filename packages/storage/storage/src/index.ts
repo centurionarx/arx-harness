@@ -2,10 +2,10 @@
  * Storage hub (`ctx.storage`): a named backend registry plus mounted
  * data-form facilities. The hub itself performs no IO — backends own media,
  * data forms (the domain layer first) own semantics.
- * @module @centurionarx/cxh-storage
+ * @module @arx-ai/arx-storage
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { StorageError } from './error.ts'
 import { BackendRegistry } from './registry.ts'
 
@@ -27,7 +27,7 @@ export function storageBackendServiceKey(name: string): string {
   return `storage.backend.${name}`
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     storage: Storage
   }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SystemPrompt, { PromptAssembly, TOOL_ORDER_REST } from '@centurionarx/cxh-system-prompt'
-import type { ToolSchema } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import SystemPrompt, { PromptAssembly, TOOL_ORDER_REST } from '@arx-ai/arx-system-prompt'
+import type { ToolSchema } from '@arx-ai/arx-llm'
 
 function tool(name: string, description = name): ToolSchema {
   return { name, description, parameters: { type: 'object', properties: {} } }

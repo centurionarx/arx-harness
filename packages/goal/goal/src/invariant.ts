@@ -1,12 +1,12 @@
-/** Package-owned durable goal-stream invariants. @module @centurionarx/cxh-goal/invariant */
+/** Package-owned durable goal-stream invariants. @module @arx-ai/arx-goal/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 import { applyGoalEvent, emptyGoalFoldState } from './fold.ts'
 import type { GoalFoldState } from './fold.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-goal'
+const PACKAGE_NAME = '@arx-ai/arx-goal'
 
 /** Cordis companion plugin name. */
 export const name = 'goal-invariant'

@@ -3,7 +3,7 @@
  * API name and the exact Win32 code; the original POC silently ignored every
  * failed call and would run children UNRESTRICTED (fail-open) — that is the
  * failure mode this class exists to prevent.
- * @module @centurionarx/cxh-sandbox-windows-acl/errors
+ * @module @arx-ai/arx-sandbox-windows-acl/errors
  */
 
 export class Win32Error extends Error {

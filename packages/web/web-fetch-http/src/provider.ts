@@ -1,16 +1,16 @@
 /**
  * Safe HTTP(S) retrieval for `ctx.web`: validates URLs, follows only same-origin redirects,
  * enforces time and size limits, classifies and decodes text, and leaves presentation to
- * `@centurionarx/cxh-tool-web`. Requests carry no browser cookies or ambient credentials.
+ * `@arx-ai/arx-tool-web`. Requests carry no browser cookies or ambient credentials.
  *
  * Private-network and SSRF protection is not implemented; do not enable this provider where
  * it can reach sensitive internal targets.
- * @module @centurionarx/cxh-web-fetch-http/provider
+ * @module @arx-ai/arx-web-fetch-http/provider
  */
 
-import { WebError } from '@centurionarx/cxh-web'
-import type { WebFetchBody, WebFetchProvider, WebFetchRequest, WebFetchResult } from '@centurionarx/cxh-web'
-import { deadline, timeoutOf } from '@centurionarx/cxh-timeout'
+import { WebError } from '@arx-ai/arx-web'
+import type { WebFetchBody, WebFetchProvider, WebFetchRequest, WebFetchResult } from '@arx-ai/arx-web'
+import { deadline, timeoutOf } from '@arx-ai/arx-timeout'
 import { classifyContentType, decoderForCharset, isSameOrigin, parseCharset, validateFetchUrl } from './policy.ts'
 
 /** Resolved provider limits (the plugin's schemastery Config supplies defaults). */

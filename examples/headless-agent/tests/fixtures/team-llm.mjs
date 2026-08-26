@@ -1,6 +1,6 @@
 /** Deterministic keyless Agent Teams adapter for the real headless Loader snapshot. */
 
-import { CallId, LlmAdapter } from '@centurionarx/cxh-llm'
+import { CallId, LlmAdapter } from '@arx-ai/arx-llm'
 
 let nextCall = 0
 

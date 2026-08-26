@@ -9,8 +9,8 @@
  * covers everything the card shows.
  */
 
-import type { IApiClient } from '@centurionarx/cxh-client-connection/client'
-import type { SettingsScope, SettingsScopeSnapshot, SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { IApiClient } from '@arx-ai/arx-client-connection/client'
+import type { SettingsScope, SettingsScopeSnapshot, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import {
   CardForm, numberField, textField,
   type CardActions, type CardFieldState, type CardShell,

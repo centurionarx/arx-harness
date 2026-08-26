@@ -2,15 +2,15 @@
  * Provider-routed model-request retry policy on the agent loop's request
  * recovery extension point. Each scheduled retry is durable before its cancellable wait.
  *
- * @module @centurionarx/cxh-llm-retry
+ * @module @arx-ai/arx-llm-retry
  */
 
 import { randomUUID } from 'node:crypto'
-import type { Context, Events } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent, RequestErrorAction } from '@centurionarx/cxh-agent'
-import type { LlmFailure, ResolvedRetryPolicy } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { Context, Events } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent, RequestErrorAction } from '@arx-ai/arx-agent'
+import type { LlmFailure, ResolvedRetryPolicy } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import { RetryId } from './brand.ts'
 import type { LlmRetryEventData } from './types.ts'
 

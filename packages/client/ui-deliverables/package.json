@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-client-ui-deliverables",
+  "name": "@arx-ai/arx-client-ui-deliverables",
   "description": "Produced-files turn tail and clickable final-response file references for Web",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/arx-ai/arx-harness.git",
     "directory": "packages/client/ui-deliverables"
   },
   "type": "module",
@@ -29,13 +29,13 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-connection",
-        "@centurionarx/cxh-client-locale",
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-ui-conversation"
+        "@arx-ai/arx-client-connection",
+        "@arx-ai/arx-client-locale",
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-ui-conversation"
       ],
       "platform": "web"
     }
@@ -46,27 +46,27 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-client-connection": "workspace:^",
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-client-connection": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-client-connection": "workspace:^",
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-test-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-conversation": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
+    "@arx-ai/arx-client-connection": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
     "@types/react": "~18.3.1",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
-    "@centurionarx/cxh-client-ui-primitives": "workspace:^"
+    "@arx-ai/arx-client-ui-primitives": "workspace:^"
   },
   "files": [
     "lib/index.js",

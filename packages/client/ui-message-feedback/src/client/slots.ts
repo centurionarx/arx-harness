@@ -5,15 +5,15 @@
  * merge lives here. Live per-message state arrives through the `feedback`
  * hook (the framework standard kit binds it into `useFeedback`); inject
  * carries the two mutation verbs plus the lazy loader.
- * @module @centurionarx/cxh-client-ui-message-feedback/client/slots
+ * @module @arx-ai/arx-client-ui-message-feedback/client/slots
  */
 
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRuntime,
-} from '@centurionarx/cxh-client-ui-slots'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
-import type { MessageId } from '@centurionarx/cxh-client-connection/client'
-import type { MessageFeedbackRating } from '@centurionarx/cxh-message-feedback/types'
+} from '@arx-ai/arx-client-ui-slots'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
+import type { MessageId } from '@arx-ai/arx-client-connection/client'
+import type { MessageFeedbackRating } from '@arx-ai/arx-message-feedback/types'
 // Type-only: pulls this package's LocaleNamespaceMap merge (the 'feedback' seat).
 import type {} from './locales.ts'
 import type { MessageFeedbackActionResult, MessageFeedbackView } from './controller.ts'

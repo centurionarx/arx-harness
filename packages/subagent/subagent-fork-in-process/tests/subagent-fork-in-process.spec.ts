@@ -1,20 +1,20 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as AgentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
-import SubagentRuntime, { type SubagentStartRequest } from '@centurionarx/cxh-subagent'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import AgentRegistry from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import * as AgentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
+import SubagentRuntime, { type SubagentStartRequest } from '@arx-ai/arx-subagent'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
 import * as fork from '../src/index.ts'
-import { STRUCTURED_OUTPUT_TOOL } from '@centurionarx/cxh-subagent-in-process-driver'
+import { STRUCTURED_OUTPUT_TOOL } from '@arx-ai/arx-subagent-in-process-driver'
 
 type Script = ConstructorParameters<typeof MockAdapter>[0]
 
@@ -55,7 +55,7 @@ function text(blocks: { type: string; text?: string }[]): string {
   return blocks.filter(b => b.type === 'text').map(b => b.text).join('')
 }
 
-describe('cxh-subagent-fork-in-process', () => {
+describe('arx-subagent-fork-in-process', () => {
   it('emits subagent/start only after the seeded child is published', async () => {
     const { ctx, parent } = await setup([textResponse('child answer')])
     let childAtStart: ReturnType<typeof ctx.agents.get>

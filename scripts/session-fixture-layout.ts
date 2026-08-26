@@ -4,8 +4,8 @@ import { deepStrictEqual } from 'node:assert'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { packChunkRuns, type SessionEvent } from '@centurionarx/cxh-session'
-import { parseSessionLog } from '@centurionarx/cxh-llm-replay'
+import { packChunkRuns, type SessionEvent } from '@arx-ai/arx-session'
+import { parseSessionLog } from '@arx-ai/arx-llm-replay'
 
 /** One repository session fixture and its canonical projected representation. */
 export interface SessionFixtureLayout {

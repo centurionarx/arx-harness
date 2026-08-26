@@ -5,19 +5,19 @@
 # `deepseek-v4-pro`, but the recorded corpus was captured on flash, and a config
 # patch replaces the whole app config, so the base fields are restated verbatim.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:
             maxBytes: 65536
@@ -27,15 +27,15 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: spill-local
-            name: '@centurionarx/cxh-spill-local'
+            name: '@arx-ai/arx-spill-local'
             config:
-              root: !!js process.env.CXH_SNAPSHOT_SPILL_ROOT ?? './.spill'
+              root: !!js process.env.ARX_SNAPSHOT_SPILL_ROOT ?? './.spill'
           - id: spill-policy
-            name: '@centurionarx/cxh-spill-policy'
+            name: '@arx-ai/arx-spill-policy'
             config:
               maxInlineBytes: 800
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official

@@ -2,7 +2,7 @@
  * Public API of the Typert analyzer, compiler-independent model, and
  * model-driven artifact emitters. Build wiring lives in the `./tsdown`
  * subpath.
- * @module @centurionarx/cxh-typert-generator
+ * @module @arx-ai/arx-typert-generator
  */
 
 export { WorkspaceAnalyzer, WorkspaceCaches, TypertAnalysisError } from './analyzer.ts'

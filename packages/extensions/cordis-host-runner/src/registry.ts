@@ -1,10 +1,10 @@
 /**
  * Process-local dynamic Plugin registry and its opaque identity mints.
- * @module @centurionarx/cxh-cordis-host-runner/registry
+ * @module @arx-ai/arx-cordis-host-runner/registry
  */
 
-import type { Fiber } from '@centurionarx/cordis'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { Fiber } from '@arx-ai/cordis'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type {
   ApprovalRequestId, CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
   CordisDynamicRunMode, DynamicCordisRenderFailure, DynamicCordisRunAttempt,

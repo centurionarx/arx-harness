@@ -1,4 +1,4 @@
-import type { MessageImagesProps } from '@centurionarx/cxh-client-ui-conversation/client'
+import type { MessageImagesProps } from '@arx-ai/arx-client-ui-conversation/client'
 import { ImageGallery } from '../MessageImage.tsx'
 import { messageImageLabels } from './labels.ts'
 

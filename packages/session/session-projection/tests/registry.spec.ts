@@ -8,14 +8,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { z } from 'zod'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/marks': MarksState
     'test/count': number
@@ -26,7 +26,7 @@ declare module '@centurionarx/cxh-session-projection/types' {
   }
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     'test/mark': { marks: string[] }
   }

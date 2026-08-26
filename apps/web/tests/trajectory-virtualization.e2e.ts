@@ -8,8 +8,8 @@ import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import type { ReplayEntry } from '@centurionarx/cxh-llm-replay'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import type { ReplayEntry } from '@arx-ai/arx-llm-replay'
 import { createChatScrollFixture } from './chat-scroll-fixture.ts'
 import {
   captureStableAria,
@@ -179,7 +179,7 @@ describe('web e2e: Trajectory virtualization over tail-paged history', () => {
   let replayDir: string
 
   beforeAll(async () => {
-    replayDir = await mkdtemp(join(tmpdir(), 'cxh-trajectory-virtualization-'))
+    replayDir = await mkdtemp(join(tmpdir(), 'arx-trajectory-virtualization-'))
     const replayFixture = join(replayDir, 'session.jsonl')
     const replayOverride = join(replayDir, 'replay.override.json')
     await writeFile(replayFixture, FIXTURE.log)

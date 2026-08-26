@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-sdk-jsonrpc-demo`.
- * @module @centurionarx/cxh-sdk-jsonrpc-demo/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-sdk-jsonrpc-demo`.
+ * @module @arx-ai/arx-sdk-jsonrpc-demo/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-sdk-jsonrpc-demo'
+const PACKAGE_NAME = '@arx-ai/arx-sdk-jsonrpc-demo'
 
 /** Cordis companion plugin name. */
 export const name = 'sdk-jsonrpc-demo-invariant'

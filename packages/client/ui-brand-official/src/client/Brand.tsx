@@ -1,6 +1,6 @@
-import { BrandWordmark, FishLogo } from '@centurionarx/cxh-client-ui-primitives'
-import type { HeroBrandMarkOwnerProps } from '@centurionarx/cxh-client-ui-conversation/client'
-import type { SidebarBrandMarkOwnerProps } from '@centurionarx/cxh-client-ui-sidebar/client'
+import { BrandWordmark, FishLogo } from '@arx-ai/arx-client-ui-primitives'
+import type { HeroBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
+import type { SidebarBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-sidebar/client'
 
 type OfficialBrandMarkProps = HeroBrandMarkOwnerProps & SidebarBrandMarkOwnerProps
 

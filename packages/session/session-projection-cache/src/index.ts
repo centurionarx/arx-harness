@@ -9,25 +9,25 @@
  * `ver` mismatch discards the row instead of migrating it. Design
  * authority: the session-projection RFC
  * (.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md).
- * @module @centurionarx/cxh-session-projection-cache
+ * @module @arx-ai/arx-session-projection-cache
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { snapshotJsonValue } from '@centurionarx/cxh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { snapshotJsonValue } from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
 // Empty type import: applies the package's cordis Context merge
 // (`ctx.sessionPersistence`), which this service reads on the cold path.
-import type {} from '@centurionarx/cxh-session-persistence'
-import type { ProjectionCheckpoint, ProjectionSnapshot } from '@centurionarx/cxh-session-projection'
-import type { KvTable } from '@centurionarx/cxh-storage-domain'
+import type {} from '@arx-ai/arx-session-persistence'
+import type { ProjectionCheckpoint, ProjectionSnapshot } from '@arx-ai/arx-session-projection'
+import type { KvTable } from '@arx-ai/arx-storage-domain'
 import { projectionCacheDomainSpec } from './spec.ts'
 import type { CheckpointIdentity, CheckpointRecord } from './spec.ts'
 
 export { checkpointIdentity, checkpointRecord, checkpointRow, projectionCacheDomainSpec } from './spec.ts'
 export type { CheckpointIdentity, CheckpointRecord } from './spec.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionProjectionCache: SessionProjectionCache
   }

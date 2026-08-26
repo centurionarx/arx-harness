@@ -1,9 +1,9 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ConversationMatch, ConversationNodeContext, ConversationNodeDefinition,
   RunningToolCall, ToolCallBlock, ToolResultNode,
-} from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-tools/types'
+} from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-tools/types'
 import { trajectoryNode } from './trajectory-definition-common.ts'
 
 /* jscpd:ignore-start -- Target-owned Definitions intentionally keep their event

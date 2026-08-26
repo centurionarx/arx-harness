@@ -1,6 +1,6 @@
 /**
  * Error vocabulary of the domain data form.
- * @module @centurionarx/cxh-storage-domain/src/error
+ * @module @arx-ai/arx-storage-domain/src/error
  */
 
 /** Discriminant codes carried by every {@link DomainError}. */

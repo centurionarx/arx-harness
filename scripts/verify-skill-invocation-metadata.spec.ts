@@ -11,7 +11,7 @@ afterEach(() => {
 })
 
 function fixtureRoot(): string {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-skill-invocation-metadata-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-skill-invocation-metadata-'))
   roots.push(root)
   return root
 }

@@ -7,14 +7,14 @@ import {
   createAssistantMessage,
   createToolResultMessage,
   createUserMessage,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 import {
   SESSION_FORMAT_VERSION,
   Session,
   SessionId,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 // Carries the session/title event declaration into this fixture builder.
-import type {} from '@centurionarx/cxh-session-title'
+import type {} from '@arx-ai/arx-session-title'
 
 /** Options for one deterministic long-chat fixture. */
 export interface ChatScrollFixtureOptions {

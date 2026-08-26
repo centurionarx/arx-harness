@@ -12,13 +12,13 @@ When a capability is general enough to need replaceable providers, such as Bash 
 
 The Bash execution capability consists of:
 
-- **Service Definition** (`cxh-shell`) — defines the Cordis service and Bash request and result types
-- **Service Provider** (`cxh-bash-local`) — executes commands on the local machine
-- **Consumer** (`cxh-tool-bash`) — exposes the capability as a model-callable tool
+- **Service Definition** (`arx-shell`) — defines the Cordis service and Bash request and result types
+- **Service Provider** (`arx-bash-local`) — executes commands on the local machine
+- **Consumer** (`arx-tool-bash`) — exposes the capability as a model-callable tool
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌──────────────┐
-│  cxh-shell   │────▶│  cxh-bash-local  │     │ cxh-tool-bash│
+│  arx-shell   │────▶│  arx-bash-local  │     │ arx-tool-bash│
 │(definition) │     │    (provider)     │     │(consumer/tool)│
 └─────────────┘     └──────────────────┘     └──────────────┘
        ▲                                            │
@@ -34,7 +34,7 @@ One Service Definition can have multiple providers selected through `cordis.yml`
 
 ```yaml
 # Local execution
-- name: '@centurionarx/cxh-bash-local'
+- name: '@arx-ai/arx-bash-local'
 
 # Replace this row with another package that provides the same service.
 ```
@@ -61,9 +61,9 @@ The [capability-seam reference](../../../capability-seams.md) owns the current b
 
 ```ts ignore-check
 // packages/my-cap/my-cap/src/index.ts
-import { Service, type Context } from '@centurionarx/cordis'
+import { Service, type Context } from '@arx-ai/cordis'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     myCap: MyCapService
   }
@@ -91,8 +91,8 @@ export interface MyCapResult {
 
 ```ts ignore-check
 // packages/my-cap/my-cap-local/src/index.ts
-import type { Context } from '@centurionarx/cordis'
-import { MyCapService, type MyCapRequest, type MyCapResult } from '@centurionarx/cxh-my-cap'
+import type { Context } from '@arx-ai/cordis'
+import { MyCapService, type MyCapRequest, type MyCapResult } from '@arx-ai/arx-my-cap'
 
 class MyCapLocal extends MyCapService {
   async execute(request: MyCapRequest): Promise<MyCapResult> {
@@ -112,8 +112,8 @@ export function apply(ctx: Context) {
 
 ```ts ignore-check
 // packages/my-cap/tool-my-cap/src/index.ts
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
 
 export const name = 'tool-my-cap'
 export const inject = ['tools', 'myCap']
@@ -140,8 +140,8 @@ export function apply(ctx: Context) {
 ### Compose them in cordis.yml
 
 ```yaml
-- name: '@centurionarx/cxh-my-cap-local'
-- name: '@centurionarx/cxh-tool-my-cap'
+- name: '@arx-ai/arx-my-cap-local'
+- name: '@arx-ai/arx-tool-my-cap'
 ```
 
 ## Design points

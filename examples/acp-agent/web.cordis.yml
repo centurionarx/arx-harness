@@ -4,18 +4,18 @@
 # fixture server the scenario prompt fetches — deterministic content, no
 # external network, in recording and replay alike.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - insert:
           - id: web
-            name: '@centurionarx/cxh-web'
+            name: '@arx-ai/arx-web'
           - id: web-fetch-http
-            name: '@centurionarx/cxh-web-fetch-http'
+            name: '@arx-ai/arx-web-fetch-http'
           - id: web-fetch-fixture
             name: './web-fetch-fixture-server.mjs'
           - id: tool-web
-            name: '@centurionarx/cxh-tool-web'
+            name: '@arx-ai/arx-tool-web'
             config:
               search: false

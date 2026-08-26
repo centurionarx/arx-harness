@@ -1,15 +1,15 @@
 /**
  * Host-filesystem implementation of `ctx.fs`. Realpath-derived target identity makes aliases
  * share stale guards, and writes through a symlink update its target without replacing the link.
- * @module @centurionarx/cxh-fs-local
+ * @module @arx-ai/arx-fs-local
  */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { constants as bufferConstants } from 'node:buffer'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import z from '@centurionarx/schemastery'
-import { FileSystem, FsError, FsVersion } from '@centurionarx/cxh-fs'
+import z from '@arx-ai/schemastery'
+import { FileSystem, FsError, FsVersion } from '@arx-ai/arx-fs'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -19,7 +19,7 @@ import type {
   FsTarget,
   FsWriteIntent,
   FsWriteOutcome,
-} from '@centurionarx/cxh-fs'
+} from '@arx-ai/arx-fs'
 import {
   applyLiteralEdit,
   listDirectory,
