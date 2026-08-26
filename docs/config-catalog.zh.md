@@ -3326,6 +3326,7 @@ export interface Config {
 - `@centurionarx/cxh-atomic-write`（[`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts)）
 - `@centurionarx/cxh-base`（[`packages/bundle/base/src/index.ts`](../packages/bundle/base/src/index.ts)）
 - `@centurionarx/cxh-brand`（[`packages/util/brand/src/index.ts`](../packages/util/brand/src/index.ts)）
+- `@centurionarx/cxh-claude-agent-sdk-process`（[`packages/subagent/claude-agent-sdk-process/src/index.ts`](../packages/subagent/claude-agent-sdk-process/src/index.ts)）
 - `@centurionarx/cxh-client-test-runtime`（[`packages/test-support/client-runtime/src/index.ts`](../packages/test-support/client-runtime/src/index.ts)）
 - `@centurionarx/cxh-client-ui-primitives`（[`packages/client/ui-primitives/src/index.ts`](../packages/client/ui-primitives/src/index.ts)）
 - `@centurionarx/cxh-client-ui-slots`（[`packages/client/ui-slots/src/index.ts`](../packages/client/ui-slots/src/index.ts)）

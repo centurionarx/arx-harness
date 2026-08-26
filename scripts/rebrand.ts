@@ -35,7 +35,7 @@ export interface Brand {
  * The target identity. `prefix` is the one naming choice still open: changing
  * it here and re-running is the whole cost of picking `carx` or `cah` instead.
  */
-export const BRAND: Brand = {
+const BRAND: Brand = {
   scope: 'centurionarx',
   prefix: 'cxh',
   slug: 'centurionarx-harness',
@@ -49,7 +49,7 @@ export const BRAND: Brand = {
  * before the rules run, so rule ordering can never corrupt them. Every entry
  * is global and must not capture surrounding product text.
  */
-export const PROTECTED: readonly RegExp[] = [
+const PROTECTED: readonly RegExp[] = [
   /[A-Za-z0-9_./-]*archived\/[a-z-]+\/\d{4}-\d{2}-\d{2}-[A-Za-z0-9_-]+\.(?:zh\.)?md/g,
   /github\.com\/deepseek-harness\/(?!deepseek-harness\.git)[A-Za-z0-9_.-]+/g,
   /(?<![A-Za-z0-9_.-])deepseekharness\/[A-Za-z0-9_.-]+/g,
@@ -64,7 +64,7 @@ export const PROTECTED: readonly RegExp[] = [
 ]
 
 /** Repository paths excluded from rewriting entirely. */
-export const EXCLUDED: readonly RegExp[] = [/^\.agents\/notes\/archived\//]
+const EXCLUDED: readonly RegExp[] = [/^\.agents\/notes\/archived\//]
 
 /**
  * Ordered rewrite rules applied to masked text.

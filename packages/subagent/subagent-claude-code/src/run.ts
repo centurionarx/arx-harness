@@ -34,7 +34,7 @@ import {
 import {
   claudeSpawnSpec,
   ManagedClaudeCodeProcess,
-} from './process.ts'
+} from '@centurionarx/cxh-claude-agent-sdk-process'
 
 /** Default POSIX grace between subprocess termination tiers. */
 export const DEFAULT_DISPOSE_GRACE_MS = 3_000

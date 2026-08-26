@@ -7324,6 +7324,22 @@ importers:
         specifier: workspace:^
         version: link:../storage
 
+  packages/subagent/claude-agent-sdk-process:
+    dependencies:
+      '@anthropic-ai/claude-agent-sdk':
+        specifier: 0.3.220
+        version: 0.3.220(@anthropic-ai/sdk@0.93.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(zod@4.4.3)
+    devDependencies:
+      '@centurionarx/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@centurionarx/cxh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@centurionarx/cxh-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+
   packages/subagent/subagent:
     dependencies:
       zod:
@@ -7452,6 +7468,9 @@ importers:
       '@centurionarx/cxh-agent':
         specifier: workspace:^
         version: link:../../core/agent
+      '@centurionarx/cxh-claude-agent-sdk-process':
+        specifier: workspace:^
+        version: link:../claude-agent-sdk-process
       '@centurionarx/cxh-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
