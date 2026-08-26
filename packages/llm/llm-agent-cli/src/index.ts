@@ -27,14 +27,24 @@ export const inject = ['llm', 'subprocess']
  * the host may not even have logged in.
  * @param ctx - plugin context carrying the llm and subprocess services.
  * @param config - configured provider routes.
+ * @returns the disposer releasing this plugin's routes and live vendor runs.
  */
-export function apply(ctx: Context, config: Config): void {
+export function apply(ctx: Context, config: Config): Promise<() => void> {
   const routes = resolveRoutes(config.providers ?? {})
-  if (routes.size === 0) return
+  if (routes.size === 0) return Promise.resolve(() => {})
   const cwd = config.cwd ?? process.cwd()
-  ctx.llm.registerAdapter([...routes.keys()], new AgentCliAdapter({
+  const adapter = new AgentCliAdapter({
     routes: () => routes,
     spawn: spec => ctx.subprocess.spawn(spec),
     cwd: () => cwd,
-  }))
+  })
+  return ctx.effect(function* () {
+    const release = ctx.llm.registerAdapter([...routes.keys()], adapter)
+    yield () => {
+      release()
+      // Each live vendor conversation owns a CLI process tree; unloading the
+      // plugin without releasing them would leave those trees running.
+      adapter.dispose()
+    }
+  }, 'llm-agent-cli.registerAdapter()') as unknown as Promise<() => void>
 }

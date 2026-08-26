@@ -27,13 +27,17 @@ The CLI presents an in-process MCP server's tools as `mcp__cxh__<name>`. The mod
 
 Tool schemas cross as JSON Schema, verbatim. The SDK's own `tool()` helper takes a Zod shape and would force a lossy translation of every tool the harness registers, so this package answers `tools/list` from the low-level MCP server instead.
 
-## Session affinity
+## One live conversation per session
 
-`LlmAdapter` is stateless: every `stream()` receives the whole history. A vendor CLI session is not — it holds its own conversation. Replaying the transcript on each step would flatten roles, lose the vendor's prompt cache, and spend subscription quota re-reading what the session already knows.
+`LlmAdapter` is stateless: every `stream()` receives the whole history. A vendor run is not — it holds its own conversation. Replaying the transcript on each step would flatten roles, lose the vendor's prompt cache, and spend subscription quota re-reading what the run already knows.
 
-So each harness session is paired with the vendor session serving it, keyed by `GenerateOptions.sessionId` and remembered as a per-message digest list. A request whose history still *extends* what that vendor session consumed resumes it and delivers only the delta — a new user message or a tool result, carried as real `tool_result` blocks. Anything else — a compaction that rewrote history, a plan-mode edit, a branch — makes the vendor session an invalid continuation, and the transcript is replayed into a fresh one as labelled text. That replay is the lossy path, and avoiding it is the whole point of the pairing.
+So each harness session keeps **one vendor run alive** across turns. The run's input is a channel this adapter pushes into: the first turn delivers the history it must know, and every later turn delivers only what it adds — a new user message or a tool result, carried as real `tool_result` blocks. The run never restarts, so nothing is re-read.
 
-The pairing lives in memory. A restart replays once per session and pairs again.
+Continuing is only valid while history still extends what that run consumed, which a per-message digest list decides. Anything else — a compaction that rewrote history, a plan-mode edit, a branch — makes the run an invalid continuation: it is disposed, and the next turn opens a fresh one with the transcript replayed as labelled text. That replay is the lossy path, and keeping the run alive is what avoids it.
+
+The vendor's own `resume` is not used, and cannot be: resuming requires `persistSession`, which would write a copy of every conversation to the host's Claude directory — outside this harness's control and lifetime, duplicating the session log it already keeps. Keeping the run alive achieves the same continuity with no disk at all.
+
+A run owns a CLI process tree, so it is released when its session diverges, when a turn is cancelled or fails, and when the plugin unloads.
 
 ## Config
 
@@ -66,15 +70,15 @@ The mandatory `attributionHeaders()` invariant is vacuous here. This adapter iss
 
 #### What the model sees
 
-The harness system prompt verbatim in place of the CLI's own, the harness tool schemas as JSON Schema under `mcp__cxh__` names, and the conversation as either the delta into a resumed vendor session — new user messages and tool results carried as real `tool_result` blocks — or a labelled replay of the whole transcript when no vendor session can continue it.
+The harness system prompt verbatim in place of the CLI's own, the harness tool schemas as JSON Schema under `mcp__cxh__` names, and the conversation as either the delta into the live vendor run — new user messages and tool results carried as real `tool_result` blocks — or a labelled replay of the whole transcript when no run can continue it.
 
 #### Token effect
 
-The replay path re-sends the whole transcript as one user message and pays for it; the resumed path sends only the delta. Which path a request takes is decided by whether its history still extends what the vendor session already consumed.
+The replay path re-sends the whole transcript as one user message and pays for it; a continuing turn sends only the delta. Which path a request takes is decided by whether its history still extends what the live run already consumed.
 
 #### KV Cache effect
 
-A resumed vendor session keeps whatever prefix cache the vendor maintains across its own turns. Divergence drops that session, so the next request starts a cold one and pays the full prefix again.
+A live run keeps whatever prefix cache the vendor maintains across its own turns. Divergence disposes it, so the next request opens a cold one and pays the full prefix again.
 
 ### Vendor CLI response
 
@@ -94,5 +98,5 @@ None of its own; the response does not change the request prefix.
 
 - **One vendor today** — the package is named for the shape, not the roster: it drives the Claude Agent SDK and nothing else, so a Claude subscription is the only login it serves. A second vendor is a second SDK with its own protocol and its own process projection; whether that arrives as another package or as a seam inside this one is undecided, and the name should not be read as a promise either way.
 - **Images cannot reach the vendor CLI** — a request carrying an image block fails with `UNSUPPORTED_CONTENT` rather than being sent without it.
-- **Affinity is in-memory** — the pairing is not written to the session log, so it does not survive a restart. A durable variant could carry it in the `finish` chunk's `ReplayEnvelope`.
+- **A live run does not survive the process** — the conversation lives in memory beside its CLI, so a restart replays once per session and opens a new run. Nothing durable could carry it: the state is a running process, not a record.
 - **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`cxh-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).

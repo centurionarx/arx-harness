@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { DEFAULT_DISPOSE_GRACE_MS, resolveRoutes } from '../src/config.ts'
 import { renderTranscript, toVendorMessages } from '../src/prompt.ts'
-import { messageDigest, SessionAffinity } from '../src/session.ts'
+import { ConversationInput, ConversationRegistry, messageDigest, type LiveConversation } from '../src/session.ts'
 import { translate } from '../src/stream.ts'
 import { createToolServer, harnessToolName, toolAlias } from '../src/tools.ts'
 
@@ -220,58 +220,117 @@ describe('translate', () => {
   })
 })
 
-describe('SessionAffinity', () => {
+describe('ConversationInput', () => {
+  const message = { type: 'user' as const, message: { role: 'user' as const, content: [] }, parent_tool_use_id: null }
+
+  it('delivers what was queued before anyone read', async () => {
+    const input = new ConversationInput()
+    input.push(message)
+    const iterator = input[Symbol.asyncIterator]()
+    await expect(iterator.next()).resolves.toEqual({ value: message, done: false })
+  })
+
+  it('delivers to a reader that arrived first', async () => {
+    const input = new ConversationInput()
+    const pending = input[Symbol.asyncIterator]().next()
+    input.push(message)
+    await expect(pending).resolves.toEqual({ value: message, done: false })
+  })
+
+  it('ends a waiting reader when the conversation closes', async () => {
+    const input = new ConversationInput()
+    const pending = input[Symbol.asyncIterator]().next()
+    input.close()
+    await expect(pending).resolves.toEqual({ value: undefined, done: true })
+    await expect(input[Symbol.asyncIterator]().next()).resolves.toEqual({ value: undefined, done: true })
+  })
+
+  it('closing twice is not an error', () => {
+    const input = new ConversationInput()
+    input.close()
+    expect(() => { input.close() }).not.toThrow()
+  })
+})
+
+describe('ConversationRegistry', () => {
   const first = createUserMessage({ content: [{ type: 'text', text: 'one' }], source: { kind: 'user' } }) as Message
   const second = createUserMessage({ content: [{ type: 'text', text: 'two' }], source: { kind: 'user' } }) as Message
   const other = createUserMessage({ content: [{ type: 'text', text: 'other' }], source: { kind: 'user' } }) as Message
+
+  /** A run that records only whether it was released. */
+  function fakeRun(): { live: LiveConversation; disposed: () => number } {
+    let disposed = 0
+    return {
+      disposed: () => disposed,
+      live: {
+        input: new ConversationInput(),
+        messages: { next: () => Promise.resolve({ value: undefined, done: true as const }) },
+        dispose: () => { disposed += 1 },
+      },
+    }
+  }
 
   it('digests a message by content, so an identical rebuild matches', () => {
     expect(messageDigest(first)).toBe(messageDigest(first))
     expect(messageDigest(first)).not.toBe(messageDigest(second))
   })
 
-  it('replays everything for a session it has never served', () => {
-    const affinity = new SessionAffinity()
-    const fresh = affinity.resolve('s1', [first])
-    expect(fresh.resume).toBeUndefined()
+  it('has no run to continue for a session it never served', () => {
+    const registry = new ConversationRegistry()
+    const fresh = registry.resolve('s1', [first])
+    expect(fresh.live).toBeUndefined()
     expect(fresh.deliver).toEqual([first])
   })
 
-  it('resumes with only the delta once a session extends what it consumed', () => {
-    const affinity = new SessionAffinity()
-    const opening = affinity.resolve('s1', [first])
-    affinity.commit('s1', 'vendor-1', opening.digests)
-    expect(affinity.resolve('s1', [first, second])).toEqual({
-      resume: 'vendor-1',
-      deliver: [second],
-      digests: [messageDigest(first), messageDigest(second)],
-    })
+  it('continues the run with only the delta once history extends it', () => {
+    const registry = new ConversationRegistry()
+    const run = fakeRun()
+    registry.commit('s1', run.live, registry.resolve('s1', [first]).digests)
+    const next = registry.resolve('s1', [first, second])
+    expect(next.live).toBe(run.live)
+    expect(next.deliver).toEqual([second])
+    expect(run.disposed()).toBe(0)
   })
 
-  it('drops the vendor session when history diverged instead of extending', () => {
-    const affinity = new SessionAffinity()
-    const opening = affinity.resolve('s1', [first])
-    affinity.commit('s1', 'vendor-1', opening.digests)
-    const diverged = affinity.resolve('s1', [other, second])
-    expect(diverged.resume).toBeUndefined()
+  it('releases the run when history diverged instead of extending', () => {
+    const registry = new ConversationRegistry()
+    const run = fakeRun()
+    registry.commit('s1', run.live, registry.resolve('s1', [first]).digests)
+    const diverged = registry.resolve('s1', [other, second])
+    expect(diverged.live).toBeUndefined()
     expect(diverged.deliver).toEqual([other, second])
-    expect(affinity.resolve('s1', [other]).resume).toBeUndefined()
+    expect(run.disposed()).toBe(1)
   })
 
-  it('holds nothing for a request that carries no session', () => {
-    const affinity = new SessionAffinity()
-    const resolved = affinity.resolve(undefined, [first])
-    affinity.commit(undefined, 'vendor-1', resolved.digests)
-    expect(affinity.resolve(undefined, [first]).resume).toBeUndefined()
+  it('keeps no run for a request that carries no session', () => {
+    const registry = new ConversationRegistry()
+    const run = fakeRun()
+    const resolved = registry.resolve(undefined, [first])
+    expect(resolved.live).toBeUndefined()
+    registry.commit(undefined, run.live, resolved.digests)
+    expect(run.disposed()).toBe(1)
   })
 
-  it('forgets on request and tolerates a session it never held', () => {
-    const affinity = new SessionAffinity()
-    const opening = affinity.resolve('s1', [first])
-    affinity.commit('s1', 'vendor-1', opening.digests)
-    affinity.forget('s1')
-    affinity.forget(undefined)
-    expect(affinity.resolve('s1', [first, second]).resume).toBeUndefined()
+  it('releases on request and tolerates a session it never held', () => {
+    const registry = new ConversationRegistry()
+    const run = fakeRun()
+    registry.commit('s1', run.live, registry.resolve('s1', [first]).digests)
+    registry.forget('s1')
+    registry.forget('s1')
+    registry.forget(undefined)
+    expect(run.disposed()).toBe(1)
+    expect(registry.resolve('s1', [first, second]).live).toBeUndefined()
+  })
+
+  it('releases everything it holds at teardown', () => {
+    const registry = new ConversationRegistry()
+    const one = fakeRun()
+    const two = fakeRun()
+    registry.commit('s1', one.live, registry.resolve('s1', [first]).digests)
+    registry.commit('s2', two.live, registry.resolve('s2', [second]).digests)
+    registry.disposeAll()
+    expect(one.disposed()).toBe(1)
+    expect(two.disposed()).toBe(1)
   })
 })
 

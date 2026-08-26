@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-26-vendor-cli-as-model-route.md
-2026-08-26-vendor-cli-as-model-route.md: 8fd4b7c414778e63deadc031d076fdc150f9966c
-2026-08-26-vendor-cli-as-model-route.zh.md: 42d052ebdc1bd36d2609b7ce0d0bd2c67f6fc735
+2026-08-26-vendor-cli-as-model-route.md: 5db02f04310f8478477b3a93ef1c8dac9440cc39
+2026-08-26-vendor-cli-as-model-route.zh.md: f25a7873166c86c8079f1fec6ce6d8776af4c084
