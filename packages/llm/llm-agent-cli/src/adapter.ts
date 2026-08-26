@@ -39,7 +39,7 @@ export interface AgentCliAdapterSpec {
 /** The vendor CLI's own tools, refused so only harness tools reach the model. */
 const VENDOR_TOOLS = [
   'Bash', 'Edit', 'Glob', 'Grep', 'NotebookEdit', 'Read', 'Task', 'TodoWrite', 'WebFetch', 'WebSearch', 'Write',
-  'AskUserQuestion', 'ExitPlanMode', 'Skill',
+  'AskUserQuestion', 'ExitPlanMode', 'Skill', 'ToolSearch',
 ] as const
 
 /**
@@ -131,7 +131,6 @@ export class AgentCliAdapter extends LlmAdapter {
       cwd: this.spec.cwd(),
       persistSession: false,
       includePartialMessages: true,
-      maxTurns: 1,
       model: options.model,
       ...options.system === undefined ? {} : { systemPrompt: options.system },
       ...resume === undefined ? {} : { resume },

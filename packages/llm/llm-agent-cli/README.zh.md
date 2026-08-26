@@ -15,7 +15,8 @@
 | `systemPrompt` ← 请求的 `system` | 用 harness 的提示词替换 CLI 自己的，使模型所见即会话日志所存。 |
 | `mcpServers` ← 一个进程内服务 | 让模型看到 harness 工具 schema 的唯一受支持方式。 |
 | `disallowedTools` ← CLI 内置工具，`canUseTool` ← 拒绝 | 模型请求的工具无法在 CLI 内部执行——那里 harness 既看不到调用，也看不到结果。 |
-| `maxTurns: 1` | 一个 assistant 回合即停——正是 `stream()` 的契约。 |
+| 翻译在 assistant 回合处结束 | 继续读取会消费本次调用从未请求的下一个回合。CLI 自身的 `maxTurns` 无法表达这一点：触达它会让 SDK 抛出 error result，于是该上限会把每个普通的工具调用回合都变成失败。 |
+| 每个工具带 `_meta['anthropic/alwaysLoad']` | 否则 CLI 会把 MCP 工具藏在它自己的 tool-search 工具后面，模型会把整个回合花在搜索一个 harness 已经放进请求里的工具上。 |
 | `skills: []` | 省略它并不等于"关闭 skills"：SDK 明确说明此时 CLI 自身的默认值仍然生效，于是宿主机的 skill 目录会经由一个 harness 从未注册的工具抵达模型。skill 改为经 `ctx.skills` 抵达 harness 模型，在那里加载是一次被记录的工具调用。 |
 
 `settingSources` 保持未设置，因此 SDK 读取宿主机常规的 Claude 设置与原生账户状态。这份继承*就是*认证本身。

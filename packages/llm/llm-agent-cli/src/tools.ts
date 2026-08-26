@@ -58,6 +58,11 @@ export function createToolServer(tools: readonly ToolSchema[]): McpServer {
       name: tool.name,
       description: tool.description,
       inputSchema: tool.parameters as { type: 'object' },
+      // Without this the CLI defers MCP tools behind its own tool-search tool,
+      // so the model spends its turn searching for a tool the harness already
+      // put in the request. The harness assembles the whole tool list itself;
+      // there is nothing here to discover.
+      _meta: { 'anthropic/alwaysLoad': true },
     })),
   }))
   // The harness executes every tool itself, so a call reaching this server
