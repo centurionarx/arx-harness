@@ -16,6 +16,7 @@
 | `mcpServers` ← 一个进程内服务 | 让模型看到 harness 工具 schema 的唯一受支持方式。 |
 | `disallowedTools` ← CLI 内置工具，`canUseTool` ← 拒绝 | 模型请求的工具无法在 CLI 内部执行——那里 harness 既看不到调用，也看不到结果。 |
 | `maxTurns: 1` | 一个 assistant 回合即停——正是 `stream()` 的契约。 |
+| `skills: []` | 省略它并不等于"关闭 skills"：SDK 明确说明此时 CLI 自身的默认值仍然生效，于是宿主机的 skill 目录会经由一个 harness 从未注册的工具抵达模型。skill 改为经 `ctx.skills` 抵达 harness 模型，在那里加载是一次被记录的工具调用。 |
 
 `settingSources` 保持未设置，因此 SDK 读取宿主机常规的 Claude 设置与原生账户状态。这份继承*就是*认证本身。
 
