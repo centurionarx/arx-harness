@@ -30,3 +30,5 @@ The overlay creates the same absolute cwd inside the sandbox, but it does not up
 ## Advanced configuration
 
 [`advanced.cordis.yml`](advanced.cordis.yml) adds Code Mode and the Cordis tools to the test composition.
+
+[`agent-cli.cordis.yml`](agent-cli.cordis.yml) reaches the model through a subscription-authenticated vendor CLI instead of an HTTP provider, so it carries no credential entry at all. It needs that CLI logged in on the host; everything else is the base composition unchanged.

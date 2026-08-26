@@ -30,3 +30,5 @@ pnpm exec vitest run --config vitest.e2e.config.ts packages/e2b/e2b/tests/compos
 ## 高级配置
 
 [`advanced.cordis.yml`](advanced.cordis.yml) 在测试组装中添加 Code Mode 和 Cordis 工具。
+
+[`agent-cli.cordis.yml`](agent-cli.cordis.yml) 通过以订阅认证的厂商 CLI 而非 HTTP 提供方访问模型，因此完全不含凭据条目。它要求该 CLI 已在宿主机登录；其余部分与基础组装完全一致。

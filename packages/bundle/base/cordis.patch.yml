@@ -95,6 +95,14 @@
     - id: llm-pi-ai
       name: '@centurionarx/cxh-llm-pi-ai'
 
+    # A subscription-authenticated vendor CLI as an ordinary model route,
+    # mounted dormant like the adapter above: no configured provider means no
+    # route, so the picker gains nothing and no request can reach a CLI the
+    # host may never have logged in to. Configuring one is a deployment
+    # decision, because the login it inherits belongs to the host.
+    - id: llm-agent-cli
+      name: '@centurionarx/cxh-llm-agent-cli'
+
     - id: session-persistence-jsonl
       name: '@centurionarx/cxh-session-persistence-jsonl'
       config:
