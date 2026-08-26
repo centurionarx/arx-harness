@@ -28,6 +28,21 @@
             contextWindow: 200000
             maxTokens: 8192
 
+# Skills. The registry is the seam; the filesystem provider supplies the
+# catalog from the shared agent roots, including `~/.agents/skills`, which is
+# where a tool-neutral skill catalog installs. The model reaches a skill by
+# calling the `skill` tool, so loading one is a logged tool call rather than
+# ambient prompt text - which is also why this route refuses the vendor CLI's
+# own Skill tool.
+- id: skill
+  name: '@centurionarx/cxh-skill'
+
+- id: skill-filesystem
+  name: '@centurionarx/cxh-skill-filesystem'
+
+- id: tool-skill
+  name: '@centurionarx/cxh-tool-skill'
+
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess
   name: '@centurionarx/cxh-subprocess-local'
