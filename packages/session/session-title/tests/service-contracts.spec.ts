@@ -1,14 +1,14 @@
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import { Context, type Fiber } from '@deepseek-ai/cordis'
+import { createUserMessage } from '@centurionarx/cxh-llm'
+import { Context, type Fiber } from '@centurionarx/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
+import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
 import SessionTitleService, {
   SessionTitleProviderId,
   type Config,
   type SessionTitleProvider,
   type SessionTitleProviderRequest,
   type SessionTitleProviderResult,
-} from '@deepseek-ai/dsh-session-title'
+} from '@centurionarx/cxh-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,

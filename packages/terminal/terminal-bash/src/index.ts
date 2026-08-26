@@ -1,18 +1,18 @@
 /**
  * Persistent shell PTY backend over the subprocess terminal primitive, shared
  * sandbox policy, bounded output, and provider-owned session cleanup.
- * @module @deepseek-ai/dsh-terminal-bash
+ * @module @centurionarx/cxh-terminal-bash
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import { TerminalBackendCleanupError } from '@deepseek-ai/dsh-terminal'
-import type { TerminalBackend, TerminalBackendSpawnSpec } from '@deepseek-ai/dsh-terminal'
-import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@deepseek-ai/dsh-subprocess'
-import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
-import { effectiveSandboxMode } from '@deepseek-ai/dsh-sandbox-policy'
-import { ENCODING_PREAMBLE } from '@deepseek-ai/dsh-pwsh-local'
+import { Context } from '@centurionarx/cordis'
+import type { Agent } from '@centurionarx/cxh-agent'
+import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import { TerminalBackendCleanupError } from '@centurionarx/cxh-terminal'
+import type { TerminalBackend, TerminalBackendSpawnSpec } from '@centurionarx/cxh-terminal'
+import type { SubprocessTerminalHandle, SubprocessTerminalSpawnSpec } from '@centurionarx/cxh-subprocess'
+import type { SandboxExecutionPolicy } from '@centurionarx/cxh-sandbox'
+import { effectiveSandboxMode } from '@centurionarx/cxh-sandbox-policy'
+import { ENCODING_PREAMBLE } from '@centurionarx/cxh-pwsh-local'
 import { type Config, type ResolvedConfig, resolveConfig, type ShellDialect, validateConfig } from './config.ts'
 import { LocalPtySession } from './session.ts'
 import { CONTROLLED_PROMPT } from './sanitize.ts'
@@ -60,9 +60,9 @@ function childEnvironment(spec: TerminalBackendSpawnSpec, dialect: ShellDialect)
     TERM: 'dumb',
     PAGER: 'cat',
     GIT_PAGER: 'cat',
-    DSH_SHELL: '1',
-    DSH_SESSION_ID: spec.owner.id,
-    DSH_PTY_SESSION_ID: spec.sessionId,
+    CXH_SHELL: '1',
+    CXH_SESSION_ID: spec.owner.id,
+    CXH_PTY_SESSION_ID: spec.sessionId,
   }
   if (dialect === 'pwsh') {
     // pwsh ignores PS1/PROMPT_COMMAND; its prompt is installed by the startup

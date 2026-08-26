@@ -10,7 +10,7 @@ Open **Settings → Models**. The DeepSeek card exposes one API-key field; enter
 
 ![The Models page: the DeepSeek card, with Add provider and Add a custom provider below it](providers-models-page.png)
 
-Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$DSH_HOME/.credentials.yaml`, while settings retain only its credential reference.
+Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$CXH_HOME/.credentials.yaml`, while settings retain only its credential reference.
 
 ## Add a catalog provider
 
@@ -28,11 +28,30 @@ The Provider ID is permanent because requests, saved sessions, model defaults, a
 
 Under **Model catalog**, choose **Fetch available models** to query the base URL and credential currently shown in the form. Selecting candidates updates the draft; the provider is not stored until you save. Catalog providers use their installed catalog without a network request.
 
+### A local model server
+
+Ollama, llama-server, vLLM, and LM Studio all speak the OpenAI-compatible protocol, so each is a custom provider pointed at `127.0.0.1`. No paid key is involved, but the route still needs a credential *reference*: a profile naming none is refused with `No API key for provider` before any request leaves the process. Name an environment variable and give it any non-empty value — a local server ignores the `Authorization` header.
+
+```yaml
+llm-pi-ai:
+  providers:
+    ollama:
+      displayName: Ollama
+      apiKeyEnv: OLLAMA_API_KEY
+      api: openai-completions
+      baseURL: http://127.0.0.1:11434/v1
+      models:
+        - id: qwen3:8b
+          contextWindow: 40960
+```
+
+Give every model its real `contextWindow`. A model entered without one inherits a 262144-token default that most local models do not serve, and automatic compaction reads that figure to decide when to summarize — so the session overruns the model's actual window before compaction starts.
+
 ### Image input
 
 A model you enter by hand is treated as text-only until it says otherwise, because nothing can ask an endpoint which modalities it accepts. Attaching an image to such a model is refused before it is sent, naming the model.
 
-A vision model on a custom provider therefore needs one line. The form has no field for it; add `input` to the model in `$DSH_HOME/settings.yaml`:
+A vision model on a custom provider therefore needs one line. The form has no field for it; add `input` to the model in `$CXH_HOME/settings.yaml`:
 
 ```yaml
 llm-pi-ai:
@@ -83,7 +102,7 @@ Both fields state a claim about your endpoint rather than checking it. A model t
 
 A gateway can hold a working key at a reachable address and still refuse every request. pi-ai decides the shape of a request — which role carries the system prompt, which field caps the output, how a thinking level travels — from the endpoint's URL, and an address it does not recognize is addressed as though it were OpenAI itself. Most OpenAI-compatible gateways refuse at least one thing OpenAI accepts.
 
-Two account for most of it. A model that declares reasoning has its system prompt sent as `role: "developer"`, which many gateways reject outright, and the output cap is sent as `max_completion_tokens`, which a server that only knows `max_tokens` refuses. The form has no field for either; correct them on the route in `$DSH_HOME/settings.yaml`:
+Two account for most of it. A model that declares reasoning has its system prompt sent as `role: "developer"`, which many gateways reject outright, and the output cap is sent as `max_completion_tokens`, which a server that only knows `max_tokens` refuses. The form has no field for either; correct them on the route in `$CXH_HOME/settings.yaml`:
 
 ```yaml
 llm-pi-ai:
@@ -113,7 +132,7 @@ What neither sets keeps the installed catalog's value for that model, and what t
 
 Each switch belongs to the protocols that declare it, so a switch valid on one `api` may be refused on another — the message names what that protocol does offer. Like `input` above, a switch states a claim about your endpoint rather than checking it: setting one your gateway does not actually need simply sends a different request.
 
-Every switch, its accepted values, and the protocols that take it are listed under `PiAiCompatProfile` in the [generated `dsh-llm-pi-ai` configuration reference](../../config-catalog.md#deepseek-aidsh-llm-pi-ai) — which is derived from the source, so it cannot fall behind what the adapter accepts.
+Every switch, its accepted values, and the protocols that take it are listed under `PiAiCompatProfile` in the [generated `cxh-llm-pi-ai` configuration reference](../../config-catalog.md#centurionarxcxh-llm-pi-ai) — which is derived from the source, so it cannot fall behind what the adapter accepts.
 
 ## Select a model
 
@@ -134,4 +153,4 @@ If a saved default names a provider that was deleted, the composer displays **Se
 
 ## Advanced configuration
 
-The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`dsh-llm-pi-ai`](../../config-catalog.md#deepseek-aidsh-llm-pi-ai) is the provider section this page configures. The [`dsh-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) and [`dsh-llm-deepseek`](../../../packages/llm/llm-deepseek/README.md) references own direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors.
+The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`cxh-llm-pi-ai`](../../config-catalog.md#centurionarxcxh-llm-pi-ai) is the provider section this page configures. The [`cxh-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) and [`cxh-llm-deepseek`](../../../packages/llm/llm-deepseek/README.md) references own direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionEvent, SessionEventMap, SessionEventType } from '@deepseek-ai/dsh-session'
+import { SessionId } from '@centurionarx/cxh-session'
+import type { SessionEvent, SessionEventMap, SessionEventType } from '@centurionarx/cxh-session'
 import {
   applyTeamEvent,
   emptyTeamFoldState,

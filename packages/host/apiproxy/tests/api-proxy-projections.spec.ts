@@ -8,22 +8,22 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@centurionarx/cordis'
 import { z } from 'zod'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import type { MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
+import { AttachmentStore } from '@centurionarx/cxh-attachment'
+import type { Agent } from '@centurionarx/cxh-agent'
+import { createUserMessage } from '@centurionarx/cxh-llm'
+import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import type { Session } from '@centurionarx/cxh-session'
+import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
+import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import UserQuestionService from '@centurionarx/cxh-user-questions'
+import type { MuxFrame, RpcRequest } from '@centurionarx/cxh-host-apiproxy/api'
+import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
+import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@centurionarx/cxh-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/last-user': LastUserState
     'test/internal-count': number

@@ -1,18 +1,18 @@
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import { createUserMessage } from '@centurionarx/cxh-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import Loader from '@deepseek-ai/cordis-plugin-loader'
-import { SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import { defineContentToolFixture } from '@deepseek-ai/dsh-tools'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
-import { LocalBashExecutor } from '@deepseek-ai/dsh-bash-local'
-import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
-import * as HooksCodex from '@deepseek-ai/dsh-hooks-codex'
+import { Context } from '@centurionarx/cordis'
+import Loader from '@centurionarx/cordis-plugin-loader'
+import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
+import { defineContentToolFixture } from '@centurionarx/cxh-tools'
+import type { Agent } from '@centurionarx/cxh-agent'
+import AgentLoop from '@centurionarx/cxh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
+import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
+import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
+import * as HooksCodex from '@centurionarx/cxh-hooks-codex'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 
 /**
@@ -25,7 +25,7 @@ const dirs: string[] = []
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }) })
 
 function configDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'dsh-hooks-codex-'))
+  const dir = mkdtempSync(join(tmpdir(), 'cxh-hooks-codex-'))
   dirs.push(dir)
   return dir
 }

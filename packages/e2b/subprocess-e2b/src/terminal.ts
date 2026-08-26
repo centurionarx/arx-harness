@@ -10,16 +10,16 @@ import {
   FileNotFoundError,
   SandboxNotFoundError,
   quoteE2BShellArg,
-} from '@deepseek-ai/dsh-e2b'
-import type { CommandHandle, CommandResult, Sandbox } from '@deepseek-ai/dsh-e2b'
+} from '@centurionarx/cxh-e2b'
+import type { CommandHandle, CommandResult, Sandbox } from '@centurionarx/cxh-e2b'
 import type {
   SubprocessOutcome,
   SubprocessTerminalForeground,
   SubprocessTerminalHandle,
   SubprocessTerminalSignal,
   SubprocessTerminalSpawnSpec,
-} from '@deepseek-ai/dsh-subprocess'
-import type E2BRuntime from '@deepseek-ai/dsh-e2b'
+} from '@centurionarx/cxh-subprocess'
+import type E2BRuntime from '@centurionarx/cxh-e2b'
 import {
   bootstrapEnvironment,
   readRemoteEnvironment,
@@ -30,17 +30,17 @@ import { asError, commandOpts, delay, signalOpts, signalRemoteGroups } from './r
 const TERMINAL_RUNNER_SOURCE = [
   '#!/bin/bash',
   'set -euo pipefail',
-  'dsh_state=$1',
-  'mapfile -d \'\' -t dsh_env < "$dsh_state/environment"',
-  'mapfile -d \'\' -t dsh_argv < "$dsh_state/argv"',
-  'dsh_output_marker=$(<"$dsh_state/output-marker")',
-  'rm -f -- "$dsh_state/environment" "$dsh_state/argv" "$dsh_state/output-marker" "$dsh_state/runner.bash"',
-  'if (( ${#dsh_argv[@]} == 0 )); then',
+  'cxh_state=$1',
+  'mapfile -d \'\' -t cxh_env < "$cxh_state/environment"',
+  'mapfile -d \'\' -t cxh_argv < "$cxh_state/argv"',
+  'cxh_output_marker=$(<"$cxh_state/output-marker")',
+  'rm -f -- "$cxh_state/environment" "$cxh_state/argv" "$cxh_state/output-marker" "$cxh_state/runner.bash"',
+  'if (( ${#cxh_argv[@]} == 0 )); then',
   "  printf 'terminal runner received empty argv\\n' >&2",
   '  exit 125',
   'fi',
-  'printf \'%s\' "$dsh_output_marker"',
-  'exec env -i -- "${dsh_env[@]}" "${dsh_argv[@]}"',
+  'printf \'%s\' "$cxh_output_marker"',
+  'exec env -i -- "${cxh_env[@]}" "${cxh_argv[@]}"',
   '',
 ].join('\n')
 
@@ -469,7 +469,7 @@ export async function spawnE2BTerminal(
     argv: posix.join(stateDir, 'argv'),
     outputMarker: posix.join(stateDir, 'output-marker'),
   }
-  const outputMarker = Buffer.from(`dsh-e2b-bootstrap:${randomUUID()}`)
+  const outputMarker = Buffer.from(`cxh-e2b-bootstrap:${randomUUID()}`)
   const output = new PassThrough()
   const outputFilter = new BootstrapOutputFilter(outputMarker, output)
   let handle: CommandHandle | undefined

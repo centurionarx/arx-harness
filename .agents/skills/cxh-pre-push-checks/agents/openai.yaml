@@ -1,0 +1,4 @@
+interface:
+  display_name: "CXH Pre-Push Checks"
+  short_description: "Run the relevant CENTURIONarx Harness checks before push"
+  default_prompt: "Use $cxh-pre-push-checks before pushing this CENTURIONarx Harness branch."

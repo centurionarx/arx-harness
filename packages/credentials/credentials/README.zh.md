@@ -1,4 +1,4 @@
-# dsh-credentials
+# cxh-credentials
 
 [English](README.md) | 中文
 
@@ -25,8 +25,8 @@
 ## 接口
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import { credentialKey, credentialRef } from '@deepseek-ai/dsh-credentials'
+import type { Context } from '@centurionarx/cordis'
+import { credentialKey, credentialRef } from '@centurionarx/cxh-credentials'
 
 declare const ctx: Context
 
@@ -56,7 +56,7 @@ await ctx.credentials.deleteRecord(key)                  // no-op when absent
 
 ## 提供方
 
-[`dsh-credentials-local`](../credentials-local/README.zh.md) 把继承的进程环境叠加在其受管 `$DSH_HOME/.credentials.yaml` 文档之上，并以启动器的项目和用户 `.env` 层作为后备。该 seam 的接口为 keyring、辅助命令和 KMS 后端提供方预留了扩展空间；远端设置提供方永远不必携带机密。
+[`cxh-credentials-local`](../credentials-local/README.zh.md) 把继承的进程环境叠加在其受管 `$CXH_HOME/.credentials.yaml` 文档之上，并以启动器的项目和用户 `.env` 层作为后备。该 seam 的接口为 keyring、辅助命令和 KMS 后端提供方预留了扩展空间；远端设置提供方永远不必携带机密。
 
 ## 模型体验
 

@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-agent-instructions`.
- * @module @deepseek-ai/dsh-agent-instructions/invariant
+ * Package-owned invariant companion for `@centurionarx/cxh-agent-instructions`.
+ * @module @centurionarx/cxh-agent-instructions/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-agent-instructions'
+const PACKAGE_NAME = '@centurionarx/cxh-agent-instructions'
 
 /** Cordis companion plugin name. */
 export const name = 'workspace-context-invariant'

@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-agent-loop-testkit`
+# `@centurionarx/cxh-agent-loop-testkit`
 
 English | [中文](README.zh.md)
 
@@ -7,9 +7,9 @@ Shared prerequisite mounting for tests that exercise the concrete `AgentLoop`. `
 The caller registers adapters and optional plugins, mounts `AgentLoop` with the configuration under test, and disposes its own Context. System-prompt and tool-registry configuration can be forwarded through `options`; the helper does not provide test defaults beyond those owned by the services. A plugin-load failure rejects the helper call, while services activated earlier in the sequence remain owned by the caller's Context.
 
 ```ts
-import { Context } from '@deepseek-ai/cordis'
-import AgentLoop from '@deepseek-ai/dsh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
+import { Context } from '@centurionarx/cordis'
+import AgentLoop from '@centurionarx/cxh-agent-loop'
+import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
 
 const ctx = new Context()
 

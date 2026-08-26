@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-trajectory
+# @centurionarx/cxh-client-ui-trajectory
 
 English | [中文](README.zh.md)
 

@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-llm",
-  "description": "Provider-neutral LLM service interface for the DeepSeek Harness",
+  "name": "@centurionarx/cxh-llm",
+  "description": "Provider-neutral LLM service interface for the CENTURIONarx Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
     "directory": "packages/llm/llm"
   },
   "type": "module",
@@ -45,20 +45,20 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-attachment": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-timeout": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@centurionarx/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@centurionarx/cxh-attachment": "workspace:^",
+    "@centurionarx/cxh-brand": "workspace:^",
+    "@centurionarx/cxh-invariants": "workspace:^",
+    "@centurionarx/cxh-timeout": "workspace:^",
+    "@centurionarx/cordis": "workspace:^"
   }
 }

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/rejected/simplification/2026-07-26-dependency-swaps-rejected-by-nih-audit.md
-2026-07-26-dependency-swaps-rejected-by-nih-audit.md: c834142bccaeca2f7407c984767f5aa0af88bc22
-2026-07-26-dependency-swaps-rejected-by-nih-audit.zh.md: 043f87809cba0ad5bdae18eaef345d55ad3c41ec
+2026-07-26-dependency-swaps-rejected-by-nih-audit.md: a9e4224ddcf8d383ad15a715f447924e5a9b77ba
+2026-07-26-dependency-swaps-rejected-by-nih-audit.zh.md: 83b2c31265d05914f7a0e7641d73e850075b3e3b

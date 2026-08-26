@@ -23,7 +23,7 @@
  * so a configuration change rebuilds the collection without forgetting who is
  * signed in.
  *
- * @module dsh-llm-pi-ai/adapter
+ * @module cxh-llm-pi-ai/adapter
  */
 
 import { createModels, getSupportedThinkingLevels } from '@earendil-works/pi-ai'
@@ -44,7 +44,7 @@ import {
   LlmAdapter,
   LlmError,
   ReasoningEffortId,
-} from '@deepseek-ai/dsh-llm'
+} from '@centurionarx/cxh-llm'
 import type {
   GenerateOptions,
   LlmModelInfo,
@@ -54,9 +54,9 @@ import type {
   ReasoningEffortId as ReasoningEffortIdType,
   ResolvedRetryPolicy,
   StreamChunk,
-} from '@deepseek-ai/dsh-llm'
-import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import { idleWatchdog, timeoutOf } from '@deepseek-ai/dsh-timeout'
+} from '@centurionarx/cxh-llm'
+import type { AttachmentStore } from '@centurionarx/cxh-attachment'
+import { idleWatchdog, timeoutOf } from '@centurionarx/cxh-timeout'
 import type { ResolvedPiAiProviderProfile } from './config.ts'
 import { toPiContext } from './context.ts'
 import { toStreamChunks } from './stream.ts'

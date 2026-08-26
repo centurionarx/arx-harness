@@ -1,11 +1,11 @@
-/** Package-owned session-event invariants for sandbox policy. @module @deepseek-ai/dsh-sandbox-policy/invariant */
+/** Package-owned session-event invariants for sandbox policy. @module @centurionarx/cxh-sandbox-policy/invariant */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import type { InvariantFailure, InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
 import { SANDBOX_MODES } from './session-mode.ts'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-sandbox-policy'
+const PACKAGE_NAME = '@centurionarx/cxh-sandbox-policy'
 
 /** Cordis companion plugin name. */
 export const name = 'sandbox-policy-invariant'

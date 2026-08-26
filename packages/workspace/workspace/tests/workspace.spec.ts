@@ -2,13 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import Storage from '@deepseek-ai/dsh-storage'
-import type { StorageBackend } from '@deepseek-ai/dsh-storage'
-import { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
-import type { DomainChanged } from '@deepseek-ai/dsh-storage-domain'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionHeader } from '@deepseek-ai/dsh-session'
+import { Context } from '@centurionarx/cordis'
+import Storage from '@centurionarx/cxh-storage'
+import type { StorageBackend } from '@centurionarx/cxh-storage'
+import { DomainFacility } from '@centurionarx/cxh-storage-domain'
+import type { DomainChanged } from '@centurionarx/cxh-storage-domain'
+import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import type { SessionHeader } from '@centurionarx/cxh-session'
 import { MemoryMediaPool, MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 import WorkspaceRegistry, {
   WorkspaceId,
@@ -171,7 +171,7 @@ let base: string
 const tempDirs: string[] = []
 
 async function makeDir(name: string): Promise<string> {
-  base ??= await realpath(await mkdtemp(join(tmpdir(), 'dsh-workspace-')))
+  base ??= await realpath(await mkdtemp(join(tmpdir(), 'cxh-workspace-')))
   if (tempDirs.length === 0) tempDirs.push(base)
   const dir = join(base, name)
   await mkdir(dir, { recursive: true })

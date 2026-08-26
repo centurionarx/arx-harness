@@ -10,7 +10,7 @@
 
 ![模型页：DeepSeek 卡片，以及添加提供方与添加自定义提供方两个入口](providers-models-page.zh.png)
 
-密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$DSH_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
+密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$CXH_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
 
 ## 添加目录提供方
 
@@ -28,11 +28,30 @@ Provider ID 是永久的，因为请求、已保存会话、模型默认值和�
 
 在**模型目录**中选择**获取可用模型**，可查询表单当前显示的基础 URL 和凭据。选择候选项只会更新草稿；保存前不会存储提供方。目录提供方使用已安装目录，不发起网络请求。
 
+### 本地模型服务
+
+Ollama、llama-server、vLLM 与 LM Studio 都讲 OpenAI 兼容协议，因此每一个都是指向 `127.0.0.1` 的自定义提供方。这里不涉及任何付费密钥，但该路由仍需要一个凭据*引用*：未命名凭据的 profile 会在请求离开进程之前就以 `No API key for provider` 被拒绝。指定一个环境变量并赋予任意非空值即可——本地服务会忽略 `Authorization` 头部。
+
+```yaml
+llm-pi-ai:
+  providers:
+    ollama:
+      displayName: Ollama
+      apiKeyEnv: OLLAMA_API_KEY
+      api: openai-completions
+      baseURL: http://127.0.0.1:11434/v1
+      models:
+        - id: qwen3:8b
+          contextWindow: 40960
+```
+
+为每个模型填写真实的 `contextWindow`。未填写的模型会继承 262144 token 的默认值，而多数本地模型并不提供这么大的窗口；自动压缩正是依据该数值决定何时归纳，于是会话会在压缩启动之前就超出模型的实际窗口。
+
 ### 图片输入
 
 手动输入的模型在自己声明之前一律按纯文本对待，因为没有任何环节能去询问端点接受哪些模态。给这类模型附加图片，会在发送前就被拒绝，并点名该模型。
 
-因此自定义提供方下的视觉模型需要加一行。表单没有对应字段；请在 `$DSH_HOME/settings.yaml` 中给该模型加上 `input`：
+因此自定义提供方下的视觉模型需要加一行。表单没有对应字段；请在 `$CXH_HOME/settings.yaml` 中给该模型加上 `input`：
 
 ```yaml
 llm-pi-ai:
@@ -83,7 +102,7 @@ llm-pi-ai:
 
 网关可能持有可用的密钥、地址也通得到，却仍然拒绝每一个请求。pi-ai 依据端点的 URL 决定请求的形状——系统提示词由哪个角色承载、输出上限写在哪个字段、思考级别如何传输——而对于它无法识别的地址，会当作 OpenAI 本身来对待。多数 OpenAI 兼容网关至少会拒绝 OpenAI 所接受的某一样东西。
 
-其中两样占了绝大多数。声明了推理能力的模型，其系统提示词会以 `role: "developer"` 发出，很多网关直接拒绝；输出上限则写作 `max_completion_tokens`，只认 `max_tokens` 的服务端会拒绝。表单里没有这两个字段；请在 `$DSH_HOME/settings.yaml` 的路由上更正：
+其中两样占了绝大多数。声明了推理能力的模型，其系统提示词会以 `role: "developer"` 发出，很多网关直接拒绝；输出上限则写作 `max_completion_tokens`，只认 `max_tokens` 的服务端会拒绝。表单里没有这两个字段；请在 `$CXH_HOME/settings.yaml` 的路由上更正：
 
 ```yaml
 llm-pi-ai:
@@ -113,7 +132,7 @@ llm-pi-ai:
 
 每个开关归属于声明了它的那些协议，因此在某个 `api` 上合法的开关，在另一个上可能被拒绝——报错会点名该协议实际提供哪些。与上面的 `input` 一样，开关陈述的是关于你的端点的一个断言，而不是对它的检查：设置一个网关其实并不需要的开关，只是发出一个不同的请求而已。
 
-全部开关、各自接受的取值，以及接受它们的协议，都列在[生成的 `dsh-llm-pi-ai` 配置参考](../../config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)的 `PiAiCompatProfile` 之下——该参考派生自源码，因此不会落后于适配器实际接受的内容。
+全部开关、各自接受的取值，以及接受它们的协议，都列在[生成的 `cxh-llm-pi-ai` 配置参考](../../config-catalog.zh.md#centurionarxcxh-llm-pi-ai)的 `PiAiCompatProfile` 之下——该参考派生自源码，因此不会落后于适配器实际接受的内容。
 
 ## 选择模型
 
@@ -134,4 +153,4 @@ llm-pi-ai:
 
 ## 进阶配置
 
-自动生成的[插件配置目录](../../config-catalog.zh.md)列出每个插件的所有受支持字段与默认值；[`dsh-llm-pi-ai`](../../config-catalog.zh.md#deepseek-aidsh-llm-pi-ai) 就是本页所配置的那个提供方段落。[`dsh-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.zh.md) 和 [`dsh-llm-deepseek`](../../../packages/llm/llm-deepseek/README.zh.md) 参考文档负责直接 `settings.yaml` 配置、目录解析、推理控制、凭据与适配器错误。
+自动生成的[插件配置目录](../../config-catalog.zh.md)列出每个插件的所有受支持字段与默认值；[`cxh-llm-pi-ai`](../../config-catalog.zh.md#centurionarxcxh-llm-pi-ai) 就是本页所配置的那个提供方段落。[`cxh-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.zh.md) 和 [`cxh-llm-deepseek`](../../../packages/llm/llm-deepseek/README.zh.md) 参考文档负责直接 `settings.yaml` 配置、目录解析、推理控制、凭据与适配器错误。

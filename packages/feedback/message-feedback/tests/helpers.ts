@@ -1,25 +1,25 @@
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@deepseek-ai/cordis'
-import { createAssistantMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { MessageId } from '@deepseek-ai/dsh-llm/brand'
+import { Context } from '@centurionarx/cordis'
+import { createAssistantMessage, createUserMessage } from '@centurionarx/cxh-llm'
+import type { MessageId } from '@centurionarx/cxh-llm/brand'
 import SessionStore, {
   SESSION_FORMAT_VERSION,
   Session,
   SessionId,
   type SessionEvent,
   type SessionHeader,
-} from '@deepseek-ai/dsh-session'
+} from '@centurionarx/cxh-session'
 import SessionPersistence, {
   SessionPersistenceRevision,
   type SessionInspection,
   type SessionLocation,
   type SessionPersistenceSnapshot,
-} from '@deepseek-ai/dsh-session-persistence'
-import Storage from '@deepseek-ai/dsh-storage'
-import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
-import * as StorageJson from '@deepseek-ai/dsh-storage-json'
+} from '@centurionarx/cxh-session-persistence'
+import Storage from '@centurionarx/cxh-storage'
+import * as StorageDomain from '@centurionarx/cxh-storage-domain'
+import * as StorageJson from '@centurionarx/cxh-storage-json'
 import MessageFeedbackService from '../src/index.ts'
 
 export interface MessageFixture {
@@ -185,7 +185,7 @@ export interface TestHarness {
 
 /** Compose the service over the real storage hub/domain/JSON backend. */
 export async function setupHarness(maxNoteBytes = 64): Promise<TestHarness> {
-  const root = await mkdtemp(join(tmpdir(), 'dsh-message-feedback-test-'))
+  const root = await mkdtemp(join(tmpdir(), 'cxh-message-feedback-test-'))
   const ctx = new Context()
   let disposeFeedback: (() => Promise<void>) | undefined
   try {

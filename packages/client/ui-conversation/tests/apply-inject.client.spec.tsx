@@ -15,15 +15,15 @@
 // chat-toolview-slot.spec.tsx.
 
 import { describe, expect, it, vi } from 'vitest'
-import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
-import type { SessionBehaviorOverrides } from '@deepseek-ai/dsh-client-test-runtime'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import type { ISession, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
-import { apply, inject } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import type { SessionBehaviorOverrides } from '@centurionarx/cxh-client-test-runtime'
+import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
+import type { ISession, SessionId } from '@centurionarx/cxh-client-runtime/client'
+import { apply, inject } from '@centurionarx/cxh-client-ui-conversation/client'
 import type {
   ChatViewInjected, ComposerBarInjected, ConversationInjected, ConversationSessionHeaderInjected,
   ConversationSessionInjected, DetailsInjected,
-} from '@deepseek-ai/dsh-client-ui-conversation/client'
+} from '@centurionarx/cxh-client-ui-conversation/client'
 import type { createChatStore } from '../src/client/stores.ts'
 
 // The service reads its initial locale from the browser; these specs assert

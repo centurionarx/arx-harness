@@ -11,11 +11,11 @@ import {
   JsonTree,
   MarkdownText,
   Tooltip,
-} from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@centurionarx/cxh-client-ui-primitives'
 import { structuredPatch } from 'diff'
 import type {
   AssistantRequestConfig, ConversationPromptSnapshot,
-} from '@deepseek-ai/dsh-client-runtime/client'
+} from '@centurionarx/cxh-client-runtime/client'
 import type {
   AssistantMetricDetail, TrajectoryCellKind, TrajectoryCellProps, TrajectorySourceBlock,
 } from './trajectory-record.ts'

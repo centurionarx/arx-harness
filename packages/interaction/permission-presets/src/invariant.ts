@@ -1,10 +1,10 @@
-/** Package-owned permission-preset event invariants. @module @deepseek-ai/dsh-permission-presets/invariant */
+/** Package-owned permission-preset event invariants. @module @centurionarx/cxh-permission-presets/invariant */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
-import type { InvariantFailure, InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@centurionarx/cordis'
+import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-permission-presets'
+const PACKAGE_NAME = '@centurionarx/cxh-permission-presets'
 
 /** Cordis companion plugin name. */
 export const name = 'permission-presets-invariant'
