@@ -138,7 +138,7 @@ export function SidebarRoot({
           >
             <span className={css.brandIdentity} aria-hidden="true">
               <span className={css.brandMark}>
-                {renderSlot('sidebar.brand.mark', { size: 24 }, { fallback: <BrandMark size={24} /> })}
+                {renderSlot('sidebar.brand.mark', { size: 48 }, { fallback: <BrandMark size={48} /> })}
               </span>
               <span className={css.brandName}>
                 {renderSlot('sidebar.brand.name', {}, {
@@ -155,8 +155,10 @@ export function SidebarRoot({
             </span>
           </button>
         )}
-        {/* Rail resting state is the whale mark; hovering swaps in the panel
-            icon (the expand affordance, figma sidebar-hover flow). */}
+        {/* Rail resting state is the brand mark; hovering swaps in the panel
+            icon (the expand affordance, figma sidebar-hover flow). It keeps the
+            24px size the 36px rail circle allows, which the expanded row does
+            not share. */}
         <Tooltip label={collapsed ? t('toggle.open') : t('toggle.collapse')} delayMs={500}>
           <button
             type="button"

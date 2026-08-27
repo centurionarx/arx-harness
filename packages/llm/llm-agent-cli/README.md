@@ -57,9 +57,13 @@ A run owns a CLI process tree, so it is released when its turn ends, fails, or i
             contextWindow: 200000
             maxTokens: 8192
             acceptsImages: true
+            efforts: [low, medium, high]
+            defaultEffort: high
 ```
 
-`acceptsImages` is per model and defaults to false. The CLI discloses no catalog, so the route states which models take image input; declaring it on a model that refuses images turns every attached image into a failed request instead of a refused attachment. Image bytes are read from `ctx.attachments` under the vendor's own documented limits, which are fixed rather than configurable: encoding past them produces a request the provider rejects, not a slower one.
+`acceptsImages` is per model and defaults to false. The route states which models take image input; declaring it on a model that refuses images turns every attached image into a failed request instead of a refused attachment. Image bytes are read from `ctx.attachments` under the vendor's own documented limits, which are fixed rather than configurable: encoding past them produces a request the provider rejects, not a slower one.
+
+`efforts` lists the reasoning levels a model serves, in the order a selector offers them; `defaultEffort` names the one requests carry when they name none, and must be among them — a default outside the list fails the plugin at load. A model that declares no efforts is reported with no reasoning capability at all, which leaves requests at the vendor's own level rather than offering a control that changes nothing. The vendor silently downgrades a level its model does not serve, so a request naming an undeclared one is refused with `UNSUPPORTED_REASONING_EFFORT` rather than run at a level the selector would then misreport.
 
 `cwd` is a deployment fact, not a session one: one adapter serves every session in the process. Absent, the CLI runs where the harness process runs.
 
@@ -102,4 +106,5 @@ None of its own; the response does not change the request prefix.
 - **One vendor today** — the package is named for the shape, not the roster: it drives the Claude Agent SDK and nothing else, so a Claude subscription is the only login it serves. A second vendor is a second SDK with its own protocol and its own process projection; whether that arrives as another package or as a seam inside this one is undecided, and the name should not be read as a promise either way.
 - **Images need a model that declares them and a mounted attachment store** — a route serves images only where `acceptsImages` says so, and only a composition mounting `attachments` can read their bytes. Either missing fails the request with `UNSUPPORTED_CONTENT` rather than sending it stripped. Documents other than images have no representation here at all.
 - **A live run does not survive the process** — the conversation lives in memory beside its CLI, so a restart replays once per session and opens a new run. Nothing durable could carry it: the state is a running process, not a record.
+- **The model roster is declared, not discovered** — the SDK's `supportedModels()` reports the vendor's alias rows with their effort levels, so `efforts` could be read rather than stated. It does not report `contextWindow`, which automatic compaction requires, and it covers aliases rather than the explicit ids a route usually pins, so a declared roster is still the only complete one. Reading efforts from it would retire half of this hand-declaration.
 - **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`arx-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).

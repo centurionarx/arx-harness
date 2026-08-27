@@ -77,7 +77,10 @@ describe('BrandWordmark', () => {
   it('sets the word in two blues and keeps its footprint under a font fallback', () => {
     const view = render(<primitives.BrandWordmark />)
     const svg = view.container.querySelector('svg')!
-    expect(svg.getAttribute('width')).toBe('180')
+    // Renders at the 24px the sidebar brand row gives it; the artwork keeps
+    // its native 180x34 proportions, so the width follows.
+    expect(svg.getAttribute('height')).toBe('24')
+    expect(svg.getAttribute('width')).toBe(String((24 * 180) / 34))
     expect(svg.getAttribute('viewBox')).toBe('0 0 180 34')
 
     const [word, plate] = [...svg.querySelectorAll('text')]

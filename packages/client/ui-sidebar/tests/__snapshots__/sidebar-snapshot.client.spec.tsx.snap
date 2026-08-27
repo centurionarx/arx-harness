@@ -128,7 +128,7 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               <span
                 aria-hidden="true"
                 class="mark"
-                style="width: 24px; height: 12.901185770750988px;"
+                style="width: 48px; height: 25.802371541501977px;"
               />
             </div>
           </span>
@@ -259,7 +259,7 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               <span
                 aria-hidden="true"
                 class="mark"
-                style="width: 24px; height: 12.901185770750988px;"
+                style="width: 48px; height: 25.802371541501977px;"
               />
             </div>
           </span>

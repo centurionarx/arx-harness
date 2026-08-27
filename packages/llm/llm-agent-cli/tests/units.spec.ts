@@ -308,4 +308,24 @@ describe('resolveRoutes', () => {
     expect(routes.get('claude')).toMatchObject({ displayName: 'Claude', disposeGraceMs: 10 })
     expect(routes.get('claude')?.models.size).toBe(0)
   })
+
+  // Self-contained misconfiguration, so it fails at load rather than on the
+  // first request that would have silently run at the vendor's own level.
+  it('refuses a default effort the model does not declare', () => {
+    expect(() => resolveRoutes({
+      claude: {
+        models: [{ id: 'fable', contextWindow: 200_000, efforts: ['low'], defaultEffort: 'max' }],
+      },
+    })).toThrow(/defaults to effort "max", which is not among its declared efforts/)
+    // A default with no efforts declared at all is the same misconfiguration:
+    // it names a level on a model that offers none.
+    expect(() => resolveRoutes({
+      claude: { models: [{ id: 'fable', contextWindow: 200_000, defaultEffort: 'high' }] },
+    })).toThrow(/not among its declared efforts/)
+    // Declaring no efforts at all is not a default outside the set — it is a
+    // model with no effort control, which the same check must let through.
+    expect(() => resolveRoutes({
+      claude: { models: [{ id: 'fable', contextWindow: 200_000 }] },
+    })).not.toThrow()
+  })
 })

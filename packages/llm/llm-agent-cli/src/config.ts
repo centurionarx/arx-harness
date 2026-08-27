@@ -13,7 +13,7 @@ export interface AgentCliModel {
   /**
    * Maximum combined request and response context. Required: automatic
    * compaction refuses to run against a route whose adapter advertises no
-   * capacity, and the vendor CLI discloses none.
+   * capacity, and the vendor CLI's own model rows carry none.
    */
   contextWindow: number
   /** Per-request output cap materialized when a caller omits one. */
@@ -26,7 +26,33 @@ export interface AgentCliModel {
    * attached image into a failed request instead of a refused attachment.
    */
   acceptsImages?: boolean
+  /**
+   * Effort levels this model accepts, in the order a selector should offer
+   * them. Declared rather than discovered: the SDK does publish these levels,
+   * but only for its alias rows, while a route pins explicit ids. Omitting the
+   * field leaves the model with no effort control, so requests carry the
+   * vendor's own default; declaring a level the model does not serve makes the
+   * vendor silently downgrade it, which the selector then misreports.
+   */
+  efforts?: AgentCliEffort[]
+  /**
+   * Effort materialized into requests that name none. Must be one of
+   * {@link efforts}; absent, an unspecified request keeps the vendor default.
+   */
+  defaultEffort?: AgentCliEffort
 }
+
+/**
+ * Effort levels the vendor CLI accepts, as its SDK declares them.
+ *
+ * A closed set rather than free text: it is the vendor's own parameter domain,
+ * so a route cannot widen it, and a value outside it is a request the CLI
+ * refuses rather than a deployment choice.
+ */
+export const AGENT_CLI_EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const
+
+/** One effort level the vendor CLI accepts. */
+export type AgentCliEffort = (typeof AGENT_CLI_EFFORTS)[number]
 
 /** One provider route backed by a subscription-authenticated vendor CLI. */
 export interface AgentCliProfile {
@@ -54,12 +80,16 @@ export interface Config {
   cwd?: string
 }
 
+const effort: z<AgentCliEffort> = z.union(AGENT_CLI_EFFORTS.map(level => z.const(level)))
+
 const model: z<AgentCliModel> = z.object({
   id: z.string().required(),
   contextWindow: z.number().step(1).min(1).required(),
   maxTokens: z.number().step(1).min(1),
   name: z.string(),
   acceptsImages: z.boolean(),
+  efforts: z.array(effort),
+  defaultEffort: effort,
 })
 
 const profile: z<AgentCliProfile> = z.object({
@@ -101,7 +131,15 @@ export function resolveRoutes(
   const routes = new Map<string, ResolvedRoute>()
   for (const [provider, configured] of Object.entries(providers)) {
     const models = new Map<string, AgentCliModel>()
-    for (const entry of configured.models ?? []) models.set(entry.id, entry)
+    for (const entry of configured.models ?? []) {
+      if (entry.defaultEffort !== undefined && !(entry.efforts ?? []).includes(entry.defaultEffort)) {
+        throw new Error(
+          `llm-agent-cli: provider "${provider}" model "${entry.id}" defaults to effort `
+          + `"${entry.defaultEffort}", which is not among its declared efforts`,
+        )
+      }
+      models.set(entry.id, entry)
+    }
     routes.set(provider, {
       provider,
       displayName: configured.displayName ?? provider,

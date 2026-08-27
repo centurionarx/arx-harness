@@ -13,6 +13,7 @@ vi.mock('@anthropic-ai/claude-agent-sdk', () => ({
 const { AgentCliAdapter } = await import('../src/adapter.ts')
 const plugin = await import('../src/index.ts')
 const { resolveRoutes } = await import('../src/config.ts')
+type AgentCliProfile = import('../src/config.ts').AgentCliProfile
 
 /** One vendor run whose messages the test supplies, pulled like the real one. */
 function vendorRun(messages: readonly unknown[]): Record<string, unknown> {
@@ -76,6 +77,30 @@ const ROUTES = {
   },
 }
 
+/**
+ * A route whose models declare reasoning efforts. Separate from {@link ROUTES}
+ * so the catalog assertions above keep describing one model set.
+ */
+const EFFORT_ROUTES: Record<string, AgentCliProfile> = {
+  claude: {
+    models: [
+      { id: 'fable', contextWindow: 1_000_000, efforts: ['medium', 'high', 'max'], defaultEffort: 'high' },
+      { id: 'no-default', contextWindow: 200_000, efforts: ['low', 'high'] },
+      { id: 'no-efforts', contextWindow: 200_000 },
+    ],
+  },
+}
+
+/** One adapter over the effort-declaring route table. */
+function effortAdapter() {
+  return new AgentCliAdapter({
+    routes: () => resolveRoutes(EFFORT_ROUTES),
+    spawn: recordingSpawn().spawn,
+    cwd: () => '/workspace',
+    attachments: () => undefined,
+  })
+}
+
 /** One image attachment reference, as a message content block carries it. */
 const IMAGE = { type: 'image', attachment: { attachmentId: 'att-1' } } as never
 
@@ -136,6 +161,27 @@ describe('route metadata', () => {
       context: { contextWindow: 200_000 },
       defaultMaxTokens: 8_192,
     })
+  })
+
+  it('exposes the efforts a route declares, and no control for a model without them', async () => {
+    await expect(effortAdapter().resolveModel('claude', 'fable')).resolves.toMatchObject({
+      reasoning: {
+        efforts: [
+          { id: 'medium', name: 'Medium' },
+          { id: 'high', name: 'High' },
+          { id: 'max', name: 'Max' },
+        ],
+        defaultEffort: 'high',
+      },
+    })
+    // Efforts without a default: the control is offered, and an unspecified
+    // request keeps the vendor's own level rather than one this route picked.
+    const open = await effortAdapter().resolveModel('claude', 'no-default')
+    expect(open.reasoning?.efforts.map(e => e.id)).toEqual(['low', 'high'])
+    expect(open.reasoning).not.toHaveProperty('defaultEffort')
+    // Absent rather than empty: the seam reads a missing `reasoning` as "no
+    // such control", which leaves the vendor's own default in force.
+    await expect(effortAdapter().resolveModel('claude', 'no-efforts')).resolves.not.toHaveProperty('reasoning')
   })
 
   it('fails naming an unconfigured route or model instead of guessing', () => {
@@ -328,6 +374,33 @@ describe('plugin', () => {
     expect(options['cwd']).toBe('/configured')
     void (options['spawnClaudeCodeProcess'] as (o: unknown) => unknown)({ command: '/c', args: [], cwd: '/configured', env: {} })
     expect(spawn.calls).toHaveLength(1)
+  })
+
+  it('carries the requested effort to the vendor, and the route default when none is named', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'v' }]))
+    await drain(effortAdapter().stream({ model: 'fable', provider: 'claude', messages: [ask], reasoningEffort: 'max' } as never))
+    expect((queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options['effort']).toBe('max')
+
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'v' }]))
+    await drain(effortAdapter().stream({ model: 'fable', provider: 'claude', messages: [ask] }))
+    expect((queryMock.mock.calls[1]?.[0] as { options: Record<string, unknown> }).options['effort']).toBe('high')
+  })
+
+  it('sends no effort for a model that declares none, or one that declares no default', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'v' }]))
+    await drain(effortAdapter().stream({ model: 'no-efforts', provider: 'claude', messages: [ask] }))
+    expect((queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options).not.toHaveProperty('effort')
+
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'v' }]))
+    await drain(effortAdapter().stream({ model: 'no-default', provider: 'claude', messages: [ask] }))
+    expect((queryMock.mock.calls[1]?.[0] as { options: Record<string, unknown> }).options).not.toHaveProperty('effort')
+  })
+
+  it('refuses an effort the model does not declare, rather than letting the vendor downgrade it', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'v' }]))
+    await expect(drain(effortAdapter().stream(
+      { model: 'fable', provider: 'claude', messages: [ask], reasoningEffort: 'low' } as never,
+    ))).rejects.toThrow(/does not serve reasoning effort "low"/)
   })
 
   it('runs where the harness process runs when configuration names no workspace', async () => {
