@@ -44,6 +44,8 @@ Generated catalogs slugify `@scope/prefix-name` into anchors by dropping `@` and
 
 `$ARX_HOME` becomes `$ARX_HOME`, so existing sessions, credentials, and settings are orphaned. The [pre-release stance](../../../../CLAUDE.md) permits this — backends reject old on-disk formats — and `SESSION_FORMAT_VERSION` does not move, because a rebrand changes no log structure.
 
+Configuration naming the GitHub organization is beyond what the classifier can decide. The upstream organization was named for the product, so a bare organization literal in JSON is indistinguishable from the product slug and the slug rule takes it — which is how `.github/issue-management/config.json` came to name an organization that does not exist, and why the issue-policy job called `repos/arx-harness/arx-harness`. Anchoring the owner rule does not reach this: there is no host beside the value to anchor to. After a rename, organization-shaped configuration is checked by hand.
+
 Publication now depends on owning the `@arx-ai` npm scope and the `arx-harness-sdk` PyPI name; neither is a code change.
 
 A rename this wide is not rebasable. It landed alone, and a conflict is cheaper to resolve by re-running the classifier over the new base than by hand.
