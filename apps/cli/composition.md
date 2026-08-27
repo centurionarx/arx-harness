@@ -152,8 +152,6 @@ flowchart LR
   cfg --> plugin_arx_base_repeat_tool_reminder
   plugin_arx_base_web["web<br/>@arx-ai/arx-web"]
   cfg --> plugin_arx_base_web
-  plugin_arx_base_web_search_deepseek["web-search-deepseek<br/>@arx-ai/arx-web-search-deepseek"]
-  cfg --> plugin_arx_base_web_search_deepseek
   plugin_arx_base_tool_web["tool-web<br/>@arx-ai/arx-tool-web"]
   cfg --> plugin_arx_base_tool_web
   plugin_arx_base_tools["tools<br/>@arx-ai/arx-tools"]
@@ -164,8 +162,6 @@ flowchart LR
   cfg --> plugin_arx_base_agent_loop
   plugin_arx_base_fs_sandbox["fs-sandbox<br/>@arx-ai/arx-fs-sandbox"]
   cfg --> plugin_arx_base_fs_sandbox
-  plugin_arx_base_llm_deepseek["llm-deepseek<br/>@arx-ai/arx-llm-deepseek"]
-  cfg --> plugin_arx_base_llm_deepseek
 ```
 
 | Plugin id | Package / module |
@@ -242,13 +238,11 @@ flowchart LR
 | `tool-str-replace-editor` | `@arx-ai/arx-tool-str-replace-editor` |
 | `repeat-tool-reminder` | `@arx-ai/arx-repeat-tool-reminder` |
 | `web` | `@arx-ai/arx-web` |
-| `web-search-deepseek` | `@arx-ai/arx-web-search-deepseek` |
 | `tool-web` | `@arx-ai/arx-tool-web` |
 | `tools` | `@arx-ai/arx-tools` |
 | `system-prompt` | `@arx-ai/arx-system-prompt` |
 | `agent-loop` | `@arx-ai/arx-agent-loop` |
 | `fs-sandbox` | `@arx-ai/arx-fs-sandbox` |
-| `llm-deepseek` | `@arx-ai/arx-llm-deepseek` |
 
 Source config: [`packages/bundle/base/cordis.patch.yml`](../../packages/bundle/base/cordis.patch.yml).
 
