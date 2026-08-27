@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-root",
-  "version": "0.1.1-rc.2",
+  "version": "1.0.1",
   "license": "MIT",
   "private": true,
   "type": "module",

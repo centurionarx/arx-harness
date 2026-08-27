@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-commands",
   "description": "Plugin-owned human command registry for arx Harness UIs",
-  "version": "0.1.1-rc.2",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
