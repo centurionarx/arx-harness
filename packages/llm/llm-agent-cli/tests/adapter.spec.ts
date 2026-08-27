@@ -33,9 +33,12 @@ function spawningRun(messages: readonly unknown[]): void {
   })
 }
 
-/** The prompt one call opened its run with. */
-function delivered(call: number): string {
-  return (queryMock.mock.calls[call]?.[0] as { prompt: string }).prompt
+/** The content blocks one call opened its run with. */
+async function delivered(call: number): Promise<unknown[]> {
+  const prompt = (queryMock.mock.calls[call]?.[0] as { prompt: AsyncIterable<unknown> }).prompt
+  const out: unknown[] = []
+  for await (const message of prompt) out.push(message)
+  return (out[0] as { message: { content: unknown[] } }).message.content
 }
 
 /** A spawn that records its request and hands back an inert handle. */
@@ -64,12 +67,40 @@ function recordingSpawn(): RecordingSpawn {
 }
 
 const ROUTES = {
-  claude: { displayName: 'Claude', models: [{ id: 'sonnet', contextWindow: 200_000, maxTokens: 8_192 }] },
+  claude: {
+    displayName: 'Claude',
+    models: [
+      { id: 'sonnet', contextWindow: 200_000, maxTokens: 8_192 },
+      { id: 'opus', contextWindow: 200_000, acceptsImages: true },
+    ],
+  },
+}
+
+/** One image attachment reference, as a message content block carries it. */
+const IMAGE = { type: 'image', attachment: { attachmentId: 'att-1' } } as never
+
+/** An attachment store that answers one read with fixed bytes. */
+function imageStore() {
+  const reads: unknown[] = []
+  return {
+    reads,
+    store: {
+      readImageRequest: (ref: unknown, policy: unknown) => {
+        reads.push({ ref, policy })
+        return Promise.resolve({ mediaType: 'image/png', data: Uint8Array.of(9, 9) })
+      },
+    },
+  }
 }
 
 /** Build one adapter over a fixed route table. */
-function adapter(spawn = recordingSpawn().spawn) {
-  return new AgentCliAdapter({ routes: () => resolveRoutes(ROUTES), spawn, cwd: () => '/workspace' })
+function adapter(spawn = recordingSpawn().spawn, attachments: unknown = undefined) {
+  return new AgentCliAdapter({
+    routes: () => resolveRoutes(ROUTES),
+    spawn,
+    cwd: () => '/workspace',
+    attachments: () => attachments as never,
+  })
 }
 
 const ask = createUserMessage({ content: [{ type: 'text', text: 'list files' }], source: { kind: 'user' } }) as Message
@@ -90,7 +121,10 @@ describe('route metadata', () => {
   })
 
   it('lists configured models and nothing for an unknown route', async () => {
-    await expect(adapter().listModels('claude')).resolves.toEqual([{ provider: 'claude', id: 'sonnet', name: 'sonnet' }])
+    await expect(adapter().listModels('claude')).resolves.toEqual([
+      { provider: 'claude', id: 'sonnet', name: 'sonnet' },
+      { provider: 'claude', id: 'opus', name: 'opus', inputModalities: ['text', 'image'] },
+    ])
     await expect(adapter().listModels('absent')).resolves.toEqual([])
   })
 
@@ -106,7 +140,7 @@ describe('route metadata', () => {
 
   it('fails naming an unconfigured route or model instead of guessing', () => {
     expect(() => adapter().resolveModel('absent', 'sonnet')).toThrow(LlmError)
-    expect(() => adapter().resolveModel('claude', 'opus')).toThrow(/serves no model/)
+    expect(() => adapter().resolveModel('claude', 'haiku')).toThrow(/serves no model/)
   })
 })
 
@@ -152,7 +186,7 @@ describe('stream', () => {
   it('opens a run with the history it must know', async () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(adapter().stream({ provider: 'claude', model: 'sonnet', messages: [ask] }))
-    expect(delivered(0)).toBe('user: list files')
+    expect(await delivered(0)).toEqual([{ type: 'text', text: 'user: list files' }])
   })
 
   it('opens its own run per call, replaying what came before', async () => {
@@ -164,7 +198,7 @@ describe('stream', () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask, next], sessionId }))
     expect(queryMock).toHaveBeenCalledTimes(2)
-    expect(delivered(1)).toBe('user: list files\n\nuser: again')
+    expect(await delivered(1)).toEqual([{ type: 'text', text: 'user: list files\n\nuser: again' }])
   })
 
   it('releases the run when the caller cancels mid-turn', async () => {
@@ -223,8 +257,47 @@ describe('stream', () => {
       routes: () => resolveRoutes({ claude: { models: [{ id: 'sonnet', contextWindow: 1_000 }] } }),
       spawn: recordingSpawn().spawn,
       cwd: () => '/workspace',
+      attachments: () => undefined,
     })
     await expect(bare.resolveModel('claude', 'sonnet')).resolves.not.toHaveProperty('defaultMaxTokens')
+  })
+
+  it('declares image input only for a model that configuration says accepts it', async () => {
+    const one = adapter()
+    await expect(one.resolveModel('claude', 'opus')).resolves.toMatchObject({ inputModalities: ['text', 'image'] })
+    await expect(one.resolveModel('claude', 'sonnet')).resolves.not.toHaveProperty('inputModalities')
+    const listed = await one.listModels('claude')
+    expect(listed.map(model => (model as { inputModalities?: unknown }).inputModalities))
+      .toEqual([undefined, ['text', 'image']])
+  })
+
+  it("carries an attached image as bytes, read under the vendor's own limits", async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+    const attached = imageStore()
+    const withImage: Message = { ...ask, content: [{ type: 'text', text: 'see' }, IMAGE] }
+    await drain(adapter(recordingSpawn().spawn, attached.store)
+      .stream({ provider: 'claude', model: 'opus', messages: [withImage] }))
+    expect(attached.reads).toHaveLength(1)
+    expect((attached.reads[0] as { policy: unknown }).policy).toEqual({ maxPixels: 1_150_000, maxBytes: 5_000_000 })
+    expect(await delivered(0)).toEqual([
+      { type: 'text', text: 'user: see' },
+      { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'CQk=' } },
+    ])
+  })
+
+  it('fails an image when the composition mounts no attachment store', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+    const withImage: Message = { ...ask, content: [IMAGE] }
+    await expect(drain(adapter().stream({ provider: 'claude', model: 'opus', messages: [withImage] })))
+      .rejects.toThrow(/mounts no attachment store/)
+  })
+
+  it('reads nothing when a request carries no image', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+    const attached = imageStore()
+    await drain(adapter(recordingSpawn().spawn, attached.store)
+      .stream({ provider: 'claude', model: 'sonnet', messages: [ask] }))
+    expect(attached.reads).toHaveLength(0)
   })
 
   it('fails an unconfigured route before starting a run', async () => {
@@ -279,6 +352,21 @@ describe('plugin', () => {
     expect(ctx.llm.listProviders()).toEqual([{ id: 'claude', name: 'Claude' }])
     await fork.dispose()
     expect(ctx.llm.listProviders()).toEqual([])
+  })
+
+  it('hands the adapter whatever attachment store the composition mounted', async () => {
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+    const attached = imageStore()
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    ;(ctx as unknown as { subprocess: unknown }).subprocess = { spawn: recordingSpawn().spawn }
+    // `ctx.get` reads the service store, which a plain property never enters.
+    ctx.provide('attachments', attached.store as never)
+    plugin.apply(ctx, { providers: ROUTES, cwd: '/workspace' })
+    const prepared = await ctx.llm.prepareCall({ provider: 'claude', model: 'opus' })
+    const withImage: Message = { ...ask, content: [IMAGE] }
+    await drain(prepared.stream({ ...prepared.config, messages: [withImage] }))
+    expect(attached.reads).toHaveLength(1)
   })
 
   it('registers one route per configured provider', async () => {

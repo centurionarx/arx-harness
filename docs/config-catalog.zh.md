@@ -955,10 +955,16 @@ export interface AgentCliModel {
   maxTokens?: number
   /** Human-readable name for selectors. */
   name?: string
+  /**
+   * Whether this model accepts image input. The CLI discloses no catalog, so a
+   * route states it: declaring it on a model that refuses images turns every
+   * attached image into a failed request instead of a refused attachment.
+   */
+  acceptsImages?: boolean
 }
 ```
 
-来源：[`packages/llm/llm-agent-cli/src/config.ts:36`](../packages/llm/llm-agent-cli/src/config.ts)
+来源：[`packages/llm/llm-agent-cli/src/config.ts:42`](../packages/llm/llm-agent-cli/src/config.ts)
 
 <a id="arx-aiarx-llm-deepseek"></a>
 

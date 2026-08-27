@@ -20,6 +20,12 @@ export interface AgentCliModel {
   maxTokens?: number
   /** Human-readable name for selectors. */
   name?: string
+  /**
+   * Whether this model accepts image input. The CLI discloses no catalog, so a
+   * route states it: declaring it on a model that refuses images turns every
+   * attached image into a failed request instead of a refused attachment.
+   */
+  acceptsImages?: boolean
 }
 
 /** One provider route backed by a subscription-authenticated vendor CLI. */
@@ -53,6 +59,7 @@ const model: z<AgentCliModel> = z.object({
   contextWindow: z.number().step(1).min(1).required(),
   maxTokens: z.number().step(1).min(1),
   name: z.string(),
+  acceptsImages: z.boolean(),
 })
 
 const profile: z<AgentCliProfile> = z.object({

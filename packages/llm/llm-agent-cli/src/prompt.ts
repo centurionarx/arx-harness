@@ -1,10 +1,17 @@
 /**
- * Rendering of harness messages into what the vendor CLI accepts as input.
+ * Rendering of harness messages into the one user message that opens a vendor
+ * run.
  *
  * @module @arx-ai/arx-llm-agent-cli/prompt
  */
 
+import type { AttachmentId, ImageAttachmentRef, RequestImageAttachment } from '@arx-ai/arx-attachment'
 import { LlmError, type ContentBlock, type Message } from '@arx-ai/arx-llm'
+
+/** Content blocks the vendor CLI accepts on a user message. */
+export type VendorContent =
+  | { type: 'text'; text: string }
+  | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
 
 /** Flatten a tool result's own blocks into the text the vendor carries. */
 function toolResultText(content: readonly ContentBlock[]): string {
@@ -12,35 +19,94 @@ function toolResultText(content: readonly ContentBlock[]): string {
 }
 
 /**
- * Render a whole transcript as the prompt opening one vendor run.
+ * Every image attachment one request references, in first-appearance order.
+ * @param messages - the request's complete assembled history.
+ * @returns the distinct references, keyed by attachment id.
+ */
+export function collectImageRefs(messages: readonly Message[]): ReadonlyMap<AttachmentId, ImageAttachmentRef> {
+  const refs = new Map<AttachmentId, ImageAttachmentRef>()
+  for (const message of messages) {
+    for (const block of message.content) {
+      if (block.type !== 'image') continue
+      const { attachment } = block
+      if (!refs.has(attachment.attachmentId)) refs.set(attachment.attachmentId, attachment)
+    }
+  }
+  return refs
+}
+
+/**
+ * Render a whole transcript as the content of the one user message that opens
+ * a vendor run.
  *
  * Every call opens its own run, and a run accepts no assistant turns, so prior
- * turns are stated as labelled text. Role structure and the vendor's prompt
- * cache are both lost here; that cost is what buys a run that cannot be left
- * holding a tool call the harness answered too late.
+ * turns are stated as labelled text. Images stay images: they ride as their own
+ * blocks, in the position their text occupied, so the model reads them where
+ * they were attached rather than as a footnote.
  * @param messages - the request's complete assembled history.
- * @returns one prompt string describing the conversation so far.
+ * @param images - request versions for every referenced attachment, keyed by attachment id.
+ * @returns the ordered content blocks describing the conversation so far.
  */
-export function renderTranscript(messages: readonly Message[]): string {
-  const rendered = messages.map((message) => {
-    const body = message.content.map((block) => {
+export function renderTranscript(
+  messages: readonly Message[],
+  images: ReadonlyMap<AttachmentId, RequestImageAttachment> = new Map(),
+): readonly VendorContent[] {
+  const out: VendorContent[] = []
+  let pending: string[] = []
+  const flush = (): void => {
+    const text = pending.join('\n\n')
+    pending = []
+    if (text.length > 0) out.push({ type: 'text', text })
+  }
+
+  for (const message of messages) {
+    const body: string[] = []
+    const carried: VendorContent[] = []
+    for (const block of message.content) {
       switch (block.type) {
         case 'text':
-          return block.text
+          body.push(block.text)
+          break
         case 'reasoning':
-          return ''
+          break
         case 'tool-call':
-          return `[requested ${block.name} with ${block.arguments}]`
+          body.push(`[requested ${block.name} with ${block.arguments}]`)
+          break
         case 'tool-result':
-          return `[result of ${block.toolCallId}]\n${toolResultText(block.content)}`
+          body.push(`[result of ${block.toolCallId}]\n${toolResultText(block.content)}`)
+          break
+        case 'image': {
+          const version = images.get(block.attachment.attachmentId)
+          if (version === undefined) {
+            throw new LlmError(
+              `llm-agent-cli: image ${block.attachment.attachmentId} has no request version`,
+              'UNSUPPORTED_CONTENT',
+            )
+          }
+          carried.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: version.mediaType,
+              data: Buffer.from(version.data).toString('base64'),
+            },
+          })
+          break
+        }
         default:
           throw new LlmError(
-            `llm-agent-cli: a ${block.type} block cannot reach the vendor CLI`,
+            `llm-agent-cli: a ${(block as ContentBlock).type} block cannot reach the vendor CLI`,
             'UNSUPPORTED_CONTENT',
           )
       }
-    }).filter(text => text.length > 0).join('\n')
-    return body.length === 0 ? '' : `${message.role}: ${body}`
-  })
-  return rendered.filter(text => text.length > 0).join('\n\n')
+    }
+    const text = body.filter(part => part.length > 0).join('\n')
+    if (text.length > 0) pending.push(`${message.role}: ${text}`)
+    if (carried.length > 0) {
+      flush()
+      out.push(...carried)
+    }
+  }
+  flush()
+  return out
 }
