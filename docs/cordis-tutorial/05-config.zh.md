@@ -81,4 +81,4 @@ ValidationError: invalid config:
 
 下一章：[组合与 HMR（热模块替换）](06-composition-and-hmr.zh.md)：将 `cordis.yml` 视为应用。
 
-[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/arx-ai/arx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)

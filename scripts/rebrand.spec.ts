@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { rebrandText } from './rebrand.ts'
+import { type Brand, rebrandText } from './rebrand.ts'
 
 /**
  * The rebrand is a classifier, not a substitution: most `deepseek` spans name
@@ -20,13 +20,15 @@ const CHANGED: readonly (readonly [string, string])[] = [
   ['CENTURIONarxHarnessConfig', 'ArxHarnessConfig'],
   ['centurionarx harness architecture', 'arx harness architecture'],
   ['centurionarx_harness_runtime_bin', 'arx_harness_runtime_bin'],
-  // the owner standing alone, which must not fragment the compounds above
-  ['the centurionarx organization', 'the arx-ai organization'],
   ['CENTURIONarx ships nothing', 'arx ships nothing'],
-  // the product's own repository
+  // the product's own repository: the slug moves, the GitHub owner does not
   [
     'https://github.com/centurionarx/centurionarx-harness.git',
-    'https://github.com/arx-ai/arx-harness.git',
+    'https://github.com/centurionarx/arx-harness.git',
+  ],
+  [
+    'https://raw.githubusercontent.com/centurionarx/centurionarx-harness/master/README.md',
+    'https://raw.githubusercontent.com/centurionarx/arx-harness/master/README.md',
   ],
   // environment and identifier prefixes a word boundary would hide
   ['window.__CXH_BOOT__', 'window.__ARX_BOOT__'],
@@ -79,6 +81,9 @@ const PRESERVED: readonly string[] = [
   'value.endsWith(suffix)',
   'sbtYDSwEVQd',
   "dsweb's likely lightbox wash",
+  // the GitHub organization keeps its name, so prose naming it stays put even
+  // though the identical literal moves as an npm scope
+  'the centurionarx organization',
   // words that merely contain a prefix-shaped run
   'handshake',
   'spreadsheet',
@@ -98,8 +103,30 @@ describe('rebrandText', () => {
     const mixed = 'see https://github.com/centurionarx/centurionarx-harness,'
       + ' https://github.com/deepseek-ai/deepseek-harness and https://github.com/deepseek-harness/cordis'
     expect(rebrandText(mixed)).toBe(
-      'see https://github.com/arx-ai/arx-harness,'
+      'see https://github.com/centurionarx/arx-harness,'
       + ' https://github.com/deepseek-ai/deepseek-harness and https://github.com/deepseek-harness/cordis',
+    )
+  })
+
+  // The bare literal is the discriminating case: `@<scope>` is claimed by an
+  // earlier rule, so only an unidentified occurrence can show whether the owner
+  // rule reaches beyond a repository URL.
+  it('moves the GitHub owner and the npm scope independently', () => {
+    const elsewhere: Brand = {
+      scope: 'arx-ai',
+      prefix: 'arx',
+      slug: 'arx-harness',
+      prose: 'arx Harness',
+      owner: 'another-org',
+      pascal: 'ArxHarness',
+    }
+    const input = 'https://github.com/centurionarx/centurionarx-harness.git,'
+      + ' https://raw.githubusercontent.com/centurionarx/centurionarx-harness/master/README.md,'
+      + ' @centurionarx/cxh-session, and the centurionarx organization'
+    expect(rebrandText(input, elsewhere)).toBe(
+      'https://github.com/another-org/arx-harness.git,'
+      + ' https://raw.githubusercontent.com/another-org/arx-harness/master/README.md,'
+      + ' @arx-ai/arx-session, and the centurionarx organization',
     )
   })
 

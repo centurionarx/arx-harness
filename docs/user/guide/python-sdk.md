@@ -17,7 +17,7 @@ This tutorial is the programmatic alternative to the Web UI. It installs the pub
 Clone the repository for its runnable example, create a virtual environment, and install the SDK with its same-version bundled runtime:
 
 ```sh
-git clone https://github.com/arx-ai/arx-harness.git
+git clone https://github.com/centurionarx/arx-harness.git
 cd arx-harness
 python -m venv .venv
 . .venv/bin/activate

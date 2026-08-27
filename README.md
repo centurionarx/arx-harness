@@ -27,7 +27,7 @@ The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it
 To run from a repository checkout:
 
 ```sh
-git clone https://github.com/arx-ai/arx-harness.git
+git clone https://github.com/centurionarx/arx-harness.git
 cd arx-harness
 pnpm install
 pnpm run build
@@ -38,7 +38,7 @@ pnpm arx web
 
 ## Community and support
 
-- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/arx-ai/arx-harness/discussions).
+- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/centurionarx/arx-harness/discussions).
 - Add the [`arx-plugin`](https://github.com/topics/arx-plugin) topic to your plugin repository for discoverability.
 - Join <a href="https://discord.gg/Ycq5dCaS4">arx Harness Discord community</a>.
 

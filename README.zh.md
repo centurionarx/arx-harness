@@ -31,7 +31,7 @@ npx @arx-ai/arx web
 如需从仓库源码运行：
 
 ```sh
-git clone https://github.com/arx-ai/arx-harness.git
+git clone https://github.com/centurionarx/arx-harness.git
 cd arx-harness
 pnpm install
 pnpm run build
@@ -42,7 +42,7 @@ pnpm arx web
 
 ## 社区与支持
 
-- 欢迎通过 [GitHub Discussions](https://github.com/arx-ai/arx-harness/discussions) 提交反馈或 bug 报告。
+- 欢迎通过 [GitHub Discussions](https://github.com/centurionarx/arx-harness/discussions) 提交反馈或 bug 报告。
 - 为你的插件仓库添加 [`arx-plugin`](https://github.com/topics/arx-plugin) 话题，便于被发现。
 - 欢迎加入 arx Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
 

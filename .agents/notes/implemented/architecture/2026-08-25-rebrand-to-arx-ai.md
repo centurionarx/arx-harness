@@ -14,7 +14,7 @@ Two further span families look like the product and are not. The `arx-harness` G
 
 ## Decision
 
-Identity is `@arx-ai` (npm scope), `arx` (package and binary prefix), `ARX_` (environment prefix), `arx_harness` (Python module), and `github.com/arx-ai/arx-harness`. The npm scope and the repository owner are the same word by choice; they are independent namespaces and need not have been.
+Identity is `@arx-ai` (npm scope), `arx` (package and binary prefix), `ARX_` (environment prefix), `arx_harness` (Python module), and `github.com/centurionarx/arx-harness`. The npm scope and the GitHub owner are independent fields and differ: `arx-ai` on npm, `centurionarx` on GitHub. The classifier anchors its owner rule to the GitHub host, because an unanchored one also claims a bare occurrence of the scope literal — invisibly, for as long as the two fields agree.
 
 [`scripts/rebrand.ts`](../../../../scripts/rebrand.ts) is the reproducible source of truth, and it is a **classifier, not a substitution**. Protected spans are masked before any rewrite rule runs and restored afterwards, so no rule can reach them whatever its order. [`scripts/rebrand.spec.ts`](../../../../scripts/rebrand.spec.ts) pins both directions: what must move, and what must survive untouched.
 

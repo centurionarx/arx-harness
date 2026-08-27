@@ -81,4 +81,4 @@ The loader used in this repo supports a `!!js` tag for config values that must b
 
 Next: [Composition and HMR](06-composition-and-hmr.md) — treating `cordis.yml` as the application.
 
-[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/arx-ai/arx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)

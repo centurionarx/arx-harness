@@ -4,7 +4,7 @@
   "description": "Prebuilt landlock-run Landlock launcher binary for linux-arm64 (static musl) — resolved as a file path by @arx-ai/node-addon-landlock-run, never imported",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arx-ai/arx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "native/landlock-run/packages/linux-arm64"
   },
   "os": [

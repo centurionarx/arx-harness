@@ -21,7 +21,7 @@ describe('APP_IDENTITY', () => {
     expect(APP_IDENTITY).toEqual({
       product: 'arx-harness',
       version: manifest.version,
-      url: 'https://github.com/arx-ai/arx-harness',
+      url: 'https://github.com/centurionarx/arx-harness',
     })
   })
 })
@@ -29,7 +29,7 @@ describe('APP_IDENTITY', () => {
 describe('userAgent', () => {
   it('renders product/version with the +url comment', () => {
     expect(userAgent()).toBe(
-      `arx-harness/${manifest.version} (+https://github.com/arx-ai/arx-harness)`,
+      `arx-harness/${manifest.version} (+https://github.com/centurionarx/arx-harness)`,
     )
   })
 

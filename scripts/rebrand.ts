@@ -25,7 +25,11 @@ export interface Brand {
   slug: string
   /** Prose product name replacing `DeepSeek Harness`. */
   prose: string
-  /** Repository owner replacing `deepseek-ai`. */
+  /**
+   * GitHub owner of the product repository, independent of `scope`: the two
+   * name different registries and move on their own schedule, so they may hold
+   * the same literal without moving together.
+   */
   owner: string
   /** PascalCase identifier replacing `DeepSeekHarness`. */
   pascal: string
@@ -51,7 +55,7 @@ const BRAND: Brand = {
   prefix: 'arx',
   slug: 'arx-harness',
   prose: 'arx Harness',
-  owner: 'arx-ai',
+  owner: 'centurionarx',
   pascal: 'ArxHarness',
 }
 
@@ -99,8 +103,8 @@ function stem(prose: string): string {
  * Ordered rewrite rules applied to masked text.
  *
  * Order is load-bearing in one direction: every compound carrying the owner
- * (`<owner>-harness`, `<owner>Harness`) must be rewritten before the bare
- * owner rule, which would otherwise fragment them.
+ * (`<owner>-harness`, `<owner>Harness`) must be rewritten before the owner
+ * rule, which would otherwise fragment them.
  * @param source - identity the tree currently carries.
  * @param target - identity to move to.
  * @returns pattern/replacement pairs in application order.
@@ -154,7 +158,12 @@ function rules(source: Brand, target: Brand): readonly (readonly [RegExp, string
     [new RegExp(quote(spaced(source.slug)), 'g'), spaced(target.slug)],
     [new RegExp(quote(source.prose.replace(' ', '-')), 'g'), target.prose.replace(' ', '-')],
     [new RegExp(`${from.stem}\\b`, 'g'), stem(target.prose)],
-    [new RegExp(`${from.owner}\\b`, 'g'), target.owner],
+    // The GitHub host is the whole guard. `owner` and `scope` are separate
+    // fields that may carry the same literal, so an unanchored owner rule
+    // rewrites `@<scope>/` too — silently, and only while the two agree.
+    // `githubusercontent` covers the raw-content host, which does not contain
+    // `github.com`.
+    [new RegExp(`(github(?:usercontent)?\\.com/)${from.owner}\\b`, 'g'), `$1${target.owner}`],
     [new RegExp(`${from.prefix}-`, 'g'), `${target.prefix}-`],
     [new RegExp(`${from.prefix}(?=[A-Z])`, 'g'), target.prefix],
     [new RegExp(`${from.prefix}_`, 'g'), `${target.prefix}_`],
