@@ -80,12 +80,27 @@ describe('AgentDefaultModelConfig', () => {
   it('falls back to the composition entry when the settings provider detaches', async () => {
     const bench = await boot()
     await bench.defaultModel.saveSelection({ provider: 'acme-gateway', model: 'acme-large' })
-    expect(bench.defaultModel.currentSelection().provider).toBe('acme-gateway')
+    expect(bench.defaultModel.currentSelection()?.provider).toBe('acme-gateway')
     await bench.settingsFiber.dispose()
     expect(bench.defaultModel.currentSelection()).toEqual({
       provider: 'deepseek-official', model: 'deepseek-v4-flash',
     })
     await bench.ctx.fiber.dispose()
+  })
+
+  it('offers no selection when the composition entry names none', async () => {
+    const ctx = new Context()
+    await ctx.plugin(AgentDefaultModelConfig, {})
+    expect(ctx.agentDefaultModel.currentSelection()).toBeUndefined()
+    await ctx.fiber.dispose()
+  })
+
+  it('offers no selection when the entry names half a pair', async () => {
+    const ctx = new Context()
+    await ctx.plugin(AgentDefaultModelConfig, { provider: 'acme-gateway' })
+    // Half a selection names no reachable route, so it is no selection.
+    expect(ctx.agentDefaultModel.currentSelection()).toBeUndefined()
+    await ctx.fiber.dispose()
   })
 
   it('keeps the composition entry when no settings provider is mounted', async () => {

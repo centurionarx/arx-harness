@@ -154,11 +154,14 @@ export interface ModelCatalogFailure {
 
 /** Detached model-directory snapshot for one session. */
 export interface SessionModels {
-  /** Model selection for the session's next assembled step. */
-  current: ModelSelection
+  /**
+   * Model selection for the session's next assembled step, or absent when the
+   * deployment ships no default and nobody has picked one yet.
+   */
+  current?: ModelSelection
   /**
    * Whether an adapter currently serves `current.provider`, and therefore
-   * whether this session can start a turn at all. Deliberately NOT derivable
+   * whether this session can start a turn at all. False without a selection. Deliberately NOT derivable
    * from `groups`: catalog membership is advisory, so a route serving a model
    * it stopped advertising is absent from the groups yet perfectly usable,
    * while a route whose adapter is gone can serve nothing. A surface that

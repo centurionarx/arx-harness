@@ -87,10 +87,10 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     description: 'Owns the default model selection independently of any Host or transport. The composition entry remains usable without a settings provider; when one is mounted, its user layer is read live.',
     methods: [
       {
-        signature: 'currentSelection(): ModelSelection',
+        signature: 'currentSelection(): ModelSelection | undefined',
         description: 'Read the current default model selection.',
         parameters: [],
-        returns: 'a detached provider, model, and optional reasoning selection.',
+        returns: 'a detached selection, or undefined when the deployment ships none and the user has picked none.',
       },
       {
         signature: 'async saveSelection(next: ModelSelection): Promise<void>',
