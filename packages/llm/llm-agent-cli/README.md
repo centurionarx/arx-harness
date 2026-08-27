@@ -56,7 +56,10 @@ A run owns a CLI process tree, so it is released when its turn ends, fails, or i
           - id: claude-sonnet-4-5
             contextWindow: 200000
             maxTokens: 8192
+            acceptsImages: true
 ```
+
+`acceptsImages` is per model and defaults to false. The CLI discloses no catalog, so the route states which models take image input; declaring it on a model that refuses images turns every attached image into a failed request instead of a refused attachment. Image bytes are read from `ctx.attachments` under the vendor's own documented limits, which are fixed rather than configurable: encoding past them produces a request the provider rejects, not a slower one.
 
 `cwd` is a deployment fact, not a session one: one adapter serves every session in the process. Absent, the CLI runs where the harness process runs.
 
@@ -97,6 +100,6 @@ None of its own; the response does not change the request prefix.
 ## Known Limitations and Deferred Work
 
 - **One vendor today** — the package is named for the shape, not the roster: it drives the Claude Agent SDK and nothing else, so a Claude subscription is the only login it serves. A second vendor is a second SDK with its own protocol and its own process projection; whether that arrives as another package or as a seam inside this one is undecided, and the name should not be read as a promise either way.
-- **Images cannot reach the vendor CLI** — a request carrying an image block fails with `UNSUPPORTED_CONTENT` rather than being sent without it.
+- **Images need a model that declares them and a mounted attachment store** — a route serves images only where `acceptsImages` says so, and only a composition mounting `attachments` can read their bytes. Either missing fails the request with `UNSUPPORTED_CONTENT` rather than sending it stripped. Documents other than images have no representation here at all.
 - **A live run does not survive the process** — the conversation lives in memory beside its CLI, so a restart replays once per session and opens a new run. Nothing durable could carry it: the state is a running process, not a record.
 - **The SDK version is pinned exactly** — `0.3.220`, matching the projection in [`arx-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.md).

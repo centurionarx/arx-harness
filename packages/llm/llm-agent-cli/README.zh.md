@@ -56,7 +56,10 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__arx__<名称>`。因此�
           - id: claude-sonnet-4-5
             contextWindow: 200000
             maxTokens: 8192
+            acceptsImages: true
 ```
+
+`acceptsImages`按模型设置，默认为 false。CLI 不暴露任何目录，因此由路由声明哪些模型接受图片输入；在拒绝图片的模型上声明它，会把每一张附加的图片都变成失败的请求，而不是被拒绝的附件。图片字节从 `ctx.attachments` 读取，遵循厂商自己写明的限制——这些限制是固定的而非可配置的：超出它们编码只会产生一个被提供方拒绝的请求，而不是更慢的请求。
 
 `cwd` 是部署事实而非会话事实：一个适配器为进程内所有会话服务。未设置时，CLI 在 harness 进程所在目录运行。
 
@@ -97,6 +100,6 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__arx__<名称>`。因此�
 ## Known Limitations and Deferred Work
 
 - **目前只有一个厂商**——本包的命名描述的是形态而非名单：它只驱动 Claude Agent SDK，因此 Claude 订阅是它服务的唯一登录。第二个厂商意味着第二套 SDK，带有自己的协议与进程投影；它究竟以另一个包的形式出现，还是作为本包内部的一个 seam，尚未决定——包名不应被读作任何一方的承诺。
-- **图片无法到达厂商 CLI**——携带 image 块的请求以 `UNSUPPORTED_CONTENT` 失败，而不是在丢弃图片后照常发送。
+- **图片需要一个声明支持它的模型，以及已挂载的附件存储**——只有 `acceptsImages` 为真的模型才服务图片，也只有挂载了 `attachments` 的组合才能读到它们的字节。任一缺失都会让请求以 `UNSUPPORTED_CONTENT` 失败，而不是丢弃图片后照常发送。图片之外的文档在这里没有任何表示形式。
 - **活跃运行不跨进程存活**——对话与其 CLI 一同驻留内存，因此重启后每个会话重放一次并开启新运行。没有任何持久化形式能承载它：该状态是一个运行中的进程，而非一条记录。
 - **SDK 版本按精确值锁定**——`0.3.220`，与 [`arx-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.zh.md) 中的投影一致。

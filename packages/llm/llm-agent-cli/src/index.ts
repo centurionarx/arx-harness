@@ -36,5 +36,8 @@ export function apply(ctx: Context, config: Config): void {
     routes: () => routes,
     spawn: spec => ctx.subprocess.spawn(spec),
     cwd: () => cwd,
+    // Optional: a composition without durable attachments serves text-only
+    // routes, and an image reaching one fails naming the missing store.
+    attachments: () => ctx.get('attachments'),
   }))
 }
