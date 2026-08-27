@@ -582,6 +582,11 @@ export interface ApiProxyDefaults {
    */
   defaultModelSelection: () => ModelSelection | undefined
   /**
+   * The launcher's bounded process-exit request, read per call because a
+   * launcher provides it before the tree mounts and a test tree provides none.
+   */
+  requestExit?: () => ((code: number) => void) | undefined
+  /**
    * Record a selection as the new default. Either absent, or a closure that
    * may itself decline — the gateway plugin always passes one, and it no-ops
    * when the deployment mounts no settings provider or when the write races
@@ -2856,6 +2861,25 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           home: homedir(),
           canOpenPath: canOpenPaths(),
         }))
+      },
+
+      exit(request) {
+        // The launcher provides this before the tree mounts; a deployment
+        // whose launcher provides none cannot stop itself, and says so rather
+        // than resolving on a shutdown that will not happen.
+        const requestExit = defaults.requestExit?.()
+        if (requestExit === undefined) {
+          return Promise.resolve(err(request, {
+            code: 'exit-unavailable',
+            message: 'this deployment cannot stop itself; stop the harness process directly',
+            details: {},
+          }))
+        }
+        // Answered before exiting: the connection carrying this response dies
+        // with the server, so the client has to hear "stopping" first.
+        const response = ok(request, { stopping: true as const })
+        requestExit(0)
+        return Promise.resolve(response)
       },
 
       async pickDirectory(request, signal) {

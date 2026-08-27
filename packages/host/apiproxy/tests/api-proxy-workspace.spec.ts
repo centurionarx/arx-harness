@@ -64,6 +64,7 @@ async function harness(
   extras: {
     openPath?: (path: string, signal: AbortSignal) => Promise<void>
     canOpenPath?: () => boolean
+    requestExit?: () => ((code: number) => void) | undefined
   } = {},
 ) {
   const ctx = new Context()
@@ -107,6 +108,7 @@ async function harness(
     cwd: root,
     ...extras.openPath === undefined ? {} : { openPath: extras.openPath },
     ...extras.canOpenPath === undefined ? {} : { canOpenPath: extras.canOpenPath },
+    ...extras.requestExit === undefined ? {} : { requestExit: extras.requestExit },
   })
   return { api, ctx, storageDomain, root }
 }
@@ -245,6 +247,20 @@ describe('host.openPath', () => {
     expect((await api.host.openPath(request({ path: '/tmp/a.txt' }), new AbortController().signal)).result)
       .toEqual({ ok: true, value: { opened: true } })
     expect(opened).toEqual(['/tmp/a.txt'])
+  })
+
+  it('starts the launcher shutdown and answers before the process goes', async () => {
+    const codes: number[] = []
+    const { api } = await harness(undefined, undefined, { requestExit: () => (code) => { codes.push(code) } })
+    // Answered first: the connection carrying the response dies with the server.
+    expect((await api.host.exit(request({}))).result).toEqual({ ok: true, value: { stopping: true } })
+    expect(codes).toEqual([0])
+  })
+
+  it('refuses when the launcher provided no exit request', async () => {
+    const { api } = await harness()
+    expect((await api.host.exit(request({}))).result)
+      .toMatchObject({ ok: false, error: { code: 'exit-unavailable' } })
   })
 
   it('propagates abort into the native boundary as a cancelled RPC error', async () => {
