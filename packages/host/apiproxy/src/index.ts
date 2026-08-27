@@ -15,6 +15,8 @@
 import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import type {} from '@arx-ai/arx-agent-default-model'
+// Declaration merge only: it is what types `ctx.get('appExit')`.
+import type {} from '@arx-ai/arx-cmdline'
 import type { ApiProxy } from './api/index.ts'
 import { createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from './api-proxy.ts'
 import {
@@ -97,6 +99,7 @@ export class ApiProxyService extends Service implements ApiProxy {
     super(ctx, 'apiProxy')
     const api = createApiProxy(ctx, {
       defaultModelSelection: () => ctx.agentDefaultModel.currentSelection(),
+      requestExit: () => ctx.get('appExit'),
       saveDefaultModelSelection: selection => ctx.agentDefaultModel.saveSelection(selection),
       cwd: process.cwd(),
       ...config.nativeOpen === undefined ? {} : { canOpenPath: () => config.nativeOpen as boolean },

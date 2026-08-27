@@ -45,15 +45,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@arx-ai/arx-attachment": "workspace:^",
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-agent-default-model": "workspace:^",
     "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-attachment": "workspace:^",
     "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-cmdline": "workspace:*",
     "@arx-ai/arx-commands": "workspace:^",
     "@arx-ai/arx-credentials": "workspace:^",
     "@arx-ai/arx-goal": "workspace:^",
     "@arx-ai/arx-host-directory-picker": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-native-command": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
@@ -65,7 +67,6 @@
     "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-skill": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
-    "@arx-ai/arx-jobs": "workspace:^",
     "@arx-ai/arx-tools": "workspace:^",
     "@arx-ai/arx-user-approval": "workspace:^",
     "@arx-ai/arx-user-questions": "workspace:^",
@@ -88,7 +89,6 @@
     "@arx-ai/arx-storage": "workspace:^",
     "@arx-ai/arx-storage-domain": "workspace:^",
     "@arx-ai/arx-typert-protocol": "workspace:^",
-    "@arx-ai/arx-typert-registry": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/arx-typert-registry": "workspace:^"
   }
 }

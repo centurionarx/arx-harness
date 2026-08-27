@@ -64,6 +64,14 @@ export const hostCreateDirectoryRequestSchema = z.object({
 export const hostCreateDirectoryValueSchema = z.object({
   path: z.string(),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.createDirectory'>>>
+/** host.exit request payload (empty object literal). */
+export const hostExitRequestSchema = z.object({}) satisfies z.ZodType<Wire<RequestPayload<'host.exit'>>>
+
+/** host.exit response value: shutdown started, not finished. */
+export const hostExitValueSchema = z.object({
+  stopping: z.literal(true),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.exit'>>>
+
 /** host.openPath request payload. */
 export const hostOpenPathRequestSchema = z.object({
   path: z.string().min(1),

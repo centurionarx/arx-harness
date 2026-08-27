@@ -86,6 +86,20 @@ export interface HostApi {
   ): Promise<RpcResponse<{ path: string }>>
 
   /**
+   * Stop the harness process this client is talking to.
+   *
+   * The launcher owns the bounded shutdown this request triggers: the tree is
+   * disposed first, and only then does the process exit. A deployment whose
+   * launcher provides no exit request refuses with `exit-unavailable` rather
+   * than pretending to stop.
+   *
+   * The response resolves before the process is gone, because the connection
+   * carrying it dies with the server. A client should treat a resolved
+   * response as "shutdown started", not "shutdown finished".
+   */
+  exit(request: RpcRequest<{}>): Promise<RpcResponse<{ stopping: true }>>
+
+  /**
    * Open a filesystem path with the operating system's default application
    * (Finder / Explorer / xdg-open hand-off). The browser carrier's
    * prefix-wide trust fence covers this privileged method like every other
