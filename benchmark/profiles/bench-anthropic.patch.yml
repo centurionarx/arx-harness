@@ -1,0 +1,27 @@
+# Controlled-arm overlay: point cxh at the SAME Anthropic model Claude Code runs.
+#
+# Applied after bench-common.patch.yml:
+#   cxh --profile headless \
+#       --patch benchmark/profiles/bench-common.patch.yml \
+#       --patch benchmark/profiles/bench-anthropic.patch.yml "<task>"
+#
+# Token counts are tokenizer-dependent, so a cxh-on-DeepSeek versus
+# Claude-Code-on-Claude comparison measures two tokenizers as much as two
+# harnesses. This overlay removes that confound by putting one model behind
+# both harnesses; the as-shipped arm keeps the defaults and is reported apart.
+
+# `llm-pi-ai` mounts dormant in cxh-base (no configured route). Naming a route
+# with the `anthropic-messages` protocol registers it.
+- id: llm-pi-ai
+  config:
+    providers:
+      anthropic-bench:
+        apiKeyEnv: ANTHROPIC_API_KEY
+        displayName: Anthropic (benchmark)
+        api: anthropic-messages
+        baseURL: https://api.anthropic.com/v1
+
+- id: agent-default-model
+  config:
+    provider: anthropic-bench
+    model: !!js process.env.CXH_BENCH_MODEL

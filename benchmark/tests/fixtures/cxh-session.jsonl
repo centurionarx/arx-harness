@@ -1,0 +1,8 @@
+{"type":"session","version":0,"id":"s1","cwd":"/w","createdAt":0,"delegationDepth":0}
+{"type":"request/header","seq":1,"time":1,"data":{"header":{"provider":"deepseek-official","model":"deepseek-v4-flash"},"reason":"step"}}
+{"type":"text-chunks","seq0":2,"time0":2,"dt":[1,1]}
+{"type":"assistant/message","seq":5,"time":5,"data":{"turn":0,"step":0,"message":{},"usage":{"inputTokens":40,"outputTokens":60,"cacheReadTokens":900,"cacheWriteTokens":10,"reasoningTokens":15}}}
+{"type":"tool/call","seq":6,"time":6,"data":{"turn":0,"step":0,"callId":"c1","name":"bash","arguments":"{}"}}
+{"type":"tool/call","seq":7,"time":7,"data":{"turn":0,"step":0,"callId":"c2","name":"read","arguments":"{}"}}
+{"type":"compaction/summary","seq":8,"time":8,"data":{"summary":[],"provider":"deepseek-official","model":"deepseek-v4-flash","usage":{"inputTokens":300,"outputTokens":80}}}
+{"type":"assistant/message","seq":9,"time":9,"data":{"turn":0,"step":1,"message":{}}}

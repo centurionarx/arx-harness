@@ -1,0 +1,27 @@
+# Benchmark overlay applied to every cxh arm.
+#
+# Applied with: cxh --profile headless --patch benchmark/profiles/bench-common.patch.yml "<task>"
+# Launcher flags must precede app arguments, so --patch comes before the task.
+#
+# An id-targeted patch REPLACES the named row's whole config, so every field a
+# row keeps is restated here rather than merged.
+
+# Plain, unpacked JSONL so the extractor reads the log without decompressing
+# concatenated zstd frames or decoding packed chunk runs. This changes the
+# on-disk representation only: the logical events are identical either way.
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.env.CXH_BENCH_SESSION_ROOT
+    compression: none
+    packChunks: false
+
+# Session titling makes one auxiliary model request per fresh session and
+# appends no usage-bearing session event, so its cost would be spent but not
+# measured. Disabling it keeps the measured total equal to the billed total.
+- id: session-title-llm
+  disabled: true
+
+# Titling is the only consumer of the shared provider in a headless run; the
+# fallback title needs no model call.
+- id: session-title
+  disabled: true

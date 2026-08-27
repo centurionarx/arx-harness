@@ -1,0 +1,2 @@
+# Result files are run artifacts, not repository content.
+*.json
