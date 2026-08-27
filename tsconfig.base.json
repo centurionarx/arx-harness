@@ -203,6 +203,7 @@
       "@arx-ai/arx-client-ui-layout": ["./packages/client/ui-layout/src"],
       "@arx-ai/arx-client-ui-sidebar": ["./packages/client/ui-sidebar/src"],
       "@arx-ai/arx-client-ui-brand-official": ["./packages/client/ui-brand-official/src"],
+      "@arx-ai/arx-client-ui-exit": ["./packages/client/ui-exit/src"],
       "@arx-ai/arx-client-ui-conversation": ["./packages/client/ui-conversation/src"],
       "@arx-ai/arx-client-ui-tool": ["./packages/client/ui-tool/src"],
       "@arx-ai/arx-client-ui-deliverables": ["./packages/client/ui-deliverables/src"],

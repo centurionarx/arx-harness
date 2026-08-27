@@ -75,7 +75,9 @@ export class ModelDirectory {
     }
     const { current, routable, groups, failures } = result.value
     this.store.update((s) => {
-      s.current = current
+      // The wire spells "no selection" as an absent field; the store spells it
+      // `null`, as it does for every other unset value it holds.
+      s.current = current ?? null
       s.routable = routable
       s.groups = groups
       s.failures = failures

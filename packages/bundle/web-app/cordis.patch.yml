@@ -206,6 +206,11 @@
     - id: ui-settings-plugin-inventory
       name: '@arx-ai/arx-client-ui-settings-plugin-inventory'
 
+    # The exit seat below Settings; `host.exit` refuses when the launcher
+    # provided no shutdown, so a deployment without one still mounts this.
+    - id: ui-exit
+      name: '@arx-ai/arx-client-ui-exit'
+
     - id: ui-conversation
       name: '@arx-ai/arx-client-ui-conversation'
 
