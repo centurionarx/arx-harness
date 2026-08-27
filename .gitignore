@@ -25,6 +25,7 @@ tmp/
 .DS_Store
 .idea
 mise.toml
+dist/
 dist-exe/
 python/sdk-runtime/src/arx_harness_runtime/runtime/arx-jsonrpc-agent-*
 python/sdk-runtime/src/arx_harness_runtime/runtime/node/
