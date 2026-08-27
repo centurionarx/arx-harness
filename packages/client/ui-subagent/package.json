@@ -67,10 +67,10 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
     "@arx-ai/arx-token-meter": "workspace:^",
-    "@types/react": "~18.3.1",
+    "@types/react": "~19.2.17",
     "@types/react-dom": "~18.3.0",
     "@arx-ai/cordis": "workspace:^",
-    "react": "^18.2.0",
+    "react": "^19.2.8",
     "react-dom": "^18.2.0"
   },
   "files": [

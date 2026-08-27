@@ -74,8 +74,8 @@
     "@arx-ai/arx-client-ui-slots": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
-    "@types/react": "~18.3.1",
-    "react": "^18.2.0",
+    "@types/react": "~19.2.17",
+    "react": "^19.2.8",
     "@arx-ai/arx-settings": "workspace:^"
   },
   "files": [

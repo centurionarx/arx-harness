@@ -71,8 +71,8 @@
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-tool-workflow": "workspace:^",
     "@arx-ai/arx-workflow": "workspace:^",
-    "@types/react": "~18.3.1",
+    "@types/react": "~19.2.17",
     "@arx-ai/cordis": "workspace:^",
-    "react": "^18.2.0"
+    "react": "^19.2.8"
   }
 }

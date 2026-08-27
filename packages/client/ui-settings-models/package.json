@@ -64,9 +64,9 @@
     "@arx-ai/arx-client-ui-settings": "workspace:^",
     "@arx-ai/arx-client-ui-slots": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@types/react": "~18.3.1",
+    "@types/react": "~19.2.17",
     "@arx-ai/cordis": "workspace:^",
-    "react": "^18.2.0"
+    "react": "^19.2.8"
   },
   "files": [
     "lib/index.js",

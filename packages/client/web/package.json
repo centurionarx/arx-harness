@@ -33,10 +33,10 @@
     "@arx-ai/arx-client-ui-primitives": "workspace:^",
     "@arx-ai/arx-client-ui-slots": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@types/react": "~18.3.1",
+    "@types/react": "~19.2.17",
     "@types/react-dom": "~18.3.0",
     "@arx-ai/cordis": "workspace:^",
-    "react": "^18.2.0",
+    "react": "^19.2.8",
     "react-dom": "^18.2.0",
     "typescript": "^6.0.3"
   },
