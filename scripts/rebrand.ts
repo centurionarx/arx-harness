@@ -64,6 +64,7 @@ const PROTECTED: readonly RegExp[] = [
   /\bdeepseek-(?:v\d[a-z0-9-]*|chat|reasoner|coder)\b/g,
   /\b[a-z0-9-]*\.?deepseek\.com\b/g,
   /\bllm-deepseek\b/g,
+  /\bdsweb\b/g,
   /\bdeepSeek[A-Za-z0-9]*/g,
   /\bDeepSeek\b(?![\s-]+Harness)/g,
   /(?<![a-zA-Z0-9_.@/-])deepseek(?![a-zA-Z0-9_.-])(?! harness)/g,
@@ -165,6 +166,10 @@ function rules(source: Brand, target: Brand): readonly (readonly [RegExp, string
     [new RegExp(`${from.pascalPrefix}\\b`, 'g'), pascalPrefix],
     [new RegExp(`${from.upper}_`, 'g'), `${upper}_`],
     [new RegExp(`${from.upper}\\b`, 'g'), upper],
+    // The design-system custom-property namespace. `--` on the left is the
+    // whole guard and the only safe one: `dsw` on its own sits inside
+    // `endsWith` 220 times, and inside opaque ids like `sbtYDSwEVQd`.
+    [/--dsw-/g, `--${target.prefix}-`],
   ]
 }
 

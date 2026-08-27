@@ -12,7 +12,7 @@ issue #2248 的第二步对齐，接在[附件展示 note](2026-08-11-web-attach
 
 **整页拖放。** InputBar 在 document 上绑定 `dragenter`/`dragover`/`dragleave`/`drop`（enter/leave 深度计数、视口边缘与 `dragend` 复位、按 `Files` 类型门控使文本拖拽保留原生 textarea 路径），并渲染 `ui-attachment` 新增的 `DropOverlay` 原子组件：经 body portal、不接收指针事件的全视口层（DeepSeek Chat DragMask 的视觉——白色 70% 加 10px 模糊，dark 为 `rgba(39,39,48,0.7)`，插画、标题、上限行），`disabled` 变体宣告锁定或忙碌的 composer。指针惰性是承重的：拖拽事件继续命中下方页面，深度计数永远看不到遮罩自己。document 级监听状态是安全的，因为 composer-bar slot 为 `kind: 'single'`。
 
-**灯箱。** 关闭钮换成 `ui-primitives` 的 `IconCloseOutline16`（Modal 的先例——在 viewBox 内居中的 SVG 不依赖字体度量）。backdrop 用共享的对话框遮罩（`--dsw-alias-bg-mask-1` 加 `--dsw-mask-blur`，两个主题都是黑基色），画在独立的兄弟图层上，因为 `backdrop-filter` 画在容器上会把预览图自己也模糊掉。
+**灯箱。** 关闭钮换成 `ui-primitives` 的 `IconCloseOutline16`（Modal 的先例——在 viewBox 内居中的 SVG 不依赖字体度量）。backdrop 用共享的对话框遮罩（`--arx-alias-bg-mask-1` 加 `--arx-mask-blur`，两个主题都是黑基色），画在独立的兄弟图层上，因为 `backdrop-filter` 画在容器上会把预览图自己也模糊掉。
 
 **历史缩略图（DeepSeek Chat 规则）。** 一条消息仅有的一张图长边 240px、展示比例钳制在 [0.25, 4]，`cover` 裁切，特别高的图锚定顶部、特别宽的锚定左侧，从不放大；多张图渲染为固定 64px 方块，单个可换行的横排（10px 间距，用户消息右对齐）。assistant 连续的 `image` 块合并进同一个画廊，平铺而不是各占一行。
 
@@ -24,7 +24,7 @@ issue #2248 的第二步对齐，接在[附件展示 note](2026-08-11-web-attach
 
 **在 attachment Service Definition 构造函数里注册投影单元。** 天然的 seam 归属，也是第一版实现——被依赖图（上述环）和一个测试基建交互否决：基类构造函数调用 `ctx.inject` 使得 spec 中直接构造的 store 触发全局 invariant 宿主，后者往同一 root 重复挂载 `attachments` 服务。
 
-**灯箱用 `--dsw-alias-bg-mask-photo`（0.88 黑、主题恒定、无人使用）。** 设计系统的照片查看器 token，也可能是 dsweb 灯箱实际的蒙层；用户选择与 settings 对话框遮罩一致（`bg-mask-1` 加模糊）——两者都能修复 dark 反转。
+**灯箱用 `--arx-alias-bg-mask-photo`（0.88 黑、主题恒定、无人使用）。** 设计系统的照片查看器 token，也可能是 dsweb 灯箱实际的蒙层；用户选择与 settings 对话框遮罩一致（`bg-mask-1` 加模糊）——两者都能修复 dark 反转。
 
 **在 `apply.ts` 的 `addImages` inject 里预检。** seam 纯度上的位置，因管线成本否决：投影仓没有暴露给 inject 工厂的非 React 面，而 InputBar 已经以惯用方式消费投影，且是两种手势的唯一调用方。
 

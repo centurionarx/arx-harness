@@ -21,11 +21,11 @@
   max-width: min(560px, calc(100vw - 48px));
   padding: 12px 16px;
   border-radius: 14px;
-  background: var(--dsw-alias-button-contrast-fill);
-  color: var(--dsw-alias-label-primary-inverted);
+  background: var(--arx-alias-button-contrast-fill);
+  color: var(--arx-alias-label-primary-inverted);
   font-size: 14px;
   line-height: 22px;
-  box-shadow: var(--dsw-shadow-lv3);
+  box-shadow: var(--arx-shadow-lv3);
   transform: translateX(-50%);
   animation:
     arx-toast-in 160ms ease-out,
@@ -36,7 +36,7 @@
   display: grid;
   place-items: center;
   flex: none;
-  color: var(--dsw-alias-state-warn-label);
+  color: var(--arx-alias-state-warn-label);
 }
 
 .text {

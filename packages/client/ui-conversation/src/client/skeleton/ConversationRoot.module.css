@@ -8,7 +8,7 @@
   flex-direction: column;
   height: 100%;
   min-width: 0;
-  background: var(--dsw-alias-bg-base);
+  background: var(--arx-alias-bg-base);
 
   /* Shared width axis for the whole column: one content width W
      (--arx-chat-content-width) for the transcript, the dock cards
@@ -40,7 +40,7 @@
   left: 0;
   z-index: 0;
   height: 1px;
-  background: var(--dsw-alias-border-l2);
+  background: var(--arx-alias-border-l2);
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@
 
 .crumbSep {
   /* figma: "/" separators are 14px caption gray (75:7903), one tint lighter than crumb text. */
-  color: var(--dsw-alias-label-caption);
+  color: var(--arx-alias-label-caption);
   font-size: 14px;
   line-height: 20px;
 }
@@ -97,7 +97,7 @@
   background: transparent;
   font-size: 14px;
   line-height: 20px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
@@ -109,12 +109,12 @@
 }
 
 .crumb:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--arx-alias-interactive-bg-hover);
 }
 
 .crumbCurrent {
   font-weight: 500;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
   cursor: default;
 }
 
@@ -156,7 +156,7 @@
   font-size: 13px;
   line-height: 16px;
   font-weight: 500;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
   cursor: pointer;
 }
 
@@ -175,11 +175,11 @@
    this token sheet, so the selected state rides the business blue — the
    nearest semantic token that stays blue in both themes. */
 .tabActive {
-  color: var(--dsw-alias-state-business-primary);
+  color: var(--arx-alias-state-business-primary);
 }
 
 .tabActive::after {
-  background: var(--dsw-alias-state-business-primary);
+  background: var(--arx-alias-state-business-primary);
 }
 
 .viewArea {
@@ -267,8 +267,8 @@
      fade from their own base. */
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--dsw-alias-bg-base) 0%, transparent) 0px,
-    var(--dsw-alias-bg-base) 36px
+    color-mix(in srgb, var(--arx-alias-bg-base) 0%, transparent) 0px,
+    var(--arx-alias-bg-base) 36px
   );
 }
 

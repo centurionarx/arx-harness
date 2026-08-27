@@ -1,4 +1,4 @@
-import { BrandWordmark, FishLogo } from '@arx-ai/arx-client-ui-primitives'
+import { BrandMark, BrandWordmark } from '@arx-ai/arx-client-ui-primitives'
 import type { HeroBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
 import type { SidebarBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-sidebar/client'
 
@@ -7,10 +7,10 @@ type OfficialBrandMarkProps = HeroBrandMarkOwnerProps & SidebarBrandMarkOwnerPro
 /**
  * Render the official mark with the presentation requested by its host surface.
  * @param props - Host-supplied mark presentation.
- * @returns the official whale mark.
+ * @returns the official brand mark.
  */
 export function OfficialBrandMark({ size, className }: OfficialBrandMarkProps) {
-  return <FishLogo size={size} className={className} />
+  return <BrandMark size={size} className={className} />
 }
 
 /**
@@ -18,5 +18,5 @@ export function OfficialBrandMark({ size, className }: OfficialBrandMarkProps) {
  * @returns the official name wordmark.
  */
 export function OfficialBrandName() {
-  return <BrandWordmark includeMark={false} />
+  return <BrandWordmark />
 }

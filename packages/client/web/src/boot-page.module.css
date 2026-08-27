@@ -11,7 +11,7 @@
   height: 100%;
   display: grid;
   place-items: center;
-  background: var(--dsw-alias-bg-base, var(--arx-boot-bg));
+  background: var(--arx-alias-bg-base, var(--arx-boot-bg));
 }
 
 :global(body[data-ds-dark-theme]) .boot {
@@ -35,13 +35,13 @@
   line-height: 24px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--dsw-alias-label-primary, var(--arx-boot-label-primary));
+  color: var(--arx-alias-label-primary, var(--arx-boot-label-primary));
 }
 
 .hint {
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-label-tertiary, var(--arx-boot-label-tertiary));
+  color: var(--arx-alias-label-tertiary, var(--arx-boot-label-tertiary));
 }
 
 .spinner {
@@ -49,7 +49,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid var(--dsw-alias-border-l2, var(--arx-boot-border));
+  border: 2px solid var(--arx-alias-border-l2, var(--arx-boot-border));
   animation: spin 0.8s linear infinite;
 }
 
@@ -59,7 +59,7 @@
   inset: -2px;
   border-radius: inherit;
   background: conic-gradient(
-    var(--dsw-alias-brand-primary, var(--arx-boot-brand)) var(--arx-boot-arc, 72deg),
+    var(--arx-alias-brand-primary, var(--arx-boot-brand)) var(--arx-boot-arc, 72deg),
     transparent 0
   );
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
@@ -81,7 +81,7 @@
   font-size: 14px;
   line-height: 22px;
   font-weight: 600;
-  color: var(--dsw-alias-label-primary, var(--arx-boot-label-primary));
+  color: var(--arx-alias-label-primary, var(--arx-boot-label-primary));
 }
 
 .failedItem {
@@ -99,6 +99,6 @@
   );
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-label-secondary, var(--arx-boot-label-secondary));
+  color: var(--arx-alias-label-secondary, var(--arx-boot-label-secondary));
   white-space: pre-wrap;
 }

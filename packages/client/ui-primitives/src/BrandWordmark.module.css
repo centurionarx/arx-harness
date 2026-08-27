@@ -1,0 +1,29 @@
+/* Brand wordmark ink. The two halves of the word carry different blues, and
+   which one is lighter flips with the theme: on the light ground `rx` is the
+   deep blue that anchors the word, and on the dark ground that same deep blue
+   would sink into the background, so it becomes the palest tone of the pair.
+   The HARNESS plate rides the `rx` tone in both themes. */
+
+.a {
+  fill: #22a6f2;
+}
+
+.rx,
+.plateLabel {
+  fill: #0b4c9e;
+}
+
+.plate {
+  fill: none;
+  stroke: #0b4c9e;
+  stroke-width: 1.5;
+}
+
+:global(body[data-ds-dark-theme]) .rx,
+:global(body[data-ds-dark-theme]) .plateLabel {
+  fill: #8ed4ff;
+}
+
+:global(body[data-ds-dark-theme]) .plate {
+  stroke: #8ed4ff;
+}

@@ -42,6 +42,9 @@ const CHANGED: readonly (readonly [string, string])[] = [
   ['CXH_CRED_TEST: a\\nCXH_CRED_OTHER: [b]', 'ARX_CRED_TEST: a\\nARX_CRED_OTHER: [b]'],
   ['[type: shell]\\ncxh> ', '[type: shell]\\narx> '],
   ['```sh\\ncxh plugin --profile <name> add', '```sh\\narx plugin --profile <name> add'],
+  // the design-system custom-property namespace
+  ['--dsw-alias-label-primary', '--arx-alias-label-primary'],
+  ['var(--dsw-static-deepseek-450)', 'var(--arx-static-deepseek-450)'],
   // generated catalog anchors fuse scope and prefix; hand-written docs link to them
   ['<a id="centurionarxcxh-tool-bash"></a>', '<a id="arx-aiarx-tool-bash"></a>'],
 ]
@@ -71,6 +74,11 @@ const PRESERVED: readonly string[] = [
   // archived notes are frozen, so links into them keep the file names they had
   '../../archived/architecture/2026-07-28-dsh-native-typescript-source-launch.md',
   '[note](../../archived/feature/2026-08-08-dsh-run-headless-command.zh.md)',
+  // `dsw` outside the custom-property namespace: a String method, an opaque
+  // id, and DeepSeek's own web product
+  'value.endsWith(suffix)',
+  'sbtYDSwEVQd',
+  "dsweb's likely lightbox wash",
   // words that merely contain a prefix-shaped run
   'handshake',
   'spreadsheet',
