@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-arx Harness (`arx`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
+arx Harness (`arx`) is a closed-source agent harness developed by CENTURIONarx.
 
 It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
