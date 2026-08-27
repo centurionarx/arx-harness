@@ -53,7 +53,14 @@ const IMAGE_POLICY: ImageRequestPolicy = { maxPixels: 1_150_000, maxBytes: 5_000
 function opening(content: readonly VendorContent[]): AsyncIterable<never> {
   const message = { type: 'user', message: { role: 'user', content }, parent_tool_use_id: null }
   return {
-    async *[Symbol.asyncIterator]() { yield message as never },
+    [Symbol.asyncIterator]: () => {
+      let sent = false
+      return {
+        next: () => Promise.resolve(sent
+          ? { value: undefined as never, done: true as const }
+          : ((sent = true), { value: message as never, done: false as const })),
+      }
+    },
   }
 }
 

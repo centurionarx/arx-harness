@@ -94,7 +94,7 @@ function imageStore() {
 }
 
 /** Build one adapter over a fixed route table. */
-function adapter(spawn = recordingSpawn().spawn, attachments: unknown = undefined) {
+function adapter(spawn = recordingSpawn().spawn, attachments?: unknown) {
   return new AgentCliAdapter({
     routes: () => resolveRoutes(ROUTES),
     spawn,
