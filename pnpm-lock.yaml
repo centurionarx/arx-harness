@@ -1066,9 +1066,6 @@ importers:
       '@arx-ai/arx-llm-agent-cli':
         specifier: workspace:^
         version: link:../../llm/llm-agent-cli
-      '@arx-ai/arx-llm-deepseek':
-        specifier: workspace:^
-        version: link:../../llm/llm-deepseek
       '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
         version: link:../../llm/llm-pi-ai
@@ -1222,9 +1219,6 @@ importers:
       '@arx-ai/arx-web':
         specifier: workspace:^
         version: link:../../web/web
-      '@arx-ai/arx-web-search-deepseek':
-        specifier: workspace:^
-        version: link:../../web/web-search-deepseek
       '@arx-ai/arx-workflow-worker-thread':
         specifier: workspace:^
         version: link:../../workflow/workflow-worker-thread

@@ -73,9 +73,9 @@
     - id: llm-retry
       name: '@arx-ai/arx-llm-retry'
 
-    # User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): a
-    # `llm-deepseek:` or `llm-pi-ai:` section there overrides the adapter entries
-    # below without a restart, and is what the web Models page writes.
+    # User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): an
+    # `llm-pi-ai:` section there configures the adapter without a restart, and
+    # is what the web Models page writes.
     - id: settings
       name: '@arx-ai/arx-settings-file'
 
@@ -160,7 +160,7 @@
         mode: !!js process.env.ARX_TELEMETRY_MODE || 'DISABLED'
         shutdownTimeoutMillis: 3000
         exporter:
-          url: !!js process.env.ARX_TELEMETRY_OTLP_URL ?? 'https://harness-telemetry.deepseeksvc.com/v1/logs'
+          url: !!js process.env.ARX_TELEMETRY_OTLP_URL
           compression: gzip
           timeoutMillis: 1000
         processor:
@@ -402,31 +402,21 @@
         thresholds: [3, 5, 8]
         argumentsPreviewChars: 500
 
-    # Every mode enables the stable model-facing web_search tool. DeepSeek search
-    # resolves the same DEEPSEEK_API_KEY credential the Models page manages for
-    # chat, at each search; its Messages endpoint is separate from the
-    # chat-completions endpoint, so it takes its own base-URL override. Fetch stays
-    # disabled and no fetch provider is mounted: that provider defers SSRF
-    # protection and the model would choose the request target. Search is a full
-    # auxiliary model request with server-side retrieval, so this shipped DeepSeek
-    # route gets 60s while the provider-neutral tool default remains 30s.
-    # No provider is pinned: whichever registered provider a deployment's
-    # credentials actually make usable is the one that serves. Two usable
-    # providers fail loud as WEB_PROVIDER_AMBIGUOUS rather than one winning by
-    # composition order.
+    # Every mode enables the stable model-facing web_search tool, and no search
+    # provider ships with it: a deployment mounts the one it pays for. Fetch
+    # stays disabled and no fetch provider is mounted either, because that
+    # provider defers SSRF protection and the model would choose the request
+    # target. No provider is pinned: whichever registered provider a
+    # deployment's credentials actually make usable is the one that serves. Two
+    # usable providers fail loud as WEB_PROVIDER_AMBIGUOUS rather than one
+    # winning by composition order.
     - id: web
       name: '@arx-ai/arx-web'
-
-    - id: web-search-deepseek
-      name: '@arx-ai/arx-web-search-deepseek'
-      config:
-        apiKeyEnv: DEEPSEEK_API_KEY
 
     - id: tool-web
       name: '@arx-ai/arx-tool-web'
       config:
         fetch: false
-        searchTimeoutMs: 60000
 
     # ── rows every mode mounts, whose values each overlay may state ──────────────
 
@@ -453,10 +443,3 @@
     # overlay can pin another workspace.
     - id: fs-sandbox
       name: '@arx-ai/arx-fs-sandbox'
-
-    # The native DeepSeek adapter. No key or endpoint is inlined: both resolve per
-    # request from the `llm-deepseek:` settings section over this entry, with the
-    # key coming from the credential store below. Thinking defaults are a deployment
-    # choice.
-    - id: llm-deepseek
-      name: '@arx-ai/arx-llm-deepseek'

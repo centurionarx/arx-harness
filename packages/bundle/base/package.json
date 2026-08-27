@@ -62,7 +62,6 @@
     "@arx-ai/arx-api-gateway": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-llm-agent-cli": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
     "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-llm-retry": "workspace:^",
     "@arx-ai/arx-permission-presets": "workspace:^",
@@ -114,7 +113,6 @@
     "@arx-ai/arx-user-approval": "workspace:^",
     "@arx-ai/arx-user-questions": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
-    "@arx-ai/arx-web-search-deepseek": "workspace:^",
     "@arx-ai/arx-workflow-worker-thread": "workspace:^",
     "@arx-ai/arx-agent-instructions": "workspace:^"
   },
