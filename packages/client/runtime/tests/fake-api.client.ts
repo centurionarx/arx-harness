@@ -181,6 +181,7 @@ export class FakeApiClient implements IApiClient {
     listDirectory: (payload: unknown) => this.record('host.listDirectory', payload, this.onListDirectory(payload)),
     createDirectory: (payload: unknown) => this.record('host.createDirectory', payload, this.onCreateDirectory(payload)),
     openPath: (payload: unknown) => this.record('host.openPath', payload, this.onOpenPath(payload)),
+    exit: (payload: unknown) => this.record('host.exit', payload, Promise.resolve(ok({ stopping: true as const }))),
   }
 
   // The archive-set field defaults at the binding below so list stubs keep
