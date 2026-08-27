@@ -251,10 +251,13 @@ export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Con
     // environment values from the same immutable provenance snapshot.
     hostCtx.provide(ARX_LAUNCH_ENVIRONMENT_KEY, options.environment)
     // The command line and bounded exit request are launcher facts available
-    // to every app plugin that injects the argument snapshot.
+    // to every app plugin that injects the argument snapshot. The exit request
+    // exits rather than completing naturally: a client asking a long-lived
+    // server to stop is still holding the connection that would keep the loop
+    // alive, so waiting for quiescence would leave the process up.
     provideCmdline(hostCtx, {
       args: options.args,
-      exit: code => void shutdown.shutdown(code),
+      exit: (code) => { shutdown.exit(code) },
     })
   })
   app.current = ctx

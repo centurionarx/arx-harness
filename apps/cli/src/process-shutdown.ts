@@ -7,6 +7,17 @@ export const PROCESS_SHUTDOWN_TIMEOUT_MS = 5_000
 export interface ProcessShutdown {
   /** Start or join graceful disposal before allowing natural completion with `code`. */
   shutdown(code: number): Promise<void>
+  /**
+   * Start or join graceful disposal and then exit, without waiting for the
+   * loop to drain.
+   *
+   * {@link shutdown} lets a surface that will end on its own end on its own.
+   * An explicit exit request is not that: on a long-lived server the caller's
+   * own connection outlives disposal, so natural completion never arrives and
+   * the process stays up with `exitCode` set. Repeated calls coalesce onto the
+   * first, unlike {@link interrupt}, because asking twice is not an escalation.
+   */
+  exit(code: number): void
   /** Start graceful disposal followed by exit, or force exit when shutdown is already running. */
   interrupt(code: number): void
 }
@@ -65,6 +76,9 @@ export function createProcessShutdown(
   return {
     shutdown(code) {
       return start(code, false)
+    },
+    exit(code) {
+      void start(code, true)
     },
     interrupt(code) {
       if (pending !== undefined) {

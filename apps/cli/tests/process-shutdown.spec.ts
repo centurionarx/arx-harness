@@ -146,6 +146,36 @@ describe('process shutdown', () => {
     expect(exit).toHaveBeenCalledOnce()
   })
 
+  // The exit request's whole point: a client asking a long-lived server to stop
+  // is still holding the connection that would keep the loop alive, so waiting
+  // for natural completion leaves the process up with `exitCode` set.
+  it('exits after disposal instead of waiting for the loop to drain', async () => {
+    const exit = vi.fn()
+    const complete = vi.fn()
+    const dispose = deferred()
+    const shutdown = createProcessShutdown(() => dispose.promise, exit, complete)
+    shutdown.exit(0)
+    expect(exit).not.toHaveBeenCalled()
+    dispose.resolve()
+    await vi.waitFor(() => { expect(exit).toHaveBeenCalledWith(0) })
+    expect(complete).not.toHaveBeenCalled()
+  })
+
+  it('coalesces repeated exit requests onto the first, which is not an escalation', async () => {
+    const exit = vi.fn()
+    const disposals: number[] = []
+    const dispose = deferred()
+    const shutdown = createProcessShutdown(() => { disposals.push(1); return dispose.promise }, exit, vi.fn())
+    shutdown.exit(0)
+    shutdown.exit(0)
+    // `start` defers disposal onto a microtask, so let it run before counting.
+    await Promise.resolve()
+    expect(disposals).toHaveLength(1)
+    expect(exit).not.toHaveBeenCalled()
+    dispose.resolve()
+    await vi.waitFor(() => { expect(exit).toHaveBeenCalledOnce() })
+  })
+
   it('coalesces normal shutdown calls without treating them as escalation', async () => {
     const disposal = deferred()
     const exit = vi.fn()
