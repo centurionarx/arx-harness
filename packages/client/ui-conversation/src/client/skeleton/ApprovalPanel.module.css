@@ -17,17 +17,17 @@
   overflow: hidden;
   width: 100%;
   max-width: var(--arx-chat-content-width);
-  border: 1px solid var(--dsw-alias-state-warn-secondary);
+  border: 1px solid var(--arx-alias-state-warn-secondary);
   border-radius: 20px;
-  background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
+  background: var(--arx-specific-input-major);
+  box-shadow: var(--arx-shadow-lv2);
   /* Elevated surface in dark, same as the menus: `.body` inside scrolls once
      the justification or command passes the cap, so the thumb takes the l2
      pair. Declared on the card because the elevation belongs to the surface,
      and the custom properties inherit down to the region that actually
      scrolls (see ui-theme styles/scrollbar.css for the rebinding contract). */
-  --arx-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
-  --arx-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2);
+  --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2);
 }
 
 /* Tinted full-width header band. */
@@ -36,8 +36,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: var(--dsw-alias-state-warn-tertiary);
-  color: var(--dsw-alias-state-warn-primary);
+  background: var(--arx-alias-state-warn-tertiary);
+  color: var(--arx-alias-state-warn-primary);
   font-size: 13px;
   line-height: 18px;
 }
@@ -46,7 +46,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--dsw-alias-state-warn-primary);
+  background: var(--arx-alias-state-warn-primary);
 }
 
 /* Scroll region: an agent's justification and its command are unbounded model
@@ -69,14 +69,14 @@
 
 /* The model's justification is the panel's message, not a footnote. */
 .headline {
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
   font-size: 15px;
   font-weight: 500;
   line-height: 24px;
 }
 
 .command {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
   font-family: var(--ds-font-family-code);
   font-size: 13px;
   line-height: 20px;
@@ -97,7 +97,7 @@
 }
 
 .reject:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover-danger);
-  color: var(--dsw-alias-state-error-primary);
+  background: var(--arx-alias-interactive-bg-hover-danger);
+  color: var(--arx-alias-state-error-primary);
   border-color: transparent;
 }

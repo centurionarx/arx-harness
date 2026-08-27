@@ -24,16 +24,16 @@
     var(--arx-composer-dock-inset) -
     var(--arx-composer-dock-inset)
   );
-  border: 1px solid var(--dsw-alias-border-l1);
+  border: 1px solid var(--arx-alias-border-l1);
   border-radius: 12px;
-  background: var(--dsw-specific-tip);
-  /* Elevated surface: `--dsw-specific-tip` is the same dark rung as the menu
+  background: var(--arx-specific-tip);
+  /* Elevated surface: `--arx-specific-tip` is the same dark rung as the menu
      surface, and `.list` scrolls inside this card, so the thumb takes the l2
      elevation tokens. Declared here because the elevation belongs to the
      surface, and the custom properties inherit down to `.list` (see ui-theme
      styles/scrollbar.css for the rebinding contract). */
-  --arx-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
-  --arx-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2);
+  --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2);
 }
 
 .body {
@@ -59,7 +59,7 @@
   display: grid;
   flex: none;
   place-items: center;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
 }
 
 .title {
@@ -67,7 +67,7 @@
   font-size: 13px;
   line-height: 24px;
   font-weight: 500;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
 }
 
 .progress {
@@ -77,7 +77,7 @@
   font-size: 13px;
   line-height: 20px;
   font-weight: 400;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -86,7 +86,7 @@
   display: grid;
   flex: none;
   place-items: center;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
 }
 
 .list {
@@ -107,7 +107,7 @@
   min-width: 0;
   font-size: 13px;
   line-height: 20px;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--arx-alias-label-secondary);
 }
 
 .glyph {
@@ -119,15 +119,15 @@
 }
 
 .glyphCompleted {
-  color: var(--dsw-alias-state-success-primary);
+  color: var(--arx-alias-state-success-primary);
 }
 
 .glyphPending {
-  color: var(--dsw-alias-label-caption);
+  color: var(--arx-alias-label-caption);
 }
 
 .glyphProgress {
-  color: var(--dsw-alias-state-business-primary);
+  color: var(--arx-alias-state-business-primary);
   animation: todo-progress-spin 1s linear infinite;
 }
 

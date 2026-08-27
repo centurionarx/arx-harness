@@ -77,15 +77,15 @@
   display: inline-flex;
   align-items: center;
   height: 26px;
-  font: var(--dsw-font-s-strong-14);
+  font: var(--arx-font-s-strong-14);
   white-space: nowrap;
   background: linear-gradient(
     90deg,
-    var(--dsw-static-deepseek-500) 0%,
-    var(--dsw-static-deepseek-500) 40%,
-    var(--dsw-static-deepseek-200) 50%,
-    var(--dsw-static-deepseek-500) 60%,
-    var(--dsw-static-deepseek-500) 100%
+    var(--arx-static-deepseek-500) 0%,
+    var(--arx-static-deepseek-500) 40%,
+    var(--arx-static-deepseek-200) 50%,
+    var(--arx-static-deepseek-500) 60%,
+    var(--arx-static-deepseek-500) 100%
   );
   background-position: 100% 0;
   background-size: 250% 100%;
@@ -98,11 +98,11 @@
 
 .turnStatusClock {
   margin-left: 8px;
-  font: var(--dsw-font-xs-13);
+  font: var(--arx-font-xs-13);
   font-weight: 400;
   font-variant-numeric: tabular-nums;
-  color: var(--dsw-alias-label-caption);
-  -webkit-text-fill-color: var(--dsw-alias-label-caption);
+  color: var(--arx-alias-label-caption);
+  -webkit-text-fill-color: var(--arx-alias-label-caption);
 }
 
 @keyframes arx-turn-status-shimmer {
@@ -120,13 +120,13 @@
 }
 
 .hint {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--arx-alias-label-tertiary);
   font-size: 12px;
   line-height: 18px;
 }
 
 .openError {
-  color: var(--dsw-alias-state-error-primary);
+  color: var(--arx-alias-state-error-primary);
   font-size: 12px;
   line-height: 18px;
 }
@@ -141,8 +141,8 @@
   border-radius: 14px;
   padding: 4px 12px;
   font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+  color: var(--arx-alias-label-secondary);
+  background: var(--arx-alias-interactive-bg-hover-solid);
   cursor: pointer;
 }
 
@@ -183,17 +183,17 @@
   height: 34px;
   margin-top: -34px;
   padding: 0;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 1px solid var(--arx-alias-border-l2);
   border-radius: 100px;
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-button-floating-fill);
-  box-shadow: var(--dsw-shadow-lv2);
+  color: var(--arx-alias-label-primary);
+  background: var(--arx-alias-button-floating-fill);
+  box-shadow: var(--arx-shadow-lv2);
   cursor: pointer;
   pointer-events: auto;
 }
 
 .toBottom:hover {
-  background: var(--dsw-alias-button-floating-hover);
+  background: var(--arx-alias-button-floating-hover);
 }
 
 /* Host open-path refusal: same dialog family as the workspace folder error. */
