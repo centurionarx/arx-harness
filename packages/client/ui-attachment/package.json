@@ -49,13 +49,13 @@
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@types/react": "~18.3.1",
-    "@types/react-dom": "~18.3.0",
+    "@types/react-dom": "~19.2.3",
     "@arx-ai/arx-client-runtime": "workspace:^",
     "@arx-ai/arx-client-ui-conversation": "workspace:^",
     "@arx-ai/arx-client-ui-primitives": "workspace:^",
     "@arx-ai/arx-client-ui-slots": "workspace:^",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^19.2.8",
     "@arx-ai/arx-attachment": "workspace:^"
   },
   "files": [
