@@ -44,6 +44,8 @@ MIT 声明保留 `Copyright (c) 2026 DeepSeek`，并在其下增加 `Copyright (
 
 `$ARX_HOME` 变为 `$ARX_HOME`，因此既有会话、凭据与设置成为孤儿。[预发布立场](../../../../CLAUDE.md)允许这样做——后端拒绝旧的磁盘格式——且 `SESSION_FORMAT_VERSION` 不变，因为更名不改变任何日志结构。
 
+命名 GitHub 组织的配置超出了分类器能判断的范围。上游组织以产品命名，因此 JSON 中裸露的组织字面量与产品 slug 无从区分，会被 slug 规则吞掉——`.github/issue-management/config.json` 由此指向了一个并不存在的组织，issue-policy 作业也因此调用了 `repos/arx-harness/arx-harness`。给 owner 规则加锚定触及不到这里：值的旁边没有主机名可供锚定。重命名之后，组织形态的配置需要人工核对。
+
 发布现在取决于持有 `@arx-ai` npm scope 与 `arx-harness-sdk` PyPI 名称；二者都不是代码变更。
 
 这种规模的改名无法 rebase。它单独落地；发生冲突时，在新基线上重跑分类器比手工解决更划算。
