@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-shell-env",
   "description": "Tool-independent managed ARX_* shell environment registry",
-  "version": "0.1.1-rc.2",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
