@@ -305,6 +305,7 @@
 }
 
 .settingsArea,
+.exitArea,
 .footerActions {
   flex: none;
   min-width: 0;
@@ -320,6 +321,7 @@
 }
 
 .collapsed .settingsArea,
+.collapsed .exitArea,
 .collapsed .footerActions {
   display: flex;
   justify-content: center;

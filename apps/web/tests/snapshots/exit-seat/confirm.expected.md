@@ -1,0 +1,7 @@
+- dialog "Exit arx Harness?":
+  - heading "Exit arx Harness?" [level=2]
+  - button "Close":
+    - img
+  - paragraph: The server stops and every attached session disconnects. Session logs are durable, so a restart resumes them.
+  - button "Cancel"
+  - button "Stop the server"

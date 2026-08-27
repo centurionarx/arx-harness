@@ -68,7 +68,7 @@ export const Config: z<ConnectionConfig> = z.object({
 
 /**
  * Methods gated to loopback even on a trusted-host deployment. Native dialogs
- * act on the host machine; the settings and credential domains mutate the
+ * and the exit request act on the host machine; the settings and credential domains mutate the
  * user's configuration and secret store, and READING them is equally
  * privileged — `settings.describe` returns every exposed namespace's
  * configuration and `credentials.describe` reports whether an arbitrary
@@ -107,6 +107,10 @@ const PRIVILEGED_METHODS = new Set([
   'agentPreset.remove',
   'host.pickDirectory',
   'host.openPath',
+  // Stopping the harness ends every attached session's server. `trustedHosts`
+  // is a rebinding fence, not authentication, so on a LAN deployment this
+  // would hand any reachable caller a shutdown switch.
+  'host.exit',
   'settings.describe',
   'settings.openDocument',
   'settings.update',

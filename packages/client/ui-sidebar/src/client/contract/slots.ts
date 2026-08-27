@@ -4,8 +4,8 @@
  * owns column geometry (fold state machine, brand row, New Session);
  * everything between the section header and the list bottom is the
  * `sidebar.workspaces` registrant's (ui-workspace), and the foot is the
- * `sidebar.settings` registrant's (ui-settings), followed by optional footer
- * actions in `sidebar.footer.action`.
+ * `sidebar.settings` registrant's (ui-settings), with optional footer actions
+ * in `sidebar.footer.action` above it and the `sidebar.exit` seat below.
  */
 import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 // Type-only: pulls ui-layout's SlotMap merge (the 'sidebar' entry) into every
@@ -44,6 +44,12 @@ declare module '@arx-ai/arx-client-ui-slots' {
      * package's 'sidebar' entry; each action receives only the column state.
      */
     'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }
+    /**
+     * The seat below Settings at the sidebar foot. Declared by this package's
+     * 'sidebar' entry; ui-exit registers the control that stops the harness.
+     * The sidebar passes only its column state — it holds no exit state.
+     */
+    'sidebar.exit': { kind: 'single'; scope: 'root'; owner: SidebarExitOwnerProps }
   }
 }
 
@@ -86,6 +92,15 @@ export interface SidebarFooterActionOwnerProps {
 }
 
 /**
+ * Owner share of the sidebar exit seat: the column display state the
+ * occupant's row must render against (wide row vs rail icon).
+ */
+export interface SidebarExitOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+}
+
+/**
  * Registrant-private injected share (arrives via the register inject
  * factory). The shell keeps only its own controls: starting a Session from
  * the New Session button and toggling the column.
@@ -114,5 +129,6 @@ export type SidebarRootComponentProps =
     | 'sidebar.workspaces'
     | 'sidebar.settings'
     | 'sidebar.footer.action'
+    | 'sidebar.exit'
   >
   & SidebarRootInjected & PropsLocale<'sidebar'>
