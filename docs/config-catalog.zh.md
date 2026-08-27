@@ -948,7 +948,7 @@ export interface AgentCliModel {
   /**
    * Maximum combined request and response context. Required: automatic
    * compaction refuses to run against a route whose adapter advertises no
-   * capacity, and the vendor CLI discloses none.
+   * capacity, and the vendor CLI's own model rows carry none.
    */
   contextWindow: number
   /** Per-request output cap materialized when a caller omits one. */
@@ -961,10 +961,27 @@ export interface AgentCliModel {
    * attached image into a failed request instead of a refused attachment.
    */
   acceptsImages?: boolean
+  /**
+   * Effort levels this model accepts, in the order a selector should offer
+   * them. Declared rather than discovered: the SDK does publish these levels,
+   * but only for its alias rows, while a route pins explicit ids. Omitting the
+   * field leaves the model with no effort control, so requests carry the
+   * vendor's own default; declaring a level the model does not serve makes the
+   * vendor silently downgrade it, which the selector then misreports.
+   */
+  efforts?: AgentCliEffort[]
+  /**
+   * Effort materialized into requests that name none. Must be one of
+   * {@link efforts}; absent, an unspecified request keeps the vendor default.
+   */
+  defaultEffort?: AgentCliEffort
 }
+
+/** One effort level the vendor CLI accepts. */
+export type AgentCliEffort = (typeof AGENT_CLI_EFFORTS)[number]
 ```
 
-来源：[`packages/llm/llm-agent-cli/src/config.ts:42`](../packages/llm/llm-agent-cli/src/config.ts)
+来源：[`packages/llm/llm-agent-cli/src/config.ts:68`](../packages/llm/llm-agent-cli/src/config.ts)
 
 <a id="arx-aiarx-llm-deepseek"></a>
 

@@ -64,8 +64,10 @@ describe('SidebarRoot.module.css', () => {
     expect(declarations('.collapsed .newSession')?.get('width')).toBe('36px')
   })
 
+  // The row seats the mark, which is twice the name's height; `.brand` clips
+  // overflow, so a row shorter than the mark loses the artwork's edges.
   it('keeps the slotted brand row at the full artwork height', () => {
-    expect(declarations('.brandIdentity')?.get('height')).toBe('24px')
+    expect(declarations('.brandIdentity')?.get('height')).toBe('48px')
     expect(declarations('.brandName')?.get('height')).toBe('24px')
     expect(declarations('.brandName')?.get('line-height')).toBe('24px')
     expect(declarations('.brandName')?.get('font-size')).toBe('18px')

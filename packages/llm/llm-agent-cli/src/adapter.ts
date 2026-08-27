@@ -10,8 +10,10 @@ import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@arx-ai/arx-claude-ag
 import {
   LlmAdapter,
   LlmError,
+  ReasoningEffortId,
   type GenerateOptions,
   type LlmModelInfo,
+  type LlmModelReasoningInfo,
   type LlmProviderInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
@@ -19,7 +21,7 @@ import {
 import type { AttachmentId, AttachmentStore, ImageRequestPolicy, RequestImageAttachment } from '@arx-ai/arx-attachment'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 
-import type { ResolvedRoute } from './config.ts'
+import type { AgentCliEffort, AgentCliModel, ResolvedRoute } from './config.ts'
 import { collectImageRefs, renderTranscript, type VendorContent } from './prompt.ts'
 import { translate } from './stream.ts'
 import { createToolServer, MCP_SERVER_NAME, toolAlias } from './tools.ts'
@@ -137,6 +139,7 @@ export class AgentCliAdapter extends LlmAdapter {
       context: { contextWindow: configured.contextWindow },
       ...configured.maxTokens === undefined ? {} : { defaultMaxTokens: configured.maxTokens },
       ...configured.acceptsImages === true ? { inputModalities: ['text', 'image'] as const } : {},
+      ...reasoningInfo(configured),
     })
   }
 
@@ -153,11 +156,13 @@ export class AgentCliAdapter extends LlmAdapter {
     capture: (child: SubprocessHandle) => void,
   ): Options {
     const tools = options.tools ?? []
+    const effort = resolveEffort(options, route)
     return {
       cwd: this.spec.cwd(),
       persistSession: false,
       includePartialMessages: true,
       model: options.model,
+      ...effort === undefined ? {} : { effort },
       ...options.system === undefined ? {} : { systemPrompt: options.system },
       // Omitting `skills` is not "skills off": the SDK documents that the
       // CLI's own defaults still apply, so the host's skill directories would
@@ -244,4 +249,56 @@ export class AgentCliAdapter extends LlmAdapter {
       release()
     }
   }
+}
+
+/**
+ * The reasoning face a configured model exposes, or nothing.
+ *
+ * A model that declares no effort is reported without the field: the seam
+ * reads that as "no such control", which leaves the surface offering the
+ * vendor's own default rather than a selector that changes nothing.
+ * @param configured - the model as configuration declared it.
+ * @returns the `reasoning` fragment, or an empty object.
+ */
+function reasoningInfo(configured: AgentCliModel): { reasoning?: LlmModelReasoningInfo } {
+  const efforts = configured.efforts ?? []
+  if (efforts.length === 0) return {}
+  return {
+    reasoning: {
+      efforts: efforts.map(level => ({
+        id: ReasoningEffortId(level),
+        name: `${level.charAt(0).toUpperCase()}${level.slice(1)}`,
+      })),
+      ...configured.defaultEffort === undefined
+        ? {}
+        : { defaultEffort: ReasoningEffortId(configured.defaultEffort) },
+    },
+  }
+}
+
+/**
+ * The effort one request runs at, checked against what its model declares.
+ *
+ * The vendor silently downgrades an effort its model does not serve, so an
+ * unchecked value would report one level and run another. Refusing names the
+ * mismatch instead.
+ * @param options - the assembled harness request.
+ * @param route - the resolved route serving it.
+ * @returns the vendor effort, or undefined to keep the vendor default.
+ * @throws LlmError when the request names an effort the model does not declare.
+ */
+function resolveEffort(options: GenerateOptions, route: ResolvedRoute): AgentCliEffort | undefined {
+  const configured = route.models.get(options.model)
+  const declared = configured?.efforts ?? []
+  const requested = options.reasoningEffort ?? configured?.defaultEffort
+  if (requested === undefined) return undefined
+  const match = declared.find(level => level === requested)
+  if (match === undefined) {
+    throw new LlmError(
+      `llm-agent-cli: provider "${route.provider}" model "${options.model}" does not serve `
+      + `reasoning effort "${requested}"`,
+      'UNSUPPORTED_REASONING_EFFORT',
+    )
+  }
+  return match
 }

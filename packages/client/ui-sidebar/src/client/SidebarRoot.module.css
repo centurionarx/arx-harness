@@ -126,11 +126,13 @@
 
 /* Mark and name are independent slots; the shell owns their shared baseline,
    spacing, and height so either occupant can vary in width. */
+/* The row is as tall as the mark it seats: `.brand` clips overflow, so a mark
+   drawn taller than this loses its edges. */
 .brandIdentity {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 24px;
+  height: 48px;
   min-width: 0;
 }
 
