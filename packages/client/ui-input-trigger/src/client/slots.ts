@@ -8,11 +8,11 @@
  * program picks this merge up transitively through its ui-input-trigger imports.
  */
 // Type-only edge: the SlotMap augmentation below merges into this package's interface.
-import type {} from '@centurionarx/cxh-client-ui-slots'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-slots'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { MenuState } from '../core/contract.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /**
      * The InputBar floating overlay anchor: MenuView (this package) and the

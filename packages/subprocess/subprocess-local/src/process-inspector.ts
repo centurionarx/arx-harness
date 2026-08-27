@@ -2,7 +2,7 @@
 
 import { closeSync, openSync, readFileSync, readdirSync, readSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import type { SubprocessTerminalSignal } from '@centurionarx/cxh-subprocess'
+import type { SubprocessTerminalSignal } from '@arx-ai/arx-subprocess'
 import { createWindowsProcessInspector } from './windows-inspector.ts'
 
 /** PID plus start identity, preventing teardown escalation after PID reuse. */

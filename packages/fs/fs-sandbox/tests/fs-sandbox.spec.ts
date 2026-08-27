@@ -13,12 +13,12 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import { existsSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join, parse } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { FsError, FsTargetKey } from '@centurionarx/cxh-fs'
-import type { FsTarget } from '@centurionarx/cxh-fs'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
-import { SandboxedFileSystem } from '@centurionarx/cxh-fs-sandbox'
+import { Context } from '@arx-ai/cordis'
+import { FsError, FsTargetKey } from '@arx-ai/arx-fs'
+import type { FsTarget } from '@arx-ai/arx-fs'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
+import { SandboxedFileSystem } from '@arx-ai/arx-fs-sandbox'
 
 let base: string
 let workspace: string
@@ -40,7 +40,7 @@ beforeEach(async () => {
   // would be legitimately writable. Sibling dirs under HOME are outside every
   // grant, so containment failures are real denials. (The bwrap e2e roots its
   // workspaces under HOME for the same reason.)
-  base = await mkdtemp(join(homedir(), '.cxh-fssbx-'))
+  base = await mkdtemp(join(homedir(), '.arx-fssbx-'))
   workspace = join(base, 'ws')
   outside = join(base, 'out')
   await mkdir(workspace)
@@ -98,7 +98,7 @@ describe('workspace-write containment', () => {
   })
 
   it('a write to the platform temp area lands (parity with the bash runner grant)', async () => {
-    const path = join(await mkdtemp(join(tmpdir(), 'cxh-fssbx-tmp-')), 'temp.txt')
+    const path = join(await mkdtemp(join(tmpdir(), 'arx-fssbx-tmp-')), 'temp.txt')
     await fs.writeText(await target(path), 'temp')
     expect(await readFile(path, 'utf8')).toBe('temp')
   })

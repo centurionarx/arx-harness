@@ -1,10 +1,10 @@
-/** Package-owned prompt-assembly invariants. @module @centurionarx/cxh-system-prompt/invariant */
+/** Package-owned prompt-assembly invariants. @module @arx-ai/arx-system-prompt/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { PromptAssembly } from './index.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-system-prompt'
+const PACKAGE_NAME = '@arx-ai/arx-system-prompt'
 const VARIABLE_NAME = /^[a-z][a-z0-9_]*$/
 
 /** Cordis companion plugin name. */

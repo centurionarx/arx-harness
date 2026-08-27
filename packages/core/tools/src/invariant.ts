@@ -1,11 +1,11 @@
-/** Package-owned tool-pipeline invariants. @module @centurionarx/cxh-tools/invariant */
+/** Package-owned tool-pipeline invariants. @module @arx-ai/arx-tools/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { ToolExecution, ToolExecutionResult } from './index.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-tools'
+const PACKAGE_NAME = '@arx-ai/arx-tools'
 
 /** Cordis companion plugin name. */
 export const name = 'tools-invariant'

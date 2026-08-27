@@ -10,8 +10,8 @@ import {
   parseLspArgs,
   presentLspCall,
   renderUri,
-} from '@centurionarx/cxh-tool-lsp'
-import type { LspLocation } from '@centurionarx/cxh-lsp'
+} from '@arx-ai/arx-tool-lsp'
+import type { LspLocation } from '@arx-ai/arx-lsp'
 
 const WS = resolve('/home/u/proj')
 const WS_URI = pathToFileURL(WS).href

@@ -7,14 +7,14 @@
 
 import { randomBytes } from 'node:crypto'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { unzipSync, strFromU8 } from 'fflate'
-import type { ImageAttachmentRef } from '@centurionarx/cxh-attachment'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import type { SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import type { SessionLineageNode } from '@centurionarx/cxh-session-query'
-import type { SessionRawArtifact } from '@centurionarx/cxh-session-persistence'
-import ApiProxyService, { createApiProxy, toFetchHandler } from '@centurionarx/cxh-host-apiproxy'
+import type { ImageAttachmentRef } from '@arx-ai/arx-attachment'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session'
+import type { SessionLineageNode } from '@arx-ai/arx-session-query'
+import type { SessionRawArtifact } from '@arx-ai/arx-session-persistence'
+import ApiProxyService, { createApiProxy, toFetchHandler } from '@arx-ai/arx-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 
@@ -161,7 +161,7 @@ describe('session.export download endpoint', () => {
     )
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('application/zip')
-    expect(response.headers.get('content-disposition')).toContain('cxh-session-session-root.zip')
+    expect(response.headers.get('content-disposition')).toContain('arx-session-session-root.zip')
     const files = unzipSync(await responseBytes(response))
     expect(Object.keys(files)).toEqual(['session.jsonl'])
     expect(strFromU8(files['session.jsonl'] as Uint8Array)).toBe(artifact('session-root').content)
@@ -176,7 +176,7 @@ describe('session.export download endpoint', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('application/zip')
-    expect(response.headers.get('content-disposition')).toContain('cxh-session-session-root.zip')
+    expect(response.headers.get('content-disposition')).toContain('arx-session-session-root.zip')
     expect(response.body).toBeNull()
     expect(readRaw).toHaveBeenCalledOnce()
   })

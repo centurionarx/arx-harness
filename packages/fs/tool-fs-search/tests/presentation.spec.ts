@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import type { JsonValue } from '@centurionarx/cxh-session'
+import type { JsonValue } from '@arx-ai/arx-session'
 import {
   globSearchMeta,
   grepSearchMeta,

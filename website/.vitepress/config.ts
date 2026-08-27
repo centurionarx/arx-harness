@@ -187,14 +187,14 @@ const sharedTheme: Pick<DefaultTheme.Config, 'search' | 'socialLinks' | 'editLin
     },
   },
   socialLinks: [
-    { icon: 'github', link: 'https://github.com/centurionarx/centurionarx-harness' },
+    { icon: 'github', link: 'https://github.com/centurionarx/arx-harness' },
   ],
   editLink: {
     pattern: ({ frontmatter }: PageData) => {
       const data: unknown = frontmatter
       const editSource: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSource') : undefined
       if (typeof editSource !== 'string') throw new Error('Projected documentation page has no editSource frontmatter.')
-      return `https://github.com/centurionarx/centurionarx-harness/edit/master/${editSource}`
+      return `https://github.com/centurionarx/arx-harness/edit/master/${editSource}`
     },
     text: '在 GitHub 上编辑此页',
   },
@@ -205,7 +205,7 @@ const base = process.env.DOCS_BASE ?? '/'
 
 /** Site identity shared by the VitePress configuration and the llms.txt index. */
 const siteIdentity = {
-  title: 'CENTURIONarx Harness',
+  title: 'arx Harness',
   description: '用于构建 Agent Harness 的插件化 SDK',
 }
 
@@ -215,7 +215,7 @@ const siteIdentity = {
  */
 const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.svg'), 'utf8')
   .trim()
-  .replace('<svg ', '<svg class="cxh-wordmark" ')
+  .replace('<svg ', '<svg class="arx-wordmark" ')
 
 /**
  * Styles the default theme does not provide, carried inline because the site
@@ -229,9 +229,9 @@ const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.s
  * stay behind a query only Firefox answers.
  */
 const siteStyle = `
-.cxh-lockup { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.cxh-wordmark { display: block; height: 22px; width: auto; color: var(--vp-c-text-1); }
-.cxh-tag {
+.arx-lockup { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.arx-wordmark { display: block; height: 22px; width: auto; color: var(--vp-c-text-1); }
+.arx-tag {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--vp-c-brand-soft);
@@ -289,7 +289,7 @@ const scrollbarScript = `
  * @returns Markup placed beside the navigation-bar home link.
  */
 function siteTitle(previewTag: string): string {
-  return `<span class="cxh-lockup">${wordmark}<span class="cxh-tag">${previewTag}</span></span>`
+  return `<span class="arx-lockup">${wordmark}<span class="arx-tag">${previewTag}</span></span>`
 }
 
 export default withMermaid({
@@ -357,7 +357,7 @@ export default withMermaid({
             const data: unknown = frontmatter
             const editSource: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSource') : undefined
             if (typeof editSource !== 'string') throw new Error('Projected documentation page has no editSource frontmatter.')
-            return `https://github.com/centurionarx/centurionarx-harness/edit/master/${editSource}`
+            return `https://github.com/centurionarx/arx-harness/edit/master/${editSource}`
           },
           text: 'Edit this page on GitHub',
         },
@@ -372,7 +372,7 @@ export default withMermaid({
     publicDir: resolve(import.meta.dirname, '../public'),
     plugins: [
       {
-        name: 'centurionarx-harness-doc-projector',
+        name: 'arx-harness-doc-projector',
         configureServer(server) {
           watchCanonicalDocs(server)
           serveRawMarkdown(server)

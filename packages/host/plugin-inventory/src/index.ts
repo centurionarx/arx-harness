@@ -1,8 +1,8 @@
 /** Read-only projection of the current Cordis Loader plugin entries. */
 
-import type { Context, FiberState } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cordis-plugin-loader'
-import { TypertRemoteService, Remote } from '@centurionarx/cxh-typert-protocol'
+import type { Context, FiberState } from '@arx-ai/cordis'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 // Typert-generated ./typert and ./remote artifacts import Zod at runtime.
 import type {} from 'zod'
 import type {

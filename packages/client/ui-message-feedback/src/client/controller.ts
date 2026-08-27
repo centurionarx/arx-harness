@@ -4,19 +4,19 @@
  * version this controller last observed, and a `version-conflict` reply carries
  * the authoritative item, so a lost race reconciles from the reply itself
  * instead of refetching the whole Session.
- * @module @centurionarx/cxh-client-ui-message-feedback/client/controller
+ * @module @arx-ai/arx-client-ui-message-feedback/client/controller
  */
 
-import type { RemoteResult } from '@centurionarx/cxh-typert-protocol'
-import type { HostObservable } from '@centurionarx/cxh-client-ui-slots'
-import type { MessageId, SessionId } from '@centurionarx/cxh-client-connection/client'
+import type { RemoteResult } from '@arx-ai/arx-typert-protocol'
+import type { HostObservable } from '@arx-ai/arx-client-ui-slots'
+import type { MessageId, SessionId } from '@arx-ai/arx-client-connection/client'
 import type {
   MessageFeedbackDeleteResult,
   MessageFeedbackItem,
   MessageFeedbackListResult,
   MessageFeedbackPutResult,
   MessageFeedbackRating,
-} from '@centurionarx/cxh-message-feedback/types'
+} from '@arx-ai/arx-message-feedback/types'
 
 /**
  * The three Remote calls this controller needs. The generated face wraps every

@@ -2,7 +2,7 @@
 # first; storage and project selection remain Engram-owned.
 - insert:
     - id: memory-engram
-      name: '@centurionarx/cxh-mcp-client'
+      name: '@arx-ai/arx-mcp-client'
       config:
         serverName: engram
         transport: stdio

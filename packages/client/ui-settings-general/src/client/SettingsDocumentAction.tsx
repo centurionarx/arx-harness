@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { Button } from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import { Button } from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import type { SettingsDocumentStore } from './settings-document-store.ts'
 import css from './SettingsDocumentAction.module.css'
 

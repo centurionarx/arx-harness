@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { CallId } from '@centurionarx/cxh-llm'
-import { carrierKeyOf, createScope } from '@centurionarx/cxh-scope'
-import type { Scope } from '@centurionarx/cxh-scope'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ApprovalService, { ApprovalOutcome, ApprovalRequest, effectiveApprovalPolicy, setApprovalPolicy } from '@centurionarx/cxh-user-approval'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { CallId } from '@arx-ai/arx-llm'
+import { carrierKeyOf, createScope } from '@arx-ai/arx-scope'
+import type { Scope } from '@arx-ai/arx-scope'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ApprovalService, { ApprovalOutcome, ApprovalRequest, effectiveApprovalPolicy, setApprovalPolicy } from '@arx-ai/arx-user-approval'
 
 /**
  * A minimal Agent stand-in — the service only reaches `agent.session.append`

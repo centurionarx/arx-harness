@@ -2,11 +2,11 @@
  * Scoped-context primitive: mint a Cordis context that tags registrations with
  * an opaque identity and build routing-only event carriers for that identity.
  *
- * @module @centurionarx/cxh-scope
+ * @module @arx-ai/arx-scope
  */
 
-import type { Context, Fiber } from '@centurionarx/cordis'
-import { Context as CordisContext } from '@centurionarx/cordis'
+import type { Context, Fiber } from '@arx-ai/cordis'
+import { Context as CordisContext } from '@arx-ai/cordis'
 
 export { AnonymousEntries, NamedEntries, ScopedLayers } from './store.ts'
 export type { ScopeLayer } from './store.ts'
@@ -15,7 +15,7 @@ export type { ScopeLayer } from './store.ts'
 export type ScopeKey = object
 
 /** Context tag written by {@link createScope}. */
-const kScope = Symbol('cxh.scope')
+const kScope = Symbol('arx.scope')
 
 declare const ScopedBrand: unique symbol
 
@@ -53,7 +53,7 @@ export interface ScopeParentBinding {
 /** Cycle-checked write shared by the bind and every rebind. */
 function linkScopeParent(key: ScopeKey, parent: ScopeKey): void {
   for (let cursor: ScopeKey | undefined = parent; cursor !== undefined; cursor = scopeParents.get(cursor)) {
-    if (cursor === key) throw new Error('cxh-scope: scope parent link would form a cycle')
+    if (cursor === key) throw new Error('arx-scope: scope parent link would form a cycle')
   }
   scopeParents.set(key, parent)
 }
@@ -71,7 +71,7 @@ function linkScopeParent(key: ScopeKey, parent: ScopeKey): void {
  */
 export function bindScopeParent(key: ScopeKey, parent: ScopeKey): ScopeParentBinding {
   if (scopeParents.has(key)) {
-    throw new Error('cxh-scope: scope key is already bound to a parent; re-linking requires the binding returned by the original bind')
+    throw new Error('arx-scope: scope key is already bound to a parent; re-linking requires the binding returned by the original bind')
   }
   linkScopeParent(key, parent)
   return {

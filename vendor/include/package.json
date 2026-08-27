@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cordis-plugin-include",
+  "name": "@arx-ai/cordis-plugin-include",
   "description": "Include files in cordis configurations",
   "version": "1.0.6",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "vendor/include"
   },
   "type": "module",
@@ -30,11 +30,11 @@
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@centurionarx/cosmokit": "workspace:^",
+    "@arx-ai/cosmokit": "workspace:^",
     "js-yaml": "^4.1.0"
   }
 }

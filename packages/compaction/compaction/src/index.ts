@@ -4,12 +4,12 @@
  * {@link CompactionEngine}. This interface necessarily depends on session and LLM
  * vocabulary; the rationale is in the
  * [compaction Agent Note](../../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.md).
- * @module @centurionarx/cxh-compaction
+ * @module @arx-ai/arx-compaction
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { Session } from '@centurionarx/cxh-session'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Session } from '@arx-ai/arx-session'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
 import type { CompactionResult } from './types.ts'
 
 export type { CompactionResult } from './types.ts'
@@ -78,7 +78,7 @@ export interface ManualCompactAgentContext extends CompactionAgentContext {
   runMaintenance<T>(task: (signal: AbortSignal) => Promise<T>): Promise<T>
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     compaction: CompactionEngine
   }

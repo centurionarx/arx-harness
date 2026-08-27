@@ -5,17 +5,17 @@
 # verbatim, and the acp-agent restatement re-pins `deepseek-v4-flash` to match
 # the recorded corpus and its pinned request headers.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ../cordis.yml
     patches:
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
-          persistenceCompression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
           workspaceContext:
             maxBytes: 65536
           persona: |
@@ -23,7 +23,7 @@
 
             Verify your work by running the code or tests. Keep answers brief and factual.
       - id: fs-sandbox
-        name: '@centurionarx/cxh-fs-sandbox'
+        name: '@arx-ai/arx-fs-sandbox'
         config:
           cwd: !!js process.cwd()
           diffBasisMaxBytes: 64

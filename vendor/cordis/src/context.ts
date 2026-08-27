@@ -1,4 +1,4 @@
-import type { Dict } from '@centurionarx/cosmokit'
+import type { Dict } from '@arx-ai/cosmokit'
 import { EventsService } from './events.ts'
 import { LoggerService } from './logger.ts'
 import { ReflectService } from './reflect.ts'

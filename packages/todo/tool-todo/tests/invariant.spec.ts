@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { type Session, type SessionEvent } from '@centurionarx/cxh-session'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import * as ToolTodo from '@centurionarx/cxh-tool-todo'
-import * as TodoInvariant from '@centurionarx/cxh-tool-todo/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { type Session, type SessionEvent } from '@arx-ai/arx-session'
+import ToolRuntime from '@arx-ai/arx-tools'
+import * as ToolTodo from '@arx-ai/arx-tool-todo'
+import * as TodoInvariant from '@arx-ai/arx-tool-todo/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()

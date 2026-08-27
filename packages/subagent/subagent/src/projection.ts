@@ -2,12 +2,12 @@
  * Pure session projections for subagent identity (mode/label) and active-turn
  * duration.
  *
- * @module @centurionarx/cxh-subagent/projection
+ * @module @arx-ai/arx-subagent/projection
  */
 
 import { z } from 'zod'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import { foldSubagentDescriptor } from './descriptor.ts'
 import type { SubagentDescriptorData } from './descriptor.ts'
 import type { SubagentIdentityProjection, SubagentTimingProjection } from './projection-types.ts'
@@ -44,7 +44,7 @@ const timingStateSchema: z.ZodType<TimingState> = z.object({
   descriptorSeen: z.boolean(),
 }).strict()
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     subagentTiming: TimingState
     subagent: IdentityState

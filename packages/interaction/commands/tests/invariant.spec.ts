@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as CommandInvariant from '@centurionarx/cxh-commands/invariant'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import SessionStore, { SessionId, type Session } from '@centurionarx/cxh-session'
-import { CommandId } from '@centurionarx/cxh-commands'
+import { Context } from '@arx-ai/cordis'
+import * as CommandInvariant from '@arx-ai/arx-commands/invariant'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import SessionStore, { SessionId, type Session } from '@arx-ai/arx-session'
+import { CommandId } from '@arx-ai/arx-commands'
 
 async function mount(installCompanion = true): Promise<{ ctx: Context; session: Session }> {
   const ctx = new Context()
@@ -50,7 +50,7 @@ describe('command lifecycle invariants', () => {
       })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-commands',
+      packageName: '@arx-ai/arx-commands',
     }))
   })
 
@@ -68,7 +68,7 @@ describe('command lifecycle invariants', () => {
       })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-commands',
+      packageName: '@arx-ai/arx-commands',
     }))
   })
 
@@ -83,7 +83,7 @@ describe('command lifecycle invariants', () => {
 
     await expect(ctx.plugin(CommandInvariant)).rejects.toMatchObject({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-commands',
+      packageName: '@arx-ai/arx-commands',
     })
   })
 })

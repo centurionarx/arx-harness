@@ -7,11 +7,11 @@
  * must stub); runtime-internal entry points (history staging, wire-frame
  * dispatch) stay on the class, invisible out here.
  */
-import type { AttachmentIdType, ImageAttachmentRef } from '@centurionarx/cxh-attachment'
+import type { AttachmentIdType, ImageAttachmentRef } from '@arx-ai/arx-attachment'
 import type {
   MessageId, PromptContentPart, QueueAction, RpcResult, SessionId,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { RemoteResult } from '@centurionarx/cxh-typert-protocol'
+} from '@arx-ai/arx-api-remotes/client'
+import type { RemoteResult } from '@arx-ai/arx-typert-protocol'
 import type { ConversationSnapshot } from '../sessions/conversation.ts'
 import type { ObservableSnapshot } from './store.ts'
 

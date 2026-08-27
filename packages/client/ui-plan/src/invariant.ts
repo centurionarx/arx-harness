@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-ui-plan`.
- * @module @centurionarx/cxh-client-ui-plan/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-ui-plan`.
+ * @module @arx-ai/arx-client-ui-plan/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-ui-plan'
+const PACKAGE_NAME = '@arx-ai/arx-client-ui-plan'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-plan-invariant'
@@ -16,7 +16,7 @@ export const inject = ['invariants']
 
 /**
  * No runtime invariant: plan state and boundary ownership are
- * audited by cxh-plan-mode, while the control is a slot effect whose
+ * audited by arx-plan-mode, while the control is a slot effect whose
  * declaration, registration, and teardown are exercised by this package.
  */
 const install: InvariantInstaller = () => {}

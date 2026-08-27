@@ -9,19 +9,19 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import { createUserMessage, CallId } from '@centurionarx/cxh-llm'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import type { ToolDefinition } from '@centurionarx/cxh-tools'
-import type { PostToolDecision, ToolExecution, ToolExecutionToken } from '@centurionarx/cxh-tools'
-import { SpillLocator, SpillStore } from '@centurionarx/cxh-spill'
-import type { SaveTextSpill, SpillRef } from '@centurionarx/cxh-spill'
-import * as SpillPolicy from '@centurionarx/cxh-spill-policy'
-import { WorkerThreadCodeRuntime } from '@centurionarx/cxh-code-runtime-worker-thread'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import { createUserMessage, CallId } from '@arx-ai/arx-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
+import type { ToolDefinition } from '@arx-ai/arx-tools'
+import type { PostToolDecision, ToolExecution, ToolExecutionToken } from '@arx-ai/arx-tools'
+import { SpillLocator, SpillStore } from '@arx-ai/arx-spill'
+import type { SaveTextSpill, SpillRef } from '@arx-ai/arx-spill'
+import * as SpillPolicy from '@arx-ai/arx-spill-policy'
+import { WorkerThreadCodeRuntime } from '@arx-ai/arx-code-runtime-worker-thread'
 
 const testToolSignal = new AbortController().signal
 

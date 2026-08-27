@@ -1,16 +1,16 @@
 /** Canonical session URI and inline mention encoding. */
 
-import { SessionId, type SessionId as SessionIdType } from '@centurionarx/cxh-session'
+import { SessionId, type SessionId as SessionIdType } from '@arx-ai/arx-session'
 import { SessionReferenceError } from './config.ts'
 import type { SessionReferenceInput } from './types.ts'
 
-/** URI scheme reserved for CENTURIONarx Harness session snapshots. */
-export const SESSION_REFERENCE_SCHEME = 'cxh-session:'
+/** URI scheme reserved for arx Harness session snapshots. */
+export const SESSION_REFERENCE_SCHEME = 'arx-session:'
 
 /**
  * Encode any JavaScript session-id string as a canonical lossless URI.
  * @param sessionId - opaque session id to serialize.
- * @returns canonical `cxh-session:` URI.
+ * @returns canonical `arx-session:` URI.
  */
 export function encodeSessionReferenceUri(sessionId: SessionIdType): string {
   const payload = Buffer.from(JSON.stringify(sessionId), 'utf8').toString('base64url')
@@ -67,7 +67,7 @@ export interface ParsedSessionReferenceText {
  */
 export function parseSessionReferenceText(text: string): ParsedSessionReferenceText {
   const references: SessionReferenceInput[] = []
-  const pattern = /@\[((?:\\.|[^\\\]])*)\]\((cxh-session:[^\s)]*)\)|(cxh-session:[A-Za-z0-9_-]+)/gu
+  const pattern = /@\[((?:\\.|[^\\\]])*)\]\((arx-session:[^\s)]*)\)|(arx-session:[A-Za-z0-9_-]+)/gu
   const rendered = text.replace(pattern, (
     _match,
     rawLabel: string | undefined,

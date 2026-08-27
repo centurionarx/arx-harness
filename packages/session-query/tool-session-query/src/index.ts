@@ -1,14 +1,14 @@
 /**
  * Model-facing, workspace-authorized session-history search and read tools.
  *
- * @module @centurionarx/cxh-tool-session-query
+ * @module @arx-ai/arx-tool-session-query
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
+import { defineTool } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-system-prompt'
 import { toolInput } from './input.ts'
 import { operations } from './operations.ts'
 import { presentation } from './presentation.ts'

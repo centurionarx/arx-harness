@@ -1,14 +1,14 @@
-# `@centurionarx/cxh-cmdline`
+# `@arx-ai/arx-cmdline`
 
 English | [中文](README.zh.md)
 
-The command line a cxh launcher hands to the app it boots. The launcher parses only its own flags (`--profile`, `--patch`, the config dumps) and hands **everything after them** to the tree verbatim, so an app owns its flag family, its `--help` text, and its parse errors instead of the launcher knowing them.
+The command line a arx launcher hands to the app it boots. The launcher parses only its own flags (`--profile`, `--patch`, the config dumps) and hands **everything after them** to the tree verbatim, so an app owns its flag family, its `--help` text, and its parse errors instead of the launcher knowing them.
 
 ## The launcher values
 
 A launcher calls `provideCmdline(ctx, host)` before any tree entry mounts, which provides:
 
-- `ctx.cmdlineArgs` — the invocation's inner arguments. `get()` is the whole interface, and it returns a snapshot: `cxh --profile tui --resume abc` yields `['--resume', 'abc']`.
+- `ctx.cmdlineArgs` — the invocation's inner arguments. `get()` is the whole interface, and it returns a snapshot: `arx --profile tui --resume abc` yields `['--resume', 'abc']`.
 - `ctx.appExit` — a bounded process-exit request, wired to the launcher's shutdown controller.
 
 An embedding host with no command line provides an empty list; that is the honest answer, not a missing value.
@@ -32,14 +32,14 @@ Its Loader row carries no launcher marker or special kind:
 
 ```yaml
 - id: web-startup
-  name: '@centurionarx/cxh-web-app/startup'
+  name: '@arx-ai/arx-web-app/startup'
 ```
 
 Every row configured from those values uses ordinary service injection and direct lazy config access:
 
 ```yaml
 - id: webserver
-  name: '@centurionarx/cxh-host-webserver'
+  name: '@arx-ai/arx-host-webserver'
   inject: [webStartup]
   config:
     host: !!js ctx.webStartup.host ?? '127.0.0.1'

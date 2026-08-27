@@ -4,7 +4,7 @@
  * discipline), so `./client` projects the same single-source content
  * `./types` serves to host consumers — zero duplication.
  *
- * @module @centurionarx/cxh-tool-todo/client
+ * @module @arx-ai/arx-tool-todo/client
  */
 
 export type * from './types.ts'

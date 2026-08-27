@@ -3,19 +3,19 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import { homedir } from 'node:os'
 import { basename, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { SandboxBashExecutor } from '@centurionarx/cxh-bash-sandbox'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as FsPolicy from '@centurionarx/cxh-fs-observation-policy'
-import SandboxedFileSystem from '@centurionarx/cxh-fs-sandbox'
-import { CallId } from '@centurionarx/cxh-llm'
-import { LocalSandboxProvider } from '@centurionarx/cxh-sandbox-local'
-import { bwrapProfileArgs, seatbeltProfileArgs } from '@centurionarx/cxh-sandbox-local/src/profiles.ts'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import { SessionId } from '@centurionarx/cxh-session'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
-import type { ToolResult } from '@centurionarx/cxh-tools'
-import { launcherPath } from '@centurionarx/node-addon-landlock-run'
+import { Context } from '@arx-ai/cordis'
+import { SandboxBashExecutor } from '@arx-ai/arx-bash-sandbox'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as FsPolicy from '@arx-ai/arx-fs-observation-policy'
+import SandboxedFileSystem from '@arx-ai/arx-fs-sandbox'
+import { CallId } from '@arx-ai/arx-llm'
+import { LocalSandboxProvider } from '@arx-ai/arx-sandbox-local'
+import { bwrapProfileArgs, seatbeltProfileArgs } from '@arx-ai/arx-sandbox-local/src/profiles.ts'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import { SessionId } from '@arx-ai/arx-session'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
+import type { ToolResult } from '@arx-ai/arx-tools'
+import { launcherPath } from '@arx-ai/node-addon-landlock-run'
 import * as agentSpine from '../src/index.ts'
 
 const bwrapUsable = spawnSync('bwrap', [...bwrapProfileArgs({ mode: 'read-only', workspaceRoot: '/' }), '--', 'true'], { timeout: 5_000, stdio: 'ignore' }).status === 0
@@ -30,7 +30,7 @@ let projectB: string
 const tempDirs: string[] = []
 
 async function projectDir(label: string): Promise<string> {
-  const dir = await mkdtemp(join(homedir(), `cxh-${label}-`))
+  const dir = await mkdtemp(join(homedir(), `arx-${label}-`))
   tempDirs.push(dir)
   return dir
 }

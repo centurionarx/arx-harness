@@ -3,7 +3,7 @@
 # The redact-rule entry models a deployment mounting its own scrub rule on the
 # session-telemetry/record waterfall — the seam itself ships no rules.
 - id: logger-console
-  name: '@centurionarx/cordis-plugin-logger-console'
+  name: '@arx-ai/cordis-plugin-logger-console'
   config:
     colors: false
     levels:
@@ -18,20 +18,20 @@
 
 # Managed child-process groups required by the bash executor.
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
 
 - id: session-telemetry-otel
-  name: '@centurionarx/cxh-session-telemetry-otel'
+  name: '@arx-ai/arx-session-telemetry-otel'
   config:
-    mode: !!js process.env.CXH_TELEMETRY_E2E_MODE || 'FULL'
+    mode: !!js process.env.ARX_TELEMETRY_E2E_MODE || 'FULL'
     exporter:
-      url: !!js process.env.CXH_TELEMETRY_E2E_URL
+      url: !!js process.env.ARX_TELEMETRY_E2E_URL
 
 - id: agent-spine
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents:
       - id: main
@@ -42,10 +42,10 @@
     workspaceContext: false
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
     compression: 'none'
 
 - id: checkpoint-policy
-  name: '@centurionarx/cxh-session-checkpoint-policy'
+  name: '@arx-ai/arx-session-checkpoint-policy'

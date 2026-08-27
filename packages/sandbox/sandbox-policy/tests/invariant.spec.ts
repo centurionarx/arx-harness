@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { type Session, type SessionEvent } from '@centurionarx/cxh-session'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import * as SandboxPolicyInvariant from '@centurionarx/cxh-sandbox-policy/invariant'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { type Session, type SessionEvent } from '@arx-ai/arx-session'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import * as SandboxPolicyInvariant from '@arx-ai/arx-sandbox-policy/invariant'
 
 async function setup(): Promise<Context> {
   const ctx = new Context()
@@ -36,7 +36,7 @@ describe('sandbox-policy invariants', () => {
   it('rejects and attributes an unknown durable sandbox mode', async () => {
     const ctx = await setup()
     expect(() => { ctx.emit('session/event', {} as Session, modeEvent('host-root')) })
-      .toThrow(new InvariantError('@centurionarx/cxh-sandbox-policy', 'sandbox/mode carries unknown mode "host-root"'))
+      .toThrow(new InvariantError('@arx-ai/arx-sandbox-policy', 'sandbox/mode carries unknown mode "host-root"'))
   })
 
   it('rejects an unknown mode already present on late registration', async () => {
@@ -47,7 +47,7 @@ describe('sandbox-policy invariants', () => {
 
     await expect(ctx.plugin(SandboxPolicyInvariant).then(() => undefined)).rejects.toMatchObject({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-sandbox-policy',
+      packageName: '@arx-ai/arx-sandbox-policy',
     })
   })
 })

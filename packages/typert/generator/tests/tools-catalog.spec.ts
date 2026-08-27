@@ -2,10 +2,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
-import type { TypertContribution } from '@centurionarx/cxh-typert-registry/types'
-import { EVENT_API, SERVICE_API, TYPE_API } from '@centurionarx/cxh-tool-cordis/src/api-catalog.ts'
+import { Context } from '@arx-ai/cordis'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
+import type { TypertContribution } from '@arx-ai/arx-typert-registry/types'
+import { EVENT_API, SERVICE_API, TYPE_API } from '@arx-ai/arx-tool-cordis/src/api-catalog.ts'
 import { WorkspaceAnalyzer } from '../src/analyzer.ts'
 import { FaceModelEmitter } from '../src/emitter.ts'
 
@@ -16,16 +16,16 @@ afterEach(() => {
   for (const root of temporaryRoots.splice(0)) rmSync(root, { recursive: true, force: true })
 })
 
-describe('model-driven cxh-tools generation', () => {
+describe('model-driven arx-tools generation', () => {
   it('round-trips the complete service and event structure through the runtime registry', { timeout: 30_000 }, async () => {
     const workspace = new WorkspaceAnalyzer({
       root: workspaceRoot,
       faces: ['host'],
-      packages: ['@centurionarx/cxh-tools'],
+      packages: ['@arx-ai/arx-tools'],
     }).analyze()
     const host = workspace.faces.find(candidate => candidate.face === 'host')
-    if (host === undefined) throw new Error('cxh-tools has no analyzed host face')
-    const artifact = new FaceModelEmitter(host).emit('@centurionarx/cxh-tools')
+    if (host === undefined) throw new Error('arx-tools has no analyzed host face')
+    const artifact = new FaceModelEmitter(host).emit('@arx-ai/arx-tools')
 
     const root = mkdtempSync(join(import.meta.dirname, '.generated-tools-'))
     temporaryRoots.push(root)
@@ -38,7 +38,7 @@ describe('model-driven cxh-tools generation', () => {
     const ctx = new Context()
     await ctx.plugin(TypertRegistry)
     const dispose = ctx.typert.register(generated.TYPERT)
-    const record = ctx.typert.getPackage('@centurionarx/cxh-tools', 'host')
+    const record = ctx.typert.getPackage('@arx-ai/arx-tools', 'host')
     const service = record?.model.services.find(candidate => candidate.key === 'tools')
     expect(service).toBeDefined()
     expect({
@@ -71,6 +71,6 @@ describe('model-driven cxh-tools generation', () => {
     )
 
     await dispose()
-    expect(ctx.typert.getPackage('@centurionarx/cxh-tools', 'host')).toBeUndefined()
+    expect(ctx.typert.getPackage('@arx-ai/arx-tools', 'host')).toBeUndefined()
   })
 })

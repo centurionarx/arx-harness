@@ -17,20 +17,20 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import lefthookPackage from 'lefthook/package.json' with { type: 'json' }
 
 const MINIMUM_GIT = [2, 26, 0]
-const HOOKS_DIRECTORY = 'cxh-hooks'
-const OWNERSHIP_MARKER = '.cxh-lefthook-owned'
+const HOOKS_DIRECTORY = 'arx-hooks'
+const OWNERSHIP_MARKER = '.arx-lefthook-owned'
 const OWNERSHIP_MARKER_VERSION = 1
-const OWNERSHIP_MARKER_OWNER = 'centurionarx-harness worktree-local lefthook hooks'
-const INSTALL_LOCK = 'cxh-lefthook-install.lock'
+const OWNERSHIP_MARKER_OWNER = 'arx-harness worktree-local lefthook hooks'
+const INSTALL_LOCK = 'arx-lefthook-install.lock'
 const INSTALL_LOCK_TIMEOUT_MS = 30_000
 const INSTALL_LOCK_INITIALIZATION_TIMEOUT_MS = 5_000
 const INSTALL_LOCK_POLL_MS = 50
-const ALLOW_HOOKS_PATH_OVERRIDE = 'CXH_LEFTHOOK_ALLOW_HOOKS_PATH_OVERRIDE'
+const ALLOW_HOOKS_PATH_OVERRIDE = 'ARX_LEFTHOOK_ALLOW_HOOKS_PATH_OVERRIDE'
 const REPOSITORY_EXTENSION_PATTERN = '^extensions\\.'
 const PAIRING_MERGE_DRIVER_CONFIG = [
-  ['merge.cxh-translation-pairing.name', 'CENTURIONarx Harness bilingual pairing records'],
+  ['merge.arx-translation-pairing.name', 'arx Harness bilingual pairing records'],
   [
-    'merge.cxh-translation-pairing.driver',
+    'merge.arx-translation-pairing.driver',
     'scripts/merge-translation-pairing-driver.sh %O %A %B %P',
   ],
 ]
@@ -389,7 +389,7 @@ async function acquireInstallLock(commonDirectory) {
       let ownedStat
       try {
         ownedStat = fstatSync(lockHandle)
-        const writeDelay = Number(process.env.CXH_TEST_LEFTHOOK_LOCK_WRITE_DELAY_MS ?? 0)
+        const writeDelay = Number(process.env.ARX_TEST_LEFTHOOK_LOCK_WRITE_DELAY_MS ?? 0)
         if (writeDelay > 0) {
           await new Promise(resolveWait => setTimeout(resolveWait, writeDelay))
         }

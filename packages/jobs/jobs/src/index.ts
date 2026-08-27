@@ -2,12 +2,12 @@
  * The background-job Service Definition (`ctx.jobs`). It owns the contract for
  * job ids, session-scoped access, lifecycle state, completion listeners, and
  * owner cleanup while producers retain their execution resources. The
- * process-local registry lives in `@centurionarx/cxh-jobs-local`.
- * @module @centurionarx/cxh-jobs
+ * process-local registry lives in `@arx-ai/arx-jobs-local`.
+ * @module @arx-ai/arx-jobs
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
 import type {
   JobDoneListener, JobId, JobRead, JobSnapshot, JobStart, JobsChangedListener,
 } from './types.ts'
@@ -26,7 +26,7 @@ export type {
   JobsChangedListener,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     jobs: JobRegistry
   }
@@ -65,7 +65,7 @@ export abstract class JobRegistry extends Service {
     // would register a ctx.jobs with no method implementations and fail far
     // from the misconfiguration. Fail loud at load instead.
     if (new.target === JobRegistry) {
-      throw new Error('@centurionarx/cxh-jobs is the abstract job registry seam; load an implementation such as @centurionarx/cxh-jobs-local instead')
+      throw new Error('@arx-ai/arx-jobs is the abstract job registry seam; load an implementation such as @arx-ai/arx-jobs-local instead')
     }
     super(ctx, 'jobs')
   }

@@ -1,10 +1,10 @@
 /**
  * Compiler-independent Typert protocol shared by business packages, generated
  * Remote artifacts, the Host Gateway, and Client API implementations.
- * @module @centurionarx/cxh-typert-protocol/types
+ * @module @arx-ai/arx-typert-protocol/types
  */
 
-import type { Context, Events } from '@centurionarx/cordis'
+import type { Context, Events } from '@arx-ai/cordis'
 
 declare const LOOKUP_HOST: unique symbol
 declare const LOOKUP_WIRE: unique symbol
@@ -484,7 +484,7 @@ export interface TypertRegistryContract {
   readonly contexts: TypertContextRegistry
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     typert: TypertRegistryContract
   }

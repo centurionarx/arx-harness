@@ -2,7 +2,7 @@
  * Pure protocol translation for the local host: what the server's capabilities allow, and how its
  * `Location`/`LocationLink`/`Hover` payloads normalize into the seam's closed result unions. No I/O
  * or process state — every function here is a pure transform, which the fake-stdio tests pin exactly.
- * @module @centurionarx/cxh-lsp-stdio/translate
+ * @module @arx-ai/arx-lsp-stdio/translate
  */
 
 import type {
@@ -10,9 +10,9 @@ import type {
   LspLocation,
   LspOperation,
   LspRange,
-} from '@centurionarx/cxh-lsp'
-import { LspError } from '@centurionarx/cxh-lsp'
-import { assertNever } from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-lsp'
+import { LspError } from '@arx-ai/arx-lsp'
+import { assertNever } from '@arx-ai/arx-llm'
 import type {
   WireHover,
   WireLocation,

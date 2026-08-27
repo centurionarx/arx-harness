@@ -1,11 +1,11 @@
 /** Package-owned relational checks for Agent Teams durable records. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 import { applyTeamEvent, foldTeam, isTeamEvent } from './fold.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-experimental-agent-team'
+const PACKAGE_NAME = '@arx-ai/arx-experimental-agent-team'
 
 /** Cordis companion plugin name. */
 export const name = 'team-invariant'

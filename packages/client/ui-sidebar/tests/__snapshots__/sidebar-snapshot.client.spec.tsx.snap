@@ -25,13 +25,10 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
             data-slot="sidebar.brand.mark"
             style="display: contents;"
           >
-            <svg
+            <span
               aria-hidden="true"
-              data-content="965fe321"
-              fill="none"
-              height="17.6580310880829"
-              viewBox="0 0 23.16 17.04"
-              width="24"
+              class="mark"
+              style="width: 24px; height: 12.901185770750988px;"
             />
           </div>
         </span>
@@ -87,6 +84,14 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
           style="display: contents;"
         />
       </div>
+      <div
+        class="exitArea"
+      >
+        <div
+          data-slot="sidebar.exit"
+          style="display: contents;"
+        />
+      </div>
     </div>
   </div>
 </div>
@@ -120,13 +125,10 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               data-slot="sidebar.brand.mark"
               style="display: contents;"
             >
-              <svg
+              <span
                 aria-hidden="true"
-                data-content="965fe321"
-                fill="none"
-                height="17.6580310880829"
-                viewBox="0 0 23.16 17.04"
-                width="24"
+                class="mark"
+                style="width: 24px; height: 12.901185770750988px;"
               />
             </div>
           </span>
@@ -140,7 +142,7 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               <span
                 class="fallbackBrandName"
               >
-                CXH Local Build
+                ARX Local Build
               </span>
               <span
                 class="buildRevision"
@@ -213,6 +215,14 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
           style="display: contents;"
         />
       </div>
+      <div
+        class="exitArea"
+      >
+        <div
+          data-slot="sidebar.exit"
+          style="display: contents;"
+        />
+      </div>
     </div>
   </div>
 </div>
@@ -246,13 +256,10 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               data-slot="sidebar.brand.mark"
               style="display: contents;"
             >
-              <svg
+              <span
                 aria-hidden="true"
-                data-content="965fe321"
-                fill="none"
-                height="17.6580310880829"
-                viewBox="0 0 23.16 17.04"
-                width="24"
+                class="mark"
+                style="width: 24px; height: 12.901185770750988px;"
               />
             </div>
           </span>
@@ -266,7 +273,7 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               <span
                 class="fallbackBrandName"
               >
-                CXH Local Build
+                ARX Local Build
               </span>
               <span
                 class="buildRevision"
@@ -336,6 +343,14 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
       >
         <div
           data-slot="sidebar.settings"
+          style="display: contents;"
+        />
+      </div>
+      <div
+        class="exitArea"
+      >
+        <div
+          data-slot="sidebar.exit"
           style="display: contents;"
         />
       </div>

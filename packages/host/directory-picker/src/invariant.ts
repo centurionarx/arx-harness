@@ -1,9 +1,9 @@
-/** Package-owned invariant companion for the directory-picker seam. @module @centurionarx/cxh-host-directory-picker/invariant */
+/** Package-owned invariant companion for the directory-picker seam. @module @arx-ai/arx-host-directory-picker/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-host-directory-picker'
+const PACKAGE_NAME = '@arx-ai/arx-host-directory-picker'
 
 /** Cordis companion plugin name. */
 export const name = 'host-directory-picker-invariant'

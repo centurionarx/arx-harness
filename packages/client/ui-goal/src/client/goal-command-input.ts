@@ -1,9 +1,9 @@
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
-import type {} from '@centurionarx/cxh-commands/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
+import type {} from '@arx-ai/arx-commands/types'
 import type {
   ConversationNodeDefinition,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 
 /** Goal-owned human command input projected independently of model messages. */
 export interface GoalCommandInputData {
@@ -12,7 +12,7 @@ export interface GoalCommandInputData {
   readonly time: number
 }
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Human-entered `/goal` command input. */
     'command-input': GoalCommandInputData

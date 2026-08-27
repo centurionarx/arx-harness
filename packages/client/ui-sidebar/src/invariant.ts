@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-ui-sidebar`.
- * @module @centurionarx/cxh-client-ui-sidebar/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-ui-sidebar`.
+ * @module @arx-ai/arx-client-ui-sidebar/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-ui-sidebar'
+const PACKAGE_NAME = '@arx-ai/arx-client-ui-sidebar'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-sidebar-invariant'

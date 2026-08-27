@@ -3,16 +3,16 @@ import { mkdtempSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SqliteSessionPersistence from '@centurionarx/cxh-session-persistence-sqlite'
-import SubagentService, { seedDescriptorTurn, snapshotSubagentDescriptor } from '@centurionarx/cxh-subagent'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
+import SubagentService, { seedDescriptorTurn, snapshotSubagentDescriptor } from '@arx-ai/arx-subagent'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import TeamService, { foldTeam, TeamId, TeamMessageId } from '../src/index.ts'
 import type { TeamMemberSnapshot, TeamMessageSnapshot, TeamTaskSnapshot } from '../src/index.ts'
@@ -148,7 +148,7 @@ for (const backend of backends) {
     it('reconciles a persisted child to active and a missing child to durable failed', {
       timeout: PERSISTENCE_TEST_TIMEOUT_MS,
     }, async () => {
-      const storageRoot = mkdtempSync(join(tmpdir(), `cxh-team-${backend.name.toLowerCase()}-`))
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-${backend.name.toLowerCase()}-`))
       roots.push(storageRoot)
       const first = await stack(backend, storageRoot, [textResponse('initial child answer')])
       const activeRootId = SessionId(`${backend.name.toLowerCase()}-active-root`)
@@ -224,7 +224,7 @@ for (const backend of backends) {
     it('reconciles a provisioning child whose initial prompt is durably pending', {
       timeout: PERSISTENCE_TEST_TIMEOUT_MS,
     }, async () => {
-      const storageRoot = mkdtempSync(join(tmpdir(), `cxh-team-pending-${backend.name.toLowerCase()}-`))
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-pending-${backend.name.toLowerCase()}-`))
       roots.push(storageRoot)
       const rootId = SessionId(`${backend.name.toLowerCase()}-pending-root`)
       const childId = SessionId(`${backend.name.toLowerCase()}-pending-child`)
@@ -268,7 +268,7 @@ for (const backend of backends) {
     it('replays queued-minus-delivered mail in FIFO order without waking for quiet mail', {
       timeout: PERSISTENCE_TEST_TIMEOUT_MS,
     }, async () => {
-      const storageRoot = mkdtempSync(join(tmpdir(), `cxh-team-mail-${backend.name.toLowerCase()}-`))
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-mail-${backend.name.toLowerCase()}-`))
       roots.push(storageRoot)
       const rootId = SessionId(`${backend.name.toLowerCase()}-mail-root`)
 
@@ -328,7 +328,7 @@ for (const backend of backends) {
     it('acknowledges target-recorded mail after restart without delivering it twice', {
       timeout: PERSISTENCE_TEST_TIMEOUT_MS,
     }, async () => {
-      const storageRoot = mkdtempSync(join(tmpdir(), `cxh-team-dedup-${backend.name.toLowerCase()}-`))
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-dedup-${backend.name.toLowerCase()}-`))
       roots.push(storageRoot)
       const rootId = SessionId(`${backend.name.toLowerCase()}-dedup-root`)
       const messageId = TeamMessageId(`${backend.name.toLowerCase()}-recorded-message`)
@@ -407,7 +407,7 @@ for (const backend of backends) {
     it('acknowledges durably pending target mail without cold-resume duplication', {
       timeout: PERSISTENCE_TEST_TIMEOUT_MS,
     }, async () => {
-      const storageRoot = mkdtempSync(join(tmpdir(), `cxh-team-inbox-${backend.name.toLowerCase()}-`))
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-inbox-${backend.name.toLowerCase()}-`))
       roots.push(storageRoot)
       const rootId = SessionId(`${backend.name.toLowerCase()}-inbox-root`)
       const childId = SessionId(`${backend.name.toLowerCase()}-inbox-child`)

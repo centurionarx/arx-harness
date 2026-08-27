@@ -1,6 +1,6 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
 import { apply as applyHost } from '../src/index.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { ComposerAttachments } from '../src/client/ComposerAttachments.tsx'

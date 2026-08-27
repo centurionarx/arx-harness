@@ -1,5 +1,5 @@
-import { Context } from '@centurionarx/cordis'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import { describe, expect, it } from 'vitest'
 import * as BrandInvariant from '../src/invariant.ts'
 import { apply as nodeApply } from '../src/index.ts'

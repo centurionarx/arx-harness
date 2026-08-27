@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import { RuntimeContextProjection } from '../src/runtime-context.ts'
 
-const SOURCE = '@centurionarx/cxh-system-prompt'
+const SOURCE = '@arx-ai/arx-system-prompt'
 
 function contextMessage(text: string) {
   return createUserMessage({

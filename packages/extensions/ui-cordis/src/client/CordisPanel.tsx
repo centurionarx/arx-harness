@@ -5,11 +5,11 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import {
   IconCheckOutline16, IconCloseOutline16, IconCordisPluginOutline14, IconPlayOutline16,
   IconStopFill16, IconTrashOutline16, Tooltip, useDismissOnOutsidePointer,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import type {} from '@centurionarx/cxh-client-ui-sidebar/client'
-import type { CordisRunActivity } from '@centurionarx/cxh-cordis-client-runner/client'
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import type {} from '@arx-ai/arx-client-ui-sidebar/client'
+import type { CordisRunActivity } from '@arx-ai/arx-cordis-client-runner/client'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
 import type { CordisInventoryRow } from './dynamic-port.ts'
 import type { CordisPanelFace } from './slots.ts'
 import type { CordisKey } from './locales.ts'

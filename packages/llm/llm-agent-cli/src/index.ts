@@ -2,10 +2,10 @@
  * Cordis plugin registering vendor-CLI model routes on the shared `llm`
  * service.
  *
- * @module @centurionarx/cxh-llm-agent-cli
+ * @module @arx-ai/arx-llm-agent-cli
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 
 import { AgentCliAdapter } from './adapter.ts'
 import { Config, resolveRoutes } from './config.ts'
@@ -36,5 +36,8 @@ export function apply(ctx: Context, config: Config): void {
     routes: () => routes,
     spawn: spec => ctx.subprocess.spawn(spec),
     cwd: () => cwd,
+    // Optional: a composition without durable attachments serves text-only
+    // routes, and an image reaching one fails naming the missing store.
+    attachments: () => ctx.get('attachments'),
   }))
 }

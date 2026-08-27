@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/goal/goal-round-driver/README.md
-README.md: 40aa6058f4518fb43bffc3bbcc37294ecd0195fc
-README.zh.md: a9a8c842bd7fb1635d45adf86c15964b7b51b502
+README.md: 5fba37df56a57b39de0c8c967aa11b8df5fd52ea
+README.zh.md: c0dfc026bb0bd46c7db4e3159de58452b1b3afe1

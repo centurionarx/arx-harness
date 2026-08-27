@@ -2,12 +2,12 @@
  * Service Definition for the same-world process-confinement capability seam: wrap exact subprocess argv under a
  * host-path file policy. Containers, microVMs, and remote execution replace the
  * surrounding capability seam instead; this service shares the host kernel and filesystem.
- * @module @centurionarx/cxh-sandbox
+ * @module @arx-ai/arx-sandbox
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
 
 export {
   ESCALATION_TARGETS,
@@ -42,7 +42,7 @@ export interface SandboxExecutionPolicy {
   /** Absolute root directory `workspace-write` may write under. */
   workspaceRoot: string
   /**
-   * Opaque identity of the calling session (the branded `cxh-session`
+   * Opaque identity of the calling session (the branded `arx-session`
    * SessionId). Backends key per-session state off it (e.g. windows-acl gives
    * each live session/workspace pair a random private temp directory and SID,
    * while the workspace SID and standing grant remain per-workspace); absent
@@ -143,7 +143,7 @@ export class SandboxUnavailableError extends HarnessError {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sandbox: SandboxProvider
   }

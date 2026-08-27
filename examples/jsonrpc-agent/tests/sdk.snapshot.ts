@@ -1,11 +1,11 @@
 /**
  * Keyless snapshot coverage for the TypeScript SDK path: each scenario spawns
- * the REAL `cxh-jsonrpc-agent` runtime (per `CXH_EXAMPLE_MODE`) through the
- * REAL `@centurionarx/cxh-sdk-client`, drives one turn over stdio JSON-RPC,
+ * the REAL `arx-jsonrpc-agent` runtime (per `ARX_EXAMPLE_MODE`) through the
+ * REAL `@arx-ai/arx-sdk-client`, drives one turn over stdio JSON-RPC,
  * and pins the SDK `RunResult`, the complete notification stream, and the
  * persisted session logs. Replay serves recorded model
- * responses via `llm-replay` (`cordis.snapshot.yml`); `CXH_SNAPSHOT=record`
- * re-records against the live API; `CXH_SNAPSHOT=refresh` replays committed
+ * responses via `llm-replay` (`cordis.snapshot.yml`); `ARX_SNAPSHOT=record`
+ * re-records against the live API; `ARX_SNAPSHOT=refresh` replays committed
  * fixtures and rewrites expected outputs.
  */
 
@@ -27,9 +27,9 @@ import {
   tokenizeSessionFixtureCwd,
   type HarvestedLog,
   type NormalizeContext,
-} from '@centurionarx/cxh-acp-snapshot'
-import { resolveExampleLaunch } from '@centurionarx/cxh-loader-smoke'
-import { CENTURIONarxHarness, type HarnessNotification, type RunResult } from '@centurionarx/cxh-sdk-client'
+} from '@arx-ai/arx-acp-snapshot'
+import { resolveExampleLaunch } from '@arx-ai/arx-loader-smoke'
+import { ArxHarness, type HarnessNotification, type RunResult } from '@arx-ai/arx-sdk-client'
 
 const testsDir = dirOf(import.meta.url)
 const snapshotsDir = join(testsDir, 'snapshots')
@@ -50,7 +50,7 @@ const MINIMAL_BASH_DESCRIPTION = `Run commands in a bash shell
 * Please avoid commands that may produce a very large amount of output.
 * Please run long lived commands in the background, e.g. 'sleep 10 &' or start a server in the background.`
 
-const mode = process.env.CXH_SNAPSHOT ?? 'replay'
+const mode = process.env.ARX_SNAPSHOT ?? 'replay'
 const recording = mode === 'record'
 const refreshing = mode === 'refresh'
 
@@ -92,7 +92,7 @@ const SCENARIOS: SdkScenario[] = [
   },
   {
     name: 'bash-tool',
-    prompt: 'Run this exact command with your bash tool, then reply with its stdout only: echo cxh-sdk-proof-7391',
+    prompt: 'Run this exact command with your bash tool, then reply with its stdout only: echo arx-sdk-proof-7391',
     sessionId: 'sdk-snapshot-bash',
     children: 0,
   },
@@ -108,7 +108,7 @@ const SCENARIOS: SdkScenario[] = [
     sessionId: 'persistent-tools-snapshot',
     children: 0,
     configs: { live: minimalLiveConfig, replay: minimalReplayConfig },
-    environment: { CXH_SYSTEM_PROMPT: MINIMAL_SYSTEM_PROMPT },
+    environment: { ARX_SYSTEM_PROMPT: MINIMAL_SYSTEM_PROMPT },
     expectedFiles: { 'note.txt': 'target:\n\tnew\n' },
     expectedTools: { bash: ['command'], str_replace_editor: ['command', 'path'] },
     expectedSystem: MINIMAL_SYSTEM_PROMPT,
@@ -189,7 +189,7 @@ function assembledRuntimeContexts(log: PersistedLog): string[] {
     }
     if (event.type !== 'user/message'
       || event.data?.source?.kind !== 'plugin'
-      || event.data.source.plugin !== '@centurionarx/cxh-system-prompt') return []
+      || event.data.source.plugin !== '@arx-ai/arx-system-prompt') return []
     return event.data.content?.flatMap(block => block.type === 'text' && typeof block.text === 'string' ? [block.text] : []) ?? []
   })
 }
@@ -280,21 +280,21 @@ async function runScenario(scenario: SdkScenario): Promise<{
   const env: Record<string, string> = {
     ...Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined)) as Record<string, string>,
     ...Object.fromEntries(Object.entries(launch.env).filter(([, value]) => value !== undefined)) as Record<string, string>,
-    CXH_CORDIS_CONFIG: recording
+    ARX_CORDIS_CONFIG: recording
       ? scenario.configs?.live ?? liveConfig
       : scenario.configs?.replay ?? replayConfig,
-    CXH_SESSION_ROOT: sessionsRoot,
-    CXH_CWD: cwd,
-    CXH_SNAPSHOT: mode,
+    ARX_SESSION_ROOT: sessionsRoot,
+    ARX_CWD: cwd,
+    ARX_SNAPSHOT: mode,
     NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
     ...parentFixture === undefined ? {} : {
-      CXH_SNAPSHOT_FILE: parentFixture,
-      ...childFixtures.length > 0 ? { CXH_SNAPSHOT_CHILD_FILES: childFixtures.join(delimiter) } : {},
+      ARX_SNAPSHOT_FILE: parentFixture,
+      ...childFixtures.length > 0 ? { ARX_SNAPSHOT_CHILD_FILES: childFixtures.join(delimiter) } : {},
     },
     ...scenario.environment,
   }
 
-  const harness = new CENTURIONarxHarness({
+  const harness = new ArxHarness({
     launch: {
       command: launch.command,
       args: launch.args,

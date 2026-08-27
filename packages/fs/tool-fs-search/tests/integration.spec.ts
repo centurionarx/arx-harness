@@ -14,12 +14,12 @@ import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as ToolFsSearch from '@centurionarx/cxh-tool-fs-search'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as ToolFsSearch from '@arx-ai/arx-tool-fs-search'
 
 const testToolSignal = new AbortController().signal
 
@@ -46,7 +46,7 @@ const agent = () => ({ session: { header: { id: 'session-int', cwd: dir } } })
 
 describe('search tools over the real subprocess service + the packaged rg', () => {
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-search-int-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-search-int-'))
     await mkdir(join(dir, 'src'), { recursive: true })
     await mkdir(join(dir, '.git'), { recursive: true })
     await mkdir(join(dir, 'spaced dir'), { recursive: true })
@@ -161,7 +161,7 @@ describe('search tools over the real subprocess service + the packaged rg', () =
 
   describe('per-session cwd', () => {
     it('resolves the search in the SESSION workspace, not the process cwd', async () => {
-      const sessionDir = await mkdtemp(join(tmpdir(), 'cxh-search-session-'))
+      const sessionDir = await mkdtemp(join(tmpdir(), 'arx-search-session-'))
       try {
         await writeFile(join(sessionDir, 'only-here.ts'), 'const sessionFile = true\n')
         const agentObj = { session: { header: { id: 'session-int', cwd: sessionDir } } }

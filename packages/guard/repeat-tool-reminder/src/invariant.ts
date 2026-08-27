@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-repeat-tool-reminder`.
- * @module @centurionarx/cxh-repeat-tool-reminder/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-repeat-tool-reminder`.
+ * @module @arx-ai/arx-repeat-tool-reminder/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-repeat-tool-reminder'
+const PACKAGE_NAME = '@arx-ai/arx-repeat-tool-reminder'
 
 /** Cordis companion plugin name. */
 export const name = 'repeat-tool-reminder-invariant'

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
+import { Context } from '@arx-ai/cordis'
+import { AttachmentId } from '@arx-ai/arx-attachment'
 import LlmRuntime, {
   errorChain,
   GenerateOptions,
@@ -15,14 +15,14 @@ import LlmRuntime, {
   StreamChunk,
   createMessage,
   createUserMessage,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 import type {
   LlmModelContext,
   LlmModelInfo,
   LlmModelReasoningInfo,
   LlmProviderInfo,
   LlmResolvedModelInfo,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 
 class ScriptedAdapter extends LlmAdapter {
   constructor(private script: StreamChunk[]) {
@@ -1230,7 +1230,7 @@ describe('LlmRuntime', () => {
   })
 
   it('LlmError extends the shared HarnessError base', async () => {
-    const { HarnessError, isHarnessError } = await import('@centurionarx/cxh-llm')
+    const { HarnessError, isHarnessError } = await import('@arx-ai/arx-llm')
     const cause = new Error('root cause')
     const err = new LlmError('boom', 'AUTH', { cause })
     expect(err).toBeInstanceOf(HarnessError)
@@ -1240,7 +1240,7 @@ describe('LlmRuntime', () => {
   })
 
   it('HarnessError carries a code, names itself by subclass, and chains cause', async () => {
-    const { HarnessError, isHarnessError } = await import('@centurionarx/cxh-llm')
+    const { HarnessError, isHarnessError } = await import('@arx-ai/arx-llm')
     const root = new Error('root cause')
     const err = new HarnessError('wrapper', 'UNKNOWN', { cause: root })
     expect(err).toBeInstanceOf(Error)

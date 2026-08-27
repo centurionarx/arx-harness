@@ -1,6 +1,6 @@
 import { staticLinked } from '../tsdown.client.ts'
 
 export default staticLinked(
-  '@centurionarx/cxh-client-web',
+  '@arx-ai/arx-client-web',
   ['lib/types/index.js', 'lib/types/invariant.js'],
 )

@@ -2,10 +2,10 @@
  * Wire-safe approval identifiers and outcome vocabulary, free of
  * cordis/service imports so browser type chains (apiproxy api → client) can
  * consume them without loading this package's Context augmentation.
- * @module @centurionarx/cxh-user-approval/types
+ * @module @arx-ai/arx-user-approval/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /**
  * Pairs one `approval/asked` audit event with its `approval/decided`.

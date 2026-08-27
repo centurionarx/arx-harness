@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-12-full-session-turn-step-counts.md
-2026-08-12-full-session-turn-step-counts.md: 84c4f63999335045d2d78269d1e1fedf598541cf
-2026-08-12-full-session-turn-step-counts.zh.md: 9dd9c441d3c6b1a69e92672b0044130563bdd732
+2026-08-12-full-session-turn-step-counts.md: 29af0a223c787704ed72d6bff57d245ecb80af68
+2026-08-12-full-session-turn-step-counts.zh.md: 662178031f614eb028fef46d19eddaf6a5e8bd24

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-settings
+# @arx-ai/arx-settings
 
 English | [中文](README.zh.md)
 

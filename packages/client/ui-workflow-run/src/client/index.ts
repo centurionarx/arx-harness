@@ -1,13 +1,13 @@
 /** Browser plugin for durable workflow-run Conversation Nodes. */
 
-import type { ClientContext, SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-locale/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-locale/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { WorkflowRunPanel, type WorkflowRunInjected } from './WorkflowRunPanel.tsx'
 import { en, NS, type WorkflowRunKey, zh } from './locales.ts'
 import { workflowRunDefinition } from './workflow-definition.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Durable workflow-run node copy. */
     workflowRun: WorkflowRunKey

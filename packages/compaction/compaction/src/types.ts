@@ -4,16 +4,16 @@
  * surface events; a separate replacement `user/message` carries the summary.
  * Backend packages own configuration and retention policy; see
  * `.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.md`.
- * @module @centurionarx/cxh-compaction/types
+ * @module @arx-ai/arx-compaction/types
  */
 
-import type { ContentBlock, TokenUsage } from '@centurionarx/cxh-llm'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
+import type { ContentBlock, TokenUsage } from '@arx-ai/arx-llm'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
 import type { CompactionId } from './brand.ts'
 
 export type { CompactionId }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Marks the start of a compaction — log-only, holds the lock until

@@ -3,15 +3,15 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Include from '@centurionarx/cordis-plugin-include'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import Storage from '@centurionarx/cxh-storage'
-import * as StorageDomain from '@centurionarx/cxh-storage-domain'
-import * as StorageJson from '@centurionarx/cxh-storage-json'
-import { remoteMethods } from '@centurionarx/cxh-typert-protocol'
+import { Context } from '@arx-ai/cordis'
+import Include from '@arx-ai/cordis-plugin-include'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import Storage from '@arx-ai/arx-storage'
+import * as StorageDomain from '@arx-ai/arx-storage-domain'
+import * as StorageJson from '@arx-ai/arx-storage-json'
+import { remoteMethods } from '@arx-ai/arx-typert-protocol'
 import MessageFeedbackService from '../src/index.ts'
 import { appendMessageFixture } from './helpers.ts'
 
@@ -30,12 +30,12 @@ async function loadComposition(configPath: string): Promise<Context> {
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-session', SessionStore],
-    ['@centurionarx/cxh-session-persistence-jsonl', JsonlSessionPersistence],
-    ['@centurionarx/cxh-storage', Storage],
-    ['@centurionarx/cxh-storage-json', StorageJson],
-    ['@centurionarx/cxh-storage-domain', StorageDomain],
-    ['@centurionarx/cxh-message-feedback', MessageFeedbackService],
+    ['@arx-ai/arx-session', SessionStore],
+    ['@arx-ai/arx-session-persistence-jsonl', JsonlSessionPersistence],
+    ['@arx-ai/arx-storage', Storage],
+    ['@arx-ai/arx-storage-json', StorageJson],
+    ['@arx-ai/arx-storage-domain', StorageDomain],
+    ['@arx-ai/arx-message-feedback', MessageFeedbackService],
   ])
   ctx.loader.internal = {
     version: 'v2',
@@ -58,23 +58,23 @@ async function loadComposition(configPath: string): Promise<Context> {
 
 describe('message feedback through a real Loader composition', () => {
   it('persists a checkpointed target and its sidecar across a cold restart', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-message-feedback-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-message-feedback-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-session-persistence-jsonl'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-session-persistence-jsonl'",
       '  config:',
       `    root: ${JSON.stringify(join(root, 'sessions'))}`,
       '    compression: none',
       '    writeBatchMaxDelayMs: 1',
-      "- name: '@centurionarx/cxh-storage'",
-      "- name: '@centurionarx/cxh-storage-json'",
+      "- name: '@arx-ai/arx-storage'",
+      "- name: '@arx-ai/arx-storage-json'",
       '  config:',
       `    root: ${JSON.stringify(join(root, 'storage'))}`,
-      "- name: '@centurionarx/cxh-storage-domain'",
+      "- name: '@arx-ai/arx-storage-domain'",
       '  config:',
       '    backend: json',
-      "- name: '@centurionarx/cxh-message-feedback'",
+      "- name: '@arx-ai/arx-message-feedback'",
       '  config:',
       '    maxNoteBytes: 32',
       '',

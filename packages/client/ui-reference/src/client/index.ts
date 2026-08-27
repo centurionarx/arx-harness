@@ -3,19 +3,19 @@
  * the cancellable generated Remote namespaces in parallel with deterministic
  * ordering and labels.
  *
- * @module @centurionarx/cxh-client-ui-reference/client
+ * @module @arx-ai/arx-client-ui-reference/client
  */
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
-import type {} from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
+import type {} from '@arx-ai/arx-client-locale/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type {
   ClientSessionContext, InputTriggerServiceContract, InputTriggerSource,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
-import { formatFileMention } from '@centurionarx/cxh-file-reference/grammar'
-import type { FileReferenceCandidate } from '@centurionarx/cxh-file-reference/types'
-import type { SessionReferenceMentionCandidate } from '@centurionarx/cxh-session-reference/types'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
+import { formatFileMention } from '@arx-ai/arx-file-reference/grammar'
+import type { FileReferenceCandidate } from '@arx-ai/arx-file-reference/types'
+import type { SessionReferenceMentionCandidate } from '@arx-ai/arx-session-reference/types'
 import { en, NS, zh, type ReferenceKey } from './locales.ts'
 
 /** Required services: the trigger registry, the Remote namespaces, and the copy. */

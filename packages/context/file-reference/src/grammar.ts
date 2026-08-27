@@ -1,7 +1,7 @@
 /**
  * Browser-safe `@file` token grammar shared by terminal and web clients.
  *
- * @module @centurionarx/cxh-file-reference/grammar
+ * @module @arx-ai/arx-file-reference/grammar
  */
 
 import type { FileReferenceCandidate } from './types.ts'

@@ -1,6 +1,6 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import * as PluginsInvariant from '../src/invariant.ts'
 
 describe('ui-settings-plugin-inventory invariant companion', () => {

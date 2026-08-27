@@ -7,9 +7,9 @@
 
 import type { z as zCore } from 'zod'
 type ZodIssue = zCore.core.$ZodIssue
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /**
  * Message correlation id: the initiator mints it on a request; a response
@@ -45,6 +45,8 @@ export interface RpcErrorDetailsMap {
   'directory-exists': { path: string }
   'directory-create-failed': { path: string }
   'directory-picker-unavailable': { capability: string }
+  /** The launcher provided no bounded exit request, so this deployment cannot stop itself. */
+  'exit-unavailable': Record<never, never>
   'agent-preset-read-only': { agentPreset: string; reason: string }
   'agent-preset-locked': { sessionId: SessionId; agentPreset: string }
   'agent-preset-conflict': { sessionId: SessionId; requestedPreset: string; existingPreset?: string }

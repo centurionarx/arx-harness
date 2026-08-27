@@ -1,13 +1,13 @@
 /** The `bash` settings section layered over the executor's composition entry. */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import { SHELL_SETTINGS_NAMESPACE } from '@centurionarx/cxh-shell'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import { SHELL_SETTINGS_NAMESPACE } from '@arx-ai/arx-shell'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {

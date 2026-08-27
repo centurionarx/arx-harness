@@ -1,4 +1,4 @@
-# @centurionarx/cxh-host-plugin-inventory
+# @arx-ai/arx-host-plugin-inventory
 
 [English](README.md) | 中文
 

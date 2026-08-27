@@ -1,11 +1,11 @@
 /**
  * Human-facing `/compact` command over the backend-independent compaction seam.
- * @module @centurionarx/cxh-command-compact
+ * @module @arx-ai/arx-command-compact
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { ManualCompactionError } from '@centurionarx/cxh-compaction'
-import type { CommandInvocation, CommandResult } from '@centurionarx/cxh-commands'
+import type { Context } from '@arx-ai/cordis'
+import { ManualCompactionError } from '@arx-ai/arx-compaction'
+import type { CommandInvocation, CommandResult } from '@arx-ai/arx-commands'
 
 export const name = 'command-compact'
 export const inject = ['commands', 'compaction']

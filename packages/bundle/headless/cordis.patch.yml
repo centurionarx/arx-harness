@@ -1,7 +1,7 @@
-# The cxh-headless bundle patch: one-shot task mode directly over cxh-base.
+# The arx-headless bundle patch: one-shot task mode directly over arx-base.
 # It mounts no Host, HTTP server, Web runtime, or browser plugin. An ordinary
 # provider plugin injects `cmdlineArgs`, parses the task positional
-# (`cxh --profile headless "<task>"`) and this app's --help, then the direct
+# (`arx --profile headless "<task>"`) and this app's --help, then the direct
 # driver creates an Agent through the core registry and prints its durable result.
 
 - id: system-prompt
@@ -17,19 +17,19 @@
 - id: tools
   config:
     # Keep the same temporary process-wide Code Mode opt-in as the Web surface.
-    mode: !!js process.env.CXH_TOOLS_MODE
+    mode: !!js process.env.ARX_TOOLS_MODE
 
 - insert:
     # Code Mode is a core execution capability, not a Web component.
     - id: code-runtime
-      name: '@centurionarx/cxh-code-runtime-worker-thread'
+      name: '@arx-ai/arx-code-runtime-worker-thread'
 
     - id: headless-startup
-      name: '@centurionarx/cxh-headless/startup'
+      name: '@arx-ai/arx-headless/startup'
 
     # Reads its task from the ordinary headlessStartup provider.
     - id: headless-runner
-      name: '@centurionarx/cxh-headless'
+      name: '@arx-ai/arx-headless'
       inject: [headlessStartup]
       config:
         task: !!js ctx.headlessStartup.task

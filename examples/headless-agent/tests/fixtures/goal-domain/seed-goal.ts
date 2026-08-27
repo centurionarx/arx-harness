@@ -1,7 +1,7 @@
 /** Test-only Loader plugin that creates a goal at the first real step edge. */
 
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-goal'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-goal'
 
 export const name = 'seed-goal'
 export const inject = ['goals']

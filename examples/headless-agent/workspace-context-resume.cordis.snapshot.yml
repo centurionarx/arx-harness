@@ -3,29 +3,29 @@
 # while the session is offline, then resumes through the public agent service.
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
     compression: none
 
 - id: replay
-  name: '@centurionarx/cxh-llm-replay'
+  name: '@arx-ai/arx-llm-replay'
   config:
-    file: !!js process.env.CXH_SNAPSHOT_FILE
-    overrideFile: !!js process.env.CXH_SNAPSHOT_OVERRIDE
+    file: !!js process.env.ARX_SNAPSHOT_FILE
+    overrideFile: !!js process.env.ARX_SNAPSHOT_OVERRIDE
 
 - id: fs-local
-  name: '@centurionarx/cxh-fs-local'
+  name: '@arx-ai/arx-fs-local'
   config:
     cwd: !!js process.cwd()
 
 - id: agent
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents: []
     workspaceContext:
       maxBytes: 65536
-      cxhHome: !!js process.cwd() + '/.cxh'
+      arxHome: !!js process.cwd() + '/.arx'
     skills:
       enabled: false
     toolBash: false

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-command-compact
+# @arx-ai/arx-command-compact
 
 English | [中文](README.zh.md)
 
@@ -34,14 +34,14 @@ The producer injects `commands` and `compact`. Mount the command registry, one b
 
 ```yaml
 - id: commands
-  name: '@centurionarx/cxh-commands'
+  name: '@arx-ai/arx-commands'
 - id: compaction-basic
-  name: '@centurionarx/cxh-compaction-basic'
+  name: '@arx-ai/arx-compaction-basic'
 - id: command-compact
-  name: '@centurionarx/cxh-command-compact'
+  name: '@arx-ai/arx-command-compact'
 ```
 
-The shipped `cxh` base mounts it beside `compaction-basic`, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic compaction only.
+The shipped `arx` base mounts it beside `compaction-basic`, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic compaction only.
 
 ## Model Experience
 

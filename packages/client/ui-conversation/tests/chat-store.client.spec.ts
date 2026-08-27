@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createChatStore } from '../src/client/stores.ts'
 
-const KEY = 'cxh.conversation.chat'
+const KEY = 'arx.conversation.chat'
 
 beforeEach(() => {
   localStorage.clear()

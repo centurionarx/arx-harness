@@ -3,16 +3,16 @@
  * an escapable vm context on a fresh worker and bridges `agent()` calls to host
  * subagents. The thread prevents synchronous script work from blocking the host
  * and permits forced termination, but it is containment rather than a security boundary.
- * @module @centurionarx/cxh-workflow-worker-thread
+ * @module @arx-ai/arx-workflow-worker-thread
  */
 
 import { randomUUID } from 'node:crypto'
 import { availableParallelism } from 'node:os'
 import * as vm from 'node:vm'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import WorkflowEngine, { WorkflowError, WorkflowRunId } from '@centurionarx/cxh-workflow'
-import type { WorkflowRun, WorkflowRunInfo, WorkflowStartRequest } from '@centurionarx/cxh-workflow'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import WorkflowEngine, { WorkflowError, WorkflowRunId } from '@arx-ai/arx-workflow'
+import type { WorkflowRun, WorkflowRunInfo, WorkflowStartRequest } from '@arx-ai/arx-workflow'
 import { WorkerRun } from './host.ts'
 import { validateMeta } from './meta.ts'
 import type { WorkerInit, WorkerLimits } from './types.ts'

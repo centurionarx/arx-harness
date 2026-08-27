@@ -15,13 +15,13 @@
  * filesystem alike), so it lives here in the policy package rather than in any
  * one capability's seam.
  *
- * @module cxh-sandbox-policy/session-mode
+ * @module arx-sandbox-policy/session-mode
  */
 
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * The session's sandbox mode was switched — log-only (like `approval/*`;

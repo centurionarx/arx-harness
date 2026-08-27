@@ -1,17 +1,17 @@
 /**
  * Single replay-aware token-meter service for request and surface pressure.
  *
- * @module @centurionarx/cxh-token-meter
+ * @module @arx-ai/arx-token-meter
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { BlockAssembler, deepFreeze } from '@centurionarx/cxh-llm'
-import type { Message, TokenUsage } from '@centurionarx/cxh-llm'
-import type { EpochHeader, Session, SessionEvent } from '@centurionarx/cxh-session'
-import { canonicalHeader, headerEquals, isSurfaceEvent } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { BlockAssembler, deepFreeze } from '@arx-ai/arx-llm'
+import type { Message, TokenUsage } from '@arx-ai/arx-llm'
+import type { EpochHeader, Session, SessionEvent } from '@arx-ai/arx-session'
+import { canonicalHeader, headerEquals, isSurfaceEvent } from '@arx-ai/arx-session'
 // Type-only: resolves the optional projection registry Context declaration.
-import type {} from '@centurionarx/cxh-session-projection'
+import type {} from '@arx-ai/arx-session-projection'
 import type {
   TokenMeasurement,
   TokenMeasurementBaseline,
@@ -64,7 +64,7 @@ function validateConfigKeys(config: TokenMeterConfig): void {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     tokenMeter: TokenMeter
   }

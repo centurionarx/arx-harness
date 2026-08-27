@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { RUN_CODE_NAME, defineContentToolFixture } from '@centurionarx/cxh-tools'
-import { Session, SessionId, type UserMessage } from '@centurionarx/cxh-session'
-import AgentRegistry, { agentEvents, type Agent } from '@centurionarx/cxh-agent'
-import { createScope } from '@centurionarx/cxh-scope'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { RUN_CODE_NAME, defineContentToolFixture } from '@arx-ai/arx-tools'
+import { Session, SessionId, type UserMessage } from '@arx-ai/arx-session'
+import AgentRegistry, { agentEvents, type Agent } from '@arx-ai/arx-agent'
+import { createScope } from '@arx-ai/arx-scope'
 import UserQuestionService, {
   UserQuestionError, type AskUserQuestionRequest,
-} from '@centurionarx/cxh-user-questions'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import { CodeRuntime, type CodeRunRequest, type CodeRunResult } from '@centurionarx/cxh-code-runtime'
+} from '@arx-ai/arx-user-questions'
+import CommandRuntime from '@arx-ai/arx-commands'
+import { CodeRuntime, type CodeRunRequest, type CodeRunResult } from '@arx-ai/arx-code-runtime'
 import PlanModeController, { EXIT_PLAN_MODE, foldPlanMode, resolveConfig } from '../src/index.ts'
 import type { PlanModeConfig } from '../src/index.ts'
 
@@ -18,7 +18,7 @@ const TEST_PLAN_SECTION = 'Test plan mode instructions.'
 const PLAN_CONFIG = { section: TEST_PLAN_SECTION } satisfies PlanModeConfig
 
 /**
- * Drives the REAL plugin: mounts `cxh-plan-mode` beside real `SystemPrompt` and
+ * Drives the REAL plugin: mounts `arx-plan-mode` beside real `SystemPrompt` and
  * `ToolRuntime` services, with fake Agents carrying real `Session`s and a
  * real scoped `agent.ctx` minted through `createScope`.
  * Request boundaries are simulated by dispatching the real pre-step waterfall

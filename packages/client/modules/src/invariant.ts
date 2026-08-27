@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-client-modules`.
- * @module @centurionarx/cxh-client-modules/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-client-modules`.
+ * @module @arx-ai/arx-client-modules/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-client-modules'
+const PACKAGE_NAME = '@arx-ai/arx-client-modules'
 
 /** Cordis companion plugin name. */
 export const name = 'client-modules-invariant'
@@ -29,7 +29,7 @@ const install: InvariantInstaller = (ctx, fail) => {
     if (host === undefined) return // browser side / host without the node half: nothing to audit
     for (const row of host.graph().entries) {
       if (host.clientPath(row.id) === undefined) {
-        fail(`web plugin graph row "${row.id}" advertises ${row.url} but resolves no client bundle path — the served __CXH_BOOT__ would 404 on fetch`)
+        fail(`web plugin graph row "${row.id}" advertises ${row.url} but resolves no client bundle path — the served __ARX_BOOT__ would 404 on fetch`)
       }
     }
   }, { global: true })

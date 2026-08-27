@@ -2,21 +2,21 @@ import { existsSync, mkdirSync, mkdtempSync, realpathSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent, AgentFactory } from '@centurionarx/cxh-agent'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import Storage from '@centurionarx/cxh-storage'
-import { DomainFacility } from '@centurionarx/cxh-storage-domain'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import { DirectoryPickerError } from '@centurionarx/cxh-host-directory-picker'
-import type { DirectoryPickerCapability } from '@centurionarx/cxh-host-directory-picker'
-import WorkspaceRegistry from '@centurionarx/cxh-workspace'
-import type { HostFrame, WorkspaceId } from '@centurionarx/cxh-host-apiproxy/api'
-import type { RpcRequest, RpcResponse } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@centurionarx/cxh-host-apiproxy'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent, AgentFactory } from '@arx-ai/arx-agent'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import Storage from '@arx-ai/arx-storage'
+import { DomainFacility } from '@arx-ai/arx-storage-domain'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import { DirectoryPickerError } from '@arx-ai/arx-host-directory-picker'
+import type { DirectoryPickerCapability } from '@arx-ai/arx-host-directory-picker'
+import WorkspaceRegistry from '@arx-ai/arx-workspace'
+import type { HostFrame, WorkspaceId } from '@arx-ai/arx-host-apiproxy/api'
+import type { RpcRequest, RpcResponse } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
 import { MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 
 let nextRpc = 1
@@ -59,11 +59,12 @@ function stubAgent(session: Session): Agent {
 
 /** Compose the API over real Session, Agent, Storage, Domain, and Workspace services. */
 async function harness(
-  root = realpathSync.native(mkdtempSync(join(tmpdir(), 'cxh-apiproxy-workspace-'))),
+  root = realpathSync.native(mkdtempSync(join(tmpdir(), 'arx-apiproxy-workspace-'))),
   picker: DirectoryPickerCapability = { kind: 'native', pick: async () => null },
   extras: {
     openPath?: (path: string, signal: AbortSignal) => Promise<void>
     canOpenPath?: () => boolean
+    requestExit?: () => ((code: number) => void) | undefined
   } = {},
 ) {
   const ctx = new Context()
@@ -107,6 +108,7 @@ async function harness(
     cwd: root,
     ...extras.openPath === undefined ? {} : { openPath: extras.openPath },
     ...extras.canOpenPath === undefined ? {} : { canOpenPath: extras.canOpenPath },
+    ...extras.requestExit === undefined ? {} : { requestExit: extras.requestExit },
   })
   return { api, ctx, storageDomain, root }
 }
@@ -245,6 +247,20 @@ describe('host.openPath', () => {
     expect((await api.host.openPath(request({ path: '/tmp/a.txt' }), new AbortController().signal)).result)
       .toEqual({ ok: true, value: { opened: true } })
     expect(opened).toEqual(['/tmp/a.txt'])
+  })
+
+  it('starts the launcher shutdown and answers before the process goes', async () => {
+    const codes: number[] = []
+    const { api } = await harness(undefined, undefined, { requestExit: () => (code) => { codes.push(code) } })
+    // Answered first: the connection carrying the response dies with the server.
+    expect((await api.host.exit(request({}))).result).toEqual({ ok: true, value: { stopping: true } })
+    expect(codes).toEqual([0])
+  })
+
+  it('refuses when the launcher provided no exit request', async () => {
+    const { api } = await harness()
+    expect((await api.host.exit(request({}))).result)
+      .toMatchObject({ ok: false, error: { code: 'exit-unavailable' } })
   })
 
   it('propagates abort into the native boundary as a cancelled RPC error', async () => {

@@ -1,12 +1,12 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-cmdline`.
- * @module @centurionarx/cxh-cmdline/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-cmdline`.
+ * @module @arx-ai/arx-cmdline/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-cmdline'
+const PACKAGE_NAME = '@arx-ai/arx-cmdline'
 
 /** Cordis companion plugin name. */
 export const name = 'cmdline-invariant'

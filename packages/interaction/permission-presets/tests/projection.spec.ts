@@ -10,16 +10,16 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createScope } from '@centurionarx/cxh-scope'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import PermissionPresetService from '@centurionarx/cxh-permission-presets'
-import type { Config } from '@centurionarx/cxh-permission-presets'
-import ApprovalService from '@centurionarx/cxh-user-approval'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createScope } from '@arx-ai/arx-scope'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import CommandRuntime from '@arx-ai/arx-commands'
+import PermissionPresetService from '@arx-ai/arx-permission-presets'
+import type { Config } from '@arx-ai/arx-permission-presets'
+import ApprovalService from '@arx-ai/arx-user-approval'
 
 async function harness(options: { withPermission?: boolean; config?: Config } = {}): Promise<{ ctx: Context; session: Session }> {
   const ctx = new Context()

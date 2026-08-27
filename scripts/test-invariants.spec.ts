@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context, FiberState, Service, ValidationError } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import z from '@centurionarx/schemastery'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import { Context, FiberState, Service, ValidationError } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import z from '@arx-ai/schemastery'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 import { packageInvariantOwners } from './package-invariants.ts'
 import {
   TEST_INVARIANT_READY_SERVICE,
@@ -13,7 +13,7 @@ import {
   usesManualInvariantTree,
 } from './test-invariants.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     testInvariantProbe: TestInvariantProbe
   }

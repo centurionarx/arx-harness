@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, CallId, EMPTY_RESPONSE_CODE, LlmAdapter, LlmError, resolveRetryPolicy  } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, CallId, EMPTY_RESPONSE_CODE, LlmAdapter, LlmError, resolveRetryPolicy  } from '@arx-ai/arx-llm'
 import type {
   AlwaysRetryPolicyConfig,
   BackoffConfig,
@@ -10,15 +10,15 @@ import type {
   ResolvedRetryPolicy,
   RetryPolicyConfig,
   StreamChunk,
-} from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionEventMap } from '@centurionarx/cxh-session'
-import type { LlmRetryEventData } from '@centurionarx/cxh-llm-retry/types'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture } from '@centurionarx/cxh-tools'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent, RequestErrorAction } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+} from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionEventMap } from '@arx-ai/arx-session'
+import type { LlmRetryEventData } from '@arx-ai/arx-llm-retry/types'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent, RequestErrorAction } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import * as retry from '../src/index.ts'
 
 type ScriptEntry = Error | Iterable<StreamChunk> | AsyncIterable<StreamChunk>

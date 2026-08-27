@@ -1,10 +1,10 @@
-/** Package-owned agent lifecycle invariants. @module @centurionarx/cxh-agent/invariant */
+/** Package-owned agent lifecycle invariants. @module @arx-ai/arx-agent/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { Agent, AgentStatus } from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { Agent, AgentStatus } from '@arx-ai/arx-agent'
 
-const PACKAGE_NAME = '@centurionarx/cxh-agent'
+const PACKAGE_NAME = '@arx-ai/arx-agent'
 
 /** Cordis companion plugin name. */
 export const name = 'agent-invariant'

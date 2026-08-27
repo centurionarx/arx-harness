@@ -1,12 +1,12 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId, createMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, Message, TokenUsage } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId, canonicalHeader } from '@centurionarx/cxh-session'
-import type { EpochHeader, SessionEvent } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import TokenMeter from '@centurionarx/cxh-token-meter'
-import type { TokenMeasurement, TokenMeterConfig } from '@centurionarx/cxh-token-meter'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId, createMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, Message, TokenUsage } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId, canonicalHeader } from '@arx-ai/arx-session'
+import type { EpochHeader, SessionEvent } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import TokenMeter from '@arx-ai/arx-token-meter'
+import type { TokenMeasurement, TokenMeterConfig } from '@arx-ai/arx-token-meter'
 
 function header(model: string, extras: Omit<EpochHeader, 'config'> = {}): EpochHeader {
   return canonicalHeader({ config: { provider: 'mock', model }, ...extras })

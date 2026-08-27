@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
-import type { ApprovalPolicy } from '@centurionarx/cxh-user-approval'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
+import type { ApprovalPolicy } from '@arx-ai/arx-user-approval'
 import PermissionPresetService, {
   CUSTOM_PRESET, effectivePermissionPreset, PERMISSION_SETTINGS_NAMESPACE,
-} from '@centurionarx/cxh-permission-presets'
-import type { Config } from '@centurionarx/cxh-permission-presets'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
+} from '@arx-ai/arx-permission-presets'
+import type { Config } from '@arx-ai/arx-permission-presets'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
 
 /** Writable memory provider for the permission/settings lifecycle specs. */
 class MemorySettings extends SettingsProvider {

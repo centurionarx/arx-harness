@@ -1,4 +1,4 @@
-# @centurionarx/cxh-subagent-acp
+# @arx-ai/arx-subagent-acp
 
 English | [中文](README.zh.md)
 
@@ -35,7 +35,7 @@ ACP advertises no start-time capabilities because this process cannot enforce th
 
 ```yaml
 - id: subagent-acp
-  name: '@centurionarx/cxh-subagent-acp'
+  name: '@arx-ai/arx-subagent-acp'
   config:
     providerName: acp
     command: node
@@ -57,7 +57,7 @@ ACP advertises no start-time capabilities because this process cannot enforce th
 
 ## Process boundary
 
-The child spawns through the [`cxh-subprocess`](../../subprocess/subprocess/README.md) seam: credential-shaped ambient variables and ambient `CXH_*` names are removed by the shared scrub, then explicit `config.env` values merge after it (an intended `DEEPSEEK_API_KEY` survives, and a `CXH_*` deployment fact such as `CXH_PERMISSION_MODE` reaches the child the same way — the scrub drops only its stale ambient namesake), stderr is inherited to the parent's own stream, and disposal applies this plugin's EOF window before the subprocess-owned SIGTERM→SIGKILL escalation and whole-tree join. The ACP wire is the real serialization boundary; same-process subagent values are not defensively cloned.
+The child spawns through the [`arx-subprocess`](../../subprocess/subprocess/README.md) seam: credential-shaped ambient variables and ambient `ARX_*` names are removed by the shared scrub, then explicit `config.env` values merge after it (an intended `DEEPSEEK_API_KEY` survives, and a `ARX_*` deployment fact such as `ARX_PERMISSION_MODE` reaches the child the same way — the scrub drops only its stale ambient namesake), stderr is inherited to the parent's own stream, and disposal applies this plugin's EOF window before the subprocess-owned SIGTERM→SIGKILL escalation and whole-tree join. The ACP wire is the real serialization boundary; same-process subagent values are not defensively cloned.
 
 The package has no default export. Cordis loader unwrapping would otherwise hide the named `inject` metadata; see [postmortem 0001](../../../docs/postmortem/0001-acp-default-export-drops-inject.md).
 
@@ -81,7 +81,7 @@ Independent of the parent request cache. Each ACP child can reuse only prefixes 
 
 #### What the model sees
 
-Through `cxh-tool-subagent`, the parent receives only the child's final streamed assistant text or that consumer's exact stop-reason error, not intermediate messages or tool traffic. A request already cancelled before publication becomes exactly `Error: subagent request was aborted before the ACP child started`; other start failures pass through as `Error: <message>`.
+Through `arx-tool-subagent`, the parent receives only the child's final streamed assistant text or that consumer's exact stop-reason error, not intermediate messages or tool traffic. A request already cancelled before publication becomes exactly `Error: subagent request was aborted before the ACP child started`; other start failures pass through as `Error: <message>`.
 
 #### Token effect
 

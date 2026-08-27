@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assertUsableApiKey, INVALID_CREDENTIAL_CODE, normalizeApiKey } from '@centurionarx/cxh-llm'
+import { assertUsableApiKey, INVALID_CREDENTIAL_CODE, normalizeApiKey } from '@arx-ai/arx-llm'
 
 describe('normalizeApiKey', () => {
   it('accepts a printable-ASCII key unchanged', () => {

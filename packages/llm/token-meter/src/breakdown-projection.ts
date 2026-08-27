@@ -6,14 +6,14 @@
  */
 
 import { z } from 'zod'
-import { canonicalHeader } from '@centurionarx/cxh-session'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import { canonicalHeader } from '@arx-ai/arx-session'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
 import { estimateSystemTokens, estimateToolsTokens } from './estimate.ts'
 import { foldSurfaceProjection } from './surface-projection.ts'
 // Import for the `contextBreakdown` SessionProjectionStateMap key merge.
 import type {} from './projection.ts'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     contextBreakdown: ContextBreakdownState
   }

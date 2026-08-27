@@ -7,9 +7,9 @@
  */
 import type {
   IApiClient, ModelCatalogFailure, ModelProviderGroup, ModelSelection, SessionId, SessionModels,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 
 /** Directory snapshot both entries render from. */
 export interface ModelDirectoryState {
@@ -75,7 +75,9 @@ export class ModelDirectory {
     }
     const { current, routable, groups, failures } = result.value
     this.store.update((s) => {
-      s.current = current
+      // The wire spells "no selection" as an absent field; the store spells it
+      // `null`, as it does for every other unset value it holds.
+      s.current = current ?? null
       s.routable = routable
       s.groups = groups
       s.failures = failures

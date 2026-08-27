@@ -1,7 +1,7 @@
-import { createUserMessage, type StreamChunk } from '@centurionarx/cxh-llm'
+import { createUserMessage, type StreamChunk } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
-import { SessionId } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
 import {
   errorResponse,
   makeBridgeHarness,

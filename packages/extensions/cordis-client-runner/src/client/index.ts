@@ -10,13 +10,13 @@
  * it until asked again.
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ApprovalRequestId, CordisDynamicPluginId, DynamicCordisInvokeResult, JsonValue,
   DynamicCordisInventoryRow,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { ClientModuleSystem } from '@centurionarx/cxh-client-modules/client'
-import type { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { ClientModuleSystem } from '@arx-ai/arx-client-modules/client'
+import type { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
 // The Client Remote assembly is the one place the two planes meet: it mounts the
 // `dynamicCordisRunner` namespace and re-exports its payload vocabulary, so this
 // package names what it sends without importing a Host package.
@@ -54,7 +54,7 @@ export { ClientTimerService } from './timer.ts'
 export type {
   ApprovalRequestId, CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
   DynamicCordisPackage,
-} from '@centurionarx/cxh-api-remotes/client'
+} from '@arx-ai/arx-api-remotes/client'
 
 
 /**
@@ -122,7 +122,7 @@ export interface CordisRunnerFace {
   isLoaded(pluginId: CordisDynamicPluginId): boolean
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Run orchestration and page-local load state: what run surfaces read and call. */
     dynamicCordisRunner: CordisRunnerFace

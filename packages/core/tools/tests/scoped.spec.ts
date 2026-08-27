@@ -1,15 +1,15 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Events } from '@centurionarx/cordis'
-import { bindScopeParent, createScope } from '@centurionarx/cxh-scope'
-import type { Scope } from '@centurionarx/cxh-scope'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import type { PreToolDecision, ToolDefinition, ToolExecution, ToolExecutionInput, ToolExecutionToken } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import type { Events } from '@arx-ai/cordis'
+import { bindScopeParent, createScope } from '@arx-ai/arx-scope'
+import type { Scope } from '@arx-ai/arx-scope'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import type { PreToolDecision, ToolDefinition, ToolExecution, ToolExecutionInput, ToolExecutionToken } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
 
-import { CallId } from '@centurionarx/cxh-llm'
-import type { SessionId } from '@centurionarx/cxh-session'
+import { CallId } from '@arx-ai/arx-llm'
+import type { SessionId } from '@arx-ai/arx-session'
 
 const testToolSignal = new AbortController().signal
 

@@ -8,22 +8,22 @@
 // and a file sub-row click opens the host path. Running parents
 // (runningCalls) nest their so-far dispatches the same way.
 
-import { Context } from '@centurionarx/cordis'
-import { stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import {
   ConversationEventRegistry, ConversationViewRegistry, createSnapshotStore,
   EMPTY_CONVERSATION_VIEWS, SlotRegistry,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import type {
   ConversationSnapshot, RunningToolCall, SessionId, SessionListState,
   ToolCallBlock, ToolResultNode, WorkspaceListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import { createSlotRenderer } from '@centurionarx/cxh-client-test-runtime'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import type { PropsRenderSlots } from '@centurionarx/cxh-client-ui-slots'
-import { apply as applyConversation, inject as injectConversation } from '@centurionarx/cxh-client-ui-conversation/client'
+} from '@arx-ai/arx-client-runtime/client'
+import { createSlotRenderer } from '@arx-ai/arx-client-test-runtime'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import type { PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
+import { apply as applyConversation, inject as injectConversation } from '@arx-ai/arx-client-ui-conversation/client'
 import { apply as applyTool, inject as injectTool } from '../src/client/apply.ts'
 import { toolChatSnapshot } from './tool-details-render.client.tsx'
 

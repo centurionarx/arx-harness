@@ -33,7 +33,7 @@ Cordis 目录是纯 TypeScript AST 遍历，因为每个事件/服务名都是�
 
 ### 范围
 
-`packages/*/tool-*` 下已发布的产品工具包，每个都使用默认配置启动，包括 `cxh-tool-bash`（`bash`）、`cxh-tool-jobs`（`job_output`、`job_list`、`job_kill`）和 `cxh-tool-subagent`（`subagent`）。仅供示例使用的工具不在范围内。
+`packages/*/tool-*` 下已发布的产品工具包，每个都使用默认配置启动，包括 `arx-tool-bash`（`bash`）、`arx-tool-jobs`（`job_output`、`job_list`、`job_kill`）和 `arx-tool-subagent`（`subagent`）。仅供示例使用的工具不在范围内。
 
 目录的单位是包，而非经过配置的每个工具实例。每个包以默认配置启动一次；加载时的别名（如 `subagent_fork`）会注明，但不枚举所有部署配置组合。部署清单覆盖的是一个独立且无界的范围。
 

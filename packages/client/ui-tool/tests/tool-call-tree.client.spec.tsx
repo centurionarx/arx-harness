@@ -2,13 +2,13 @@
 /** ToolCallTree-owned root/subcall markers and selection projection. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import type { HostDescription } from '@centurionarx/cxh-client-connection/client'
-import type { ConversationSnapshot, ToolResultNode } from '@centurionarx/cxh-client-runtime/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import type { HostDescription } from '@arx-ai/arx-client-connection/client'
+import type { ConversationSnapshot, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { ToolTreeProps } from '../src/client/contract/slots.ts'
 import { ToolCallTree } from '../src/client/tool/ToolCallTree.tsx'
-import { zh } from '@centurionarx/cxh-client-ui-conversation/src/client/locales.ts'
+import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
 
 afterEach(cleanup)
 

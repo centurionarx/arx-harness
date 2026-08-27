@@ -10,16 +10,16 @@ import {
   FileNotFoundError,
   SandboxNotFoundError,
   quoteE2BShellArg,
-} from '@centurionarx/cxh-e2b'
-import type { CommandHandle, CommandResult, Sandbox } from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-e2b'
+import type { CommandHandle, CommandResult, Sandbox } from '@arx-ai/arx-e2b'
 import type {
   SubprocessOutcome,
   SubprocessTerminalForeground,
   SubprocessTerminalHandle,
   SubprocessTerminalSignal,
   SubprocessTerminalSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import type E2BRuntime from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-subprocess'
+import type E2BRuntime from '@arx-ai/arx-e2b'
 import {
   bootstrapEnvironment,
   readRemoteEnvironment,
@@ -30,17 +30,17 @@ import { asError, commandOpts, delay, signalOpts, signalRemoteGroups } from './r
 const TERMINAL_RUNNER_SOURCE = [
   '#!/bin/bash',
   'set -euo pipefail',
-  'cxh_state=$1',
-  'mapfile -d \'\' -t cxh_env < "$cxh_state/environment"',
-  'mapfile -d \'\' -t cxh_argv < "$cxh_state/argv"',
-  'cxh_output_marker=$(<"$cxh_state/output-marker")',
-  'rm -f -- "$cxh_state/environment" "$cxh_state/argv" "$cxh_state/output-marker" "$cxh_state/runner.bash"',
-  'if (( ${#cxh_argv[@]} == 0 )); then',
+  'arx_state=$1',
+  'mapfile -d \'\' -t arx_env < "$arx_state/environment"',
+  'mapfile -d \'\' -t arx_argv < "$arx_state/argv"',
+  'arx_output_marker=$(<"$arx_state/output-marker")',
+  'rm -f -- "$arx_state/environment" "$arx_state/argv" "$arx_state/output-marker" "$arx_state/runner.bash"',
+  'if (( ${#arx_argv[@]} == 0 )); then',
   "  printf 'terminal runner received empty argv\\n' >&2",
   '  exit 125',
   'fi',
-  'printf \'%s\' "$cxh_output_marker"',
-  'exec env -i -- "${cxh_env[@]}" "${cxh_argv[@]}"',
+  'printf \'%s\' "$arx_output_marker"',
+  'exec env -i -- "${arx_env[@]}" "${arx_argv[@]}"',
   '',
 ].join('\n')
 
@@ -469,7 +469,7 @@ export async function spawnE2BTerminal(
     argv: posix.join(stateDir, 'argv'),
     outputMarker: posix.join(stateDir, 'output-marker'),
   }
-  const outputMarker = Buffer.from(`cxh-e2b-bootstrap:${randomUUID()}`)
+  const outputMarker = Buffer.from(`arx-e2b-bootstrap:${randomUUID()}`)
   const output = new PassThrough()
   const outputFilter = new BootstrapOutputFilter(outputMarker, output)
   let handle: CommandHandle | undefined

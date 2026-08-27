@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
-import { createUserMessage, CallId, type StreamChunk  } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import { defineContentToolFixture } from '@centurionarx/cxh-tools'
+import { createUserMessage, CallId, type StreamChunk  } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import { defineContentToolFixture } from '@arx-ai/arx-tools'
 import { makeBridgeHarness, textResponse, type BridgeHarness } from './harness.ts'
 
 function toolCallResponse(): StreamChunk[] {

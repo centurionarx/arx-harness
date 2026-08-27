@@ -3,12 +3,12 @@
  * connection handle, stream-loop sink wiring into the object layer, and the
  * fiber-scoped loop teardown.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { ConnectionHandle } from '@centurionarx/cxh-api-remotes/client'
-import type { ConnectionSinks } from '@centurionarx/cxh-api-remotes/client'
-import { SESSION_SEARCH_RESULT_LIMIT } from '@centurionarx/cxh-host-apiproxy/api'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+import type { ConnectionHandle } from '@arx-ai/arx-api-remotes/client'
+import type { ConnectionSinks } from '@arx-ai/arx-api-remotes/client'
+import { SESSION_SEARCH_RESULT_LIMIT } from '@arx-ai/arx-host-apiproxy/api'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 import * as RuntimeClient from '../src/client/index.ts'
 import type { ConversationNodeDefinition } from '../src/client/contract/conversation.ts'
 import { Session } from '../src/client/sessions/session.ts'

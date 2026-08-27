@@ -1,11 +1,11 @@
 /** Default Agent model settings layered over a real settings provider. */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import AgentDefaultModelConfig, { AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE } from '../src/index.ts'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import { ReasoningEffortId } from '@centurionarx/cxh-llm'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import { ReasoningEffortId } from '@arx-ai/arx-llm'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {
@@ -80,12 +80,27 @@ describe('AgentDefaultModelConfig', () => {
   it('falls back to the composition entry when the settings provider detaches', async () => {
     const bench = await boot()
     await bench.defaultModel.saveSelection({ provider: 'acme-gateway', model: 'acme-large' })
-    expect(bench.defaultModel.currentSelection().provider).toBe('acme-gateway')
+    expect(bench.defaultModel.currentSelection()?.provider).toBe('acme-gateway')
     await bench.settingsFiber.dispose()
     expect(bench.defaultModel.currentSelection()).toEqual({
       provider: 'deepseek-official', model: 'deepseek-v4-flash',
     })
     await bench.ctx.fiber.dispose()
+  })
+
+  it('offers no selection when the composition entry names none', async () => {
+    const ctx = new Context()
+    await ctx.plugin(AgentDefaultModelConfig, {})
+    expect(ctx.agentDefaultModel.currentSelection()).toBeUndefined()
+    await ctx.fiber.dispose()
+  })
+
+  it('offers no selection when the entry names half a pair', async () => {
+    const ctx = new Context()
+    await ctx.plugin(AgentDefaultModelConfig, { provider: 'acme-gateway' })
+    // Half a selection names no reachable route, so it is no selection.
+    expect(ctx.agentDefaultModel.currentSelection()).toBeUndefined()
+    await ctx.fiber.dispose()
   })
 
   it('keeps the composition entry when no settings provider is mounted', async () => {

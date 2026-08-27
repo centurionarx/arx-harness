@@ -1,11 +1,11 @@
 /** Tool UI slot declarations and their composed component props. */
-import type { HostDescriptionSource } from '@centurionarx/cxh-client-connection/client'
-import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import type { ToolCallBlock } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
+import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import type { ToolCallBlock } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /**
      * Keyed atomic Tool call view, dispatched by the wire Tool name. Register

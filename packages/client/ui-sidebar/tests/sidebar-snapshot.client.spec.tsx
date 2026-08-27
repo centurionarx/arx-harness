@@ -10,15 +10,15 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, waitFor } from '@testing-library/react'
-import { SlotTestRuntime, usePinnedBrowserLanguages } from '@centurionarx/cxh-client-test-runtime'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-sidebar/client'
+import { SlotTestRuntime, usePinnedBrowserLanguages } from '@arx-ai/arx-client-test-runtime'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-sidebar/client'
 
 // The service reads its initial locale from the browser; these specs assert
 // the shipped Chinese copy, so they state the browser they assume.
 usePinnedBrowserLanguages('zh-CN')
 
-beforeEach(() => { vi.stubEnv('CXH_CLIENT_COMMIT_HASH', 'abc1234') })
+beforeEach(() => { vi.stubEnv('ARX_CLIENT_COMMIT_HASH', 'abc1234') })
 
 afterEach(() => {
   cleanup()

@@ -4,21 +4,21 @@
  * owns column geometry (fold state machine, brand row, New Session);
  * everything between the section header and the list bottom is the
  * `sidebar.workspaces` registrant's (ui-workspace), and the foot is the
- * `sidebar.settings` registrant's (ui-settings), followed by optional footer
- * actions in `sidebar.footer.action`.
+ * `sidebar.settings` registrant's (ui-settings), with optional footer actions
+ * in `sidebar.footer.action` above it and the `sidebar.exit` seat below.
  */
-import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 // Type-only: pulls ui-layout's SlotMap merge (the 'sidebar' entry) into every
 // program that sees this contract, so PropsRuntime<'sidebar'> resolves.
-import type {} from '@centurionarx/cxh-client-ui-layout/client'
-import type { WorkspaceId } from '@centurionarx/cxh-client-runtime/client'
+import type {} from '@arx-ai/arx-client-ui-layout/client'
+import type { WorkspaceId } from '@arx-ai/arx-client-runtime/client'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /**
      * Brand mark rendered in the expanded brand row and collapsed rail.
      * Declared by this package's `sidebar` entry; deployments may replace
-     * the shell's fish fallback without replacing the surrounding controls.
+     * the shell's mark fallback without replacing the surrounding controls.
      */
     'sidebar.brand.mark': { kind: 'single'; scope: 'root'; owner: SidebarBrandMarkOwnerProps }
     /**
@@ -44,6 +44,12 @@ declare module '@centurionarx/cxh-client-ui-slots' {
      * package's 'sidebar' entry; each action receives only the column state.
      */
     'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }
+    /**
+     * The seat below Settings at the sidebar foot. Declared by this package's
+     * 'sidebar' entry; ui-exit registers the control that stops the harness.
+     * The sidebar passes only its column state — it holds no exit state.
+     */
+    'sidebar.exit': { kind: 'single'; scope: 'root'; owner: SidebarExitOwnerProps }
   }
 }
 
@@ -86,6 +92,15 @@ export interface SidebarFooterActionOwnerProps {
 }
 
 /**
+ * Owner share of the sidebar exit seat: the column display state the
+ * occupant's row must render against (wide row vs rail icon).
+ */
+export interface SidebarExitOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+}
+
+/**
  * Registrant-private injected share (arrives via the register inject
  * factory). The shell keeps only its own controls: starting a Session from
  * the New Session button and toggling the column.
@@ -114,5 +129,6 @@ export type SidebarRootComponentProps =
     | 'sidebar.workspaces'
     | 'sidebar.settings'
     | 'sidebar.footer.action'
+    | 'sidebar.exit'
   >
   & SidebarRootInjected & PropsLocale<'sidebar'>

@@ -1,6 +1,6 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@centurionarx/cxh-settings'
+import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@arx-ai/arx-settings'
 import { apply } from '../src/index.ts'
 
 /** Mirrors the module-local namespace id in src/index.ts. */

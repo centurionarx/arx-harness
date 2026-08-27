@@ -1,4 +1,4 @@
-# @centurionarx/cxh-agent-spine-demo
+# @arx-ai/arx-agent-spine-demo
 
 [English](README.md) | 中文
 
@@ -11,32 +11,32 @@
 `apply(ctx, config)` 将以下每个插件挂载为组合包 fiber 的子节点：
 
 ```
-@centurionarx/cordis-plugin-timer  timer service (writes nothing to stdout)
-@centurionarx/cxh-llm              abstract LLM service + content-block vocabulary
-@centurionarx/cxh-session          event-sourced session log + store
-@centurionarx/cxh-session-title    log-backed title service + deterministic fallback
-@centurionarx/cxh-system-prompt    prompt-section + tool-schema assembly
-@centurionarx/cxh-tools            registry + guarded pre/around/post/final-result pipeline
-@centurionarx/cxh-skill            skill provider registry
-@centurionarx/cxh-skill-filesystem      local filesystem skill provider
-@centurionarx/cxh-agent            agent registry + initiator scope + agent/* events
-@centurionarx/cxh-goal             optional persisted same-session goal domain
-@centurionarx/cxh-tool-goal        optional model-facing goal controls
-@centurionarx/cxh-goal-round-driver     optional same-session goal-round driver
-@centurionarx/cxh-llm-retry        provider-routed request retry policy
-@centurionarx/cxh-jobs-local      generic background-job registry
-@centurionarx/cxh-invariants       configurable invariant registry service
-@centurionarx/cxh-session/invariant
-@centurionarx/cxh-agent/invariant
-@centurionarx/cxh-scope/invariant
-@centurionarx/cxh-agent-loop/invariant
+@arx-ai/cordis-plugin-timer  timer service (writes nothing to stdout)
+@arx-ai/arx-llm              abstract LLM service + content-block vocabulary
+@arx-ai/arx-session          event-sourced session log + store
+@arx-ai/arx-session-title    log-backed title service + deterministic fallback
+@arx-ai/arx-system-prompt    prompt-section + tool-schema assembly
+@arx-ai/arx-tools            registry + guarded pre/around/post/final-result pipeline
+@arx-ai/arx-skill            skill provider registry
+@arx-ai/arx-skill-filesystem      local filesystem skill provider
+@arx-ai/arx-agent            agent registry + initiator scope + agent/* events
+@arx-ai/arx-goal             optional persisted same-session goal domain
+@arx-ai/arx-tool-goal        optional model-facing goal controls
+@arx-ai/arx-goal-round-driver     optional same-session goal-round driver
+@arx-ai/arx-llm-retry        provider-routed request retry policy
+@arx-ai/arx-jobs-local      generic background-job registry
+@arx-ai/arx-invariants       configurable invariant registry service
+@arx-ai/arx-session/invariant
+@arx-ai/arx-agent/invariant
+@arx-ai/arx-scope/invariant
+@arx-ai/arx-agent-loop/invariant
                                   package-owned relational checks
-@centurionarx/cxh-tool-bash        the model-facing bash schema (unless toolBash=false)
-@centurionarx/cxh-agent-instructions  AGENTS.md/CLAUDE.md workspace context loader
-@centurionarx/cxh-tool-skill       session-prefix skill catalog + model-facing loader schema
-@centurionarx/cxh-tool-jobs       job_output/job_list/job_kill schemas + completion notices
-@centurionarx/cxh-agent-loop       THE concrete loop (gets the forwarded `agents`)
-                                  (cxh-system-prompt gets the forwarded `persona`)
+@arx-ai/arx-tool-bash        the model-facing bash schema (unless toolBash=false)
+@arx-ai/arx-agent-instructions  AGENTS.md/CLAUDE.md workspace context loader
+@arx-ai/arx-tool-skill       session-prefix skill catalog + model-facing loader schema
+@arx-ai/arx-tool-jobs       job_output/job_list/job_kill schemas + completion notices
+@arx-ai/arx-agent-loop       THE concrete loop (gets the forwarded `agents`)
+                                  (arx-system-prompt gets the forwarded `persona`)
 ```
 
 ## 有意留在组合包外的组件
@@ -54,14 +54,14 @@
 ## 配置
 
 ```ts
-import type { Config } from '@centurionarx/cxh-agent-spine-demo'
-// { agents?, maxParallelToolCalls?, includeHarnessIdentity?, includeRuntimeContext?, persona?, toolOrder?, tools?, cxhHome?, sessionTitle?, skills?, workspaceContext, toolBash?, jobs?, toolJobs?, goals?, invariants? }
+import type { Config } from '@arx-ai/arx-agent-spine-demo'
+// { agents?, maxParallelToolCalls?, includeHarnessIdentity?, includeRuntimeContext?, persona?, toolOrder?, tools?, arxHome?, sessionTitle?, skills?, workspaceContext, toolBash?, jobs?, toolJobs?, goals?, invariants? }
 // workspaceContext requires { maxBytes } or false; the other owner schemas supply defaults.
 ```
 
-组合包将每个字段转发给拥有它的子节点。应用包提供预创建的 agent：无头和 JSON-RPC 组合会创建 `main`，ACP 应用则在 `session/new` 按需创建 agent。`includeRuntimeContext: false` 会转发给 `cxh-system-prompt`，为新建会话抑制所有动态上下文快照，但不禁用其策略服务。提示词、工具、标题、skill、工作区上下文、不变式、目标和任务设置沿用其所属包记录的 schema 与默认值；`jobs.maxConcurrentJobsPerOwner` 配置本地 Service Provider，并与面向模型的 `toolJobs` 控制工具相互独立。`pickSpineConfig()` 只复制该组合包拥有的字段，`cxhHome` 值冲突会在组合时失败。
+组合包将每个字段转发给拥有它的子节点。应用包提供预创建的 agent：无头和 JSON-RPC 组合会创建 `main`，ACP 应用则在 `session/new` 按需创建 agent。`includeRuntimeContext: false` 会转发给 `arx-system-prompt`，为新建会话抑制所有动态上下文快照，但不禁用其策略服务。提示词、工具、标题、skill、工作区上下文、不变式、目标和任务设置沿用其所属包记录的 schema 与默认值；`jobs.maxConcurrentJobsPerOwner` 配置本地 Service Provider，并与面向模型的 `toolJobs` 控制工具相互独立。`pickSpineConfig()` 只复制该组合包拥有的字段，`arxHome` 值冲突会在组合时失败。
 
-例如，`{ invariants: { enabled: true, package_allowlist: ['^@centurionarx/cxh-'], package_blocklist: ['agent-loop$'] } }` 会让包拥有的配套插件保持挂载，但抑制被阻止的拥有者。Blocklist 匹配优先于 allowlist 匹配；正则表达式与生命周期规则见 [`cxh-invariants`](../../runtime-diagnostics/invariants/README.zh.md)。
+例如，`{ invariants: { enabled: true, package_allowlist: ['^@arx-ai/arx-'], package_blocklist: ['agent-loop$'] } }` 会让包拥有的配套插件保持挂载，但抑制被阻止的拥有者。Blocklist 匹配优先于 allowlist 匹配；正则表达式与生命周期规则见 [`arx-invariants`](../../runtime-diagnostics/invariants/README.zh.md)。
 
 ## 为何使用代码组合包，而非共享 YAML include
 
@@ -71,7 +71,7 @@ YAML include 可以去重配置，却无法拥有 bin 或提供入口默认值�
 
 ## 模型体验
 
-模型通过 `cxh-system-prompt`、`cxh-tool-skill`、`cxh-tool-bash`、`cxh-tools` 和 `cxh-llm-retry` 间接获得体验；还会通过 `cxh-tool-goal` 与 Goal Round 提示词获得体验，前提是启用 `goals`。组合包自身不添加面向模型的包装内容。
+模型通过 `arx-system-prompt`、`arx-tool-skill`、`arx-tool-bash`、`arx-tools` 和 `arx-llm-retry` 间接获得体验；还会通过 `arx-tool-goal` 与 Goal Round 提示词获得体验，前提是启用 `goals`。组合包自身不添加面向模型的包装内容。
 
 #### KV Cache 影响
 

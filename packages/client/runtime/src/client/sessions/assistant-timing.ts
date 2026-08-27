@@ -2,13 +2,13 @@
 // history fold derive AssistantTiming from the same step/start -> first token
 // delta -> assistant/message sequence.
 
-import { isTokenDelta } from '@centurionarx/cxh-llm/message'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import { isTokenDelta } from '@arx-ai/arx-llm/message'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 import type { AssistantTiming } from './conversation.ts'
 
-// The first-token predicate lives beside the StreamChunk type in cxh-llm;
+// The first-token predicate lives beside the StreamChunk type in arx-llm;
 // re-exported here so Chat Definitions keep their client-runtime import.
-export { isTokenDelta } from '@centurionarx/cxh-llm/message'
+export { isTokenDelta } from '@arx-ai/arx-llm/message'
 
 /** Pre-finalize timing boundaries for one assistant step (start + first token). */
 export interface AssistantStepMetadata {

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-llm-agent-cli
+# @arx-ai/arx-llm-agent-cli
 
 [English](README.md) | 中文
 
@@ -23,7 +23,7 @@
 
 ## 工具名带命名空间，且这对模型可见
 
-CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此模型发出的是 `mcp__cxh__bash`，本适配器在 harness 看到该调用之前将其映射回 `bash`。带前缀的形式正是模型在自身上下文中读到的内容，所以一份点名工具的系统提示词用的是 harness 名称，而模型看到的是带前缀的名称。
+CLI 会把进程内 MCP 服务的工具呈现为 `mcp__arx__<名称>`。因此模型发出的是 `mcp__arx__bash`，本适配器在 harness 看到该调用之前将其映射回 `bash`。带前缀的形式正是模型在自身上下文中读到的内容，所以一份点名工具的系统提示词用的是 harness 名称，而模型看到的是带前缀的名称。
 
 工具 schema 以 JSON Schema 原样传递。SDK 自带的 `tool()` 辅助函数接受 Zod shape，会迫使 harness 注册的每个工具都经历有损转换，因此本包改为在低层 MCP 服务上直接应答 `tools/list`。
 
@@ -45,7 +45,7 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
 
 ```yaml
 - id: llm-agent-cli
-  name: '@centurionarx/cxh-llm-agent-cli'
+  name: '@arx-ai/arx-llm-agent-cli'
   config:
     cwd: /srv/workspace
     providers:
@@ -56,7 +56,10 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
           - id: claude-sonnet-4-5
             contextWindow: 200000
             maxTokens: 8192
+            acceptsImages: true
 ```
+
+`acceptsImages`按模型设置，默认为 false。CLI 不暴露任何目录，因此由路由声明哪些模型接受图片输入；在拒绝图片的模型上声明它，会把每一张附加的图片都变成失败的请求，而不是被拒绝的附件。图片字节从 `ctx.attachments` 读取，遵循厂商自己写明的限制——这些限制是固定的而非可配置的：超出它们编码只会产生一个被提供方拒绝的请求，而不是更慢的请求。
 
 `cwd` 是部署事实而非会话事实：一个适配器为进程内所有会话服务。未设置时，CLI 在 harness 进程所在目录运行。
 
@@ -70,7 +73,7 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
 
 #### What the model sees
 
-原样的 harness 系统提示词以替代 CLI 自己的、以 `mcp__cxh__` 命名并保持 JSON Schema 形态的 harness 工具 schema，以及以下二者之一的对话：投递进活跃厂商运行的增量——新的用户消息与以真正 `tool_result` 块承载的工具结果——或在没有运行可续接时，对整份文本记录的带标签重放。
+原样的 harness 系统提示词以替代 CLI 自己的、以 `mcp__arx__` 命名并保持 JSON Schema 形态的 harness 工具 schema，以及以下二者之一的对话：投递进活跃厂商运行的增量——新的用户消息与以真正 `tool_result` 块承载的工具结果——或在没有运行可续接时，对整份文本记录的带标签重放。
 
 #### Token effect
 
@@ -84,7 +87,7 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
 
 #### What the model sees
 
-不再额外增加内容：响应就是模型自己的输出。推理、文本与工具调用被翻译为 harness chunk，每个工具名在循环记录之前从 `mcp__cxh__<名称>` 映射回去。
+不再额外增加内容：响应就是模型自己的输出。推理、文本与工具调用被翻译为 harness chunk，每个工具名在循环记录之前从 `mcp__arx__<名称>` 映射回去。
 
 #### Token effect
 
@@ -97,6 +100,6 @@ CLI 会把进程内 MCP 服务的工具呈现为 `mcp__cxh__<名称>`。因此�
 ## Known Limitations and Deferred Work
 
 - **目前只有一个厂商**——本包的命名描述的是形态而非名单：它只驱动 Claude Agent SDK，因此 Claude 订阅是它服务的唯一登录。第二个厂商意味着第二套 SDK，带有自己的协议与进程投影；它究竟以另一个包的形式出现，还是作为本包内部的一个 seam，尚未决定——包名不应被读作任何一方的承诺。
-- **图片无法到达厂商 CLI**——携带 image 块的请求以 `UNSUPPORTED_CONTENT` 失败，而不是在丢弃图片后照常发送。
+- **图片需要一个声明支持它的模型，以及已挂载的附件存储**——只有 `acceptsImages` 为真的模型才服务图片，也只有挂载了 `attachments` 的组合才能读到它们的字节。任一缺失都会让请求以 `UNSUPPORTED_CONTENT` 失败，而不是丢弃图片后照常发送。图片之外的文档在这里没有任何表示形式。
 - **活跃运行不跨进程存活**——对话与其 CLI 一同驻留内存，因此重启后每个会话重放一次并开启新运行。没有任何持久化形式能承载它：该状态是一个运行中的进程，而非一条记录。
-- **SDK 版本按精确值锁定**——`0.3.220`，与 [`cxh-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.zh.md) 中的投影一致。
+- **SDK 版本按精确值锁定**——`0.3.220`，与 [`arx-claude-agent-sdk-process`](../../subagent/claude-agent-sdk-process/README.zh.md) 中的投影一致。

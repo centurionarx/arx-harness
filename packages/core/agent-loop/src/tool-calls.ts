@@ -8,13 +8,13 @@
  * Abort records synthetic error results for skipped calls so replay stays
  * valid. A terminal scheduler failure preserves already-recorded `tool/call`
  * events without fabricating results.
- * @module cxh-agent-loop/tool-calls
+ * @module arx-agent-loop/tool-calls
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { assertNever, createToolResultMessage, type ToolCallBlock } from '@centurionarx/cxh-llm'
-import type { Session, UserMessage } from '@centurionarx/cxh-session'
-import { TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type ToolExecutionInput, type ToolExecutionMode, type ToolExecutionResult, type ToolRunContext } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { assertNever, createToolResultMessage, type ToolCallBlock } from '@arx-ai/arx-llm'
+import type { Session, UserMessage } from '@arx-ai/arx-session'
+import { TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type ToolExecutionInput, type ToolExecutionMode, type ToolExecutionResult, type ToolRunContext } from '@arx-ai/arx-tools'
 
 /** One tool call after argument parsing, ready to schedule. */
 interface PlannedCall {

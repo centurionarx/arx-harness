@@ -7,8 +7,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import { AgentLoopCard } from '../src/client/AgentLoopCard.tsx'
 import type { AgentLoopCardProps } from '../src/client/AgentLoopCard.tsx'
 import { BashCard } from '../src/client/BashCard.tsx'

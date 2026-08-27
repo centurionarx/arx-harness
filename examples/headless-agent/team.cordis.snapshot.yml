@@ -1,27 +1,27 @@
 # Keyless Agent Teams composition over the real headless app and deterministic fixture adapter.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: tool-subagent-control
-        name: '@centurionarx/cxh-tool-subagent-control'
+        name: '@arx-ai/arx-tool-subagent-control'
         disabled: true
       - id: tool-subagent-report
-        name: '@centurionarx/cxh-tool-subagent-report'
+        name: '@arx-ai/arx-tool-subagent-report'
         disabled: true
       - id: tool-subagent
-        name: '@centurionarx/cxh-tool-subagent'
+        name: '@arx-ai/arx-tool-subagent'
         config:
           provider: spawn
           toolName: subagent
           backgroundMode: one-shot
           maxDepth: 1
       - id: tool-subagent-fork
-        name: '@centurionarx/cxh-tool-subagent'
+        name: '@arx-ai/arx-tool-subagent'
         config:
           provider: fork
           toolName: subagent_fork
@@ -29,8 +29,8 @@
           maxDepth: 1
       - insert:
           - id: agent-team
-            name: '@centurionarx/cxh-experimental-agent-team'
+            name: '@arx-ai/arx-experimental-agent-team'
           - id: tool-agent-team
-            name: '@centurionarx/cxh-experimental-tool-agent-team'
+            name: '@arx-ai/arx-experimental-tool-agent-team'
           - id: team-fixture-llm
             name: './tests/fixtures/team-llm.mjs'

@@ -4,9 +4,9 @@
  * direct parent into the child's Agent inbox.
  */
 
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type { RpcRequest, RpcResponse } from './rpc.ts'
 import type { HistoryEntry, SessionProjectionsBlock } from './sessions.ts'
 

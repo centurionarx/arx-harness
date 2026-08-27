@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-31-workspace-write-surface-default.md
-2026-07-31-workspace-write-surface-default.md: 946735130dc536e2eee34c03c1fa0229a147cdea
-2026-07-31-workspace-write-surface-default.zh.md: e9298412537c2d8185e29681f636244d34437500
+2026-07-31-workspace-write-surface-default.md: ccc5be502d3804e1a424a3198b1a17d3452e9ea1
+2026-07-31-workspace-write-surface-default.zh.md: 49d829ba617794f153dcdac9e5a4586a09cf3d00

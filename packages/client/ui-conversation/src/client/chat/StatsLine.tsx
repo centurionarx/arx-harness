@@ -3,12 +3,12 @@
 // active conversation scrollport (see ConversationRoot data-conversation-scroll).
 
 import { Fragment, memo, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Tooltip } from '@centurionarx/cxh-client-ui-primitives'
-import type { ConversationSnapshot, UseProjection } from '@centurionarx/cxh-client-runtime/client'
-import type { SnapshotSelectorHook } from '@centurionarx/cxh-client-ui-slots'
+import { Tooltip } from '@arx-ai/arx-client-ui-primitives'
+import type { ConversationSnapshot, UseProjection } from '@arx-ai/arx-client-runtime/client'
+import type { SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
 // Type-only: merges the sessionStats key into SessionProjectionMap for useProjection.
-import type {} from '@centurionarx/cxh-session-stats/client'
-import type { ContextPressureProjection, TokenUsageProjection } from '@centurionarx/cxh-token-meter/client'
+import type {} from '@arx-ai/arx-session-stats/client'
+import type { ContextPressureProjection, TokenUsageProjection } from '@arx-ai/arx-token-meter/client'
 import type { ComposerBarProps } from '../contract/slots.ts'
 import { formatTokensPerSecond } from './message-chrome.ts'
 import { assistantStepReading } from './turn-metrics.ts'

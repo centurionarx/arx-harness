@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cordis-plugin-group",
+  "name": "@arx-ai/cordis-plugin-group",
   "description": "Nested plugin group for cordis",
   "version": "1.0.1",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "vendor/group"
   },
   "type": "module",
@@ -30,7 +30,7 @@
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

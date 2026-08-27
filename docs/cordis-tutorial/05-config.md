@@ -9,8 +9,8 @@ Each `cordis.yml` entry can carry a `config` block, and the plugin declares a sc
 Create `config-demo.ts` in `tmp/cordis-tutorial`:
 
 ```ts
-import type { Context } from '@centurionarx/cordis'
-import Schema from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import Schema from '@arx-ai/schemastery'
 
 export const name = 'config-demo'
 
@@ -81,4 +81,4 @@ The loader used in this repo supports a `!!js` tag for config values that must b
 
 Next: [Composition and HMR](06-composition-and-hmr.md) — treating `cordis.yml` as the application.
 
-[![](https://img.shields.io/badge/powered_by-cxh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/centurionarx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)

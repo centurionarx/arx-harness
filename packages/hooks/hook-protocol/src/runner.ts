@@ -3,10 +3,10 @@
  * process-group cancellation, and timeout machinery. The bridge supplies the
  * trusted stdin payload and dialect environment, then this module decodes the
  * captured outcome.
- * @module @centurionarx/cxh-hook-protocol/runner
+ * @module @arx-ai/arx-hook-protocol/runner
  */
 
-import type { ShellExecutor } from '@centurionarx/cxh-shell'
+import type { ShellExecutor } from '@arx-ai/arx-shell'
 import { parseHookOutput } from './codec.ts'
 import type { CommandHook, HookOutput } from './types.ts'
 

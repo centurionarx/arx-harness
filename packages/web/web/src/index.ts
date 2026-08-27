@@ -3,11 +3,11 @@
  * fetch. Duplicate ids are rejected. At execution time, a configured provider must exist and
  * be usable; without one, exactly one usable provider is required, so selection never depends
  * on registration order.
- * @module @centurionarx/cxh-web
+ * @module @arx-ai/arx-web
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import type {
   WebFetchProvider,
   WebFetchRequest,
@@ -32,7 +32,7 @@ export type {
   WebSearchSource,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     web: WebRuntime
   }
@@ -74,7 +74,7 @@ export interface WebRuntimeConfig {
 export class WebRuntime extends Service {
   /**
    * Provider selection config. Operational env overrides feed the SAME fields:
-   * `$CXH_WEB_SEARCH_PROVIDER` / `$CXH_WEB_FETCH_PROVIDER` are equivalent to
+   * `$ARX_WEB_SEARCH_PROVIDER` / `$ARX_WEB_FETCH_PROVIDER` are equivalent to
    * `searchProvider` / `fetchProvider` and are NOT a hidden priority chain.
    */
   static Config: z<WebRuntimeConfig> = z.object({
@@ -89,8 +89,8 @@ export class WebRuntime extends Service {
 
   constructor(ctx: Context, config: WebRuntimeConfig = {}) {
     super(ctx, 'web')
-    this.searchProviderId = config.searchProvider ?? process.env.CXH_WEB_SEARCH_PROVIDER
-    this.fetchProviderId = config.fetchProvider ?? process.env.CXH_WEB_FETCH_PROVIDER
+    this.searchProviderId = config.searchProvider ?? process.env.ARX_WEB_SEARCH_PROVIDER
+    this.fetchProviderId = config.fetchProvider ?? process.env.ARX_WEB_FETCH_PROVIDER
   }
 
   /**

@@ -8,9 +8,9 @@ import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import type { ReplayEntry, ReplayOverrideDoc } from '@centurionarx/cxh-llm-replay'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import type { ReplayEntry, ReplayOverrideDoc } from '@arx-ai/arx-llm-replay'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
 import { createChatScrollFixture } from './chat-scroll-fixture.ts'
 import {
   launchWebScaffold,
@@ -141,7 +141,7 @@ describe('web e2e: long Chat interaction contract', () => {
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    replayDir = await mkdtemp(join(tmpdir(), 'cxh-chat-interaction-replay-'))
+    replayDir = await mkdtemp(join(tmpdir(), 'arx-chat-interaction-replay-'))
     const replayOverride = join(replayDir, 'replay.override.json')
     const replay: ReplayOverrideDoc = [replayEntry(continuationChunks())]
     await writeFile(replayOverride, JSON.stringify(replay))

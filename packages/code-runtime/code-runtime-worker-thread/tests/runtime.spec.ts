@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { WorkerThreadCodeRuntime } from '@centurionarx/cxh-code-runtime-worker-thread'
-import type { Config } from '@centurionarx/cxh-code-runtime-worker-thread'
-import type { CodeBindingFunction, CodeBindingNamespace, CodeRunResult } from '@centurionarx/cxh-code-runtime'
+import { Context } from '@arx-ai/cordis'
+import { WorkerThreadCodeRuntime } from '@arx-ai/arx-code-runtime-worker-thread'
+import type { Config } from '@arx-ai/arx-code-runtime-worker-thread'
+import type { CodeBindingFunction, CodeBindingNamespace, CodeRunResult } from '@arx-ai/arx-code-runtime'
 
 /**
  * Integration suite over REAL worker threads (no mocks — workers are cheap
@@ -838,7 +838,7 @@ describe('WorkerThreadCodeRuntime — seam misuse and lifecycle', () => {
     await expect(run([namespace('tools', 'CallError', '__dict__')])).rejects.toThrow(/member property.*not usable/)
     // The Python backend's owned globals are refused here too (shared
     // RESERVED_BINDING_GLOBALS), keeping namespace lists backend-portable.
-    await expect(runtime.run({ program: 'return 1', bindings: [{ global: '__cxh_main__', functions: {} }] }))
+    await expect(runtime.run({ program: 'return 1', bindings: [{ global: '__arx_main__', functions: {} }] }))
       .rejects.toThrow(/reserved binding global/)
   })
 

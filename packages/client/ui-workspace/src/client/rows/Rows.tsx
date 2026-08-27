@@ -11,9 +11,9 @@ import {
   HoverCard, IconArchiveOutline20, IconBranchOutline16, IconEditOutline16,
   IconEllipsisOutline16, IconFolderClose16, IconFolderOpen16, IconPlusOutline16,
   IconTrashOutline16, IconTriangleRightFill14, Menu, StateDot,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { StateDotState } from '@centurionarx/cxh-client-ui-primitives'
-import { abbreviateHomePath } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { StateDotState } from '@arx-ai/arx-client-ui-primitives'
+import { abbreviateHomePath } from '@arx-ai/arx-client-runtime/client'
 import type { WorkspaceBrowserProps } from '../contract/slots.ts'
 import type { GroupNode, SearchResultNode, SessionNode } from '../tree.ts'
 import { relativeTime } from '../tree.ts'

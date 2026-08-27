@@ -1,14 +1,14 @@
 /**
  * Package-owned strict Schedule stream invariant.
- * @module @centurionarx/cxh-schedule/invariant
+ * @module @arx-ai/arx-schedule/invariant
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import { foldScheduleEvents, ScheduleLogError } from './domain.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-schedule'
+const PACKAGE_NAME = '@arx-ai/arx-schedule'
 
 /** Cordis invariant-companion plugin name. */
 export const name = 'tool-schedule-invariant'

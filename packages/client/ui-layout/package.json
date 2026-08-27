@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-client-ui-layout",
+  "name": "@arx-ai/arx-client-ui-layout",
   "description": "Shell plugin: three-column AppFrame with drag handles, ctx.layout viewing-state service (navigation + panels)",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/client/ui-layout"
   },
   "type": "module",
@@ -29,11 +29,11 @@
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
-  "cxh": {
+  "arx": {
     "client": {
       "inject": [
-        "@centurionarx/cxh-client-runtime",
-        "@centurionarx/cxh-client-ui-theme"
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-ui-theme"
       ],
       "platform": "web"
     }
@@ -44,19 +44,19 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-theme": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-theme": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-client-locale": "workspace:^",
-    "@centurionarx/cxh-client-runtime": "workspace:^",
-    "@centurionarx/cxh-client-ui-slots": "workspace:^",
-    "@centurionarx/cxh-client-ui-theme": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-client-ui-theme": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
     "@types/react": "~18.3.1",
-    "@centurionarx/cordis": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0"
   },
   "files": [

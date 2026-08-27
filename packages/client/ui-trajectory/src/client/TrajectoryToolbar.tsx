@@ -1,7 +1,7 @@
 /** Trajectory toolbar: timeline and ledger fold controls. */
 
-import type { TranslateNS } from '@centurionarx/cxh-client-ui-slots'
-import { IconSearchOutline16 } from '@centurionarx/cxh-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
+import { IconSearchOutline16 } from '@arx-ai/arx-client-ui-primitives'
 import type { NS } from './locales.ts'
 import css from './TrajectoryToolbar.module.css'
 

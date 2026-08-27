@@ -10,11 +10,11 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import SessionTitleService from '@centurionarx/cxh-session-title'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import SessionTitleService from '@arx-ai/arx-session-title'
 
 const CONFIG = { fallbackMaxWords: 8, fallbackMaxBytes: 64, maxTitleBytes: 256 }
 

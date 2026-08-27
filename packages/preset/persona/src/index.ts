@@ -1,26 +1,26 @@
 /**
  * A per-agent persona as a composable row.
  *
- * `cxh-system-prompt` owns the global persona as its own config, and registers
+ * `arx-system-prompt` owns the global persona as its own config, and registers
  * that section unconditionally — so this row is **scope-only**. Mounted inside
  * an agent preset it shadows the deployment persona for that one session,
- * exactly like the per-child persona `cxh-subagent` installs; mounted globally
+ * exactly like the per-child persona `arx-subagent` installs; mounted globally
  * it collides with the registry's own registration and fails loud.
  *
  * That constraint is the reason the row exists. An agent preset cannot mount
  * the prompt registry itself, so without a row of its own a preset could
  * change an agent's tools but never its identity.
- * @module @centurionarx/cxh-persona
+ * @module @arx-ai/arx-persona
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-system-prompt'
 
 // Imported rather than restated: the registry declares the slot this row
 // replaces, and two hardcoded copies would drift into a preset whose persona
 // silently lands beside the deployment's instead of shadowing it.
-import { PERSONA_ORDER, PERSONA_SECTION } from '@centurionarx/cxh-system-prompt'
+import { PERSONA_ORDER, PERSONA_SECTION } from '@arx-ai/arx-system-prompt'
 
 export { PERSONA_ORDER, PERSONA_SECTION }
 

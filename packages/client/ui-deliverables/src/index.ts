@@ -2,11 +2,11 @@
  * Deliverables plugin, node half. Registers the response-format guidance that
  * lets the browser half recognize final-response file references. The browser
  * half ships via exports["./client"], discovered through the package.json
- * cxh.client declaration.
+ * arx.client declaration.
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import type {} from '@arx-ai/arx-system-prompt'
 
 /** Services required for the model guidance paired with the browser renderer. */
 export const inject = ['systemPrompt']

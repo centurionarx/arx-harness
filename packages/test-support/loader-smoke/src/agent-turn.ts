@@ -1,12 +1,12 @@
 /**
  * Test-only direct-agent turn driver shared by assembled Loader fixtures.
- * @module @centurionarx/cxh-loader-smoke/agent-turn
+ * @module @arx-ai/arx-loader-smoke/agent-turn
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage, type TokenUsage } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage, type TokenUsage } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /** Result envelope consumed only by snapshot and composition tests. */
 export interface FixtureTurnResult {

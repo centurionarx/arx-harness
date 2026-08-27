@@ -1,9 +1,9 @@
 /** Agent Teams service façade over roster, mailbox, task, and runtime lifecycle owners. */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type {} from '@centurionarx/cxh-session-persistence'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import type {} from '@arx-ai/arx-session-persistence'
 import { TeamActivity } from './activity.ts'
 import { errorMessage, TeamError } from './error.ts'
 import { TeamJournal } from './journal.ts'
@@ -32,7 +32,7 @@ export { TeamId, TeamMessageId, TeamTaskId } from './types.ts'
 export { TeamError } from './error.ts'
 export { foldTeam } from './fold.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     agentTeams: TeamService
   }

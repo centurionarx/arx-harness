@@ -9,10 +9,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Command } from 'commander'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import type { PatchOptions } from '@centurionarx/cordis-plugin-include'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import type { PatchOptions } from '@arx-ai/cordis-plugin-include'
 import { afterEach, describe, expect, it } from 'vitest'
 import { internals, parseCmdline, provideCmdline } from '../src/index.ts'
 
@@ -66,7 +66,7 @@ async function bootFixture(
   resolve: (program: Command) => unknown = resolveDemo,
   options: { objectInject?: boolean; withoutProvider?: boolean } = {},
 ): Promise<Fixture> {
-  const dir = mkdtempSync(join(tmpdir(), 'cxh-cmdline-'))
+  const dir = mkdtempSync(join(tmpdir(), 'arx-cmdline-'))
   const observed: Observed = { exits: [], out: '' }
   writeFileSync(join(dir, 'reader.mjs'), `
 export const name = 'reader'

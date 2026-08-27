@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { agentEvents, type Agent } from '@centurionarx/cxh-agent'
-import { CompactionId, compactCheckpointSource } from '@centurionarx/cxh-compaction'
-import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import SessionQueryEngine from '@centurionarx/cxh-session-query'
+import { Context } from '@arx-ai/cordis'
+import { agentEvents, type Agent } from '@arx-ai/arx-agent'
+import { CompactionId, compactCheckpointSource } from '@arx-ai/arx-compaction'
+import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import SessionQueryEngine from '@arx-ai/arx-session-query'
 import SessionReferenceResolver, {
   decodeSessionReferenceUri,
   encodeSessionReferenceUri,
@@ -12,7 +12,7 @@ import SessionReferenceResolver, {
   parseSessionReferenceText,
   type Config,
   type SessionReferenceErrorCode,
-} from '@centurionarx/cxh-session-reference'
+} from '@arx-ai/arx-session-reference'
 import { stringifyTagSafeJson } from '../src/serialization.ts'
 
 class TestSessionQueryEngine extends SessionQueryEngine {
@@ -218,23 +218,23 @@ describe('session reference URI and inline mentions', () => {
       { sessionId, label: sessionId },
     ])
 
-    expect(parseSessionReferenceText('what is a cxh-session: URI?')).toEqual({
-      text: 'what is a cxh-session: URI?',
+    expect(parseSessionReferenceText('what is a arx-session: URI?')).toEqual({
+      text: 'what is a arx-session: URI?',
       references: [],
     })
-    expect(parseSessionReferenceText('see cxh-session:%%%')).toEqual({
-      text: 'see cxh-session:%%%',
+    expect(parseSessionReferenceText('see arx-session:%%%')).toEqual({
+      text: 'see arx-session:%%%',
       references: [],
     })
   })
 
   it('rejects malformed explicit references and base64url-shaped bare candidates', () => {
     expect(() => decodeSessionReferenceUri('https://example.test')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
-    expect(() => parseSessionReferenceText('see cxh-session:IiJ')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
-    expect(() => parseSessionReferenceText('@[bad](cxh-session:%%%)')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
-    const nonString = `cxh-session:${Buffer.from(JSON.stringify({ id: 'x' })).toString('base64url')}`
+    expect(() => parseSessionReferenceText('see arx-session:IiJ')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
+    expect(() => parseSessionReferenceText('@[bad](arx-session:%%%)')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
+    const nonString = `arx-session:${Buffer.from(JSON.stringify({ id: 'x' })).toString('base64url')}`
     expect(() => decodeSessionReferenceUri(nonString)).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
-    expect(() => decodeSessionReferenceUri('cxh-session:IiJ')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
+    expect(() => decodeSessionReferenceUri('arx-session:IiJ')).toThrow(expectCode('SESSION_REFERENCE_INVALID_REFERENCE'))
   })
 })
 
@@ -357,7 +357,7 @@ describe('session reference discovery and preparation', () => {
     const target = ctx.sessions.create(SessionId('target'))
     const agent = fakeAgent(target)
     const malformed = createUserMessage({
-      content: [{ type: 'text', text: '@[bad](cxh-session:not-canonical)' }],
+      content: [{ type: 'text', text: '@[bad](arx-session:not-canonical)' }],
       source: { kind: 'user' },
     })
     const readSurface = vi.spyOn(ctx.sessionQuery, 'readSurface')

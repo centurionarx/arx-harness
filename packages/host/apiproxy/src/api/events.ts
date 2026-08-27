@@ -6,20 +6,20 @@
  * signal is a local stream-control parameter, independent of the request (never on the wire).
  */
 
-import type { AskUserQuestionItem } from '@centurionarx/cxh-user-questions/types'
-import type { ApprovalOutcome, ApprovalRequestId } from '@centurionarx/cxh-user-approval/types'
-import type { Message } from '@centurionarx/cxh-llm/types'
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { CallId } from '@centurionarx/cxh-llm/brand'
-import type { JsonValue, SessionEvent, SessionId } from '@centurionarx/cxh-session/types'
-import type { ToolCallView, ToolResultView } from '@centurionarx/cxh-tools/presentation'
+import type { AskUserQuestionItem } from '@arx-ai/arx-user-questions/types'
+import type { ApprovalOutcome, ApprovalRequestId } from '@arx-ai/arx-user-approval/types'
+import type { Message } from '@arx-ai/arx-llm/types'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { CallId } from '@arx-ai/arx-llm/brand'
+import type { JsonValue, SessionEvent, SessionId } from '@arx-ai/arx-session/types'
+import type { ToolCallView, ToolResultView } from '@arx-ai/arx-tools/presentation'
 import type { RpcError, RpcId, RpcRequest } from './rpc.ts'
 import type { JobView } from './jobs.ts'
 import type { WorkspaceView } from './workspace.ts'
 
 // Client-side consumers take the render-intent vocabulary from the contract;
-// cxh-tools remains its owner.
-export type { ToolCallView, ToolResultView } from '@centurionarx/cxh-tools/presentation'
+// arx-tools remains its owner.
+export type { ToolCallView, ToolResultView } from '@arx-ai/arx-tools/presentation'
 
 /**
  * Host-computed render intent accompanying a `tool/call` or `tool/result`
@@ -143,7 +143,7 @@ export type HostFrame =
   | { type: 'host/archived-sessions-changed'; archivedSessionIds: SessionId[] }
   /**
    * One allowlisted host cordis event forwarded verbatim. The allowlist is
-   * owned by `@centurionarx/cxh-api-remotes` (`API_REMOTE_FORWARDED_EVENTS`),
+   * owned by `@arx-ai/arx-api-remotes` (`API_REMOTE_FORWARDED_EVENTS`),
    * which is also the only control point over what a consumer can receive.
    * `event` is the host's own event name and `args` its argument list: this
    * path applies no projection, no redaction, and no renaming, so the payload

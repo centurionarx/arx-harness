@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   bindTypertRemote,
@@ -11,9 +11,9 @@ import {
   type TypertContext,
   type TypertForwardableEvent,
   type TypertRemoteEvent,
-} from '@centurionarx/cxh-typert-protocol'
+} from '@arx-ai/arx-typert-protocol'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * Test-only one-way event: bound to no Scope and returning nothing.
@@ -34,7 +34,7 @@ declare module '@centurionarx/cordis' {
   }
 }
 
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   interface TypertContextMap {
     metaFixture: TypertContext<string>
   }

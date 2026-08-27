@@ -5,10 +5,10 @@
  */
 import type {
   ConversationNodeDefinition, ToolResultNode,
-} from '@centurionarx/cxh-client-runtime/client'
-import { isAppendSurfaceEvent } from '@centurionarx/cxh-client-runtime/client'
-import type { MarkdownFileMentions } from '@centurionarx/cxh-client-ui-primitives'
-import type { TurnTailOwnerProps } from '@centurionarx/cxh-client-ui-conversation/client'
+} from '@arx-ai/arx-client-runtime/client'
+import { isAppendSurfaceEvent } from '@arx-ai/arx-client-runtime/client'
+import type { MarkdownFileMentions } from '@arx-ai/arx-client-ui-primitives'
+import type { TurnTailOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
 
 interface ProducedPath {
   readonly seq: number
@@ -20,7 +20,7 @@ export interface DeliverablesTurnData {
   readonly produced: readonly ProducedPath[]
 }
 
-declare module '@centurionarx/cxh-client-runtime/client' {
+declare module '@arx-ai/arx-client-runtime/client' {
   interface ConversationTurnDataMap {
     /** Successful mutation paths accumulated in this Turn. */
     deliverables: DeliverablesTurnData

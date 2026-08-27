@@ -2,10 +2,10 @@
  * Parse Codex's five-event hook subset into shared {@link MatcherGroup}s. Only synchronous command
  * hooks run; other types and `async: true` commands are recorded as skipped. Codex performs no
  * command substitution.
- * @module @centurionarx/cxh-hooks-codex/config
+ * @module @arx-ai/arx-hooks-codex/config
  */
 
-import { matcherDiagnostic, type MatcherGroup } from '@centurionarx/cxh-hook-protocol'
+import { matcherDiagnostic, type MatcherGroup } from '@arx-ai/arx-hook-protocol'
 
 /** The five Codex hook points this bridge supports. */
 export const CODEX_EVENTS = ['PreToolUse', 'PostToolUse', 'SessionStart', 'UserPromptSubmit', 'Stop'] as const

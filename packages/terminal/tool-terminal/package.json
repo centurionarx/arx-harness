@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-tool-terminal",
+  "name": "@arx-ai/arx-tool-terminal",
   "description": "Six model-facing persistent PTY tools with owner isolation and generic background-job integration",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/terminal/tool-terminal"
   },
   "type": "module",
@@ -32,37 +32,37 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-terminal": "workspace:^",
-    "@centurionarx/cxh-output-retention": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-terminal": "workspace:^",
+    "@arx-ai/arx-output-retention": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cordis-plugin-include": "workspace:^",
-    "@centurionarx/cordis-plugin-loader": "workspace:^",
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-terminal": "workspace:^",
-    "@centurionarx/cxh-terminal-bash": "workspace:^",
-    "@centurionarx/cxh-output-retention": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-subprocess-local": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-jobs-local": "workspace:^",
-    "@centurionarx/cxh-tool-jobs": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-terminal": "workspace:^",
+    "@arx-ai/arx-terminal-bash": "workspace:^",
+    "@arx-ai/arx-output-retention": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-subprocess-local": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-jobs-local": "workspace:^",
+    "@arx-ai/arx-tool-jobs": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

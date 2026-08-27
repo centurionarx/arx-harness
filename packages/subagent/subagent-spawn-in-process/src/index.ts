@@ -3,18 +3,18 @@
  * `ctx.subagents` that runs each child as a fresh child {@link Agent} on the same cordis
  * context (its own session, own system prompt, zero parent context). The cheapest transport,
  * reusing the agent factory's quiescent teardown.
- * @module @centurionarx/cxh-subagent-spawn-in-process
+ * @module @arx-ai/arx-subagent-spawn-in-process
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import type {
   ContinuableCreateSpec,
   ResolvedSubagentStartRequest,
   SubagentCapabilities,
   SubagentProvider,
-} from '@centurionarx/cxh-subagent'
-import { startInProcessRun } from '@centurionarx/cxh-subagent-in-process-driver'
+} from '@arx-ai/arx-subagent'
+import { startInProcessRun } from '@arx-ai/arx-subagent-in-process-driver'
 
 export const name = 'subagent-spawn-in-process'
 // `tools` is deliberately not injected: the child factory already provides it during setup,

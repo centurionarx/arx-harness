@@ -1,4 +1,4 @@
-# @centurionarx/cxh-typert-protocol
+# @arx-ai/arx-typert-protocol
 
 [English](README.md) | 中文
 

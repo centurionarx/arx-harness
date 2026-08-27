@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import { appendHookInvoked, appendHookResult, summarizeStderr, type HookOutput } from '@centurionarx/cxh-hook-protocol'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import { appendHookInvoked, appendHookResult, summarizeStderr, type HookOutput } from '@arx-ai/arx-hook-protocol'
 
 /** A {@link HookOutput} with the required stream fields defaulted. */
 function output(over: Partial<HookOutput> = {}): HookOutput {

@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cordis-plugin-hmr",
+  "name": "@arx-ai/cordis-plugin-hmr",
   "description": "Hot Module Replacement Plugin for Cordis",
   "version": "1.0.16",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "vendor/hmr"
   },
   "type": "module",
@@ -29,7 +29,7 @@
   ],
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
-  "@centurionarx/cordis": {
+  "@arx-ai/cordis": {
     "services": {
       "required": [
         "timer"
@@ -41,15 +41,15 @@
     }
   },
   "peerDependencies": {
-    "@centurionarx/cordis-plugin-timer": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/cordis-plugin-timer": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
     "@babel/code-frame": "^7.29.0",
     "chokidar": "^4.0.3",
-    "@centurionarx/cosmokit": "workspace:^",
+    "@arx-ai/cosmokit": "workspace:^",
     "picomatch": "^4.0.3",
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
     "@types/babel__code-frame": "^7.27.0",

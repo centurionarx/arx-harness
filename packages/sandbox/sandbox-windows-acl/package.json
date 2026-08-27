@@ -1,13 +1,13 @@
 {
-  "name": "@centurionarx/cxh-sandbox-windows-acl",
-  "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the CENTURIONarx Harness sandbox seam",
+  "name": "@arx-ai/arx-sandbox-windows-acl",
+  "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the arx Harness sandbox seam",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/sandbox/sandbox-windows-acl"
   },
   "type": "module",
@@ -38,16 +38,16 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
     "koffi": "^3.1.0"
   },
   "devDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-pwsh-local": "workspace:^",
-    "@centurionarx/cxh-sandbox-local": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-pwsh-local": "workspace:^",
+    "@arx-ai/arx-sandbox-local": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

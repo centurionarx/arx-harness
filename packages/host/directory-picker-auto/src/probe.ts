@@ -3,7 +3,7 @@
  * sampled fact for the resolver, so an attended Linux host without
  * zenity/kdialog keeps the working `browse` interaction instead of a backend
  * whose every pick fails.
- * @module @centurionarx/cxh-host-directory-picker-auto/probe
+ * @module @arx-ai/arx-host-directory-picker-auto/probe
  */
 
 import { accessSync, constants } from 'node:fs'

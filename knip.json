@@ -66,9 +66,9 @@
         "acp-agent/tests/fixtures/subagent/subagent-claude-code/driver.ts",
         "acp-agent/tests/fixtures/subagent/subagent-codex/fixture.ts",
         "acp-agent/tests/fixtures/subagent/subagent-codex/driver.ts",
-        "jsonrpc-agent/tests/fixtures/subagent/subagent-cxh-sdk/driver.ts",
-        "jsonrpc-agent/tests/fixtures/subagent/subagent-cxh-sdk/child-mock-llm.ts",
-        "jsonrpc-agent/tests/fixtures/subagent/subagent-cxh-sdk/mock-delegating-llm.ts",
+        "jsonrpc-agent/tests/fixtures/subagent/subagent-arx-sdk/driver.ts",
+        "jsonrpc-agent/tests/fixtures/subagent/subagent-arx-sdk/child-mock-llm.ts",
+        "jsonrpc-agent/tests/fixtures/subagent/subagent-arx-sdk/mock-delegating-llm.ts",
         "*/tests/**/*.e2e.ts",
         "*/tests/**/*.snapshot.ts"
       ],
@@ -76,13 +76,13 @@
         "**/*.ts"
       ],
       "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     },
     "packages/host/directory-picker-auto": {
       "ignoreDependencies": [
-        "@centurionarx/cxh-client-ui-directory-picker-browse",
-        "@centurionarx/cxh-client-ui-directory-picker-native"
+        "@arx-ai/arx-client-ui-directory-picker-browse",
+        "@arx-ai/arx-client-ui-directory-picker-native"
       ]
     },
     "packages/extensions/cordis-host-runner": {
@@ -116,7 +116,7 @@
         "tests/**/*.ts"
       ],
       "ignoreDependencies": [
-        "@centurionarx/cxh-api-gateway"
+        "@arx-ai/arx-api-gateway"
       ]
     },
     "packages/client/ui-primitives": {
@@ -618,8 +618,8 @@
         "tests/**/*.ts"
       ],
       "ignoreDependencies": [
-        "@centurionarx/cxh-client-ui-primitives",
-        "@centurionarx/cxh-client-ui-slots",
+        "@arx-ai/arx-client-ui-primitives",
+        "@arx-ai/arx-client-ui-slots",
         "@types/react",
         "@types/react-dom",
         "react",
@@ -637,10 +637,10 @@
         "tests/**/*.ts"
       ],
       "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     },
-    "packages/subagent/subagent-cxh-sdk": {
+    "packages/subagent/subagent-arx-sdk": {
       "entry": [
         "tests/**/*.spec.ts",
         "tests/**/*.e2e.ts"
@@ -652,17 +652,17 @@
     },
     "packages/bundle/base": {
       "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     },
     "packages/bundle/headless": {
       "ignoreDependencies": [
-        "@centurionarx/cxh-code-runtime-worker-thread"
+        "@arx-ai/arx-code-runtime-worker-thread"
       ]
     },
     "packages/bundle/web-app": {
       "ignoreDependencies": [
-        "@centurionarx/.+"
+        "@arx-ai/.+"
       ]
     }
   }

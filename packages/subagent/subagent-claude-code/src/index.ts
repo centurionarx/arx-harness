@@ -3,12 +3,12 @@
  * invokes the official Agent SDK in the delegating Session's workspace and
  * places the SDK-spawned real CLI under the shared subprocess owner.
  *
- * @module @centurionarx/cxh-subagent-claude-code
+ * @module @arx-ai/arx-subagent-claude-code
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import {
   assertPositiveFinite,
   NO_START_CAPABILITIES,
@@ -16,7 +16,7 @@ import {
   type ResolvedSubagentStartRequest,
   type SubagentCapabilities,
   type SubagentProvider,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import {
   CLAUDE_CODE_PERMISSION_MODES,
   DEFAULT_CLAUDE_CODE_PERMISSION_MODE,

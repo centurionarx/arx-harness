@@ -7,18 +7,18 @@ import { readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { afterEach, expect, it } from 'vitest'
-import { CallId } from '@centurionarx/cxh-llm'
-import { canonicalPath, writableRoots } from '@centurionarx/cxh-sandbox'
-import { SessionId } from '@centurionarx/cxh-session'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import { CallId } from '@arx-ai/arx-llm'
+import { canonicalPath, writableRoots } from '@arx-ai/arx-sandbox'
+import { SessionId } from '@arx-ai/arx-session'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 // Empty type imports carry the tools/sandboxPolicy/approval Context merges.
-import type {} from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-sandbox-policy'
-import type {} from '@centurionarx/cxh-user-approval'
-import type {} from '@centurionarx/cxh-permission-presets'
-import type {} from '@centurionarx/cxh-agent-presets'
-import type {} from '@centurionarx/cxh-commands'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type {} from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-sandbox-policy'
+import type {} from '@arx-ai/arx-user-approval'
+import type {} from '@arx-ai/arx-permission-presets'
+import type {} from '@arx-ai/arx-agent-presets'
+import type {} from '@arx-ai/arx-commands'
+import type {} from '@arx-ai/arx-system-prompt'
 import { launchWebScaffold, type WebScaffold } from './scaffold.ts'
 
 const FILE_REFERENCE_PROMPT = fileURLToPath(new URL(
@@ -60,7 +60,7 @@ const EXPECTED_TOOLS = [
 ]
 
 /**
- * `glob` and `grep` come from `cxh-tool-fs-search`, which spawns the PACKAGED
+ * `glob` and `grep` come from `arx-tool-fs-search`, which spawns the PACKAGED
  * ripgrep binary (`@vscode/ripgrep`) through the subprocess seam, so the pair
  * is always present on every host — asserted as fixed members, not a host
  * dependency.

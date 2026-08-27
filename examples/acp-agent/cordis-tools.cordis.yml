@@ -1,12 +1,12 @@
 # Add the self-referential Cordis tools without changing the base ACP tool
 # presentation mode.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - insert:
           - id: cordis-host-runner
-            name: '@centurionarx/cxh-cordis-host-runner'
+            name: '@arx-ai/arx-cordis-host-runner'
           - id: tool-cordis
-            name: '@centurionarx/cxh-tool-cordis'
+            name: '@arx-ai/arx-tool-cordis'

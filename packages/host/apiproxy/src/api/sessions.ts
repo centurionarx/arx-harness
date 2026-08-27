@@ -4,18 +4,18 @@
  * else references RequestPayload<'session.*'> / ResponseValue<'session.*'>.
  */
 
-import type { MessageId } from '@centurionarx/cxh-llm/brand'
-import type { AttachmentIdType, ImageAttachmentLimits, ImageAttachmentRef, ImageMediaType } from '@centurionarx/cxh-attachment'
-import type { ContentBlock } from '@centurionarx/cxh-llm/types'
-import type { SessionEvent, SessionId } from '@centurionarx/cxh-session/types'
+import type { MessageId } from '@arx-ai/arx-llm/brand'
+import type { AttachmentIdType, ImageAttachmentLimits, ImageAttachmentRef, ImageMediaType } from '@arx-ai/arx-attachment'
+import type { ContentBlock } from '@arx-ai/arx-llm/types'
+import type { SessionEvent, SessionId } from '@arx-ai/arx-session/types'
 // The pure-type outlet: api/ is browser-importable, and the package root's
-// cordis Context merge (via cxh-agent) must not enter client aggregates.
-import type { SessionProjectionMap } from '@centurionarx/cxh-session-projection/types'
+// cordis Context merge (via arx-agent) must not enter client aggregates.
+import type { SessionProjectionMap } from '@arx-ai/arx-session-projection/types'
 import type { RpcId, RpcRequest, RpcResponse } from './rpc.ts'
 import type { ToolEventView } from './events.ts'
 import type { WorkspaceId } from './workspace.ts'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     sessionListMetadata: SessionListMetadata
     imageLimits: null
@@ -47,7 +47,7 @@ export interface SessionListMetadata {
   lastPromptAt: number | null
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     /**
      * The prompt's rpcId is passed through MessageSource into the `user/message` event
@@ -154,11 +154,14 @@ export interface ModelCatalogFailure {
 
 /** Detached model-directory snapshot for one session. */
 export interface SessionModels {
-  /** Model selection for the session's next assembled step. */
-  current: ModelSelection
+  /**
+   * Model selection for the session's next assembled step, or absent when the
+   * deployment ships no default and nobody has picked one yet.
+   */
+  current?: ModelSelection
   /**
    * Whether an adapter currently serves `current.provider`, and therefore
-   * whether this session can start a turn at all. Deliberately NOT derivable
+   * whether this session can start a turn at all. False without a selection. Deliberately NOT derivable
    * from `groups`: catalog membership is advisory, so a route serving a model
    * it stopped advertising is absent from the groups yet perfectly usable,
    * while a route whose adapter is gone can serve nothing. A surface that

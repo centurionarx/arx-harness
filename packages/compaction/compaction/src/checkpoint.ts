@@ -3,17 +3,17 @@
  * every backend uses for its replacement user message, plus the predicate that
  * recognizes persisted checkpoints.
  *
- * The seam itself lives in `@centurionarx/cxh-compaction`, which re-exports these
+ * The seam itself lives in `@arx-ai/arx-compaction`, which re-exports these
  * contracts; this module is a pure type/value/predicate outlet (no cordis
  * imports, no module augmentation) so client and wire programs can name the
  * checkpoint source without loading the host plugin's Context merges — the
- * `cxh-commands/brand` shape.
+ * `arx-commands/brand` shape.
  *
- * @module @centurionarx/cxh-compaction/checkpoint
+ * @module @arx-ai/arx-compaction/checkpoint
  */
 
-import type { MessageSource } from '@centurionarx/cxh-llm/message'
-import type { CommandId } from '@centurionarx/cxh-commands/brand'
+import type { MessageSource } from '@arx-ai/arx-llm/message'
+import type { CommandId } from '@arx-ai/arx-commands/brand'
 import type { CompactionId } from './brand.ts'
 
 const COMPACT_CHECKPOINT_MARKER = Object.freeze({ kind: 'plugin', plugin: 'compact' } as const)

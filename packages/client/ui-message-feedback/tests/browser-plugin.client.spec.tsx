@@ -8,13 +8,13 @@
  * fiber (HMR safety). The node half and the invariant companion are exercised
  * over the same Context.
  */
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
-import { SlotRegistry, type SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import type { MessageId } from '@centurionarx/cxh-client-connection/client'
-import type { MessageFeedbackItem, MessageFeedbackVersion } from '@centurionarx/cxh-message-feedback/types'
+import { SlotRegistry, type SessionId } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import type { MessageId } from '@arx-ai/arx-client-connection/client'
+import type { MessageFeedbackItem, MessageFeedbackVersion } from '@arx-ai/arx-message-feedback/types'
 import type { MessageFeedbackInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { apply as nodeApply } from '../src/index.ts'

@@ -8,9 +8,9 @@
 
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
-import type { IApiClient } from '@centurionarx/cxh-api-remotes/client'
-import type { SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { InjectFace, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
+import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { InjectFace, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import type { ModelsSettingsState, ModelsSettingsStore } from './store.ts'
 import { onboardingReadiness } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'

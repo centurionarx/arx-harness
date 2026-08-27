@@ -5,7 +5,7 @@
  * workspace package's tests import it by relative path (it lives under
  * `tests/`, never `src/`, so it stays out of the published surface).
  *
- * Fidelity to the backend contract (`cxh-storage` `src/backend.ts`): version
+ * Fidelity to the backend contract (`arx-storage` `src/backend.ts`): version
  * stamping and `version-mismatch` on reopen, `malformed` never (memory cannot
  * corrupt), per-call atomicity trivially, `closed` after close, delete
  * idempotence. Media survive across backends through the shared `media` map
@@ -15,8 +15,8 @@
  * @module
  */
 
-import { StorageError } from '@centurionarx/cxh-storage'
-import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@centurionarx/cxh-storage'
+import { StorageError } from '@arx-ai/arx-storage'
+import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@arx-ai/arx-storage'
 
 /** One unit's medium: tables of records plus the global slot (`null` = never written). */
 export interface MemoryMedium {

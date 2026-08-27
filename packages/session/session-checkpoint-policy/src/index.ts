@@ -1,15 +1,15 @@
 /**
  * Semantic durability checkpoints for model requests, top-level tool dispatch,
  * and completed agent steps.
- * @module @centurionarx/cxh-session-checkpoint-policy
+ * @module @arx-ai/arx-session-checkpoint-policy
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session } from '@centurionarx/cxh-session'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecutionResult } from '@centurionarx/cxh-tools'
-import type { PreStepDecision } from '@centurionarx/cxh-agent'
-import type {} from '@centurionarx/cxh-session-persistence'
+import type { Context } from '@arx-ai/cordis'
+import type { Session } from '@arx-ai/arx-session'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import { TOOL_ABORTED_BEFORE_DISPATCH, type ToolExecutionResult } from '@arx-ai/arx-tools'
+import type { PreStepDecision } from '@arx-ai/arx-agent'
+import type {} from '@arx-ai/arx-session-persistence'
 
 /** Cordis plugin name used by Loader diagnostics. */
 export const name = 'session-checkpoint-policy'

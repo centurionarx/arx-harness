@@ -3,61 +3,61 @@ import { homedir, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
-  DEFAULT_CXH_HOME_DISPLAY,
-  CXH_HOME_DIR_NAME,
+  DEFAULT_ARX_HOME_DISPLAY,
+  ARX_HOME_DIR_NAME,
   canonicalizeWatchPath,
-  defaultCxhHome,
-  cxhHomeDisplay,
-  cxhHomePath,
+  defaultArxHome,
+  arxHomeDisplay,
+  arxHomePath,
   expandHomePath,
-  resolveCxhHome,
-} from '@centurionarx/cxh-home-paths'
+  resolveArxHome,
+} from '@arx-ai/arx-home-paths'
 
 afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('cxh path helpers', () => {
-  it('owns the shared default CXH home directory name', () => {
-    expect(CXH_HOME_DIR_NAME).toBe('.cxh')
-    expect(DEFAULT_CXH_HOME_DISPLAY).toBe('~/.cxh')
-    expect(defaultCxhHome()).toBe(join(homedir(), '.cxh'))
+describe('arx path helpers', () => {
+  it('owns the shared default ARX home directory name', () => {
+    expect(ARX_HOME_DIR_NAME).toBe('.arx')
+    expect(DEFAULT_ARX_HOME_DISPLAY).toBe('~/.arx')
+    expect(defaultArxHome()).toBe(join(homedir(), '.arx'))
   })
 
   it('expands tilde paths without changing non-tilde paths', () => {
     expect(expandHomePath('~')).toBe(homedir())
-    expect(expandHomePath('~/.cxh')).toBe(join(homedir(), '.cxh'))
-    expect(expandHomePath('~\\.cxh')).toBe(join(homedir(), '.cxh'))
-    expect(expandHomePath('/tmp/.cxh')).toBe('/tmp/.cxh')
-    expect(expandHomePath('~other/.cxh')).toBe('~other/.cxh')
+    expect(expandHomePath('~/.arx')).toBe(join(homedir(), '.arx'))
+    expect(expandHomePath('~\\.arx')).toBe(join(homedir(), '.arx'))
+    expect(expandHomePath('/tmp/.arx')).toBe('/tmp/.arx')
+    expect(expandHomePath('~other/.arx')).toBe('~other/.arx')
   })
 
-  it('resolves explicit path before CXH_HOME and the default', () => {
-    const envHome = join(homedir(), 'env-cxh')
+  it('resolves explicit path before ARX_HOME and the default', () => {
+    const envHome = join(homedir(), 'env-arx')
 
-    expect(resolveCxhHome('/tmp/explicit-cxh', { CXH_HOME: '~/env-cxh' })).toBe(resolve('/tmp/explicit-cxh'))
-    expect(resolveCxhHome(undefined, { CXH_HOME: '~/env-cxh' })).toBe(envHome)
-    expect(resolveCxhHome(undefined, {})).toBe(defaultCxhHome())
+    expect(resolveArxHome('/tmp/explicit-arx', { ARX_HOME: '~/env-arx' })).toBe(resolve('/tmp/explicit-arx'))
+    expect(resolveArxHome(undefined, { ARX_HOME: '~/env-arx' })).toBe(envHome)
+    expect(resolveArxHome(undefined, {})).toBe(defaultArxHome())
   })
 
-  it('treats an empty or whitespace-only CXH_HOME as unset', () => {
-    expect(resolveCxhHome(undefined, { CXH_HOME: '' })).toBe(defaultCxhHome())
-    expect(resolveCxhHome(undefined, { CXH_HOME: '   ' })).toBe(defaultCxhHome())
+  it('treats an empty or whitespace-only ARX_HOME as unset', () => {
+    expect(resolveArxHome(undefined, { ARX_HOME: '' })).toBe(defaultArxHome())
+    expect(resolveArxHome(undefined, { ARX_HOME: '   ' })).toBe(defaultArxHome())
   })
 
-  it('joins child segments onto the resolved CXH_HOME', () => {
-    vi.stubEnv('CXH_HOME', '~/env-cxh')
-    expect(cxhHomePath()).toBe(join(homedir(), 'env-cxh'))
-    expect(cxhHomePath('storages', 'cache')).toBe(join(homedir(), 'env-cxh', 'storages', 'cache'))
+  it('joins child segments onto the resolved ARX_HOME', () => {
+    vi.stubEnv('ARX_HOME', '~/env-arx')
+    expect(arxHomePath()).toBe(join(homedir(), 'env-arx'))
+    expect(arxHomePath('storages', 'cache')).toBe(join(homedir(), 'env-arx', 'storages', 'cache'))
   })
 
   it('labels a resolved home by whether it is the default root', () => {
-    expect(cxhHomeDisplay(resolve(defaultCxhHome()))).toBe('~/.cxh')
-    expect(cxhHomeDisplay('/some/other/root')).toBe('$CXH_HOME')
+    expect(arxHomeDisplay(resolve(defaultArxHome()))).toBe('~/.arx')
+    expect(arxHomeDisplay('/some/other/root')).toBe('$ARX_HOME')
   })
 
   it('canonicalizes a watcher ancestor while preserving a missing suffix', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'cxh-watch-path-'))
+    const root = await mkdtemp(join(tmpdir(), 'arx-watch-path-'))
     const target = join(root, 'target')
     const alias = join(root, 'alias')
     try {

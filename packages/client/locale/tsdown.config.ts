@@ -1,3 +1,3 @@
 import { clientBundle } from '../tsdown.client.ts'
 
-export default clientBundle('@centurionarx/cxh-client-locale', ['lib/types/index.js', 'lib/types/invariant.js'])
+export default clientBundle('@arx-ai/arx-client-locale', ['lib/types/index.js', 'lib/types/invariant.js'])

@@ -6,11 +6,11 @@
 // entries. Tool composition belongs to ui-tool and its machinery spec.
 
 import { describe, expect, it, vi } from 'vitest'
-import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
-import { resolveSlotLabel } from '@centurionarx/cxh-client-ui-slots'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { apply, inject } from '@centurionarx/cxh-client-ui-conversation/client'
+import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
+import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { apply, inject } from '@arx-ai/arx-client-ui-conversation/client'
 
 // The service reads its initial locale from the browser; these specs assert
 // the shipped Chinese copy, so they state the browser they assume.

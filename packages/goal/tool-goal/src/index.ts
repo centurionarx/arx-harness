@@ -1,17 +1,17 @@
 /**
  * Model-facing `get_goal`, `create_goal`, and `update_goal` tools over the
  * persisted same-session goal domain.
- * @module @centurionarx/cxh-tool-goal
+ * @module @arx-ai/arx-tool-goal
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { GoalId } from '@centurionarx/cxh-goal'
-import type { GoalRef, GoalView } from '@centurionarx/cxh-goal'
-import { boundContextSummary, createUserMessage, HarnessError } from '@centurionarx/cxh-llm'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { GoalId } from '@arx-ai/arx-goal'
+import type { GoalRef, GoalView } from '@arx-ai/arx-goal'
+import { boundContextSummary, createUserMessage, HarnessError } from '@arx-ai/arx-llm'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-system-prompt'
 import {
   completionAuthority,
   goalToolExecution,

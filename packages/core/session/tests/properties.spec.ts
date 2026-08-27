@@ -9,9 +9,9 @@
 
 import { describe, expect, it } from 'vitest'
 import fc from 'fast-check'
-import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import type { SessionEventMap, SessionEventType, SurfaceIntent } from '@centurionarx/cxh-session'
+import { createUserMessage, CallId , createMessage, createToolResultMessage } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import type { SessionEventMap, SessionEventType, SurfaceIntent } from '@arx-ai/arx-session'
 
 // Each arbitrary supplies its own surface intent; `build` must not synthesize
 // one or the property would fail to exercise malformed fixture choices.

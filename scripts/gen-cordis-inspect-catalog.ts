@@ -2,8 +2,8 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { projectCordisCatalog } from '@centurionarx/cxh-typert-generator'
-import type { CordisCatalogModel, ServiceMethodEntry } from '@centurionarx/cxh-typert-generator'
+import { projectCordisCatalog } from '@arx-ai/arx-typert-generator'
+import type { CordisCatalogModel, ServiceMethodEntry } from '@arx-ai/arx-typert-generator'
 import { CORDIS_CATALOG_POLICY } from './gen-cordis-catalog.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -48,7 +48,7 @@ function main(): void {
   const { projector, model } = projectCordisCatalog(root, CORDIS_CATALOG_POLICY, 'client')
   const destination = resolve(root, CLIENT_OUT)
   const source = projector.renderRuntimeApi(clientModel(model))
-    .replaceAll('@centurionarx/cxh-tool-cordis/api-catalog', '@centurionarx/cxh-cordis-client-runner/client/api-catalog')
+    .replaceAll('@arx-ai/arx-tool-cordis/api-catalog', '@arx-ai/arx-cordis-client-runner/client/api-catalog')
   mkdirSync(dirname(destination), { recursive: true })
   writeFileSync(destination, source)
   console.log(`gen-cordis-inspect-catalog: wrote ${CLIENT_OUT}`)

@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-subagent",
+  "name": "@arx-ai/arx-subagent",
   "description": "Abstract subagent seam (ctx.subagents): named-provider registry for delegating to child agents",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/subagent/subagent"
   },
   "type": "module",
@@ -40,67 +40,67 @@
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-presets": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-session-projection": "workspace:^",
-    "@centurionarx/cxh-session-projection-cache": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cxh-user-approval": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
+    "@arx-ai/arx-session-projection-cache": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-user-approval": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "peerDependenciesMeta": {
-    "@centurionarx/cxh-agent-presets": {
+    "@arx-ai/arx-agent-presets": {
       "optional": true
     },
-    "@centurionarx/cxh-sandbox": {
+    "@arx-ai/arx-sandbox": {
       "optional": true
     },
-    "@centurionarx/cxh-sandbox-policy": {
+    "@arx-ai/arx-sandbox-policy": {
       "optional": true
     },
-    "@centurionarx/cxh-session-persistence": {
+    "@arx-ai/arx-session-persistence": {
       "optional": true
     },
-    "@centurionarx/cxh-session-projection": {
+    "@arx-ai/arx-session-projection": {
       "optional": true
     },
-    "@centurionarx/cxh-session-projection-cache": {
+    "@arx-ai/arx-session-projection-cache": {
       "optional": true
     },
-    "@centurionarx/cxh-jobs": {
+    "@arx-ai/arx-jobs": {
       "optional": true
     },
-    "@centurionarx/cxh-user-approval": {
+    "@arx-ai/arx-user-approval": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-presets": "workspace:^",
-    "@centurionarx/cxh-brand": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-sandbox": "workspace:^",
-    "@centurionarx/cxh-sandbox-policy": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence": "workspace:^",
-    "@centurionarx/cxh-session-projection": "workspace:^",
-    "@centurionarx/cxh-session-projection-cache": "workspace:^",
-    "@centurionarx/cxh-storage": "workspace:^",
-    "@centurionarx/cxh-storage-domain": "workspace:^",
-    "@centurionarx/cxh-jobs": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cxh-user-approval": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
+    "@arx-ai/arx-brand": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-sandbox": "workspace:^",
+    "@arx-ai/arx-sandbox-policy": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
+    "@arx-ai/arx-session-projection-cache": "workspace:^",
+    "@arx-ai/arx-storage": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-jobs": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-user-approval": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

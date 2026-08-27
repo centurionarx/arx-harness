@@ -1,8 +1,8 @@
-# @centurionarx/cxh-spill-local
+# @arx-ai/arx-spill-local
 
 English | [中文](README.zh.md)
 
-The **local-filesystem** implementation of the [`@centurionarx/cxh-spill`](../spill) storage seam. Registers as `ctx.spillStore` and persists a tool's oversized text to a private, session-scoped file; its locator is the file path and its retrieval hint tells the model to use `read` or `grep` on that path.
+The **local-filesystem** implementation of the [`@arx-ai/arx-spill`](../spill) storage seam. Registers as `ctx.spillStore` and persists a tool's oversized text to a private, session-scoped file; its locator is the file path and its retrieval hint tells the model to use `read` or `grep` on that path.
 
 ## Storage layout
 

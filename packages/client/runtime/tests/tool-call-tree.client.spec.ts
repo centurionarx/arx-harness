@@ -1,4 +1,4 @@
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
 import { describe, expect, it } from 'vitest'
 import type { RunningToolCall, ToolCallBlock } from '../src/client/sessions/conversation.ts'
 import {

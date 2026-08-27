@@ -14,14 +14,14 @@
  * carry the complete post-change state, never a bare delta — it keeps every
  * unit's transition trivially cheap and every served value self-describing.
  *
- * @module @centurionarx/cxh-session-projection
+ * @module @arx-ai/arx-session-projection
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import type { ZodType } from 'zod'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionProjections: SessionProjectionRegistry
   }

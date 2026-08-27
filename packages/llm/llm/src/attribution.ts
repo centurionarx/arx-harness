@@ -4,7 +4,7 @@
  * `.agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.md`.
  *
  * App-attribution vocabulary for provider requests.
- * @module @centurionarx/cxh-llm/attribution
+ * @module @arx-ai/arx-llm/attribution
  */
 
 import { createRequire } from 'node:module'
@@ -38,9 +38,9 @@ export interface AppIdentity {
  * can suppress attribution entirely.
  */
 export const APP_IDENTITY: AppIdentity = {
-  product: 'centurionarx-harness',
+  product: 'arx-harness',
   version,
-  url: 'https://github.com/centurionarx/centurionarx-harness',
+  url: 'https://github.com/centurionarx/arx-harness',
 }
 
 /**

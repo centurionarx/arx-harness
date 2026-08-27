@@ -1,4 +1,4 @@
-# @centurionarx/cxh-typert-loader
+# @arx-ai/arx-typert-loader
 
 [English](README.md) | 中文
 

@@ -4,11 +4,11 @@
  * not the only correct recovery (re-read / read the file), so this package
  * appends the remedy at the model boundary; provider messages stay
  * machine-oriented and unchanged.
- * @module @centurionarx/cxh-tool-fs/src/error
+ * @module @arx-ai/arx-tool-fs/src/error
  */
 
-import { FsError } from '@centurionarx/cxh-fs'
-import type { FsErrorCode } from '@centurionarx/cxh-fs'
+import { FsError } from '@arx-ai/arx-fs'
+import type { FsErrorCode } from '@arx-ai/arx-fs'
 
 /** The remedy appended to each remediable failure code's message. */
 const REMEDIES: Partial<Record<FsErrorCode, string>> = {

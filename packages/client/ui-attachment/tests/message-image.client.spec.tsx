@@ -2,8 +2,8 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
-import type { MessageImagesProps } from '@centurionarx/cxh-client-ui-conversation/client'
+import { AttachmentId } from '@arx-ai/arx-attachment'
+import type { MessageImagesProps } from '@arx-ai/arx-client-ui-conversation/client'
 import { ImageGallery, MessageImage } from '../src/MessageImage.tsx'
 import type { MessageImageLabels } from '../src/MessageImage.tsx'
 import { MessageImages } from '../src/client/MessageImages.tsx'

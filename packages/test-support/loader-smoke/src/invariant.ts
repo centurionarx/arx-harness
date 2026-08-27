@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-loader-smoke`.
- * @module @centurionarx/cxh-loader-smoke/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-loader-smoke`.
+ * @module @arx-ai/arx-loader-smoke/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-loader-smoke'
+const PACKAGE_NAME = '@arx-ai/arx-loader-smoke'
 
 /** Cordis companion plugin name. */
 export const name = 'loader-smoke-invariant'

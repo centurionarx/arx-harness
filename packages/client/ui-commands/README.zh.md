@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-commands
+# @arx-ai/arx-client-ui-commands
 
 [English](README.md) | 中文
 

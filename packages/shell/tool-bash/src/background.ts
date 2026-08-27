@@ -1,10 +1,10 @@
 /**
  * Generic-task adaptation for background bash process handles.
  *
- * @module @centurionarx/cxh-tool-bash/background
+ * @module @arx-ai/arx-tool-bash/background
  */
 
-import type { ShellProcess } from '@centurionarx/cxh-shell'
+import type { ShellProcess } from '@arx-ai/arx-shell'
 
 /**
  * Map a settled background process onto the generic task-outcome vocabulary:

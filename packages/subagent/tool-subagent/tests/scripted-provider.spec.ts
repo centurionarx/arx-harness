@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { type Agent } from '@centurionarx/cxh-agent'
-import SubagentRuntime, { type SubagentStartRequest } from '@centurionarx/cxh-subagent'
-import { SessionId } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import { type Agent } from '@arx-ai/arx-agent'
+import SubagentRuntime, { type SubagentStartRequest } from '@arx-ai/arx-subagent'
+import { SessionId } from '@arx-ai/arx-session'
 import * as scripted from './scripted-provider.ts'
 
 /** A minimal parent; the scripted provider only reads its id. */

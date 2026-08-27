@@ -6,11 +6,11 @@
 # Requires the vendor CLI to be logged in on this host (`claude login`). There
 # is no credential entry below because this harness never handles one.
 
-# User-settings document (`$CXH_HOME/settings.yaml`, hot-reloaded): a
+# User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): a
 # `llm-agent-cli:` section there overrides the adapter entry below without a
 # restart.
 - id: settings
-  name: '@centurionarx/cxh-settings-file'
+  name: '@arx-ai/arx-settings-file'
 
 # A subscription-authenticated vendor CLI as an ordinary model route. No API
 # key is involved: the CLI reads the login the host already has, and the
@@ -18,7 +18,7 @@
 # required because automatic compaction resolves capacity from this route and
 # the CLI discloses none.
 - id: llm-agent-cli
-  name: '@centurionarx/cxh-llm-agent-cli'
+  name: '@arx-ai/arx-llm-agent-cli'
   config:
     providers:
       claude-subscription:
@@ -27,6 +27,7 @@
           - id: claude-sonnet-4-5
             contextWindow: 200000
             maxTokens: 8192
+            acceptsImages: true
 
 # Skills. The registry is the seam; the filesystem provider supplies the
 # catalog from the shared agent roots, including `~/.agents/skills`, which is
@@ -35,26 +36,26 @@
 # ambient prompt text - which is also why this route refuses the vendor CLI's
 # own Skill tool.
 - id: skill
-  name: '@centurionarx/cxh-skill'
+  name: '@arx-ai/arx-skill'
 
 - id: skill-filesystem
-  name: '@centurionarx/cxh-skill-filesystem'
+  name: '@arx-ai/arx-skill-filesystem'
 
 - id: tool-skill
-  name: '@centurionarx/cxh-tool-skill'
+  name: '@arx-ai/arx-tool-skill'
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-bash-local'
+  name: '@arx-ai/arx-bash-local'
   config:
     timeoutMs: 60000
 
 # The example composition pre-creates one fresh `main` agent for its test driver.
 - id: agent-spine
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents:
       - id: main
@@ -70,20 +71,20 @@
       factual.
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
-    compression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+    compression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
 
 - id: checkpoint-policy
-  name: '@centurionarx/cxh-session-checkpoint-policy'
+  name: '@arx-ai/arx-session-checkpoint-policy'
 
 # Summarize an older range when derived history approaches the context window.
 - id: token-meter
-  name: '@centurionarx/cxh-token-meter'
+  name: '@arx-ai/arx-token-meter'
 
 - id: compaction-basic
-  name: '@centurionarx/cxh-compaction-basic'
+  name: '@arx-ai/arx-compaction-basic'
   config:
     thresholdRatio: 0.8
     retainRatio: 0.16
@@ -93,20 +94,20 @@
 # Projection registry: durable subagent identity (mode/label) folds through
 # its registered units; subagent catalog reads fail loud without the capability.
 - id: session-projection
-  name: '@centurionarx/cxh-session-projection'
+  name: '@arx-ai/arx-session-projection'
 
 # Expose fresh-child `spawn` and completed-prefix `fork` through independent
 # in-process backends.
 - id: subagent
-  name: '@centurionarx/cxh-subagent'
+  name: '@arx-ai/arx-subagent'
 
 - id: subagent-spawn-in-process
-  name: '@centurionarx/cxh-subagent-spawn-in-process'
+  name: '@arx-ai/arx-subagent-spawn-in-process'
   config:
     providerName: spawn
 
 - id: subagent-fork-in-process
-  name: '@centurionarx/cxh-subagent-fork-in-process'
+  name: '@arx-ai/arx-subagent-fork-in-process'
   config:
     providerName: fork
 
@@ -114,13 +115,13 @@
 # separately loaded control registers global `send_message`; `report` is
 # installed only in continuable child scopes.
 - id: tool-subagent-control
-  name: '@centurionarx/cxh-tool-subagent-control'
+  name: '@arx-ai/arx-tool-subagent-control'
 
 - id: tool-subagent-report
-  name: '@centurionarx/cxh-tool-subagent-report'
+  name: '@arx-ai/arx-tool-subagent-report'
 
 - id: tool-subagent
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: spawn
     toolName: subagent
@@ -132,7 +133,7 @@
 # as an explicit foreground-only choice even though agent-spine-demo mounts the
 # generic Job runtime. See .agents/notes/implemented/architecture/2026-08-10-fork-children-stay-one-shot.md.
 - id: tool-subagent-fork
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: fork
     toolName: subagent_fork
@@ -143,33 +144,33 @@
 # The worker-thread workflow engine fans a model-written JavaScript script's
 # `agent()` calls out through the spawn backend.
 - id: workflow-worker-thread
-  name: '@centurionarx/cxh-workflow-worker-thread'
+  name: '@arx-ai/arx-workflow-worker-thread'
   config:
     provider: spawn
 
 - id: tool-workflow
-  name: '@centurionarx/cxh-tool-workflow'
+  name: '@arx-ai/arx-tool-workflow'
 
 # A separate fixed consumer demonstrates fresh-agent Ralph iteration without
 # changing the workflow tool or same-session goal behavior.
 - id: tool-ralph
-  name: '@centurionarx/cxh-tool-ralph'
+  name: '@arx-ai/arx-tool-ralph'
 
 # `todo_write` replaces the logged whole list.
 - id: tool-todo
-  name: '@centurionarx/cxh-tool-todo'
+  name: '@arx-ai/arx-tool-todo'
   config:
     allowParallelInProgress: true
 
 # Policy loads before the model-facing filesystem tools so writes and edits
 # require an observed file. Relative paths resolve from the process cwd.
 - id: fs-local
-  name: '@centurionarx/cxh-fs-local'
+  name: '@arx-ai/arx-fs-local'
   config:
     cwd: !!js process.cwd()
 
 - id: fs-observation-policy
-  name: '@centurionarx/cxh-fs-observation-policy'
+  name: '@arx-ai/arx-fs-observation-policy'
 
 - id: tool-fs
-  name: '@centurionarx/cxh-tool-fs'
+  name: '@arx-ai/arx-tool-fs'

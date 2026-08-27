@@ -1,10 +1,10 @@
-/** Package-owned filesystem event-data invariants. @module @centurionarx/cxh-fs/invariant */
+/** Package-owned filesystem event-data invariants. @module @arx-ai/arx-fs/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 import type { FsObservation, FsTarget } from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-fs'
+const PACKAGE_NAME = '@arx-ai/arx-fs'
 
 /** Cordis companion plugin name. */
 export const name = 'fs-invariant'

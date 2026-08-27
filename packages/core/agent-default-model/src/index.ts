@@ -1,16 +1,16 @@
 /**
  * Default model selection for an Agent without a session-specific selection.
  *
- * @module @centurionarx/cxh-agent-default-model
+ * @module @arx-ai/arx-agent-default-model
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { ModelSelection } from '@centurionarx/cxh-agent'
-import { ReasoningEffortId } from '@centurionarx/cxh-llm'
-import { installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ModelSelection } from '@arx-ai/arx-agent'
+import { ReasoningEffortId } from '@arx-ai/arx-llm'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Default model selection for Agents created without an explicit model. */
     agentDefaultModel: AgentDefaultModelConfig
@@ -20,33 +20,44 @@ declare module '@centurionarx/cordis' {
 /** Settings namespace carrying the default model selection for future Agents. */
 export const AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE = settingsNamespace('agent-default-model')
 
-/** Stored and composed default model selection. */
+/**
+ * Stored and composed default model selection.
+ *
+ * A deployment that ships no default leaves `provider` and `model` unset, and
+ * every consumer then has no selection to seed with until the user picks one.
+ * Both must be present together: half a selection names no reachable route.
+ */
 export interface AgentDefaultModelSettings {
   /** Registered provider route. */
-  provider: string
+  provider?: string
   /** Provider-owned model id. */
-  model: string
+  model?: string
   /** Adapter-owned reasoning effort, or provider/default behavior when absent. */
   reasoningEffort?: string
 }
 
 /** Schema of the default Agent model settings section. */
 export const AGENT_DEFAULT_MODEL_SETTINGS_SCHEMA: z<AgentDefaultModelSettings> = z.object({
-  provider: z.string().required(),
-  model: z.string().required(),
+  provider: z.string(),
+  model: z.string(),
   reasoningEffort: z.string(),
 })
 
 /** Composition entry for the default model selection. */
 export interface Config {
-  /** Registered provider route. */
-  provider: string
-  /** Provider-owned model id. */
-  model: string
+  /** Registered provider route; absent ships no default. */
+  provider?: string
+  /** Provider-owned model id; absent ships no default. */
+  model?: string
 }
 
-/** Project stored settings onto the Agent-facing selection type. */
-function selection(settings: AgentDefaultModelSettings): ModelSelection {
+/**
+ * Project stored settings onto the Agent-facing selection type.
+ * @param settings - the current stored or composed section.
+ * @returns the selection, or undefined when the deployment ships none.
+ */
+function selection(settings: AgentDefaultModelSettings): ModelSelection | undefined {
+  if (settings.provider === undefined || settings.model === undefined) return undefined
   return {
     provider: settings.provider,
     model: settings.model,
@@ -63,15 +74,18 @@ function selection(settings: AgentDefaultModelSettings): ModelSelection {
  */
 export class AgentDefaultModelConfig extends Service {
   static Config: z<Config> = z.object({
-    provider: z.string().required(),
-    model: z.string().required(),
+    provider: z.string(),
+    model: z.string(),
   })
 
   private source: () => AgentDefaultModelSettings
 
   constructor(ctx: Context, config: Config) {
     super(ctx, 'agentDefaultModel')
-    const entry: AgentDefaultModelSettings = { provider: config.provider, model: config.model }
+    const entry: AgentDefaultModelSettings = {
+      ...config.provider === undefined ? {} : { provider: config.provider },
+      ...config.model === undefined ? {} : { model: config.model },
+    }
     this.source = () => entry
     installSettingsSection(ctx, AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE, AGENT_DEFAULT_MODEL_SETTINGS_SCHEMA, entry, {
       setSource: (current) => { this.source = current },
@@ -83,9 +97,9 @@ export class AgentDefaultModelConfig extends Service {
 
   /**
    * Read the current default model selection.
-   * @returns a detached provider, model, and optional reasoning selection.
+   * @returns a detached selection, or undefined when the deployment ships none and the user has picked none.
    */
-  currentSelection(): ModelSelection {
+  currentSelection(): ModelSelection | undefined {
     return selection(this.source())
   }
 

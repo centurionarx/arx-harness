@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from centurionarx_harness import RunResult
+    from arx_harness import RunResult
 
 
 EXPECTED_TEXT = "runtime smoke ok"
@@ -80,13 +80,13 @@ MINIMAL_SNAPSHOT_DIRECTORY = (
 MINIMAL_SNAPSHOT_FILENAMES = ("model-visible.json",)
 # The agent loop's dynamic runtime-context snapshot is the one model-visible message this
 # expected output cannot carry: the same composition emits it on macOS and not on Linux
-# (centurionarx-harness#2488), and the file must replay on both. Everything else is compared.
+# (arx-harness#2488), and the file must replay on both. Everything else is compared.
 RUNTIME_CONTEXT_PREFIX = "Current runtime context"
 CUSTOM_CORDIS = """\
 - id: sdk-jsonrpc-server
-  name: '@centurionarx/cxh-sdk-jsonrpc-server'
+  name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     workspaceContext: false
     skills:
@@ -95,38 +95,38 @@ CUSTOM_CORDIS = """\
     tools:
       mode: both
 - id: sessions
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
-    root: !!js process.env.CXH_SESSION_ROOT
+    root: !!js process.env.ARX_SESSION_ROOT
     compression: 'none'
 - id: code-runtime
-  name: '@centurionarx/cxh-code-runtime-worker-thread'
+  name: '@arx-ai/arx-code-runtime-worker-thread'
 - id: subagents
-  name: '@centurionarx/cxh-subagent'
+  name: '@arx-ai/arx-subagent'
 - id: subagent-spawn-in-process
-  name: '@centurionarx/cxh-subagent-spawn-in-process'
+  name: '@arx-ai/arx-subagent-spawn-in-process'
   config:
     providerName: spawn
 - id: subagent-tool
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: spawn
 - id: workflow-engine
-  name: '@centurionarx/cxh-workflow-worker-thread'
+  name: '@arx-ai/arx-workflow-worker-thread'
   config:
     provider: spawn
 - id: workflow-tool
-  name: '@centurionarx/cxh-tool-workflow'
+  name: '@arx-ai/arx-tool-workflow'
 - id: cordis-host-runner
-  name: '@centurionarx/cxh-cordis-host-runner'
+  name: '@arx-ai/arx-cordis-host-runner'
 - id: cordis-tool
-  name: '@centurionarx/cxh-tool-cordis'
+  name: '@arx-ai/arx-tool-cordis'
 """
 FS_SEARCH_CORDIS = """\
 - id: sdk-jsonrpc-server
-  name: '@centurionarx/cxh-sdk-jsonrpc-server'
+  name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     workspaceContext: false
     skills:
@@ -134,14 +134,14 @@ FS_SEARCH_CORDIS = """\
     toolBash: false
     toolJobs: false
 - id: sessions
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
-    root: !!js process.env.CXH_SESSION_ROOT
+    root: !!js process.env.ARX_SESSION_ROOT
     compression: 'none'
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 - id: fs-search
-  name: '@centurionarx/cxh-tool-fs-search'
+  name: '@arx-ai/arx-tool-fs-search'
   config:
     sampleOverCapGlobResults: false
 """
@@ -228,11 +228,11 @@ def mcp_cordis(server_script: Path) -> str:
     return json.dumps([
         {
             "id": "sdk-jsonrpc-server",
-            "name": "@centurionarx/cxh-sdk-jsonrpc-server",
+            "name": "@arx-ai/arx-sdk-jsonrpc-server",
         },
         {
             "id": "agent-core",
-            "name": "@centurionarx/cxh-agent-spine-demo",
+            "name": "@arx-ai/arx-agent-spine-demo",
             "config": {
                 "workspaceContext": False,
                 "skills": {"enabled": False},
@@ -241,12 +241,12 @@ def mcp_cordis(server_script: Path) -> str:
         },
         {
             "id": "sessions",
-            "name": "@centurionarx/cxh-session-persistence-jsonl",
+            "name": "@arx-ai/arx-session-persistence-jsonl",
             "config": {"root": "./sessions", "compression": "none"},
         },
         {
             "id": "mcp-fixture",
-            "name": "@centurionarx/cxh-mcp-client",
+            "name": "@arx-ai/arx-mcp-client",
             "config": {
                 "serverName": "fixture",
                 "transport": "stdio",
@@ -718,12 +718,12 @@ def main() -> None:
 
 
 def smoke_sdk_default(base_url: str) -> None:
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-default-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-default-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -738,14 +738,14 @@ def smoke_sdk_default(base_url: str) -> None:
 
 
 def smoke_sdk_custom(base_url: str, executable: Path) -> None:
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-custom-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-custom-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -767,16 +767,16 @@ def smoke_sdk_custom(base_url: str, executable: Path) -> None:
 
 def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -> None:
     """Exercise the checked-in minimal composition through the packaged executable."""
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
     # One mock model serves every scenario of a run, so the snapshot takes this turn's slice.
     first_request = len(MockModelHandler.requests)
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-minimal-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-minimal-") as temporary:
         root = Path(temporary).resolve()
         editor_path = root / "created.txt"
         prompt = f"{MINIMAL_PROMPT}\n{MINIMAL_EDITOR_PATH_PREFIX}{editor_path}"
         sessions = root / "sessions"
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -804,15 +804,15 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
 
 def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
     """Exercise real grep and glob spawns through the packaged executable."""
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-fs-search-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-fs-search-") as temporary:
         root = Path(temporary).resolve()
         (root / "needle.txt").write_text(f"{FS_SEARCH_MARKER}\n")
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(FS_SEARCH_CORDIS)
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -831,9 +831,9 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
 
 def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
     """Discover and call an external stdio MCP tool through the packaged client."""
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-mcp-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-mcp-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         server_script = root / "mcp_server.py"
@@ -841,7 +841,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         cordis = root / "cordis.yml"
         cordis.write_text(mcp_cordis(server_script))
         discovery_log = server_script.with_suffix(".log")
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -866,14 +866,14 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
 
 def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) -> None:
     """Drive and compare the advanced SDK/executable behavioral snapshot."""
-    from centurionarx_harness import CENTURIONarxHarness
+    from arx_harness import ArxHarness
 
-    with tempfile.TemporaryDirectory(prefix="cxh-sdk-snapshot-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-sdk-snapshot-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
-        with CENTURIONarxHarness(
+        with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -910,16 +910,16 @@ def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) 
 
 
 def smoke_direct(base_url: str, executable: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="cxh-direct-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="arx-direct-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
         environment = {
             **os.environ,
-            "CXH_CORDIS_CONFIG": str(cordis),
-            "CXH_SESSION_ROOT": str(sessions),
-            "CXH_CWD": str(root),
+            "ARX_CORDIS_CONFIG": str(cordis),
+            "ARX_SESSION_ROOT": str(sessions),
+            "ARX_CWD": str(root),
             "DEEPSEEK_API_KEY": "sk-keyless-smoke",
             "DEEPSEEK_BASE_URL": base_url,
         }

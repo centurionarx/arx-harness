@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
 
 const streamSimple = vi.hoisted(() => vi.fn())
 

@@ -8,7 +8,7 @@ import {
   launchAcpTestAgent,
   type AgentUnderTest,
   type LaunchedAcpTestAgent,
-} from '@centurionarx/cxh-acp-snapshot'
+} from '@arx-ai/arx-acp-snapshot'
 import { cleanupAcpExampleTest } from './cleanup.ts'
 
 /**
@@ -47,7 +47,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('acp-agent e2e: a PreToolUse hook
     spawned = launchAcpTestAgent({
       agent: AGENT,
       cwd: workdir,
-      env: { CXH_PERMISSION_MODE: 'danger-full-access' },
+      env: { ARX_PERMISSION_MODE: 'danger-full-access' },
     })
     const { client, updates } = spawned
 

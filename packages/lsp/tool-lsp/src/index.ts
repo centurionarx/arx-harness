@@ -3,21 +3,21 @@
  * (`goToDefinition`/`findReferences`/`goToImplementation`/`hover`); it converts one-based UTF-16
  * cursor coordinates to the seam's zero-based positions, requires the session workspace with no
  * fallback, caps and renders results, and attaches a configurable timeout budget for
- * `cxh-tool-call-timeout-policy` to enforce. It runtime-injects only `tools`, `lsp`, and `systemPrompt` and
+ * `arx-tool-call-timeout-policy` to enforce. It runtime-injects only `tools`, `lsp`, and `systemPrompt` and
  * imports no provider.
  *
  * Namespace plugin (named exports, no default export).
- * @module @centurionarx/cxh-tool-lsp
+ * @module @arx-ai/arx-tool-lsp
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { defineTool } from '@centurionarx/cxh-tools'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { LspError } from '@centurionarx/cxh-lsp'
-import type {} from '@centurionarx/cxh-lsp'
-import type {} from '@centurionarx/cxh-system-prompt'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { defineTool } from '@arx-ai/arx-tools'
+import { assertNever } from '@arx-ai/arx-llm'
+import { LspError } from '@arx-ai/arx-lsp'
+import type {} from '@arx-ai/arx-lsp'
+import type {} from '@arx-ai/arx-system-prompt'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,

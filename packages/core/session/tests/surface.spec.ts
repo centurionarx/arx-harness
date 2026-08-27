@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { SessionEvent, SurfaceEvent, SurfaceEventType } from '@centurionarx/cxh-session'
+import type { SessionEvent, SurfaceEvent, SurfaceEventType } from '@arx-ai/arx-session'
 import {
   Session,
   SessionId,
@@ -8,8 +8,8 @@ import {
   isReplacementSurfaceEvent,
   isSurfaceEligibleType,
   isSurfaceEvent,
-} from '@centurionarx/cxh-session'
-import { SurfaceManager } from '@centurionarx/cxh-session/surface'
+} from '@arx-ai/arx-session'
+import { SurfaceManager } from '@arx-ai/arx-session/surface'
 import {
   createMessage,
   createToolResultMessage,
@@ -17,7 +17,7 @@ import {
   freezeMessage,
   CallId,
   MessageId,
-} from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-llm'
 
 /** Build a minimal session with turn boundaries and a single user message. */
 function surfaceSession(): Session {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { scopeTarget } from '@centurionarx/cxh-scope'
-import { CallId } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
-import type { ToolExecution, ToolExecutionResult, ToolExecutionToken } from '@centurionarx/cxh-tools'
-import * as ToolsInvariant from '@centurionarx/cxh-tools/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import { scopeTarget } from '@arx-ai/arx-scope'
+import { CallId } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
+import type { ToolExecution, ToolExecutionResult, ToolExecutionToken } from '@arx-ai/arx-tools'
+import * as ToolsInvariant from '@arx-ai/arx-tools/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 const testToolSignal = new AbortController().signal
 

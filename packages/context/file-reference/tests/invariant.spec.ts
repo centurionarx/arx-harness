@@ -1,6 +1,6 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import InvariantService from '@centurionarx/cxh-invariants'
+import InvariantService from '@arx-ai/arx-invariants'
 import * as FileReferenceInvariant from '../src/invariant.ts'
 
 describe('invariant companion', () => {

@@ -8,11 +8,11 @@
  * Unsupported or misplaced keywords reject rather than being accepted without
  * enforcement. Consumers that require an object root apply
  * {@link assertObjectJsonSchema} before accepting input.
- * @module cxh-tools/json-schema
+ * @module arx-tools/json-schema
  */
 
-import { assertNever, HarnessError } from '@centurionarx/cxh-llm'
-import { isJsonValue, type JsonValue } from '@centurionarx/cxh-session'
+import { assertNever, HarnessError } from '@arx-ai/arx-llm'
+import { isJsonValue, type JsonValue } from '@arx-ai/arx-session'
 
 /** Scalar JSON values supported by `enum` and `const`. */
 export type JsonSchemaScalar = string | number | boolean | null

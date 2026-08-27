@@ -1,14 +1,14 @@
 /**
  * Model-facing UTF-8 read. It performs one provider stat for type, routing, and observed version,
  * streams large or size-unknown files, renders a bounded window, then emits the observation.
- * @module @centurionarx/cxh-tool-fs/src/read
+ * @module @arx-ai/arx-tool-fs/src/read
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { GenericCallView, ReadResultView, ToolResult } from '@centurionarx/cxh-tools'
-import type {} from '@centurionarx/cxh-fs'
-import type {} from '@centurionarx/cxh-system-prompt'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { GenericCallView, ReadResultView, ToolResult } from '@arx-ai/arx-tools'
+import type {} from '@arx-ai/arx-fs'
+import type {} from '@arx-ai/arx-system-prompt'
 import { buildWindow, formatReadOutput, langFromPath, readMetaFromMeta } from './read-render.ts'
 import { resolveRegularReadTarget } from './read-target.ts'
 

@@ -3,12 +3,12 @@
  * The tool pauses until a UI provider returns a human answer, then feeds that
  * answer back into the agent loop as an ordinary tool result.
  *
- * @module @centurionarx/cxh-tool-ask-user
+ * @module @arx-ai/arx-tool-ask-user
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import '@centurionarx/cxh-user-questions'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import '@arx-ai/arx-user-questions'
 
 export const name = 'tool-ask-user'
 export const inject = ['tools', 'userQuestions']

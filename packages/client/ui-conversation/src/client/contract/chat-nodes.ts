@@ -1,7 +1,7 @@
 import type {
   AssistantBlock, AssistantMessageNode, ChatConversationViewNode, CommandNode,
   CompactionSummaryNode, ModelRetryNode, RunningToolCall, ToolCallBlock,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 
 /** Merge-extensible payload registry keyed by final Chat renderer kind. */
 export interface ChatNodeDataMap {}

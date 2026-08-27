@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-message-feedback
+# @arx-ai/arx-client-ui-message-feedback
 
 [English](README.md) | 中文
 

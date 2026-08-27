@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-title-first-prompt-llm
+# @arx-ai/arx-session-title-first-prompt-llm
 
 [English](README.md) | 中文
 

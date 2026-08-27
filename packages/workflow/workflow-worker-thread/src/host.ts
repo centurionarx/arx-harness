@@ -3,20 +3,20 @@
  * cancellation-grace expiry owns settlement and closes message admission.
  * Pending starts share one abort signal; published children share idempotent
  * cleanup, and quiescence waits for both while synthesizing any missing end events.
- * @module @centurionarx/cxh-workflow-worker-thread/host
+ * @module @arx-ai/arx-workflow-worker-thread/host
  */
 
 import { tmpdir } from 'node:os'
 import { Worker } from 'node:worker_threads'
 import type { WorkerOptions } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
-import type { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { snapshotJsonValue } from '@centurionarx/cxh-session'
-import type SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentRun } from '@centurionarx/cxh-subagent'
-import type { WorkflowAgentEndInfo, WorkflowAgentInfo, WorkflowMeta, WorkflowResult, WorkflowRun, WorkflowRunId } from '@centurionarx/cxh-workflow'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { assertNever } from '@arx-ai/arx-llm'
+import { snapshotJsonValue } from '@arx-ai/arx-session'
+import type SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentRun } from '@arx-ai/arx-subagent'
+import type { WorkflowAgentEndInfo, WorkflowAgentInfo, WorkflowMeta, WorkflowResult, WorkflowRun, WorkflowRunId } from '@arx-ai/arx-workflow'
 import { renderThrown } from './realm.ts'
 import type { ExecutionObserver } from './runtime.ts'
 import { HostToWorkerType, WorkerToHostType } from './protocol.ts'

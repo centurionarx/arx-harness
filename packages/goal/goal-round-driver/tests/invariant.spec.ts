@@ -1,15 +1,15 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   GoalId,
   type GoalSnapshotChangeMeta,
   type GoalView,
-} from '@centurionarx/cxh-goal'
-import * as GoalSessionInvariant from '@centurionarx/cxh-goal-round-driver/invariant'
-import { renderGoalRoundPrompt } from '@centurionarx/cxh-goal-round-driver'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import SessionStore, { SessionId, type Session } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-goal'
+import * as GoalSessionInvariant from '@arx-ai/arx-goal-round-driver/invariant'
+import { renderGoalRoundPrompt } from '@arx-ai/arx-goal-round-driver'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import SessionStore, { SessionId, type Session } from '@arx-ai/arx-session'
 
 const change: GoalSnapshotChangeMeta = {
   kind: 'goal/change',
@@ -95,7 +95,7 @@ describe('goal-round-driver prompt invariants', () => {
       appendRound(session, 2, [{ type: 'text', text: 'counterfeit continuation' }])
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-goal-round-driver',
+      packageName: '@arx-ai/arx-goal-round-driver',
     }))
   })
 
@@ -110,7 +110,7 @@ describe('goal-round-driver prompt invariants', () => {
         source,
       }), { surfaceOp: 'append' })
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
-      packageName: '@centurionarx/cxh-goal-round-driver',
+      packageName: '@arx-ai/arx-goal-round-driver',
     }))
   })
 
@@ -122,7 +122,7 @@ describe('goal-round-driver prompt invariants', () => {
 
     await expect(ctx.plugin(GoalSessionInvariant)).rejects.toMatchObject({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-goal-round-driver',
+      packageName: '@arx-ai/arx-goal-round-driver',
     })
   })
 })

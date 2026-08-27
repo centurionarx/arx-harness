@@ -11,17 +11,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import { CommandId } from '@centurionarx/cxh-commands/brand'
-import PlanModeController from '@centurionarx/cxh-plan-mode'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import { CommandId } from '@arx-ai/arx-commands/brand'
+import PlanModeController from '@arx-ai/arx-plan-mode'
 
 interface Bench {
   ctx: Context

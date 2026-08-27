@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-07-19-make-jsonrpc-directional.md
-2026-07-19-make-jsonrpc-directional.md: d05ad94db457419d4ee8bc9169a7e0b644668ed5
-2026-07-19-make-jsonrpc-directional.zh.md: a2c51ce367a50baddeddb0395075d4587b637790
+2026-07-19-make-jsonrpc-directional.md: 320a14f5ce2ce0ddcf063d97c19fd39d2e16e647
+2026-07-19-make-jsonrpc-directional.zh.md: ec0576b1dc7786484f8795b3b358815ff163e320

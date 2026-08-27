@@ -2,11 +2,11 @@
  * Vocabulary for the filesystem Service Definition (`ctx.fs`): the opaque target/version
  * identities, the metadata `stat` returns, the write-intent and outcome shapes, the
  * literal-edit request/outcome, and the typed error taxonomy.
- * @module @centurionarx/cxh-fs/types
+ * @module @arx-ai/arx-fs/types
  */
 
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { Branded } from '@centurionarx/cxh-brand'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /**
  * Opaque key for stale guards and target lookup. The local backend uses a
@@ -189,7 +189,7 @@ export type FsErrorCode =
 
 /**
  * Typed filesystem error. Extends {@link HarnessError} so it carries a stable
- * {@link FsErrorCode} and chains `cause`. `cxh-fs` owns this vocabulary so
+ * {@link FsErrorCode} and chains `cause`. `arx-fs` owns this vocabulary so
  * backends and the policy layer raise the same codes instead of each inventing
  * message strings.
  */

@@ -1,13 +1,13 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import LlmRuntime, { createUserMessage, deepFreeze, markAgentLoopRequest  } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+import LlmRuntime, { createUserMessage, deepFreeze, markAgentLoopRequest  } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import SessionTitleService, {
   SessionTitleProviderId,
   type SessionTitleProvider,
   type SessionTitleProviderRequest,
   type SessionTitleProviderResult,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,

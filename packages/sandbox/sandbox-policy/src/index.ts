@@ -15,16 +15,16 @@
  * reads session state once at each operation boundary; executors and providers
  * remain session-free.
  *
- * @module @centurionarx/cxh-sandbox-policy
+ * @module @arx-ai/arx-sandbox-policy
  */
 
 import { resolve as resolvePath } from 'node:path'
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-agent'
-import { canonicalPath, type SandboxExecutionPolicy, type SandboxMode } from '@centurionarx/cxh-sandbox'
-import type { Session } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-system-prompt'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-agent'
+import { canonicalPath, type SandboxExecutionPolicy, type SandboxMode } from '@arx-ai/arx-sandbox'
+import type { Session } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-system-prompt'
 import { effectiveSandboxMode } from './session-mode.ts'
 
 export { SANDBOX_MODES, effectiveSandboxMode, setSandboxMode } from './session-mode.ts'
@@ -38,11 +38,11 @@ function resolveWorkspaceRoot(path: string): string {
 function renderPolicyContext(policy: SandboxExecutionPolicy): string {
   switch (policy.mode) {
     case 'read-only':
-      return 'Current CXH file policy: read-only. Any available operation enforced by the CXH file sandbox cannot modify files in the standing mode. Do not refuse a required modification from this policy alone: try an available tool normally and follow any denial and escalation guidance it returns.'
+      return 'Current ARX file policy: read-only. Any available operation enforced by the ARX file sandbox cannot modify files in the standing mode. Do not refuse a required modification from this policy alone: try an available tool normally and follow any denial and escalation guidance it returns.'
     case 'workspace-write':
-      return `Current CXH file policy: workspace-write. Any available operation enforced by the CXH file sandbox may modify files under the session workspace: ${JSON.stringify(policy.workspaceRoot)}. Some platform temporary areas may also be writable.`
+      return `Current ARX file policy: workspace-write. Any available operation enforced by the ARX file sandbox may modify files under the session workspace: ${JSON.stringify(policy.workspaceRoot)}. Some platform temporary areas may also be writable.`
     case 'danger-full-access':
-      return 'Current CXH file policy: danger-full-access. The CXH file sandbox does not restrict file modifications by available operations.'
+      return 'Current ARX file policy: danger-full-access. The ARX file sandbox does not restrict file modifications by available operations.'
     /* v8 ignore next 4 -- SandboxMode is a typed same-process closed union; this branch is only the static exhaustiveness guard. */
     default: {
       const mode: never = policy.mode
@@ -51,7 +51,7 @@ function renderPolicyContext(policy: SandboxExecutionPolicy): string {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sandboxPolicy: SandboxPolicyService
   }

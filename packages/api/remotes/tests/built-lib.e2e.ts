@@ -45,7 +45,7 @@ describe.skipIf(!requiredArtifacts)('Goal Remote built LIB chain', () => {
     }).map(([key, path]) => [key, artifactUrl(path)]))
     const script = `
       import { createServer } from 'node:http'
-      import * as cordis from '@centurionarx/cordis'
+      import * as cordis from '@arx-ai/cordis'
 
       const urls = ${JSON.stringify(urls)}
       const { Context } = cordis
@@ -123,16 +123,16 @@ describe.skipIf(!requiredArtifacts)('Goal Remote built LIB chain', () => {
         const handoff = handoffs.get(id)
         if (handoff === undefined) throw new Error('missing Client bundle handoff ' + id)
         return handoff.factory(specifier => {
-          if (specifier === '@centurionarx/cordis') return cordis
+          if (specifier === '@arx-ai/cordis') return cordis
           throw new Error('unexpected Client external ' + specifier)
         })
       }
       const client = new Context()
       for (const id of [
-        '@centurionarx/cxh-typert-registry',
-        '@centurionarx/cxh-client-connection',
-        '@centurionarx/cxh-api-gateway',
-        '@centurionarx/cxh-api-remotes',
+        '@arx-ai/arx-typert-registry',
+        '@arx-ai/arx-client-connection',
+        '@arx-ai/arx-api-gateway',
+        '@arx-ai/arx-api-remotes',
       ]) {
         const plugin = instantiate(id)
         await client.plugin({ inject: plugin.inject, apply: plugin.apply })

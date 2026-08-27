@@ -4,7 +4,7 @@
  * (repo discipline), so `./client` projects the same single-source content
  * `./types` serves to host consumers — zero duplication.
  *
- * @module @centurionarx/cxh-permission-presets/client
+ * @module @arx-ai/arx-permission-presets/client
  */
 
 export type * from './types.ts'

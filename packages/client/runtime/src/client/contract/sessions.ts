@@ -7,11 +7,11 @@
  * [SessionsPort](./sessions-port.ts). Widening this interface is the
  * explicit act of widening what features may do to the sessions domain.
  */
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   RpcResult, SessionId, SubagentAddress,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { HostObservable, SessionMaybeProvideInfo } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-api-remotes/client'
+import type { HostObservable, SessionMaybeProvideInfo } from '@arx-ai/arx-client-ui-slots'
 import type { AgentContext } from '../agents/scope.ts'
 import type { SessionSearchResultItem } from '../sessions/manager.ts'
 import type {

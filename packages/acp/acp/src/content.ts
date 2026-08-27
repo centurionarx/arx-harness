@@ -1,11 +1,11 @@
 /** ACP wire-content admission and projection owned by the ACP adapter. @module */
 
 import type { ContentBlock as AcpContentBlock } from '@agentclientprotocol/sdk'
-import type { Context } from '@centurionarx/cordis'
-import { isImageAdmissionError } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentRef, ImageMediaType, SaveImageAttachment } from '@centurionarx/cxh-attachment'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import { isImageAdmissionError } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentRef, ImageMediaType, SaveImageAttachment } from '@arx-ai/arx-attachment'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { ContentBlock } from '@arx-ai/arx-llm'
 
 /** Raster formats shared by ACP image blocks and the core attachment vocabulary. */
 const IMAGE_MEDIA_TYPES: readonly ImageMediaType[] = [

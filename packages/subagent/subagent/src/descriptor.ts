@@ -18,14 +18,14 @@
  * durable descriptor, so it neither restores the prior budget nor inherits
  * the parent's current one; the resumed route's defaults apply instead.
  *
- * @module @centurionarx/cxh-subagent/descriptor
+ * @module @arx-ai/arx-subagent/descriptor
  */
 
-import { snapshotJsonValue } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import type { ToolRestriction } from '@centurionarx/cxh-tools'
+import { snapshotJsonValue } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import type { ToolRestriction } from '@arx-ai/arx-tools'
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Durable identity and lifecycle mode of a session-backed subagent child,

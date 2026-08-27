@@ -1,7 +1,7 @@
-/** Canonical tool-definition fixtures for repository tests. @module cxh-tools/testing */
+/** Canonical tool-definition fixtures for repository tests. @module arx-tools/testing */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session'
 import { defineTool } from './schema.ts'
 import type { DefineToolOptions, ParameterSchemaSpec } from './schema.ts'
 import type { ToolDefinition, ToolRunContext } from './index.ts'

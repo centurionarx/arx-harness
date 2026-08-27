@@ -1,21 +1,21 @@
 /**
  * Model argument schemas, normalization, and filter construction.
  *
- * @module @centurionarx/cxh-tool-session-query/input
+ * @module @arx-ai/arx-tool-session-query/input
  */
 
 import {
   SessionId,
   type SessionEventType,
   type SessionId as SessionIdValue,
-} from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-session'
 import {
   SessionQueryError,
   type SessionAvailability,
   type SessionEventMetadataFilter,
   type SessionEventSurface,
   type SessionResultFilter,
-} from '@centurionarx/cxh-session-query'
+} from '@arx-ai/arx-session-query'
 
 interface SessionSearchArgs {
   query: string

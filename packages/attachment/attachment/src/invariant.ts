@@ -1,10 +1,10 @@
-/** Package-owned invariant companion for `@centurionarx/cxh-attachment`. @module @centurionarx/cxh-attachment/invariant */
+/** Package-owned invariant companion for `@arx-ai/arx-attachment`. @module @arx-ai/arx-attachment/invariant */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-attachment'
+const PACKAGE_NAME = '@arx-ai/arx-attachment'
 /** Cordis companion plugin name. */
 export const name = 'attachment-invariant'
 /** Service required before package ownership can be reserved. */

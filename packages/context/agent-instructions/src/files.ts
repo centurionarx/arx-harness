@@ -1,15 +1,15 @@
 /**
  * Instruction-file discovery and bounded, abort-aware provider reads.
  *
- * @module @centurionarx/cxh-agent-instructions/files
+ * @module @arx-ai/arx-agent-instructions/files
  */
 
 import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
-import type { FileSystem, FsInfo, FsTarget, FsVersion } from '@centurionarx/cxh-fs'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { cxhHomeDisplay } from '@centurionarx/cxh-home-paths'
+import type { FileSystem, FsInfo, FsTarget, FsVersion } from '@arx-ai/arx-fs'
+import { assertNever } from '@arx-ai/arx-llm'
+import { arxHomeDisplay } from '@arx-ai/arx-home-paths'
 import { resolveConfig, resolveDiscoveryConfig, type ResolvedConfig } from './config.ts'
 import { trimmedInstructionDigest } from './digest.ts'
 import {
@@ -48,7 +48,7 @@ export interface ProbedInstructionFile extends InstructionFile {
 
 interface DiscoverOptions {
   cwd: string
-  cxhHome?: string
+  arxHome?: string
   projectRootMarkers?: string[]
   instructionFileCandidates?: string[]
   localInstructionFileCandidates?: string[]
@@ -277,13 +277,13 @@ async function discoverInstructionFiles(
     files.push(file)
   }
 
-  const userGlobal = join(config.cxhHome, USER_GLOBAL_FILE)
+  const userGlobal = join(config.arxHome, USER_GLOBAL_FILE)
   const userGlobalProbe = await statFile(userGlobal, fileSystem, options.signal)
   switch (userGlobalProbe.kind) {
     case 'present':
       addFile({
         absolutePath: userGlobal,
-        displayPath: userGlobalDisplayPath(config.cxhHome),
+        displayPath: userGlobalDisplayPath(config.arxHome),
         ...userGlobalProbe.info,
       })
       break
@@ -466,7 +466,7 @@ export async function probeScopeInstruction(
 ): Promise<ScopeInstructionProbe> {
   const { directory, candidateName } = decodeScopeKey(scope)
   const dir = directory === USER_GLOBAL_DIRECTORY
-    ? resolved.cxhHome
+    ? resolved.arxHome
     : directory === '.' ? projectRoot : join(projectRoot, directory)
   const absolutePath = join(dir, candidateName)
   // resolve() follows a final-component symlink; stat then classifies the target.
@@ -484,7 +484,7 @@ export async function probeScopeInstruction(
   if (info?.type !== 'file') return { kind: 'absent' }
   const file: ProbedInstructionFile = {
     absolutePath,
-    displayPath: directory === USER_GLOBAL_DIRECTORY ? userGlobalDisplayPath(resolved.cxhHome) : relativeDisplay(projectRoot, absolutePath),
+    displayPath: directory === USER_GLOBAL_DIRECTORY ? userGlobalDisplayPath(resolved.arxHome) : relativeDisplay(projectRoot, absolutePath),
     target,
     version: info.version,
     ...info.size === undefined ? {} : { size: info.size },
@@ -516,6 +516,6 @@ export async function readScopeInstruction(
   }
 }
 
-function userGlobalDisplayPath(cxhHome: string): string {
-  return `${cxhHomeDisplay(cxhHome)}/AGENTS.md`
+function userGlobalDisplayPath(arxHome: string): string {
+  return `${arxHomeDisplay(arxHome)}/AGENTS.md`
 }

@@ -3,8 +3,8 @@
  * CommandUiRuntime (`ctx.commandUi`) implements this face; business packages
  * consume `register` alone.
  */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { ClientSessionContext } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { ClientSessionContext } from '@arx-ai/arx-client-ui-input-trigger/client'
 
 /** Copy for an option that must be acknowledged before onSelect can run. */
 export interface SelectConfirmation {

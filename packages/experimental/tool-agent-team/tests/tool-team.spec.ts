@@ -2,20 +2,20 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { CallId } from '@centurionarx/cxh-llm'
-import { scopeOf } from '@centurionarx/cxh-scope'
-import { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SubagentService from '@centurionarx/cxh-subagent'
-import * as SubagentFork from '@centurionarx/cxh-subagent-fork-in-process'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import { renderPrompt } from '@centurionarx/cxh-system-prompt'
-import * as ToolSubagentControl from '@centurionarx/cxh-tool-subagent-control'
-import { defineContentToolFixture } from '@centurionarx/cxh-tools'
+import { Context } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { CallId } from '@arx-ai/arx-llm'
+import { scopeOf } from '@arx-ai/arx-scope'
+import { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SubagentService from '@arx-ai/arx-subagent'
+import * as SubagentFork from '@arx-ai/arx-subagent-fork-in-process'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import { renderPrompt } from '@arx-ai/arx-system-prompt'
+import * as ToolSubagentControl from '@arx-ai/arx-tool-subagent-control'
+import { defineContentToolFixture } from '@arx-ai/arx-tools'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import TeamService from '../../agent-team/src/index.ts'
 import * as toolTeam from '../src/index.ts'
@@ -44,7 +44,7 @@ afterEach(() => {
 async function setup(script: ConstructorParameters<typeof MockAdapter>[0], legacyControl = false) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  const storageRoot = mkdtempSync(join(tmpdir(), 'cxh-tool-team-'))
+  const storageRoot = mkdtempSync(join(tmpdir(), 'arx-tool-team-'))
   roots.push(storageRoot)
   await ctx.plugin(JsonlSessionPersistence, { root: storageRoot })
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -110,7 +110,7 @@ async function waitNoAgent(ctx: Context, id: SessionId): Promise<void> {
   await vi.waitFor(() => { expect(ctx.agents.get(id)).toBeUndefined() }, { timeout: 5_000 })
 }
 
-describe('cxh-tool-team', () => {
+describe('arx-tool-team', () => {
   it('installs the complete scoped schema and shared-checkout policy for roots and teammates', async () => {
     const { ctx, lead } = await setup(['hang'])
     const leadAssembly = await assembly(ctx, lead)

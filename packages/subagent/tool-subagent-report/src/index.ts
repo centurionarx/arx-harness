@@ -3,16 +3,16 @@
  * continuable in-process child's unpublished context. Roots, one-shot children,
  * remote providers, and agentless executions never see the registration.
  *
- * @module @centurionarx/cxh-tool-subagent-report
+ * @module @arx-ai/arx-tool-subagent-report
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SubagentReportDelivery } from '@centurionarx/cxh-subagent'
-import type {} from '@centurionarx/cxh-system-prompt'
-import { defineTool } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SubagentReportDelivery } from '@arx-ai/arx-subagent'
+import type {} from '@arx-ai/arx-system-prompt'
+import { defineTool } from '@arx-ai/arx-tools'
 
 export const name = 'tool-subagent-report'
 // The contribution registers only through childCtx.tools and

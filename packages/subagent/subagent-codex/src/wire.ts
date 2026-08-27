@@ -4,13 +4,13 @@
  * product methods, current thread/turn association, unattended approval
  * responses, and terminal-answer selection.
  *
- * @module @centurionarx/cxh-subagent-codex/wire
+ * @module @arx-ai/arx-subagent-codex/wire
  */
 
 import type { Readable, Writable } from 'node:stream'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SubagentResult } from '@centurionarx/cxh-subagent'
-import { JsonRpcLineTransport } from '@centurionarx/cxh-sdk-protocol'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SubagentResult } from '@arx-ai/arx-subagent'
+import { JsonRpcLineTransport } from '@arx-ai/arx-sdk-protocol'
 import type { CodexPermissionMode } from './run.ts'
 
 type JsonObject = Record<string, unknown>
@@ -287,8 +287,8 @@ export class CodexAppServerWire {
   async initialize(signal: AbortSignal): Promise<void> {
     object(await this.guarded(this.transport.request('initialize', {
       clientInfo: {
-        name: 'centurionarx-harness',
-        title: 'CENTURIONarx Harness',
+        name: 'arx-harness',
+        title: 'arx Harness',
         version: '0.0.1',
       },
       capabilities: {

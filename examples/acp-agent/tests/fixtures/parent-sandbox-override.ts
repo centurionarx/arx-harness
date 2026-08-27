@@ -1,6 +1,6 @@
-import type { Context } from '@centurionarx/cordis'
-import { setSandboxMode } from '@centurionarx/cxh-sandbox-policy'
-import type {} from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import { setSandboxMode } from '@arx-ai/arx-sandbox-policy'
+import type {} from '@arx-ai/arx-agent'
 
 export const name = 'parent-sandbox-override'
 

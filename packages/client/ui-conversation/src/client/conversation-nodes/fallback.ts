@@ -1,11 +1,11 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ConversationNodeDefinition, UnknownSurfaceNode,
-} from '@centurionarx/cxh-client-runtime/client'
-import { isAppendSurfaceEvent } from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
+import { isAppendSurfaceEvent } from '@arx-ai/arx-client-runtime/client'
 import { chatNode } from './common.ts'
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Generic presentation of an unclaimed append-surface event. */
     unknown: UnknownSurfaceNode

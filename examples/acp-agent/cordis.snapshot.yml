@@ -5,11 +5,11 @@
 # recorded corpus (request headers, provenance, system prompt) was captured on flash,
 # so replay holds the recorded model to stay reproducible without a re-record. A config
 # patch replaces the whole app config, so the base fields are restated verbatim.
-# With `CXH_SNAPSHOT=replay`, the app bin reads `CXH_SNAPSHOT_FILE` and optional
-# `CXH_SNAPSHOT_OVERRIDE` from the harness. The one-shot patch applies at include
+# With `ARX_SNAPSHOT=replay`, the app bin reads `ARX_SNAPSHOT_FILE` and optional
+# `ARX_SNAPSHOT_OVERRIDE` from the harness. The one-shot patch applies at include
 # load time, and stdout remains reserved for ACP JSON-RPC.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
@@ -17,14 +17,14 @@
       # a logger exists. A renamed id leaves a stale adapter entry, but replay still
       # short-circuits through `llm-replay`.
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           # Replay fixtures are raw JSONL; the whole-config patch must restate
           # the compression choice or the default zstd frames hide the logs
           # from the harness's harvest.
@@ -36,7 +36,7 @@
 
             Verify your work by running the code or tests. Keep answers brief and factual.
       - id: sandbox
-        name: '@centurionarx/cxh-sandbox-local'
+        name: '@arx-ai/arx-sandbox-local'
         config:
           runnerCommand:
             - bash
@@ -47,7 +47,7 @@
             - 'passthrough-runner: profile rejected'
       - insert:
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official

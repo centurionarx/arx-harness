@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-permission-presets
+# @arx-ai/arx-client-ui-permission-presets
 
 English | [中文](README.zh.md)
 

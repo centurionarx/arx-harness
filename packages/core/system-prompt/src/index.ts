@@ -1,16 +1,16 @@
 /**
  * Registry for ordered system sections, dynamic context, tool schemas, and prompt variables.
  *
- * @module @centurionarx/cxh-system-prompt
+ * @module @arx-ai/arx-system-prompt
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { AnonymousEntries, NamedEntries, ScopedLayers, scopeTarget } from '@centurionarx/cxh-scope'
-import type { ScopeKey, ScopeLayer, Scoped } from '@centurionarx/cxh-scope'
-import type { ContextSnapshotSection, ToolSchema } from '@centurionarx/cxh-llm'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { AnonymousEntries, NamedEntries, ScopedLayers, scopeTarget } from '@arx-ai/arx-scope'
+import type { ScopeKey, ScopeLayer, Scoped } from '@arx-ai/arx-scope'
+import type { ContextSnapshotSection, ToolSchema } from '@arx-ai/arx-llm'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     systemPrompt: SystemPrompt
   }
@@ -18,7 +18,7 @@ declare module '@centurionarx/cordis' {
   interface Events {
     /**
      * Expert waterfall over the assembled sections, contexts, tools, and variables.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`): scoped listeners
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`): scoped listeners
      * receive only that scope's assemblies. The returned value is authoritative.
      * A supplied signal controls only this explicit assembly request and must not
      * be retained to control later turns. A registered complete section is
@@ -184,7 +184,7 @@ function compareToolNames(a: ToolSchema, b: ToolSchema): number {
 
 /** Plugin config: the deployment-authored fragment of the system prompt (see {@link Config.persona} for its contract). */
 export interface Config {
-  /** Include the fixed CENTURIONarx Harness identity before the deployment persona (default true). */
+  /** Include the fixed arx Harness identity before the deployment persona (default true). */
   includeHarnessIdentity?: boolean
   /** Include dynamic runtime-context snapshots in model history (default true). */
   includeRuntimeContext?: boolean
@@ -358,7 +358,7 @@ export class SystemPrompt extends Service {
       this.section({
         name: 'harness:identity',
         order: -100,
-        text: 'You are an AI agent powered by CENTURIONarx Harness.',
+        text: 'You are an AI agent powered by arx Harness.',
       })
     }
     this.section({

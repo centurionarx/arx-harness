@@ -5,17 +5,17 @@ import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { AgentHandle } from '@centurionarx/cxh-agent'
-import { CallId, createUserMessage, LlmAdapter } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
+import type { AgentHandle } from '@arx-ai/arx-agent'
+import { CallId, createUserMessage, LlmAdapter } from '@arx-ai/arx-llm'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
 import {
   ScheduleId,
   createEveryScheduleRecord,
   foldScheduleEvents,
   resolveEveryOccurrence,
   type EveryScheduleRecord,
-} from '@centurionarx/cxh-schedule'
+} from '@arx-ai/arx-schedule'
 import {
   assertFixtureInventory,
   captureStableAria,
@@ -233,7 +233,7 @@ describe.skipIf(MODE === 'record')('web e2e: conversational reminders', () => {
       locale: 'en-US',
       timezoneId: AT_BROWSER_ZONE,
     })
-    await page.addInitScript(() => { localStorage.setItem('cxh.locale', 'en') })
+    await page.addInitScript(() => { localStorage.setItem('arx.locale', 'en') })
     tripwire = watchConsole(page)
     await page.goto(scaffold.baseUrl, { waitUntil: 'load' })
     await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })

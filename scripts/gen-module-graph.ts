@@ -81,7 +81,7 @@ function render(pkgs: Pkg[]): string {
     '',
     '# Module dependency graph',
     '',
-    'Inter-package dependencies among the `@centurionarx/cxh-*` harness packages, derived from each package\'s `peerDependencies` (the canonical runtime-dependency signal) and grouped by the `packages/<group>/<pkg>` hierarchy. An edge `a --> b` means package `a` depends on package `b`. Names have the `@centurionarx/cxh-` prefix stripped.',
+    'Inter-package dependencies among the `@arx-ai/arx-*` harness packages, derived from each package\'s `peerDependencies` (the canonical runtime-dependency signal) and grouped by the `packages/<group>/<pkg>` hierarchy. An edge `a --> b` means package `a` depends on package `b`. Names have the `@arx-ai/arx-` prefix stripped.',
     '',
     '```mermaid',
     'flowchart TD',

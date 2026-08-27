@@ -1,10 +1,10 @@
-/** Package-owned invariant companion for `@centurionarx/cxh-api-remotes`. */
+/** Package-owned invariant companion for `@arx-ai/arx-api-remotes`. */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-api-remotes'
+const PACKAGE_NAME = '@arx-ai/arx-api-remotes'
 
 /** Cordis companion plugin name. */
 export const name = 'api-remotes-invariant'

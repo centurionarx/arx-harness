@@ -5,26 +5,26 @@
  * provider driver and the continuation manager compose children this way, so
  * depth accounting, lineage stamping, and delegation policy have one home.
  *
- * @module @centurionarx/cxh-subagent/child-agent
+ * @module @arx-ai/arx-subagent/child-agent
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Agent, AgentOptions, CreateAgentOptions } from '@centurionarx/cxh-agent'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
-import type { Session, SessionId } from '@centurionarx/cxh-session'
-import type { ToolRestriction } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent, AgentOptions, CreateAgentOptions } from '@arx-ai/arx-agent'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
+import type { Session, SessionId } from '@arx-ai/arx-session'
+import type { ToolRestriction } from '@arx-ai/arx-tools'
 // Type-only: make `ctx.get('sandboxPolicy')` / `ctx.get('approval')` resolve
 // to the policy services when composed — delegation consumes both
 // opportunistically (the documented `ctx.get` pattern), never as a hard dep —
 // and merge the `sandbox/mode` / `approval/policy` session-event payloads.
-import type {} from '@centurionarx/cxh-sandbox-policy'
-import type {} from '@centurionarx/cxh-user-approval'
+import type {} from '@arx-ai/arx-sandbox-policy'
+import type {} from '@arx-ai/arx-user-approval'
 // Type-only: make `ctx.get('agentPresets')` resolve to the preset roster when
 // composed — a child inherits its parent's composition opportunistically (the
 // documented `ctx.get` pattern), never as a hard dep. A rosterless deployment
 // keeps its model-facing rows on the host plane, where the child already sees
 // them through the tool registry's global layer.
-import type {} from '@centurionarx/cxh-agent-presets'
+import type {} from '@arx-ai/arx-agent-presets'
 import { delegationDepthOf } from './depth.ts'
 
 /** Thrown when starting a child would exceed the requested depth cap. */

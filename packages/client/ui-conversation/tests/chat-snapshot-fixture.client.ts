@@ -3,7 +3,7 @@ import type {
   ChatLocationNodeIndex, ChatNodeStore, CompactionSummaryNode, ConversationLocationDataStore,
   ConversationTurnDataMap, LegacyConversationSlice, PartialAssistant, RunningToolCall,
   ToolCallBlock, TurnLocation,
-} from '@centurionarx/cxh-client-runtime/client'
+} from '@arx-ai/arx-client-runtime/client'
 import { deriveTurnMetrics } from '../src/client/chat/turn-metrics.ts'
 
 const EMPTY: readonly never[] = []

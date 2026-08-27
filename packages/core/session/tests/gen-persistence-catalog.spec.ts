@@ -35,14 +35,14 @@ const make = (files: Record<string, string>): string => {
 
 /** A merge-form declaration file wrapping `members` in the session module. */
 const merge = (members: string): string =>
-  `declare module '@centurionarx/cxh-session/types' {\n  interface SessionEventMap {\n${members}\n  }\n}\n`
+  `declare module '@arx-ai/arx-session/types' {\n  interface SessionEventMap {\n${members}\n  }\n}\n`
 
 afterEach(() => {
   while (roots.length) rmSync(roots.pop()!, { recursive: true, force: true })
 })
 
 /** The manifest that marks a fixture package as the owning session package. */
-const OWNER_MANIFEST = '{ "name": "@centurionarx/cxh-session" }\n'
+const OWNER_MANIFEST = '{ "name": "@arx-ai/arx-session" }\n'
 
 describe('gen-persistence-catalog collectLogEvents', () => {
   it('extracts a documented member of the owning top-level interface', () => {
@@ -64,10 +64,10 @@ describe('gen-persistence-catalog collectLogEvents', () => {
 
   it('hard-errors on a top-level interface outside the owning package', () => {
     expect(() => collectLogEvents(make({
-      'packages/group/alien/package.json': '{ "name": "@centurionarx/cxh-alien" }\n',
+      'packages/group/alien/package.json': '{ "name": "@arx-ai/arx-alien" }\n',
       'packages/group/alien/src/types.ts':
         'export interface SessionEventMap {\n  /** Not the real vocabulary. */\n  \'alien/event\': { turn: number }\n}\n',
-    }))).toThrow(/top-level interface SessionEventMap .* is outside @centurionarx\/cxh-session \(package @centurionarx\/cxh-alien\)/)
+    }))).toThrow(/top-level interface SessionEventMap .* is outside @arx-ai\/arx-session \(package @arx-ai\/arx-alien\)/)
   })
 
   it('hard-errors on a non-exported top-level interface even in the owning package', () => {
@@ -89,7 +89,7 @@ describe('gen-persistence-catalog collectLogEvents', () => {
   it('hard-errors on an extends clause (inherited keys would escape the catalog)', () => {
     expect(() => collectLogEvents(make({
       'packages/group/fix/src/types.ts':
-        'interface Extra { \'fix/hidden\': { turn: number } }\ndeclare module \'@centurionarx/cxh-session/types\' {\n  interface SessionEventMap extends Extra {\n    /** Declared directly. */\n    \'fix/direct\': { turn: number }\n  }\n}\n',
+        'interface Extra { \'fix/hidden\': { turn: number } }\ndeclare module \'@arx-ai/arx-session/types\' {\n  interface SessionEventMap extends Extra {\n    /** Declared directly. */\n    \'fix/direct\': { turn: number }\n  }\n}\n',
     }))).toThrow(/uses extends; inherited keys would join keyof SessionEventMap without a catalog row/)
   })
 

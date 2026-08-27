@@ -19,12 +19,12 @@
  * that it cannot be interrogated so the surface falls back to hand-entry
  * rather than guessing a response shape.
  *
- * @module cxh-llm-pi-ai/discovery
+ * @module arx-llm-pi-ai/discovery
  */
 
-import { INVALID_CREDENTIAL_CODE, LlmError, normalizeApiKey } from '@centurionarx/cxh-llm'
-import type { LlmDiscoveredModel, LlmModelDiscoveryRequest } from '@centurionarx/cxh-llm'
-import { attributionHeaders } from '@centurionarx/cxh-llm'
+import { INVALID_CREDENTIAL_CODE, LlmError, normalizeApiKey } from '@arx-ai/arx-llm'
+import type { LlmDiscoveredModel, LlmModelDiscoveryRequest } from '@arx-ai/arx-llm'
+import { attributionHeaders } from '@arx-ai/arx-llm'
 import { catalogModels } from './catalog.ts'
 
 /**
@@ -43,7 +43,7 @@ const LISTABLE_PROTOCOLS: ReadonlySet<string> = new Set([
 /**
  * Endpoint replies larger than this are refused. The endpoint is whatever URL
  * the user typed, so the ceiling holds on the bytes actually read rather than
- * on the length the server claims — the same two-stage shape `cxh-web-fetch`
+ * on the length the server claims — the same two-stage shape `arx-web-fetch`
  * uses for its own caller-supplied URLs, except that a truncated model listing
  * is not parseable, so overflow rejects instead of truncating.
  */

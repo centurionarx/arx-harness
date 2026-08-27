@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-slots
+# @arx-ai/arx-client-ui-slots
 
 [English](README.md) | 中文
 

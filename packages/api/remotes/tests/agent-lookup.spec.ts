@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore from '@centurionarx/cxh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@centurionarx/cxh-session'
-import { createApiRemoteAgentResolver } from '@centurionarx/cxh-api-remotes'
-import { TypertLookupFailure } from '@centurionarx/cxh-typert-protocol'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
+import { createApiRemoteAgentResolver } from '@arx-ai/arx-api-remotes'
+import { TypertLookupFailure } from '@arx-ai/arx-typert-protocol'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 
 const sid = (value: string): SessionId => value as SessionId
 

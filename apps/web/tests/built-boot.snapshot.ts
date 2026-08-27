@@ -43,7 +43,7 @@ it('boots the built plugin graph and renders a fixture session end to end', asyn
   // The sidebar renders from the boot graph: every inject layer activated.
   const tree = await screen.findByRole('tree', { name: 'Sessions' }, { timeout: 10_000 })
   expect(document.querySelector('svg[viewBox="26 0 156 24"]')).not.toBeNull()
-  expect(screen.queryByText('CXH Local Build')).toBeNull()
+  expect(screen.queryByText('ARX Local Build')).toBeNull()
   // The compact layout dropped group session counts; the fixture workspace
   // group row renders immediately with its sessions beneath it.
   const fixtureGroup = (await within(tree).findAllByText('fixture'))
@@ -125,7 +125,7 @@ it('boots the built plugin graph and renders a fixture session end to end', asyn
   // Every bundle injected its plugin-owned style tag (the loader's CSS path).
   const styleOwners = [...document.head.querySelectorAll('style[data-plugin]')]
     .map(style => style.getAttribute('data-plugin'))
-  for (const plugin of ['@centurionarx/cxh-client-ui-layout', '@centurionarx/cxh-client-ui-sidebar', '@centurionarx/cxh-client-ui-conversation', '@centurionarx/cxh-client-ui-tool']) {
+  for (const plugin of ['@arx-ai/arx-client-ui-layout', '@arx-ai/arx-client-ui-sidebar', '@arx-ai/arx-client-ui-conversation', '@arx-ai/arx-client-ui-tool']) {
     expect(styleOwners).toContain(plugin)
   }
 })

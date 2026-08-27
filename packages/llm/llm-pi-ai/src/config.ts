@@ -11,16 +11,16 @@
  * once, while the configuration key that made a route unserviceable can still be
  * named in the failure.
  *
- * @module cxh-llm-pi-ai/config
+ * @module arx-llm-pi-ai/config
  */
 
 import type { CacheRetention, ChatTemplateKwargValue, ModelThinkingLevel, Provider, ThinkingBudgets, Transport } from '@earendil-works/pi-ai'
-import z from '@centurionarx/schemastery'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import type { CredentialRef } from '@centurionarx/cxh-credentials'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
-import { resolveRetryPolicy, RetryPolicySchema } from '@centurionarx/cxh-llm'
-import type { ResolvedRetryPolicy, RetryPolicyConfig } from '@centurionarx/cxh-llm'
+import z from '@arx-ai/schemastery'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import type { CredentialRef } from '@arx-ai/arx-credentials'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
+import { resolveRetryPolicy, RetryPolicySchema } from '@arx-ai/arx-llm'
+import type { ResolvedRetryPolicy, RetryPolicyConfig } from '@arx-ai/arx-llm'
 import {
   CACHE_CONTROL_FORMATS,
   CHAT_TEMPLATE_VARS,
@@ -363,7 +363,7 @@ function rejectRemovedFields(provider: string, source: PiAiProviderProfile): voi
   if ('maxRetries' in legacy || 'maxRetryDelayMs' in legacy) {
     throw new Error(
       `llm-pi-ai: provider "${provider}" sets maxRetries or maxRetryDelayMs, which were removed;`
-      + ' compose agent recovery with cxh-llm-retry',
+      + ' compose agent recovery with arx-llm-retry',
     )
   }
 }

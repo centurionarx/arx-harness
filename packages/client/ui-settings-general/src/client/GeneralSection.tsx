@@ -1,5 +1,5 @@
 /** The General section: one column rendering feature-owned item contributions. */
-import type { PropsRenderSlots, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
+import type { PropsRenderSlots, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import css from './GeneralSection.module.css'
 
 /** Full component props: section owner share plus item render share. */

@@ -8,27 +8,27 @@
  * itself is not a dependency of this package; the source below is the
  * decision-table contract at the `InputTriggerSource` boundary.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import {
   EMPTY_CHAT_SNAPSHOT, EMPTY_CONVERSATION_VIEWS, SessionRuntime,
-} from '@centurionarx/cxh-client-runtime/client'
-import { InputTriggerService } from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-runtime/client'
+import { InputTriggerService } from '@arx-ai/arx-client-ui-input-trigger/client'
 import type {
   ClientSessionContext, CommandClaim, PickOutcome, SubmitEnvelope, SubmitImageAttachment, SubmitOutcome,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
 import { FakeApiClient, fakeRemote, ok } from '../../runtime/tests/fake-api.client.ts'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type { DraftAttachmentId } from '../src/client/input/contract.ts'
 import { SessionInputShell } from '../src/client/input/facade.ts'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'
 import type { InputBarProps } from '../src/client/skeleton/InputBar.tsx'
 import { zh } from '../src/client/locales.ts'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import type { ConversationSnapshot } from '@centurionarx/cxh-client-runtime/client'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import type { ConversationSnapshot } from '@arx-ai/arx-client-runtime/client'
 
 afterEach(cleanup)
 

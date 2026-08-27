@@ -1,5 +1,5 @@
 /**
- * End-to-end tests for cxh-mcp-client. Exercises the REAL MCP protocol against:
+ * End-to-end tests for arx-mcp-client. Exercises the REAL MCP protocol against:
  * 1. A self-written fixture server over stdio (controlled edge cases)
  * 2. @modelcontextprotocol/server-everything (official integration test server)
  * 3. @modelcontextprotocol/server-filesystem (real filesystem operations)
@@ -14,19 +14,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { z } from 'zod'
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
-import LocalAttachmentStore from '@centurionarx/cxh-attachment-local'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import { CallId, LlmAdapter, LlmRuntime } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@centurionarx/cxh-llm'
-import { apply } from '@centurionarx/cxh-mcp-client/src/index.ts'
-import { publicToolName } from '@centurionarx/cxh-mcp-client/src/tools.ts'
-import type { Config } from '@centurionarx/cxh-mcp-client'
+import LocalAttachmentStore from '@arx-ai/arx-attachment-local'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import { CallId, LlmAdapter, LlmRuntime } from '@arx-ai/arx-llm'
+import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@arx-ai/arx-llm'
+import { apply } from '@arx-ai/arx-mcp-client/src/index.ts'
+import { publicToolName } from '@arx-ai/arx-mcp-client/src/tools.ts'
+import type { Config } from '@arx-ai/arx-mcp-client'
 
 const testToolSignal = new AbortController().signal
 
@@ -56,9 +56,9 @@ class ImageAdapter extends LlmAdapter {
   }
 }
 
-async function mountImageRegistry(cxhHome: string): Promise<Context> {
+async function mountImageRegistry(arxHome: string): Promise<Context> {
   const ctx = await mountRegistry()
-  await ctx.plugin(LocalAttachmentStore, { cxhHome })
+  await ctx.plugin(LocalAttachmentStore, { arxHome })
   await ctx.plugin(LlmRuntime)
   ctx.llm.registerAdapter(['visual'], new ImageAdapter())
   return ctx

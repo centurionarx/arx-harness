@@ -1,15 +1,15 @@
 # Keyless counterpart to depth-two.cordis.yml: apply the depth patch and replace
 # the live adapter with per-session replay.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - id: llm-deepseek
-        name: '@centurionarx/cxh-llm-deepseek'
+        name: '@arx-ai/arx-llm-deepseek'
         disabled: true
       - id: sandbox
-        name: '@centurionarx/cxh-sandbox-local'
+        name: '@arx-ai/arx-sandbox-local'
         config:
           runnerCommand:
             - bash
@@ -19,7 +19,7 @@
           runnerFailureSignatures:
             - 'passthrough-runner: profile rejected'
       - id: tool-subagent
-        name: '@centurionarx/cxh-tool-subagent'
+        name: '@arx-ai/arx-tool-subagent'
         config:
           provider: spawn
           toolName: subagent
@@ -29,11 +29,11 @@
       # scenario's corpus was captured on flash. A config patch replaces the
       # whole app config, so the base fields are restated verbatim.
       - id: acp-agent
-        name: '@centurionarx/cxh-acp-demo'
+        name: '@arx-ai/arx-acp-demo'
         config:
           provider: deepseek-official
           model: deepseek-v4-flash
-          persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+          persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:
             maxBytes: 65536
@@ -43,7 +43,7 @@
             Verify your work by running the code or tests. Keep answers brief and factual.
       - insert:
           - id: llm-replay
-            name: '@centurionarx/cxh-llm-replay'
+            name: '@arx-ai/arx-llm-replay'
             config:
               providers:
                 - id: deepseek-official

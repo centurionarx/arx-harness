@@ -6,10 +6,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createServer, type IncomingMessage, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { DeepSeekSearchProvider } from '@centurionarx/cxh-web-search-deepseek'
+import { DeepSeekSearchProvider } from '@arx-ai/arx-web-search-deepseek'
 
 /** Construct the provider over a fixed options value; production passes a live thunk. */
-import type { DeepSeekSearchProviderOptions } from '@centurionarx/cxh-web-search-deepseek'
+import type { DeepSeekSearchProviderOptions } from '@arx-ai/arx-web-search-deepseek'
 
 const searchProvider = (options: DeepSeekSearchProviderOptions): DeepSeekSearchProvider =>
   new DeepSeekSearchProvider(() => options)

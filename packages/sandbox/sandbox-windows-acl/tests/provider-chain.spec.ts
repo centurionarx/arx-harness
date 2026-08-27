@@ -9,9 +9,9 @@
 
 import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { SandboxPolicy } from '@centurionarx/cxh-sandbox'
-import { LocalSandboxProvider } from '@centurionarx/cxh-sandbox-local'
+import { Context } from '@arx-ai/cordis'
+import type { SandboxPolicy } from '@arx-ai/arx-sandbox'
+import { LocalSandboxProvider } from '@arx-ai/arx-sandbox-local'
 
 const RO: SandboxPolicy = { mode: 'read-only', workspaceRoot: '/ws' }
 const WW: SandboxPolicy = { mode: 'workspace-write', workspaceRoot: '/ws' }

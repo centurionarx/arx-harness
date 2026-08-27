@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { Session, SessionId, isJsonValue } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionHeader } from '@centurionarx/cxh-session'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { Session, SessionId, isJsonValue } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
 import {
   DEFAULT_PREPARED_SESSION_CACHE_SIZE, DEFAULT_WRITE_BATCH_MAX_DELAY_MS, MAX_WRITE_BATCH_DELAY_MS,
   SessionPersistence, SessionPersistenceRevision, PersistenceCoordinator,

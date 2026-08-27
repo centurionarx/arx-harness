@@ -6,7 +6,7 @@
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { Root, RootContent } from 'mdast'
-import { MarkdownText } from '@centurionarx/cxh-client-ui-primitives'
+import { MarkdownText } from '@arx-ai/arx-client-ui-primitives'
 import { IncrementalMarkdownParser } from '../src/markdown/incremental.ts'
 import { parseGfm } from '../src/markdown/parse.ts'
 

@@ -1,13 +1,13 @@
 /**
  * Service Definition for combined session-history reads, traces, filters, and full-text search.
  *
- * @module @centurionarx/cxh-session-query
+ * @module @arx-ai/arx-session-query
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { Session, snapshotSessionEvent, type SessionId } from '@centurionarx/cxh-session'
-import { foldSessionTitle } from '@centurionarx/cxh-session-title'
-import type { SessionTitleSnapshot } from '@centurionarx/cxh-session-title'
+import { Context, Service } from '@arx-ai/cordis'
+import { Session, snapshotSessionEvent, type SessionId } from '@arx-ai/arx-session'
+import { foldSessionTitle } from '@arx-ai/arx-session-title'
+import type { SessionTitleSnapshot } from '@arx-ai/arx-session-title'
 import type {
   SessionEventResultFilter,
   SessionEventSearchPage,
@@ -65,7 +65,7 @@ export {
 } from './filters.ts'
 export { assertSessionHeadersCompatible } from './sources.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessionQuery: SessionQueryEngine
   }

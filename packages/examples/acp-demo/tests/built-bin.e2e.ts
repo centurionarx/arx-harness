@@ -30,7 +30,7 @@ const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url))
 const acpBin = join(repoRoot, 'packages/examples/acp-demo/lib/bin.js')
 const decompress = promisify(zstdDecompress)
 
-const cxhPackages = [
+const arxPackages = [
   'examples/agent-spine-demo', 'core/agent', 'core/session', 'core/system-prompt',
   'core/tools', 'core/agent-loop', 'llm/llm', 'shell/shell',
   'shell/bash-local', 'shell/tool-bash', 'subprocess/subprocess', 'subprocess/subprocess-local', 'context/agent-instructions', 'runtime-diagnostics/invariants', 'boot/app-boot',
@@ -62,7 +62,7 @@ async function link(target: string, name: string, nm: string): Promise<void> {
 async function makeConsumer(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'acp-built-bin-'))
   const nm = join(dir, 'node_modules')
-  for (const rel of cxhPackages) {
+  for (const rel of arxPackages) {
     const abs = join(repoRoot, 'packages', rel)
     await link(abs, await pkgName(abs), nm)
   }
@@ -78,7 +78,7 @@ async function makeConsumer(): Promise<string> {
     await link(dirname(resolved), dep, nm)
   }
   await writeFile(join(dir, 'mock-llm.mjs'), [
-    "import { LlmAdapter } from '@centurionarx/cxh-llm'",
+    "import { LlmAdapter } from '@arx-ai/arx-llm'",
     'class Mock extends LlmAdapter {',
     '  async * stream() {',
     "    yield { type: 'block-start', index: 0, blockType: 'text' }",
@@ -96,11 +96,11 @@ async function makeConsumer(): Promise<string> {
     '- id: mock-llm',
     '  name: \'./mock-llm.mjs\'',
     '- id: subprocess',
-    '  name: \'@centurionarx/cxh-subprocess-local\'',
+    '  name: \'@arx-ai/arx-subprocess-local\'',
     '- id: bash',
-    '  name: \'@centurionarx/cxh-bash-local\'',
+    '  name: \'@arx-ai/arx-bash-local\'',
     '- id: acp-agent',
-    '  name: \'@centurionarx/cxh-acp-demo\'',
+    '  name: \'@arx-ai/arx-acp-demo\'',
     '  config:',
     '    provider: built-acp-mock',
     '    model: built-acp-mock',
@@ -131,15 +131,15 @@ afterEach(async () => {
   consumer = undefined
 })
 
-describe.skipIf(!existsSync(acpBin))('cxh-acp-demo BUILT bin (node lib/bin.js, no tsx)', () => {
+describe.skipIf(!existsSync(acpBin))('arx-acp-demo BUILT bin (node lib/bin.js, no tsx)', () => {
   it('boots the published bin, completes a turn, and writes default Zstandard persistence', async () => {
     consumer = await makeConsumer()
     child = spawn(process.execPath, [acpBin, '--config', './cordis.yml'], {
       cwd: consumer,
       env: {
         ...process.env,
-        CXH_HOME: join(consumer, '.cxh'),
-        CXH_AGENTS_HOME: join(consumer, '.agents'),
+        ARX_HOME: join(consumer, '.arx'),
+        ARX_AGENTS_HOME: join(consumer, '.agents'),
       },
       stdio: ['pipe', 'pipe', 'pipe'],
     })
@@ -218,8 +218,8 @@ async function runBinExpectingExit(configArg: string, cwd: string = tmpdir()): P
   const result = await execa(process.execPath, [acpBin, '--config', configArg], {
     cwd,
     env: {
-      CXH_HOME: join(cwd, '.cxh'),
-      CXH_AGENTS_HOME: join(cwd, '.agents'),
+      ARX_HOME: join(cwd, '.arx'),
+      ARX_AGENTS_HOME: join(cwd, '.agents'),
     },
     input: '',
     timeout: 25_000,

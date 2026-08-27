@@ -1,4 +1,4 @@
-/* NEW SESSION hero (figma Input_Bottom 75:8208): fish + title, workspace chip
+/* NEW SESSION hero (figma Input_Bottom 75:8208): mark + title, workspace chip
    above the shared InputBar card. The input itself is InputBar — only stack
    geometry and the chip live here. */
 
@@ -19,11 +19,11 @@
   /* figma 75:8208: 12 between title block / workspace / card. */
   gap: 12px;
   width: 100%;
-  max-width: var(--cxh-composer-card-max-width);
+  max-width: var(--arx-composer-card-max-width);
   overflow: visible;
 }
 
-/* figma 34:10411: fish + title, gap 10, centered; 26/32 wt500. The preview
+/* figma 34:10411: mark + title, gap 10, centered; 26/32 wt500. The preview
    badge is a product addition outside that source: a mono superscript pill
    riding the title's top-right. */
 .headline {
@@ -35,7 +35,7 @@
   font-size: 26px;
   line-height: 32px;
   font-weight: 500;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
 }
 
 .headlineText {
@@ -50,10 +50,10 @@
   margin-top: 2px;
   margin-left: -3px;
   padding: 1px 7px 0;
-  border: 1px solid var(--dsw-alias-interactive-bg-hover);
+  border: 1px solid var(--arx-alias-interactive-bg-hover);
   border-radius: 24px;
-  background: var(--dsw-alias-state-business-tertiary);
-  color: var(--dsw-alias-label-primary-bluish);
+  background: var(--arx-alias-state-business-tertiary);
+  color: var(--arx-alias-label-primary-bluish);
   font-family: var(--ds-font-family-code);
   font-size: 12px;
   line-height: 18px;
@@ -62,7 +62,7 @@
 }
 
 /* Keep hover detection on a stationary box while the mark moves within it. */
-.fishHitbox {
+.markHitbox {
   grid-row: 1;
   grid-column: 1;
   display: inline-flex;
@@ -70,29 +70,26 @@
   justify-content: center;
 }
 
-/* Keep the hero mark in the same primary ink as its headline. */
-.fish {
-  color: var(--dsw-alias-label-primary);
-  transform-origin: 50% 60%;
+/* The mark carries its own colors, so it takes no ink from the headline. */
+.mark {
+  transform-origin: 50% 50%;
 }
 
-@keyframes hero-fish-swim {
+/* An eye reads as focusing, not swimming: the previous rotation belonged to a
+   creature and looks broken on a symmetric mark. */
+@keyframes hero-mark-focus {
   0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
+    transform: scale(1);
   }
 
-  35% {
-    transform: translate(-1px, -1px) rotate(-5deg);
-  }
-
-  70% {
-    transform: translate(1px, 0) rotate(3deg);
+  45% {
+    transform: scale(1.06);
   }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .fishHitbox:hover .fish {
-    animation: hero-fish-swim var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+  .markHitbox:hover .mark {
+    animation: hero-mark-focus var(--ds-transition-duration-slow) var(--ds-ease-in-out);
   }
 }
 
@@ -135,7 +132,7 @@
   border: none;
   border-radius: 16px;
   background: transparent;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
   font-size: 13px;
   line-height: 20px;
   font-weight: 500;
@@ -144,7 +141,7 @@
 
 .workspace:not(:disabled):hover,
 .workspace[aria-expanded='true'] {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--arx-alias-interactive-bg-hover);
 }
 
 /* Locked form (bound guidance state): a static echo — no hover feedback, no
@@ -155,7 +152,7 @@
 
 .folder {
   flex: none;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
 }
 
 .workspaceLabel {
@@ -166,7 +163,7 @@
 
 .chevron {
   flex: none;
-  color: var(--dsw-alias-label-caption);
+  color: var(--arx-alias-label-caption);
 }
 
 /* Dialog field: 44 tall on the modal's 332 content column, r22, hairline
@@ -177,22 +174,22 @@
   width: 100%;
   height: 44px;
   padding: 7px 14px;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 1px solid var(--arx-alias-border-l2);
   border-radius: 22px;
   outline: none;
   background: transparent;
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  color: var(--dsw-alias-label-primary);
+  color: var(--arx-alias-label-primary);
 }
 
 .modalInput::placeholder {
-  color: var(--dsw-alias-label-caption);
+  color: var(--arx-alias-label-caption);
 }
 
 .modalInput:disabled {
-  color: var(--dsw-alias-label-dimmed);
+  color: var(--arx-alias-label-dimmed);
 }
 
 .modalAction {
@@ -203,5 +200,5 @@
   margin-top: 8px;
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-state-error-primary);
+  color: var(--arx-alias-state-error-primary);
 }

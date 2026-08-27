@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-workflow-worker-thread`.
- * @module @centurionarx/cxh-workflow-worker-thread/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-workflow-worker-thread`.
+ * @module @arx-ai/arx-workflow-worker-thread/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-workflow-worker-thread'
+const PACKAGE_NAME = '@arx-ai/arx-workflow-worker-thread'
 
 /** Cordis companion plugin name. */
 export const name = 'workflow-worker-thread-invariant'

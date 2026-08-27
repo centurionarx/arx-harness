@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { runNativeCommand } from '@centurionarx/cxh-native-command'
+import { runNativeCommand } from '@arx-ai/arx-native-command'
 
 const node = process.execPath
 
@@ -25,7 +25,7 @@ describe('runNativeCommand', () => {
 
   it('rejects a missing executable with the spawn ENOENT code', async () => {
     const failure = await runNativeCommand(
-      'cxh-definitely-missing-command',
+      'arx-definitely-missing-command',
       [],
       new AbortController().signal,
     ).then(() => { throw new Error('unexpected resolve') }, (error: unknown) => error)

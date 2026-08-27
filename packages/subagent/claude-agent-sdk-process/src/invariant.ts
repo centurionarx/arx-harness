@@ -1,14 +1,14 @@
 /**
  * Package-owned invariant companion for
- * `@centurionarx/cxh-claude-agent-sdk-process`.
- * @module @centurionarx/cxh-claude-agent-sdk-process/invariant
+ * `@arx-ai/arx-claude-agent-sdk-process`.
+ * @module @arx-ai/arx-claude-agent-sdk-process/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-claude-agent-sdk-process'
+const PACKAGE_NAME = '@arx-ai/arx-claude-agent-sdk-process'
 
 /** Cordis companion plugin name. */
 export const name = 'claude-agent-sdk-process-invariant'

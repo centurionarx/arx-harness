@@ -7,8 +7,8 @@ import { memo, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type {
   ModelRetryNode, TurnErrorNode, UserMessageNode,
-} from '@centurionarx/cxh-client-runtime/client'
-import { JsonBlock, MessageText, StateDot } from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-runtime/client'
+import { JsonBlock, MessageText, StateDot } from '@arx-ai/arx-client-ui-primitives'
 import type { ChatNodeOwnerProps, ChatNodeViewProps, ChatViewSlotProps } from '../contract/slots.ts'
 import { ReferenceIcon } from '../reference/ReferenceIcon.tsx'
 import { CompactionItem } from './CompactionItem.tsx'

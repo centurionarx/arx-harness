@@ -12,10 +12,10 @@
 - text: Reply with the single word LIGHTHOUSE and stop. {{clock}}
 - button "Copy":
   - img
-- button "Context injection @centurionarx/cxh-system-prompt":
+- button "Context injection @arx-ai/arx-system-prompt":
   - img
   - img
-  - text: Context injection @centurionarx/cxh-system-prompt
+  - text: Context injection @arx-ai/arx-system-prompt
 - button "Think The user wants me to reply with a single word. Let me comply.":
   - img
   - img

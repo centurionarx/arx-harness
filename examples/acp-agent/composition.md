@@ -8,101 +8,101 @@ The ACP demo exposes fresh baseline-prompt agent sessions to programmatic client
 ```mermaid
 flowchart LR
   cfg["examples/acp-agent<br/>cordis.yml"]
-  plugin_acp_llm_deepseek["llm-deepseek<br/>@centurionarx/cxh-llm-deepseek"]
+  plugin_acp_llm_deepseek["llm-deepseek<br/>@arx-ai/arx-llm-deepseek"]
   cfg --> plugin_acp_llm_deepseek
-  plugin_acp_sandbox["sandbox<br/>@centurionarx/cxh-sandbox-local"]
+  plugin_acp_sandbox["sandbox<br/>@arx-ai/arx-sandbox-local"]
   cfg --> plugin_acp_sandbox
-  plugin_acp_sandbox_policy["sandbox-policy<br/>@centurionarx/cxh-sandbox-policy"]
+  plugin_acp_sandbox_policy["sandbox-policy<br/>@arx-ai/arx-sandbox-policy"]
   cfg --> plugin_acp_sandbox_policy
-  plugin_acp_subprocess["subprocess<br/>@centurionarx/cxh-subprocess-local"]
+  plugin_acp_subprocess["subprocess<br/>@arx-ai/arx-subprocess-local"]
   cfg --> plugin_acp_subprocess
-  plugin_acp_bash["bash<br/>@centurionarx/cxh-bash-sandbox"]
+  plugin_acp_bash["bash<br/>@arx-ai/arx-bash-sandbox"]
   cfg --> plugin_acp_bash
-  plugin_acp_approval["approval<br/>@centurionarx/cxh-user-approval"]
+  plugin_acp_approval["approval<br/>@arx-ai/arx-user-approval"]
   cfg --> plugin_acp_approval
-  plugin_acp_acp_agent["acp-agent<br/>@centurionarx/cxh-acp-demo"]
+  plugin_acp_acp_agent["acp-agent<br/>@arx-ai/arx-acp-demo"]
   cfg --> plugin_acp_acp_agent
-  plugin_acp_acp_agent --> bundle_agent_core["@centurionarx/cxh-agent-spine-demo"]
-  plugin_acp_acp_agent --> bundle_jsonl["@centurionarx/cxh-session-persistence-jsonl"]
-  plugin_acp_acp_agent --> entrypoint_acp["@centurionarx/cxh-acp<br/>automation-only JSON-RPC stdio<br/>fresh sessions created by client"]
+  plugin_acp_acp_agent --> bundle_agent_core["@arx-ai/arx-agent-spine-demo"]
+  plugin_acp_acp_agent --> bundle_jsonl["@arx-ai/arx-session-persistence-jsonl"]
+  plugin_acp_acp_agent --> entrypoint_acp["@arx-ai/arx-acp<br/>automation-only JSON-RPC stdio<br/>fresh sessions created by client"]
   bundle_agent_core --> spine_llm["ctx.llm"]
   bundle_agent_core --> spine_sessions["ctx.sessions"]
   bundle_agent_core --> spine_tools["ctx.tools + tool-bash"]
   bundle_agent_core --> spine_loop["ctx.agents + ctx.agentLoop"]
-  plugin_acp_token_meter["token-meter<br/>@centurionarx/cxh-token-meter"]
+  plugin_acp_token_meter["token-meter<br/>@arx-ai/arx-token-meter"]
   cfg --> plugin_acp_token_meter
-  plugin_acp_compaction_basic["compaction-basic<br/>@centurionarx/cxh-compaction-basic"]
+  plugin_acp_compaction_basic["compaction-basic<br/>@arx-ai/arx-compaction-basic"]
   cfg --> plugin_acp_compaction_basic
-  plugin_acp_session_projection["session-projection<br/>@centurionarx/cxh-session-projection"]
+  plugin_acp_session_projection["session-projection<br/>@arx-ai/arx-session-projection"]
   cfg --> plugin_acp_session_projection
-  plugin_acp_subagent["subagent<br/>@centurionarx/cxh-subagent"]
+  plugin_acp_subagent["subagent<br/>@arx-ai/arx-subagent"]
   cfg --> plugin_acp_subagent
-  plugin_acp_subagent_spawn_in_process["subagent-spawn-in-process<br/>@centurionarx/cxh-subagent-spawn-in-process"]
+  plugin_acp_subagent_spawn_in_process["subagent-spawn-in-process<br/>@arx-ai/arx-subagent-spawn-in-process"]
   cfg --> plugin_acp_subagent_spawn_in_process
-  plugin_acp_subagent_fork_in_process["subagent-fork-in-process<br/>@centurionarx/cxh-subagent-fork-in-process"]
+  plugin_acp_subagent_fork_in_process["subagent-fork-in-process<br/>@arx-ai/arx-subagent-fork-in-process"]
   cfg --> plugin_acp_subagent_fork_in_process
-  plugin_acp_tool_subagent_control["tool-subagent-control<br/>@centurionarx/cxh-tool-subagent-control"]
+  plugin_acp_tool_subagent_control["tool-subagent-control<br/>@arx-ai/arx-tool-subagent-control"]
   cfg --> plugin_acp_tool_subagent_control
-  plugin_acp_tool_subagent_list_agents["tool-subagent-list-agents<br/>@centurionarx/cxh-tool-subagent-control/list-agents"]
+  plugin_acp_tool_subagent_list_agents["tool-subagent-list-agents<br/>@arx-ai/arx-tool-subagent-control/list-agents"]
   cfg --> plugin_acp_tool_subagent_list_agents
-  plugin_acp_tool_subagent_report["tool-subagent-report<br/>@centurionarx/cxh-tool-subagent-report"]
+  plugin_acp_tool_subagent_report["tool-subagent-report<br/>@arx-ai/arx-tool-subagent-report"]
   cfg --> plugin_acp_tool_subagent_report
-  plugin_acp_tool_subagent["tool-subagent<br/>@centurionarx/cxh-tool-subagent"]
+  plugin_acp_tool_subagent["tool-subagent<br/>@arx-ai/arx-tool-subagent"]
   cfg --> plugin_acp_tool_subagent
-  plugin_acp_tool_subagent_fork["tool-subagent-fork<br/>@centurionarx/cxh-tool-subagent"]
+  plugin_acp_tool_subagent_fork["tool-subagent-fork<br/>@arx-ai/arx-tool-subagent"]
   cfg --> plugin_acp_tool_subagent_fork
-  plugin_acp_workflow_worker_thread["workflow-worker-thread<br/>@centurionarx/cxh-workflow-worker-thread"]
+  plugin_acp_workflow_worker_thread["workflow-worker-thread<br/>@arx-ai/arx-workflow-worker-thread"]
   cfg --> plugin_acp_workflow_worker_thread
-  plugin_acp_tool_workflow["tool-workflow<br/>@centurionarx/cxh-tool-workflow"]
+  plugin_acp_tool_workflow["tool-workflow<br/>@arx-ai/arx-tool-workflow"]
   cfg --> plugin_acp_tool_workflow
-  plugin_acp_tool_ralph["tool-ralph<br/>@centurionarx/cxh-tool-ralph"]
+  plugin_acp_tool_ralph["tool-ralph<br/>@arx-ai/arx-tool-ralph"]
   cfg --> plugin_acp_tool_ralph
-  plugin_acp_tool_todo["tool-todo<br/>@centurionarx/cxh-tool-todo"]
+  plugin_acp_tool_todo["tool-todo<br/>@arx-ai/arx-tool-todo"]
   cfg --> plugin_acp_tool_todo
-  plugin_acp_repeat_tool_reminder["repeat-tool-reminder<br/>@centurionarx/cxh-repeat-tool-reminder"]
+  plugin_acp_repeat_tool_reminder["repeat-tool-reminder<br/>@arx-ai/arx-repeat-tool-reminder"]
   cfg --> plugin_acp_repeat_tool_reminder
-  plugin_acp_fs_sandbox["fs-sandbox<br/>@centurionarx/cxh-fs-sandbox"]
+  plugin_acp_fs_sandbox["fs-sandbox<br/>@arx-ai/arx-fs-sandbox"]
   cfg --> plugin_acp_fs_sandbox
-  plugin_acp_fs_observation_policy["fs-observation-policy<br/>@centurionarx/cxh-fs-observation-policy"]
+  plugin_acp_fs_observation_policy["fs-observation-policy<br/>@arx-ai/arx-fs-observation-policy"]
   cfg --> plugin_acp_fs_observation_policy
-  plugin_acp_tool_fs["tool-fs<br/>@centurionarx/cxh-tool-fs"]
+  plugin_acp_tool_fs["tool-fs<br/>@arx-ai/arx-tool-fs"]
   cfg --> plugin_acp_tool_fs
-  plugin_acp_hooks_claude_code["hooks-claude-code<br/>@centurionarx/cxh-hooks-claude-code"]
+  plugin_acp_hooks_claude_code["hooks-claude-code<br/>@arx-ai/arx-hooks-claude-code"]
   cfg --> plugin_acp_hooks_claude_code
-  plugin_acp_hooks_codex["hooks-codex<br/>@centurionarx/cxh-hooks-codex"]
+  plugin_acp_hooks_codex["hooks-codex<br/>@arx-ai/arx-hooks-codex"]
   cfg --> plugin_acp_hooks_codex
 ```
 
 | Plugin id | Package / module |
 | --- | --- |
-| `llm-deepseek` | `@centurionarx/cxh-llm-deepseek` |
-| `sandbox` | `@centurionarx/cxh-sandbox-local` |
-| `sandbox-policy` | `@centurionarx/cxh-sandbox-policy` |
-| `subprocess` | `@centurionarx/cxh-subprocess-local` |
-| `bash` | `@centurionarx/cxh-bash-sandbox` |
-| `approval` | `@centurionarx/cxh-user-approval` |
-| `acp-agent` | `@centurionarx/cxh-acp-demo` |
-| `token-meter` | `@centurionarx/cxh-token-meter` |
-| `compaction-basic` | `@centurionarx/cxh-compaction-basic` |
-| `session-projection` | `@centurionarx/cxh-session-projection` |
-| `subagent` | `@centurionarx/cxh-subagent` |
-| `subagent-spawn-in-process` | `@centurionarx/cxh-subagent-spawn-in-process` |
-| `subagent-fork-in-process` | `@centurionarx/cxh-subagent-fork-in-process` |
-| `tool-subagent-control` | `@centurionarx/cxh-tool-subagent-control` |
-| `tool-subagent-list-agents` | `@centurionarx/cxh-tool-subagent-control/list-agents` |
-| `tool-subagent-report` | `@centurionarx/cxh-tool-subagent-report` |
-| `tool-subagent` | `@centurionarx/cxh-tool-subagent` |
-| `tool-subagent-fork` | `@centurionarx/cxh-tool-subagent` |
-| `workflow-worker-thread` | `@centurionarx/cxh-workflow-worker-thread` |
-| `tool-workflow` | `@centurionarx/cxh-tool-workflow` |
-| `tool-ralph` | `@centurionarx/cxh-tool-ralph` |
-| `tool-todo` | `@centurionarx/cxh-tool-todo` |
-| `repeat-tool-reminder` | `@centurionarx/cxh-repeat-tool-reminder` |
-| `fs-sandbox` | `@centurionarx/cxh-fs-sandbox` |
-| `fs-observation-policy` | `@centurionarx/cxh-fs-observation-policy` |
-| `tool-fs` | `@centurionarx/cxh-tool-fs` |
-| `hooks-claude-code` | `@centurionarx/cxh-hooks-claude-code` |
-| `hooks-codex` | `@centurionarx/cxh-hooks-codex` |
+| `llm-deepseek` | `@arx-ai/arx-llm-deepseek` |
+| `sandbox` | `@arx-ai/arx-sandbox-local` |
+| `sandbox-policy` | `@arx-ai/arx-sandbox-policy` |
+| `subprocess` | `@arx-ai/arx-subprocess-local` |
+| `bash` | `@arx-ai/arx-bash-sandbox` |
+| `approval` | `@arx-ai/arx-user-approval` |
+| `acp-agent` | `@arx-ai/arx-acp-demo` |
+| `token-meter` | `@arx-ai/arx-token-meter` |
+| `compaction-basic` | `@arx-ai/arx-compaction-basic` |
+| `session-projection` | `@arx-ai/arx-session-projection` |
+| `subagent` | `@arx-ai/arx-subagent` |
+| `subagent-spawn-in-process` | `@arx-ai/arx-subagent-spawn-in-process` |
+| `subagent-fork-in-process` | `@arx-ai/arx-subagent-fork-in-process` |
+| `tool-subagent-control` | `@arx-ai/arx-tool-subagent-control` |
+| `tool-subagent-list-agents` | `@arx-ai/arx-tool-subagent-control/list-agents` |
+| `tool-subagent-report` | `@arx-ai/arx-tool-subagent-report` |
+| `tool-subagent` | `@arx-ai/arx-tool-subagent` |
+| `tool-subagent-fork` | `@arx-ai/arx-tool-subagent` |
+| `workflow-worker-thread` | `@arx-ai/arx-workflow-worker-thread` |
+| `tool-workflow` | `@arx-ai/arx-tool-workflow` |
+| `tool-ralph` | `@arx-ai/arx-tool-ralph` |
+| `tool-todo` | `@arx-ai/arx-tool-todo` |
+| `repeat-tool-reminder` | `@arx-ai/arx-repeat-tool-reminder` |
+| `fs-sandbox` | `@arx-ai/arx-fs-sandbox` |
+| `fs-observation-policy` | `@arx-ai/arx-fs-observation-policy` |
+| `tool-fs` | `@arx-ai/arx-tool-fs` |
+| `hooks-claude-code` | `@arx-ai/arx-hooks-claude-code` |
+| `hooks-codex` | `@arx-ai/arx-hooks-codex` |
 
 Source config: [`examples/acp-agent/cordis.yml`](cordis.yml).
 

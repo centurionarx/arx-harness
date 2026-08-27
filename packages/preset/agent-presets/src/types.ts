@@ -1,7 +1,7 @@
 /** Client-safe event declarations owned by the agent-preset domain. */
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * One session committed a different agent preset to its durable log.

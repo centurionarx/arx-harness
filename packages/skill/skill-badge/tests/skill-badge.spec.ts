@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import SkillRegistry from '@centurionarx/cxh-skill'
-import * as SkillBadge from '@centurionarx/cxh-skill-badge'
+import SkillRegistry from '@arx-ai/arx-skill'
+import * as SkillBadge from '@arx-ai/arx-skill-badge'
 
-describe('cxh-skill-badge', () => {
+describe('arx-skill-badge', () => {
   it('registers and disposes the bundled badge skill', async () => {
     const ctx = new Context()
     await ctx.plugin(SkillRegistry)
@@ -14,14 +14,14 @@ describe('cxh-skill-badge', () => {
     const resourcePath = fileURLToPath(new URL('../assets/', import.meta.url))
 
     expect(await ctx.skills.list()).toEqual([{
-      name: 'cxh-badge',
-      description: 'Add the official “powered by cxh” badge to documents, pull requests, merge requests, and other content produced with CENTURIONarx Harness. Use whenever creating a pull request or merge request. Also use when the user asks for a cxh badge, powered-by-cxh attribution, or a reusable cxh badge asset or snippet.',
+      name: 'arx-badge',
+      description: 'Add the official “powered by arx” badge to documents, pull requests, merge requests, and other content produced with arx Harness. Use whenever creating a pull request or merge request. Also use when the user asks for a arx badge, powered-by-arx attribution, or a reusable arx badge asset or snippet.',
       invocation: { modelInvocable: true, userInvocable: true },
-      provider: 'cxh-badge',
+      provider: 'arx-badge',
       source: 'bundled',
       resourceBase: { kind: 'directory', path: resourcePath },
     }])
-    const loaded = await ctx.skills.get('cxh-badge')
+    const loaded = await ctx.skills.get('arx-badge')
     expect(loaded?.content).toContain('Preserve the badge\'s 121×20 dimensions')
     expect(loaded?.resourceBase).toEqual({ kind: 'directory', path: resourcePath })
 
@@ -30,7 +30,7 @@ describe('cxh-skill-badge', () => {
   })
 
   it('ships the official 726×120 PNG unchanged', async () => {
-    const image = await readFile(new URL('../assets/cxh-badge.png', import.meta.url))
+    const image = await readFile(new URL('../assets/arx-badge.png', import.meta.url))
     expect(image.readUInt32BE(16)).toBe(726)
     expect(image.readUInt32BE(20)).toBe(120)
     expect(createHash('sha256').update(image).digest('hex')).toBe(

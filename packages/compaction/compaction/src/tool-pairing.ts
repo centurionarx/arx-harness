@@ -2,10 +2,10 @@
  * Tool-pairing balance over a session surface. Compaction changes surface
  * positions, so safe cuts are derived from tool-call/result content in current
  * surface order rather than step markers.
- * @module @centurionarx/cxh-compaction/tool-pairing
+ * @module @arx-ai/arx-compaction/tool-pairing
  */
 
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
 
 /** Incremental balance state for one session surface generation. */
 interface BalanceCache {

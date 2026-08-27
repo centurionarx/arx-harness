@@ -3,9 +3,9 @@
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { AttachmentId } from '@arx-ai/arx-attachment'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import { AssistantMarkdown } from '../src/client/chat/AssistantMarkdown.tsx'
 import type { RenderMessageImages } from '../src/client/contract/slots.ts'
 import { attachmentErrorText, imageSizeText } from '../src/client/image-labels.ts'

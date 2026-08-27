@@ -1,6 +1,6 @@
 /**
  * The escalation vocabulary and choreography shared by every sandbox-enforcing
- * tool family (`@centurionarx/cxh-tool-bash`, `@centurionarx/cxh-tool-fs`): the
+ * tool family (`@arx-ai/arx-tool-bash`, `@arx-ai/arx-tool-fs`): the
  * strictly-wider ladder, the argument-pairing validation, the model-facing
  * denial/hint markers, and {@link approveEscalation} — the ordered fail-closed
  * sequence that resolves a `sandbox_permissions` request through a
@@ -13,10 +13,10 @@
  * hands the closure down, so this package never depends on the approval or
  * agent packages.
  *
- * @module cxh-sandbox/escalation
+ * @module arx-sandbox/escalation
  */
 
-import { assertNever } from '@centurionarx/cxh-llm'
+import { assertNever } from '@arx-ai/arx-llm'
 import type { SandboxMode } from './index.ts'
 
 /**

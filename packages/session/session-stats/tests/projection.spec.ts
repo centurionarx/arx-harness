@@ -11,14 +11,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createMessage } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { Session, SessionEvent } from '@centurionarx/cxh-session'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import * as SessionStatsPlugin from '@centurionarx/cxh-session-stats'
-import { sessionStatsProjectionDefinition } from '@centurionarx/cxh-session-stats/src/projection.ts'
-import type { SessionStatsProjection } from '@centurionarx/cxh-session-stats/types'
+import { Context } from '@arx-ai/cordis'
+import { createMessage } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import * as SessionStatsPlugin from '@arx-ai/arx-session-stats'
+import { sessionStatsProjectionDefinition } from '@arx-ai/arx-session-stats/src/projection.ts'
+import type { SessionStatsProjection } from '@arx-ai/arx-session-stats/types'
 
 async function harness(withStatsPlugin: boolean): Promise<{ ctx: Context; session: Session }> {
   const ctx = new Context()

@@ -1,9 +1,9 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@centurionarx/cxh-settings'
+import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@arx-ai/arx-settings'
 import {
   LOCALE_SETTINGS_NAMESPACE, apply,
-} from '@centurionarx/cxh-client-locale'
+} from '@arx-ai/arx-client-locale'
 
 class MemorySettings extends SettingsProvider {
   readonly writable = true

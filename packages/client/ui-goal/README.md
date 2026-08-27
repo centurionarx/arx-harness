@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-goal
+# @arx-ai/arx-client-ui-goal
 
 English | [中文](README.zh.md)
 

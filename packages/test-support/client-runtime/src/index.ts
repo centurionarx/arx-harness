@@ -5,17 +5,17 @@
  * declaration, registration, scope, store, inject, rendering, updates, and
  * disposal without hand-building the machinery per suite.
  *
- * Not part of the product plugin graph (no `cxh.client`); feature packages
+ * Not part of the product plugin graph (no `arx.client`); feature packages
  * depend on it in devDependencies only. It copies no SlotCore/renderer/store
  * machinery — everything mounts the production implementations.
- * @module @centurionarx/cxh-client-test-runtime
+ * @module @arx-ai/arx-client-test-runtime
  */
 /* oxlint-disable typescript/no-redundant-type-constituents --
  * `keyof SlotMap & string` is the declare-merge key pattern (see ui-slots):
  * this compilation unit sees only the runtime's 'root' row, but consumer
  * programs merge their own keys in; the rule fires on the narrow-map view. */
-import { Context, Inject } from '@centurionarx/cordis'
-import type { Fiber, Plugin } from '@centurionarx/cordis'
+import { Context, Inject } from '@arx-ai/cordis'
+import type { Fiber, Plugin } from '@arx-ai/cordis'
 import { createElement, Fragment, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { act, render, within } from '@testing-library/react'
@@ -24,19 +24,19 @@ import type { queries } from '@testing-library/dom'
 import type { BoundFunctions } from '@testing-library/dom'
 import {
   ConversationEventRegistry, ConversationViewRegistry, SlotRegistry,
-} from '@centurionarx/cxh-client-runtime/client'
-import { bindSnapshotSelector as bindRendererSnapshotSelector } from '@centurionarx/cxh-client-ui-renderer/src/client/bind.ts'
-import { createSlotRenderer as createRenderer } from '@centurionarx/cxh-client-ui-renderer/src/client/scoped-slots.tsx'
+} from '@arx-ai/arx-client-runtime/client'
+import { bindSnapshotSelector as bindRendererSnapshotSelector } from '@arx-ai/arx-client-ui-renderer/src/client/bind.ts'
+import { createSlotRenderer as createRenderer } from '@arx-ai/arx-client-ui-renderer/src/client/scoped-slots.tsx'
 import type {
   ChildrenDecl, ComposedProps, HostObservable, OwnerOf, SlotComponent, SlotMap, SlotRenderer,
   SlotRendererHost, SnapshotSelectorHook, StoreInstanceLike,
-} from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-slots'
 import { registerDomSnapshotSerializer } from './snapshot.ts'
 import { TestSessions } from './sessions.ts'
 import { TestWorkspaces } from './workspaces.ts'
 import type { Stabilizer } from './fixtures.ts'
 
-export type { UseSession } from '@centurionarx/cxh-client-ui-renderer/client'
+export type { UseSession } from '@arx-ai/arx-client-ui-renderer/client'
 export { domSnapshotSerializer, registerDomSnapshotSerializer } from './snapshot.ts'
 export { FixtureSession, TestSessions } from './sessions.ts'
 export { stubSettingsScope } from './settings-scope.ts'

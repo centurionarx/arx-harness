@@ -1,10 +1,10 @@
 /**
  * Client-safe wire vocabulary of the dynamic Cordis plugin runner.
- * @module @centurionarx/cxh-cordis-host-runner/types
+ * @module @arx-ai/arx-cordis-host-runner/types
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
-import type { JsonValue, SessionId } from '@centurionarx/cxh-session/types'
+import type { Branded } from '@arx-ai/arx-brand'
+import type { JsonValue, SessionId } from '@arx-ai/arx-session/types'
 
 /** Stable identity of one dynamic plugin instance. */
 export type CordisDynamicPluginId = Branded<'CordisDynamicPluginId'>
@@ -357,7 +357,7 @@ export type DynamicCordisInvokeResult =
   | { ok: true; value: JsonValue }
   | ({ ok: false; code: 'plugin-not-running' | 'stale-run' | 'method-not-found' | 'handler-error' } & CordisErrorDetails)
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * A Client-bearing activation needs a browser page, and may require a user decision.

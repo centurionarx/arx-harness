@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { Config } from '@centurionarx/cxh-terminal-bash/src/config.ts'
-import { resolveConfig, validateConfig } from '@centurionarx/cxh-terminal-bash/src/config.ts'
+import type { Config } from '@arx-ai/arx-terminal-bash/src/config.ts'
+import { resolveConfig, validateConfig } from '@arx-ai/arx-terminal-bash/src/config.ts'
 
 function config(overrides: Partial<Config> = {}): Config {
   return {

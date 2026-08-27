@@ -3,7 +3,7 @@
  * timestamps and hook duration while preserving event payloads.
  * Request-header scrubbers stay composable so one scenario per header class can pin prompt and
  * tool-schema sidecars.
- * @module @centurionarx/cxh-acp-snapshot/normalize
+ * @module @arx-ai/arx-acp-snapshot/normalize
  */
 
 const SESSION_ID = '{{sessionId}}'
@@ -44,7 +44,7 @@ const LOCAL_SPILL_PATH_RE = new RegExp(
   'g',
 )
 const SNAPSHOT_SPILL_PATH_RE = new RegExp(
-  String.raw`(?:[A-Za-z]:)?[\\/](?:tmp|t)[\\/](?:cxh-acp-snap-[0-9a-f]{9}|cxh-acp-snapshot-spill)[\\/]session-[0-9a-f]{12}[\\/][0-9a-f]{12}-([A-Za-z0-9._~-]+?)`
+  String.raw`(?:[A-Za-z]:)?[\\/](?:tmp|t)[\\/](?:arx-acp-snap-[0-9a-f]{9}|arx-acp-snapshot-spill)[\\/]session-[0-9a-f]{12}[\\/][0-9a-f]{12}-([A-Za-z0-9._~-]+?)`
   + String.raw`(?=\. Use read with offset/limit|[\s)]|$)`,
   'g',
 )

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import * as SidebarInvariant from '@centurionarx/cxh-client-ui-sidebar/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import * as SidebarInvariant from '@arx-ai/arx-client-ui-sidebar/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 describe('invariant companion', () => {
   it('registers under the package name with an empty installer', async () => {
@@ -11,7 +11,7 @@ describe('invariant companion', () => {
   })
 
   it('node-half apply is a no-op host placeholder', async () => {
-    const { apply } = await import('@centurionarx/cxh-client-ui-sidebar')
+    const { apply } = await import('@arx-ai/arx-client-ui-sidebar')
     apply()
     expect(true).toBe(true) // reaching here without throw is the contract
   })

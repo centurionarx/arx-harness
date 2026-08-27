@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { writeFileAtomic } from '@centurionarx/cxh-atomic-write'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import { writeFileAtomic } from '@arx-ai/arx-atomic-write'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 import { FileSettingsProvider, resolveSpec } from '../src/index.ts'
 
 interface ThemeConfig {
@@ -25,7 +25,7 @@ afterEach(async () => {
 })
 
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-settings-local-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-settings-local-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }
@@ -102,7 +102,7 @@ describe('boot and reads', () => {
 
   it('defaults the file location under the configured harness home', async () => {
     const dir = await tempDir()
-    const ctx = await boot({ cxhHome: dir, watch: false })
+    const ctx = await boot({ arxHome: dir, watch: false })
     expect(ctx.settings.documentPath).toBe(join(dir, 'settings.yaml'))
     const scope = ctx.settings.register(settingsNamespace('ui-theme'), ThemeSchema)
     await scope.update({ theme: 'light' })

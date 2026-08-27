@@ -1,17 +1,17 @@
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import LlmRuntime, { createUserMessage, CallId, isAgentLoopRequest, LlmAdapter  } from '@centurionarx/cxh-llm'
-import type { FinishReason, GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import { SessionTitleProviderId } from '@centurionarx/cxh-session-title'
-import type { SessionTitleProviderRequest } from '@centurionarx/cxh-session-title'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import LlmRuntime, { createUserMessage, CallId, isAgentLoopRequest, LlmAdapter  } from '@arx-ai/arx-llm'
+import type { FinishReason, GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import { SessionTitleProviderId } from '@arx-ai/arx-session-title'
+import type { SessionTitleProviderRequest } from '@arx-ai/arx-session-title'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import {
   generateSessionTitleWithLlm,
   resolveSessionTitleLlmConfig,
   SESSION_TITLE_TIMEOUT_CODE,
-} from '@centurionarx/cxh-session-title-llm'
-import type { SessionTitleLlmConfig } from '@centurionarx/cxh-session-title-llm'
+} from '@arx-ai/arx-session-title-llm'
+import type { SessionTitleLlmConfig } from '@arx-ai/arx-session-title-llm'
 
 class RecordingAdapter extends LlmAdapter {
   readonly requests: GenerateOptions[] = []

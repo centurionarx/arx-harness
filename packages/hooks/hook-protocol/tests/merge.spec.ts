@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { mergeHookOutputs } from '@centurionarx/cxh-hook-protocol'
-import type { HookOutput } from '@centurionarx/cxh-hook-protocol'
+import { mergeHookOutputs } from '@arx-ai/arx-hook-protocol'
+import type { HookOutput } from '@arx-ai/arx-hook-protocol'
 
 function out(over: Partial<HookOutput> = {}): HookOutput {
   return { exitCode: 0, stderr: '', stdout: '', ...over }

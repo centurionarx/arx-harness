@@ -12,14 +12,14 @@
  * history outside the direct-parent continuation path.
  */
 // Type-only: the carrier types, the forwarded Host-event face and the ctx.remote merge.
-import type { ModelSelection, SessionModels } from '@centurionarx/cxh-api-remotes/client'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { CommandUiContract, SelectOption } from '@centurionarx/cxh-client-ui-commands/client'
+import type { ModelSelection, SessionModels } from '@arx-ai/arx-api-remotes/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { CommandUiContract, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.model seat).
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
-import type { TranslateNS } from '@centurionarx/cxh-client-ui-slots'
+import type {} from '@arx-ai/arx-client-locale/client'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import type { ModelDirectoryState } from './directory.ts'
 import { ModelDirectoryResolver } from './service.ts'
 import type { ModelSelectInjected } from './slots.ts'
@@ -32,7 +32,7 @@ export { ModelDirectoryResolver } from './service.ts'
 export type { ModelSelectInjected } from './slots.ts'
 export type { ModelKey } from './locales.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The model selection surfaces' copy (/model popup + composer seat). */
     model: ModelKey
@@ -53,7 +53,7 @@ function optionsOf(directory: SessionModels, t: TranslateNS<'model'>): SelectOpt
         id: rowId(group.id, model.id),
         label: model.name,
         detail: model.description !== undefined ? `${group.name} · ${model.description}` : group.name,
-        ...(directory.current.provider === group.id && directory.current.model === model.id
+        ...(directory.current?.provider === group.id && directory.current.model === model.id
           ? { active: true } : {}),
       })
     }

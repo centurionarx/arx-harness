@@ -23,12 +23,12 @@
  * })
  * ```
  *
- * @module @centurionarx/cxh-authorization
+ * @module @arx-ai/arx-authorization
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { CredentialKey } from '@centurionarx/cxh-credentials'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import { Context, Service } from '@arx-ai/cordis'
+import type { CredentialKey } from '@arx-ai/arx-credentials'
+import { HarnessError } from '@arx-ai/arx-llm'
 
 import type {
   AuthorizationEntry, AuthorizationMethod, AuthorizationNotice, AuthorizationOutcome, AuthorizationPrompt,
@@ -40,7 +40,7 @@ export type {
   AuthorizationPromptOption, AuthorizationSettlement, AuthorizationStatus,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     authorization: AuthorizationService
   }

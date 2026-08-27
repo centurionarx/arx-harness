@@ -7,13 +7,13 @@
  * Capture commits only after the authoritative `tools/result` succeeds; Code Mode capture also
  * waits for the enclosing `run_code` result. The terminal result marker and monotonic tool
  * guard prevent later calls from reopening a completed structured run.
- * @module @centurionarx/cxh-subagent-in-process-driver/structured
+ * @module @arx-ai/arx-subagent-in-process-driver/structured
  */
 
-import type { Context } from '@centurionarx/cordis'
-import type { ToolSchema } from '@centurionarx/cxh-llm'
-import type { ToolExecution, ToolRunContext } from '@centurionarx/cxh-tools'
-import { ToolArgsError, validateJsonSchemaValue, type ObjectJsonSchema } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import type { ToolSchema } from '@arx-ai/arx-llm'
+import type { ToolExecution, ToolRunContext } from '@arx-ai/arx-tools'
+import { ToolArgsError, validateJsonSchemaValue, type ObjectJsonSchema } from '@arx-ai/arx-tools'
 
 /** The model-facing tool name a structured child must call to finish. */
 export const STRUCTURED_OUTPUT_TOOL = 'structured_output'
@@ -43,7 +43,7 @@ export interface StructuredAttachment {
  * its creation window. Child disposal removes every registration.
  * @param childCtx - the child agent's scope context (`setup`'s argument).
  * @param schema - the trusted, already-asserted schema subset to enforce (see
- *   `assertObjectJsonSchema` in cxh-tools).
+ *   `assertObjectJsonSchema` in arx-tools).
  * @returns the attachment handle (read `captured()` after the child settles).
  */
 export function attachStructuredRuntime(childCtx: Context, schema: ObjectJsonSchema): StructuredAttachment {

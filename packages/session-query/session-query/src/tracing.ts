@@ -1,7 +1,7 @@
 /** One-shot session-lineage and event-relationship tracing helpers. */
 
-import { foldSurface, isSurfaceEvent, snapshotSessionEvent } from '@centurionarx/cxh-session'
-import type { SessionEvent, SessionId, SurfaceEvent, SurfaceEventType } from '@centurionarx/cxh-session'
+import { foldSurface, isSurfaceEvent, snapshotSessionEvent } from '@arx-ai/arx-session'
+import type { SessionEvent, SessionId, SurfaceEvent, SurfaceEventType } from '@arx-ai/arx-session'
 import { SessionQueryError } from './config.ts'
 import type {
   SessionEventRecord,

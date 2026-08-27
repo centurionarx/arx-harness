@@ -2,15 +2,15 @@
  * JSON storage backend: one human-readable file per unit under a configured
  * root, published by atomic whole-file rewrite. Registers as backend `json`
  * on the storage hub.
- * @module @centurionarx/cxh-storage-json
+ * @module @arx-ai/arx-storage-json
  */
 
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { StorageError, UNIT_NAME_RE, storageBackendServiceKey } from '@centurionarx/cxh-storage'
-import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@centurionarx/cxh-storage'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { StorageError, UNIT_NAME_RE, storageBackendServiceKey } from '@arx-ai/arx-storage'
+import type { KvFacet, KvUnit, KvUnitDescriptor, StorageBackend } from '@arx-ai/arx-storage'
 import { openJsonUnit } from './unit.ts'
 
 /** Cordis plugin name. */

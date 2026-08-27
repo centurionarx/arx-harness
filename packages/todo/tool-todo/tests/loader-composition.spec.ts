@@ -6,16 +6,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import { CallId } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import * as ToolTodo from '@centurionarx/cxh-tool-todo'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import { CallId } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import * as ToolTodo from '@arx-ai/arx-tool-todo'
 
 let root: string | undefined
 let context: Context | undefined
@@ -52,13 +52,13 @@ function resultText(result: { content: { type: string; text?: string }[] }): str
  * @returns the booted context.
  */
 async function boot(configLines: readonly string[]): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-todo-loader-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-todo-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@centurionarx/cxh-agent'",
-    "- name: '@centurionarx/cxh-system-prompt'",
-    "- name: '@centurionarx/cxh-tools'",
-    "- name: '@centurionarx/cxh-tool-todo'",
+    "- name: '@arx-ai/arx-agent'",
+    "- name: '@arx-ai/arx-system-prompt'",
+    "- name: '@arx-ai/arx-tools'",
+    "- name: '@arx-ai/arx-tool-todo'",
     ...configLines.length > 0 ? ['  config:', ...configLines] : [],
     '',
   ].join('\n'))
@@ -69,10 +69,10 @@ async function boot(configLines: readonly string[]): Promise<Context> {
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-agent', AgentRegistry],
-    ['@centurionarx/cxh-system-prompt', SystemPrompt],
-    ['@centurionarx/cxh-tools', ToolRuntime],
-    ['@centurionarx/cxh-tool-todo', ToolTodo],
+    ['@arx-ai/arx-agent', AgentRegistry],
+    ['@arx-ai/arx-system-prompt', SystemPrompt],
+    ['@arx-ai/arx-tools', ToolRuntime],
+    ['@arx-ai/arx-tool-todo', ToolTodo],
   ])
   ctx.loader.internal = {
     version: 'v2',

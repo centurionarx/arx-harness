@@ -1,25 +1,25 @@
 /**
- * @centurionarx/cxh-headless — one-shot direct Agent driver. The bundle patch
- * rides over cxh-base without Host, HTTP, or browser plugins; this runner
+ * @arx-ai/arx-headless — one-shot direct Agent driver. The bundle patch
+ * rides over arx-base without Host, HTTP, or browser plugins; this runner
  * creates one Agent through the core registry, drives the task to quiescence,
  * flushes its Session, prints the final assistant text, and exits.
  *
- * @module @centurionarx/cxh-headless
+ * @module @arx-ai/arx-headless
  */
 
 import { randomUUID } from 'node:crypto'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { installModelSelection } from '@centurionarx/cxh-agent'
-import type { ModelSelectionRef } from '@centurionarx/cxh-agent'
-import type {} from '@centurionarx/cxh-agent-default-model'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { installModelSelection } from '@arx-ai/arx-agent'
+import type { ModelSelectionRef } from '@arx-ai/arx-agent'
+import type {} from '@arx-ai/arx-agent-default-model'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 // Empty type imports carry the loader Context merge for the settlement await
 // and the cmdline Context merge for the appExit host value.
-import type {} from '@centurionarx/cordis-plugin-loader'
-import type {} from '@centurionarx/cxh-cmdline'
+import type {} from '@arx-ai/cordis-plugin-loader'
+import type {} from '@arx-ai/arx-cmdline'
 
 /** Stable Cordis plugin name. */
 export const name = 'headless-runner'
@@ -83,7 +83,7 @@ function summarize(events: readonly SessionEvent[], firstSeq: number): RunOutcom
 
 /** Report an unexpected direct-driver failure and request a failing exit. */
 function fail(io: HeadlessIo, error: unknown): void {
-  io.stderr.write(`cxh: ${error instanceof Error ? error.message : String(error)}\n`)
+  io.stderr.write(`arx: ${error instanceof Error ? error.message : String(error)}\n`)
   io.exit(1)
 }
 
@@ -104,10 +104,15 @@ async function run(ctx: Context, task: string, io: HeadlessIo): Promise<void> {
   if (agents === undefined || defaultModel === undefined || sessions === undefined) return
 
   const selection = defaultModel.currentSelection()
+  // Headless runs one task and exits: there is no picker to fall back on, so a
+  // deployment that ships no default has to say which model this run uses.
+  if (selection === undefined) {
+    throw new Error('headless: no default model is configured; set agent-default-model provider and model')
+  }
   // This bundle composes no preset roster, so the model-facing rows sit in the
   // host plane and the agent reads them from the global layer. A deployment
   // that DOES configure one has to join it here first
-  // (@centurionarx/cxh-agent-presets README, "Composing a child agent").
+  // (@arx-ai/arx-agent-presets README, "Composing a child agent").
   const { agent } = await agents.create({
     sessionId: SessionId(`session-${randomUUID()}`),
     meta: { cwd: process.cwd() },
@@ -128,7 +133,7 @@ async function run(ctx: Context, task: string, io: HeadlessIo): Promise<void> {
   const outcome = summarize(agent.session.events, firstSeq)
   io.stdout.write(outcome.text + '\n')
   if (outcome.reason?.kind === 'error') {
-    io.stderr.write(`cxh: ${outcome.reason.error.code}: ${outcome.reason.error.message}\n`)
+    io.stderr.write(`arx: ${outcome.reason.error.code}: ${outcome.reason.error.message}\n`)
   }
   io.exit(outcome.reason?.kind === 'completed' ? 0 : 1)
 }

@@ -1,10 +1,10 @@
-import { createUserMessage, createMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage, createMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@centurionarx/cxh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId as SessionIdType } from '@centurionarx/cxh-session'
-import SessionPersistence from '@centurionarx/cxh-session-persistence'
-import { type SessionQueryErrorCode } from '@centurionarx/cxh-session-query'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SESSION_FORMAT_VERSION, SessionId } from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader, SessionId as SessionIdType } from '@arx-ai/arx-session'
+import SessionPersistence from '@arx-ai/arx-session-persistence'
+import { type SessionQueryErrorCode } from '@arx-ai/arx-session-query'
 import { TestSessionQueryEngine } from './test-service.ts'
 
 type MutableSessionHeader = { -readonly [K in keyof SessionHeader]: SessionHeader[K] }

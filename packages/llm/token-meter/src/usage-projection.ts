@@ -3,9 +3,9 @@
  */
 
 import { z } from 'zod'
-import type { TokenUsage } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import type { ProjectionDefinition } from '@centurionarx/cxh-session-projection'
+import type { TokenUsage } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
 import type { ContextPressureProjection, TokenUsageProjection } from './projection.ts'
 import { foldSurfaceProjection } from './surface-projection.ts'
 
@@ -84,7 +84,7 @@ const usageOf = (event: SessionEvent): TokenUsage | undefined =>
       ? event.data.usage
       : undefined
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     tokenUsage: TokenUsageState
     contextPressure: ContextPressureState

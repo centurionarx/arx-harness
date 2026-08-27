@@ -1,6 +1,6 @@
 import type {
   SettingsSchemaService,
-} from '@centurionarx/cxh-client-ui-settings/client'
+} from '@arx-ai/arx-client-ui-settings/client'
 
 /** Plain schema callbacks exposed to Models stores and presentation components. */
 export type SettingsSchemaOperations = Pick<

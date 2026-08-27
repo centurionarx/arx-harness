@@ -4,14 +4,14 @@
  * `api-catalog.ts`. This module owns the join of the two plus presentation: which
  * lines a section prints, how compact the default report stays, and what an exact
  * `name` adds.
- * @module @centurionarx/cxh-tool-cordis/inspect
+ * @module @arx-ai/arx-tool-cordis/inspect
  */
 
-import type { Context, Fiber } from '@centurionarx/cordis'
-import type { ScopeKey } from '@centurionarx/cxh-scope'
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Context, Fiber } from '@arx-ai/cordis'
+import type { ScopeKey } from '@arx-ai/arx-scope'
+import type { Agent } from '@arx-ai/arx-agent'
 // Type-only: resolves `ctx.dynamicCordisRunner` (the registry this report reads).
-import type {} from '@centurionarx/cxh-cordis-host-runner'
+import type {} from '@arx-ai/arx-cordis-host-runner'
 import { EVENT_API, INHERITED_CTX_API, SERVICE_API, TYPE_API } from './api-catalog.ts'
 import type { EventApiEntry, InheritedApiEntry, ServiceApiEntry, ServiceApiMethod, TypeApiEntry } from './api-catalog.ts'
 import { FiberState, STATE_LABELS } from './fiber-state.ts'
@@ -180,7 +180,7 @@ export function describeTools(ctx: Context, scope?: ScopeKey): string[] {
 export function describeDynamic(ctx: Context, agent?: Agent): string[] {
   const rows = agent === undefined ? [] : ctx.dynamicCordisRunner.snapshot(agent)
   if (rows.length === 0) {
-    return ['No dynamic Plugins are defined in this session. Definitions live only in this process\'s memory, so a CXH restart clears them.']
+    return ['No dynamic Plugins are defined in this session. Definitions live only in this process\'s memory, so a ARX restart clears them.']
   }
   return rows.flatMap((row) => {
     const head = `- Plugin ${row.pluginId}; current: ${row.currentPackageId ?? 'none'}; next: ${row.nextPackageId ?? 'none'}`

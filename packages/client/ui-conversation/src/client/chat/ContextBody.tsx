@@ -5,8 +5,8 @@
 // even when this UI version has never seen its producer.
 
 import type { ReactNode } from 'react'
-import type { ContextMessageNode, KnownContextForm } from '@centurionarx/cxh-client-runtime/client'
-import { JsonBlock } from '@centurionarx/cxh-client-ui-primitives'
+import type { ContextMessageNode, KnownContextForm } from '@arx-ai/arx-client-runtime/client'
+import { JsonBlock } from '@arx-ai/arx-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import css from './ContextBody.module.css'
 

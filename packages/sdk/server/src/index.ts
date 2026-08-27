@@ -6,13 +6,13 @@
  * owns EOF and signal exits. Keep named plugin exports with no default export so
  * Loader `unwrapExports` preserves `name`, `inject`, `Config`, and `apply`.
  *
- * @module @centurionarx/cxh-sdk-jsonrpc-server
+ * @module @arx-ai/arx-sdk-jsonrpc-server
  */
 
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type { Readable, Writable } from 'node:stream'
-import Schema from '@centurionarx/schemastery'
-import { JsonRpcLineTransport } from '@centurionarx/cxh-sdk-protocol'
+import Schema from '@arx-ai/schemastery'
+import { JsonRpcLineTransport } from '@arx-ai/arx-sdk-protocol'
 import { HarnessSdkJsonRpcServer } from './server.ts'
 
 export * from './server.ts'

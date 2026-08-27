@@ -2,14 +2,14 @@
  * Web boot kernel. It owns only the module system, Cordis loader, and a
  * framework-free boot page. The dynamic UI renderer receives the mount
  * point after every client entry activates.
- * @module @centurionarx/cxh-client-web/src/boot
+ * @module @arx-ai/arx-client-web/src/boot
  */
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
 import type {
-  BootManifest, ClientModuleCreateOptions, ClientModuleSystem, CxhWindow,
-} from '@centurionarx/cxh-client-modules/client'
-import type {} from '@centurionarx/cxh-client-ui-renderer/client'
+  BootManifest, ClientModuleCreateOptions, ClientModuleSystem, ArxWindow,
+} from '@arx-ai/arx-client-modules/client'
+import type {} from '@arx-ai/arx-client-ui-renderer/client'
 import { BootPage } from './boot-page.ts'
 import { getStaticModules } from './seed.ts'
 import { STATE_LABELS } from './loader-status.ts'
@@ -45,21 +45,21 @@ export class AppWebEntry {
    */
   async run(): Promise<void> {
     try {
-      const win = globalThis as CxhWindow
+      const win = globalThis as ArxWindow
       const moduleLoader = win.__ModuleLoader__
       if (moduleLoader === undefined) {
         throw new Error('web boot: window.__ModuleLoader__ bootstrap facade is missing')
       }
       // A pre-injected transport (the worker preview page) owns bundle bytes;
       // its loadBundle is the default and explicit seams still win. The global
-      // is `ClientTransportHooks`, owned by @centurionarx/cxh-client-connection;
+      // is `ClientTransportHooks`, owned by @arx-ai/arx-client-connection;
       // this structural slice reads one optional member without adding a
       // package edge.
       const transport = (globalThis as {
-        __CXH_TRANSPORT__?: { loadBundle?: ClientModuleCreateOptions['loadBundle'] }
-      }).__CXH_TRANSPORT__
+        __ARX_TRANSPORT__?: { loadBundle?: ClientModuleCreateOptions['loadBundle'] }
+      }).__ARX_TRANSPORT__
       this.modules = moduleLoader.create({
-        boot: win.__CXH_BOOT__,
+        boot: win.__ARX_BOOT__,
         staticModules: getStaticModules(),
         ...transport?.loadBundle === undefined ? {} : { loadBundle: transport.loadBundle },
         ...this.seams,
@@ -99,8 +99,8 @@ export class AppWebEntry {
     // against its static deployment answers nothing. A transport without
     // loadBundle leaves bundles on HTTP, prefetch included.
     const transport = (globalThis as {
-      __CXH_TRANSPORT__?: { loadBundle?: unknown }
-    }).__CXH_TRANSPORT__
+      __ARX_TRANSPORT__?: { loadBundle?: unknown }
+    }).__ARX_TRANSPORT__
     if (transport?.loadBundle !== undefined) return
     await Promise.all(this.manifest.plugins
       .filter(row => row.immediately)

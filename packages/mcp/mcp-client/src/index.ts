@@ -10,16 +10,16 @@
  * disposing the old instance and creating a new one; identical `serverName`
  * reproduces identical public tool names.
  *
- * @module @centurionarx/cxh-mcp-client
+ * @module @arx-ai/arx-mcp-client
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import { RECONNECT_DEFAULTS, resolveReconnectPolicy, startConnection } from './connection.ts'
 import type { ReconnectConfig } from './connection.ts'
 // Side-effect type import: declaration-merges `ctx.tools` onto Context.
-import type {} from '@centurionarx/cxh-tools'
+import type {} from '@arx-ai/arx-tools'
 
 export type { McpResult } from './tools.ts'
 export type { ReconnectConfig, ResolvedReconnectPolicy } from './connection.ts'

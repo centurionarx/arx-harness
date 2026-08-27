@@ -1,15 +1,15 @@
 /**
- * `@centurionarx/cxh-web-fetch-http`: registers an anonymous public HTTP(S)
+ * `@arx-ai/arx-web-fetch-http`: registers an anonymous public HTTP(S)
  * `WebFetchProvider` with `ctx.web`. A function/namespace plugin (NOT a
  * default-export service): it registers INTO the seam's fetch registry, like the
  * search providers register into the search registry.
  *
- * @module @centurionarx/cxh-web-fetch-http
+ * @module @arx-ai/arx-web-fetch-http
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type {} from '@centurionarx/cxh-web'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type {} from '@arx-ai/arx-web'
 import { HttpFetchProvider } from './provider.ts'
 import type { HttpFetchLimits } from './provider.ts'
 
@@ -22,7 +22,7 @@ export {
 export type { HttpFetchLimits } from './provider.ts'
 
 /** Default `User-Agent`: an explicit product agent, never a browser disguise. */
-export const DEFAULT_USER_AGENT = 'centurionarx-harness/0.0.1 (+https://github.com/centurionarx)'
+export const DEFAULT_USER_AGENT = 'arx-harness/0.0.1 (+https://github.com/centurionarx)'
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'web-fetch-http'

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-agent-spine-demo
+# @arx-ai/arx-agent-spine-demo
 
 English | [中文](README.zh.md)
 
@@ -11,32 +11,32 @@ Read this package for the whole plugin tree and its composition order.
 `apply(ctx, config)` mounts each of these as a child of the bundle fiber:
 
 ```
-@centurionarx/cordis-plugin-timer  timer service (writes nothing to stdout)
-@centurionarx/cxh-llm              abstract LLM service + content-block vocabulary
-@centurionarx/cxh-session          event-sourced session log + store
-@centurionarx/cxh-session-title    log-backed title service + deterministic fallback
-@centurionarx/cxh-system-prompt    prompt-section + tool-schema assembly
-@centurionarx/cxh-tools            registry + guarded pre/around/post/final-result pipeline
-@centurionarx/cxh-skill            skill provider registry
-@centurionarx/cxh-skill-filesystem      local filesystem skill provider
-@centurionarx/cxh-agent            agent registry + initiator scope + agent/* events
-@centurionarx/cxh-goal             optional persisted same-session goal domain
-@centurionarx/cxh-tool-goal        optional model-facing goal controls
-@centurionarx/cxh-goal-round-driver     optional same-session goal-round driver
-@centurionarx/cxh-llm-retry        provider-routed request retry policy
-@centurionarx/cxh-jobs-local      generic background-job registry
-@centurionarx/cxh-invariants       configurable invariant registry service
-@centurionarx/cxh-session/invariant
-@centurionarx/cxh-agent/invariant
-@centurionarx/cxh-scope/invariant
-@centurionarx/cxh-agent-loop/invariant
+@arx-ai/cordis-plugin-timer  timer service (writes nothing to stdout)
+@arx-ai/arx-llm              abstract LLM service + content-block vocabulary
+@arx-ai/arx-session          event-sourced session log + store
+@arx-ai/arx-session-title    log-backed title service + deterministic fallback
+@arx-ai/arx-system-prompt    prompt-section + tool-schema assembly
+@arx-ai/arx-tools            registry + guarded pre/around/post/final-result pipeline
+@arx-ai/arx-skill            skill provider registry
+@arx-ai/arx-skill-filesystem      local filesystem skill provider
+@arx-ai/arx-agent            agent registry + initiator scope + agent/* events
+@arx-ai/arx-goal             optional persisted same-session goal domain
+@arx-ai/arx-tool-goal        optional model-facing goal controls
+@arx-ai/arx-goal-round-driver     optional same-session goal-round driver
+@arx-ai/arx-llm-retry        provider-routed request retry policy
+@arx-ai/arx-jobs-local      generic background-job registry
+@arx-ai/arx-invariants       configurable invariant registry service
+@arx-ai/arx-session/invariant
+@arx-ai/arx-agent/invariant
+@arx-ai/arx-scope/invariant
+@arx-ai/arx-agent-loop/invariant
                                   package-owned relational checks
-@centurionarx/cxh-tool-bash        the model-facing bash schema (unless toolBash=false)
-@centurionarx/cxh-agent-instructions  AGENTS.md/CLAUDE.md workspace context loader
-@centurionarx/cxh-tool-skill       session-prefix skill catalog + model-facing loader schema
-@centurionarx/cxh-tool-jobs       job_output/job_list/job_kill schemas + completion notices
-@centurionarx/cxh-agent-loop       THE concrete loop (gets the forwarded `agents`)
-                                  (cxh-system-prompt gets the forwarded `persona`)
+@arx-ai/arx-tool-bash        the model-facing bash schema (unless toolBash=false)
+@arx-ai/arx-agent-instructions  AGENTS.md/CLAUDE.md workspace context loader
+@arx-ai/arx-tool-skill       session-prefix skill catalog + model-facing loader schema
+@arx-ai/arx-tool-jobs       job_output/job_list/job_kill schemas + completion notices
+@arx-ai/arx-agent-loop       THE concrete loop (gets the forwarded `agents`)
+                                  (arx-system-prompt gets the forwarded `persona`)
 ```
 
 ## What it deliberately leaves OUTSIDE the bundle
@@ -54,14 +54,14 @@ This applies the [Service Definition / Service Provider / Consumer separation](.
 ## Config
 
 ```ts
-import type { Config } from '@centurionarx/cxh-agent-spine-demo'
-// { agents?, maxParallelToolCalls?, includeHarnessIdentity?, includeRuntimeContext?, persona?, toolOrder?, tools?, cxhHome?, sessionTitle?, skills?, workspaceContext, toolBash?, jobs?, toolJobs?, goals?, invariants? }
+import type { Config } from '@arx-ai/arx-agent-spine-demo'
+// { agents?, maxParallelToolCalls?, includeHarnessIdentity?, includeRuntimeContext?, persona?, toolOrder?, tools?, arxHome?, sessionTitle?, skills?, workspaceContext, toolBash?, jobs?, toolJobs?, goals?, invariants? }
 // workspaceContext requires { maxBytes } or false; the other owner schemas supply defaults.
 ```
 
-The bundle forwards each field to the child that owns it. App packages supply any pre-created agents: headless and JSON-RPC compositions create `main`, while the ACP app creates agents on demand at `session/new`. `includeRuntimeContext: false` is forwarded to `cxh-system-prompt` and suppresses all dynamic context snapshots for fresh sessions without disabling their policy services. Prompt, tool, title, skill, agent-instructions, invariant, goal, and task settings retain the schemas and defaults documented by their owning packages; `jobs.maxConcurrentJobsPerOwner` configures the local provider independently of the model-facing `toolJobs` controls. `pickSpineConfig()` copies only fields owned by this bundle, and conflicting `cxhHome` values fail during composition.
+The bundle forwards each field to the child that owns it. App packages supply any pre-created agents: headless and JSON-RPC compositions create `main`, while the ACP app creates agents on demand at `session/new`. `includeRuntimeContext: false` is forwarded to `arx-system-prompt` and suppresses all dynamic context snapshots for fresh sessions without disabling their policy services. Prompt, tool, title, skill, agent-instructions, invariant, goal, and task settings retain the schemas and defaults documented by their owning packages; `jobs.maxConcurrentJobsPerOwner` configures the local provider independently of the model-facing `toolJobs` controls. `pickSpineConfig()` copies only fields owned by this bundle, and conflicting `arxHome` values fail during composition.
 
-For example, `{ invariants: { enabled: true, package_allowlist: ['^@centurionarx/cxh-'], package_blocklist: ['agent-loop$'] } }` keeps the package-owned companions mounted but suppresses the blocked owner. Blocklist matches override allowlist matches; see [`cxh-invariants`](../../runtime-diagnostics/invariants/README.md) for regex and lifecycle rules.
+For example, `{ invariants: { enabled: true, package_allowlist: ['^@arx-ai/arx-'], package_blocklist: ['agent-loop$'] } }` keeps the package-owned companions mounted but suppresses the blocked owner. Blocklist matches override allowlist matches; see [`arx-invariants`](../../runtime-diagnostics/invariants/README.md) for regex and lifecycle rules.
 
 ## Why a code bundle, not a shared YAML include
 
@@ -71,7 +71,7 @@ The retry policy may repeat a failed request in a new numbered step. Retry statu
 
 ## Model Experience
 
-Indirectly, through `cxh-system-prompt`, `cxh-tool-skill`, `cxh-tool-bash`, `cxh-tools`, and `cxh-llm-retry`, plus `cxh-tool-goal` and goal-round prompts when `goals` is enabled. The bundle adds no model-bound wrapper content of its own.
+Indirectly, through `arx-system-prompt`, `arx-tool-skill`, `arx-tool-bash`, `arx-tools`, and `arx-llm-retry`, plus `arx-tool-goal` and goal-round prompts when `goals` is enabled. The bundle adds no model-bound wrapper content of its own.
 
 #### KV Cache effect
 

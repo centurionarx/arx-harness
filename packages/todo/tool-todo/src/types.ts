@@ -1,18 +1,18 @@
 /**
  * Pure types of the todo domain: the ONE home of the `todos` projection-key
  * declaration plus its payload types, free of this package's host-side value
- * imports (cxh-tools, zod). Two namespace projections serve it — `./types`
+ * imports (arx-tools, zod). Two namespace projections serve it — `./types`
  * for host consumers, `./client/types` (the browser half-entry's re-export)
  * for client aggregates — with zero content duplication.
  *
- * @module @centurionarx/cxh-tool-todo/types
+ * @module @arx-ai/arx-tool-todo/types
  */
 
-import type { TodoItem } from '@centurionarx/cxh-session/types'
+import type { TodoItem } from '@arx-ai/arx-session/types'
 
-export type { TodoItem } from '@centurionarx/cxh-session/types'
+export type { TodoItem } from '@arx-ai/arx-session/types'
 
-declare module '@centurionarx/cxh-session-projection/types' {
+declare module '@arx-ai/arx-session-projection/types' {
   interface SessionProjectionStateMap {
     todos: TodoItem[] | null
   }

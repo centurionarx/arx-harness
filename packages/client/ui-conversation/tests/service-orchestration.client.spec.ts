@@ -3,11 +3,11 @@
 // TestSessions mints tagged scopes through the production createScope, so the
 // service's scopeOf/binding path runs against production resolution (no local
 // tag probe).
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { AttachmentId } from '@centurionarx/cxh-attachment'
-import { makeTranslate, SlotTestRuntime } from '@centurionarx/cxh-client-test-runtime'
-import type { QueuedMessage, SessionFace } from '@centurionarx/cxh-client-runtime/client'
+import { AttachmentId } from '@arx-ai/arx-attachment'
+import { makeTranslate, SlotTestRuntime } from '@arx-ai/arx-client-test-runtime'
+import type { QueuedMessage, SessionFace } from '@arx-ai/arx-client-runtime/client'
 import { ComposerBlockRegistry } from '../src/client/input/blocks.ts'
 import { InputHub } from '../src/client/input/hub.ts'
 import { ConversationController, UnsupportedImageMediaTypeError } from '../src/client/service.ts'

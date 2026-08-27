@@ -8,23 +8,23 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
-import { Context } from '@centurionarx/cordis'
-import { bindSnapshotSelector } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import {
   createSnapshotStore, EMPTY_CONVERSATION_VIEWS,
-} from '@centurionarx/cxh-client-runtime/client'
-import { makeTranslate } from '@centurionarx/cxh-client-test-runtime'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 import type {
   ConversationSnapshot, RunningToolCall, SessionId, SessionListState, ToolResultNode, WorkspaceListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ToolResultView } from '@centurionarx/cxh-api-remotes/client'
-import type { SelectionTarget } from '@centurionarx/cxh-client-ui-conversation/client'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ToolResultView } from '@arx-ai/arx-api-remotes/client'
+import type { SelectionTarget } from '@arx-ai/arx-client-ui-conversation/client'
 import { CHAT_READ_MAX_LINES, readCardModel } from '../src/client/tool/models/read-card-model.ts'
-import { createChatStore } from '@centurionarx/cxh-client-ui-conversation/src/client/stores.ts'
+import { createChatStore } from '@arx-ai/arx-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
-import { zh } from '@centurionarx/cxh-client-ui-conversation/src/client/locales.ts'
-import { DetailsPanel } from '@centurionarx/cxh-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
+import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
+import { DetailsPanel } from '@arx-ai/arx-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
 import { ReadRow, readToolview } from '../src/client/tool/toolviews/read-row.tsx'
 import { renderToolDetails, SessionProviderStub, toolChatSnapshot } from './tool-details-render.client.tsx'
 

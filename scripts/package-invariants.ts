@@ -95,19 +95,19 @@ function checkManifest(
   if (!manifest.files?.includes('lib/invariant.js')) {
     addViolation(violations, owner.manifestPath, 'files must publish lib/invariant.js')
   }
-  if (owner.packageName === '@centurionarx/cxh-invariants') return
-  if (manifest.peerDependencies?.['@centurionarx/cxh-invariants'] !== 'workspace:^') {
+  if (owner.packageName === '@arx-ai/arx-invariants') return
+  if (manifest.peerDependencies?.['@arx-ai/arx-invariants'] !== 'workspace:^') {
     addViolation(
       violations,
       owner.manifestPath,
-      '@centurionarx/cxh-invariants must be a workspace:^ peerDependency',
+      '@arx-ai/arx-invariants must be a workspace:^ peerDependency',
     )
   }
-  if (manifest.devDependencies?.['@centurionarx/cxh-invariants'] !== 'workspace:^') {
+  if (manifest.devDependencies?.['@arx-ai/arx-invariants'] !== 'workspace:^') {
     addViolation(
       violations,
       owner.manifestPath,
-      '@centurionarx/cxh-invariants must also be a workspace:^ devDependency',
+      '@arx-ai/arx-invariants must also be a workspace:^ devDependency',
     )
   }
 }
@@ -118,7 +118,7 @@ function checkBuild(
   violations: PackageInvariantViolation[],
 ): void {
   const tsconfigPath = `${owner.dir}/tsconfig.json`
-  if (owner.packageName !== '@centurionarx/cxh-invariants'
+  if (owner.packageName !== '@arx-ai/arx-invariants'
     && !projectReferencesInvariants(root, owner.dir, tsconfigPath)) {
     addViolation(
       violations,

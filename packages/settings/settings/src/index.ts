@@ -3,11 +3,11 @@
  * per-namespace sections; plugins register a namespace schema and read the
  * resolved value, which layers schema defaults, the registrant's composition
  * `base`, and the user document section, in that order.
- * @module @centurionarx/cxh-settings
+ * @module @arx-ai/arx-settings
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type z from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import type z from '@arx-ai/schemastery'
 import { redactSecrets } from './redact.ts'
 import type { RedactedSecret } from './redact.ts'
 import type { SettingsNamespace, SettingsUpdateSource } from './types.ts'
@@ -128,7 +128,7 @@ export interface SettingsScope<T> {
   replace(section: object): Promise<void>
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     settings: SettingsProvider
   }

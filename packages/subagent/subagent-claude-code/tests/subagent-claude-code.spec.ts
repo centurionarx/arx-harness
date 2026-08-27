@@ -10,8 +10,8 @@ import type {
   SDKResultMessage,
   SpawnOptions,
 } from '@anthropic-ai/claude-agent-sdk'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
 import * as yaml from 'js-yaml'
 import {
   afterEach,
@@ -22,24 +22,24 @@ import {
   type Mock,
   vi,
 } from 'vitest'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import SubagentRuntime from '@arx-ai/arx-subagent'
 import type {
   SubprocessHandle,
   SubprocessOutcome,
   SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+} from '@arx-ai/arx-subprocess'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import * as claudeCode from '../src/index.ts'
 import * as invariant from '../src/invariant.ts'
 import {
   claudeSpawnSpec,
   ManagedClaudeCodeProcess,
   sdkEnvironmentOverlay,
-} from '@centurionarx/cxh-claude-agent-sdk-process'
+} from '@arx-ai/arx-claude-agent-sdk-process'
 import {
   CLAUDE_CODE_PERMISSION_MODES,
   DEFAULT_CLAUDE_CODE_PERMISSION_MODE,
@@ -346,9 +346,9 @@ describe('task admission and package contracts', () => {
     const manifest = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')) as {
       dependencies?: Record<string, string>
       files?: string[]
-      cxh?: { bundle?: { patch?: string } }
+      arx?: { bundle?: { patch?: string } }
     }
-    expect(manifest.cxh?.bundle?.patch).toBe('./cordis.patch.yml')
+    expect(manifest.arx?.bundle?.patch).toBe('./cordis.patch.yml')
     expect(manifest.files).toContain('cordis.patch.yml')
     expect(manifest.dependencies).toHaveProperty(
       '@anthropic-ai/claude-agent-sdk',
@@ -359,7 +359,7 @@ describe('task admission and package contracts', () => {
       '^1.29.0',
     )
     expect(manifest.dependencies).toHaveProperty('zod', '^4.4.3')
-    expect(manifest.dependencies).not.toHaveProperty('@centurionarx/cxh-subagent-codex')
+    expect(manifest.dependencies).not.toHaveProperty('@arx-ai/arx-subagent-codex')
 
     const sdkRoot = dirname(fileURLToPath(
       import.meta.resolve('@anthropic-ai/claude-agent-sdk'),
@@ -390,13 +390,13 @@ describe('task admission and package contracts', () => {
       )
     }
 
-    const parsed = yaml.load(readFileSync(resolve(root, manifest.cxh!.bundle!.patch!), 'utf8'))
+    const parsed = yaml.load(readFileSync(resolve(root, manifest.arx!.bundle!.patch!), 'utf8'))
     const rows = Array.isArray(parsed)
       ? (parsed as Array<{ insert?: Array<{ id?: string; name?: string }> }>).flatMap(entry => entry.insert ?? [])
       : []
     expect(rows).toEqual([{
       id: 'subagent-claude-code',
-      name: '@centurionarx/cxh-subagent-claude-code',
+      name: '@arx-ai/arx-subagent-claude-code',
     }])
     expect(JSON.stringify(rows)).not.toContain('tool-subagent')
   })
@@ -453,7 +453,7 @@ describe('task admission and package contracts', () => {
     const spawnSpecs: SubprocessSpawnSpec[] = []
     vi.spyOn(ctx.subprocess, 'spawn').mockImplementation((spec) => {
       spawnSpecs.push(spec)
-      return spec.env?.CXH_CLAUDE_INSTANCE === 'safe'
+      return spec.env?.ARX_CLAUDE_INSTANCE === 'safe'
         ? safeChild.handle
         : bypassChild.handle
     })
@@ -480,13 +480,13 @@ describe('task admission and package contracts', () => {
     ctx.on('subagent/provider-removed', providerName => void removed.push(providerName))
     const safeFiber = await ctx.plugin(claudeCode, {
       providerName: 'claude-safe',
-      env: { CXH_CLAUDE_INSTANCE: 'safe' },
+      env: { ARX_CLAUDE_INSTANCE: 'safe' },
       permissionMode: 'dontAsk',
       disposeGraceMs: 11,
     })
     const bypassFiber = await ctx.plugin(claudeCode, {
       providerName: 'claude-bypass',
-      env: { CXH_CLAUDE_INSTANCE: 'bypass' },
+      env: { ARX_CLAUDE_INSTANCE: 'bypass' },
       permissionMode: 'bypassPermissions',
       disposeGraceMs: 29,
     })
@@ -514,14 +514,14 @@ describe('task admission and package contracts', () => {
       stopReason: 'aborted',
     })
     expect(queryOptions.map(options => ({
-      instance: options.env?.CXH_CLAUDE_INSTANCE,
+      instance: options.env?.ARX_CLAUDE_INSTANCE,
       permissionMode: options.permissionMode,
     }))).toEqual([
       { instance: 'safe', permissionMode: 'dontAsk' },
       { instance: 'bypass', permissionMode: 'bypassPermissions' },
     ])
     expect(spawnSpecs.map(spec => ({
-      instance: spec.env?.CXH_CLAUDE_INSTANCE,
+      instance: spec.env?.ARX_CLAUDE_INSTANCE,
       graceMs: spec.graceMs,
     }))).toEqual([
       { instance: 'safe', graceMs: 11 },
@@ -595,8 +595,8 @@ describe('task admission and package contracts', () => {
       providerName: 'claude-diagnostic',
       env: {
         ANTHROPIC_API_KEY: 'provider-fake-key',
-        CLAUDE_CONFIG_DIR: '/private/tmp/cxh-claude-code-unit-config',
-        HOME: '/private/tmp/cxh-claude-code-unit-home',
+        CLAUDE_CONFIG_DIR: '/private/tmp/arx-claude-code-unit-config',
+        HOME: '/private/tmp/arx-claude-code-unit-home',
       },
       permissionMode: 'auto',
       disposeGraceMs: 29,
@@ -704,7 +704,7 @@ describe('task admission and package contracts', () => {
     const ctx = { invariants: { register } } as unknown as Context
     await expect(invariant.apply(ctx)).resolves.toBe(dispose)
     expect(register).toHaveBeenCalledWith(
-      '@centurionarx/cxh-subagent-claude-code',
+      '@arx-ai/arx-subagent-claude-code',
       expect.any(Function),
     )
     const install = register.mock.calls[0]![1]
@@ -833,7 +833,7 @@ describe('query options and result mapping', () => {
   it('builds the fixed unattended options over the scrubbed environment', async () => {
     vi.stubEnv('HOST_VISIBLE', 'visible')
     vi.stubEnv('HOST_SECRET_TOKEN', 'must-not-leak')
-    vi.stubEnv('CXH_INTERNAL', 'must-not-leak')
+    vi.stubEnv('ARX_INTERNAL', 'must-not-leak')
     const child = fakeChild()
     const spawn = vi.fn(() => child.handle)
     const captured: SubprocessHandle[] = []
@@ -873,7 +873,7 @@ describe('query options and result mapping', () => {
       ANTHROPIC_API_KEY: 'explicit-fake-key',
     })
     expect(options.env).not.toHaveProperty('HOST_SECRET_TOKEN')
-    expect(options.env).not.toHaveProperty('CXH_INTERNAL')
+    expect(options.env).not.toHaveProperty('ARX_INTERNAL')
     expect(options).not.toHaveProperty('settingSources')
 
     const callbackSignal = new AbortController().signal

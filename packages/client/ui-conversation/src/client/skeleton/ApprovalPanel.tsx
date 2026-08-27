@@ -13,8 +13,8 @@
 // resolved frame.
 
 import { useMemo, useState } from 'react'
-import { Button } from '@centurionarx/cxh-client-ui-primitives'
-import type { RunningToolCall } from '@centurionarx/cxh-client-runtime/client'
+import { Button } from '@arx-ai/arx-client-ui-primitives'
+import type { RunningToolCall } from '@arx-ai/arx-client-runtime/client'
 import { PendingApproval, type ApprovalComposerProps } from '../contract/slots.ts'
 import { rootToolCall } from '../chat/tool-node-reader.ts'
 import css from './ApprovalPanel.module.css'

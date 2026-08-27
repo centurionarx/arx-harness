@@ -1,7 +1,7 @@
 /** Schedule-owned use of the shared session durability barrier. */
 
-import type { Context } from '@centurionarx/cordis'
-import type { Session } from '@centurionarx/cxh-session'
+import type { Context } from '@arx-ai/cordis'
+import type { Session } from '@arx-ai/arx-session'
 
 /** Failure to prove that the current live prefix reached a persistence listener. */
 export class SchedulePersistenceError extends Error {

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
+import { Context } from '@arx-ai/cordis'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
 import {
   agentEvents,
   installModelSelection,
   type Agent,
   type ModelSelectionRef,
 } from '../src/index.ts'
-import { ReasoningEffortId, type LlmCallConfig } from '@centurionarx/cxh-llm'
+import { ReasoningEffortId, type LlmCallConfig } from '@arx-ai/arx-llm'
 
 describe('installModelSelection()', () => {
   it('snapshots prompt variables and request routing together, then disposes both listeners', async () => {

@@ -1,16 +1,16 @@
 /** Web subagent catalog, navigation, and addressed-session composer owner. */
 import type {
   ClientContext, SessionId, SubagentAddress,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ComposerChainProps } from '@centurionarx/cxh-client-ui-conversation/client'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ComposerChainProps } from '@arx-ai/arx-client-ui-conversation/client'
 import { SubagentHeaderLineage, type SubagentCatalogInjected } from './SubagentHeaderLineage.tsx'
 import {
   SubagentReadOnlyComposer, type SubagentReadOnlyMatch,
 } from './SubagentReadOnlyComposer.tsx'
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import { en, NS, zh, type SubagentKey } from './locales.ts'
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Subagent catalog and read-only composer copy. */
     'subagent': SubagentKey

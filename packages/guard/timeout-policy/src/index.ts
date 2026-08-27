@@ -3,17 +3,17 @@
  * promises to honor `exec.signal`; this wrapper arms that deadline and maps its
  * own expiry to `TOOL_TIMEOUT` without racing or abandoning the tool promise.
  *
- * FIXME: settle the intended `@centurionarx/cxh-timeout-guard` rename before the
+ * FIXME: settle the intended `@arx-ai/arx-timeout-guard` rename before the
  * first tagged release — suggestion only, aligning the name with its `guard/`
  * home; decide at resolution time
  * ([regrouping Agent Note](../../../../.agents/notes/implemented/architecture/2026-07-29-package-regrouping.md)).
  *
- * @module @centurionarx/cxh-tool-call-timeout-policy
+ * @module @arx-ai/arx-tool-call-timeout-policy
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { deadline, timeoutOf } from '@centurionarx/cxh-timeout'
-import type { ToolExecutionResult } from '@centurionarx/cxh-tools'
+import type { Context } from '@arx-ai/cordis'
+import { deadline, timeoutOf } from '@arx-ai/arx-timeout'
+import type { ToolExecutionResult } from '@arx-ai/arx-tools'
 
 /**
  * The code owned by this plugin, used BOTH as the internal {@link deadline}

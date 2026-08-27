@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import LlmRuntime, { createUserMessage, LlmAdapter  } from '@centurionarx/cxh-llm'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import SessionTitleService from '@centurionarx/cxh-session-title'
-import * as providerPlugin from '@centurionarx/cxh-session-title-first-prompt-llm'
+import LlmRuntime, { createUserMessage, LlmAdapter  } from '@arx-ai/arx-llm'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import SessionTitleService from '@arx-ai/arx-session-title'
+import * as providerPlugin from '@arx-ai/arx-session-title-first-prompt-llm'
 
 let root: string | undefined
 let context: Context | undefined
@@ -33,17 +33,17 @@ afterEach(async () => {
 })
 
 async function loadComposition(): Promise<Context> {
-  root = await mkdtemp(join(tmpdir(), 'cxh-title-loader-'))
+  root = await mkdtemp(join(tmpdir(), 'arx-title-loader-'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
-    "- name: '@centurionarx/cxh-llm'",
-    "- name: '@centurionarx/cxh-session'",
-    "- name: '@centurionarx/cxh-session-title'",
+    "- name: '@arx-ai/arx-llm'",
+    "- name: '@arx-ai/arx-session'",
+    "- name: '@arx-ai/arx-session-title'",
     '  config:',
     '    fallbackMaxWords: 5',
     '    fallbackMaxBytes: 40',
     '    maxTitleBytes: 80',
-    "- name: '@centurionarx/cxh-session-title-first-prompt-llm'",
+    "- name: '@arx-ai/arx-session-title-first-prompt-llm'",
     '  config:',
     '    targetWords: 5',
     '    targetCjkCharacters: 10',
@@ -60,10 +60,10 @@ async function loadComposition(): Promise<Context> {
   await context.plugin(Loader)
   context.loader.builtins.include = Include
   const modules = new Map<string, unknown>([
-    ['@centurionarx/cxh-llm', LlmRuntime],
-    ['@centurionarx/cxh-session', SessionStore],
-    ['@centurionarx/cxh-session-title', SessionTitleService],
-    ['@centurionarx/cxh-session-title-first-prompt-llm', providerPlugin],
+    ['@arx-ai/arx-llm', LlmRuntime],
+    ['@arx-ai/arx-session', SessionStore],
+    ['@arx-ai/arx-session-title', SessionTitleService],
+    ['@arx-ai/arx-session-title-first-prompt-llm', providerPlugin],
   ])
   context.loader.internal = {
     version: 'v2',

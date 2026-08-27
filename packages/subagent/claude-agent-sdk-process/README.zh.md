@@ -1,10 +1,10 @@
-# @centurionarx/cxh-claude-agent-sdk-process
+# @arx-ai/arx-claude-agent-sdk-process
 
 [English](README.md) | 中文
 
-官方 Claude Agent SDK 会自行拉起一个 Claude Code CLI。本包让 harness 接管那棵进程树。它**不是 cordis 插件**——不注册任何东西，也不注入任何东西。它是一个库，供 SDK 的 `spawnClaudeCodeProcess` 钩子把拉起请求转交给 [`cxh-subprocess`](../../subprocess/subprocess/README.zh.md)，从而让终止升级与整棵树的退出证明留在真正拥有它们的服务里。
+官方 Claude Agent SDK 会自行拉起一个 Claude Code CLI。本包让 harness 接管那棵进程树。它**不是 cordis 插件**——不注册任何东西，也不注入任何东西。它是一个库，供 SDK 的 `spawnClaudeCodeProcess` 钩子把拉起请求转交给 [`arx-subprocess`](../../subprocess/subprocess/README.zh.md)，从而让终止升级与整棵树的退出证明留在真正拥有它们的服务里。
 
-它之所以独立成包，是因为驱动同一个 SDK 的 seam 不止一个：[`cxh-subagent-claude-code`](../subagent-claude-code/README.zh.md) 把整个任务委派给它，而 LLM 适配器可以把同一个 CLI 当作普通模型路由来驱动。把这层投影复制进第二个消费者，会让进程所有权契约产生分叉。
+它之所以独立成包，是因为驱动同一个 SDK 的 seam 不止一个：[`arx-subagent-claude-code`](../subagent-claude-code/README.zh.md) 把整个任务委派给它，而 LLM 适配器可以把同一个 CLI 当作普通模型路由来驱动。把这层投影复制进第二个消费者，会让进程所有权契约产生分叉。
 
 ## 原语
 

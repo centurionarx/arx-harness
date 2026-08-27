@@ -1,7 +1,7 @@
 /**
  * Default Agent driver over queued turns and step-boundary input. Every request
  * is derived from the session log.
- * @module cxh-agent-loop/agent
+ * @module arx-agent-loop/agent
  */
 
 import type {
@@ -14,9 +14,9 @@ import type {
   InboxTarget,
   PreStepDecision,
   RequestErrorAction,
-} from '@centurionarx/cxh-agent'
-import { Inbox, agentEvents, assembleContextFor } from '@centurionarx/cxh-agent'
-import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@centurionarx/cxh-llm'
+} from '@arx-ai/arx-agent'
+import { Inbox, agentEvents, assembleContextFor } from '@arx-ai/arx-agent'
+import type { GenerateOptions, LlmCallConfig, Message, PreparedLlmCall } from '@arx-ai/arx-llm'
 import {
   BlockAssembler,
   LlmError,
@@ -24,14 +24,14 @@ import {
   deepFreeze,
   errorChain,
   markAgentLoopRequest,
-} from '@centurionarx/cxh-llm'
-import type { Scope } from '@centurionarx/cxh-scope'
-import { createScope } from '@centurionarx/cxh-scope'
-import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@centurionarx/cxh-session'
-import { canonicalHeader, headerEquals } from '@centurionarx/cxh-session'
-import { joinContextSections, renderContextSections, renderPrompt } from '@centurionarx/cxh-system-prompt'
-import type { PromptAssembly } from '@centurionarx/cxh-system-prompt'
-import type { Context } from '@centurionarx/cordis'
+} from '@arx-ai/arx-llm'
+import type { Scope } from '@arx-ai/arx-scope'
+import { createScope } from '@arx-ai/arx-scope'
+import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@arx-ai/arx-session'
+import { canonicalHeader, headerEquals } from '@arx-ai/arx-session'
+import { joinContextSections, renderContextSections, renderPrompt } from '@arx-ai/arx-system-prompt'
+import type { PromptAssembly } from '@arx-ai/arx-system-prompt'
+import type { Context } from '@arx-ai/cordis'
 import { RuntimeContextProjection } from './runtime-context.ts'
 import { executeToolCalls } from './tool-calls.ts'
 

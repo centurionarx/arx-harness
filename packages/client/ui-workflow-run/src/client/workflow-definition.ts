@@ -1,12 +1,12 @@
 import type {
   ChatConversationViewNode, ConversationLocation, ConversationNodeContext,
   ConversationNodeDefinition,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+} from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-session/types'
 import type {
   ToolWorkflowAgentEndData, ToolWorkflowAgentStartData,
-} from '@centurionarx/cxh-tool-workflow/types'
-import type { WorkflowAgentOutcome, WorkflowStopReason } from '@centurionarx/cxh-workflow/types'
+} from '@arx-ai/arx-tool-workflow/types'
+import type { WorkflowAgentOutcome, WorkflowStopReason } from '@arx-ai/arx-workflow/types'
 
 /** Status shown for a workflow, phase, or member. */
 export type WorkflowRunStatus = 'running' | 'completed' | 'failed' | 'cancelled' | 'interrupted'
@@ -34,7 +34,7 @@ export interface WorkflowRunChatData {
   readonly phases: readonly WorkflowRunPhaseData[]
 }
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Durable top-level workflow run and all members that actually started. */
     'workflow-run': WorkflowRunChatData

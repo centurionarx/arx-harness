@@ -1,16 +1,16 @@
 /** The `agent-loop` settings section layered over the composition entry. */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime from '@centurionarx/cxh-tools'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import { SettingsProvider } from '@centurionarx/cxh-settings'
-import type { SettingsNamespace } from '@centurionarx/cxh-settings'
-import AgentLoop, { AGENT_LOOP_SETTINGS_NAMESPACE } from '@centurionarx/cxh-agent-loop'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime from '@arx-ai/arx-tools'
+import AgentRegistry from '@arx-ai/arx-agent'
+import { SettingsProvider } from '@arx-ai/arx-settings'
+import type { SettingsNamespace } from '@arx-ai/arx-settings'
+import AgentLoop, { AGENT_LOOP_SETTINGS_NAMESPACE } from '@arx-ai/arx-agent-loop'
 
 /** The smallest real provider: one in-memory document, always writable. */
 class MemorySettings extends SettingsProvider {

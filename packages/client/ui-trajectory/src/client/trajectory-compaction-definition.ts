@@ -1,8 +1,8 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ConversationMatch, ConversationNodeDefinition, RequestView,
-} from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-compaction/types'
+} from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-compaction/types'
 import { trajectoryNode } from './trajectory-definition-common.ts'
 
 interface CompactionState {

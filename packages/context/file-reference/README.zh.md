@@ -1,4 +1,4 @@
-# `@centurionarx/cxh-file-reference`
+# `@arx-ai/arx-file-reference`
 
 [English](README.md) | 中文
 
@@ -10,7 +10,7 @@
 
 ## 模型体验
 
-间接影响模型体验：`@centurionarx/cxh-file-reference-local` 会按条件贡献本包的稳定文件引用指引。
+间接影响模型体验：`@arx-ai/arx-file-reference-local` 会按条件贡献本包的稳定文件引用指引。
 
 #### KV 缓存影响
 

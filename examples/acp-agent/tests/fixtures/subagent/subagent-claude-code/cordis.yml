@@ -4,26 +4,26 @@
   name: './fixture.ts'
 
 - id: subagent
-  name: '@centurionarx/cxh-subagent'
+  name: '@arx-ai/arx-subagent'
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: subagent-codex
-  name: '@centurionarx/cxh-subagent-codex'
+  name: '@arx-ai/arx-subagent-codex'
 
 - id: subagent-claude-primary
-  name: '@centurionarx/cxh-subagent-claude-code'
+  name: '@arx-ai/arx-subagent-claude-code'
   config:
     providerName: claude-primary
 
 - id: subagent-claude-secondary
-  name: '@centurionarx/cxh-subagent-claude-code'
+  name: '@arx-ai/arx-subagent-claude-code'
   config:
     providerName: claude-secondary
 
 - id: tool-subagent-codex
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: codex
     toolName: subagent_codex
@@ -31,7 +31,7 @@
     maxDepth: 'provider-managed'
 
 - id: tool-subagent-claude-code
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: claude-code
     toolName: subagent_claude_code
@@ -39,7 +39,7 @@
     maxDepth: 'provider-managed'
 
 - id: tool-subagent-claude-primary
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: claude-primary
     toolName: subagent_claude_primary
@@ -47,7 +47,7 @@
     maxDepth: 'provider-managed'
 
 - id: tool-subagent-claude-secondary
-  name: '@centurionarx/cxh-tool-subagent'
+  name: '@arx-ai/arx-tool-subagent'
   config:
     provider: claude-secondary
     toolName: subagent_claude_secondary
@@ -55,7 +55,7 @@
     maxDepth: 'provider-managed'
 
 - id: agent-spine
-  name: '@centurionarx/cxh-agent-spine-demo'
+  name: '@arx-ai/arx-agent-spine-demo'
   config:
     agents:
       - id: main
@@ -66,9 +66,9 @@
     workspaceContext: false
 
 - id: persistence
-  name: '@centurionarx/cxh-session-persistence-jsonl'
+  name: '@arx-ai/arx-session-persistence-jsonl'
   config:
     root: './.sessions'
 
 - id: checkpoint-policy
-  name: '@centurionarx/cxh-session-checkpoint-policy'
+  name: '@arx-ai/arx-session-checkpoint-policy'

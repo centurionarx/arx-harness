@@ -1,10 +1,10 @@
 /** Test adapter for the production conversation.details.tool registration. */
-import type { HostDescription } from '@centurionarx/cxh-client-connection/client'
+import type { HostDescription } from '@arx-ai/arx-client-connection/client'
 import type {
   ChatConversationViewNode, ChatSnapshot, ConversationNode, RunningToolCall, SessionId,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { SessionProviderComponent, TranslateNS } from '@centurionarx/cxh-client-ui-slots'
-import type { DetailsSlotProps, DetailsToolOwnerProps } from '@centurionarx/cxh-client-ui-conversation/src/client/contract/slots.ts'
+} from '@arx-ai/arx-client-runtime/client'
+import type { SessionProviderComponent, TranslateNS } from '@arx-ai/arx-client-ui-slots'
+import type { DetailsSlotProps, DetailsToolOwnerProps } from '@arx-ai/arx-client-ui-conversation/src/client/contract/slots.ts'
 import { ToolDetails } from '../src/client/tool/ToolDetails.tsx'
 
 /** Framework session-area seat used by direct DetailsPanel tests. */

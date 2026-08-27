@@ -1,16 +1,16 @@
 /**
  * Dynamic Cordis Plugin service: immutable package definitions, one active run
  * per Plugin, human-approved Client activation, and Host/Client invocation.
- * @module @centurionarx/cxh-cordis-host-runner
+ * @module @arx-ai/arx-cordis-host-runner
  */
 
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { JsonValue } from '@centurionarx/cxh-session/types'
-import { TypertRemoteService, Remote } from '@centurionarx/cxh-typert-protocol'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { Agent } from '@arx-ai/arx-agent'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { JsonValue } from '@arx-ai/arx-session/types'
+import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 import { isPlugin, normalizeHandler } from './guard.ts'
 import { CordisInspectRegistryService } from './inspect-registry.ts'
 import { missingServices, startHostHalf } from './lifecycle.ts'
@@ -77,7 +77,7 @@ export function ApprovalRequestId(id: string): ApprovalRequestId {
   return id as ApprovalRequestId
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Process-local dynamic Plugin registry and lifecycle service. */
     dynamicCordisRunner: DynamicCordisRunnerService
@@ -1245,7 +1245,7 @@ function missingFor(ctx: Context, run: DynamicCordisRun): string[] {
 }
 
 function missingPluginMessage(id: CordisDynamicPluginId): string {
-  return `no dynamic plugin "${id}" in this process — it may have been removed or lost on CXH restart`
+  return `no dynamic plugin "${id}" in this process — it may have been removed or lost on ARX restart`
 }
 
 function errorDetails(error: unknown): CordisErrorDetails {

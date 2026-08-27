@@ -8,18 +8,18 @@
  * anything, while an in-flight stream keeps the facts it started with. The
  * one registration-captured fact — the retry policy — re-registers the route
  * in place when it changes.
- * @module @centurionarx/cxh-llm-deepseek
+ * @module @arx-ai/arx-llm-deepseek
  */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { assertUsableApiKey, LlmError, resolveRetryPolicy, RetryPolicySchema } from '@centurionarx/cxh-llm'
-import type { ModelModality, RetryPolicyConfig } from '@centurionarx/cxh-llm'
-import { credentialRef } from '@centurionarx/cxh-credentials'
-import { launchEnvironmentOf, type LaunchEnvironmentSnapshot } from '@centurionarx/cxh-launch-environment'
-import { deepEqualJson, installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
-import { getOrCreateAnonymousUserId, type AnonymousUserId } from '@centurionarx/cxh-anonymous-user-id'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { assertUsableApiKey, LlmError, resolveRetryPolicy, RetryPolicySchema } from '@arx-ai/arx-llm'
+import type { ModelModality, RetryPolicyConfig } from '@arx-ai/arx-llm'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import { launchEnvironmentOf, type LaunchEnvironmentSnapshot } from '@arx-ai/arx-launch-environment'
+import { deepEqualJson, installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
+import { getOrCreateAnonymousUserId, type AnonymousUserId } from '@arx-ai/arx-anonymous-user-id'
 import {
   DEFAULT_CONTEXT_WINDOW,
   DEFAULT_FILE_EXPIRY_SECONDS,

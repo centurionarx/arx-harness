@@ -28,12 +28,12 @@ The example keeps the producer declarations and client contribution in one block
 
 ```ts ignore-check
 import { createElement } from 'react'
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 import type {
   ClientContext, ConversationLocation, ConversationNodeContext,
   ConversationNodeDefinition,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { ChatNodeViewProps } from '@centurionarx/cxh-client-ui-conversation/client'
+} from '@arx-ai/arx-client-runtime/client'
+import type { ChatNodeViewProps } from '@arx-ai/arx-client-ui-conversation/client'
 
 type ReviewId = Branded<'ReviewId'>
 
@@ -58,7 +58,7 @@ interface ReviewEndData {
   readonly summary: string
 }
 
-declare module '@centurionarx/cxh-session/types' {
+declare module '@arx-ai/arx-session/types' {
   interface SessionEventMap {
     /**
      * Opens one durable review job.
@@ -88,13 +88,13 @@ interface ReviewChatData {
   readonly summary?: string
 }
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     'review-job': ReviewChatData
   }
 }
 
-declare module '@centurionarx/cxh-client-runtime/client' {
+declare module '@arx-ai/arx-client-runtime/client' {
   interface ConversationStepDataMap {
     'review-job': ReviewChatData
   }

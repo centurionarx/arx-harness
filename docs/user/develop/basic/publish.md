@@ -2,18 +2,18 @@
 
 English | [中文](publish.zh.md)
 
-The previous tutorials loaded a local plugin through a `--patch` overlay. This tutorial packages it as an installable **bundle**, installs it into a **profile** with `cxh plugin add`, and explains the layer order that determines the composed configuration. It assumes the `cxh` CLI is installed. Complete [plugin configuration](./config.md) first.
+The previous tutorials loaded a local plugin through a `--patch` overlay. This tutorial packages it as an installable **bundle**, installs it into a **profile** with `arx plugin add`, and explains the layer order that determines the composed configuration. It assumes the `arx` CLI is installed. Complete [plugin configuration](./config.md) first.
 
-To use a fresh source checkout instead, complete the [run-from-source section](../../../../README.md#run-from-source), keep this tutorial's `hello-plugin` directory at the repository root, and run the remaining `cxh ...` commands from there as `pnpm cxh ...`. See [source execution](../../../../apps/cli/reference/README.md#source-execution) for build and launcher behavior.
+To use a fresh source checkout instead, complete the [run-from-source section](../../../../README.md#run-from-source), keep this tutorial's `hello-plugin` directory at the repository root, and run the remaining `arx ...` commands from there as `pnpm arx ...`. See [source execution](../../../../apps/cli/reference/README.md#source-execution) for build and launcher behavior.
 
 ## Two concepts, two manifests
 
-Installation is built on two concepts. Both are described by a `package.json`, but they carry different kinds of manifest under the `cxh` key, and they answer different questions:
+Installation is built on two concepts. Both are described by a `package.json`, but they carry different kinds of manifest under the `arx` key, and they answer different questions:
 
-- A **bundle** is an npm package that ships a configuration layer. Its manifest declares `cxh.bundle`, answering "what does this package contribute?": a patch file that inserts or overrides plugin rows.
-- A **profile** is a directory under `$CXH_HOME/profiles/<name>` describing one runnable composition. Its manifest declares `cxh.profile`, answering "which bundles compose this setup, in what order?".
+- A **bundle** is an npm package that ships a configuration layer. Its manifest declares `arx.bundle`, answering "what does this package contribute?": a patch file that inserts or overrides plugin rows.
+- A **profile** is a directory under `$ARX_HOME/profiles/<name>` describing one runnable composition. Its manifest declares `arx.profile`, answering "which bundles compose this setup, in what order?".
 
-A bundle is what you author and distribute; a profile is what a user boots with `cxh --profile <name>`. Nothing is both.
+A bundle is what you author and distribute; a profile is what a user boots with `arx --profile <name>`. Nothing is both.
 
 ### The bundle manifest
 
@@ -25,7 +25,7 @@ mkdir -p hello-plugin
 
 ```
 hello-plugin/
-├── package.json       # declares cxh.bundle
+├── package.json       # declares arx.bundle
 ├── cordis.patch.yml   # the layer applied when a profile lists this bundle
 └── index.js           # plugin modules the patch rows reference
 ```
@@ -34,12 +34,12 @@ Create `hello-plugin/package.json`:
 
 ```json
 {
-  "name": "cxh-hello-plugin",
+  "name": "arx-hello-plugin",
   "version": "0.1.0",
   "type": "module",
   "main": "index.js",
   "files": ["index.js", "cordis.patch.yml"],
-  "cxh": { "bundle": { "patch": "./cordis.patch.yml" } }
+  "arx": { "bundle": { "patch": "./cordis.patch.yml" } }
 }
 ```
 
@@ -58,42 +58,42 @@ Create `hello-plugin/cordis.patch.yml`. The patch is a YAML array like the `--pa
 ```yaml
 - insert:
     - id: hello
-      name: cxh-hello-plugin
+      name: arx-hello-plugin
 ```
 
-A package without the `cxh.bundle` declaration still installs, but only as a plain dependency: `cxh plugin` prints a warning and activates no layer. Use that package format for a library that plugin packages import rather than a plugin users enable.
+A package without the `arx.bundle` declaration still installs, but only as a plain dependency: `arx plugin` prints a warning and activates no layer. Use that package format for a library that plugin packages import rather than a plugin users enable.
 
 ### The profile manifest
 
 A profile directory holds two files:
 
-- `package.json` — the profile's out-of-tree plugin dependencies (managed by pnpm) plus the `cxh.profile` manifest with its ordered `bundles` list.
+- `package.json` — the profile's out-of-tree plugin dependencies (managed by pnpm) plus the `arx.profile` manifest with its ordered `bundles` list.
 - `cordis.patch.yml` — the user's own patch layer, applied after every bundle layer.
 
-You never write a profile manifest by hand: `cxh plugin` creates and maintains it. The next section shows the result.
+You never write a profile manifest by hand: `arx plugin` creates and maintains it. The next section shows the result.
 
 ## Install into a profile
 
-`cxh plugin --profile <name> <args...>` forwards to pnpm in the profile directory, so every pnpm verb works. From the directory that contains `hello-plugin`, install the package checkout:
+`arx plugin --profile <name> <args...>` forwards to pnpm in the profile directory, so every pnpm verb works. From the directory that contains `hello-plugin`, install the package checkout:
 
 ```sh
-cxh plugin --profile demo add ./hello-plugin
+arx plugin --profile demo add ./hello-plugin
 ```
 
-The first use initializes the profile (with `@centurionarx/cxh-base` as its first bundle), pnpm links the checkout, and `cxh` appends the bundle to `cxh.profile.bundles` because the package declares `cxh.bundle`:
+The first use initializes the profile (with `@arx-ai/arx-base` as its first bundle), pnpm links the checkout, and `arx` appends the bundle to `arx.profile.bundles` because the package declares `arx.bundle`:
 
 ```json
 {
-  "name": "cxh-profile-demo",
+  "name": "arx-profile-demo",
   "private": true,
   "dependencies": {
-    "cxh-hello-plugin": "link:/path/to/hello-plugin"
+    "arx-hello-plugin": "link:/path/to/hello-plugin"
   },
-  "cxh": {
+  "arx": {
     "profile": {
       "bundles": [
-        "@centurionarx/cxh-base",
-        "cxh-hello-plugin"
+        "@arx-ai/arx-base",
+        "arx-hello-plugin"
       ]
     }
   }
@@ -103,29 +103,29 @@ The first use initializes the profile (with `@centurionarx/cxh-base` as its firs
 Verify the layer without booting, then boot:
 
 ```sh
-cxh --profile demo --dump-config   # shows a "# == cxh-hello-plugin" layer
-cxh --profile demo
+arx --profile demo --dump-config   # shows a "# == arx-hello-plugin" layer
+arx --profile demo
 ```
 
-`cxh plugin --profile demo remove cxh-hello-plugin` removes both the dependency and the layer.
+`arx plugin --profile demo remove arx-hello-plugin` removes both the dependency and the layer.
 
 ## The loading order
 
 The effective configuration composes over an empty root by applying, in order:
 
-1. Each bundle patch named in the profile's `cxh.profile.bundles` list, in list order — `@centurionarx/cxh-base` first, then each installed bundle in the order it was added.
+1. Each bundle patch named in the profile's `arx.profile.bundles` list, in list order — `@arx-ai/arx-base` first, then each installed bundle in the order it was added.
 2. The profile's own `cordis.patch.yml`.
-3. The home-level `$CXH_HOME/cordis.patch.yml` — machine-local preferences shared by every profile.
+3. The home-level `$ARX_HOME/cordis.patch.yml` — machine-local preferences shared by every profile.
 4. Each `--patch <path>` overlay, in argv order.
 
 App arguments are not another patch layer. A surface bundle can resolve them through an ordinary app-owned service, described below.
 
 Later layers win per row, and a patch replaces a row's entire `config` value rather than deep-merging keys. Two consequences for bundle authors:
 
-- Your patch can override rows from earlier layers by `id` — the same way [the `cxh-web-app` bundle](../../../../packages/bundle/web-app/cordis.patch.yml) overrides `cxh-base` rows — but must restate every key the row needs, not just the changed one.
+- Your patch can override rows from earlier layers by `id` — the same way [the `arx-web-app` bundle](../../../../packages/bundle/web-app/cordis.patch.yml) overrides `arx-base` rows — but must restate every key the row needs, not just the changed one.
 - Users can override your rows in their profile's `cordis.patch.yml` without touching your package, so prefer configuration defaults users are likely to keep and let the schema carry the rest.
 
-In-box bundle names always resolve from the cxh installation itself; pnpm manages only out-of-tree packages, so your bundle can rely on `@centurionarx/cxh-base` being present and current.
+In-box bundle names always resolve from the arx installation itself; pnpm manages only out-of-tree packages, so your bundle can rely on `@arx-ai/arx-base` being present and current.
 
 ## Give a surface bundle its own command line
 
@@ -133,10 +133,10 @@ A bundle that defines a runnable app mounts an ordinary provider plugin:
 
 ```yaml
 - id: hello-startup
-  name: 'cxh-hello-plugin/startup'
+  name: 'arx-hello-plugin/startup'
 ```
 
-The plugin exports `inject = ['cmdlineArgs']`, calls `parseCmdline` from [`@centurionarx/cxh-cmdline`](../../../../packages/boot/cmdline/README.md) with its own commander program, and provides its app-owned service from the program's action. The launcher hands every plugin the same immutable arguments after launcher flags, so app-specific flags need no launcher change and multiple plugins may parse the snapshot. The Loader row needs no launcher marker or special kind.
+The plugin exports `inject = ['cmdlineArgs']`, calls `parseCmdline` from [`@arx-ai/arx-cmdline`](../../../../packages/boot/cmdline/README.md) with its own commander program, and provides its app-owned service from the program's action. The launcher hands every plugin the same immutable arguments after launcher flags, so app-specific flags need no launcher change and multiple plugins may parse the snapshot. The Loader row needs no launcher marker or special kind.
 
 Rows configured by those arguments inject the provider's service and read it from their own `!!js` options, with the deployment value beside it as the fallback:
 
@@ -155,17 +155,17 @@ On `--help`, the provider publishes no service, so those rows never activate. Lo
 Publishing to a registry is not required — users can install straight from a git host:
 
 ```sh
-cxh plugin --profile demo add github:you/hello-plugin
+arx plugin --profile demo add github:you/hello-plugin
 ```
 
 But a git install fetches **sources, not built artifacts**: nothing runs your `build` script, so a TypeScript package arrives without its `lib/` output and fails to load. Two things must happen, one on each side:
 
 - **The author** ships a `prepare` script — pnpm runs it after a git install — that builds the published entry points from source, self-contained: it must not assume dev-only context such as a sibling monorepo checkout. [turtle-ui](https://github.com/deepseek-harness/turtle-ui) is a working example: its `prepare` runs a dedicated tsdown config that transpiles `src/` without project references or type checking.
-- **The user** allowlists the build. pnpm ≥10 refuses to run a git dependency's `prepare` script until it is explicitly allowed, so the first `add` fails; `cxh` points at the fix — copy the exact package key pnpm printed into the profile's `pnpm-workspace.yaml`:
+- **The user** allowlists the build. pnpm ≥10 refuses to run a git dependency's `prepare` script until it is explicitly allowed, so the first `add` fails; `arx` points at the fix — copy the exact package key pnpm printed into the profile's `pnpm-workspace.yaml`:
 
   ```yaml
   allowBuilds:
-    cxh-hello-plugin: true
+    arx-hello-plugin: true
   ```
 
   and re-run the `add`.
@@ -174,8 +174,8 @@ Treat that allowance as what it is: **permission to execute the package's code o
 
 If you would rather not ask users for the allowance, distribute built artifacts instead — neither form needs any build permission:
 
-- **Publish to npm** with `lib/` built at `pnpm publish` time; `cxh plugin add your-package` then installs prebuilt code.
-- **Ship a tarball** from `pnpm pack`; users run `cxh plugin add ./hello-plugin-0.1.0.tgz`.
+- **Publish to npm** with `lib/` built at `pnpm publish` time; `arx plugin add your-package` then installs prebuilt code.
+- **Ship a tarball** from `pnpm pack`; users run `arx plugin add ./hello-plugin-0.1.0.tgz`.
 
 ## Next steps
 

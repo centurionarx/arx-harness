@@ -1,20 +1,20 @@
-import { CallId, createUserMessage } from '@centurionarx/cxh-llm'
+import { CallId, createUserMessage } from '@arx-ai/arx-llm'
 /**
  * Tests for the queue-aware `Agent.cancel()` primitive. The default clears
  * queued and steering work, while `keepInbox` preserves pending input for a
  * later wake after the active turn reaches quiescence. The suite
  * covers every landing window plus signal reset and `whenIdle()` quiescence.
- * @module cxh-agent-loop/tests/cancel
+ * @module arx-agent-loop/tests/cancel
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId, TurnEndReason } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime from '@arx-ai/arx-llm'
+import SessionStore, { SessionId, TurnEndReason } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
+import AgentLoop from '@arx-ai/arx-agent-loop'
 import { MockAdapter, textResponse, toolCallResponse } from './mock-adapter.ts'
 
 function driverDone(agent: Agent): Promise<void> {
@@ -570,7 +570,7 @@ describe('Agent.cancel()', () => {
     const ctx = await harness(adapter)
     const agent = ctx.agentLoop.create(SessionId('recovery-cancel'), { provider: 'mock', model: 'mock' })
     // Cancellation lands while agent/request-error is in flight — the window
-    // cxh-llm-retry opens when its backoff waits after appending llm/retry.
+    // arx-llm-retry opens when its backoff waits after appending llm/retry.
     ctx.on('agent/request-error', async ({ agent: subject }) => {
       if (subject === agent) subject.cancel({ kind: 'user' })
     })

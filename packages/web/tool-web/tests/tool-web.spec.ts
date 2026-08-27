@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import TurndownService from 'turndown'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { type ToolExecutionResult } from '@centurionarx/cxh-tools'
-import WebRuntime from '@centurionarx/cxh-web'
-import type { WebSearchProvider, WebSearchResult } from '@centurionarx/cxh-web'
-import * as ToolWeb from '@centurionarx/cxh-tool-web'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { type ToolExecutionResult } from '@arx-ai/arx-tools'
+import WebRuntime from '@arx-ai/arx-web'
+import type { WebSearchProvider, WebSearchResult } from '@arx-ai/arx-web'
+import * as ToolWeb from '@arx-ai/arx-tool-web'
 import {
   formatSearchOutput,
   formatFetchOutput,
@@ -21,9 +21,9 @@ import {
   fetchMetaFromResult,
   WEB_SEARCH_MAX_QUERIES,
   WEB_SEARCH_MAX_RESULTS,
-} from '@centurionarx/cxh-tool-web'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { ToolResult } from '@centurionarx/cxh-tools'
+} from '@arx-ai/arx-tool-web'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { ToolResult } from '@arx-ai/arx-tools'
 import { parseSearchArgs } from '../src/search.ts'
 
 const testToolSignal = new AbortController().signal
@@ -39,7 +39,7 @@ async function mountTools(opts: {
   config?: ToolWeb.Config
   webConfig?: ConstructorParameters<typeof WebRuntime>[1]
   search?: WebSearchProvider
-  fetchProvider?: import('@centurionarx/cxh-web').WebFetchProvider
+  fetchProvider?: import('@arx-ai/arx-web').WebFetchProvider
 } = {}): Promise<{ ctx: Context; fiber: Awaited<ReturnType<Context['plugin']>>; call: (name: string, args: unknown) => Promise<ToolExecutionResult> }> {
   const ctx = new Context()
   await ctx.plugin(SystemPrompt)
@@ -732,7 +732,7 @@ describe('tool-web execution through the real registry', () => {
       truncated: false,
     })
     // The model schema exposes no timeout: the tool forwards only the url; the
-    // tool-call budget is owned by cxh-tool-call-timeout-policy over exec.signal.
+    // tool-call budget is owned by arx-tool-call-timeout-policy over exec.signal.
     expect(seen.request).toEqual({ url: 'https://a.test' })
     expect(seen.signal).toBe(controller.signal)
     await fiber.dispose()

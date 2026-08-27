@@ -12,7 +12,7 @@
  * a running call always takes the generic path.
  * @module
  */
-import type { WebBlockProps } from '@centurionarx/cxh-client-ui-primitives'
+import type { WebBlockProps } from '@arx-ai/arx-client-ui-primitives'
 import type { ToolCallBlock } from './tool-call-model.ts'
 
 /**

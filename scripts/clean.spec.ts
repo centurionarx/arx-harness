@@ -8,7 +8,7 @@ import { RepositoryCleaner } from './clean.ts'
 const roots: string[] = []
 
 function fixture(): string {
-  const root = mkdtempSync(join(tmpdir(), 'cxh-clean-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-clean-'))
   roots.push(root)
   return root
 }
@@ -38,7 +38,7 @@ describe('RepositoryCleaner', () => {
     write(join(root, 'products/shell/lib/types/index.js'))
     write(join(root, 'products/shell/lib/index.js'))
     write(join(root, '.typecheck/legacy.tsbuildinfo'))
-    write(join(root, '.cxh-build/client-build-environment.json'))
+    write(join(root, '.arx-build/client-build-environment.json'))
     write(join(root, 'root.tsbuildinfo'))
     write(join(root, 'packages/removed/ghost/node_modules/.bin/tool'))
 
@@ -47,7 +47,7 @@ describe('RepositoryCleaner', () => {
     expect(existsSync(join(root, 'products/shell/lib'))).toBe(false)
     expect(existsSync(join(root, 'products/shell/src/index.ts'))).toBe(true)
     expect(existsSync(join(root, '.typecheck'))).toBe(false)
-    expect(existsSync(join(root, '.cxh-build'))).toBe(false)
+    expect(existsSync(join(root, '.arx-build'))).toBe(false)
     expect(existsSync(join(root, 'root.tsbuildinfo'))).toBe(false)
     expect(existsSync(join(root, 'packages/removed/ghost'))).toBe(false)
   })

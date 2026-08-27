@@ -7,12 +7,12 @@
  * payload, the scoped consume-token dispatch, per-session popupFor
  * lifecycle, and the directory invalidation event subscriptions.
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import type { CommandResult } from '@centurionarx/cxh-commands/types'
-import { createScope, scopeOf } from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import type { ClientSessionContext, ConsumeTokenRequest, InputTriggerPick, InputTriggerSource, SubmitImageAttachment } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import type { CommandResult } from '@arx-ai/arx-commands/types'
+import { createScope, scopeOf } from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import type { ClientSessionContext, ConsumeTokenRequest, InputTriggerPick, InputTriggerSource, SubmitImageAttachment } from '@arx-ai/arx-client-ui-input-trigger/client'
 import type { CommandContribution, CommandDecoration, CommandUiSpec, SelectOption } from '../src/client/contract.ts'
 import type { CommandDescriptor } from '../src/client/directory.ts'
 import { CommandUiRuntime } from '../src/client/service.ts'

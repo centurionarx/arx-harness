@@ -2,13 +2,13 @@
  * Concrete agent-loop plugin: creates scoped ReactLoopAgents, publishes them
  * through the agent/session registries, and owns their ordered teardown.
  *
- * @module @centurionarx/cxh-agent-loop
+ * @module @arx-ai/arx-agent-loop
  */
 
-import { Context, FiberState, Service } from '@centurionarx/cordis'
+import { Context, FiberState, Service } from '@arx-ai/cordis'
 import { randomUUID } from 'node:crypto'
-import z from '@centurionarx/schemastery'
-import { emitAgentEvent } from '@centurionarx/cxh-agent'
+import z from '@arx-ai/schemastery'
+import { emitAgentEvent } from '@arx-ai/arx-agent'
 import type {
   Agent,
   AgentFactory,
@@ -18,14 +18,14 @@ import type {
   CreateAgentOptions,
   ResumeAgentOptions,
   SessionStartSource,
-} from '@centurionarx/cxh-agent'
-import { errorChain } from '@centurionarx/cxh-llm'
-import { installSettingsSection, settingsNamespace } from '@centurionarx/cxh-settings'
-import { SessionId, SessionPreparation } from '@centurionarx/cxh-session'
-import type { Session, SessionHeader } from '@centurionarx/cxh-session'
-import type {} from '@centurionarx/cxh-system-prompt'
-import type {} from '@centurionarx/cxh-tools'
-import type { SessionPersistence } from '@centurionarx/cxh-session-persistence'
+} from '@arx-ai/arx-agent'
+import { errorChain } from '@arx-ai/arx-llm'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
+import { SessionId, SessionPreparation } from '@arx-ai/arx-session'
+import type { Session, SessionHeader } from '@arx-ai/arx-session'
+import type {} from '@arx-ai/arx-system-prompt'
+import type {} from '@arx-ai/arx-tools'
+import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import { ReactLoopAgent } from './agent.ts'
 import { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from './constants.ts'
 
@@ -157,7 +157,7 @@ interface PreparedAgent {
   dispose(): Promise<void>
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     agentLoop: AgentLoop
     /**
@@ -653,7 +653,7 @@ export class AgentLoop extends Service implements AgentFactory {
   async resume(ownerCtx: Context, options: ResumeAgentOptions): Promise<AgentHandle> {
     const persistence = this.runtime.ctx.get('sessionPersistence')
     if (persistence === undefined) {
-      throw new Error('cannot resume: session persistence is not configured (load a cxh-session-persistence backend)')
+      throw new Error('cannot resume: session persistence is not configured (load a arx-session-persistence backend)')
     }
     return this.resumeWith(ownerCtx, persistence, options)
   }

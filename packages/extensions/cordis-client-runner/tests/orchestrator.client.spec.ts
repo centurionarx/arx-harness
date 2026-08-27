@@ -11,8 +11,8 @@ import { describe, expect, it, vi } from 'vitest'
 import type {
   ApprovalRequestId, CordisDynamicPackageId, CordisDynamicPluginId, CordisDynamicPluginRunId,
   DynamicCordisClientSource, DynamicCordisHostHalfResult, DynamicCordisResolveAck,
-} from '@centurionarx/cxh-api-remotes/client'
-import type { SessionId } from '@centurionarx/cxh-client-connection/client'
+} from '@arx-ai/arx-api-remotes/client'
+import type { SessionId } from '@arx-ai/arx-client-connection/client'
 import { CordisRunOrchestrator } from '../src/client/orchestrator.ts'
 import type { CordisUserRunRequest } from '../src/client/orchestrator.ts'
 import type { DynamicCordisLoadResult, DynamicCordisPackageRunner } from '../src/client/runtime.ts'

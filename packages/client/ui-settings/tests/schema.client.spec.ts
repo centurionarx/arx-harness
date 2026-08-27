@@ -1,5 +1,5 @@
-import { Context } from '@centurionarx/cordis'
-import Schema from '@centurionarx/schemastery'
+import { Context } from '@arx-ai/cordis'
+import Schema from '@arx-ai/schemastery'
 import { describe, expect, it } from 'vitest'
 import type { SchemaNode } from '../src/client/schema.ts'
 import { SettingsSchemaService } from '../src/client/schema.ts'

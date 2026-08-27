@@ -2,14 +2,14 @@
 import { EventEmitter, once } from 'node:events'
 import { createServer, request as httpRequest } from 'node:http'
 import { PassThrough, Readable } from 'node:stream'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
 import type { AddressInfo } from 'node:net'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { ApiProxy } from '@centurionarx/cxh-host-apiproxy/api'
-import type { AttachmentStore } from '@centurionarx/cxh-attachment'
-import { RpcId, type ClientRequest } from '@centurionarx/cxh-host-apiproxy/api'
-import type { WebServer, WebRoute, WebUpgradeRoute } from '@centurionarx/cxh-host-webserver'
+import type { ApiProxy } from '@arx-ai/arx-host-apiproxy/api'
+import type { AttachmentStore } from '@arx-ai/arx-attachment'
+import { RpcId, type ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
+import type { WebServer, WebRoute, WebUpgradeRoute } from '@arx-ai/arx-host-webserver'
 import { API_PATH, apply, HOST_EVENTS_PATH, inject, MUX_EVENTS_PATH, type HostConnectionHandle } from '../src/index.ts'
 import { DEFAULT_MAX_REQUEST_BODY_BYTES } from '../src/http-bridge.ts'
 
@@ -169,13 +169,13 @@ describe('connection node half', () => {
 
   it('pins privileged methods to loopback even for a declared trusted authority', async () => {
     const { routes, dispose } = await mounted({ trustedHosts: ['harness.example'] })
-    // The privileged set: native dialogs plus the whole settings/credential
-    // configuration plane, reads included, plus the one method that makes the
-    // host fetch a caller-chosen URL. The same declared authority reaches
+    // The privileged set: native dialogs and the shutdown request, plus the
+    // whole settings/credential configuration plane, reads included, plus the
+    // one method that makes the host fetch a caller-chosen URL. The same declared authority reaches
     // ordinary reads (carrier-level 404 from the empty proxy proves the fence
     // passed), but each privileged method stays loopback-only and 403s.
     for (const method of [
-      'host.pickDirectory', 'host.openPath',
+      'host.pickDirectory', 'host.openPath', 'host.exit',
       'settings.describe', 'settings.openDocument', 'settings.update', 'settings.replace', 'settings.mutate',
       'credentials.describe', 'credentials.set', 'credentials.unset',
       'llm.discoverModels',
@@ -472,7 +472,7 @@ describe('connection node half over a real HTTP server', () => {
       for (const method of [
         'settings.describe', 'settings.openDocument', 'settings.update', 'settings.replace', 'settings.mutate',
         'credentials.describe', 'credentials.set', 'credentials.unset',
-        'host.pickDirectory', 'host.openPath',
+        'host.pickDirectory', 'host.openPath', 'host.exit',
         // Carries a draft credential and turns the host into a fetcher for a
         // URL the caller picked: an anonymous LAN caller must not reach it.
         'llm.discoverModels',

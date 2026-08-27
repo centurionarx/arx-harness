@@ -36,7 +36,7 @@ export function apply(ctx: Context) {
 ### 使用 Service 基类
 
 ```ts
-import { Service, type Context } from '@centurionarx/cordis'
+import { Service, type Context } from '@arx-ai/cordis'
 
 export default class MetricsService extends Service {
   static inject = ['llm']  // A service may depend on other services.
@@ -67,9 +67,9 @@ export function apply(ctx: Context) {
 使用 TypeScript 声明合并让 `ctx.metrics` 有正确类型：
 
 ```ts
-import { Service, type Context } from '@centurionarx/cordis'
+import { Service, type Context } from '@arx-ai/cordis'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     metrics: MetricsService
   }
@@ -116,23 +116,23 @@ export function apply(ctx: Context) {
 
 ```yaml
 - id: group-a
-  name: '@centurionarx/cordis-plugin-group'
+  name: '@arx-ai/cordis-plugin-group'
   group: true
   isolate:
     shell: true
   config:
-    - name: '@centurionarx/cxh-bash-local'
+    - name: '@arx-ai/arx-bash-local'
       config:
         timeoutMs: 5000
     - name: './src/plugin-a.ts'
 
 - id: group-b
-  name: '@centurionarx/cordis-plugin-group'
+  name: '@arx-ai/cordis-plugin-group'
   group: true
   isolate:
     shell: true
   config:
-    - name: '@centurionarx/cxh-bash-local'
+    - name: '@arx-ai/arx-bash-local'
       config:
         timeoutMs: 60000
     - name: './src/plugin-b.ts'

@@ -1,4 +1,4 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { CredentialProvider } from '../src/index.ts'
 import type {
   CredentialInfo,

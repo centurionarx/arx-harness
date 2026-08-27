@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/util/atomic-write/README.md
-README.md: 9bc94f5d962fd5f8a790f954da4b191f1cb34af0
-README.zh.md: 76571a5d2c56126dffba2446d52b47c71b71ad8a
+README.md: b8659a163c5488b99505bcf5a959cb558b2ae880
+README.zh.md: 5f639dae103863c6b7e0598de9b2df8d3405c497

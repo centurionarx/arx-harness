@@ -1,14 +1,14 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import { Context, type Fiber } from '@centurionarx/cordis'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import { Context, type Fiber } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import SessionStore, { Session, SessionId } from '@centurionarx/cxh-session'
+import SessionStore, { Session, SessionId } from '@arx-ai/arx-session'
 import SessionTitleService, {
   SessionTitleProviderId,
   type Config,
   type SessionTitleProvider,
   type SessionTitleProviderRequest,
   type SessionTitleProviderResult,
-} from '@centurionarx/cxh-session-title'
+} from '@arx-ai/arx-session-title'
 
 const CONFIG = {
   fallbackMaxWords: 5,

@@ -1,4 +1,4 @@
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   export interface TypertLookup<Host, Wire> {
     readonly host: Host
     readonly wire: Wire

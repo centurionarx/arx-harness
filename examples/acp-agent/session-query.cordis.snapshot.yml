@@ -1,12 +1,12 @@
 # Keyless counterpart to session-query.cordis.yml: the nested snapshot overlay
 # supplies replay plus deterministic private spill storage and its byte limit.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./fs.cordis.snapshot.yml
     patches:
       - insert:
           - id: tool-session-query
-            name: '@centurionarx/cxh-tool-session-query'
+            name: '@arx-ai/arx-tool-session-query'
           - id: timeout-policy
-            name: '@centurionarx/cxh-tool-call-timeout-policy'
+            name: '@arx-ai/arx-tool-call-timeout-policy'

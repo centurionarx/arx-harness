@@ -1,18 +1,18 @@
 /**
  * Replay-safe, model-free tool-result pruning service.
  *
- * @module @centurionarx/cxh-compaction-tool-result-pruner
+ * @module @arx-ai/arx-compaction-tool-result-pruner
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { freezeMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { Session, SessionEvent, ToolResultMessage } from '@centurionarx/cxh-session'
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { freezeMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { Session, SessionEvent, ToolResultMessage } from '@arx-ai/arx-session'
 // Type-only: the `compaction/*` SessionEventMap merges (the shadow-price event).
-import type {} from '@centurionarx/cxh-compaction'
+import type {} from '@arx-ai/arx-compaction'
 // Type-only: the `ctx.tokenMeter` Context merge for the declared injection.
-import type {} from '@centurionarx/cxh-token-meter'
+import type {} from '@arx-ai/arx-token-meter'
 import { codePointLength, DEFAULTS, PRUNE_MARKER, resolveConfig } from './config.ts'
 import type {
   PrunedEntry,
@@ -29,7 +29,7 @@ export type {
   ToolResultPruneConfig,
 } from './types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     toolResultPruner: ToolResultPruner
   }

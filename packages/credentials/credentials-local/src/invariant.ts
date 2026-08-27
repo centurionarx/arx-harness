@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-credentials-local`.
- * @module @centurionarx/cxh-credentials-local/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-credentials-local`.
+ * @module @arx-ai/arx-credentials-local/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-credentials-local'
+const PACKAGE_NAME = '@arx-ai/arx-credentials-local'
 
 /** Cordis companion plugin name. */
 export const name = 'credentials-local-invariant'
@@ -15,7 +15,7 @@ export const name = 'credentials-local-invariant'
 export const inject = ['invariants']
 
 /**
- * No runtime invariant: the Service Definition companion (`cxh-credentials/invariant`) owns the
+ * No runtime invariant: the Service Definition companion (`arx-credentials/invariant`) owns the
  * `credentials/reference-updated` lifecycle contract; this provider's file/environment layering is
  * asynchronous I/O pinned by its unit suite.
  */

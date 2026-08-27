@@ -1,7 +1,7 @@
-/** Package-owned workflow lifecycle invariants. @module @centurionarx/cxh-workflow/invariant */
+/** Package-owned workflow lifecycle invariants. @module @arx-ai/arx-workflow/invariant */
 
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantFailure, InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantFailure, InvariantInstaller } from '@arx-ai/arx-invariants'
 import type {
   WorkflowAgentEndInfo,
   WorkflowAgentInfo,
@@ -9,7 +9,7 @@ import type {
   WorkflowRunInfo,
 } from './types.ts'
 
-const PACKAGE_NAME = '@centurionarx/cxh-workflow'
+const PACKAGE_NAME = '@arx-ai/arx-workflow'
 
 /** Cordis companion plugin name. */
 export const name = 'workflow-invariant'

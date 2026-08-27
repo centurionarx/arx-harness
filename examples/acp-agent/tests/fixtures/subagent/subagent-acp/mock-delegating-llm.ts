@@ -1,6 +1,6 @@
-import type { Context } from '@centurionarx/cordis'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import { CallId, LlmAdapter } from '@centurionarx/cxh-llm'
+import type { Context } from '@arx-ai/cordis'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import { CallId, LlmAdapter } from '@arx-ai/arx-llm'
 
 /**
  * Test adapter for the `mock-delegate` model: the first request calls the

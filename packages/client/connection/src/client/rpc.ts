@@ -4,11 +4,11 @@ import {
   RpcId,
   serverResponseSchema,
   type ClientRequest,
-} from '@centurionarx/cxh-host-apiproxy/api'
+} from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientConnectionRpc } from '../rpc.ts'
 import { randomUuid } from './random-uuid.ts'
 
-const INTERNAL_BASE = 'http://cxh.internal'
+const INTERNAL_BASE = 'http://arx.internal'
 const CHANNEL_PATTERN = /^\/[A-Za-z0-9._~-]+$/
 const ENDPOINT_SEGMENT_PATTERN = /^[A-Za-z0-9_$.-]+$/
 

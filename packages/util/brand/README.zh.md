@@ -1,4 +1,4 @@
-# cxh-brand
+# arx-brand
 
 [English](README.md) | 中文
 
@@ -9,7 +9,7 @@
 品牌使 `SessionId` 和 `CallId` 这样结构相同的字符串在类型层面不可互换，尽管两者在运行时都是普通 `string`。
 
 ```ts
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 export type SessionId = Branded<'SessionId'>
 
@@ -23,6 +23,6 @@ export function SessionId(id: string): SessionId {
 
 ## 策略：为跨包边界的 id 添加品牌
 
-包为自己拥有的 id 添加品牌：`CallId` 位于 `cxh-llm`，共享的 agent/会话 `SessionId` 位于 `cxh-session`，`JobId` 位于 `cxh-jobs`。为可能被混淆的跨包 id 添加品牌，但无需为每个字符串都添加。
+包为自己拥有的 id 添加品牌：`CallId` 位于 `arx-llm`，共享的 agent/会话 `SessionId` 位于 `arx-session`，`JobId` 位于 `arx-jobs`。为可能被混淆的跨包 id 添加品牌，但无需为每个字符串都添加。
 
-该包只负责这一原语。保持无依赖意味着，例如 `cxh-jobs` 可以为 `JobId` 使用品牌类型，而无需仅为使用 `Branded` 而导入不相关的功能包。
+该包只负责这一原语。保持无依赖意味着，例如 `arx-jobs` 可以为 `JobId` 使用品牌类型，而无需仅为使用 `Branded` 而导入不相关的功能包。

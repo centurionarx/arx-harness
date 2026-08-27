@@ -4,17 +4,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createUserMessage, CallId, StreamChunk  } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionEvent, SessionId } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import LlmRuntime from '@centurionarx/cxh-llm'
-import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
-import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@centurionarx/cxh-agent-loop'
+import { Context } from '@arx-ai/cordis'
+import { createUserMessage, CallId, StreamChunk  } from '@arx-ai/arx-llm'
+import SessionStore, { SessionEvent, SessionId } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import LlmRuntime from '@arx-ai/arx-llm'
+import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
+import AgentLoop, { DEFAULT_MAX_PARALLEL_TOOL_CALLS } from '@arx-ai/arx-agent-loop'
 import { MockAdapter, textResponse } from './mock-adapter.ts'
-import { CodeRuntime } from '@centurionarx/cxh-code-runtime'
-import type { CodeRunRequest, CodeRunResult } from '@centurionarx/cxh-code-runtime'
+import { CodeRuntime } from '@arx-ai/arx-code-runtime'
+import type { CodeRunRequest, CodeRunResult } from '@arx-ai/arx-code-runtime'
 
 async function harness(adapter: MockAdapter, maxParallelToolCalls?: number) {
   const ctx = new Context()

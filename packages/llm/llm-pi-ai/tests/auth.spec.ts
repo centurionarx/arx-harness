@@ -2,18 +2,18 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LocalCredentialProvider from '@centurionarx/cxh-credentials-local'
-import { credentialKey, credentialRef } from '@centurionarx/cxh-credentials'
+import { Context } from '@arx-ai/cordis'
+import LocalCredentialProvider from '@arx-ai/arx-credentials-local'
+import { credentialKey, credentialRef } from '@arx-ai/arx-credentials'
 import { authContextFrom, credentialStoreFrom, recordKeyFor } from '../src/auth.ts'
 
 const CODEX = recordKeyFor('openai-codex')
 
 const dirs: string[] = []
 
-/** A context whose credential records live in a throwaway `$CXH_HOME`. */
+/** A context whose credential records live in a throwaway `$ARX_HOME`. */
 async function stored(): Promise<Context> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-auth-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-pi-auth-'))
   dirs.push(dir)
   const ctx = new Context()
   await ctx.plugin(LocalCredentialProvider, { path: join(dir, '.credentials.yaml'), watch: false })
@@ -155,7 +155,7 @@ describe('pi-ai ambient auth context', () => {
   })
 
   it('answers about the host filesystem, expanding a leading ~', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-home-'))
+    const dir = await mkdtemp(join(tmpdir(), 'arx-pi-home-'))
     dirs.push(dir)
     await writeFile(join(dir, 'creds'), 'x')
     // Both spellings of "home": os.homedir() reads HOME on POSIX and

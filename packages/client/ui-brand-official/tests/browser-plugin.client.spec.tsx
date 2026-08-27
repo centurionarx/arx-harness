@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import { SlotRegistry } from '@centurionarx/cxh-client-runtime/client'
+import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
 import { apply, inject } from '../src/client/index.ts'
 import { OfficialBrandMark, OfficialBrandName } from '../src/client/Brand.tsx'
 
@@ -35,14 +35,14 @@ describe('official browser-brand plugin', () => {
   })
 
   it('leaves every slot empty outside the official build profile', async () => {
-    vi.stubEnv('CXH_CLIENT_BUILD_PROFILE', 'local')
+    vi.stubEnv('ARX_CLIENT_BUILD_PROFILE', 'local')
     const subject = await bench()
     await subject.ctx.plugin({ inject: [...inject], apply }).await()
     for (const hole of HOLES) expect(subject.slots.entries(hole)).toHaveLength(0)
   })
 
   it('fills declarations before or after apply and removes every occupant on teardown', async () => {
-    vi.stubEnv('CXH_CLIENT_BUILD_PROFILE', 'official')
+    vi.stubEnv('ARX_CLIENT_BUILD_PROFILE', 'official')
     const before = await bench()
     const fiber = before.ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
@@ -67,13 +67,13 @@ describe('official browser-brand plugin', () => {
 
   it('renders the official name independently from both requested mark sizes', () => {
     const name = render(<OfficialBrandName />)
-    expect(name.container.querySelector('svg')?.getAttribute('viewBox')).toBe('26 0 156 24')
+    expect(name.container.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 180 34')
     name.unmount()
 
     const mark = render(<OfficialBrandMark size={34} className="hero-mark" />)
-    expect(mark.container.querySelector('svg')?.getAttribute('width')).toBe('34')
-    expect(mark.container.querySelector('svg')?.getAttribute('class')).toBe('hero-mark')
+    expect(mark.container.querySelector('span')?.style.width).toBe('34px')
+    expect(mark.container.querySelector('span')?.className.split(' ')).toContain('hero-mark')
     mark.rerender(<OfficialBrandMark size={24} />)
-    expect(mark.container.querySelector('svg')?.getAttribute('width')).toBe('24')
+    expect(mark.container.querySelector('span')?.style.width).toBe('24px')
   })
 })

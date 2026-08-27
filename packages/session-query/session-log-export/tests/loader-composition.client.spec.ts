@@ -3,13 +3,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import type { Agent } from '@centurionarx/cxh-agent'
-import CommandRuntime from '@centurionarx/cxh-commands'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import * as SessionLogDownload from '@centurionarx/cxh-session-log-export'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import type { Agent } from '@arx-ai/arx-agent'
+import CommandRuntime from '@arx-ai/arx-commands'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import * as SessionLogDownload from '@arx-ai/arx-session-log-export'
 
 let root: string | undefined
 let context: Context | undefined
@@ -23,12 +23,12 @@ afterEach(async () => {
 
 describe('session-log-download real Loader composition', () => {
   it('discovers and executes /export through the assembled command plane', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-session-export-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-session-export-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-session'",
-      "- name: '@centurionarx/cxh-commands'",
-      "- name: '@centurionarx/cxh-session-log-export'",
+      "- name: '@arx-ai/arx-session'",
+      "- name: '@arx-ai/arx-commands'",
+      "- name: '@arx-ai/arx-session-log-export'",
       '',
     ].join('\n'))
 
@@ -37,9 +37,9 @@ describe('session-log-download real Loader composition', () => {
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@centurionarx/cxh-session', SessionStore],
-      ['@centurionarx/cxh-commands', CommandRuntime],
-      ['@centurionarx/cxh-session-log-export', SessionLogDownload],
+      ['@arx-ai/arx-session', SessionStore],
+      ['@arx-ai/arx-commands', CommandRuntime],
+      ['@arx-ai/arx-session-log-export', SessionLogDownload],
     ])
     context.loader.internal = {
       version: 'v2',

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-subagent
+# @arx-ai/arx-client-ui-subagent
 
 [English](README.md) | 中文
 

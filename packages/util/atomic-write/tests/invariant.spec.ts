@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 import * as AtomicWriteInvariant from '../src/invariant.ts'
 
 describe('atomic-write invariant companion', () => {
@@ -10,7 +10,7 @@ describe('atomic-write invariant companion', () => {
     const fiber = await ctx.plugin(AtomicWriteInvariant)
 
     expect(() => {
-      ctx.invariants.register('@centurionarx/cxh-atomic-write', () => {})
+      ctx.invariants.register('@arx-ai/arx-atomic-write', () => {})
     }).toThrow(/already registered/)
     await fiber.dispose()
     await ctx.fiber.dispose()

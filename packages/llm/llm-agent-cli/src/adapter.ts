@@ -2,11 +2,11 @@
  * The `LlmAdapter` that drives a subscription-authenticated vendor CLI as an
  * ordinary model route.
  *
- * @module @centurionarx/cxh-llm-agent-cli/adapter
+ * @module @arx-ai/arx-llm-agent-cli/adapter
  */
 
 import { type Options, query } from '@anthropic-ai/claude-agent-sdk'
-import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@centurionarx/cxh-claude-agent-sdk-process'
+import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@arx-ai/arx-claude-agent-sdk-process'
 import {
   LlmAdapter,
   LlmError,
@@ -15,11 +15,12 @@ import {
   type LlmProviderInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
-} from '@centurionarx/cxh-llm'
-import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-llm'
+import type { AttachmentId, AttachmentStore, ImageRequestPolicy, RequestImageAttachment } from '@arx-ai/arx-attachment'
+import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 
 import type { ResolvedRoute } from './config.ts'
-import { renderTranscript } from './prompt.ts'
+import { collectImageRefs, renderTranscript, type VendorContent } from './prompt.ts'
 import { translate } from './stream.ts'
 import { createToolServer, MCP_SERVER_NAME, toolAlias } from './tools.ts'
 
@@ -31,6 +32,36 @@ export interface AgentCliAdapterSpec {
   readonly spawn: (spec: SubprocessSpawnSpec) => SubprocessHandle
   /** Workspace the CLI runs in. */
   readonly cwd: () => string
+  /** Durable attachment bytes, absent in a composition that mounts no store. */
+  readonly attachments: () => AttachmentStore | undefined
+}
+
+/**
+ * The vendor's documented image limits, which every model on the route shares.
+ * These are the external API's own numbers, not a deployment choice: encoding
+ * past them produces a request the provider rejects rather than a slower one.
+ */
+const IMAGE_POLICY: ImageRequestPolicy = { maxPixels: 1_150_000, maxBytes: 5_000_000 }
+
+/**
+ * The one user message a run opens with, as the single-item stream the SDK
+ * takes. A plain string would carry text only, and this route has to carry
+ * images too.
+ * @param content - the rendered transcript blocks.
+ * @returns a one-message async iterable the SDK consumes and then sees end.
+ */
+function opening(content: readonly VendorContent[]): AsyncIterable<never> {
+  const message = { type: 'user', message: { role: 'user', content }, parent_tool_use_id: null }
+  return {
+    [Symbol.asyncIterator]: () => {
+      let sent = false
+      return {
+        next: () => Promise.resolve(sent
+          ? { value: undefined as never, done: true as const }
+          : ((sent = true), { value: message as never, done: false as const })),
+      }
+    },
+  }
 }
 
 /** The vendor CLI's own tools, refused so only harness tools reach the model. */
@@ -84,6 +115,7 @@ export class AgentCliAdapter extends LlmAdapter {
       provider,
       id: model.id,
       name: model.name ?? model.id,
+      ...model.acceptsImages === true ? { inputModalities: ['text', 'image'] as const } : {},
     })))
   }
 
@@ -104,6 +136,7 @@ export class AgentCliAdapter extends LlmAdapter {
       name: configured.name ?? model,
       context: { contextWindow: configured.contextWindow },
       ...configured.maxTokens === undefined ? {} : { defaultMaxTokens: configured.maxTokens },
+      ...configured.acceptsImages === true ? { inputModalities: ['text', 'image'] as const } : {},
     })
   }
 
@@ -160,6 +193,27 @@ export class AgentCliAdapter extends LlmAdapter {
    * @param options - the fully assembled harness request.
    * @returns the harness chunk stream for that call.
    */
+  /**
+   * Resolve every image one request references into provider-ready bytes.
+   * @param options - the assembled harness request.
+   * @param signal - cancellation for the reads.
+   * @returns request versions keyed by attachment id.
+   */
+  private async requestImages(
+    options: GenerateOptions,
+    signal: AbortSignal,
+  ): Promise<ReadonlyMap<AttachmentId, RequestImageAttachment>> {
+    const refs = collectImageRefs(options.messages)
+    if (refs.size === 0) return new Map()
+    const store = this.spec.attachments()
+    if (store === undefined) {
+      throw new LlmError('llm-agent-cli: this composition mounts no attachment store', 'UNSUPPORTED_CONTENT')
+    }
+    const ordered = [...refs.values()]
+    const versions = await Promise.all(ordered.map(ref => store.readImageRequest(ref, IMAGE_POLICY, signal)))
+    return new Map(ordered.map((ref, index) => [ref.attachmentId, versions[index] as RequestImageAttachment]))
+  }
+
   async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     const route = this.route(options.provider)
     const controller = new AbortController()
@@ -174,14 +228,15 @@ export class AgentCliAdapter extends LlmAdapter {
       child?.terminate()
     }
     options.signal?.addEventListener('abort', release, { once: true })
-    const run = query({
-      prompt: renderTranscript(options.messages),
-      options: {
-        ...this.queryOptions(options, route, (handle) => { child = handle }),
-        abortController: controller,
-      },
-    })
     try {
+      const content = renderTranscript(options.messages, await this.requestImages(options, controller.signal))
+      const run = query({
+        prompt: opening(content),
+        options: {
+          ...this.queryOptions(options, route, (handle) => { child = handle }),
+          abortController: controller,
+        },
+      })
       yield* translate(run)
     } finally {
       options.signal?.removeEventListener('abort', release)

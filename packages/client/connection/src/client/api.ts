@@ -18,12 +18,12 @@ export type {
   CredentialsApi, CredentialView, ConfigurableProviderView, DiscoveredModelView, LlmApi,
   SubagentsApi, SubagentAddress, SubagentCatalog, SubagentListEntry, SubagentPromptReceipt,
   JobView,
-} from '@centurionarx/cxh-host-apiproxy/api'
-export type { ToolCallView, ToolResultView } from '@centurionarx/cxh-tools/presentation'
+} from '@arx-ai/arx-host-apiproxy/api'
+export type { ToolCallView, ToolResultView } from '@arx-ai/arx-tools/presentation'
 export type {
   RpcRequest, RpcResponse, RpcResult, RpcError, RpcErrorCode,
   ClientRequest, ServerResponse, ServerRequest, ClientResponse, RpcMessage, RpcReceipt,
-} from '@centurionarx/cxh-host-apiproxy/api'
+} from '@arx-ai/arx-host-apiproxy/api'
 // transportError lives in the apiproxy api layer (beside RpcResult, its
 // subject); re-exported here so connection consumers keep one contract
 // entry point.
@@ -31,17 +31,17 @@ export {
   RpcId,
   SESSION_SEARCH_RESULT_LIMIT,
   transportError,
-} from '@centurionarx/cxh-host-apiproxy/api'
-export { AbstractApiClient } from '@centurionarx/cxh-host-apiproxy/client'
-export type { IApiClient } from '@centurionarx/cxh-host-apiproxy/client'
-export type { SessionId, SessionEvent } from '@centurionarx/cxh-session/types'
-export type { MessageId } from '@centurionarx/cxh-llm/brand'
-export type { ContentBlock, StreamChunk } from '@centurionarx/cxh-llm/types'
+} from '@arx-ai/arx-host-apiproxy/api'
+export { AbstractApiClient } from '@arx-ai/arx-host-apiproxy/client'
+export type { IApiClient } from '@arx-ai/arx-host-apiproxy/client'
+export type { SessionId, SessionEvent } from '@arx-ai/arx-session/types'
+export type { MessageId } from '@arx-ai/arx-llm/brand'
+export type { ContentBlock, StreamChunk } from '@arx-ai/arx-llm/types'
 
 /** Successful value returned by the connection-generation host handshake. */
-export type HostDescription = import('@centurionarx/cxh-host-apiproxy/api').ResponseValue<'host.describe'>
+export type HostDescription = import('@arx-ai/arx-host-apiproxy/api').ResponseValue<'host.describe'>
 
-import type { RpcResponse, RpcResult } from '@centurionarx/cxh-host-apiproxy/api'
+import type { RpcResponse, RpcResult } from '@arx-ai/arx-host-apiproxy/api'
 
 /**
  * Unwrap a unary response: RpcResponse<T> -> RpcResult<T> (business code only

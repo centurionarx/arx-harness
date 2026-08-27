@@ -1,7 +1,7 @@
 /**
  * Normalization for values thrown by a final LLM adapter boundary.
  *
- * @module @centurionarx/cxh-llm/adapter-failure
+ * @module @arx-ai/arx-llm/adapter-failure
  */
 
 import { HarnessError } from './error.ts'

@@ -1,5 +1,5 @@
 {
-  "name": "@centurionarx/cxh-tool-fs-search",
+  "name": "@arx-ai/arx-tool-fs-search",
   "description": "Model-facing filesystem discovery tools (glob, grep) backed by the packaged ripgrep binary (@vscode/ripgrep)",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/fs/tool-fs-search"
   },
   "type": "module",
@@ -33,32 +33,32 @@
   "license": "MIT",
   "dependencies": {
     "@vscode/ripgrep": "^1.18.0",
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-output-retention": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-spill": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-output-retention": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-spill": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-subprocess": "workspace:^",
-    "@centurionarx/cxh-subprocess-local": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-llm": "workspace:^",
-    "@centurionarx/cxh-output-retention": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-spill": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-timeout": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-subprocess": "workspace:^",
+    "@arx-ai/arx-subprocess-local": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-output-retention": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-spill": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-timeout": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { type SessionEvent } from '@centurionarx/cxh-session'
-import { parseSessionLog } from '@centurionarx/cxh-llm-replay'
+import { type SessionEvent } from '@arx-ai/arx-session'
+import { parseSessionLog } from '@arx-ai/arx-llm-replay'
 import { canonicalSessionFixture } from './session-fixture-layout.ts'
 
 const HEADER = '  {"type":"session","version":0,"id":"fixture","createdAt":1,"delegationDepth":0}  '

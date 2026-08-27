@@ -7,17 +7,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import UserQuestionService from '@centurionarx/cxh-user-questions'
-import ApprovalService from '@centurionarx/cxh-user-approval'
-import type { ApprovalRequestId } from '@centurionarx/cxh-user-approval'
-import type { ApiProxy, MuxFrame, RpcRequest } from '@centurionarx/cxh-host-apiproxy/api'
-import type { RpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
-import { RpcId as mintRpcId } from '@centurionarx/cxh-host-apiproxy/api/rpc'
+import { Context } from '@arx-ai/cordis'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import UserQuestionService from '@arx-ai/arx-user-questions'
+import ApprovalService from '@arx-ai/arx-user-approval'
+import type { ApprovalRequestId } from '@arx-ai/arx-user-approval'
+import type { ApiProxy, MuxFrame, RpcRequest } from '@arx-ai/arx-host-apiproxy/api'
+import type { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
+import { RpcId as mintRpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
 import { createApiProxy } from '../src/api-proxy.ts'
 
 async function harness(): Promise<{ ctx: Context; api: ApiProxy }> {

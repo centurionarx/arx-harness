@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { createScope } from '@centurionarx/cxh-scope'
-import type { Scope } from '@centurionarx/cxh-scope'
-import type { Agent } from '@centurionarx/cxh-agent'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import CommandRuntime, { parseCommand, type CommandDefinition } from '@centurionarx/cxh-commands'
-import { AttachmentStore } from '@centurionarx/cxh-attachment'
+import { Context } from '@arx-ai/cordis'
+import { createScope } from '@arx-ai/arx-scope'
+import type { Scope } from '@arx-ai/arx-scope'
+import type { Agent } from '@arx-ai/arx-agent'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import CommandRuntime, { parseCommand, type CommandDefinition } from '@arx-ai/arx-commands'
+import { AttachmentStore } from '@arx-ai/arx-attachment'
 
 function command(name: string, text = `ran:${name}`): CommandDefinition {
   return {

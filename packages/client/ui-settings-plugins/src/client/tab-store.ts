@@ -10,9 +10,9 @@
  * trace and does not count toward the empty line.
  */
 
-import type { SettingsDescribeFace } from '@centurionarx/cxh-client-ui-settings/client'
-import type { StoredEntry } from '@centurionarx/cxh-client-ui-slots'
-import { createSnapshotStore, type SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
+import type { StoredEntry } from '@arx-ai/arx-client-ui-slots'
+import { createSnapshotStore, type SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 
 /** What the section renders. */
 export interface ConfigurablePluginsTabState {

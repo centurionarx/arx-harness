@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { SessionId } from '@centurionarx/cxh-session'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import * as SessionInvariant from '@centurionarx/cxh-session/invariant'
-import * as AgentInvariant from '@centurionarx/cxh-agent/invariant'
-import * as AgentLoopInvariant from '@centurionarx/cxh-agent-loop/invariant'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import * as spawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import { STRUCTURED_OUTPUT_TOOL } from '@centurionarx/cxh-subagent-in-process-driver'
+import { Context } from '@arx-ai/cordis'
+import { SessionId } from '@arx-ai/arx-session'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import * as SessionInvariant from '@arx-ai/arx-session/invariant'
+import * as AgentInvariant from '@arx-ai/arx-agent/invariant'
+import * as AgentLoopInvariant from '@arx-ai/arx-agent-loop/invariant'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import * as spawn from '@arx-ai/arx-subagent-spawn-in-process'
+import { STRUCTURED_OUTPUT_TOOL } from '@arx-ai/arx-subagent-in-process-driver'
 import { MockAdapter, textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import WorkerThreadWorkflowEngine from '../src/index.ts'
 
@@ -44,7 +44,7 @@ async function setup(script: Script) {
   return { ctx, parent, adapter }
 }
 
-describe('cxh-workflow-worker-thread over the real in-process stack', () => {
+describe('arx-workflow-worker-thread over the real in-process stack', () => {
   it('runs a two-stage workflow: a plain child, then a schema child through the structured runtime', async () => {
     const { ctx, parent } = await setup([
       textResponse('the file list is a.ts'),

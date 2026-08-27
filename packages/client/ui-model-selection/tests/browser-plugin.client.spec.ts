@@ -8,14 +8,14 @@
  * (and the reverse), the one-shared-state contract of the dual entry.
  * Scope disposal drops the directory (HMR safety).
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { createScope } from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import { TestRemote } from '@centurionarx/cxh-client-test-runtime'
-import type { ModelSelection } from '@centurionarx/cxh-api-remotes/client'
-import type { CommandContribution, SelectOption } from '@centurionarx/cxh-client-ui-commands/client'
+import { createScope } from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import { TestRemote } from '@arx-ai/arx-client-test-runtime'
+import type { ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { CommandContribution, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 import type { ModelSelectInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { zh } from '../src/client/locales.ts'
@@ -54,15 +54,25 @@ const GROUPS = [{
 }]
 
 /** Boot the plugin over fake faces + a stateful fake host (current moves on selectModel). */
-async function bench() {
+async function bench({ selected = true }: { selected?: boolean } = {}) {
   const ctx = new Context()
-  let current: ModelSelection = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
+  // `selected: false` is the deployment that ships no default model: the Host
+  // answers with the field absent, not with a fabricated pair.
+  let current: ModelSelection | undefined = selected
+    ? { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
+    : undefined
   const calls = { models: 0, select: 0 }
   ctx.provide('connection', { api: { sessions: {
     models: () => {
       calls.models += 1
       return Promise.resolve({
-        result: { ok: true as const, value: { current, routable, groups: GROUPS, failures: [] } },
+        result: {
+          ok: true as const,
+          value: {
+            ...current === undefined ? {} : { current },
+            routable, groups: GROUPS, failures: [],
+          },
+        },
       })
     },
     selectModel: (payload: { provider: string; model: string; reasoningEffort?: string }) => {
@@ -197,6 +207,16 @@ describe('ui-model-selection dual entry', () => {
       model: 'deepseek-v4-pro',
       reasoningEffort: 'high',
     })
+  })
+
+  it('holds no selection and marks no row active when the Host reports none', async () => {
+    const b = await bench({ selected: false })
+    b.mint('s1')
+    const seatFace = b.seat().inject!(sid('s1'))
+    const options = await b.contribution().ui.options(projection('s1'), new AbortController().signal)
+    expect(options.length).toBeGreaterThan(0)
+    expect(options.some((o: SelectOption) => o.active === true)).toBe(false)
+    expect(seatFace.directory.getSnapshot().current).toBeNull()
   })
 
   it('both entries share one directory instance per session, isolated across sessions', async () => {

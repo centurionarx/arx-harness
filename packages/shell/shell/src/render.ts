@@ -1,8 +1,8 @@
 /**
- * Shared rendering helpers for the shell tools (`cxh-tool-bash`,
- * `cxh-tool-pwsh`): the exit-status marker contract the tools' renderers
+ * Shared rendering helpers for the shell tools (`arx-tool-bash`,
+ * `arx-tool-pwsh`): the exit-status marker contract the tools' renderers
  * emit and the presentation layer parses back.
- * @module @centurionarx/cxh-shell/render
+ * @module @arx-ai/arx-shell/render
  */
 
 /**

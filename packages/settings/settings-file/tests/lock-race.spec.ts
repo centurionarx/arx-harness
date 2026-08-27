@@ -1,12 +1,12 @@
 // A temp-file write failure cannot be timed from outside. The `fs/promises` API
 // injects it once so the test can prove that the writer lock still releases.
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
+import { settingsNamespace } from '@arx-ai/arx-settings'
 import { FileSettingsProvider } from '../src/index.ts'
 
 const state = vi.hoisted(() => ({
@@ -54,7 +54,7 @@ afterEach(async () => {
 })
 
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-settings-lockrace-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-settings-lockrace-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
   return dir
 }

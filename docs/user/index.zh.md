@@ -6,6 +6,6 @@ head:
       content: 0; url=./guide/quickstart
 ---
 
-# CENTURIONarx Harness
+# arx Harness
 
 [English](index.md) | 中文

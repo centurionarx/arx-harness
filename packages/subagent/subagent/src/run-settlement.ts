@@ -3,11 +3,11 @@
  * the one-shot background path uses Jobs; continuable children have no Task,
  * no per-message result, and no Task cancellation.
  *
- * @module @centurionarx/cxh-subagent/run-settlement
+ * @module @arx-ai/arx-subagent/run-settlement
  */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { JobOutcome } from '@centurionarx/cxh-jobs'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { JobOutcome } from '@arx-ai/arx-jobs'
 import type { SubagentResult, SubagentRun } from './types.ts'
 
 /** Flatten a child's final output blocks to the task's final text. */

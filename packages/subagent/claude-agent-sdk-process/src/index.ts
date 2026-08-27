@@ -3,7 +3,7 @@
  * Agent SDK's custom-spawn process interface, so the harness owns the CLI
  * process tree the SDK spawns.
  *
- * @module @centurionarx/cxh-claude-agent-sdk-process
+ * @module @arx-ai/arx-claude-agent-sdk-process
  */
 
 import { EventEmitter } from 'node:events'
@@ -16,7 +16,7 @@ import {
   type SubprocessHandle,
   type SubprocessOutcome,
   type SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-subprocess'
 
 function thrown(value: unknown): Error {
   /* v8 ignore next -- the subprocess seam rejects with Error. */

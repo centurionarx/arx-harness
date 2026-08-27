@@ -3,14 +3,14 @@
 //
 // The 'conversation.input.dock' SlotMap declaration lives in
 // ../contract/slots.ts beside the other input-region slots.
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { useEffect, useId, useMemo, useState } from 'react'
-import type { PropsLocale, PropsRuntime } from '@centurionarx/cxh-client-ui-slots'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
+import type { PropsLocale, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 import {
   IconCheckOutline16, IconChevronDownOutline14, IconChevronUpOutline14, IconCloseOutline16,
   IconEditOutline16, IconQueueOutline14, IconSendOutline14, IconTrashOutline16, Tooltip,
-} from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-ui-primitives'
 import type { QueueAction, QueueItemId } from '../contract/queue.ts'
 import { NS } from '../locales.ts'
 import css from './QueueDock.module.css'

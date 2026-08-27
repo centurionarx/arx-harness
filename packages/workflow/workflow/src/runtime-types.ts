@@ -3,10 +3,10 @@
  * vocabulary remains in `./types` so Client programs never import Agent or
  * host Cordis context declarations.
  *
- * @module @centurionarx/cxh-workflow
+ * @module @arx-ai/arx-workflow
  */
 
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Agent } from '@arx-ai/arx-agent'
 import type {
   WorkflowMeta, WorkflowResult, WorkflowRunId,
 } from './types.ts'

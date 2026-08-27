@@ -1,4 +1,4 @@
-import type { ConversationNodeContext } from '@centurionarx/cxh-client-runtime/client'
+import type { ConversationNodeContext } from '@arx-ai/arx-client-runtime/client'
 import type {
   TrajectoryContribution, TrajectoryConversationViewNode,
 } from './trajectory-contract.ts'

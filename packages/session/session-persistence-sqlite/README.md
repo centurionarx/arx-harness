@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-persistence-sqlite
+# @arx-ai/arx-session-persistence-sqlite
 
 English | [中文](README.zh.md)
 

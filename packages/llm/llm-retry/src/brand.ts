@@ -1,4 +1,4 @@
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /** Stable identity shared by every attempt in one request-step retry chain. */
 export type RetryId = Branded<'RetryId'>

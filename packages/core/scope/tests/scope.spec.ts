@@ -1,9 +1,9 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { bindScopeParent, carrierKeyOf, createScope, isScopeCarrier, scopeChainOf, scopeOf, scopeParentOf, scopeTarget } from '@centurionarx/cxh-scope'
-import type { Scope, Scoped } from '@centurionarx/cxh-scope'
+import { Context } from '@arx-ai/cordis'
+import { bindScopeParent, carrierKeyOf, createScope, isScopeCarrier, scopeChainOf, scopeOf, scopeParentOf, scopeTarget } from '@arx-ai/arx-scope'
+import type { Scope, Scoped } from '@arx-ai/arx-scope'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     /**
      * Test-only event for scope-filtered dispatch.

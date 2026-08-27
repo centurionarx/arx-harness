@@ -1,23 +1,23 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   ConversationMatch, ConversationNodeContext, ConversationNodeDefinition, TurnLocation,
-} from '@centurionarx/cxh-client-runtime/client'
-import { isAppendSurfaceEvent, toAssistantBlocks } from '@centurionarx/cxh-client-runtime/client'
-import type {} from '@centurionarx/cxh-llm-retry/types'
+} from '@arx-ai/arx-client-runtime/client'
+import { isAppendSurfaceEvent, toAssistantBlocks } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-llm-retry/types'
 import type {
   AssistantChatData, FinalAssistantChatData, TurnTailChatData,
 } from '../contract/chat-nodes.ts'
 import { deriveTurnMetrics } from '../chat/turn-metrics.ts'
 import { CHAT_SYNTHETIC_SEQ_OFFSETS, chatNode } from './common.ts'
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Completed-turn actions and extension tail. */
     'turn-tail': TurnTailChatData
   }
 }
 
-declare module '@centurionarx/cxh-client-runtime/client' {
+declare module '@arx-ai/arx-client-runtime/client' {
   interface ConversationTurnDataMap {
     /** Closing Assistant and footer facts derived for this completed Turn. */
     'turn-tail': TurnTailChatData

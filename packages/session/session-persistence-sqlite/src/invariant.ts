@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-session-persistence-sqlite`.
- * @module @centurionarx/cxh-session-persistence-sqlite/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-session-persistence-sqlite`.
+ * @module @arx-ai/arx-session-persistence-sqlite/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session-persistence-sqlite'
+const PACKAGE_NAME = '@arx-ai/arx-session-persistence-sqlite'
 
 /** Cordis companion plugin name. */
 export const name = 'session-persistence-sqlite-invariant'

@@ -4,8 +4,8 @@
  * the ordinary-process and terminal teardown ladders.
  */
 
-import { CommandExitError, e2bControlEnvs, SandboxNotFoundError } from '@centurionarx/cxh-e2b'
-import type { Sandbox } from '@centurionarx/cxh-e2b'
+import { CommandExitError, e2bControlEnvs, SandboxNotFoundError } from '@arx-ai/arx-e2b'
+import type { Sandbox } from '@arx-ai/arx-e2b'
 
 /**
  * Normalize an unknown rejection into an Error.

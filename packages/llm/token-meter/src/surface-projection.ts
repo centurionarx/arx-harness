@@ -14,13 +14,13 @@
  * armed claim folds with zero delta because bounded state cannot reconstruct
  * the replaced range; this preserves replay at the cost of possible drift.
  *
- * @module @centurionarx/cxh-token-meter/surface-projection
+ * @module @arx-ai/arx-token-meter/surface-projection
  */
 
-import { deriveEventMessage, isSurfaceEvent } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import { deriveEventMessage, isSurfaceEvent } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 // Type-only: the `compaction/*` SessionEventMap merges (shadow-price events).
-import type {} from '@centurionarx/cxh-compaction'
+import type {} from '@arx-ai/arx-compaction'
 import { estimateMessage } from './estimate.ts'
 
 /**

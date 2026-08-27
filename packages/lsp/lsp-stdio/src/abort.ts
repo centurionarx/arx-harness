@@ -1,9 +1,9 @@
 /**
  * Shared cancellation helpers for the local LSP provider's host-I/O, queue, and protocol phases.
- * @module @centurionarx/cxh-lsp-stdio/abort
+ * @module @arx-ai/arx-lsp-stdio/abort
  */
 
-import { timeoutOf } from '@centurionarx/cxh-timeout'
+import { timeoutOf } from '@arx-ai/arx-timeout'
 
 /**
  * Build an abort Error carrying the signal's reason and preserving timeout classification.

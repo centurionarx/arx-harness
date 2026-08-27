@@ -1,18 +1,18 @@
 /** Conversation slot declarations and their composed component props. */
 import type { ReactNode, RefObject } from 'react'
-import type { ImageAttachmentRef } from '@centurionarx/cxh-attachment'
+import type { ImageAttachmentRef } from '@arx-ai/arx-attachment'
 import type {
   InjectFace, MaybeSnapshotSelectorHook, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore,
   SlotHookFactory, SnapshotSelectorHook,
-} from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-slots'
 import type {
   CommandNode, CompactionSummaryNode, ConversationSnapshot, ConversationTurnDataMap,
   ObservableSnapshot, PendingInteraction, PendingWait, SessionId, ToolCallBlock,
   TurnLocation, WorkspaceId,
-} from '@centurionarx/cxh-client-runtime/client'
-import type { MarkdownFileMentions } from '@centurionarx/cxh-client-ui-primitives'
-import type { MessageId } from '@centurionarx/cxh-client-connection/client'
-import type {} from '@centurionarx/cxh-client-ui-layout/client'
+} from '@arx-ai/arx-client-runtime/client'
+import type { MarkdownFileMentions } from '@arx-ai/arx-client-ui-primitives'
+import type { MessageId } from '@arx-ai/arx-client-connection/client'
+import type {} from '@arx-ai/arx-client-ui-layout/client'
 import type { ComposerBlock } from '../input/blocks.ts'
 import type {
   ComposerKeyboard, DraftAttachmentId, EditSelection, InputActions, InputNotice, InputState,
@@ -57,7 +57,7 @@ export interface MessageImagesOwnerProps {
 /** Slot-backed renderer used by chat nodes without importing an attachment implementation. */
 export type RenderMessageImages = (owner: Omit<MessageImagesOwnerProps, 'loadImage'>) => ReactNode
 
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     /**
      * The entire body of one session: taking this seat means rendering that
@@ -178,7 +178,7 @@ declare module '@centurionarx/cxh-client-ui-slots' {
     'conversation.hero.workspace': { kind: 'single'; scope: 'root'; owner: EmptyWorkspaceOwnerProps }
     /**
      * Brand mark leading the blank-session headline. Declared by this
-     * package's `conversation` entry; the shell supplies a fish fallback.
+     * package's `conversation` entry; the shell supplies a mark fallback.
      */
     'conversation.hero.brand.mark': { kind: 'single'; scope: 'root'; owner: HeroBrandMarkOwnerProps }
     /**
@@ -366,7 +366,7 @@ export interface ChatFileMentions {
   forClosing(owner: TurnTailOwnerProps): MarkdownFileMentions | undefined
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Prose file-mention provider (ui-deliverables); reach via ctx.get — optional. */
     chatFileMentions: ChatFileMentions

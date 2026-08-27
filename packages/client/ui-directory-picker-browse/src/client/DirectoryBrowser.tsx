@@ -39,10 +39,10 @@ import clsx from 'clsx'
 import {
   Button, IconCheckOutline16, IconChevronRightOutline14, IconEditOutline16, IconFolderClose16, IconFolderOpen16,
   IconPlusOutline16, Modal,
-} from '@centurionarx/cxh-client-ui-primitives'
-import type { DirectoryEntry, DirectoryListing } from '@centurionarx/cxh-client-runtime/client'
-import { DirectoryBrowseError } from '@centurionarx/cxh-client-runtime/client'
-import type { Translate } from '@centurionarx/cxh-client-locale/client'
+} from '@arx-ai/arx-client-ui-primitives'
+import type { DirectoryEntry, DirectoryListing } from '@arx-ai/arx-client-runtime/client'
+import { DirectoryBrowseError } from '@arx-ai/arx-client-runtime/client'
+import type { Translate } from '@arx-ai/arx-client-locale/client'
 import css from './DirectoryBrowser.module.css'
 
 /** Owner-supplied browser props: browse calls, pick semantics, and copy. */

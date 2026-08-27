@@ -1,9 +1,9 @@
-import { CallId, createUserMessage, LlmError, type Message, type StreamChunk } from '@centurionarx/cxh-llm'
+import { CallId, createUserMessage, LlmError, type Message, type StreamChunk } from '@arx-ai/arx-llm'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { describe, expect, it } from 'vitest'
 
 import { DEFAULT_DISPOSE_GRACE_MS, resolveRoutes } from '../src/config.ts'
-import { renderTranscript } from '../src/prompt.ts'
+import { collectImageRefs, renderTranscript } from '../src/prompt.ts'
 import { translate } from '../src/stream.ts'
 import { createToolServer, harnessToolName, toolAlias } from '../src/tools.ts'
 
@@ -23,8 +23,8 @@ function event(body: Record<string, unknown>): Record<string, unknown> {
 
 describe('tool naming', () => {
   it('namespaces a harness tool the way the CLI presents it', () => {
-    expect(toolAlias('bash')).toBe('mcp__cxh__bash')
-    expect(harnessToolName('mcp__cxh__bash')).toBe('bash')
+    expect(toolAlias('bash')).toBe('mcp__arx__bash')
+    expect(harnessToolName('mcp__arx__bash')).toBe('bash')
   })
 
   it('leaves an unprefixed name alone rather than guessing at it', () => {
@@ -89,7 +89,7 @@ describe('translate', () => {
 
   it('recovers the harness tool name and finishes on tool calls', async () => {
     const out = await chunks([
-      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":"ls"}' } }),
       event({ type: 'content_block_stop', index: 0 }),
       { type: 'result', subtype: 'error_max_turns' },
@@ -101,10 +101,10 @@ describe('translate', () => {
 
   it('carries every tool a turn requested, not just the first', async () => {
     const out = await chunks([
-      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":"ls"}' } }),
       event({ type: 'content_block_stop', index: 0 }),
-      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-2', name: 'mcp__cxh__read' } }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-2', name: 'mcp__arx__read' } }),
       event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"path":"a.ts"}' } }),
       event({ type: 'content_block_stop', index: 1 }),
       { type: 'result', subtype: 'error_max_turns' },
@@ -119,7 +119,7 @@ describe('translate', () => {
   it('keeps interleaved blocks apart by their own index', async () => {
     const out = await chunks([
       event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
-      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__cxh__bash' } }),
+      event({ type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'call-1', name: 'mcp__arx__bash' } }),
       event({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{}' } }),
       event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'running' } }),
       event({ type: 'content_block_stop', index: 1 }),
@@ -222,13 +222,18 @@ describe('translate', () => {
 describe('prompt rendering', () => {
   const ask = createUserMessage({ content: [{ type: 'text', text: 'list files' }], source: { kind: 'user' } }) as Message
 
-  it('refuses a block that reaches the vendor through no path this adapter owns', () => {
+  it('refuses an image the caller resolved no request version for', () => {
     const withImage: Message = {
       ...ask,
-      content: [{ type: 'image', attachment: { id: 'a', mediaType: 'image/png', width: 1, height: 1, byteLength: 1 } } as never],
+      content: [{ type: 'image', attachment: { attachmentId: 'a', mediaType: 'image/png', width: 1, height: 1, bytes: 1 } } as never],
     }
     expect(() => renderTranscript([withImage])).toThrow(LlmError)
-    expect(() => renderTranscript([withImage])).toThrow(/cannot reach the vendor CLI/)
+    expect(() => renderTranscript([withImage])).toThrow(/has no request version/)
+  })
+
+  it('refuses a block that reaches the vendor through no path this adapter owns', () => {
+    const alien: Message = { ...ask, content: [{ type: 'video' } as never] }
+    expect(() => renderTranscript([alien])).toThrow(/cannot reach the vendor CLI/)
   })
 
   it('states prior turns as labelled text when no vendor session can resume', () => {
@@ -244,14 +249,46 @@ describe('prompt rendering', () => {
       ...ask,
       content: [{ type: 'tool-result', toolCallId: CallId('call-1'), content: [{ type: 'text', text: 'a.ts' }, { type: 'reasoning', text: 'x' }] }],
     }
-    expect(renderTranscript([ask, assistant, result])).toBe(
-      'user: list files\n\nassistant: [requested bash with {}]\n\nuser: [result of call-1]\na.ts\n[reasoning]',
-    )
+    expect(renderTranscript([ask, assistant, result])).toEqual([{
+      type: 'text',
+      text: 'user: list files\n\nassistant: [requested bash with {}]\n\nuser: [result of call-1]\na.ts\n[reasoning]',
+    }])
   })
 
   it('drops a message that renders to nothing', () => {
     const empty: Message = { ...ask, content: [{ type: 'reasoning', text: 'private' }] }
-    expect(renderTranscript([empty])).toBe('')
+    expect(renderTranscript([empty])).toEqual([])
+  })
+
+  it('carries an image as its own block, where the attachment sat', () => {
+    const withImage: Message = {
+      ...ask,
+      content: [
+        { type: 'text', text: 'look at this' },
+        { type: 'image', attachment: { attachmentId: 'att-1' } } as never,
+      ],
+    }
+    const versions = new Map([['att-1', {
+      mediaType: 'image/png',
+      data: Uint8Array.of(1, 2, 3),
+    }]]) as never
+    expect(renderTranscript([withImage, ask], versions)).toEqual([
+      { type: 'text', text: 'user: look at this' },
+      { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'AQID' } },
+      { type: 'text', text: 'user: list files' },
+    ])
+  })
+
+  it('reports every distinct attachment once, in first-appearance order', () => {
+    const one: Message = { ...ask, content: [{ type: 'image', attachment: { attachmentId: 'b' } } as never] }
+    const two: Message = {
+      ...ask,
+      content: [
+        { type: 'image', attachment: { attachmentId: 'a' } } as never,
+        { type: 'image', attachment: { attachmentId: 'b' } } as never,
+      ],
+    }
+    expect([...collectImageRefs([one, two]).keys()]).toEqual(['b', 'a'])
   })
 })
 

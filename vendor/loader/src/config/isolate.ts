@@ -1,5 +1,5 @@
-import { Context } from '@centurionarx/cordis'
-import type { Dict } from '@centurionarx/cosmokit'
+import { Context } from '@arx-ai/cordis'
+import type { Dict } from '@arx-ai/cosmokit'
 import { Entry } from './entry.ts'
 
 declare module './entry.ts' {

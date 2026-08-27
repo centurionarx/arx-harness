@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-session-stats`.
- * @module @centurionarx/cxh-session-stats/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-session-stats`.
+ * @module @arx-ai/arx-session-stats/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-session-stats'
+const PACKAGE_NAME = '@arx-ai/arx-session-stats'
 
 /** Cordis companion plugin name. */
 export const name = 'session-stats-invariant'
@@ -20,7 +20,7 @@ export const inject = ['invariants']
  * snapshot and change-feed emission, and the event relations the fold relies
  * on (`step/end` exactly once per entered step, monotonic host-assigned turn
  * numbers, chunk and tool events carrying their step coordinates and call
- * ids) are owned and runtime-checked by cxh-agent-loop and the session
+ * ids) are owned and runtime-checked by arx-agent-loop and the session
  * surface, not here.
  */
 const install: InvariantInstaller = () => {}

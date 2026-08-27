@@ -3,11 +3,11 @@
  * pure context-breakdown projection, so both surfaces price identical content
  * to identical numbers.
  *
- * @module @centurionarx/cxh-token-meter/estimate
+ * @module @arx-ai/arx-token-meter/estimate
  */
 
-import type { ContentBlock, Message } from '@centurionarx/cxh-llm'
-import type { EpochHeader } from '@centurionarx/cxh-session'
+import type { ContentBlock, Message } from '@arx-ai/arx-llm'
+import type { EpochHeader } from '@arx-ai/arx-session'
 
 /** Fixed text-density estimate used until exact tokenization is needed. */
 const CHARS_PER_TOKEN = 4

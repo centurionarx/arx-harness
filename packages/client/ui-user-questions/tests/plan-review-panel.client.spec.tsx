@@ -7,16 +7,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type {
   ConversationSnapshot, SessionId, SessionListState, WorkspaceListState,
-} from '@centurionarx/cxh-client-runtime/client'
-import { PendingWait } from '@centurionarx/cxh-client-runtime/client'
-import type { RpcReceipt } from '@centurionarx/cxh-api-remotes/client'
-import { RpcId } from '@centurionarx/cxh-client-connection/client'
-import type { SnapshotSelectorHook } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-runtime/client'
+import { PendingWait } from '@arx-ai/arx-client-runtime/client'
+import type { RpcReceipt } from '@arx-ai/arx-api-remotes/client'
+import { RpcId } from '@arx-ai/arx-client-connection/client'
+import type { SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
 import { planReviewOf, type QuestionComposerProps, type QuestionWait } from '../src/client/contract/slots.ts'
 import { QuestionComposer } from '../src/client/QuestionComposer.tsx'
 import { en, zh } from '../src/client/locales.ts'
-import { en as commonEn } from '@centurionarx/cxh-client-locale/src/locales/en.ts'
-import { zh as commonZh } from '@centurionarx/cxh-client-locale/src/locales/zh.ts'
+import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
+import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
 
 afterEach(cleanup)
 

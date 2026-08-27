@@ -4,13 +4,13 @@
  * accepted prompt.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
-import type { InputTriggerController, SubmitOutcome } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { InputTriggerController, SubmitOutcome } from '@arx-ai/arx-client-ui-input-trigger/client'
 import { SessionInputShell } from '../src/client/input/facade.ts'
 import type { DraftAttachmentId } from '../src/client/input/contract.ts'
 
-const mention = '@[Research](cxh-session:InNvdXJjZSI)'
-const spacedMention = '@[Research notes](cxh-session:InNvdXJjZSI)'
+const mention = '@[Research](arx-session:InNvdXJjZSI)'
+const spacedMention = '@[Research notes](arx-session:InNvdXJjZSI)'
 const commandImages = {
   serialize: () => Promise.resolve([]),
   release: () => {},

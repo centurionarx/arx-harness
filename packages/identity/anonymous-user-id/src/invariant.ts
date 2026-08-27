@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-anonymous-user-id`.
- * @module @centurionarx/cxh-anonymous-user-id/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-anonymous-user-id`.
+ * @module @arx-ai/arx-anonymous-user-id/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-anonymous-user-id'
+const PACKAGE_NAME = '@arx-ai/arx-anonymous-user-id'
 
 /** Cordis companion plugin name. */
 export const name = 'anonymous-user-id-invariant'

@@ -4,14 +4,14 @@
  * vocabulary and pi-ai's `AuthInteraction`; nothing above it knows which
  * library ran the conversation.
  *
- * @module cxh-llm-pi-ai/login
+ * @module arx-llm-pi-ai/login
  */
 
 import { createModels } from '@earendil-works/pi-ai'
 import type { AuthEvent, AuthPrompt, AuthType, Provider } from '@earendil-works/pi-ai'
-import type { Context } from '@centurionarx/cordis'
-import type { AuthorizationMethod, AuthorizationPrompt, AuthorizationSession } from '@centurionarx/cxh-authorization'
-import { isCredentialKeySegment } from '@centurionarx/cxh-credentials'
+import type { Context } from '@arx-ai/cordis'
+import type { AuthorizationMethod, AuthorizationPrompt, AuthorizationSession } from '@arx-ai/arx-authorization'
+import { isCredentialKeySegment } from '@arx-ai/arx-credentials'
 import { catalogProvider, catalogProviderIds } from './catalog.ts'
 import { recordKeyFor } from './auth.ts'
 import type { PiAiAuthInjection } from './adapter.ts'

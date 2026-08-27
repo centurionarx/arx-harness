@@ -1,16 +1,16 @@
 /**
- * cxh-commands' owned branded id: command lifecycle pairing across the
+ * arx-commands' owned branded id: command lifecycle pairing across the
  * session log, the wire admission response, and client-side flow pairing.
  *
- * The `Branded<B>` primitive lives in `@centurionarx/cxh-brand`; this module
+ * The `Branded<B>` primitive lives in `@arx-ai/arx-brand`; this module
  * is a pure type/constructor outlet (no cordis imports, no module
  * augmentation) so wire and client programs can name the brand without
- * loading the host plugin's Context merges — the `cxh-llm/brand` shape.
+ * loading the host plugin's Context merges — the `arx-llm/brand` shape.
  *
- * @module @centurionarx/cxh-commands/brand
+ * @module @arx-ai/arx-commands/brand
  */
 
-import type { Branded } from '@centurionarx/cxh-brand'
+import type { Branded } from '@arx-ai/arx-brand'
 
 /**
  * Pairs one command execution's `command/run`/`command/done` lifecycle

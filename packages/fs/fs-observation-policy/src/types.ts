@@ -4,18 +4,18 @@
  * actor the `fs/*` events carry.
  *
  * The provider vocabulary (`FsTarget`, `FsVersion`, write/edit request types) is
- * re-used from `@centurionarx/cxh-fs`; this package owns only the observed-state
+ * re-used from `@arx-ai/arx-fs`; this package owns only the observed-state
  * owner structure on top of it.
  *
- * @module @centurionarx/cxh-fs-observation-policy/types
+ * @module @arx-ai/arx-fs-observation-policy/types
  */
 
 /**
  * Minimal structural view of a tool execution the policy plugin needs to derive
- * an observed-state owner. `@centurionarx/cxh-tools`' `ToolExecution` contains
+ * an observed-state owner. `@arx-ai/arx-tools`' `ToolExecution` contains
  * these fields, so the tool passes its `exec` straight through as the opaque
  * `object` actor on the `fs/*` events; this plugin narrows that actor to
- * `FsObservationActor` without importing `cxh-tools`, `cxh-agent`, or `cxh-session`.
+ * `FsObservationActor` without importing `arx-tools`, `arx-agent`, or `arx-session`.
  *
  * The owner is `agent.session` when present. It is treated as an opaque object
  * identity (a `WeakMap` key); this package never reads any of its fields.

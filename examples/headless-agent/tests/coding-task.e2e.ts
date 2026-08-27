@@ -1,12 +1,12 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { spawnSync } from 'node:child_process'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import { codingHarness, finalText, SYSTEM_PROMPT, waitForIdle } from './harness.ts'
-import { SessionId } from '@centurionarx/cxh-session'
+import { SessionId } from '@arx-ai/arx-session'
 
 /**
  * The swebench-style smoke test: a real model fixes a real bug in a temp
@@ -46,7 +46,7 @@ afterEach(async () => {
 
 describe.skipIf(!process.env.DEEPSEEK_API_KEY)('coding task: fix a failing test via bash', () => {
   it('repairs add.js so node add.test.js passes', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-coding-task-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-coding-task-'))
     await writeFile(join(workdir, 'add.js'), BUGGY_ADD)
     await writeFile(join(workdir, 'add.test.js'), TEST_FILE)
 

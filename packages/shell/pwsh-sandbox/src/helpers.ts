@@ -1,15 +1,15 @@
 /**
  * Internal sandbox-result classification helpers — deliberate call-for-call
- * mirror of `@centurionarx/cxh-bash-sandbox/src/helpers.ts` (the pwsh twin of
+ * mirror of `@arx-ai/arx-bash-sandbox/src/helpers.ts` (the pwsh twin of
  * the bash consumer shares the identical classification dialect).
  *
- * @module @centurionarx/cxh-pwsh-sandbox/helpers
+ * @module @arx-ai/arx-pwsh-sandbox/helpers
  */
 
 /* jscpd:ignore-start */
 import { accessSync, constants, statSync } from 'node:fs'
-import type { ShellRunResult } from '@centurionarx/cxh-shell'
-import type { RunnerFailureRule } from '@centurionarx/cxh-sandbox'
+import type { ShellRunResult } from '@arx-ai/arx-shell'
+import type { RunnerFailureRule } from '@arx-ai/arx-sandbox'
 
 /** Node-local spawn codes proven to identify executable resolution or permission failure. */
 const EXECUTABLE_SPAWN_CODES = new Set(['EACCES', 'ENOENT'])

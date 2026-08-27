@@ -2,18 +2,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { mountAgentLoopTestDependencies } from '@centurionarx/cxh-agent-loop-testkit'
-import { SessionId } from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
-import SessionProjectionRegistry from '@centurionarx/cxh-session-projection'
-import SubagentRuntime from '@centurionarx/cxh-subagent'
-import type { SubagentListEntry } from '@centurionarx/cxh-subagent'
-import * as SubagentSpawn from '@centurionarx/cxh-subagent-spawn-in-process'
-import type { GenerateOptions, StreamChunk } from '@centurionarx/cxh-llm'
-import { LlmAdapter } from '@centurionarx/cxh-llm'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
+import { SessionId } from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
+import SubagentRuntime from '@arx-ai/arx-subagent'
+import type { SubagentListEntry } from '@arx-ai/arx-subagent'
+import * as SubagentSpawn from '@arx-ai/arx-subagent-spawn-in-process'
+import type { GenerateOptions, StreamChunk } from '@arx-ai/arx-llm'
+import { LlmAdapter } from '@arx-ai/arx-llm'
 import { MockAdapter, textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as tool from '../src/list-agents.ts'
 import { parkParent } from './park-parent.ts'
@@ -54,7 +54,7 @@ afterEach(() => {
 async function setupWith(adapter: MockAdapter | GatedAdapter) {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
-  const root = mkdtempSync(join(tmpdir(), 'cxh-tool-list-agents-'))
+  const root = mkdtempSync(join(tmpdir(), 'arx-tool-list-agents-'))
   roots.push(root)
   await ctx.plugin(JsonlSessionPersistence, { root })
   await ctx.plugin(AgentLoop, { agents: [] })
@@ -100,7 +100,7 @@ async function waitNoActivation(ctx: Context, childId: SessionId): Promise<void>
   }, { timeout: 5_000 })
 }
 
-describe('cxh-tool-subagent-control/list-agents', () => {
+describe('arx-tool-subagent-control/list-agents', () => {
   it('registers list_agents once, globally, with only the optional scope parameter', async () => {
     const { ctx } = await setup([])
     const schemas = ctx.tools.schemas().filter(schema => schema.name === 'list_agents')

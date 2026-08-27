@@ -2,29 +2,29 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, CallId, HarnessError  } from '@centurionarx/cxh-llm'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import type { SessionEvent } from '@centurionarx/cxh-session'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { RUN_CODE_NAME, defineTool } from '@centurionarx/cxh-tools'
-import type { ToolExecutionResult } from '@centurionarx/cxh-tools'
-import AgentRegistry, { type Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, CallId, HarnessError  } from '@arx-ai/arx-llm'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { RUN_CODE_NAME, defineTool } from '@arx-ai/arx-tools'
+import type { ToolExecutionResult } from '@arx-ai/arx-tools'
+import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
-import AgentLoop from '@centurionarx/cxh-agent-loop'
-import { LocalBashExecutor } from '@centurionarx/cxh-bash-local'
-import * as BashEnvPlugin from '@centurionarx/cxh-shell-env'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import * as ToolBash from '@centurionarx/cxh-tool-bash'
-import * as LlmDeepSeek from '@centurionarx/cxh-llm-deepseek'
-import { WorkerThreadCodeRuntime } from '@centurionarx/cxh-code-runtime-worker-thread'
-import LocalFileSystem from '@centurionarx/cxh-fs-local'
-import * as ToolFs from '@centurionarx/cxh-tool-fs'
-import * as WorkspaceContext from '@centurionarx/cxh-agent-instructions'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
-import CordisHostRunner from '@centurionarx/cxh-cordis-host-runner'
-import * as ToolCordis from '@centurionarx/cxh-tool-cordis'
+import AgentLoop from '@arx-ai/arx-agent-loop'
+import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
+import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import * as ToolBash from '@arx-ai/arx-tool-bash'
+import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import { WorkerThreadCodeRuntime } from '@arx-ai/arx-code-runtime-worker-thread'
+import LocalFileSystem from '@arx-ai/arx-fs-local'
+import * as ToolFs from '@arx-ai/arx-tool-fs'
+import * as WorkspaceContext from '@arx-ai/arx-agent-instructions'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
+import CordisHostRunner from '@arx-ai/arx-cordis-host-runner'
+import * as ToolCordis from '@arx-ai/arx-tool-cordis'
 
 /**
  * With-key Code Mode proof: a real model receives only `run_code`, composes two
@@ -187,7 +187,7 @@ describe('Code Mode typed values: keyless real-worker contracts', () => {
   })
 
   it('returns a background job id, settles the outer run, and polls that id to completion', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-code-mode-background-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-code-mode-background-'))
     ctx = await backgroundCodeModeHarness(workdir)
 
     const jobId = completion(await runCode(ctx, `
@@ -210,7 +210,7 @@ describe('Code Mode typed values: keyless real-worker contracts', () => {
   }, 15_000)
 
   it('pre-abort spawns nothing; post-publication abort leaves job_kill as the cancellation owner', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-code-mode-task-cancel-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-code-mode-task-cancel-'))
     ctx = await backgroundCodeModeHarness(workdir)
 
     const pre = new AbortController()
@@ -247,7 +247,7 @@ describe('Code Mode typed values: keyless real-worker contracts', () => {
   }, 15_000)
 
   it('keeps foreground bash coupled to the outer signal', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-code-mode-foreground-cancel-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-code-mode-foreground-cancel-'))
     ctx = await backgroundCodeModeHarness(workdir)
     const controller = new AbortController()
     const startedAt = Date.now()
@@ -351,7 +351,7 @@ function waitForIdle(harness: Context, agent: Agent): Promise<void> {
 
 describe.skipIf(!process.env.DEEPSEEK_API_KEY)('Code Mode: real model writes a program over real tools', () => {
   it('collapses the wire tool list to [run_code], bridges sub-calls, and returns curated output', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-code-mode-e2e-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-code-mode-e2e-'))
     ctx = await codeModeHarness(workdir)
     const agent = ctx.agentLoop.create(SessionId('e2e-code-mode'), { provider: 'deepseek-official', model: 'deepseek-v4-flash' })
 
@@ -396,7 +396,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('Code Mode: real model writes a p
   }, 180_000)
 
   it('projects nested workspace instructions discovered by an fs sub-call', async () => {
-    workdir = await mkdtemp(join(tmpdir(), 'cxh-code-mode-workspace-e2e-'))
+    workdir = await mkdtemp(join(tmpdir(), 'arx-code-mode-workspace-e2e-'))
     await mkdir(join(workdir, '.git'), { recursive: true })
     await mkdir(join(workdir, 'pkg/deep'), { recursive: true })
     await writeFile(join(workdir, 'pkg/AGENTS.md'), `If asked for the Code Mode workspace handshake, reply with exactly ${WORKSPACE_PROBE} and nothing else.\n`)

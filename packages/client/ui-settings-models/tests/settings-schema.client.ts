@@ -1,5 +1,5 @@
-import { Context } from '@centurionarx/cordis'
-import { SettingsSchemaService } from '@centurionarx/cxh-client-ui-settings/src/client/schema.ts'
+import { Context } from '@arx-ai/cordis'
+import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
 import { createSettingsSchemaOperations } from '../src/client/schema-operations.ts'
 
 /** Stateless schema operations used by settings-model component fixtures. */

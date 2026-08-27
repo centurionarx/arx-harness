@@ -1,12 +1,12 @@
 /** First-human-message model provider for `ctx.sessionTitle`. */
 
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
 import {
   registerSessionTitleLlmProvider,
   SessionTitleLlmConfigFields,
-} from '@centurionarx/cxh-session-title-llm'
-import type { SessionTitleLlmConfig } from '@centurionarx/cxh-session-title-llm'
+} from '@arx-ai/arx-session-title-llm'
+import type { SessionTitleLlmConfig } from '@arx-ai/arx-session-title-llm'
 
 export const name = 'session-title-first-prompt-llm'
 export const inject = ['sessionTitle', 'llm', 'sessions']

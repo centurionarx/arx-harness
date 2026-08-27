@@ -3,14 +3,14 @@
  * tools through nested executions scheduled under the native concurrency
  * contract; each sub-dispatch is logged for reconstruction, while only the
  * outer curated result enters model history.
- * @module @centurionarx/cxh-tools/src/code-mode
+ * @module @arx-ai/arx-tools/src/code-mode
  */
 
-import { CallId, createUserMessage, HarnessError } from '@centurionarx/cxh-llm'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { CodeBindingFunction, CodeRunResult, CodeRuntime } from '@centurionarx/cxh-code-runtime'
-import { snapshotJsonValue } from '@centurionarx/cxh-session'
-import type { JsonValue } from '@centurionarx/cxh-session'
+import { CallId, createUserMessage, HarnessError } from '@arx-ai/arx-llm'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { CodeBindingFunction, CodeRunResult, CodeRuntime } from '@arx-ai/arx-code-runtime'
+import { snapshotJsonValue } from '@arx-ai/arx-session'
+import type { JsonValue } from '@arx-ai/arx-session'
 import { defineTool, parameterSchemaSpecToJsonSchema } from './schema.ts'
 import { TOOL_RUNTIME_SCHEDULER } from './index.ts'
 import type { CodeDispatchLog, ToolDefinition, ToolExecutionResult, ToolRuntime, ToolRunContext } from './index.ts'
@@ -126,7 +126,7 @@ function resolveFlavor(peekRuntime: () => CodeRuntime | undefined): RunCodeFlavo
   const flavor = RUN_CODE_FLAVORS[runtime.language]
   if (!Object.hasOwn(RUN_CODE_FLAVORS, runtime.language) || flavor === undefined) {
     const known = Object.keys(RUN_CODE_FLAVORS).map(name => JSON.stringify(name)).join(', ')
-    throw new Error(`cxh-tools: no run_code schema flavor registered for runtime language ${JSON.stringify(runtime.language)} (known: ${known})`)
+    throw new Error(`arx-tools: no run_code schema flavor registered for runtime language ${JSON.stringify(runtime.language)} (known: ${known})`)
   }
   return flavor
 }

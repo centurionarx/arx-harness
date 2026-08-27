@@ -1,4 +1,4 @@
-# Loader overlay for the real-host smoke (`cxh web --patch`): pin the
+# Loader overlay for the real-host smoke (`arx web --patch`): pin the
 # in-browser directory picker. The shipped row is `-auto`, which resolves to
 # the native OS chooser on a loopback bind with a local display — an
 # interaction a Playwright page cannot drive, so the resolved backend would
@@ -8,6 +8,6 @@
   disabled: true
 - insert:
     - id: directory-picker-browse
-      name: '@centurionarx/cxh-host-directory-picker-browse'
+      name: '@arx-ai/arx-host-directory-picker-browse'
     - id: ui-directory-picker-browse
-      name: '@centurionarx/cxh-client-ui-directory-picker-browse'
+      name: '@arx-ai/arx-client-ui-directory-picker-browse'

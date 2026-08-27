@@ -15,7 +15,7 @@ import {
   type ClientPackageFacts,
 } from './verify-client-packages.ts'
 
-const CORDIS = '@centurionarx/cordis'
+const CORDIS = '@arx-ai/cordis'
 const roots: string[] = []
 
 afterEach(() => {
@@ -27,7 +27,7 @@ function declaration(
   fields: Partial<Omit<ClientDeclaration, 'name' | 'manifest'>> = {},
 ): ClientDeclaration {
   return {
-    name: short.startsWith('@') ? short : '@centurionarx/cxh-client-' + short,
+    name: short.startsWith('@') ? short : '@arx-ai/arx-client-' + short,
     manifest: 'packages/client/' + short.replace(/^.*\//, '') + '/package.json',
     dynamic: true,
     external: [],
@@ -73,26 +73,26 @@ function facts(
 describe('source package uses', () => {
   it('counts type imports, module augmentations, dynamic imports, and JSX', () => {
     const uses = collectSourcePackageUses('feature.tsx', [
-      "import type { A } from '@centurionarx/cxh-a/subpath'",
-      "declare module '@centurionarx/cxh-client-ui-slots' {}",
-      "const load = () => import('@centurionarx/cxh-b')",
+      "import type { A } from '@arx-ai/arx-a/subpath'",
+      "declare module '@arx-ai/arx-client-ui-slots' {}",
+      "const load = () => import('@arx-ai/arx-b')",
       'export const view = <div />',
       "export type { Local } from './local.ts'",
     ].join('\n'))
 
     expect([...uses].sort()).toEqual([
-      '@centurionarx/cxh-a',
-      '@centurionarx/cxh-b',
-      '@centurionarx/cxh-client-ui-slots',
+      '@arx-ai/arx-a',
+      '@arx-ai/arx-b',
+      '@arx-ai/arx-client-ui-slots',
       'react',
     ])
     expect([...collectRuntimeSourcePackageUses('feature.tsx', [
-      "import type { A } from '@centurionarx/cxh-a/subpath'",
-      "declare module '@centurionarx/cxh-client-ui-slots' {}",
-      "const load = () => import('@centurionarx/cxh-b')",
+      "import type { A } from '@arx-ai/arx-a/subpath'",
+      "declare module '@arx-ai/arx-client-ui-slots' {}",
+      "const load = () => import('@arx-ai/arx-b')",
       'export const view = <div />',
     ].join('\n'))].sort()).toEqual([
-      '@centurionarx/cxh-b',
+      '@arx-ai/arx-b',
       'react',
     ])
   })
@@ -124,7 +124,7 @@ describe('package modes', () => {
     }))
     expect(found).toHaveLength(2)
     expect(found.join('\n')).toContain('does not use the staticLinked preset')
-    expect(found.join('\n')).toContain('has no dynamic cxh.client row')
+    expect(found.join('\n')).toContain('has no dynamic arx.client row')
   })
 
   it('requires every preloaded external to have a parser preload row', () => {
@@ -135,7 +135,7 @@ describe('package modes', () => {
       parserPreloadIds: [],
     }))).toEqual([
       'packages/client/web/src/platform.ts: parser-preloaded external '
-      + '"@centurionarx/cxh-client-runtime/client" has no matching PARSER_PRELOAD_IDS row in '
+      + '"@arx-ai/arx-client-runtime/client" has no matching PARSER_PRELOAD_IDS row in '
       + 'packages/client/modules/src/index.ts',
     ])
   })
@@ -145,23 +145,23 @@ describe('dependency sections', () => {
   it('accepts dynamic peer plus dev relationships, static dev inputs, and private dependencies', () => {
     const slots = pkg('ui-slots', { dynamic: false, staticLinked: true })
     const runtime = pkg('runtime', {
-      inject: ['@centurionarx/cxh-client-feature'],
+      inject: ['@arx-ai/arx-client-feature'],
       sourceUses: {
-        '@centurionarx/cxh-agent': ['packages/client/runtime/src/index.ts'],
-        '@centurionarx/cxh-client-ui-slots': ['packages/client/runtime/src/client/slots.ts'],
+        '@arx-ai/arx-agent': ['packages/client/runtime/src/index.ts'],
+        '@arx-ai/arx-client-ui-slots': ['packages/client/runtime/src/client/slots.ts'],
         react: ['packages/client/runtime/src/client/view.tsx'],
       },
       dependencies: { immer: '^10.1.1' },
       peerDependencies: {
         [CORDIS]: 'workspace:^',
-        '@centurionarx/cxh-agent': 'workspace:^',
-        '@centurionarx/cxh-client-feature': 'workspace:^',
+        '@arx-ai/arx-agent': 'workspace:^',
+        '@arx-ai/arx-client-feature': 'workspace:^',
       },
       devDependencies: {
         [CORDIS]: 'workspace:^',
-        '@centurionarx/cxh-agent': 'workspace:^',
-        '@centurionarx/cxh-client-feature': 'workspace:^',
-        '@centurionarx/cxh-client-ui-slots': 'workspace:^',
+        '@arx-ai/arx-agent': 'workspace:^',
+        '@arx-ai/arx-client-feature': 'workspace:^',
+        '@arx-ai/arx-client-ui-slots': 'workspace:^',
         react: '^18.2.0',
       },
     })
@@ -174,26 +174,26 @@ describe('dependency sections', () => {
     const slots = pkg('ui-slots', { dynamic: false, staticLinked: true })
     const subject = pkg('feature', {
       sourceUses: {
-        '@centurionarx/cxh-agent': ['packages/client/feature/src/index.ts'],
+        '@arx-ai/arx-agent': ['packages/client/feature/src/index.ts'],
         [slots.name]: ['packages/client/feature/src/view.tsx'],
       },
-      dependencies: { '@centurionarx/cxh-agent': 'workspace:^' },
+      dependencies: { '@arx-ai/arx-agent': 'workspace:^' },
       peerDependencies: { [CORDIS]: 'workspace:^', [slots.name]: 'workspace:^' },
       devDependencies: { [CORDIS]: 'workspace:^', [slots.name]: 'workspace:*' },
     })
     const found = collectClientPackageViolations(facts([slots, subject]))
     expect(found).toHaveLength(2)
-    expect(found.join('\n')).toContain('peer-installed CXH relationship')
+    expect(found.join('\n')).toContain('peer-installed ARX relationship')
     expect(found.join('\n')).toContain('static client input')
   })
 
   it('requires every peer to have the same development range', () => {
     const subject = pkg('feature', {
-      peerDependencies: { [CORDIS]: 'workspace:^', '@centurionarx/cordis-plugin-loader': 'workspace:^' },
+      peerDependencies: { [CORDIS]: 'workspace:^', '@arx-ai/cordis-plugin-loader': 'workspace:^' },
     })
     expect(collectClientPackageViolations(facts([subject]))).toEqual([
-      'packages/client/feature/package.json: peerDependencies.@centurionarx/cordis-plugin-loader'
-      + ' is workspace:^, so devDependencies.@centurionarx/cordis-plugin-loader must use the same range;'
+      'packages/client/feature/package.json: peerDependencies.@arx-ai/cordis-plugin-loader'
+      + ' is workspace:^, so devDependencies.@arx-ai/cordis-plugin-loader must use the same range;'
       + ' found no declaration',
     ])
   })
@@ -219,12 +219,12 @@ describe('dependency sections', () => {
       dynamic: false,
       staticLinked: true,
       runtimeSourceUses: {
-        '@centurionarx/cordis-plugin-loader': ['packages/client/web/src/boot.ts'],
+        '@arx-ai/cordis-plugin-loader': ['packages/client/web/src/boot.ts'],
         react: ['packages/client/web/src/seed.ts'],
       },
       devDependencies: {
         [CORDIS]: 'workspace:^',
-        '@centurionarx/cordis-plugin-loader': 'workspace:^',
+        '@arx-ai/cordis-plugin-loader': 'workspace:^',
         react: '^18.2.0',
       },
     })
@@ -233,12 +233,12 @@ describe('dependency sections', () => {
 
   it('allows npm dependency cycles', () => {
     const a = pkg('a', {
-      peerDependencies: { [CORDIS]: 'workspace:^', '@centurionarx/cxh-client-b': 'workspace:^' },
-      devDependencies: { [CORDIS]: 'workspace:^', '@centurionarx/cxh-client-b': 'workspace:^' },
+      peerDependencies: { [CORDIS]: 'workspace:^', '@arx-ai/arx-client-b': 'workspace:^' },
+      devDependencies: { [CORDIS]: 'workspace:^', '@arx-ai/arx-client-b': 'workspace:^' },
     })
     const b = pkg('b', {
-      peerDependencies: { [CORDIS]: 'workspace:^', '@centurionarx/cxh-client-a': 'workspace:^' },
-      devDependencies: { [CORDIS]: 'workspace:^', '@centurionarx/cxh-client-a': 'workspace:^' },
+      peerDependencies: { [CORDIS]: 'workspace:^', '@arx-ai/arx-client-a': 'workspace:^' },
+      devDependencies: { [CORDIS]: 'workspace:^', '@arx-ai/arx-client-a': 'workspace:^' },
     })
     expect(collectClientPackageViolations(facts([a, b]))).toEqual([])
   })
@@ -246,7 +246,7 @@ describe('dependency sections', () => {
 
 describe('module requests', () => {
   it('accepts a dynamic row supplier and its client subpath', () => {
-    const ui = declaration('ui', { external: ['@centurionarx/cxh-client-slots/client'] })
+    const ui = declaration('ui', { external: ['@arx-ai/arx-client-slots/client'] })
     const slots = declaration('slots')
     expect(collectClientPackageViolations(facts([], { declarations: [ui, slots] }))).toEqual([])
   })
@@ -257,35 +257,35 @@ describe('module requests', () => {
       declarations: [ui],
       platformModules: ['react'],
     }))).toEqual([
-      ui.manifest + ': cxh.client.external repeats baseline module "react"; remove the explicit declaration',
+      ui.manifest + ': arx.client.external repeats baseline module "react"; remove the explicit declaration',
     ])
   })
 
   it('rejects duplicates, empty values, self-requests, and missing suppliers', () => {
     const ui = declaration('ui', {
-      external: ['', '@centurionarx/cxh-client-ui', '@centurionarx/cxh-missing', '@centurionarx/cxh-missing'],
-      inject: ['', '@centurionarx/cxh-a', '@centurionarx/cxh-a'],
+      external: ['', '@arx-ai/arx-client-ui', '@arx-ai/arx-missing', '@arx-ai/arx-missing'],
+      inject: ['', '@arx-ai/arx-a', '@arx-ai/arx-a'],
     })
     const found = collectClientPackageViolations(facts([], { declarations: [ui] }))
     expect(found).toHaveLength(6)
-    expect(found.join('\n')).toContain('cxh.client.external contains an empty value')
-    expect(found.join('\n')).toContain('cxh.client.inject contains an empty value')
+    expect(found.join('\n')).toContain('arx.client.external contains an empty value')
+    expect(found.join('\n')).toContain('arx.client.inject contains an empty value')
     expect(found.join('\n')).toContain('names its own row')
     expect(found.join('\n')).toContain('has no supplier')
   })
 
   it('rejects synchronous module-request cycles but ignores inject cycles', () => {
     const a = declaration('a', {
-      external: ['@centurionarx/cxh-client-b'],
-      inject: ['@centurionarx/cxh-client-b'],
+      external: ['@arx-ai/arx-client-b'],
+      inject: ['@arx-ai/arx-client-b'],
     })
     const b = declaration('b', {
-      external: ['@centurionarx/cxh-client-a'],
-      inject: ['@centurionarx/cxh-client-a'],
+      external: ['@arx-ai/arx-client-a'],
+      inject: ['@arx-ai/arx-client-a'],
     })
     const found = collectClientPackageViolations(facts([], { declarations: [a, b] }))
     expect(found).toHaveLength(1)
-    expect(found[0]).toContain('synchronous cxh.client.external cycle')
+    expect(found[0]).toContain('synchronous arx.client.external cycle')
   })
 })
 
@@ -295,9 +295,9 @@ describe('manifest declarations', () => {
     roots.push(root)
     const files: Record<string, unknown> = {
       'packages/g/a/package.json': {
-        name: '@f/a', cxh: { client: { external: 'react', inject: ['@f/b', 1] } },
+        name: '@f/a', arx: { client: { external: 'react', inject: ['@f/b', 1] } },
       },
-      'packages/g/b/package.json': { name: '@f/b', cxh: { client: {} } },
+      'packages/g/b/package.json': { name: '@f/b', arx: { client: {} } },
     }
     for (const [path, value] of Object.entries(files)) {
       mkdirSync(dirname(join(root, path)), { recursive: true })
@@ -307,8 +307,8 @@ describe('manifest declarations', () => {
     const result = readClientDeclarations(root)
     expect(result.declarations).toHaveLength(2)
     expect(result.malformed).toEqual([
-      'packages/g/a/package.json: @f/a cxh.client.external must be a string array',
-      'packages/g/a/package.json: @f/a cxh.client.inject must be a string array',
+      'packages/g/a/package.json: @f/a arx.client.external must be a string array',
+      'packages/g/a/package.json: @f/a arx.client.inject must be a string array',
     ])
   })
 
@@ -316,26 +316,26 @@ describe('manifest declarations', () => {
     const root = mkdtempSync(join(tmpdir(), 'client-packages-fix-'))
     roots.push(root)
     const subject = pkg('feature', {
-      external: ['', 'react', '@centurionarx/cxh-client-feature', '@centurionarx/cxh-missing'],
-      inject: ['', '@centurionarx/cxh-agent', '@centurionarx/cxh-agent'],
+      external: ['', 'react', '@arx-ai/arx-client-feature', '@arx-ai/arx-missing'],
+      inject: ['', '@arx-ai/arx-agent', '@arx-ai/arx-agent'],
       sourceUses: {
-        '@centurionarx/cxh-agent': ['packages/client/feature/src/index.ts'],
-        '@centurionarx/cxh-client-ui-slots': ['packages/client/feature/src/view.tsx'],
+        '@arx-ai/arx-agent': ['packages/client/feature/src/index.ts'],
+        '@arx-ai/arx-client-ui-slots': ['packages/client/feature/src/view.tsx'],
       },
       dependencies: {
         [CORDIS]: 'workspace:^',
-        '@centurionarx/cxh-agent': 'workspace:*',
+        '@arx-ai/arx-agent': 'workspace:*',
       },
       peerDependencies: {
-        '@centurionarx/cxh-client-ui-slots': 'workspace:^',
-        '@centurionarx/cordis-plugin-loader': 'workspace:^',
+        '@arx-ai/arx-client-ui-slots': 'workspace:^',
+        '@arx-ai/cordis-plugin-loader': 'workspace:^',
       },
       devDependencies: {},
     })
     const slots = declaration('ui-slots', { dynamic: false })
     const manifest = {
       name: subject.name,
-      cxh: { client: { external: subject.external, inject: subject.inject, platform: 'web' } },
+      arx: { client: { external: subject.external, inject: subject.inject, platform: 'web' } },
       dependencies: subject.dependencies,
       peerDependencies: subject.peerDependencies,
       devDependencies: subject.devDependencies,
@@ -351,26 +351,26 @@ describe('manifest declarations', () => {
     }))).toEqual([subject.manifest])
 
     const fixed = JSON.parse(readFileSync(join(root, subject.manifest), 'utf8')) as {
-      cxh: { client: { external: string[]; inject: string[] } }
+      arx: { client: { external: string[]; inject: string[] } }
       dependencies?: Record<string, string>
       peerDependencies: Record<string, string>
       devDependencies: Record<string, string>
     }
-    expect(fixed.cxh.client).toMatchObject({
-      external: ['@centurionarx/cxh-missing'],
-      inject: ['@centurionarx/cxh-agent'],
+    expect(fixed.arx.client).toMatchObject({
+      external: ['@arx-ai/arx-missing'],
+      inject: ['@arx-ai/arx-agent'],
     })
     expect(fixed.dependencies).toBeUndefined()
     expect(fixed.peerDependencies).toEqual({
-      '@centurionarx/cordis-plugin-loader': 'workspace:^',
+      '@arx-ai/cordis-plugin-loader': 'workspace:^',
       [CORDIS]: 'workspace:^',
-      '@centurionarx/cxh-agent': 'workspace:*',
+      '@arx-ai/arx-agent': 'workspace:*',
     })
     expect(fixed.devDependencies).toEqual({
-      '@centurionarx/cxh-client-ui-slots': 'workspace:^',
+      '@arx-ai/arx-client-ui-slots': 'workspace:^',
       [CORDIS]: 'workspace:^',
-      '@centurionarx/cxh-agent': 'workspace:*',
-      '@centurionarx/cordis-plugin-loader': 'workspace:^',
+      '@arx-ai/arx-agent': 'workspace:*',
+      '@arx-ai/cordis-plugin-loader': 'workspace:^',
     })
   })
 

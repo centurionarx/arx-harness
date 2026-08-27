@@ -6,15 +6,15 @@ import { describe, expect, it } from 'vitest'
 import type { ReactNode } from 'react'
 import type {
   BoundActions, DefineStore, PropsRenderSlots, PropsRuntime, PropsStore, SlotComponent, SlotHookFactory,
-} from '@centurionarx/cxh-client-ui-slots'
-import { SlotCore } from '@centurionarx/cxh-client-ui-slots'
+} from '@arx-ai/arx-client-ui-slots'
+import { SlotCore } from '@arx-ai/arx-client-ui-slots'
 
 // Only package-unique SlotMap keys are merged here. The standard-kit
 // interfaces (SessionStandardProps/GlobalStandardProps) are NOT re-merged:
 // the runtime package owns the real members, and in the client aggregate
 // program a toy merge would collide with them — samples below stay
 // shape-agnostic about kit member payloads for the same reason.
-declare module '@centurionarx/cxh-client-ui-slots' {
+declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
     'chain.frame': { kind: 'single'; scope: 'root' }
     'chain.side': { kind: 'single'; scope: 'root'; owner: { collapsed: boolean; width: number } }

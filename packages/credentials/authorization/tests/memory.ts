@@ -1,4 +1,4 @@
-import { CredentialProvider } from '@centurionarx/cxh-credentials'
+import { CredentialProvider } from '@arx-ai/arx-credentials'
 import type {
   CredentialInfo,
   CredentialKey,
@@ -7,7 +7,7 @@ import type {
   CredentialRecordInfo,
   CredentialRef,
   ResolvedCredential,
-} from '@centurionarx/cxh-credentials'
+} from '@arx-ai/arx-credentials'
 
 /**
  * In-memory credentials provider for the authorization suite. Only the record

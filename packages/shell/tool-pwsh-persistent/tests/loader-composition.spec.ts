@@ -4,23 +4,23 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import Loader from '@centurionarx/cordis-plugin-loader'
-import Include from '@centurionarx/cordis-plugin-include'
-import { CallId } from '@centurionarx/cxh-llm'
-import { Session, SessionId } from '@centurionarx/cxh-session'
-import AgentRegistry, { Inbox } from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import TerminalSessionService from '@centurionarx/cxh-terminal'
-import * as TerminalBash from '@centurionarx/cxh-terminal-bash'
-import SandboxProvider from '@centurionarx/cxh-sandbox'
-import type { ConfinedArgv, SandboxPolicy } from '@centurionarx/cxh-sandbox'
-import SandboxPolicyService from '@centurionarx/cxh-sandbox-policy'
-import LocalSubprocessService from '@centurionarx/cxh-subprocess-local'
-import { resolvePwshPath } from '@centurionarx/cxh-pwsh-local/src/resolve.ts'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRegistry from '@centurionarx/cxh-tools'
-import * as ToolPwshPersistent from '@centurionarx/cxh-tool-pwsh-persistent'
+import { Context } from '@arx-ai/cordis'
+import Loader from '@arx-ai/cordis-plugin-loader'
+import Include from '@arx-ai/cordis-plugin-include'
+import { CallId } from '@arx-ai/arx-llm'
+import { Session, SessionId } from '@arx-ai/arx-session'
+import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import TerminalSessionService from '@arx-ai/arx-terminal'
+import * as TerminalBash from '@arx-ai/arx-terminal-bash'
+import SandboxProvider from '@arx-ai/arx-sandbox'
+import type { ConfinedArgv, SandboxPolicy } from '@arx-ai/arx-sandbox'
+import SandboxPolicyService from '@arx-ai/arx-sandbox-policy'
+import LocalSubprocessService from '@arx-ai/arx-subprocess-local'
+import { resolvePwshPath } from '@arx-ai/arx-pwsh-local/src/resolve.ts'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRegistry from '@arx-ai/arx-tools'
+import * as ToolPwshPersistent from '@arx-ai/arx-tool-pwsh-persistent'
 
 const hasPwsh = spawnSync(
   resolvePwshPath(), ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', '$true'],
@@ -72,20 +72,20 @@ function text(result: { content: { type: string; text?: string }[] }): string {
 
 describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader composition', () => {
   it('preserves cwd and environment across calls', async () => {
-    root = await mkdtemp(join(tmpdir(), 'cxh-persistent-pwsh-loader-'))
+    root = await mkdtemp(join(tmpdir(), 'arx-persistent-pwsh-loader-'))
     const configPath = join(root, 'cordis.yml')
     await writeFile(configPath, [
-      "- name: '@centurionarx/cxh-agent'",
-      "- name: '@centurionarx/cxh-system-prompt'",
-      "- name: '@centurionarx/cxh-tools'",
-      "- name: '@centurionarx/cxh-terminal'",
-      "- name: '@centurionarx/cxh-test-sandbox'",
-      "- name: '@centurionarx/cxh-sandbox-policy'",
+      "- name: '@arx-ai/arx-agent'",
+      "- name: '@arx-ai/arx-system-prompt'",
+      "- name: '@arx-ai/arx-tools'",
+      "- name: '@arx-ai/arx-terminal'",
+      "- name: '@arx-ai/arx-test-sandbox'",
+      "- name: '@arx-ai/arx-sandbox-policy'",
       '  config:',
       '    mode: danger-full-access',
       `    workspaceRoot: ${JSON.stringify(root)}`,
-      "- name: '@centurionarx/cxh-subprocess-local'",
-      "- name: '@centurionarx/cxh-terminal-bash'",
+      "- name: '@arx-ai/arx-subprocess-local'",
+      "- name: '@arx-ai/arx-terminal-bash'",
       '  config:',
       '    shellDialect: pwsh',
       '    pollIntervalMs: 10',
@@ -95,7 +95,7 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
       '    scrollbackLines: 20000',
       '    timeoutMs: 8000',
       '    disposeGraceMs: 500',
-      "- name: '@centurionarx/cxh-tool-pwsh-persistent'",
+      "- name: '@arx-ai/arx-tool-pwsh-persistent'",
       '  config:',
       '    timeoutMs: 20000',
       '',
@@ -106,15 +106,15 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
-      ['@centurionarx/cxh-agent', AgentRegistry],
-      ['@centurionarx/cxh-system-prompt', SystemPrompt],
-      ['@centurionarx/cxh-tools', ToolRegistry],
-      ['@centurionarx/cxh-terminal', TerminalSessionService],
-      ['@centurionarx/cxh-test-sandbox', PassthroughSandbox],
-      ['@centurionarx/cxh-sandbox-policy', SandboxPolicyService],
-      ['@centurionarx/cxh-subprocess-local', LocalSubprocessService],
-      ['@centurionarx/cxh-terminal-bash', TerminalBash],
-      ['@centurionarx/cxh-tool-pwsh-persistent', ToolPwshPersistent],
+      ['@arx-ai/arx-agent', AgentRegistry],
+      ['@arx-ai/arx-system-prompt', SystemPrompt],
+      ['@arx-ai/arx-tools', ToolRegistry],
+      ['@arx-ai/arx-terminal', TerminalSessionService],
+      ['@arx-ai/arx-test-sandbox', PassthroughSandbox],
+      ['@arx-ai/arx-sandbox-policy', SandboxPolicyService],
+      ['@arx-ai/arx-subprocess-local', LocalSubprocessService],
+      ['@arx-ai/arx-terminal-bash', TerminalBash],
+      ['@arx-ai/arx-tool-pwsh-persistent', ToolPwshPersistent],
     ])
     context.loader.internal = {
       version: 'v2',
@@ -140,14 +140,14 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
     await execute('state', '$env:KEEP = "loader"; New-Item -ItemType Directory -Force -Path nested | Out-Null; Set-Location nested')
     const observed = text(await execute('observe', 'Write-Output "cwd=$PWD keep=$env:KEEP"'))
     expect(observed).toContain(`cwd=${join(root, 'nested')} keep=loader`)
-    expect(observed).not.toContain('CXH_PERSISTENT_PWSH')
+    expect(observed).not.toContain('ARX_PERSISTENT_PWSH')
 
     const multiline = text(await execute(
       'multiline',
       '$value = "line one"\nWrite-Output "${value}:it\'s fine"',
     ))
     expect(multiline).toBe("line one:it's fine")
-    expect(multiline).not.toContain('CXH_PERSISTENT_PWSH')
+    expect(multiline).not.toContain('ARX_PERSISTENT_PWSH')
 
     const hereString = text(await execute(
       'here-string',

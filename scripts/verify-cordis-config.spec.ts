@@ -17,7 +17,7 @@ import {
 describe('verify-cordis-config metadata expressions', () => {
   it('accepts a disabled !!js expression', () => {
     const problems = metadataExpressionErrors(
-      { id: 'tool-bash', name: '@centurionarx/cxh-tool-bash', disabled: { __jsExpr: "process.platform === 'win32'" } },
+      { id: 'tool-bash', name: '@arx-ai/arx-tool-bash', disabled: { __jsExpr: "process.platform === 'win32'" } },
       '[0]',
     )
     expect(problems).toEqual([])
@@ -47,18 +47,18 @@ describe('verify-cordis-config metadata expressions', () => {
 
 describe('workspace Bundle discovery and product dependency closures', () => {
   it('discovers a Bundle outside packages/bundle from its manifest declaration', () => {
-    const fixture = mkdtempSync(join(tmpdir(), 'cxh-bundle-discovery-'))
+    const fixture = mkdtempSync(join(tmpdir(), 'arx-bundle-discovery-'))
     try {
       const bundleDir = join(fixture, 'packages/subagent/example')
       const plainDir = join(fixture, 'packages/bundle/plain')
       mkdirSync(bundleDir, { recursive: true })
       mkdirSync(plainDir, { recursive: true })
       writeFileSync(join(bundleDir, 'package.json'), JSON.stringify({
-        name: '@centurionarx/cxh-subagent-example',
-        cxh: { bundle: { patch: './cordis.patch.yml' } },
+        name: '@arx-ai/arx-subagent-example',
+        arx: { bundle: { patch: './cordis.patch.yml' } },
       }))
       writeFileSync(join(plainDir, 'package.json'), JSON.stringify({
-        name: '@centurionarx/cxh-plain',
+        name: '@arx-ai/arx-plain',
       }))
 
       expect(bundleManifestPaths(fixture)).toEqual([
@@ -73,16 +73,16 @@ describe('workspace Bundle discovery and product dependency closures', () => {
     const manifestPath = 'packages/subagent/example/package.json'
     const file = 'packages/subagent/example/cordis.patch.yml'
     const manifest = {
-      name: '@centurionarx/cxh-subagent-example',
+      name: '@arx-ai/arx-subagent-example',
       dependencies: {},
     }
-    const self = { file, name: '@centurionarx/cxh-subagent-example' }
+    const self = { file, name: '@arx-ai/arx-subagent-example' }
     expect(bundlePluginDependencyErrors(manifestPath, manifest, [self])).toEqual([])
     expect(bundlePluginDependencyErrors(manifestPath, manifest, [
       self,
-      { file, name: '@centurionarx/cxh-missing-plugin' },
+      { file, name: '@arx-ai/arx-missing-plugin' },
     ])).toEqual([
-      `${file}: @centurionarx/cxh-missing-plugin must be declared in ${manifestPath} dependencies`,
+      `${file}: @arx-ai/arx-missing-plugin must be declared in ${manifestPath} dependencies`,
     ])
   })
 })

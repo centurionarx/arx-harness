@@ -9,9 +9,9 @@ This file is GENERATED from source (`scripts/gen-config-catalog.ts`) and verifie
 
 A `Requires:` line lists the service keys the plugin `inject`s: its `cordis.yml` tree must also load providers for those services. Scope is the harness tier (`packages/`); the vendored cordis plugins a config tree may also load (`hmr`, the console logger, …) are pinned upstream source ([vendoring policy](../vendor/README.md)) and not catalogued here.
 
-<a id="centurionarxcxh-acp"></a>
+<a id="arx-aiarx-acp"></a>
 
-## `@centurionarx/cxh-acp`
+## `@arx-ai/arx-acp`
 
 Requires: `agents`
 
@@ -31,9 +31,9 @@ Depends on: `Stream` (`@agentclientprotocol/sdk`)
 
 Source: [`packages/acp/acp/src/index.ts:71`](../packages/acp/acp/src/index.ts)
 
-<a id="centurionarxcxh-acp-demo"></a>
+<a id="arx-aiarx-acp-demo"></a>
 
-## `@centurionarx/cxh-acp-demo`
+## `@arx-ai/arx-acp-demo`
 
 ```ts config-catalog
 /**
@@ -53,12 +53,12 @@ export interface Config {
   maxParallelToolCalls?: number
   /** Deployment persona (the system-prompt plugin's `persona` config). */
   persona?: string
-  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see cxh-system-prompt). */
+  /** Explicit model-facing tool order (the system-prompt plugin's `toolOrder` config; see arx-system-prompt). */
   toolOrder?: string[]
-  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see cxh-tools). */
+  /** Tool-registry config — its presentation `mode` (forwarded through agent-spine-demo; see arx-tools). */
   tools?: ToolsConfig
-  /** CENTURIONarx Harness home directory exposed to bash and used for local skill discovery. */
-  cxhHome?: string
+  /** arx Harness home directory exposed to bash and used for local skill discovery. */
+  arxHome?: string
   /** Fallback session-title limits forwarded through agent-spine-demo. */
   sessionTitle?: NonNullable<agentCore.Config['sessionTitle']>
   /** Directory for JSONL sessions and the derived query index. Defaults to `./.sessions`. */
@@ -82,35 +82,35 @@ export interface Config {
 }
 ```
 
-Depends on: [`agentCore`](../packages/examples/agent-spine-demo/src/index.ts) · [`JsonlCompression`](../packages/session/session-persistence-jsonl/src/index.ts) · [`ToolsConfig`](#centurionarxcxh-tools)
+Depends on: [`agentCore`](../packages/examples/agent-spine-demo/src/index.ts) · [`JsonlCompression`](../packages/session/session-persistence-jsonl/src/index.ts) · [`ToolsConfig`](#arx-aiarx-tools)
 
 Source: [`packages/examples/acp-demo/src/index.ts:39`](../packages/examples/acp-demo/src/index.ts)
 
-<a id="centurionarxcxh-agent-default-model"></a>
+<a id="arx-aiarx-agent-default-model"></a>
 
-## `@centurionarx/cxh-agent-default-model`
+## `@arx-ai/arx-agent-default-model`
 
 ```ts config-catalog
 /** Composition entry for the default model selection. */
 export interface Config {
-  /** Registered provider route. */
-  provider: string
-  /** Provider-owned model id. */
-  model: string
+  /** Registered provider route; absent ships no default. */
+  provider?: string
+  /** Provider-owned model id; absent ships no default. */
+  model?: string
 }
 ```
 
-Source: [`packages/core/agent-default-model/src/index.ts:41`](../packages/core/agent-default-model/src/index.ts)
+Source: [`packages/core/agent-default-model/src/index.ts:47`](../packages/core/agent-default-model/src/index.ts)
 
-<a id="centurionarxcxh-agent-instructions"></a>
+<a id="arx-aiarx-agent-instructions"></a>
 
-## `@centurionarx/cxh-agent-instructions`
+## `@arx-ai/arx-agent-instructions`
 
 ```ts config-catalog
 /** User-facing workspace instruction loader configuration. */
 export interface Config {
-  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** Harness home containing the fixed user-global `AGENTS.md`; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
   /** Directory entries that identify the project root while walking upward from the session cwd. */
   projectRootMarkers?: string[]
   /** UTF-8 byte cap for one rendered baseline or dynamic batch; non-positive or non-finite disables loading. */
@@ -132,9 +132,9 @@ export interface Config {
 
 Source: [`packages/context/agent-instructions/src/config.ts:18`](../packages/context/agent-instructions/src/config.ts)
 
-<a id="centurionarxcxh-agent-loop"></a>
+<a id="arx-aiarx-agent-loop"></a>
 
-## `@centurionarx/cxh-agent-loop`
+## `@arx-ai/arx-agent-loop`
 
 Requires: `agents` · `sessions` · `llm` · `tools` · `systemPrompt`
 
@@ -164,9 +164,9 @@ Depends on: [`AgentOptions`](subsystems/core.md) · [`SessionId`](subsystems/cor
 
 Source: [`packages/core/agent-loop/src/index.ts:255`](../packages/core/agent-loop/src/index.ts)
 
-<a id="centurionarxcxh-agent-presets"></a>
+<a id="arx-aiarx-agent-presets"></a>
 
-## `@centurionarx/cxh-agent-presets`
+## `@arx-ai/arx-agent-presets`
 
 Requires: `loader`
 
@@ -202,9 +202,9 @@ export type PresetTrust = 'system' | 'user'
 
 Source: [`packages/preset/agent-presets/src/preset.ts:52`](../packages/preset/agent-presets/src/preset.ts)
 
-<a id="centurionarxcxh-agent-spine-demo"></a>
+<a id="arx-aiarx-agent-spine-demo"></a>
 
-## `@centurionarx/cxh-agent-spine-demo`
+## `@arx-ai/arx-agent-spine-demo`
 
 ```ts config-catalog
 /**
@@ -214,7 +214,7 @@ Source: [`packages/preset/agent-presets/src/preset.ts:52`](../packages/preset/ag
  * `persona`, and `toolOrder` to the system-prompt plugin (the fixed opener,
  * dynamic-context policy, deployment persona, and explicit model-facing tool
  * order), the `tools` object to the tool registry (its presentation `mode`),
- * `cxhHome` to bash environment and local skill discovery, `sessionTitle` to
+ * `arxHome` to bash environment and local skill discovery, `sessionTitle` to
  * the fallback title service, `skills` to the
  * skill registry/local provider/tool consumer, `workspaceContext` to the
  * agent-instructions loader, `jobs` to the process-local job provider, and
@@ -231,7 +231,7 @@ Source: [`packages/preset/agent-presets/src/preset.ts:52`](../packages/preset/ag
  * `bash` name.
  */
 export interface Config {
-  /** The agent-loop `agents` list (see cxh-agent-loop's `Config`). */
+  /** The agent-loop `agents` list (see arx-agent-loop's `Config`). */
   agents?: AgentLoopConfig['agents']
   /** Agent-loop concurrency cap; `1` is serial. */
   maxParallelToolCalls?: AgentLoopConfig['maxParallelToolCalls']
@@ -239,14 +239,14 @@ export interface Config {
   includeHarnessIdentity?: SystemPromptConfig['includeHarnessIdentity']
   /** Whether model history includes dynamic runtime-context snapshots (default true). */
   includeRuntimeContext?: SystemPromptConfig['includeRuntimeContext']
-  /** The deployment persona (see cxh-system-prompt's `Config`). */
+  /** The deployment persona (see arx-system-prompt's `Config`). */
   persona?: SystemPromptConfig['persona']
-  /** The explicit model-facing tool order (see cxh-system-prompt's `Config`). */
+  /** The explicit model-facing tool order (see arx-system-prompt's `Config`). */
   toolOrder?: SystemPromptConfig['toolOrder']
-  /** The tool registry's config — its presentation `mode` (see cxh-tools' `Config`). */
+  /** The tool registry's config — its presentation `mode` (see arx-tools' `Config`). */
   tools?: ToolsConfig
-  /** CENTURIONarx Harness home directory shared by shell context and local skill discovery. */
-  cxhHome?: string
+  /** arx Harness home directory shared by shell context and local skill discovery. */
+  arxHome?: string
   /** Deterministic fallback and accepted-title limits; omission uses the bundle's example policy. */
   sessionTitle?: SessionTitleConfig
   /** Workspace-context loader controls with an explicit byte budget; set `false` for hermetic prompts. */
@@ -290,13 +290,13 @@ export interface GoalConfig {
 }
 ```
 
-Depends on: [`AgentLoopConfig`](#centurionarxcxh-agent-loop) · [`GoalDomainConfig`](#centurionarxcxh-goal) · [`InvariantConfig`](#centurionarxcxh-invariants) · [`JobsConfig`](#centurionarxcxh-jobs-local) · [`SessionTitleConfig`](#centurionarxcxh-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#centurionarxcxh-skill) · [`SystemPromptConfig`](#centurionarxcxh-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#centurionarxcxh-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
+Depends on: [`AgentLoopConfig`](#arx-aiarx-agent-loop) · [`GoalDomainConfig`](#arx-aiarx-goal) · [`InvariantConfig`](#arx-aiarx-invariants) · [`JobsConfig`](#arx-aiarx-jobs-local) · [`SessionTitleConfig`](#arx-aiarx-session-title) · [`SkillFileSystem`](../packages/skill/skill-filesystem/src/index.ts) · [`SkillRegistryConfig`](#arx-aiarx-skill) · [`SystemPromptConfig`](#arx-aiarx-system-prompt) · [`toolBash`](../packages/shell/tool-bash/src/index.ts) · [`toolGoal`](../packages/goal/tool-goal/src/index.ts) · [`toolJobs`](../packages/jobs/tool-jobs/src/index.ts) · [`ToolsConfig`](#arx-aiarx-tools) · [`toolSkill`](../packages/skill/tool-skill/src/index.ts) · [`workspaceContext`](../packages/context/agent-instructions/src/index.ts)
 
 Source: [`packages/examples/agent-spine-demo/src/index.ts:92`](../packages/examples/agent-spine-demo/src/index.ts)
 
-<a id="centurionarxcxh-agent-tool-presentation"></a>
+<a id="arx-aiarx-agent-tool-presentation"></a>
 
-## `@centurionarx/cxh-agent-tool-presentation`
+## `@arx-ai/arx-agent-tool-presentation`
 
 Requires: `tools`
 
@@ -318,15 +318,15 @@ Depends on: [`ToolPresentationMode`](subsystems/tools.md)
 
 Source: [`packages/core/agent-tool-presentation/src/index.ts:38`](../packages/core/agent-tool-presentation/src/index.ts)
 
-<a id="centurionarxcxh-attachment-local"></a>
+<a id="arx-aiarx-attachment-local"></a>
 
-## `@centurionarx/cxh-attachment-local`
+## `@arx-ai/arx-attachment-local`
 
 ```ts config-catalog
 /** Local attachment backend configuration. */
 export interface Config {
-  /** Explicit harness home; omitted follows `CXH_HOME`, then `~/.cxh`. */
-  cxhHome?: string
+  /** Explicit harness home; omitted follows `ARX_HOME`, then `~/.arx`. */
+  arxHome?: string
   /** Maximum encoded bytes accepted for one submitted image. Default: 20 MiB. */
   maxImageBytes?: number
   /** Maximum image count accepted in one submitted message. Default: 20. */
@@ -348,9 +348,9 @@ export interface Config {
 
 Source: [`packages/attachment/attachment-local/src/index.ts:51`](../packages/attachment/attachment-local/src/index.ts)
 
-<a id="centurionarxcxh-bash-local"></a>
+<a id="arx-aiarx-bash-local"></a>
 
-## `@centurionarx/cxh-bash-local`
+## `@arx-ai/arx-bash-local`
 
 Requires: `subprocess`
 
@@ -374,9 +374,9 @@ export interface Config {
 
 Source: [`packages/shell/bash-local/src/index.ts:41`](../packages/shell/bash-local/src/index.ts)
 
-<a id="centurionarxcxh-bash-sandbox"></a>
+<a id="arx-aiarx-bash-sandbox"></a>
 
-## `@centurionarx/cxh-bash-sandbox`
+## `@arx-ai/arx-bash-sandbox`
 
 Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 
@@ -384,20 +384,20 @@ Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@arx-ai/arx-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The runner
  * choice is likewise the `ctx.sandbox` provider's config, not this executor's.
  */
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#centurionarxcxh-bash-local)
+Depends on: [`LocalConfig`](#arx-aiarx-bash-local)
 
 Source: [`packages/shell/bash-sandbox/src/index.ts:35`](../packages/shell/bash-sandbox/src/index.ts)
 
-<a id="centurionarxcxh-client-connection"></a>
+<a id="arx-aiarx-client-connection"></a>
 
-## `@centurionarx/cxh-client-connection`
+## `@arx-ai/arx-client-connection`
 
 Requires: `webServer`
 
@@ -409,7 +409,7 @@ export interface ConnectionConfig {
    * port-less `host` matching any port. The /api trust fence refuses any
    * request whose Host is neither loopback nor listed here, so a
    * non-loopback (`0.0.0.0`) deployment must declare the names it is reached
-   * by (the cxh CLI derives the machine's LAN IP literals itself). An entry
+   * by (the arx CLI derives the machine's LAN IP literals itself). An entry
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
@@ -420,9 +420,9 @@ export interface ConnectionConfig {
 
 Source: [`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
 
-<a id="centurionarxcxh-client-hmr"></a>
+<a id="arx-aiarx-client-hmr"></a>
 
-## `@centurionarx/cxh-client-hmr`
+## `@arx-ai/arx-client-hmr`
 
 Requires: `clientModules` · `webServer`
 
@@ -436,9 +436,9 @@ export interface Config {
 
 Source: [`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
-<a id="centurionarxcxh-code-runtime-worker-thread"></a>
+<a id="arx-aiarx-code-runtime-worker-thread"></a>
 
-## `@centurionarx/cxh-code-runtime-worker-thread`
+## `@arx-ai/arx-code-runtime-worker-thread`
 
 ```ts config-catalog
 /** Plugin config: every execution cap, changeable from `cordis.yml` (no hardcoded tunables). */
@@ -473,9 +473,9 @@ export interface Config {
 
 Source: [`packages/code-runtime/code-runtime-worker-thread/src/index.ts:25`](../packages/code-runtime/code-runtime-worker-thread/src/index.ts)
 
-<a id="centurionarxcxh-compaction-basic"></a>
+<a id="arx-aiarx-compaction-basic"></a>
 
-## `@centurionarx/cxh-compaction-basic`
+## `@arx-ai/arx-compaction-basic`
 
 Requires: `llm` · `tokenMeter` · `sessions`
 
@@ -519,9 +519,9 @@ export interface ModelCompactPolicyConfig extends CompactionPolicyConfig {
 
 Source: [`packages/compaction/compaction-basic/src/types.ts:38`](../packages/compaction/compaction-basic/src/types.ts)
 
-<a id="centurionarxcxh-compaction-tool-result-pruner"></a>
+<a id="arx-aiarx-compaction-tool-result-pruner"></a>
 
-## `@centurionarx/cxh-compaction-tool-result-pruner`
+## `@arx-ai/arx-compaction-tool-result-pruner`
 
 Requires: `tokenMeter`
 
@@ -539,9 +539,9 @@ export interface ToolResultPruneConfig {
 
 Source: [`packages/compaction/compaction-tool-result-pruner/src/types.ts:4`](../packages/compaction/compaction-tool-result-pruner/src/types.ts)
 
-<a id="centurionarxcxh-cordis-host-runner"></a>
+<a id="arx-aiarx-cordis-host-runner"></a>
 
-## `@centurionarx/cxh-cordis-host-runner`
+## `@arx-ai/arx-cordis-host-runner`
 
 Requires: `tools`
 
@@ -555,17 +555,17 @@ export interface Config {
 
 Source: [`packages/extensions/cordis-host-runner/src/index.ts:88`](../packages/extensions/cordis-host-runner/src/index.ts)
 
-<a id="centurionarxcxh-credentials-local"></a>
+<a id="arx-aiarx-credentials-local"></a>
 
-## `@centurionarx/cxh-credentials-local`
+## `@arx-ai/arx-credentials-local`
 
 ```ts config-catalog
 /** Plugin config: file location and hot-reload behavior. */
 export interface Config {
   /** Credentials document path; defaults to `.credentials.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** Harness home used when `path` is omitted; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -575,9 +575,9 @@ export interface Config {
 
 Source: [`packages/credentials/credentials-local/src/index.ts:64`](../packages/credentials/credentials-local/src/index.ts)
 
-<a id="centurionarxcxh-e2b"></a>
+<a id="arx-aiarx-e2b"></a>
 
-## `@centurionarx/cxh-e2b`
+## `@arx-ai/arx-e2b`
 
 ```ts config-catalog
 /** Configuration for the shared E2B sandbox owner. */
@@ -593,9 +593,9 @@ export interface Config {
 
 Source: [`packages/e2b/e2b/src/index.ts:43`](../packages/e2b/e2b/src/index.ts)
 
-<a id="centurionarxcxh-experimental-agent-team"></a>
+<a id="arx-aiarx-experimental-agent-team"></a>
 
-## `@centurionarx/cxh-experimental-agent-team`
+## `@arx-ai/arx-experimental-agent-team`
 
 Requires: `agents` · `sessions` · `sessionPersistence` · `subagents`
 
@@ -617,9 +617,9 @@ export interface Config {
 
 Source: [`packages/experimental/agent-team/src/types.ts:125`](../packages/experimental/agent-team/src/types.ts)
 
-<a id="centurionarxcxh-experimental-tool-agent-team"></a>
+<a id="arx-aiarx-experimental-tool-agent-team"></a>
 
-## `@centurionarx/cxh-experimental-tool-agent-team`
+## `@arx-ai/arx-experimental-tool-agent-team`
 
 Requires: `agents` · `agentTeams` · `tools` · `systemPrompt`
 
@@ -635,9 +635,9 @@ export interface Config {
 
 Source: [`packages/experimental/tool-agent-team/src/index.ts:17`](../packages/experimental/tool-agent-team/src/index.ts)
 
-<a id="centurionarxcxh-file-reference-local"></a>
+<a id="arx-aiarx-file-reference-local"></a>
 
-## `@centurionarx/cxh-file-reference-local`
+## `@arx-ai/arx-file-reference-local`
 
 Requires: `agents`
 
@@ -655,9 +655,9 @@ export interface Config {
 
 Source: [`packages/context/file-reference-local/src/index.ts:35`](../packages/context/file-reference-local/src/index.ts)
 
-<a id="centurionarxcxh-fs-local"></a>
+<a id="arx-aiarx-fs-local"></a>
 
-## `@centurionarx/cxh-fs-local`
+## `@arx-ai/arx-fs-local`
 
 ```ts config-catalog
 /** Configuration for the local filesystem backend. */
@@ -674,9 +674,9 @@ export interface Config {
 
 Source: [`packages/fs/fs-local/src/index.ts:41`](../packages/fs/fs-local/src/index.ts)
 
-<a id="centurionarxcxh-fs-sandbox"></a>
+<a id="arx-aiarx-fs-sandbox"></a>
 
-## `@centurionarx/cxh-fs-sandbox`
+## `@arx-ai/arx-fs-sandbox`
 
 Requires: `sandboxPolicy`
 
@@ -690,13 +690,13 @@ Requires: `sandboxPolicy`
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#centurionarxcxh-fs-local)
+Depends on: [`LocalConfig`](#arx-aiarx-fs-local)
 
 Source: [`packages/fs/fs-sandbox/src/index.ts:49`](../packages/fs/fs-sandbox/src/index.ts)
 
-<a id="centurionarxcxh-goal"></a>
+<a id="arx-aiarx-goal"></a>
 
-## `@centurionarx/cxh-goal`
+## `@arx-ai/arx-goal`
 
 Requires: `agents`
 
@@ -710,9 +710,9 @@ export interface Config {
 
 Source: [`packages/goal/goal/src/index.ts:116`](../packages/goal/goal/src/index.ts)
 
-<a id="centurionarxcxh-headless"></a>
+<a id="arx-aiarx-headless"></a>
 
-## `@centurionarx/cxh-headless`
+## `@arx-ai/arx-headless`
 
 Requires: `agentDefaultModel` · `agents` · `sessions`
 
@@ -726,9 +726,9 @@ export interface Config {
 
 Source: [`packages/bundle/headless/src/index.ts:31`](../packages/bundle/headless/src/index.ts)
 
-<a id="centurionarxcxh-hooks-claude-code"></a>
+<a id="arx-aiarx-hooks-claude-code"></a>
 
-## `@centurionarx/cxh-hooks-claude-code`
+## `@arx-ai/arx-hooks-claude-code`
 
 Requires: `shell`
 
@@ -764,9 +764,9 @@ export interface Config {
 
 Source: [`packages/hooks/hooks-claude-code/src/index.ts:45`](../packages/hooks/hooks-claude-code/src/index.ts)
 
-<a id="centurionarxcxh-hooks-codex"></a>
+<a id="arx-aiarx-hooks-codex"></a>
 
-## `@centurionarx/cxh-hooks-codex`
+## `@arx-ai/arx-hooks-codex`
 
 Requires: `shell`
 
@@ -791,9 +791,9 @@ export interface Config {
 
 Source: [`packages/hooks/hooks-codex/src/index.ts:44`](../packages/hooks/hooks-codex/src/index.ts)
 
-<a id="centurionarxcxh-host-apiproxy"></a>
+<a id="arx-aiarx-host-apiproxy"></a>
 
-## `@centurionarx/cxh-host-apiproxy`
+## `@arx-ai/arx-host-apiproxy`
 
 Requires: `agentDefaultModel` · `agents` · `attachments` · `directoryPicker` · `llm` · `sessions` · `subagents` · `sessionQuery` · `tools` · `userQuestions` · `workspaceRegistry`
 
@@ -823,11 +823,11 @@ export interface Config {
 }
 ```
 
-Source: [`packages/host/apiproxy/src/index.ts:41`](../packages/host/apiproxy/src/index.ts)
+Source: [`packages/host/apiproxy/src/index.ts:43`](../packages/host/apiproxy/src/index.ts)
 
-<a id="centurionarxcxh-host-directory-picker-browse"></a>
+<a id="arx-aiarx-host-directory-picker-browse"></a>
 
-## `@centurionarx/cxh-host-directory-picker-browse`
+## `@arx-ai/arx-host-directory-picker-browse`
 
 ```ts config-catalog
 /** Validated plugin configuration. */
@@ -839,9 +839,9 @@ export interface Config {
 
 Source: [`packages/host/directory-picker-browse/src/index.ts:181`](../packages/host/directory-picker-browse/src/index.ts)
 
-<a id="centurionarxcxh-host-frontend-static"></a>
+<a id="arx-aiarx-host-frontend-static"></a>
 
-## `@centurionarx/cxh-host-frontend-static`
+## `@arx-ai/arx-host-frontend-static`
 
 Requires: `webServer`
 
@@ -855,9 +855,9 @@ export interface Config {
 
 Source: [`packages/host/frontend-static/src/index.ts:28`](../packages/host/frontend-static/src/index.ts)
 
-<a id="centurionarxcxh-host-webserver"></a>
+<a id="arx-aiarx-host-webserver"></a>
 
-## `@centurionarx/cxh-host-webserver`
+## `@arx-ai/arx-host-webserver`
 
 ```ts config-catalog
 /** Gateway config: the listen address. */
@@ -871,9 +871,9 @@ export interface Config {
 
 Source: [`packages/host/webserver/src/index.ts:59`](../packages/host/webserver/src/index.ts)
 
-<a id="centurionarxcxh-invariants"></a>
+<a id="arx-aiarx-invariants"></a>
 
-## `@centurionarx/cxh-invariants`
+## `@arx-ai/arx-invariants`
 
 ```ts config-catalog
 /** Runtime invariant selection configured on the service plugin. */
@@ -889,9 +889,9 @@ export interface Config {
 
 Source: [`packages/runtime-diagnostics/invariants/src/index.ts:15`](../packages/runtime-diagnostics/invariants/src/index.ts)
 
-<a id="centurionarxcxh-jobs-local"></a>
+<a id="arx-aiarx-jobs-local"></a>
 
-## `@centurionarx/cxh-jobs-local`
+## `@arx-ai/arx-jobs-local`
 
 ```ts config-catalog
 /** Configuration for the process-local job registry. */
@@ -906,9 +906,9 @@ export interface Config {
 
 Source: [`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
 
-<a id="centurionarxcxh-llm-agent-cli"></a>
+<a id="arx-aiarx-llm-agent-cli"></a>
 
-## `@centurionarx/cxh-llm-agent-cli`
+## `@arx-ai/arx-llm-agent-cli`
 
 Requires: `llm` · `subprocess`
 
@@ -953,14 +953,20 @@ export interface AgentCliModel {
   maxTokens?: number
   /** Human-readable name for selectors. */
   name?: string
+  /**
+   * Whether this model accepts image input. The CLI discloses no catalog, so a
+   * route states it: declaring it on a model that refuses images turns every
+   * attached image into a failed request instead of a refused attachment.
+   */
+  acceptsImages?: boolean
 }
 ```
 
-Source: [`packages/llm/llm-agent-cli/src/config.ts:36`](../packages/llm/llm-agent-cli/src/config.ts)
+Source: [`packages/llm/llm-agent-cli/src/config.ts:42`](../packages/llm/llm-agent-cli/src/config.ts)
 
-<a id="centurionarxcxh-llm-deepseek"></a>
+<a id="arx-aiarx-llm-deepseek"></a>
 
-## `@centurionarx/cxh-llm-deepseek`
+## `@arx-ai/arx-llm-deepseek`
 
 Requires: `llm`
 
@@ -1041,9 +1047,9 @@ Depends on: [`ModelModality`](../packages/llm/llm/src/index.ts) · [`RetryPolicy
 
 Source: [`packages/llm/llm-deepseek/src/index.ts:106`](../packages/llm/llm-deepseek/src/index.ts)
 
-<a id="centurionarxcxh-llm-pi-ai"></a>
+<a id="arx-aiarx-llm-pi-ai"></a>
 
-## `@centurionarx/cxh-llm-pi-ai`
+## `@arx-ai/arx-llm-pi-ai`
 
 Requires: `llm`
 
@@ -1295,21 +1301,21 @@ Depends on: `Api` (`@earendil-works/pi-ai`) · `CacheRetention` (`@earendil-work
 
 Source: [`packages/llm/llm-pi-ai/src/config.ts:213`](../packages/llm/llm-pi-ai/src/config.ts)
 
-<a id="centurionarxcxh-llm-replay"></a>
+<a id="arx-aiarx-llm-replay"></a>
 
-## `@centurionarx/cxh-llm-replay`
+## `@arx-ai/arx-llm-replay`
 
 Requires: `llm`
 
 ```ts config-catalog
-/** Plugin config: the {@link ReplayConfig} inputs, each defaulting to its `CXH_SNAPSHOT_*` env var in `apply`. */
+/** Plugin config: the {@link ReplayConfig} inputs, each defaulting to its `ARX_SNAPSHOT_*` env var in `apply`. */
 export interface Config {
-  /** Override the fixture path; defaults to `$CXH_SNAPSHOT_FILE`. */
+  /** Override the fixture path; defaults to `$ARX_SNAPSHOT_FILE`. */
   file?: string
-  /** Override the sidecar path; defaults to `$CXH_SNAPSHOT_OVERRIDE`. */
+  /** Override the sidecar path; defaults to `$ARX_SNAPSHOT_OVERRIDE`. */
   overrideFile?: string
   /**
-   * Override the child-log paths; defaults to `$CXH_SNAPSHOT_CHILD_FILES` (a
+   * Override the child-log paths; defaults to `$ARX_SNAPSHOT_CHILD_FILES` (a
    * path-separator-delimited list). Each is a recorded subagent session log for
    * a nested-agent scenario; absent/empty for a single-session scenario.
    */
@@ -1363,9 +1369,9 @@ Depends on: [`ModelModality`](../packages/llm/llm/src/index.ts) · [`RetryPolicy
 
 Source: [`packages/test-support/llm-replay/src/index.ts:809`](../packages/test-support/llm-replay/src/index.ts)
 
-<a id="centurionarxcxh-llm-retry"></a>
+<a id="arx-aiarx-llm-retry"></a>
 
-## `@centurionarx/cxh-llm-retry`
+## `@arx-ai/arx-llm-retry`
 
 Requires: `agents`
 
@@ -1376,9 +1382,9 @@ export type Config = Readonly<Record<string, never>>
 
 Source: [`packages/llm/llm-retry/src/index.ts:24`](../packages/llm/llm-retry/src/index.ts)
 
-<a id="centurionarxcxh-lsp-stdio"></a>
+<a id="arx-aiarx-lsp-stdio"></a>
 
-## `@centurionarx/cxh-lsp-stdio`
+## `@arx-ai/arx-lsp-stdio`
 
 Requires: `fs` · `lsp` · `subprocess`
 
@@ -1418,9 +1424,9 @@ export interface LspLocalServerConfig {
 
 Source: [`packages/lsp/lsp-stdio/src/index.ts:82`](../packages/lsp/lsp-stdio/src/index.ts)
 
-<a id="centurionarxcxh-mcp-client"></a>
+<a id="arx-aiarx-mcp-client"></a>
 
-## `@centurionarx/cxh-mcp-client`
+## `@arx-ai/arx-mcp-client`
 
 Requires: `tools`
 
@@ -1491,9 +1497,9 @@ export interface ReconnectConfig {
 
 Source: [`packages/mcp/mcp-client/src/index.ts:98`](../packages/mcp/mcp-client/src/index.ts)
 
-<a id="centurionarxcxh-message-feedback"></a>
+<a id="arx-aiarx-message-feedback"></a>
 
-## `@centurionarx/cxh-message-feedback`
+## `@arx-ai/arx-message-feedback`
 
 Requires: `storageDomain` · `sessionPersistence` · `sessions`
 
@@ -1507,9 +1513,9 @@ export interface Config {
 
 Source: [`packages/feedback/message-feedback/src/index.ts:49`](../packages/feedback/message-feedback/src/index.ts)
 
-<a id="centurionarxcxh-permission-presets"></a>
+<a id="arx-aiarx-permission-presets"></a>
 
-## `@centurionarx/cxh-permission-presets`
+## `@arx-ai/arx-permission-presets`
 
 Requires: `shell` · `approval` · `sessions`
 
@@ -1546,9 +1552,9 @@ Depends on: [`ApprovalPolicy`](subsystems/approval.md) · [`SandboxMode`](subsys
 
 Source: [`packages/interaction/permission-presets/src/index.ts:156`](../packages/interaction/permission-presets/src/index.ts)
 
-<a id="centurionarxcxh-persona"></a>
+<a id="arx-aiarx-persona"></a>
 
-## `@centurionarx/cxh-persona`
+## `@arx-ai/arx-persona`
 
 Requires: `systemPrompt`
 
@@ -1570,9 +1576,9 @@ export interface Config {
 
 Source: [`packages/preset/persona/src/index.ts:34`](../packages/preset/persona/src/index.ts)
 
-<a id="centurionarxcxh-plan-mode"></a>
+<a id="arx-aiarx-plan-mode"></a>
 
-## `@centurionarx/cxh-plan-mode`
+## `@arx-ai/arx-plan-mode`
 
 Requires: `tools` · `systemPrompt`
 
@@ -1586,9 +1592,9 @@ export interface PlanModeConfig {
 
 Source: [`packages/plan/plan-mode/src/index.ts:70`](../packages/plan/plan-mode/src/index.ts)
 
-<a id="centurionarxcxh-pwsh-local"></a>
+<a id="arx-aiarx-pwsh-local"></a>
 
-## `@centurionarx/cxh-pwsh-local`
+## `@arx-ai/arx-pwsh-local`
 
 Requires: `subprocess`
 
@@ -1619,9 +1625,9 @@ export interface Config {
 
 Source: [`packages/shell/pwsh-local/src/index.ts:58`](../packages/shell/pwsh-local/src/index.ts)
 
-<a id="centurionarxcxh-pwsh-sandbox"></a>
+<a id="arx-aiarx-pwsh-sandbox"></a>
 
-## `@centurionarx/cxh-pwsh-sandbox`
+## `@arx-ai/arx-pwsh-sandbox`
 
 Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 
@@ -1629,7 +1635,7 @@ Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 /**
  * Plugin config: the local executor's knobs, verbatim. The sandbox policy —
  * the default mode and fallback `workspace-write` root — is NOT here: it lives
- * on `ctx.sandboxPolicy` (`@centurionarx/cxh-sandbox-policy`), which resolves
+ * on `ctx.sandboxPolicy` (`@arx-ai/arx-sandbox-policy`), which resolves
  * each calling session's mode and cwd for every enforcing capability. The
  * runner choice is likewise the `ctx.sandbox` provider's config, not this
  * executor's.
@@ -1637,13 +1643,13 @@ Requires: `subprocess` · `sandbox` · `sandboxPolicy`
 export type Config = LocalConfig
 ```
 
-Depends on: [`LocalConfig`](#centurionarxcxh-pwsh-local)
+Depends on: [`LocalConfig`](#arx-aiarx-pwsh-local)
 
 Source: [`packages/shell/pwsh-sandbox/src/index.ts:40`](../packages/shell/pwsh-sandbox/src/index.ts)
 
-<a id="centurionarxcxh-repeat-tool-reminder"></a>
+<a id="arx-aiarx-repeat-tool-reminder"></a>
 
-## `@centurionarx/cxh-repeat-tool-reminder`
+## `@arx-ai/arx-repeat-tool-reminder`
 
 ```ts config-catalog
 /**
@@ -1675,9 +1681,9 @@ export interface Config {
 
 Source: [`packages/guard/repeat-tool-reminder/src/index.ts:28`](../packages/guard/repeat-tool-reminder/src/index.ts)
 
-<a id="centurionarxcxh-sandbox-local"></a>
+<a id="arx-aiarx-sandbox-local"></a>
 
-## `@centurionarx/cxh-sandbox-local`
+## `@arx-ai/arx-sandbox-local`
 
 ```ts config-catalog
 /** Plugin config. All optional — `static Config` supplies the defaults. */
@@ -1707,9 +1713,9 @@ export interface Config {
 
 Source: [`packages/sandbox/sandbox-local/src/index.ts:44`](../packages/sandbox/sandbox-local/src/index.ts)
 
-<a id="centurionarxcxh-sandbox-policy"></a>
+<a id="arx-aiarx-sandbox-policy"></a>
 
-## `@centurionarx/cxh-sandbox-policy`
+## `@arx-ai/arx-sandbox-policy`
 
 ```ts config-catalog
 /**
@@ -1734,9 +1740,9 @@ Depends on: [`SandboxMode`](subsystems/sandbox.md)
 
 Source: [`packages/sandbox/sandbox-policy/src/index.ts:67`](../packages/sandbox/sandbox-policy/src/index.ts)
 
-<a id="centurionarxcxh-sdk-jsonrpc-server"></a>
+<a id="arx-aiarx-sdk-jsonrpc-server"></a>
 
-## `@centurionarx/cxh-sdk-jsonrpc-server`
+## `@arx-ai/arx-sdk-jsonrpc-server`
 
 Requires: `agents`
 
@@ -1758,9 +1764,9 @@ Depends on: `Readable` (`node:stream`) · `Writable` (`node:stream`)
 
 Source: [`packages/sdk/server/src/index.ts:25`](../packages/sdk/server/src/index.ts)
 
-<a id="centurionarxcxh-session-persistence-jsonl"></a>
+<a id="arx-aiarx-session-persistence-jsonl"></a>
 
-## `@centurionarx/cxh-session-persistence-jsonl`
+## `@arx-ai/arx-session-persistence-jsonl`
 
 Requires: `sessions`
 
@@ -1797,9 +1803,9 @@ export type JsonlCompression = 'zstd' | 'none'
 
 Source: [`packages/session/session-persistence-jsonl/src/index.ts:60`](../packages/session/session-persistence-jsonl/src/index.ts)
 
-<a id="centurionarxcxh-session-persistence-sqlite"></a>
+<a id="arx-aiarx-session-persistence-sqlite"></a>
 
-## `@centurionarx/cxh-session-persistence-sqlite`
+## `@arx-ai/arx-session-persistence-sqlite`
 
 Requires: `sessions`
 
@@ -1824,9 +1830,9 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 Source: [`packages/session/session-persistence-sqlite/src/index.ts:36`](../packages/session/session-persistence-sqlite/src/index.ts)
 
-<a id="centurionarxcxh-session-projection-cache"></a>
+<a id="arx-aiarx-session-projection-cache"></a>
 
-## `@centurionarx/cxh-session-projection-cache`
+## `@arx-ai/arx-session-projection-cache`
 
 Requires: `storageDomain` · `sessionProjections` · `sessionPersistence` · `sessions`
 
@@ -1847,9 +1853,9 @@ export interface Config {
 
 Source: [`packages/session/session-projection-cache/src/index.ts:42`](../packages/session/session-projection-cache/src/index.ts)
 
-<a id="centurionarxcxh-session-query-sqlite"></a>
+<a id="arx-aiarx-session-query-sqlite"></a>
 
-## `@centurionarx/cxh-session-query-sqlite`
+## `@arx-ai/arx-session-query-sqlite`
 
 Requires: `sessions`
 
@@ -1893,9 +1899,9 @@ Depends on: [`SessionQueryConfig`](../packages/session-query/session-query/src/i
 
 Source: [`packages/session-query/session-query-sqlite/src/index.ts:89`](../packages/session-query/session-query-sqlite/src/index.ts)
 
-<a id="centurionarxcxh-session-reference"></a>
+<a id="arx-aiarx-session-reference"></a>
 
-## `@centurionarx/cxh-session-reference`
+## `@arx-ai/arx-session-reference`
 
 Requires: `sessionQuery`
 
@@ -1913,16 +1919,16 @@ export interface Config {
 
 Source: [`packages/context/session-reference/src/config.ts:11`](../packages/context/session-reference/src/config.ts)
 
-<a id="centurionarxcxh-session-telemetry-otel"></a>
+<a id="arx-aiarx-session-telemetry-otel"></a>
 
-## `@centurionarx/cxh-session-telemetry-otel`
+## `@arx-ai/arx-session-telemetry-otel`
 
 Requires: `sessions`
 
 ```ts config-catalog
 /**
  * Plugin configuration: one sharing policy, two verbatim SDK option objects,
- * and one CXH-owned shutdown bound. Uploading modes validate their endpoint
+ * and one ARX-owned shutdown bound. Uploading modes validate their endpoint
  * and shutdown deadline at plugin load; `DISABLED` reads neither.
  */
 export interface Config {
@@ -1959,9 +1965,9 @@ Depends on: `BatchLogRecordProcessorOptions` (`@opentelemetry/sdk-logs`) · `OTL
 
 Source: [`packages/session/session-telemetry-otel/src/index.ts:91`](../packages/session/session-telemetry-otel/src/index.ts)
 
-<a id="centurionarxcxh-session-title"></a>
+<a id="arx-aiarx-session-title"></a>
 
-## `@centurionarx/cxh-session-title`
+## `@arx-ai/arx-session-title`
 
 Requires: `sessions`
 
@@ -1979,9 +1985,9 @@ export interface Config {
 
 Source: [`packages/session/session-title/src/index.ts:79`](../packages/session/session-title/src/index.ts)
 
-<a id="centurionarxcxh-session-title-all-prompts-llm"></a>
+<a id="arx-aiarx-session-title-all-prompts-llm"></a>
 
-## `@centurionarx/cxh-session-title-all-prompts-llm`
+## `@arx-ai/arx-session-title-all-prompts-llm`
 
 Requires: `sessionTitle` · `llm` · `sessions`
 
@@ -1994,9 +2000,9 @@ Depends on: [`SessionTitleLlmConfig`](../packages/session/session-title-llm/src/
 
 Source: [`packages/session/session-title-all-prompts-llm/src/index.ts:15`](../packages/session/session-title-all-prompts-llm/src/index.ts)
 
-<a id="centurionarxcxh-session-title-first-prompt-llm"></a>
+<a id="arx-aiarx-session-title-first-prompt-llm"></a>
 
-## `@centurionarx/cxh-session-title-first-prompt-llm`
+## `@arx-ai/arx-session-title-first-prompt-llm`
 
 Requires: `sessionTitle` · `llm` · `sessions`
 
@@ -2009,17 +2015,17 @@ Depends on: [`SessionTitleLlmConfig`](../packages/session/session-title-llm/src/
 
 Source: [`packages/session/session-title-first-prompt-llm/src/index.ts:15`](../packages/session/session-title-first-prompt-llm/src/index.ts)
 
-<a id="centurionarxcxh-settings-file"></a>
+<a id="arx-aiarx-settings-file"></a>
 
-## `@centurionarx/cxh-settings-file`
+## `@arx-ai/arx-settings-file`
 
 ```ts config-catalog
 /** Plugin config: file location and hot-reload behavior. */
 export interface Config {
   /** Settings document path; defaults to `settings.yaml` under the harness home. */
   path?: string
-  /** Harness home used when `path` is omitted; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** Harness home used when `path` is omitted; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
   /** Watch the document and hot-publish external edits; defaults to true. */
   watch?: boolean
   /** Watcher write-settle window in milliseconds; defaults to 100. */
@@ -2029,23 +2035,23 @@ export interface Config {
 
 Source: [`packages/settings/settings-file/src/index.ts:21`](../packages/settings/settings-file/src/index.ts)
 
-<a id="centurionarxcxh-shell-env"></a>
+<a id="arx-aiarx-shell-env"></a>
 
-## `@centurionarx/cxh-shell-env`
+## `@arx-ai/arx-shell-env`
 
 ```ts config-catalog
 /** Plugin config (all optional — the built-in facts resolve without defaults). */
 export interface Config {
-  /** CENTURIONarx Harness home directory exposed as `CXH_HOME`; defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
+  /** arx Harness home directory exposed as `ARX_HOME`; defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
 }
 ```
 
 Source: [`packages/shell/shell-env/src/index.ts:29`](../packages/shell/shell-env/src/index.ts)
 
-<a id="centurionarxcxh-skill"></a>
+<a id="arx-aiarx-skill"></a>
 
-## `@centurionarx/cxh-skill`
+## `@arx-ai/arx-skill`
 
 ```ts config-catalog
 /** Skill registry configuration. */
@@ -2057,9 +2063,9 @@ export interface Config {
 
 Source: [`packages/skill/skill/src/index.ts:279`](../packages/skill/skill/src/index.ts)
 
-<a id="centurionarxcxh-skill-filesystem"></a>
+<a id="arx-aiarx-skill-filesystem"></a>
 
-## `@centurionarx/cxh-skill-filesystem`
+## `@arx-ai/arx-skill-filesystem`
 
 Requires: `skills`
 
@@ -2070,9 +2076,9 @@ export interface Config {
   providerName?: string
   /** Whether project and user roots are included around custom roots. */
   includeDefaultRoots?: boolean
-  /** CENTURIONarx Harness config root. Defaults to `$CXH_HOME` or `~/.cxh`. */
-  cxhHome?: string
-  /** Shared agent config root. Defaults to `$CXH_AGENTS_HOME` or `~/.agents`. */
+  /** arx Harness config root. Defaults to `$ARX_HOME` or `~/.arx`. */
+  arxHome?: string
+  /** Shared agent config root. Defaults to `$ARX_AGENTS_HOME` or `~/.agents`. */
   agentsHome?: string
   /** Additional skill roots scanned after project roots and before user roots. */
   customSkillDirs?: string[]
@@ -2088,16 +2094,16 @@ export interface Config {
   watchMaxProjects?: number
   /** Whether watched symbolic links follow their target files. */
   watchFollowSymlinks?: boolean
-  /** Bundled skill root; defaults to `$CXH_BUNDLED_SKILL_DIR` when default roots are included, otherwise mounts none. */
+  /** Bundled skill root; defaults to `$ARX_BUNDLED_SKILL_DIR` when default roots are included, otherwise mounts none. */
   bundledSkillDir?: string
 }
 ```
 
 Source: [`packages/skill/skill-filesystem/src/index.ts:49`](../packages/skill/skill-filesystem/src/index.ts)
 
-<a id="centurionarxcxh-spill-local"></a>
+<a id="arx-aiarx-spill-local"></a>
 
-## `@centurionarx/cxh-spill-local`
+## `@arx-ai/arx-spill-local`
 
 ```ts config-catalog
 /** Plugin config (all optional — `static Config` supplies the defaults). */
@@ -2113,9 +2119,9 @@ export interface Config {
 
 Source: [`packages/spill/spill-local/src/index.ts:22`](../packages/spill/spill-local/src/index.ts)
 
-<a id="centurionarxcxh-spill-policy"></a>
+<a id="arx-aiarx-spill-policy"></a>
 
-## `@centurionarx/cxh-spill-policy`
+## `@arx-ai/arx-spill-policy`
 
 Requires: `tools`
 
@@ -2133,9 +2139,9 @@ export interface Config {
 
 Source: [`packages/spill/spill-policy/src/index.ts:60`](../packages/spill/spill-policy/src/index.ts)
 
-<a id="centurionarxcxh-storage-domain"></a>
+<a id="arx-aiarx-storage-domain"></a>
 
-## `@centurionarx/cxh-storage-domain`
+## `@arx-ai/arx-storage-domain`
 
 Requires: `storage`
 
@@ -2156,9 +2162,9 @@ export interface Config {
 
 Source: [`packages/storage/storage-domain/src/index.ts:52`](../packages/storage/storage-domain/src/index.ts)
 
-<a id="centurionarxcxh-storage-json"></a>
+<a id="arx-aiarx-storage-json"></a>
 
-## `@centurionarx/cxh-storage-json`
+## `@arx-ai/arx-storage-json`
 
 Requires: `storage`
 
@@ -2177,9 +2183,9 @@ export interface Config {
 
 Source: [`packages/storage/storage-json/src/index.ts:27`](../packages/storage/storage-json/src/index.ts)
 
-<a id="centurionarxcxh-storage-sqlite"></a>
+<a id="arx-aiarx-storage-sqlite"></a>
 
-## `@centurionarx/cxh-storage-sqlite`
+## `@arx-ai/arx-storage-sqlite`
 
 Requires: `storage`
 
@@ -2217,9 +2223,9 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 Source: [`packages/storage/storage-sqlite/src/index.ts:24`](../packages/storage/storage-sqlite/src/index.ts)
 
-<a id="centurionarxcxh-subagent-acp"></a>
+<a id="arx-aiarx-subagent-acp"></a>
 
-## `@centurionarx/cxh-subagent-acp`
+## `@arx-ai/arx-subagent-acp`
 
 Requires: `subagents` · `subprocess`
 
@@ -2270,9 +2276,62 @@ export type PermissionPolicy = 'allow' | 'reject'
 
 Source: [`packages/subagent/subagent-acp/src/index.ts:27`](../packages/subagent/subagent-acp/src/index.ts)
 
-<a id="centurionarxcxh-subagent-claude-code"></a>
+<a id="arx-aiarx-subagent-arx-sdk"></a>
 
-## `@centurionarx/cxh-subagent-claude-code`
+## `@arx-ai/arx-subagent-arx-sdk`
+
+Requires: `subagents`
+
+```ts config-catalog
+/** Config: how to spawn and drive the child SDK runtime process. */
+export interface Config {
+  /** Provider name on `ctx.subagents` (default `arx-sdk`). */
+  providerName: string
+  /** The executable to spawn for each run (the child runtime bin or packaged exe). */
+  command: string
+  /** Arguments passed to {@link command} (typically the child's `cordis.yml` path). */
+  args: string[]
+  /**
+   * Working directory override for the child process and its SDK session
+   * workspace. Must be non-empty; a relative path resolves against the
+   * harness launch directory at load, and the result must be an existing
+   * directory. When omitted, each child inherits its delegating parent
+   * session's cwd — and starting one from a parent session that has no cwd
+   * fails.
+   */
+  cwd?: string
+  /** Provider route the child runtime initializes with (default `deepseek-official`). */
+  provider: string
+  /** Model the child runtime initializes with (default `deepseek-v4-flash`). */
+  model: string
+  /** Optional per-request output-token cap for the child runtime. */
+  maxTokens?: number
+  /**
+   * Extra environment variables for the child process — e.g. the child
+   * runtime's own `DEEPSEEK_API_KEY`, or `ARX_CORDIS_CONFIG` naming its
+   * config. Forwarded on top of a credential-scrubbed copy of the parent
+   * env, so an explicit key here reaches the child while ambient secrets do
+   * not leak implicitly.
+   */
+  env: Record<string, string>
+  /** Bound (ms) on the protocol `shutdown` exchange during dispose. */
+  shutdownTimeoutMs?: number
+  /**
+   * Grace period (ms) for the child's EOF-driven quiesce on dispose — its
+   * window to flush persistence and tear down its own nested subprocesses
+   * before the parent escalates to a signal.
+   */
+  disposeEofGraceMs?: number
+  /** Termination confirmation window (ms), including forced exit on every platform. */
+  disposeGraceMs?: number
+}
+```
+
+Source: [`packages/subagent/subagent-arx-sdk/src/index.ts:29`](../packages/subagent/subagent-arx-sdk/src/index.ts)
+
+<a id="arx-aiarx-subagent-claude-code"></a>
+
+## `@arx-ai/arx-subagent-claude-code`
 
 Requires: `subagents` · `subprocess`
 
@@ -2303,9 +2362,9 @@ export type ClaudeCodePermissionMode = typeof CLAUDE_CODE_PERMISSION_MODES[numbe
 
 Source: [`packages/subagent/subagent-claude-code/src/index.ts:38`](../packages/subagent/subagent-claude-code/src/index.ts)
 
-<a id="centurionarxcxh-subagent-codex"></a>
+<a id="arx-aiarx-subagent-codex"></a>
 
-## `@centurionarx/cxh-subagent-codex`
+## `@arx-ai/arx-subagent-codex`
 
 Requires: `subagents` · `subprocess`
 
@@ -2334,62 +2393,9 @@ export type CodexPermissionMode =
 
 Source: [`packages/subagent/subagent-codex/src/index.ts:36`](../packages/subagent/subagent-codex/src/index.ts)
 
-<a id="centurionarxcxh-subagent-cxh-sdk"></a>
+<a id="arx-aiarx-subagent-fork-in-process"></a>
 
-## `@centurionarx/cxh-subagent-cxh-sdk`
-
-Requires: `subagents`
-
-```ts config-catalog
-/** Config: how to spawn and drive the child SDK runtime process. */
-export interface Config {
-  /** Provider name on `ctx.subagents` (default `cxh-sdk`). */
-  providerName: string
-  /** The executable to spawn for each run (the child runtime bin or packaged exe). */
-  command: string
-  /** Arguments passed to {@link command} (typically the child's `cordis.yml` path). */
-  args: string[]
-  /**
-   * Working directory override for the child process and its SDK session
-   * workspace. Must be non-empty; a relative path resolves against the
-   * harness launch directory at load, and the result must be an existing
-   * directory. When omitted, each child inherits its delegating parent
-   * session's cwd — and starting one from a parent session that has no cwd
-   * fails.
-   */
-  cwd?: string
-  /** Provider route the child runtime initializes with (default `deepseek-official`). */
-  provider: string
-  /** Model the child runtime initializes with (default `deepseek-v4-flash`). */
-  model: string
-  /** Optional per-request output-token cap for the child runtime. */
-  maxTokens?: number
-  /**
-   * Extra environment variables for the child process — e.g. the child
-   * runtime's own `DEEPSEEK_API_KEY`, or `CXH_CORDIS_CONFIG` naming its
-   * config. Forwarded on top of a credential-scrubbed copy of the parent
-   * env, so an explicit key here reaches the child while ambient secrets do
-   * not leak implicitly.
-   */
-  env: Record<string, string>
-  /** Bound (ms) on the protocol `shutdown` exchange during dispose. */
-  shutdownTimeoutMs?: number
-  /**
-   * Grace period (ms) for the child's EOF-driven quiesce on dispose — its
-   * window to flush persistence and tear down its own nested subprocesses
-   * before the parent escalates to a signal.
-   */
-  disposeEofGraceMs?: number
-  /** Termination confirmation window (ms), including forced exit on every platform. */
-  disposeGraceMs?: number
-}
-```
-
-Source: [`packages/subagent/subagent-cxh-sdk/src/index.ts:29`](../packages/subagent/subagent-cxh-sdk/src/index.ts)
-
-<a id="centurionarxcxh-subagent-fork-in-process"></a>
-
-## `@centurionarx/cxh-subagent-fork-in-process`
+## `@arx-ai/arx-subagent-fork-in-process`
 
 Requires: `subagents`
 
@@ -2403,9 +2409,9 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-fork-in-process/src/index.ts:31`](../packages/subagent/subagent-fork-in-process/src/index.ts)
 
-<a id="centurionarxcxh-subagent-spawn-in-process"></a>
+<a id="arx-aiarx-subagent-spawn-in-process"></a>
 
-## `@centurionarx/cxh-subagent-spawn-in-process`
+## `@arx-ai/arx-subagent-spawn-in-process`
 
 Requires: `subagents`
 
@@ -2419,9 +2425,9 @@ export interface Config {
 
 Source: [`packages/subagent/subagent-spawn-in-process/src/index.ts:25`](../packages/subagent/subagent-spawn-in-process/src/index.ts)
 
-<a id="centurionarxcxh-subprocess-e2b"></a>
+<a id="arx-aiarx-subprocess-e2b"></a>
 
-## `@centurionarx/cxh-subprocess-e2b`
+## `@arx-ai/arx-subprocess-e2b`
 
 Requires: `e2b`
 
@@ -2435,14 +2441,14 @@ export interface Config {
 
 Source: [`packages/e2b/subprocess-e2b/src/index.ts:25`](../packages/e2b/subprocess-e2b/src/index.ts)
 
-<a id="centurionarxcxh-system-prompt"></a>
+<a id="arx-aiarx-system-prompt"></a>
 
-## `@centurionarx/cxh-system-prompt`
+## `@arx-ai/arx-system-prompt`
 
 ```ts config-catalog
 /** Plugin config: the deployment-authored fragment of the system prompt (see {@link Config.persona} for its contract). */
 export interface Config {
-  /** Include the fixed CENTURIONarx Harness identity before the deployment persona (default true). */
+  /** Include the fixed arx Harness identity before the deployment persona (default true). */
   includeHarnessIdentity?: boolean
   /** Include dynamic runtime-context snapshots in model history (default true). */
   includeRuntimeContext?: boolean
@@ -2462,9 +2468,9 @@ export interface Config {
 
 Source: [`packages/core/system-prompt/src/index.ts:186`](../packages/core/system-prompt/src/index.ts)
 
-<a id="centurionarxcxh-terminal-bash"></a>
+<a id="arx-aiarx-terminal-bash"></a>
 
-## `@centurionarx/cxh-terminal-bash`
+## `@arx-ai/arx-terminal-bash`
 
 Requires: `terminals` · `sandboxPolicy` · `subprocess`
 
@@ -2512,9 +2518,9 @@ export type ShellDialect = 'bash' | 'pwsh'
 
 Source: [`packages/terminal/terminal-bash/src/config.ts:10`](../packages/terminal/terminal-bash/src/config.ts)
 
-<a id="centurionarxcxh-time-context"></a>
+<a id="arx-aiarx-time-context"></a>
 
-## `@centurionarx/cxh-time-context`
+## `@arx-ai/arx-time-context`
 
 Requires: `agents`
 
@@ -2530,9 +2536,9 @@ export interface Config {
 
 Source: [`packages/context/time-context/src/index.ts:27`](../packages/context/time-context/src/index.ts)
 
-<a id="centurionarxcxh-tmux-context"></a>
+<a id="arx-aiarx-tmux-context"></a>
 
-## `@centurionarx/cxh-tmux-context`
+## `@arx-ai/arx-tmux-context`
 
 Requires: `agents`
 
@@ -2546,9 +2552,9 @@ export interface Config {
 
 Source: [`packages/context/tmux-context/src/index.ts:34`](../packages/context/tmux-context/src/index.ts)
 
-<a id="centurionarxcxh-token-meter"></a>
+<a id="arx-aiarx-token-meter"></a>
 
-## `@centurionarx/cxh-token-meter`
+## `@arx-ai/arx-token-meter`
 
 ```ts config-catalog
 /** Token-meter plugin configuration; the fixed estimator has no settings. */
@@ -2557,9 +2563,9 @@ export type TokenMeterConfig = Record<string, never>
 
 Source: [`packages/llm/token-meter/src/types.ts:12`](../packages/llm/token-meter/src/types.ts)
 
-<a id="centurionarxcxh-tool-bash"></a>
+<a id="arx-aiarx-tool-bash"></a>
 
-## `@centurionarx/cxh-tool-bash`
+## `@arx-ai/arx-tool-bash`
 
 Requires: `tools` · `shell` · `systemPrompt` · `shellEnv`
 
@@ -2573,9 +2579,9 @@ export interface Config {
 
 Source: [`packages/shell/tool-bash/src/index.ts:34`](../packages/shell/tool-bash/src/index.ts)
 
-<a id="centurionarxcxh-tool-bash-persistent"></a>
+<a id="arx-aiarx-tool-bash-persistent"></a>
 
-## `@centurionarx/cxh-tool-bash-persistent`
+## `@arx-ai/arx-tool-bash-persistent`
 
 Requires: `tools` · `terminals`
 
@@ -2595,9 +2601,9 @@ export interface Config {
 
 Source: [`packages/shell/tool-bash-persistent/src/index.ts:432`](../packages/shell/tool-bash-persistent/src/index.ts)
 
-<a id="centurionarxcxh-tool-fs"></a>
+<a id="arx-aiarx-tool-fs"></a>
 
-## `@centurionarx/cxh-tool-fs`
+## `@arx-ai/arx-tool-fs`
 
 Requires: `tools` · `fs` · `systemPrompt`
 
@@ -2617,9 +2623,9 @@ export interface Config {
 
 Source: [`packages/fs/tool-fs/src/index.ts:25`](../packages/fs/tool-fs/src/index.ts)
 
-<a id="centurionarxcxh-tool-fs-search"></a>
+<a id="arx-aiarx-tool-fs-search"></a>
 
-## `@centurionarx/cxh-tool-fs-search`
+## `@arx-ai/arx-tool-fs-search`
 
 Requires: `tools` · `systemPrompt` · `subprocess`
 
@@ -2644,7 +2650,7 @@ export interface Config {
   stderrMaxBytes?: number
   /**
    * Cooperative tool-call timeout budget (ms) on both tools, enforced by
-   * `@centurionarx/cxh-tool-call-timeout-policy` through `exec.signal`.
+   * `@arx-ai/arx-tool-call-timeout-policy` through `exec.signal`.
    */
   timeoutMs?: number
 }
@@ -2652,9 +2658,9 @@ export interface Config {
 
 Source: [`packages/fs/tool-fs-search/src/index.ts:73`](../packages/fs/tool-fs-search/src/index.ts)
 
-<a id="centurionarxcxh-tool-goal"></a>
+<a id="arx-aiarx-tool-goal"></a>
 
-## `@centurionarx/cxh-tool-goal`
+## `@arx-ai/arx-tool-goal`
 
 Requires: `agents` · `goals` · `tools` · `systemPrompt`
 
@@ -2668,9 +2674,9 @@ export interface Config {
 
 Source: [`packages/goal/tool-goal/src/index.ts:26`](../packages/goal/tool-goal/src/index.ts)
 
-<a id="centurionarxcxh-tool-jobs"></a>
+<a id="arx-aiarx-tool-jobs"></a>
 
-## `@centurionarx/cxh-tool-jobs`
+## `@arx-ai/arx-tool-jobs`
 
 Requires: `tools` · `jobs` · `systemPrompt`
 
@@ -2702,9 +2708,9 @@ export type CompletionDelivery = 'quiet' | 'wakeup'
 
 Source: [`packages/jobs/tool-jobs/src/index.ts:32`](../packages/jobs/tool-jobs/src/index.ts)
 
-<a id="centurionarxcxh-tool-lsp"></a>
+<a id="arx-aiarx-tool-lsp"></a>
 
-## `@centurionarx/cxh-tool-lsp`
+## `@arx-ai/arx-tool-lsp`
 
 Requires: `tools` · `lsp` · `systemPrompt`
 
@@ -2722,9 +2728,9 @@ export interface Config {
 
 Source: [`packages/lsp/tool-lsp/src/index.ts:58`](../packages/lsp/tool-lsp/src/index.ts)
 
-<a id="centurionarxcxh-tool-pwsh"></a>
+<a id="arx-aiarx-tool-pwsh"></a>
 
-## `@centurionarx/cxh-tool-pwsh`
+## `@arx-ai/arx-tool-pwsh`
 
 Requires: `tools` · `shell` · `systemPrompt` · `shellEnv`
 
@@ -2738,9 +2744,9 @@ export interface Config {
 
 Source: [`packages/shell/tool-pwsh/src/index.ts:52`](../packages/shell/tool-pwsh/src/index.ts)
 
-<a id="centurionarxcxh-tool-pwsh-persistent"></a>
+<a id="arx-aiarx-tool-pwsh-persistent"></a>
 
-## `@centurionarx/cxh-tool-pwsh-persistent`
+## `@arx-ai/arx-tool-pwsh-persistent`
 
 Requires: `tools` · `terminals`
 
@@ -2760,9 +2766,9 @@ export interface Config {
 
 Source: [`packages/shell/tool-pwsh-persistent/src/index.ts:472`](../packages/shell/tool-pwsh-persistent/src/index.ts)
 
-<a id="centurionarxcxh-tool-ralph"></a>
+<a id="arx-aiarx-tool-ralph"></a>
 
-## `@centurionarx/cxh-tool-ralph`
+## `@arx-ai/arx-tool-ralph`
 
 Requires: `tools` · `workflowEngine` · `subagents` · `systemPrompt`
 
@@ -2782,9 +2788,9 @@ export interface Config {
 
 Source: [`packages/workflow/tool-ralph/src/index.ts:23`](../packages/workflow/tool-ralph/src/index.ts)
 
-<a id="centurionarxcxh-tool-session-query"></a>
+<a id="arx-aiarx-tool-session-query"></a>
 
-## `@centurionarx/cxh-tool-session-query`
+## `@arx-ai/arx-tool-session-query`
 
 Requires: `tools` · `systemPrompt` · `sessionQuery`
 
@@ -2800,9 +2806,9 @@ export interface Config {
 
 Source: [`packages/session-query/tool-session-query/src/index.ts:29`](../packages/session-query/tool-session-query/src/index.ts)
 
-<a id="centurionarxcxh-tool-skill"></a>
+<a id="arx-aiarx-tool-skill"></a>
 
-## `@centurionarx/cxh-tool-skill`
+## `@arx-ai/arx-tool-skill`
 
 Requires: `agents` · `tools` · `skills`
 
@@ -2816,9 +2822,9 @@ export interface Config {
 
 Source: [`packages/skill/tool-skill/src/index.ts:61`](../packages/skill/tool-skill/src/index.ts)
 
-<a id="centurionarxcxh-tool-str-replace-editor"></a>
+<a id="arx-aiarx-tool-str-replace-editor"></a>
 
-## `@centurionarx/cxh-tool-str-replace-editor`
+## `@arx-ai/arx-tool-str-replace-editor`
 
 Requires: `tools` · `fs`
 
@@ -2834,9 +2840,9 @@ export interface Config {
 
 Source: [`packages/fs/tool-str-replace-editor/src/index.ts:497`](../packages/fs/tool-str-replace-editor/src/index.ts)
 
-<a id="centurionarxcxh-tool-subagent"></a>
+<a id="arx-aiarx-tool-subagent"></a>
 
-## `@centurionarx/cxh-tool-subagent`
+## `@arx-ai/arx-tool-subagent`
 
 Requires: `tools` · `subagents` · `systemPrompt`
 
@@ -2899,9 +2905,9 @@ Depends on: [`AgentOptions`](subsystems/core.md)
 
 Source: [`packages/subagent/tool-subagent/src/index.ts:29`](../packages/subagent/tool-subagent/src/index.ts)
 
-<a id="centurionarxcxh-tool-subagent-report"></a>
+<a id="arx-aiarx-tool-subagent-report"></a>
 
-## `@centurionarx/cxh-tool-subagent-report`
+## `@arx-ai/arx-tool-subagent-report`
 
 Requires: `subagents` · `tools` · `systemPrompt`
 
@@ -2921,9 +2927,9 @@ Depends on: [`SubagentReportDelivery`](subsystems/subagent.md)
 
 Source: [`packages/subagent/tool-subagent-report/src/index.ts:27`](../packages/subagent/tool-subagent-report/src/index.ts)
 
-<a id="centurionarxcxh-tool-terminal"></a>
+<a id="arx-aiarx-tool-terminal"></a>
 
-## `@centurionarx/cxh-tool-terminal`
+## `@arx-ai/arx-tool-terminal`
 
 Requires: `terminals` · `tools` · `systemPrompt`
 
@@ -2939,9 +2945,9 @@ export interface Config {
 
 Source: [`packages/terminal/tool-terminal/src/index.ts:35`](../packages/terminal/tool-terminal/src/index.ts)
 
-<a id="centurionarxcxh-tool-todo"></a>
+<a id="arx-aiarx-tool-todo"></a>
 
-## `@centurionarx/cxh-tool-todo`
+## `@arx-ai/arx-tool-todo`
 
 Requires: `tools`
 
@@ -2961,9 +2967,9 @@ export interface Config {
 
 Source: [`packages/todo/tool-todo/src/index.ts:29`](../packages/todo/tool-todo/src/index.ts)
 
-<a id="centurionarxcxh-tool-web"></a>
+<a id="arx-aiarx-tool-web"></a>
 
-## `@centurionarx/cxh-tool-web`
+## `@arx-ai/arx-tool-web`
 
 Requires: `tools` · `web` · `systemPrompt`
 
@@ -2989,9 +2995,9 @@ export interface Config {
 
 Source: [`packages/web/tool-web/src/index.ts:37`](../packages/web/tool-web/src/index.ts)
 
-<a id="centurionarxcxh-tool-workflow"></a>
+<a id="arx-aiarx-tool-workflow"></a>
 
-## `@centurionarx/cxh-tool-workflow`
+## `@arx-ai/arx-tool-workflow`
 
 Requires: `tools` · `workflowEngine` · `systemPrompt`
 
@@ -3007,9 +3013,9 @@ export interface Config {
 
 Source: [`packages/workflow/tool-workflow/src/index.ts:33`](../packages/workflow/tool-workflow/src/index.ts)
 
-<a id="centurionarxcxh-tools"></a>
+<a id="arx-aiarx-tools"></a>
 
-## `@centurionarx/cxh-tools`
+## `@arx-ai/arx-tools`
 
 Requires: `systemPrompt`
 
@@ -3043,9 +3049,9 @@ export type ToolPresentationMode = 'native' | 'code' | 'both'
 
 Source: [`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/index.ts)
 
-<a id="centurionarxcxh-typert-loader"></a>
+<a id="arx-aiarx-typert-loader"></a>
 
-## `@centurionarx/cxh-typert-loader`
+## `@arx-ai/arx-typert-loader`
 
 Requires: `typert` · `loader`
 
@@ -3059,9 +3065,9 @@ export interface Config {
 
 Source: [`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
-<a id="centurionarxcxh-user-approval"></a>
+<a id="arx-aiarx-user-approval"></a>
 
-## `@centurionarx/cxh-user-approval`
+## `@arx-ai/arx-user-approval`
 
 ```ts config-catalog
 /** Plugin config. All optional — `static Config` supplies the defaults. */
@@ -3090,9 +3096,9 @@ export type ApprovalPolicy = 'ask' | 'never'
 
 Source: [`packages/interaction/user-approval/src/index.ts:177`](../packages/interaction/user-approval/src/index.ts)
 
-<a id="centurionarxcxh-web"></a>
+<a id="arx-aiarx-web"></a>
 
-## `@centurionarx/cxh-web`
+## `@arx-ai/arx-web`
 
 ```ts config-catalog
 /**
@@ -3111,9 +3117,9 @@ export interface WebRuntimeConfig {
 
 Source: [`packages/web/web/src/index.ts:55`](../packages/web/web/src/index.ts)
 
-<a id="centurionarxcxh-web-app"></a>
+<a id="arx-aiarx-web-app"></a>
 
-## `@centurionarx/cxh-web-app`
+## `@arx-ai/arx-web-app`
 
 Requires: `webServer`
 
@@ -3126,7 +3132,7 @@ export interface Config {
   printUrl: boolean
   /**
    * Register the model-visible surface context (the `app:web-surface` prompt
-   * section and the `CXH_WEB_URL` bash variable). A one-shot non-interactive
+   * section and the `ARX_WEB_URL` bash variable). A one-shot non-interactive
    * layer can turn it off when its user is not in the GUI, so the
    * orientation text would be false.
    */
@@ -3138,9 +3144,9 @@ export interface Config {
 
 Source: [`packages/bundle/web-app/src/index.ts:42`](../packages/bundle/web-app/src/index.ts)
 
-<a id="centurionarxcxh-web-fetch-http"></a>
+<a id="arx-aiarx-web-fetch-http"></a>
 
-## `@centurionarx/cxh-web-fetch-http`
+## `@arx-ai/arx-web-fetch-http`
 
 Requires: `web`
 
@@ -3164,9 +3170,9 @@ export interface Config {
 
 Source: [`packages/web/web-fetch-http/src/index.ts:34`](../packages/web/web-fetch-http/src/index.ts)
 
-<a id="centurionarxcxh-web-search-deepseek"></a>
+<a id="arx-aiarx-web-search-deepseek"></a>
 
-## `@centurionarx/cxh-web-search-deepseek`
+## `@arx-ai/arx-web-search-deepseek`
 
 Requires: `web`
 
@@ -3192,9 +3198,9 @@ export interface Config {
 
 Source: [`packages/web/web-search-deepseek/src/index.ts:46`](../packages/web/web-search-deepseek/src/index.ts)
 
-<a id="centurionarxcxh-web-search-exa"></a>
+<a id="arx-aiarx-web-search-exa"></a>
 
-## `@centurionarx/cxh-web-search-exa`
+## `@arx-ai/arx-web-search-exa`
 
 Requires: `web`
 
@@ -3216,9 +3222,9 @@ export interface Config {
 
 Source: [`packages/web/web-search-exa/src/index.ts:38`](../packages/web/web-search-exa/src/index.ts)
 
-<a id="centurionarxcxh-web-search-perplexity"></a>
+<a id="arx-aiarx-web-search-perplexity"></a>
 
-## `@centurionarx/cxh-web-search-perplexity`
+## `@arx-ai/arx-web-search-perplexity`
 
 Requires: `web`
 
@@ -3240,9 +3246,9 @@ export interface Config {
 
 Source: [`packages/web/web-search-perplexity/src/index.ts:32`](../packages/web/web-search-perplexity/src/index.ts)
 
-<a id="centurionarxcxh-workflow-worker-thread"></a>
+<a id="arx-aiarx-workflow-worker-thread"></a>
 
-## `@centurionarx/cxh-workflow-worker-thread`
+## `@arx-ai/arx-workflow-worker-thread`
 
 Requires: `subagents`
 
@@ -3274,132 +3280,133 @@ Source: [`packages/workflow/workflow-worker-thread/src/index.ts:32`](../packages
 
 These load from a `cordis.yml` entry with no `config:` block; they declare no configuration API.
 
-- `@centurionarx/cxh-agent` ([`packages/core/agent/src/index.ts`](../packages/core/agent/src/index.ts))
-- `@centurionarx/cxh-api-gateway` — requires `typert` ([`packages/api/gateway/src/index.ts`](../packages/api/gateway/src/index.ts))
-- `@centurionarx/cxh-api-remotes` ([`packages/api/remotes/src/index.ts`](../packages/api/remotes/src/index.ts))
-- `@centurionarx/cxh-authorization` — requires `credentials` ([`packages/credentials/authorization/src/index.ts`](../packages/credentials/authorization/src/index.ts))
-- `@centurionarx/cxh-client-locale` ([`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts))
-- `@centurionarx/cxh-client-modules` — requires `webServer` · `loader` ([`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts))
-- `@centurionarx/cxh-client-runtime` ([`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts))
-- `@centurionarx/cxh-client-ui-agent-preset` ([`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts))
-- `@centurionarx/cxh-client-ui-attachment` ([`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts))
-- `@centurionarx/cxh-client-ui-brand-official` ([`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts))
-- `@centurionarx/cxh-client-ui-commands` ([`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts))
-- `@centurionarx/cxh-client-ui-conversation` ([`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts))
-- `@centurionarx/cxh-client-ui-cordis` ([`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts))
-- `@centurionarx/cxh-client-ui-deliverables` — requires `systemPrompt` ([`packages/client/ui-deliverables/src/index.ts`](../packages/client/ui-deliverables/src/index.ts))
-- `@centurionarx/cxh-client-ui-directory-picker-browse` ([`packages/client/ui-directory-picker-browse/src/index.ts`](../packages/client/ui-directory-picker-browse/src/index.ts))
-- `@centurionarx/cxh-client-ui-directory-picker-native` ([`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts))
-- `@centurionarx/cxh-client-ui-goal` ([`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts))
-- `@centurionarx/cxh-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
-- `@centurionarx/cxh-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
-- `@centurionarx/cxh-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
-- `@centurionarx/cxh-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
-- `@centurionarx/cxh-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
-- `@centurionarx/cxh-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))
-- `@centurionarx/cxh-client-ui-plan` ([`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts))
-- `@centurionarx/cxh-client-ui-reference` ([`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts))
-- `@centurionarx/cxh-client-ui-renderer` ([`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts))
-- `@centurionarx/cxh-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
-- `@centurionarx/cxh-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))
-- `@centurionarx/cxh-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
-- `@centurionarx/cxh-client-ui-settings-plugin-inventory` ([`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts))
-- `@centurionarx/cxh-client-ui-settings-plugins` ([`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts))
-- `@centurionarx/cxh-client-ui-sidebar` ([`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts))
-- `@centurionarx/cxh-client-ui-skill` ([`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts))
-- `@centurionarx/cxh-client-ui-subagent` ([`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts))
-- `@centurionarx/cxh-client-ui-theme` ([`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts))
-- `@centurionarx/cxh-client-ui-tool` ([`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts))
-- `@centurionarx/cxh-client-ui-trajectory` ([`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts))
-- `@centurionarx/cxh-client-ui-user-questions` ([`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts))
-- `@centurionarx/cxh-client-ui-workflow-run` ([`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts))
-- `@centurionarx/cxh-client-ui-workspace` ([`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts))
-- `@centurionarx/cxh-command-compact` — requires `commands` · `compaction` ([`packages/compaction/command-compact/src/index.ts`](../packages/compaction/command-compact/src/index.ts))
-- `@centurionarx/cxh-command-feedback` — requires `commands` ([`packages/feedback/command-feedback/src/index.ts`](../packages/feedback/command-feedback/src/index.ts))
-- `@centurionarx/cxh-command-goal` — requires `commands` · `goals` ([`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts))
-- `@centurionarx/cxh-commands` ([`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts))
-- `@centurionarx/cxh-cordis-client-runner` ([`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts))
-- `@centurionarx/cxh-fs-e2b` — requires `e2b` ([`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts))
-- `@centurionarx/cxh-fs-observation-policy` ([`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts))
-- `@centurionarx/cxh-goal-round-driver` — requires `agents` · `goals` · `sessions` ([`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts))
-- `@centurionarx/cxh-host-directory-picker-auto` — requires `webServer` · `loader` ([`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts))
-- `@centurionarx/cxh-host-directory-picker-native` ([`packages/host/directory-picker-native/src/index.ts`](../packages/host/directory-picker-native/src/index.ts))
-- `@centurionarx/cxh-host-plugin-inventory` — requires `loader` ([`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts))
-- `@centurionarx/cxh-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
-- `@centurionarx/cxh-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
-- `@centurionarx/cxh-schedule` — requires `agents` · `sessions` · `tools` · `sessionPersistence` ([`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts))
-- `@centurionarx/cxh-session` ([`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts))
-- `@centurionarx/cxh-session-checkpoint-policy` — requires `llm` · `sessionPersistence` · `sessions` · `tools` ([`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts))
-- `@centurionarx/cxh-session-log-export` — requires `commands` ([`packages/session-query/session-log-export/src/index.ts`](../packages/session-query/session-log-export/src/index.ts))
-- `@centurionarx/cxh-session-projection` ([`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts))
-- `@centurionarx/cxh-session-stats` — requires `sessionProjections` ([`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts))
-- `@centurionarx/cxh-skill-badge` — requires `skills` ([`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts))
-- `@centurionarx/cxh-storage` ([`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts))
-- `@centurionarx/cxh-subagent` ([`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts))
-- `@centurionarx/cxh-subprocess-local` ([`packages/subprocess/subprocess-local/src/index.ts`](../packages/subprocess/subprocess-local/src/index.ts))
-- `@centurionarx/cxh-terminal` ([`packages/terminal/terminal/src/index.ts`](../packages/terminal/terminal/src/index.ts))
-- `@centurionarx/cxh-tool-ask-user` — requires `tools` · `userQuestions` ([`packages/interaction/tool-ask-user/src/index.ts`](../packages/interaction/tool-ask-user/src/index.ts))
-- `@centurionarx/cxh-tool-call-timeout-policy` — requires `tools` ([`packages/guard/timeout-policy/src/index.ts`](../packages/guard/timeout-policy/src/index.ts))
-- `@centurionarx/cxh-tool-cordis` — requires `tools` · `systemPrompt` · `dynamicCordisRunner` · `cordisInspect` ([`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/tool-cordis/src/index.ts))
-- `@centurionarx/cxh-tool-subagent-control` — requires `tools` · `subagents` ([`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts))
-- `@centurionarx/cxh-user-questions` ([`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts))
-- `@centurionarx/cxh-workspace` — requires `storageDomain` · `sessionPersistence` ([`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts))
+- `@arx-ai/arx-agent` ([`packages/core/agent/src/index.ts`](../packages/core/agent/src/index.ts))
+- `@arx-ai/arx-api-gateway` — requires `typert` ([`packages/api/gateway/src/index.ts`](../packages/api/gateway/src/index.ts))
+- `@arx-ai/arx-api-remotes` ([`packages/api/remotes/src/index.ts`](../packages/api/remotes/src/index.ts))
+- `@arx-ai/arx-authorization` — requires `credentials` ([`packages/credentials/authorization/src/index.ts`](../packages/credentials/authorization/src/index.ts))
+- `@arx-ai/arx-client-locale` ([`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts))
+- `@arx-ai/arx-client-modules` — requires `webServer` · `loader` ([`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts))
+- `@arx-ai/arx-client-runtime` ([`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts))
+- `@arx-ai/arx-client-ui-agent-preset` ([`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts))
+- `@arx-ai/arx-client-ui-attachment` ([`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts))
+- `@arx-ai/arx-client-ui-brand-official` ([`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts))
+- `@arx-ai/arx-client-ui-commands` ([`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts))
+- `@arx-ai/arx-client-ui-conversation` ([`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts))
+- `@arx-ai/arx-client-ui-cordis` ([`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts))
+- `@arx-ai/arx-client-ui-deliverables` — requires `systemPrompt` ([`packages/client/ui-deliverables/src/index.ts`](../packages/client/ui-deliverables/src/index.ts))
+- `@arx-ai/arx-client-ui-directory-picker-browse` ([`packages/client/ui-directory-picker-browse/src/index.ts`](../packages/client/ui-directory-picker-browse/src/index.ts))
+- `@arx-ai/arx-client-ui-directory-picker-native` ([`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts))
+- `@arx-ai/arx-client-ui-exit` ([`packages/client/ui-exit/src/index.ts`](../packages/client/ui-exit/src/index.ts))
+- `@arx-ai/arx-client-ui-goal` ([`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts))
+- `@arx-ai/arx-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
+- `@arx-ai/arx-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
+- `@arx-ai/arx-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
+- `@arx-ai/arx-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
+- `@arx-ai/arx-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
+- `@arx-ai/arx-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))
+- `@arx-ai/arx-client-ui-plan` ([`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts))
+- `@arx-ai/arx-client-ui-reference` ([`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts))
+- `@arx-ai/arx-client-ui-renderer` ([`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts))
+- `@arx-ai/arx-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
+- `@arx-ai/arx-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))
+- `@arx-ai/arx-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
+- `@arx-ai/arx-client-ui-settings-plugin-inventory` ([`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts))
+- `@arx-ai/arx-client-ui-settings-plugins` ([`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts))
+- `@arx-ai/arx-client-ui-sidebar` ([`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts))
+- `@arx-ai/arx-client-ui-skill` ([`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts))
+- `@arx-ai/arx-client-ui-subagent` ([`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts))
+- `@arx-ai/arx-client-ui-theme` ([`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts))
+- `@arx-ai/arx-client-ui-tool` ([`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts))
+- `@arx-ai/arx-client-ui-trajectory` ([`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts))
+- `@arx-ai/arx-client-ui-user-questions` ([`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts))
+- `@arx-ai/arx-client-ui-workflow-run` ([`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts))
+- `@arx-ai/arx-client-ui-workspace` ([`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts))
+- `@arx-ai/arx-command-compact` — requires `commands` · `compaction` ([`packages/compaction/command-compact/src/index.ts`](../packages/compaction/command-compact/src/index.ts))
+- `@arx-ai/arx-command-feedback` — requires `commands` ([`packages/feedback/command-feedback/src/index.ts`](../packages/feedback/command-feedback/src/index.ts))
+- `@arx-ai/arx-command-goal` — requires `commands` · `goals` ([`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts))
+- `@arx-ai/arx-commands` ([`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts))
+- `@arx-ai/arx-cordis-client-runner` ([`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts))
+- `@arx-ai/arx-fs-e2b` — requires `e2b` ([`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts))
+- `@arx-ai/arx-fs-observation-policy` ([`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts))
+- `@arx-ai/arx-goal-round-driver` — requires `agents` · `goals` · `sessions` ([`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts))
+- `@arx-ai/arx-host-directory-picker-auto` — requires `webServer` · `loader` ([`packages/host/directory-picker-auto/src/index.ts`](../packages/host/directory-picker-auto/src/index.ts))
+- `@arx-ai/arx-host-directory-picker-native` ([`packages/host/directory-picker-native/src/index.ts`](../packages/host/directory-picker-native/src/index.ts))
+- `@arx-ai/arx-host-plugin-inventory` — requires `loader` ([`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts))
+- `@arx-ai/arx-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
+- `@arx-ai/arx-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
+- `@arx-ai/arx-schedule` — requires `agents` · `sessions` · `tools` · `sessionPersistence` ([`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts))
+- `@arx-ai/arx-session` ([`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts))
+- `@arx-ai/arx-session-checkpoint-policy` — requires `llm` · `sessionPersistence` · `sessions` · `tools` ([`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts))
+- `@arx-ai/arx-session-log-export` — requires `commands` ([`packages/session-query/session-log-export/src/index.ts`](../packages/session-query/session-log-export/src/index.ts))
+- `@arx-ai/arx-session-projection` ([`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts))
+- `@arx-ai/arx-session-stats` — requires `sessionProjections` ([`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts))
+- `@arx-ai/arx-skill-badge` — requires `skills` ([`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts))
+- `@arx-ai/arx-storage` ([`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts))
+- `@arx-ai/arx-subagent` ([`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts))
+- `@arx-ai/arx-subprocess-local` ([`packages/subprocess/subprocess-local/src/index.ts`](../packages/subprocess/subprocess-local/src/index.ts))
+- `@arx-ai/arx-terminal` ([`packages/terminal/terminal/src/index.ts`](../packages/terminal/terminal/src/index.ts))
+- `@arx-ai/arx-tool-ask-user` — requires `tools` · `userQuestions` ([`packages/interaction/tool-ask-user/src/index.ts`](../packages/interaction/tool-ask-user/src/index.ts))
+- `@arx-ai/arx-tool-call-timeout-policy` — requires `tools` ([`packages/guard/timeout-policy/src/index.ts`](../packages/guard/timeout-policy/src/index.ts))
+- `@arx-ai/arx-tool-cordis` — requires `tools` · `systemPrompt` · `dynamicCordisRunner` · `cordisInspect` ([`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/tool-cordis/src/index.ts))
+- `@arx-ai/arx-tool-subagent-control` — requires `tools` · `subagents` ([`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts))
+- `@arx-ai/arx-user-questions` ([`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts))
+- `@arx-ai/arx-workspace` — requires `storageDomain` · `sessionPersistence` ([`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts))
 
 ## Seam packages (not directly loadable)
 
 Abstract service classes — a deployment loads a concrete implementation package instead ([capability seams](../.agents/notes/implemented/architecture/2026-06-13-capability-seams.md)).
 
-- `@centurionarx/cxh-attachment` — abstract `AttachmentStore` ([`packages/attachment/attachment/src/index.ts`](../packages/attachment/attachment/src/index.ts))
-- `@centurionarx/cxh-code-runtime` — abstract `CodeRuntime` ([`packages/code-runtime/code-runtime/src/index.ts`](../packages/code-runtime/code-runtime/src/index.ts))
-- `@centurionarx/cxh-compaction` — abstract `CompactionEngine` ([`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts))
-- `@centurionarx/cxh-credentials` — abstract `CredentialProvider` ([`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts))
-- `@centurionarx/cxh-file-reference` — abstract `FileReferenceService` ([`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts))
-- `@centurionarx/cxh-fs` — abstract `FileSystem` ([`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts))
-- `@centurionarx/cxh-host-directory-picker` — abstract `DirectoryPicker` ([`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts))
-- `@centurionarx/cxh-jobs` — abstract `JobRegistry` ([`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts))
-- `@centurionarx/cxh-sandbox` — abstract `SandboxProvider` ([`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts))
-- `@centurionarx/cxh-session-persistence` — abstract `SessionPersistence` ([`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts))
-- `@centurionarx/cxh-session-query` — abstract `SessionQueryEngine` ([`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts))
-- `@centurionarx/cxh-settings` — abstract `SettingsProvider` ([`packages/settings/settings/src/index.ts`](../packages/settings/settings/src/index.ts))
-- `@centurionarx/cxh-shell` — abstract `ShellExecutor` ([`packages/shell/shell/src/index.ts`](../packages/shell/shell/src/index.ts))
-- `@centurionarx/cxh-spill` — abstract `SpillStore` ([`packages/spill/spill/src/index.ts`](../packages/spill/spill/src/index.ts))
-- `@centurionarx/cxh-subprocess` — abstract `SubprocessRuntime` ([`packages/subprocess/subprocess/src/index.ts`](../packages/subprocess/subprocess/src/index.ts))
-- `@centurionarx/cxh-workflow` — abstract `WorkflowEngine` ([`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts))
+- `@arx-ai/arx-attachment` — abstract `AttachmentStore` ([`packages/attachment/attachment/src/index.ts`](../packages/attachment/attachment/src/index.ts))
+- `@arx-ai/arx-code-runtime` — abstract `CodeRuntime` ([`packages/code-runtime/code-runtime/src/index.ts`](../packages/code-runtime/code-runtime/src/index.ts))
+- `@arx-ai/arx-compaction` — abstract `CompactionEngine` ([`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts))
+- `@arx-ai/arx-credentials` — abstract `CredentialProvider` ([`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts))
+- `@arx-ai/arx-file-reference` — abstract `FileReferenceService` ([`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts))
+- `@arx-ai/arx-fs` — abstract `FileSystem` ([`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts))
+- `@arx-ai/arx-host-directory-picker` — abstract `DirectoryPicker` ([`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts))
+- `@arx-ai/arx-jobs` — abstract `JobRegistry` ([`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts))
+- `@arx-ai/arx-sandbox` — abstract `SandboxProvider` ([`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts))
+- `@arx-ai/arx-session-persistence` — abstract `SessionPersistence` ([`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts))
+- `@arx-ai/arx-session-query` — abstract `SessionQueryEngine` ([`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts))
+- `@arx-ai/arx-settings` — abstract `SettingsProvider` ([`packages/settings/settings/src/index.ts`](../packages/settings/settings/src/index.ts))
+- `@arx-ai/arx-shell` — abstract `ShellExecutor` ([`packages/shell/shell/src/index.ts`](../packages/shell/shell/src/index.ts))
+- `@arx-ai/arx-spill` — abstract `SpillStore` ([`packages/spill/spill/src/index.ts`](../packages/spill/spill/src/index.ts))
+- `@arx-ai/arx-subprocess` — abstract `SubprocessRuntime` ([`packages/subprocess/subprocess/src/index.ts`](../packages/subprocess/subprocess/src/index.ts))
+- `@arx-ai/arx-workflow` — abstract `WorkflowEngine` ([`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts))
 
 ## Library packages (no plugin entry)
 
 Imported as libraries by other packages; a `cordis.yml` cannot load them.
 
-- `@centurionarx/cxh-acp-snapshot` ([`packages/test-support/acp-snapshot/src/index.ts`](../packages/test-support/acp-snapshot/src/index.ts))
-- `@centurionarx/cxh-agent-loop-testkit` ([`packages/test-support/agent-loop-testkit/src/index.ts`](../packages/test-support/agent-loop-testkit/src/index.ts))
-- `@centurionarx/cxh-anonymous-user-id` ([`packages/identity/anonymous-user-id/src/index.ts`](../packages/identity/anonymous-user-id/src/index.ts))
-- `@centurionarx/cxh-app-boot` ([`packages/boot/app-boot/src/index.ts`](../packages/boot/app-boot/src/index.ts))
-- `@centurionarx/cxh-atomic-write` ([`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts))
-- `@centurionarx/cxh-base` ([`packages/bundle/base/src/index.ts`](../packages/bundle/base/src/index.ts))
-- `@centurionarx/cxh-brand` ([`packages/util/brand/src/index.ts`](../packages/util/brand/src/index.ts))
-- `@centurionarx/cxh-claude-agent-sdk-process` ([`packages/subagent/claude-agent-sdk-process/src/index.ts`](../packages/subagent/claude-agent-sdk-process/src/index.ts))
-- `@centurionarx/cxh-client-test-runtime` ([`packages/test-support/client-runtime/src/index.ts`](../packages/test-support/client-runtime/src/index.ts))
-- `@centurionarx/cxh-client-ui-primitives` ([`packages/client/ui-primitives/src/index.ts`](../packages/client/ui-primitives/src/index.ts))
-- `@centurionarx/cxh-client-ui-slots` ([`packages/client/ui-slots/src/index.ts`](../packages/client/ui-slots/src/index.ts))
-- `@centurionarx/cxh-client-web` ([`packages/client/web/src/index.ts`](../packages/client/web/src/index.ts))
-- `@centurionarx/cxh-cmdline` ([`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts))
-- `@centurionarx/cxh-code-runtime-python` ([`packages/code-runtime/code-runtime-python/src/index.ts`](../packages/code-runtime/code-runtime-python/src/index.ts))
-- `@centurionarx/cxh-home-paths` ([`packages/util/home-paths/src/index.ts`](../packages/util/home-paths/src/index.ts))
-- `@centurionarx/cxh-hook-protocol` ([`packages/hooks/hook-protocol/src/index.ts`](../packages/hooks/hook-protocol/src/index.ts))
-- `@centurionarx/cxh-launch-environment` ([`packages/util/launch-environment/src/index.ts`](../packages/util/launch-environment/src/index.ts))
-- `@centurionarx/cxh-llm-mock-server` ([`packages/test-support/llm-mock-server/src/index.ts`](../packages/test-support/llm-mock-server/src/index.ts))
-- `@centurionarx/cxh-loader-smoke` ([`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts))
-- `@centurionarx/cxh-native-command` ([`packages/util/native-command/src/index.ts`](../packages/util/native-command/src/index.ts))
-- `@centurionarx/cxh-output-retention` ([`packages/util/output-retention/src/index.ts`](../packages/util/output-retention/src/index.ts))
-- `@centurionarx/cxh-sandbox-windows-acl` ([`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts))
-- `@centurionarx/cxh-scope` ([`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts))
-- `@centurionarx/cxh-sdk-client` ([`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts))
-- `@centurionarx/cxh-sdk-jsonrpc-demo` ([`packages/examples/jsonrpc-demo/src/index.ts`](../packages/examples/jsonrpc-demo/src/index.ts))
-- `@centurionarx/cxh-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
-- `@centurionarx/cxh-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
-- `@centurionarx/cxh-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
-- `@centurionarx/cxh-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
-- `@centurionarx/cxh-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))
-- `@centurionarx/cxh-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
-- `@centurionarx/cxh-typert-protocol` ([`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts))
-- `@centurionarx/cxh-typert-registry` ([`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts))
+- `@arx-ai/arx-acp-snapshot` ([`packages/test-support/acp-snapshot/src/index.ts`](../packages/test-support/acp-snapshot/src/index.ts))
+- `@arx-ai/arx-agent-loop-testkit` ([`packages/test-support/agent-loop-testkit/src/index.ts`](../packages/test-support/agent-loop-testkit/src/index.ts))
+- `@arx-ai/arx-anonymous-user-id` ([`packages/identity/anonymous-user-id/src/index.ts`](../packages/identity/anonymous-user-id/src/index.ts))
+- `@arx-ai/arx-app-boot` ([`packages/boot/app-boot/src/index.ts`](../packages/boot/app-boot/src/index.ts))
+- `@arx-ai/arx-atomic-write` ([`packages/util/atomic-write/src/index.ts`](../packages/util/atomic-write/src/index.ts))
+- `@arx-ai/arx-base` ([`packages/bundle/base/src/index.ts`](../packages/bundle/base/src/index.ts))
+- `@arx-ai/arx-brand` ([`packages/util/brand/src/index.ts`](../packages/util/brand/src/index.ts))
+- `@arx-ai/arx-claude-agent-sdk-process` ([`packages/subagent/claude-agent-sdk-process/src/index.ts`](../packages/subagent/claude-agent-sdk-process/src/index.ts))
+- `@arx-ai/arx-client-test-runtime` ([`packages/test-support/client-runtime/src/index.ts`](../packages/test-support/client-runtime/src/index.ts))
+- `@arx-ai/arx-client-ui-primitives` ([`packages/client/ui-primitives/src/index.ts`](../packages/client/ui-primitives/src/index.ts))
+- `@arx-ai/arx-client-ui-slots` ([`packages/client/ui-slots/src/index.ts`](../packages/client/ui-slots/src/index.ts))
+- `@arx-ai/arx-client-web` ([`packages/client/web/src/index.ts`](../packages/client/web/src/index.ts))
+- `@arx-ai/arx-cmdline` ([`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts))
+- `@arx-ai/arx-code-runtime-python` ([`packages/code-runtime/code-runtime-python/src/index.ts`](../packages/code-runtime/code-runtime-python/src/index.ts))
+- `@arx-ai/arx-home-paths` ([`packages/util/home-paths/src/index.ts`](../packages/util/home-paths/src/index.ts))
+- `@arx-ai/arx-hook-protocol` ([`packages/hooks/hook-protocol/src/index.ts`](../packages/hooks/hook-protocol/src/index.ts))
+- `@arx-ai/arx-launch-environment` ([`packages/util/launch-environment/src/index.ts`](../packages/util/launch-environment/src/index.ts))
+- `@arx-ai/arx-llm-mock-server` ([`packages/test-support/llm-mock-server/src/index.ts`](../packages/test-support/llm-mock-server/src/index.ts))
+- `@arx-ai/arx-loader-smoke` ([`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts))
+- `@arx-ai/arx-native-command` ([`packages/util/native-command/src/index.ts`](../packages/util/native-command/src/index.ts))
+- `@arx-ai/arx-output-retention` ([`packages/util/output-retention/src/index.ts`](../packages/util/output-retention/src/index.ts))
+- `@arx-ai/arx-sandbox-windows-acl` ([`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts))
+- `@arx-ai/arx-scope` ([`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts))
+- `@arx-ai/arx-sdk-client` ([`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts))
+- `@arx-ai/arx-sdk-jsonrpc-demo` ([`packages/examples/jsonrpc-demo/src/index.ts`](../packages/examples/jsonrpc-demo/src/index.ts))
+- `@arx-ai/arx-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
+- `@arx-ai/arx-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
+- `@arx-ai/arx-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
+- `@arx-ai/arx-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
+- `@arx-ai/arx-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))
+- `@arx-ai/arx-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
+- `@arx-ai/arx-typert-protocol` ([`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts))
+- `@arx-ai/arx-typert-registry` ([`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts))

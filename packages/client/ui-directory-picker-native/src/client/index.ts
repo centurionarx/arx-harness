@@ -7,9 +7,9 @@
  * both sides of the native interaction with one cordis.yml row; no client
  * code branches on a capability kind.
  */
-import type { ClientContext } from '@centurionarx/cxh-client-runtime/client'
+import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 // Type-only: pulls the SlotMap merge declaring the directory-flow holes.
-import type {} from '@centurionarx/cxh-client-ui-workspace/client'
+import type {} from '@arx-ai/arx-client-ui-workspace/client'
 import type { NativeFlowInjected } from './flow.ts'
 import { NativeDirectoryFlow } from './flow.ts'
 

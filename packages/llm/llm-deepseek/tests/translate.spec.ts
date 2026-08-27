@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { BlockAssembler, EMPTY_RESPONSE_CODE, LlmError } from '@centurionarx/cxh-llm'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
+import { BlockAssembler, EMPTY_RESPONSE_CODE, LlmError } from '@arx-ai/arx-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
 import { DONE } from '../src/sse.ts'
 import { mapFinishReason, mapUsage, translate } from '../src/translate.ts'
 

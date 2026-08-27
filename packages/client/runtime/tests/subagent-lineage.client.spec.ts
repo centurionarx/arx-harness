@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { SessionId, SessionSummary } from '@centurionarx/cxh-client-runtime/client'
-import { indexSubagentDescendants } from '@centurionarx/cxh-client-runtime/client'
+import type { SessionId, SessionSummary } from '@arx-ai/arx-client-runtime/client'
+import { indexSubagentDescendants } from '@arx-ai/arx-client-runtime/client'
 
 const sid = (id: string) => id as SessionId
 

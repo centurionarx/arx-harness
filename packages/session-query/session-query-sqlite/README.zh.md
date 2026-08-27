@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-query-sqlite
+# @arx-ai/arx-session-query-sqlite
 
 [English](README.md) | 中文
 

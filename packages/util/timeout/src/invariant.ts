@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-timeout`.
- * @module @centurionarx/cxh-timeout/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-timeout`.
+ * @module @arx-ai/arx-timeout/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-timeout'
+const PACKAGE_NAME = '@arx-ai/arx-timeout'
 
 /** Cordis companion plugin name. */
 export const name = 'timeout-invariant'

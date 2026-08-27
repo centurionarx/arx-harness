@@ -1,13 +1,13 @@
 /**
  * Service Definition for the `ctx.shell` capability seam, covering foreground commands and background process
  * handles. Job ids, ownership, polling, and notices belong to
- * `@centurionarx/cxh-jobs`, keeping executors independent of sessions.
- * @module @centurionarx/cxh-shell
+ * `@arx-ai/arx-jobs`, keeping executors independent of sessions.
+ * @module @arx-ai/arx-shell
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
-import type { SandboxMode } from '@centurionarx/cxh-sandbox'
+import { Context, Service } from '@arx-ai/cordis'
+import { settingsNamespace } from '@arx-ai/arx-settings'
+import type { SandboxMode } from '@arx-ai/arx-sandbox'
 import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } from './types.ts'
 
 /**
@@ -21,7 +21,7 @@ import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellRunResult } fr
  */
 export const SHELL_SETTINGS_NAMESPACE = settingsNamespace('shell')
 
-export { CXH_ENV_PREFIX } from './types.ts'
+export { ARX_ENV_PREFIX } from './types.ts'
 export type {
   ShellExecRequest,
   ShellExecSpec,
@@ -31,13 +31,13 @@ export type {
   ShellRunResult,
   ShellSandboxInfo,
   CollectedOutput,
-  CxhEnvironment,
-  CxhEnvironmentKey,
+  ArxEnvironment,
+  ArxEnvironmentKey,
 } from './types.ts'
 export { parseExitStatus } from './render.ts'
 export type { ParsedExitStatus } from './render.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     shell: ShellExecutor
   }

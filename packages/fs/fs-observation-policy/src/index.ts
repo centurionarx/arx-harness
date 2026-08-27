@@ -4,12 +4,12 @@
  * guards from that state, and the provider performs the atomic freshness/no-clobber check. Without
  * this plugin, tools retain the bare provider's unconditional mutation behavior. See the package
  * README for composition rules.
- * @module @centurionarx/cxh-fs-observation-policy
+ * @module @arx-ai/arx-fs-observation-policy
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { FsError } from '@centurionarx/cxh-fs'
-import type { FsObservation, FsTarget, FsVersion, FsWriteIntent } from '@centurionarx/cxh-fs'
+import type { Context } from '@arx-ai/cordis'
+import { FsError } from '@arx-ai/arx-fs'
+import type { FsObservation, FsTarget, FsVersion, FsWriteIntent } from '@arx-ai/arx-fs'
 import type { FsObservationActor } from './types.ts'
 
 export type { FsObservationActor } from './types.ts'

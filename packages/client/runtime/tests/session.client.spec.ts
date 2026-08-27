@@ -7,9 +7,9 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { SessionEvent } from '@centurionarx/cxh-session/types'
-import type {} from '@centurionarx/cxh-commands/types'
-import type { SessionId } from '@centurionarx/cxh-api-remotes/client'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import type {} from '@arx-ai/arx-commands/types'
+import type { SessionId } from '@arx-ai/arx-api-remotes/client'
 import { Session } from '../src/client/sessions/session.ts'
 import type {
   ChatConversationViewNode, ChatLocationNodeIndex, ChatNodeStore, ChatSnapshot,

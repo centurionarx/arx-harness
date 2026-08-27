@@ -1,16 +1,16 @@
 /**
  * Same-session goal-round driver over public agent, session, and goal services.
- * @module @centurionarx/cxh-goal-round-driver
+ * @module @arx-ai/arx-goal-round-driver
  */
 
 import { isDeepStrictEqual } from 'node:util'
-import { FiberState } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
-import type { Agent, PreStepDecision } from '@centurionarx/cxh-agent'
-import type { GoalMessageSource, GoalRef, GoalView } from '@centurionarx/cxh-goal'
-import { createUserMessage } from '@centurionarx/cxh-llm'
-import type { ContentBlock, MessageId, MessageSource } from '@centurionarx/cxh-llm'
-import type { Session, SessionEvent, UserMessage } from '@centurionarx/cxh-session'
+import { FiberState } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
+import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import type { GoalMessageSource, GoalRef, GoalView } from '@arx-ai/arx-goal'
+import { createUserMessage } from '@arx-ai/arx-llm'
+import type { ContentBlock, MessageId, MessageSource } from '@arx-ai/arx-llm'
+import type { Session, SessionEvent, UserMessage } from '@arx-ai/arx-session'
 import { renderGoalRoundPrompt } from './prompt.ts'
 
 export { renderGoalRoundPrompt } from './prompt.ts'

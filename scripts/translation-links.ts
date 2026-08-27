@@ -307,7 +307,7 @@ export function normalizeTranslationMarkdownLinks(
   visitResolvedDocumentLinks(markdown, context, skipTargets, (_node, destination, resolved) => {
     replacements.push(replacementFor(
       destination,
-      `cxh-translation-target:${resolved.pair.source}${resolved.suffix}`,
+      `arx-translation-target:${resolved.pair.source}${resolved.suffix}`,
     ))
   })
   return applyReplacements(markdown, replacements)
@@ -324,5 +324,5 @@ export function semanticTranslationLinkNodeTarget(
   const resolved = resolveTranslationLink(node.url, context, destination.url)
   return resolved === undefined
     ? destination.url
-    : `cxh-translation-target:${resolved.pair.source}${resolved.suffix}`
+    : `arx-translation-target:${resolved.pair.source}${resolved.suffix}`
 }

@@ -4,7 +4,7 @@ Status: implemented
 
 English | [中文](2026-06-21-subagent-capability-seam.zh.md)
 
-> The full seam is shipped: the `cxh-subagent` interface and `cxh-tool-subagent` consumer; the two in-process backends (`cxh-subagent-spawn-in-process`, `cxh-subagent-fork-in-process`); the nested-agent snapshot infrastructure ([per-session snapshot replay](../testing/2026-06-22-subagent-snapshot-replay.md)); and the out-of-process ACP, Codex, and Claude Code backends ([ACP Agent Note](2026-06-22-acp-subagent-backend.md), [product-provider Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.md)).
+> The full seam is shipped: the `arx-subagent` interface and `arx-tool-subagent` consumer; the two in-process backends (`arx-subagent-spawn-in-process`, `arx-subagent-fork-in-process`); the nested-agent snapshot infrastructure ([per-session snapshot replay](../testing/2026-06-22-subagent-snapshot-replay.md)); and the out-of-process ACP, Codex, and Claude Code backends ([ACP Agent Note](2026-06-22-acp-subagent-backend.md), [product-provider Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.md)).
 
 ## Problem
 
@@ -31,13 +31,13 @@ A new package group `packages/subagent/`:
 
 | Package | Role |
 |---|---|
-| `@centurionarx/cxh-subagent` | interface: `SubagentRuntime` (`ctx.subagents`), `SubagentProvider`, `SubagentRun`, the request/result/capability vocabulary, the `subagent/*` events |
-| `@centurionarx/cxh-subagent-spawn-in-process` | implementation: a fresh in-process child via `ctx.agents.create` |
-| `@centurionarx/cxh-subagent-fork-in-process` | implementation: an in-process child seeded with a snapshot of the parent's log |
-| `@centurionarx/cxh-subagent-acp` | implementation: an ACP client driving a configured child process |
-| `@centurionarx/cxh-subagent-codex` | implementation: a one-shot official Codex app-server process |
-| `@centurionarx/cxh-subagent-claude-code` | implementation: a one-shot official Claude Code process through the Agent SDK |
-| `@centurionarx/cxh-tool-subagent` | consumer: the model-facing `subagent` tool over `ctx.subagents` |
+| `@arx-ai/arx-subagent` | interface: `SubagentRuntime` (`ctx.subagents`), `SubagentProvider`, `SubagentRun`, the request/result/capability vocabulary, the `subagent/*` events |
+| `@arx-ai/arx-subagent-spawn-in-process` | implementation: a fresh in-process child via `ctx.agents.create` |
+| `@arx-ai/arx-subagent-fork-in-process` | implementation: an in-process child seeded with a snapshot of the parent's log |
+| `@arx-ai/arx-subagent-acp` | implementation: an ACP client driving a configured child process |
+| `@arx-ai/arx-subagent-codex` | implementation: a one-shot official Codex app-server process |
+| `@arx-ai/arx-subagent-claude-code` | implementation: a one-shot official Claude Code process through the Agent SDK |
+| `@arx-ai/arx-tool-subagent` | consumer: the model-facing `subagent` tool over `ctx.subagents` |
 
 ### The primitive: async `start → SubagentRun`
 
@@ -50,7 +50,7 @@ A provider exposes `start(request) → Promise<SubagentRun>`. Fulfillment publis
 
 ### Fork vs. fresh are separate backends, not a flag
 
-Fresh and forked children are separate providers, not a request flag. `cxh-subagent-spawn-in-process` starts an isolated child; `cxh-subagent-fork-in-process` seeds a balanced prefix containing only completed parent turns. The in-flight turn is excluded because its subagent call has no result yet and cannot form valid replay history.
+Fresh and forked children are separate providers, not a request flag. `arx-subagent-spawn-in-process` starts an isolated child; `arx-subagent-fork-in-process` seeds a balanced prefix containing only completed parent turns. The in-flight turn is excluded because its subagent call has no result yet and cannot form valid replay history.
 
 ### Child isolation and the parent log
 
@@ -58,11 +58,11 @@ Each in-process subagent runs in its **own `Session`** (own id, `parentSession` 
 
 ### Synchronous collect (first cut)
 
-`cxh-tool-subagent` passes its execution signal to `start()`, awaits the child result, and disposes the run before reporting. Non-completed outcomes become error results rather than successful partial output; they present the optional safe diagnostic owned by the [non-interactive permissions decision](2026-08-15-product-subagent-noninteractive-permissions.md) separately from partial assistant text. Independent result and disposal rejections remain independently observable.
+`arx-tool-subagent` passes its execution signal to `start()`, awaits the child result, and disposes the run before reporting. Non-completed outcomes become error results rather than successful partial output; they present the optional safe diagnostic owned by the [non-interactive permissions decision](2026-08-15-product-subagent-noninteractive-permissions.md) separately from partial assistant text. Independent result and disposal rejections remain independently observable.
 
 ### Provider selection is config, not model-facing
 
-`cxh-tool-subagent` binds to exactly one provider name (`Config.provider`); the model sees only `{ description, prompt }`. To expose more than one transport, load the tool plugin more than once, each bound to a different provider and a distinct `toolName` (the tool registry rejects a duplicate name). The *service* holds the multi-provider registry; the *tool* picks one — the schema carries no provider/type parameter.
+`arx-tool-subagent` binds to exactly one provider name (`Config.provider`); the model sees only `{ description, prompt }`. To expose more than one transport, load the tool plugin more than once, each bound to a different provider and a distinct `toolName` (the tool registry rejects a duplicate name). The *service* holds the multi-provider registry; the *tool* picks one — the schema carries no provider/type parameter.
 
 ## Testing
 

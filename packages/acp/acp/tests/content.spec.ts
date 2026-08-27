@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Context } from '@centurionarx/cordis'
-import { AttachmentError, AttachmentId } from '@centurionarx/cxh-attachment'
-import type { ImageAttachmentRef, SaveImageAttachment } from '@centurionarx/cxh-attachment'
-import type { Agent } from '@centurionarx/cxh-agent'
+import type { Context } from '@arx-ai/cordis'
+import { AttachmentError, AttachmentId } from '@arx-ai/arx-attachment'
+import type { ImageAttachmentRef, SaveImageAttachment } from '@arx-ai/arx-attachment'
+import type { Agent } from '@arx-ai/arx-agent'
 import {
   AcpContentError,
   admitAcpPrompt,

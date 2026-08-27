@@ -8,85 +8,85 @@ The headless snapshot composition combines the real DeepSeek adapter and coding 
 ```mermaid
 flowchart LR
   cfg["examples/headless-agent<br/>cordis.yml"]
-  plugin_headless_settings["settings<br/>@centurionarx/cxh-settings-file"]
+  plugin_headless_settings["settings<br/>@arx-ai/arx-settings-file"]
   cfg --> plugin_headless_settings
-  plugin_headless_credentials["credentials<br/>@centurionarx/cxh-credentials-local"]
+  plugin_headless_credentials["credentials<br/>@arx-ai/arx-credentials-local"]
   cfg --> plugin_headless_credentials
-  plugin_headless_llm_deepseek["llm-deepseek<br/>@centurionarx/cxh-llm-deepseek"]
+  plugin_headless_llm_deepseek["llm-deepseek<br/>@arx-ai/arx-llm-deepseek"]
   cfg --> plugin_headless_llm_deepseek
-  plugin_headless_subprocess["subprocess<br/>@centurionarx/cxh-subprocess-local"]
+  plugin_headless_subprocess["subprocess<br/>@arx-ai/arx-subprocess-local"]
   cfg --> plugin_headless_subprocess
-  plugin_headless_bash["bash<br/>@centurionarx/cxh-bash-local"]
+  plugin_headless_bash["bash<br/>@arx-ai/arx-bash-local"]
   cfg --> plugin_headless_bash
-  plugin_headless_agent_spine["agent-spine<br/>@centurionarx/cxh-agent-spine-demo"]
+  plugin_headless_agent_spine["agent-spine<br/>@arx-ai/arx-agent-spine-demo"]
   cfg --> plugin_headless_agent_spine
-  plugin_headless_persistence["persistence<br/>@centurionarx/cxh-session-persistence-jsonl"]
+  plugin_headless_persistence["persistence<br/>@arx-ai/arx-session-persistence-jsonl"]
   cfg --> plugin_headless_persistence
-  plugin_headless_checkpoint_policy["checkpoint-policy<br/>@centurionarx/cxh-session-checkpoint-policy"]
+  plugin_headless_checkpoint_policy["checkpoint-policy<br/>@arx-ai/arx-session-checkpoint-policy"]
   cfg --> plugin_headless_checkpoint_policy
-  plugin_headless_token_meter["token-meter<br/>@centurionarx/cxh-token-meter"]
+  plugin_headless_token_meter["token-meter<br/>@arx-ai/arx-token-meter"]
   cfg --> plugin_headless_token_meter
-  plugin_headless_compaction_basic["compaction-basic<br/>@centurionarx/cxh-compaction-basic"]
+  plugin_headless_compaction_basic["compaction-basic<br/>@arx-ai/arx-compaction-basic"]
   cfg --> plugin_headless_compaction_basic
-  plugin_headless_session_projection["session-projection<br/>@centurionarx/cxh-session-projection"]
+  plugin_headless_session_projection["session-projection<br/>@arx-ai/arx-session-projection"]
   cfg --> plugin_headless_session_projection
-  plugin_headless_subagent["subagent<br/>@centurionarx/cxh-subagent"]
+  plugin_headless_subagent["subagent<br/>@arx-ai/arx-subagent"]
   cfg --> plugin_headless_subagent
-  plugin_headless_subagent_spawn_in_process["subagent-spawn-in-process<br/>@centurionarx/cxh-subagent-spawn-in-process"]
+  plugin_headless_subagent_spawn_in_process["subagent-spawn-in-process<br/>@arx-ai/arx-subagent-spawn-in-process"]
   cfg --> plugin_headless_subagent_spawn_in_process
-  plugin_headless_subagent_fork_in_process["subagent-fork-in-process<br/>@centurionarx/cxh-subagent-fork-in-process"]
+  plugin_headless_subagent_fork_in_process["subagent-fork-in-process<br/>@arx-ai/arx-subagent-fork-in-process"]
   cfg --> plugin_headless_subagent_fork_in_process
-  plugin_headless_tool_subagent_control["tool-subagent-control<br/>@centurionarx/cxh-tool-subagent-control"]
+  plugin_headless_tool_subagent_control["tool-subagent-control<br/>@arx-ai/arx-tool-subagent-control"]
   cfg --> plugin_headless_tool_subagent_control
-  plugin_headless_tool_subagent_report["tool-subagent-report<br/>@centurionarx/cxh-tool-subagent-report"]
+  plugin_headless_tool_subagent_report["tool-subagent-report<br/>@arx-ai/arx-tool-subagent-report"]
   cfg --> plugin_headless_tool_subagent_report
-  plugin_headless_tool_subagent["tool-subagent<br/>@centurionarx/cxh-tool-subagent"]
+  plugin_headless_tool_subagent["tool-subagent<br/>@arx-ai/arx-tool-subagent"]
   cfg --> plugin_headless_tool_subagent
-  plugin_headless_tool_subagent_fork["tool-subagent-fork<br/>@centurionarx/cxh-tool-subagent"]
+  plugin_headless_tool_subagent_fork["tool-subagent-fork<br/>@arx-ai/arx-tool-subagent"]
   cfg --> plugin_headless_tool_subagent_fork
-  plugin_headless_workflow_worker_thread["workflow-worker-thread<br/>@centurionarx/cxh-workflow-worker-thread"]
+  plugin_headless_workflow_worker_thread["workflow-worker-thread<br/>@arx-ai/arx-workflow-worker-thread"]
   cfg --> plugin_headless_workflow_worker_thread
-  plugin_headless_tool_workflow["tool-workflow<br/>@centurionarx/cxh-tool-workflow"]
+  plugin_headless_tool_workflow["tool-workflow<br/>@arx-ai/arx-tool-workflow"]
   cfg --> plugin_headless_tool_workflow
-  plugin_headless_tool_ralph["tool-ralph<br/>@centurionarx/cxh-tool-ralph"]
+  plugin_headless_tool_ralph["tool-ralph<br/>@arx-ai/arx-tool-ralph"]
   cfg --> plugin_headless_tool_ralph
-  plugin_headless_tool_todo["tool-todo<br/>@centurionarx/cxh-tool-todo"]
+  plugin_headless_tool_todo["tool-todo<br/>@arx-ai/arx-tool-todo"]
   cfg --> plugin_headless_tool_todo
-  plugin_headless_fs_local["fs-local<br/>@centurionarx/cxh-fs-local"]
+  plugin_headless_fs_local["fs-local<br/>@arx-ai/arx-fs-local"]
   cfg --> plugin_headless_fs_local
-  plugin_headless_fs_observation_policy["fs-observation-policy<br/>@centurionarx/cxh-fs-observation-policy"]
+  plugin_headless_fs_observation_policy["fs-observation-policy<br/>@arx-ai/arx-fs-observation-policy"]
   cfg --> plugin_headless_fs_observation_policy
-  plugin_headless_tool_fs["tool-fs<br/>@centurionarx/cxh-tool-fs"]
+  plugin_headless_tool_fs["tool-fs<br/>@arx-ai/arx-tool-fs"]
   cfg --> plugin_headless_tool_fs
 ```
 
 | Plugin id | Package / module |
 | --- | --- |
-| `settings` | `@centurionarx/cxh-settings-file` |
-| `credentials` | `@centurionarx/cxh-credentials-local` |
-| `llm-deepseek` | `@centurionarx/cxh-llm-deepseek` |
-| `subprocess` | `@centurionarx/cxh-subprocess-local` |
-| `bash` | `@centurionarx/cxh-bash-local` |
-| `agent-spine` | `@centurionarx/cxh-agent-spine-demo` |
-| `persistence` | `@centurionarx/cxh-session-persistence-jsonl` |
-| `checkpoint-policy` | `@centurionarx/cxh-session-checkpoint-policy` |
-| `token-meter` | `@centurionarx/cxh-token-meter` |
-| `compaction-basic` | `@centurionarx/cxh-compaction-basic` |
-| `session-projection` | `@centurionarx/cxh-session-projection` |
-| `subagent` | `@centurionarx/cxh-subagent` |
-| `subagent-spawn-in-process` | `@centurionarx/cxh-subagent-spawn-in-process` |
-| `subagent-fork-in-process` | `@centurionarx/cxh-subagent-fork-in-process` |
-| `tool-subagent-control` | `@centurionarx/cxh-tool-subagent-control` |
-| `tool-subagent-report` | `@centurionarx/cxh-tool-subagent-report` |
-| `tool-subagent` | `@centurionarx/cxh-tool-subagent` |
-| `tool-subagent-fork` | `@centurionarx/cxh-tool-subagent` |
-| `workflow-worker-thread` | `@centurionarx/cxh-workflow-worker-thread` |
-| `tool-workflow` | `@centurionarx/cxh-tool-workflow` |
-| `tool-ralph` | `@centurionarx/cxh-tool-ralph` |
-| `tool-todo` | `@centurionarx/cxh-tool-todo` |
-| `fs-local` | `@centurionarx/cxh-fs-local` |
-| `fs-observation-policy` | `@centurionarx/cxh-fs-observation-policy` |
-| `tool-fs` | `@centurionarx/cxh-tool-fs` |
+| `settings` | `@arx-ai/arx-settings-file` |
+| `credentials` | `@arx-ai/arx-credentials-local` |
+| `llm-deepseek` | `@arx-ai/arx-llm-deepseek` |
+| `subprocess` | `@arx-ai/arx-subprocess-local` |
+| `bash` | `@arx-ai/arx-bash-local` |
+| `agent-spine` | `@arx-ai/arx-agent-spine-demo` |
+| `persistence` | `@arx-ai/arx-session-persistence-jsonl` |
+| `checkpoint-policy` | `@arx-ai/arx-session-checkpoint-policy` |
+| `token-meter` | `@arx-ai/arx-token-meter` |
+| `compaction-basic` | `@arx-ai/arx-compaction-basic` |
+| `session-projection` | `@arx-ai/arx-session-projection` |
+| `subagent` | `@arx-ai/arx-subagent` |
+| `subagent-spawn-in-process` | `@arx-ai/arx-subagent-spawn-in-process` |
+| `subagent-fork-in-process` | `@arx-ai/arx-subagent-fork-in-process` |
+| `tool-subagent-control` | `@arx-ai/arx-tool-subagent-control` |
+| `tool-subagent-report` | `@arx-ai/arx-tool-subagent-report` |
+| `tool-subagent` | `@arx-ai/arx-tool-subagent` |
+| `tool-subagent-fork` | `@arx-ai/arx-tool-subagent` |
+| `workflow-worker-thread` | `@arx-ai/arx-workflow-worker-thread` |
+| `tool-workflow` | `@arx-ai/arx-tool-workflow` |
+| `tool-ralph` | `@arx-ai/arx-tool-ralph` |
+| `tool-todo` | `@arx-ai/arx-tool-todo` |
+| `fs-local` | `@arx-ai/arx-fs-local` |
+| `fs-observation-policy` | `@arx-ai/arx-fs-observation-policy` |
+| `tool-fs` | `@arx-ai/arx-tool-fs` |
 
 Source config: [`examples/headless-agent/cordis.yml`](cordis.yml).
 

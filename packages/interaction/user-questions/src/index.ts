@@ -1,17 +1,17 @@
 /**
  * Service Definition for the user-questions capability seam (`ctx.userQuestions`): a UI-backed service for
  * pausing an agent tool call until the human answers a question. The model-
- * facing tool lives in `@centurionarx/cxh-tool-ask-user`; UI packages provide
+ * facing tool lives in `@arx-ai/arx-tool-ask-user`; UI packages provide
  * the single active provider.
  *
- * @module @centurionarx/cxh-user-questions
+ * @module @arx-ai/arx-user-questions
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { HarnessError } from '@centurionarx/cxh-llm'
+import { Context, Service } from '@arx-ai/cordis'
+import type { Agent } from '@arx-ai/arx-agent'
+import { HarnessError } from '@arx-ai/arx-llm'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     userQuestions: UserQuestionService
   }

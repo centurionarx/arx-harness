@@ -6,8 +6,8 @@ import {
   requestMethod,
   supportsOperation,
   supportsTransientOpen,
-} from '@centurionarx/cxh-lsp-stdio'
-import type { WireServerCapabilities } from '@centurionarx/cxh-lsp-stdio/src/protocol.ts'
+} from '@arx-ai/arx-lsp-stdio'
+import type { WireServerCapabilities } from '@arx-ai/arx-lsp-stdio/src/protocol.ts'
 
 const RANGE = { start: { line: 1, character: 2 }, end: { line: 1, character: 5 } }
 

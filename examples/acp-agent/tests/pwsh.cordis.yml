@@ -1,26 +1,26 @@
 # Minimal live counterpart for the pwsh-tool-turn snapshot composition.
 - id: llm-deepseek
-  name: '@centurionarx/cxh-llm-deepseek'
+  name: '@arx-ai/arx-llm-deepseek'
   config:
     models:
       - id: deepseek-v4-pro
 
 - id: subprocess
-  name: '@centurionarx/cxh-subprocess-local'
+  name: '@arx-ai/arx-subprocess-local'
 
 - id: bash
-  name: '@centurionarx/cxh-pwsh-local'
+  name: '@arx-ai/arx-pwsh-local'
 
 - id: shell-env
-  name: '@centurionarx/cxh-shell-env'
+  name: '@arx-ai/arx-shell-env'
 
 - id: acp-agent
-  name: '@centurionarx/cxh-acp-demo'
+  name: '@arx-ai/arx-acp-demo'
   config:
     provider: deepseek-official
     model: deepseek-v4-pro
-    persistenceRoot: !!js process.env.CXH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
-    persistenceCompression: !!js "process.env.CXH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+    persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+    persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
     workspaceContext: false
     skills:
       enabled: false
@@ -32,4 +32,4 @@
     persona: You are a concise snapshot agent working in {{cwd}}.
 
 - id: tool-pwsh
-  name: '@centurionarx/cxh-tool-pwsh'
+  name: '@arx-ai/arx-tool-pwsh'

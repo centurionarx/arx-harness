@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
-import TypertRegistry from '@centurionarx/cxh-typert-registry'
+import { Context } from '@arx-ai/cordis'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
+import TypertRegistry from '@arx-ai/arx-typert-registry'
 
 describe('Session Typert provider', () => {
   it('contributes live Session lookup in either service load order', async () => {
@@ -15,8 +15,8 @@ describe('Session Typert provider', () => {
     expect(lookup).toMatchObject({
       parameter: 'session',
       wire: 'sessionId',
-      hostTypeSymbol: '@centurionarx/cxh-session#Session',
-      wireTypeSymbol: '@centurionarx/cxh-session/types#SessionId',
+      hostTypeSymbol: '@arx-ai/arx-session#Session',
+      wireTypeSymbol: '@arx-ai/arx-session/types#SessionId',
     })
     expect(lookup?.resolve(session.id)).toBe(session)
 

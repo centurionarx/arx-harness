@@ -12,10 +12,10 @@
 - text: /user-invoke-demo and confirm the fixture wiring {{clock}}
 - button "Copy":
   - img
-- button "Context injection @centurionarx/cxh-system-prompt":
+- button "Context injection @arx-ai/arx-system-prompt":
   - img
   - img
-  - text: Context injection @centurionarx/cxh-system-prompt
+  - text: Context injection @arx-ai/arx-system-prompt
 - button "Context injection user-invoke-demo":
   - img
   - img

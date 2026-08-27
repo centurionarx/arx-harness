@@ -1,18 +1,18 @@
 /**
  * `LocalSpillStore`: the host-filesystem implementation of the
- * `@centurionarx/cxh-spill` storage seam. Persists a tool's oversized text to a
+ * `@arx-ai/arx-spill` storage seam. Persists a tool's oversized text to a
  * private, session-scoped file (see `./store.ts` for the traversal-safe naming
  * and exclusive owner-only write) and returns a path locator plus local
  * read/grep retrieval guidance.
  *
- * @module @centurionarx/cxh-spill-local
+ * @module @arx-ai/arx-spill-local
  */
 
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { resolve } from 'node:path'
-import z from '@centurionarx/schemastery'
-import { SpillLocator, SpillStore } from '@centurionarx/cxh-spill'
-import type { SaveTextSpill, SpillRef } from '@centurionarx/cxh-spill'
+import z from '@arx-ai/schemastery'
+import { SpillLocator, SpillStore } from '@arx-ai/arx-spill'
+import type { SaveTextSpill, SpillRef } from '@arx-ai/arx-spill'
 import { privateRoot, saveTextFile } from './store.ts'
 
 export { encodeSegment, privateRoot, saveTextFile, sessionDir } from './store.ts'

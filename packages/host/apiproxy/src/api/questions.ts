@@ -5,8 +5,8 @@
  * echoing that rpcId, with no resource id in the payload (rpcId suffices).
  */
 
-import type { AskUserQuestionAnswer } from '@centurionarx/cxh-user-questions/types'
-import type { SessionId } from '@centurionarx/cxh-session/types'
+import type { AskUserQuestionAnswer } from '@arx-ai/arx-user-questions/types'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /**
  * Question answer payload (the result.value slot of a client-response):

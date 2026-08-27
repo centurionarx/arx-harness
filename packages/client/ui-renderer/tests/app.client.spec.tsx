@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
-import { Context } from '@centurionarx/cordis'
-import { SlotTestRuntime } from '@centurionarx/cxh-client-test-runtime'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
+import { Context } from '@arx-ai/cordis'
+import { SlotTestRuntime } from '@arx-ai/arx-client-test-runtime'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 import { buildRenderApp } from '../src/client/app.tsx'
 
 let runtime: SlotTestRuntime | undefined
@@ -34,7 +34,7 @@ describe('buildRenderApp', () => {
   })
 
   it('projects the selected durable session title', async () => {
-    vi.stubEnv('CXH_CLIENT_TITLE', 'Product')
+    vi.stubEnv('ARX_CLIENT_TITLE', 'Product')
     document.title = 'stale title'
     const b = await bench()
     render(<>{b.renderApp()}</>)
@@ -48,7 +48,7 @@ describe('buildRenderApp', () => {
   })
 
   it('falls back when the selected id has no list row', async () => {
-    vi.stubEnv('CXH_CLIENT_TITLE', 'Product')
+    vi.stubEnv('ARX_CLIENT_TITLE', 'Product')
     document.title = 'stale title'
     const b = await bench()
     await b.runtime.sessions.add({ id: 's1', summary: { title: 'First' } })

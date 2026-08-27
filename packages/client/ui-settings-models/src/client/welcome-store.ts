@@ -5,8 +5,8 @@
  * stays process-local here.
  */
 
-import type { SettingsScope, SnapshotStore } from '@centurionarx/cxh-client-runtime/client'
-import { createSnapshotStore } from '@centurionarx/cxh-client-runtime/client'
+import type { SettingsScope, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import {
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_VERSION,
 } from '../onboarding-copy.ts'

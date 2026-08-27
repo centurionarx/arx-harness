@@ -1,18 +1,18 @@
 /**
- * Commander adapter for the `cxh` command line.
+ * Commander adapter for the `arx` command line.
  *
  * The launcher parses only what it owns — which profile to boot, which extra
  * patch overlays to apply, and the config dumps — and hands **everything after
  * its own flags** to the booted tree verbatim, where injected app plugins parse
  * their own flag families and print their own `--help` (see
- * `@centurionarx/cxh-cmdline`). Launcher flags therefore come first: the first
+ * `@arx-ai/arx-cmdline`). Launcher flags therefore come first: the first
  * token this parser does not recognize starts the inner arguments, so
- * `cxh --profile tui --resume abc` boots the tui profile with `--resume abc`,
- * and `cxh --profile web -h` prints the web app's help, not this one's.
+ * `arx --profile tui --resume abc` boots the tui profile with `--resume abc`,
+ * and `arx --profile web -h` prints the web app's help, not this one's.
  *
  * `web` is a hardcoded alias for `--profile web`; `plugin` manages a profile's
  * plugin dependencies by forwarding to pnpm.
- * @module @centurionarx/cxh/args
+ * @module @arx-ai/arx/args
  */
 
 import { Command, CommanderError } from 'commander'
@@ -44,8 +44,8 @@ interface PluginInvocation {
   args: string[]
 }
 
-/** The resolved `cxh` invocation. Help, version, and errors exit inside {@link parseCxhArgs}. */
-export type CxhInvocation = ProfileInvocation | DumpConfigInvocation | PluginInvocation
+/** The resolved `arx` invocation. Help, version, and errors exit inside {@link parseArxArgs}. */
+export type ArxInvocation = ProfileInvocation | DumpConfigInvocation | PluginInvocation
 
 /** Launcher flags shared by the default command and the `web` alias. */
 interface BootOptions {
@@ -63,12 +63,12 @@ const collect = (value: string, previous: string[] = []): string[] => [...previo
 /** The launcher's own help text; each app prints its own. */
 const HELP_EXAMPLES = `
 Examples:
-  cxh --profile web                          boot the web profile (same as: cxh web)
-  cxh --profile headless "run the tests"     answer one task, print the result, and exit
-  cxh --profile tui --patch ./extra.yml      boot a custom profile with one extra overlay
-  cxh --profile tui --resume <session>       arguments after the launcher flags reach the app
-  cxh --profile web --help                   the web app's own flags and help
-  cxh plugin --profile tui add <package>     install a plugin into the tui profile
+  arx --profile web                          boot the web profile (same as: arx web)
+  arx --profile headless "run the tests"     answer one task, print the result, and exit
+  arx --profile tui --patch ./extra.yml      boot a custom profile with one extra overlay
+  arx --profile tui --resume <session>       arguments after the launcher flags reach the app
+  arx --profile web --help                   the web app's own flags and help
+  arx plugin --profile tui add <package>     install a plugin into the tui profile
 `
 
 /**
@@ -80,7 +80,7 @@ Examples:
  * @param args - the leftover arguments, in argv order.
  * @returns the resolved invocation.
  */
-function resolveBoot(program: Command, profile: string, options: BootOptions, args: string[]): CxhInvocation {
+function resolveBoot(program: Command, profile: string, options: BootOptions, args: string[]): ArxInvocation {
   const patches = options.patch ?? []
   if (patches.includes('')) program.error('error: --patch needs a path')
   if (options.dumpConfig !== true && options.dumpDefaultConfig !== true) {
@@ -109,32 +109,32 @@ function resolveBoot(program: Command, profile: string, options: BootOptions, ar
  * @param version - version string printed by `--version`.
  * @returns the resolved invocation.
  */
-export function parseCxhArgs(argv: readonly string[], version: string): CxhInvocation {
-  let resolved: CxhInvocation | undefined
+export function parseArxArgs(argv: readonly string[], version: string): ArxInvocation {
+  let resolved: ArxInvocation | undefined
   // Annotated, not inferred: the actions below call back into `program`, and an
   // inferred type would be circular through its own chain.
   const program: Command = new Command()
   program
-    .name('cxh')
+    .name('arx')
     .version(version, '-V, --version', 'output the version number')
-    .description('cxh: boot a CENTURIONarx Harness profile — an ordered stack of plugin-bundle patch layers under your own overrides.')
+    .description('arx: boot a arx Harness profile — an ordered stack of plugin-bundle patch layers under your own overrides.')
     .addHelpText('after', HELP_EXAMPLES)
     .exitOverride()
     // The launcher's flags come first and end at the first token it does not
     // know; everything from there on belongs to the booted app, including
-    // its -h. `cxh -h` with no profile still prints this help, below.
+    // its -h. `arx -h` with no profile still prints this help, below.
     .helpOption(false)
     .allowUnknownOption()
     .passThroughOptions()
     .enablePositionalOptions()
-    .argument('[args...]', 'arguments for the booted profile\'s app (see: cxh --profile <name> --help)')
-    .option('--profile <name>', 'the profile under $CXH_HOME/profiles to boot')
+    .argument('[args...]', 'arguments for the booted profile\'s app (see: arx --profile <name> --help)')
+    .option('--profile <name>', 'the profile under $ARX_HOME/profiles to boot')
     .option('--patch <path>', 'extra patch-list overlay applied after the profile layer (repeatable)', collect)
     .option('--dump-config', 'print the composed profile tree and exit')
     .option('--dump-default-config', 'print the profile tree without its user layer or --patch overlays and exit')
     .action((args: string[], options: BootOptions & { profile?: string }) => {
       // With the app owning -h, the launcher's own help is what a bare
-      // `cxh -h` (no profile to hand it to) must print.
+      // `arx -h` (no profile to hand it to) must print.
       if (options.profile === undefined) {
         if (args.some(argument => argument === '-h' || argument === '--help')) program.help()
         program.error('error: --profile <name> is required')
@@ -159,7 +159,7 @@ export function parseCxhArgs(argv: readonly string[], version: string): CxhInvoc
     .allowUnknownOption()
     .passThroughOptions()
     .enablePositionalOptions()
-    .argument('[args...]', 'arguments for the web app (see: cxh web --help)')
+    .argument('[args...]', 'arguments for the web app (see: arx web --help)')
     .option('--patch <path>', 'extra patch-list overlay applied after the profile layer (repeatable)', collect)
     .option('--dump-config', 'print the composed web-profile tree (with the user layer and any --patch) and exit')
     .option('--dump-default-config', 'print the web profile\'s bundle layers (no user layer) and exit')
@@ -186,6 +186,6 @@ export function parseCxhArgs(argv: readonly string[], version: string): CxhInvoc
     return process.exit(error instanceof CommanderError ? error.exitCode : 1)
   }
   /* v8 ignore next -- an action resolves or Commander throws */
-  if (resolved === undefined) throw new Error('cxh: no invocation resolved')
+  if (resolved === undefined) throw new Error('arx: no invocation resolved')
   return resolved
 }

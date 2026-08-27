@@ -2,28 +2,28 @@
 # to the real ACP composition. The model is told not to call them; the scenario
 # pins both assembled request schemas without starting Codex.
 - id: base
-  name: '@centurionarx/cordis-plugin-include'
+  name: '@arx-ai/cordis-plugin-include'
   config:
     path: ./cordis.yml
     patches:
       - insert:
           - id: subagent-codex-primary
-            name: '@centurionarx/cxh-subagent-codex'
+            name: '@arx-ai/arx-subagent-codex'
             config:
               providerName: codex-primary
           - id: subagent-codex-secondary
-            name: '@centurionarx/cxh-subagent-codex'
+            name: '@arx-ai/arx-subagent-codex'
             config:
               providerName: codex-secondary
           - id: tool-subagent-codex-primary
-            name: '@centurionarx/cxh-tool-subagent'
+            name: '@arx-ai/arx-tool-subagent'
             config:
               provider: codex-primary
               toolName: subagent_codex_primary
               backgroundMode: one-shot
               maxDepth: provider-managed
           - id: tool-subagent-codex-secondary
-            name: '@centurionarx/cxh-tool-subagent'
+            name: '@arx-ai/arx-tool-subagent'
             config:
               provider: codex-secondary
               toolName: subagent_codex_secondary

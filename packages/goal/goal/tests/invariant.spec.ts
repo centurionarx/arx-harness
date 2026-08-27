@@ -1,13 +1,13 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import {
   GoalId,
   type GoalSnapshotChangeMeta,
-} from '@centurionarx/cxh-goal'
-import * as GoalInvariantCompanion from '@centurionarx/cxh-goal/invariant'
-import InvariantRegistry, { InvariantError } from '@centurionarx/cxh-invariants'
-import SessionStore, { SessionId } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-goal'
+import * as GoalInvariantCompanion from '@arx-ai/arx-goal/invariant'
+import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
+import SessionStore, { SessionId } from '@arx-ai/arx-session'
 
 const change: GoalSnapshotChangeMeta = {
   kind: 'goal/change',
@@ -54,7 +54,7 @@ describe('goal stream invariants', () => {
       session.append('goal/change', { ...change, extra: true } as never)
     }).toThrow(expect.objectContaining<Partial<InvariantError>>({
       code: 'INVARIANT',
-      packageName: '@centurionarx/cxh-goal',
+      packageName: '@arx-ai/arx-goal',
     }))
     expect(session.seq).toBe(0)
     expect(() => {

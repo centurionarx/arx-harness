@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARX Pre-Push Checks"
+  short_description: "Run the relevant arx Harness checks before push"
+  default_prompt: "Use $arx-pre-push-checks before pushing this arx Harness branch."

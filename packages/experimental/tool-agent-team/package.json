@@ -1,11 +1,11 @@
 {
-  "name": "@centurionarx/cxh-experimental-tool-agent-team",
+  "name": "@arx-ai/arx-experimental-tool-agent-team",
   "description": "Scoped model-facing Agent Teams tools over ctx.agentTeams",
   "version": "0.1.1-rc.2",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/centurionarx/centurionarx-harness.git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
     "directory": "packages/experimental/tool-agent-team"
   },
   "type": "module",
@@ -30,32 +30,32 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@centurionarx/schemastery": "workspace:^"
+    "@arx-ai/schemastery": "workspace:^"
   },
   "peerDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-experimental-agent-team": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-experimental-agent-team": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@centurionarx/cxh-agent": "workspace:^",
-    "@centurionarx/cxh-agent-loop": "workspace:^",
-    "@centurionarx/cxh-agent-loop-testkit": "workspace:^",
-    "@centurionarx/cxh-invariants": "workspace:^",
-    "@centurionarx/cxh-session": "workspace:^",
-    "@centurionarx/cxh-session-persistence-jsonl": "workspace:^",
-    "@centurionarx/cxh-scope": "workspace:^",
-    "@centurionarx/cxh-subagent": "workspace:^",
-    "@centurionarx/cxh-subagent-fork-in-process": "workspace:^",
-    "@centurionarx/cxh-subagent-spawn-in-process": "workspace:^",
-    "@centurionarx/cxh-tool-subagent-control": "workspace:^",
-    "@centurionarx/cxh-system-prompt": "workspace:^",
-    "@centurionarx/cxh-experimental-agent-team": "workspace:^",
-    "@centurionarx/cxh-tools": "workspace:^",
-    "@centurionarx/cordis": "workspace:^"
+    "@arx-ai/arx-agent": "workspace:^",
+    "@arx-ai/arx-agent-loop": "workspace:^",
+    "@arx-ai/arx-agent-loop-testkit": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-session": "workspace:^",
+    "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
+    "@arx-ai/arx-scope": "workspace:^",
+    "@arx-ai/arx-subagent": "workspace:^",
+    "@arx-ai/arx-subagent-fork-in-process": "workspace:^",
+    "@arx-ai/arx-subagent-spawn-in-process": "workspace:^",
+    "@arx-ai/arx-tool-subagent-control": "workspace:^",
+    "@arx-ai/arx-system-prompt": "workspace:^",
+    "@arx-ai/arx-experimental-agent-team": "workspace:^",
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/cordis": "workspace:^"
   }
 }

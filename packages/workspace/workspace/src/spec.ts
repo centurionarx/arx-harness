@@ -2,12 +2,12 @@
  * The workspace domain declaration: record schema and the `defineDomain` spec
  * the registry opens. The zod schema is the durable-boundary validator today
  * and the direct source of the RPC wire projection in a later phase.
- * @module @centurionarx/cxh-workspace/src/spec
+ * @module @arx-ai/arx-workspace/src/spec
  */
 
 import { z } from 'zod'
-import { SessionId } from '@centurionarx/cxh-session'
-import { defineDomain, domainTable } from '@centurionarx/cxh-storage-domain'
+import { SessionId } from '@arx-ai/arx-session'
+import { defineDomain, domainTable } from '@arx-ai/arx-storage-domain'
 import type { WorkspaceId } from './types.ts'
 
 /** Workspace id schema at the durable boundary; branding has no runtime representation. */

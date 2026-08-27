@@ -2,11 +2,11 @@
  * Types for the TypeScript SDK client: launch options, notification shapes,
  * and owned activity results.
  *
- * @module @centurionarx/cxh-sdk-client/types
+ * @module @arx-ai/arx-sdk-client/types
  */
 
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import type { SessionEvent } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import type { SessionEvent } from '@arx-ai/arx-session'
 
 /** One server-to-client notification as received off the wire. */
 export interface HarnessNotification {
@@ -21,7 +21,7 @@ export type NotificationFilter = (notification: HarnessNotification) => boolean
 
 /** Launch and timeout options for {@link HarnessClient}. */
 export interface HarnessClientOptions {
-  /** The runtime executable (the `cxh-jsonrpc-agent` bin, a packaged exe, or `node`). */
+  /** The runtime executable (the `arx-jsonrpc-agent` bin, a packaged exe, or `node`). */
   command: string
   /** Arguments passed to {@link command}. */
   args?: string[]
@@ -30,7 +30,7 @@ export interface HarnessClientOptions {
   /**
    * The complete child environment. `undefined` inherits the parent env
    * verbatim; passing an object replaces it entirely, so callers own
-   * credential policy (see `scrubbedParentEnv` in `@centurionarx/cxh-subprocess`
+   * credential policy (see `scrubbedParentEnv` in `@arx-ai/arx-subprocess`
    * for the shared scrub-then-merge base).
    */
   env?: NodeJS.ProcessEnv
@@ -44,8 +44,8 @@ export interface HarnessClientOptions {
   disposeGraceMs?: number
 }
 
-/** Options for the high-level {@link CENTURIONarxHarness} wrapper. */
-export interface CENTURIONarxHarnessOptions {
+/** Options for the high-level {@link ArxHarness} wrapper. */
+export interface ArxHarnessOptions {
   /** Launch spec for the runtime subprocess (command, args, cwd, env, timeouts). */
   launch: HarnessClientOptions
   /** Workspace cwd recorded on every SDK-created session (default: the launch cwd, else `process.cwd()`). */

@@ -1,9 +1,9 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { type Agent } from '@centurionarx/cxh-agent'
+import { Context } from '@arx-ai/cordis'
+import { type Agent } from '@arx-ai/arx-agent'
 
-import { HarnessError } from '@centurionarx/cxh-llm'
-import { carrierKeyOf } from '@centurionarx/cxh-scope'
+import { HarnessError } from '@arx-ai/arx-llm'
+import { carrierKeyOf } from '@arx-ai/arx-scope'
 import SubagentRuntime, {
   foldSubagentDescriptor,
   snapshotSubagentDescriptor,
@@ -17,8 +17,8 @@ import SubagentRuntime, {
   type SubagentRun,
   type SubagentRunEndInfo,
   type SubagentStartRequest,
-} from '@centurionarx/cxh-subagent'
-import { SessionId, type SessionEvent } from '@centurionarx/cxh-session'
+} from '@arx-ai/arx-subagent'
+import { SessionId, type SessionEvent } from '@arx-ai/arx-session'
 
 function fakeParent(id = 'parent-1'): Agent {
   return { id: SessionId(id) } as unknown as Agent

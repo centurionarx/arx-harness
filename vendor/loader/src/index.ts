@@ -1,5 +1,5 @@
-import { Context, FiberState, Inject, Service, type Fiber } from '@centurionarx/cordis'
-import { defineProperty, isNullable, type Dict } from '@centurionarx/cosmokit'
+import { Context, FiberState, Inject, Service, type Fiber } from '@arx-ai/cordis'
+import { defineProperty, isNullable, type Dict } from '@arx-ai/cosmokit'
 import { ModuleLoader } from './internal.ts'
 import { Entry, type EntryOptions } from './config/entry.ts'
 import { EntryGroup } from './config/group.ts'
@@ -20,7 +20,7 @@ export * from './config/utils.ts'
 /** Re-export Node internal module loader compatibility types. */
 export * from './internal.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Events {
     'exit'(signal: NodeJS.Signals): Promise<void>
     'loader/config-update'(): void

@@ -1,0 +1,69 @@
+/* Exit seat: the sidebar foot's 42px row / 36px rail circle rhythm, shared
+   with the Settings trigger directly above it, plus the confirmation's two
+   footer buttons. */
+
+.trigger {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 4px);
+  height: 42px;
+  margin: 4px -2px;
+  padding: 0 10px 0 8px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--arx-alias-label-secondary);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.trigger:hover:not(:disabled) {
+  background: var(--arx-alias-interactive-bg-hover);
+}
+
+.trigger:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* Rail trigger: the same 36x36 circle box as the other rail controls. */
+.trigger.rail {
+  width: 36px;
+  height: 36px;
+  margin: 8px 0 10px;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+
+.cancel,
+.stop {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cancel {
+  background: var(--arx-alias-interactive-bg-hover);
+  color: var(--arx-alias-label-primary);
+}
+
+.stop {
+  background: var(--arx-alias-state-error-primary);
+  color: var(--arx-alias-label-primary-inverted);
+}

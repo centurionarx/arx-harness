@@ -2,11 +2,11 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import AuthorizationService from '@centurionarx/cxh-authorization'
-import type { AuthorizationInteraction, AuthorizationNotice, AuthorizationPrompt } from '@centurionarx/cxh-authorization'
-import LocalCredentialProvider from '@centurionarx/cxh-credentials-local'
-import type { CredentialKey } from '@centurionarx/cxh-credentials'
+import { Context } from '@arx-ai/cordis'
+import AuthorizationService from '@arx-ai/arx-authorization'
+import type { AuthorizationInteraction, AuthorizationNotice, AuthorizationPrompt } from '@arx-ai/arx-authorization'
+import LocalCredentialProvider from '@arx-ai/arx-credentials-local'
+import type { CredentialKey } from '@arx-ai/arx-credentials'
 import type { AuthEvent, AuthInteraction, AuthPrompt, AuthType, Credential } from '@earendil-works/pi-ai'
 
 const login = vi.hoisted(() => vi.fn())
@@ -27,7 +27,7 @@ const dirs: string[] = []
 
 /** A context with the record store, the seam, and every pi-ai login flow. */
 async function harness(): Promise<Context> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-login-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-pi-login-'))
   dirs.push(dir)
   const ctx = new Context()
   await ctx.plugin(LocalCredentialProvider, { path: join(dir, '.credentials.yaml'), watch: false })

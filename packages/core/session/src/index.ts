@@ -3,17 +3,17 @@
  * the derived LLM message history. Persistence is a plugin concern (subscribe
  * to `session/event`, drain on `session/flush`).
  *
- * @module @centurionarx/cxh-session
+ * @module @arx-ai/arx-session
  */
 
-import { Context, Service } from '@centurionarx/cordis'
+import { Context, Service } from '@arx-ai/cordis'
 import { isAbsolute } from 'node:path'
-import { deepFreeze } from '@centurionarx/cxh-llm'
-import { scopeOf, scopeTarget } from '@centurionarx/cxh-scope'
-import type { Scoped } from '@centurionarx/cxh-scope'
-import type { Message } from '@centurionarx/cxh-llm'
+import { deepFreeze } from '@arx-ai/arx-llm'
+import { scopeOf, scopeTarget } from '@arx-ai/arx-scope'
+import type { Scoped } from '@arx-ai/arx-scope'
+import type { Message } from '@arx-ai/arx-llm'
 import { SESSION_FORMAT_VERSION, SessionId } from './types.ts'
-import type { TypertLookup } from '@centurionarx/cxh-typert-protocol'
+import type { TypertLookup } from '@arx-ai/arx-typert-protocol'
 import type { CreateSessionOptions, EpochHeader, PrepareSessionOptions, RequestContext, SessionEvent, SessionEventMap, SessionEventType, SessionHeader, SurfaceIntent, SurfaceEventType } from './types.ts'
 import { snapshotJsonValue } from './json.ts'
 import { deriveEventMessage, SurfaceManager } from './surface.ts'
@@ -23,7 +23,7 @@ import { foldRequestHeader } from './request-header.ts'
 export * from './types.ts'
 export { SessionPreparation } from './preparation.ts'
 export type { SessionPreparationOptions } from './preparation.ts'
-export type { AssistantMessage, ToolResultMessage, UserMessage } from '@centurionarx/cxh-llm'
+export type { AssistantMessage, ToolResultMessage, UserMessage } from '@arx-ai/arx-llm'
 export { isJsonValue, snapshotJsonValue } from './json.ts'
 export type { JsonValue } from './json.ts'
 export { interruptedTurnClosers, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from './repair.ts'
@@ -34,7 +34,7 @@ export { deriveEventMessage, foldSurface, isAppendSurfaceEvent, isReplacementSur
 export { canonicalHeader, foldRequestHeader, headerEquals } from './request-header.ts'
 export { KNOWN_SESSION_EVENT_TYPES } from './known-event-types.ts'
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     sessions: SessionStore
   }
@@ -45,10 +45,10 @@ declare module '@centurionarx/cordis' {
      * back with a paired disposal; detach requested during dispatch is deferred.
      * A returned-promise rejection is logged but cannot retroactively veto this
      * synchronous boundary.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`): agent-scoped listeners
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`): agent-scoped listeners
      * receive only sessions entered through that agent's context.
      * @param session - the session just entered and announced.
-     * @cxhScopeScan unsupported
+     * @arxScopeScan unsupported
      * @mode emit
      */
     'session/created'(this: Scoped<Session>, session: Session): void
@@ -56,9 +56,9 @@ declare module '@centurionarx/cordis' {
      * Emitted once when an announced session leaves the store, including
      * publication rollback, but never for an entry whose creation announcement
      * did not begin. Listener failures are logged and contained.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`) reuses the owner scope.
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`) reuses the owner scope.
      * @param session - the session that is no longer live in the store.
-     * @cxhScopeScan unsupported
+     * @arxScopeScan unsupported
      * @mode emit
      */
     'session/disposed'(this: Scoped<Session>, session: Session): void
@@ -66,27 +66,27 @@ declare module '@centurionarx/cordis' {
      * Post-commit, fire-and-forget append feed. The listener snapshot resolves
      * before the log push, but callbacks run after it; observer failures are
      * logged and contained without making the committed append fail.
-     * Scope-filtered dispatch (`@centurionarx/cxh-scope`): agent-scoped listeners
+     * Scope-filtered dispatch (`@arx-ai/arx-scope`): agent-scoped listeners
      * receive only events from sessions entered through that agent's context.
      * @param session - the session whose log grew.
      * @param event - the appended event, exactly as recorded.
-     * @cxhScopeScan unsupported
+     * @arxScopeScan unsupported
      * @mode emit
      */
     'session/event'(this: Scoped<Session>, session: Session, event: SessionEvent): void
     /**
      * Awaited parallel durability checkpoint: every listener runs and the
      * caller awaits all of them, with no waterfall veto. Scope-filtered dispatch
-     * (`@centurionarx/cxh-scope`) reuses the session's owner scope.
+     * (`@arx-ai/arx-scope`) reuses the session's owner scope.
      * @param session - the session whose buffered events must reach durable storage.
-     * @cxhScopeScan unsupported
+     * @arxScopeScan unsupported
      * @mode parallel
      */
     'session/flush'(this: Scoped<Session>, session: Session): Promise<void> | void
   }
 }
 
-declare module '@centurionarx/cxh-typert-protocol' {
+declare module '@arx-ai/arx-typert-protocol' {
   interface TypertLookupMap {
     session: TypertLookup<Session, SessionId>
   }
@@ -799,8 +799,8 @@ export class SessionStore extends Service {
       typeCtx.typert.lookups.register('session', {
         parameter: 'session',
         wire: 'sessionId',
-        hostTypeSymbol: '@centurionarx/cxh-session#Session',
-        wireTypeSymbol: '@centurionarx/cxh-session/types#SessionId',
+        hostTypeSymbol: '@arx-ai/arx-session#Session',
+        wireTypeSymbol: '@arx-ai/arx-session/types#SessionId',
         resolve: sessionId => this.get(sessionId),
       })
     })
@@ -818,7 +818,7 @@ export class SessionStore extends Service {
    * loop's final events are published before the store attachment ends), do NOT use this
    * — fold the session lifecycle into the agent's own effect via
    * {@link prepare} + {@link enter} + {@link announce} (see
-   * `cxh-agent-loop`'s creation transaction).
+   * `arx-agent-loop`'s creation transaction).
    *
    * @param id - the session id; omitted, the store mints `session-<n>`.
    * @param options - seed events and/or creation metadata for the header.

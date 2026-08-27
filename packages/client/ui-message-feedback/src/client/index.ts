@@ -4,16 +4,16 @@
  * Session backs every message control in that Session, so a single list read
  * seeds the whole transcript. Mutations go through the generated
  * messageFeedback Remote; the Host owns per-item compare-and-set.
- * @module @centurionarx/cxh-client-ui-message-feedback/client
+ * @module @arx-ai/arx-client-ui-message-feedback/client
  */
 
-import type { ClientContext, SessionId } from '@centurionarx/cxh-client-runtime/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
-import type {} from '@centurionarx/cxh-api-remotes/client'
+import type {} from '@arx-ai/arx-api-remotes/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the assistant-actions entry).
-import type {} from '@centurionarx/cxh-client-ui-conversation/client'
+import type {} from '@arx-ai/arx-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@centurionarx/cxh-client-locale/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import { MessageFeedbackController } from './controller.ts'
 import { MessageFeedbackActions } from './MessageFeedbackActions.tsx'
 import type { MessageFeedbackInjected } from './slots.ts'

@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-projection-cache
+# @arx-ai/arx-session-projection-cache
 
 English | [中文](README.zh.md)
 
@@ -40,7 +40,7 @@ The read ladder, zero full-log load on the happy path: cached rows → `sessionP
 
 ```yaml
 - id: session-projection-cache
-  name: '@centurionarx/cxh-session-projection-cache'
+  name: '@arx-ai/arx-session-projection-cache'
   config:
     writeEveryEvents: 200
     writeIntervalMs: 5000

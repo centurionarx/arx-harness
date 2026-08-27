@@ -1,12 +1,12 @@
 /**
  * Model-facing PowerShell Consumer of the `ctx.shell` capability seam. Intended for
  * Windows compositions where a PowerShell executor (e.g.
- * `@centurionarx/cxh-pwsh-local`) backs `ctx.shell`; the tool contract is
+ * `@arx-ai/arx-pwsh-local`) backs `ctx.shell`; the tool contract is
  * PowerShell-dialect: native `C:\...` paths and `$env:NAME` variables.
  *
- * Behavior mirrors `cxh-tool-bash` call-for-call: foreground and
+ * Behavior mirrors `arx-tool-bash` call-for-call: foreground and
  * `run_in_background` execution (background handles register with the
- * generic `ctx.jobs` runtime), the managed `CXH_*` environment through the
+ * generic `ctx.jobs` runtime), the managed `ARX_*` environment through the
  * shared `shell-env` registry, the per-call sandbox policy resolution (the
  * calling session's mode and cwd travel to the confining executor), the
  * sandbox-denial rendering with the same-turn escalation surface
@@ -14,32 +14,32 @@
  * `ctx.approval`), and the bash marker/truncation rendering story. UI
  * presentation mirrors the bash tool's too: a completed foreground call is
  * a terminal card with the parsed exit-status pill, using the shared
- * exit-status parse from `@centurionarx/cxh-shell`.
+ * exit-status parse from `@arx-ai/arx-shell`.
  *
- * @module @centurionarx/cxh-tool-pwsh
+ * @module @arx-ai/arx-tool-pwsh
  */
 
 import { isAbsolute, resolve as resolvePath } from 'node:path'
-import type { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { defineTool, TOOL_ABORTED } from '@centurionarx/cxh-tools'
-import type { GenericCallView, TerminalCallView, ToolExecution, ToolResult, ToolResultView } from '@centurionarx/cxh-tools'
-import { HarnessError } from '@centurionarx/cxh-llm'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type {} from '@centurionarx/cxh-system-prompt'
-import type {} from '@centurionarx/cxh-jobs'
-import type {} from '@centurionarx/cxh-shell-env'
-import type {} from '@centurionarx/cxh-user-approval'
-import type { SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
-import { ESCALATION_TARGETS, approveEscalation, validateEscalationArgs } from '@centurionarx/cxh-sandbox'
-import type { SandboxPolicyService } from '@centurionarx/cxh-sandbox-policy'
-import type { ShellRunResult } from '@centurionarx/cxh-shell'
-import { parseExitStatus } from '@centurionarx/cxh-shell'
+import type { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { defineTool, TOOL_ABORTED } from '@arx-ai/arx-tools'
+import type { GenericCallView, TerminalCallView, ToolExecution, ToolResult, ToolResultView } from '@arx-ai/arx-tools'
+import { HarnessError } from '@arx-ai/arx-llm'
+import type { Agent } from '@arx-ai/arx-agent'
+import type {} from '@arx-ai/arx-system-prompt'
+import type {} from '@arx-ai/arx-jobs'
+import type {} from '@arx-ai/arx-shell-env'
+import type {} from '@arx-ai/arx-user-approval'
+import type { SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
+import { ESCALATION_TARGETS, approveEscalation, validateEscalationArgs } from '@arx-ai/arx-sandbox'
+import type { SandboxPolicyService } from '@arx-ai/arx-sandbox-policy'
+import type { ShellRunResult } from '@arx-ai/arx-shell'
+import { parseExitStatus } from '@arx-ai/arx-shell'
 import { processOutcome } from './background.ts'
 import { renderPwshProcessRead, renderPwshResult } from './render.ts'
 import type { RenderablePwshResult } from './render.ts'
 
-declare module '@centurionarx/cxh-jobs' {
+declare module '@arx-ai/arx-jobs' {
   interface JobKindMap {
     pwsh: 'pwsh'
   }
@@ -83,7 +83,7 @@ interface PwshForegroundResult {
   sandbox?: { mode: string; denied: boolean; enforcement?: string; runnerFailed?: boolean }
 }
 
-/* jscpd:ignore-start -- minimal mirror of cxh-tool-bash's validation and execute plumbing (Agent Note). */
+/* jscpd:ignore-start -- minimal mirror of arx-tool-bash's validation and execute plumbing (Agent Note). */
 function validatePwshArgs(args: PwshToolArgs): void {
   if (args.command.trim().length === 0) {
     throw new Error('invalid command: expected a non-empty string')
@@ -108,7 +108,7 @@ function pwshDescription(backgroundEnabled: boolean, escalationModes: readonly S
     + 'Each call runs in a fresh pwsh process: no state (cwd, variables, functions) persists between calls — '
     + 'pass `workdir` instead of using `cd`. Paths use native Windows form (`C:\\...`); read environment '
     + 'variables with `$env:NAME`. Non-zero exits are reported as `[exit code: N]`. '
-    + 'Current harness environment facts are exposed through managed `$env:CXH_*` variables; inspect them when needed. '
+    + 'Current harness environment facts are exposed through managed `$env:ARX_*` variables; inspect them when needed. '
     + 'Commands may run under a file sandbox; a blocked file operation is reported as `[sandbox: file access denied under <mode> mode]` — a policy denial, not a bug in the command; do not retry another way. '
     + 'Long output is truncated to its tail; the full output is saved to a file whose path is reported when available. '
     + 'On Windows a force-killed command settles as `[exit code: 1]` without a signal marker — treat it as an interruption, not a command failure. '
@@ -171,7 +171,7 @@ function canonicalPwshResult(result: ShellRunResult): PwshForegroundResult {
     timedOut: result.timedOut,
     aborted: result.aborted,
     timeoutMs: result.timeoutMs,
-    /* jscpd:ignore-start -- the canonical projection and background-handle shape mirror cxh-tool-bash's by design (Agent Note). */
+    /* jscpd:ignore-start -- the canonical projection and background-handle shape mirror arx-tool-bash's by design (Agent Note). */
     stdout: output(result.stdout),
     stderr: output(result.stderr),
     ...result.sandbox !== undefined ? {
@@ -192,7 +192,7 @@ const BACKGROUND_OUTPUT_PROPERTIES = {
 } as const
 /* jscpd:ignore-end */
 
-/* jscpd:ignore-start -- deliberate mirror of cxh-tool-bash's apply() preamble (pwsh-tool-and-executor Agent Note). */
+/* jscpd:ignore-start -- deliberate mirror of arx-tool-bash's apply() preamble (pwsh-tool-and-executor Agent Note). */
 export function apply(ctx: Context, config: Config = {}): void {
   const backgroundEnabled = config.enableRunInBackground ?? true
   const defaultMode = ctx.shell.sandboxMode
@@ -206,7 +206,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   const resolveSandboxPolicy = (exec: ToolExecution): SandboxExecutionPolicy | undefined =>
     sandboxPolicy?.resolve(exec.agent === undefined ? {} : { session: exec.agent.session })
 
-  /* jscpd:ignore-start -- deliberate mirror of cxh-tool-bash's escalation resolver (pwsh-tool-and-executor Agent Note). */
+  /* jscpd:ignore-start -- deliberate mirror of arx-tool-bash's escalation resolver (pwsh-tool-and-executor Agent Note). */
   /**
    * Resolve a sandbox-escalation request through `ctx.approval` BEFORE
    * anything executes, delegating the shared fail-closed sequence (strict
@@ -252,7 +252,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.tools.register(defineTool({
     name: 'pwsh',
     description: pwshDescription(backgroundEnabled, escalationModes),
-    /* jscpd:ignore-start -- deliberate mirror of cxh-tool-bash's parameter surface (pwsh-tool-and-executor Agent Note). */
+    /* jscpd:ignore-start -- deliberate mirror of arx-tool-bash's parameter surface (pwsh-tool-and-executor Agent Note). */
     parameters: {
       command: { type: 'string', required: true, description: 'The PowerShell command to execute.' },
       description: {
@@ -281,10 +281,10 @@ export function apply(ctx: Context, config: Config = {}): void {
     },
     /* jscpd:ignore-end */
     output: {
-      // The foreground result wire shape mirrors cxh-tool-bash's by contract —
+      // The foreground result wire shape mirrors arx-tool-bash's by contract —
       // consumers of one must accept the other (see the pwsh-tool-and-executor
       // Agent Note).
-      /* jscpd:ignore-start -- deliberate result-schema symmetry with cxh-tool-bash. */
+      /* jscpd:ignore-start -- deliberate result-schema symmetry with arx-tool-bash. */
       schema: {
         oneOf: [
           {
@@ -344,7 +344,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           : renderPwshResult(value as RenderablePwshResult, escalationModes),
       }],
     },
-    /* jscpd:ignore-start -- the execute path mirrors cxh-tool-bash's by design (see the pwsh-tool-and-executor Agent Note). */
+    /* jscpd:ignore-start -- the execute path mirrors arx-tool-bash's by design (see the pwsh-tool-and-executor Agent Note). */
     async execute(args: PwshToolArgs, exec) {
       validatePwshArgs(args)
       // Description is display metadata; workdir defaults to the caller's session.
@@ -360,7 +360,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         command: args.command,
         ...workdir !== undefined ? { workdir } : {},
         ...args.timeoutMs !== undefined ? { timeoutMs: args.timeoutMs } : {},
-        cxhEnv: ctx.shellEnv.collect(exec),
+        arxEnv: ctx.shellEnv.collect(exec),
         ...policy !== undefined ? { sandboxPolicy: policy } : {},
       }
       if (args.run_in_background === true) {
@@ -370,7 +370,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         }
         const jobs = ctx.get('jobs')
         if (jobs === undefined) {
-          throw new Error('background jobs unavailable: load @centurionarx/cxh-jobs and @centurionarx/cxh-tool-jobs')
+          throw new Error('background jobs unavailable: load @arx-ai/arx-jobs and @arx-ai/arx-tool-jobs')
         }
         // The caller owns cancellation until ctx.jobs commits detached ownership.
         if (exec.signal.aborted) {

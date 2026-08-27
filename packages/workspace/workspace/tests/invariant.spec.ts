@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
-import type { DomainChanged } from '@centurionarx/cxh-storage-domain'
+import { Context } from '@arx-ai/cordis'
+import InvariantRegistry from '@arx-ai/arx-invariants'
+import type { DomainChanged } from '@arx-ai/arx-storage-domain'
 import * as WorkspaceInvariant from '../src/invariant.ts'
 import { WorkspaceId } from '../src/index.ts'
 

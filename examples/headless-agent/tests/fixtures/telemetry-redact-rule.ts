@@ -1,4 +1,4 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 
 /**
  * Deployment-style redaction rule for the telemetry e2e: scrubs the fixture

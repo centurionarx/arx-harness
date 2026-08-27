@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseHookOutput } from '@centurionarx/cxh-hook-protocol'
+import { parseHookOutput } from '@arx-ai/arx-hook-protocol'
 
 describe('parseHookOutput — exit code semantics', () => {
   it('exit 0 with no stdout is a neutral success', () => {

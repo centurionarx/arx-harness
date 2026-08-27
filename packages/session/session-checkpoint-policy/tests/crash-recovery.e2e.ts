@@ -3,13 +3,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import SessionStore, {
   SessionId, TOOL_OUTCOME_UNKNOWN,
   type SessionEvent,
-} from '@centurionarx/cxh-session'
-import JsonlSessionPersistence from '@centurionarx/cxh-session-persistence-jsonl'
+} from '@arx-ai/arx-session'
+import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
 
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url))
 const childScript = fileURLToPath(new URL('./fixtures/crash-child.ts', import.meta.url))
@@ -37,7 +37,7 @@ async function waitForMarker(path: string, expected: string): Promise<string> {
 }
 
 async function crashAt(mode: 'request' | 'tool'): Promise<{ root: string; markerText: string }> {
-  const root = await mkdtemp(join(tmpdir(), `cxh-semantic-${mode}-`))
+  const root = await mkdtemp(join(tmpdir(), `arx-semantic-${mode}-`))
   roots.push(root)
   const marker = join(root, 'failpoint')
   // Keep the open-before-write window deterministic: readiness is marker content, not path existence.

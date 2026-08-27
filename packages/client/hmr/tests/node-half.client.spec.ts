@@ -5,17 +5,17 @@
 import { mkdtempSync, rmSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WebBootGraph, ClientModuleRegistry } from '@centurionarx/cxh-client-modules'
-import type { WebRoute, WebServer } from '@centurionarx/cxh-host-webserver'
+import type { WebBootGraph, ClientModuleRegistry } from '@arx-ai/arx-client-modules'
+import type { WebRoute, WebServer } from '@arx-ai/arx-host-webserver'
 import { apply, Config, EVENTS_ENDPOINT, inject } from '../src/index.ts'
 
 const POLL_MS = 20
 
 let dir: string
 
-beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'cxh-hmr-')) })
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'arx-hmr-')) })
 afterEach(() => { rmSync(dir, { recursive: true, force: true }) })
 
 /**

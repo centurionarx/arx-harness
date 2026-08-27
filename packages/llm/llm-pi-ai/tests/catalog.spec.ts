@@ -2,13 +2,13 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import LlmRuntime, { createUserMessage, ReasoningEffortId } from '@centurionarx/cxh-llm'
-import type { StreamChunk } from '@centurionarx/cxh-llm'
-import FileSettingsProvider from '@centurionarx/cxh-settings-file'
-import { settingsNamespace } from '@centurionarx/cxh-settings'
-import * as LlmPiAi from '@centurionarx/cxh-llm-pi-ai'
-import { PiAiAdapter } from '@centurionarx/cxh-llm-pi-ai'
+import { Context } from '@arx-ai/cordis'
+import LlmRuntime, { createUserMessage, ReasoningEffortId } from '@arx-ai/arx-llm'
+import type { StreamChunk } from '@arx-ai/arx-llm'
+import FileSettingsProvider from '@arx-ai/arx-settings-file'
+import { settingsNamespace } from '@arx-ai/arx-settings'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
+import { PiAiAdapter } from '@arx-ai/arx-llm-pi-ai'
 import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 import { createModels, getSupportedThinkingLevels } from '@earendil-works/pi-ai'
 import type { Api, Model, OpenAICompletionsCompat, Provider } from '@earendil-works/pi-ai'
@@ -35,9 +35,9 @@ afterEach(async () => {
   await Promise.all(homes.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
 })
 
-/** A throwaway $CXH_HOME with an empty settings document. */
+/** A throwaway $ARX_HOME with an empty settings document. */
 async function home(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'cxh-pi-catalog-'))
+  const dir = await mkdtemp(join(tmpdir(), 'arx-pi-catalog-'))
   homes.push(dir)
   await writeFile(join(dir, 'settings.yaml'), '')
   return dir

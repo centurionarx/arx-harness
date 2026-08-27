@@ -1,10 +1,10 @@
-/** Package-owned invariant companion. @module @centurionarx/cxh-message-feedback/invariant */
+/** Package-owned invariant companion. @module @arx-ai/arx-message-feedback/invariant */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-message-feedback'
+const PACKAGE_NAME = '@arx-ai/arx-message-feedback'
 
 /** Cordis companion plugin name. */
 export const name = 'message-feedback-invariant'

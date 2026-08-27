@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-launch-environment`.
- * @module @centurionarx/cxh-launch-environment/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-launch-environment`.
+ * @module @arx-ai/arx-launch-environment/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-launch-environment'
+const PACKAGE_NAME = '@arx-ai/arx-launch-environment'
 
 /** Cordis companion plugin name. */
 export const name = 'launch-environment-invariant'

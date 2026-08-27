@@ -4,15 +4,15 @@
  * creation, flatten post-publication failures, and dispose to whole-tree
  * quiescence.
  *
- * @module @centurionarx/cxh-subagent-codex/run
+ * @module @arx-ai/arx-subagent-codex/run
  */
 
 import { randomUUID } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import { SessionId } from '@centurionarx/cxh-session'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import { SessionId } from '@arx-ai/arx-session'
 import {
   settleRunResult,
   subprocessRunHandle,
@@ -20,12 +20,12 @@ import {
   type SubagentRun,
   type SubagentStartRequest,
   type SubagentStopReason,
-} from '@centurionarx/cxh-subagent'
+} from '@arx-ai/arx-subagent'
 import type {
   SubprocessHandle,
   SubprocessOutcome,
   SubprocessSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
+} from '@arx-ai/arx-subprocess'
 import {
   CodexAppServerWire,
   type CodexWireFailureFacts,

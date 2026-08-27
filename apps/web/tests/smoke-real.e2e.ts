@@ -1,4 +1,4 @@
-// Real-host smoke: spawn `cxh web` with a real key, walk the full flow
+// Real-host smoke: spawn `arx web` with a real key, walk the full flow
 // list in a real chromium, screenshot every screen into .artifacts/ for the
 // figma comparison pass. Self-skips without DEEPSEEK_API_KEY (repo e2e
 // convention); vitest.web.config.ts loads the repo-root .env before this file
@@ -32,10 +32,10 @@ const WEB_SURFACE_PROMPT = fileURLToPath(new URL('./snapshots/web-runtime-contex
 function waitForReadyLine(child: ChildProcess): Promise<string> {
   return new Promise((resolveReady, reject) => {
     let out = ''
-    const timer = setTimeout(() => { reject(new Error(`cxh web not ready in 90s; output:\n${out}`)) }, 90_000)
+    const timer = setTimeout(() => { reject(new Error(`arx web not ready in 90s; output:\n${out}`)) }, 90_000)
     const onData = (chunk: Buffer): void => {
       out += chunk.toString()
-      const match = /cxh web: (http:\/\/[^\s]+)/.exec(out)
+      const match = /arx web: (http:\/\/[^\s]+)/.exec(out)
       if (match?.[1] !== undefined) {
         clearTimeout(timer)
         resolveReady(match[1])
@@ -45,7 +45,7 @@ function waitForReadyLine(child: ChildProcess): Promise<string> {
     child.stderr?.on('data', onData)
     child.once('exit', (code) => {
       clearTimeout(timer)
-      reject(new Error(`cxh web exited early (code ${code}); output:\n${out}`))
+      reject(new Error(`arx web exited early (code ${code}); output:\n${out}`))
     })
   })
 }
@@ -138,7 +138,7 @@ async function detailsTrack(page: Page): Promise<number> {
   return Number(cols.split(' ').pop()!.replace('px', ''))
 }
 
-// Readiness gate: `cxh web` serves every production manifest plugin; until every UI
+// Readiness gate: `arx web` serves every production manifest plugin; until every UI
 // plugin's client bundle exists and exports apply, the loader fail-louds and
 // the frame never appears.
 const UI_PLUGIN_DIRS = [
@@ -153,10 +153,10 @@ const notReady = UI_PLUGIN_DIRS.filter((dir) => {
 })
 if (notReady.length > 0) console.warn(`[smoke-real] skipped — client bundles not ready: ${notReady.join(', ')}`)
 
-describe('cxh web keyless CLI smoke', () => {
+describe('arx web keyless CLI smoke', () => {
   it('listens on 127.0.0.1 by default', async () => {
     requireDist()
-    const sessionsDir = mkdtempSync(join(tmpdir(), 'cxh-web-keyless-'))
+    const sessionsDir = mkdtempSync(join(tmpdir(), 'arx-web-keyless-'))
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
@@ -166,8 +166,8 @@ describe('cxh web keyless CLI smoke', () => {
         env: {
           ...process.env,
           DEEPSEEK_API_KEY: 'keyless-web-no-call',
-          CXH_HOME: join(sessionsDir, '.cxh'),
-          CXH_AGENTS_HOME: join(sessionsDir, '.agents'),
+          ARX_HOME: join(sessionsDir, '.arx'),
+          ARX_AGENTS_HOME: join(sessionsDir, '.agents'),
           TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -189,7 +189,7 @@ describe('cxh web keyless CLI smoke', () => {
 
   it('routes web runtime context and workspace instructions through the real CLI request', async () => {
     requireDist()
-    const workspace = mkdtempSync(join(tmpdir(), 'cxh-web-workspace-'))
+    const workspace = mkdtempSync(join(tmpdir(), 'arx-web-workspace-'))
     mkdirSync(join(workspace, '.git'))
     writeFileSync(join(workspace, 'AGENTS.md'), 'web-workspace-context-probe\n')
 
@@ -233,8 +233,8 @@ describe('cxh web keyless CLI smoke', () => {
           ...process.env,
           DEEPSEEK_API_KEY: 'keyless-web-workspace',
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
-          CXH_HOME: join(workspace, '.cxh'),
-          CXH_AGENTS_HOME: join(workspace, '.agents'),
+          ARX_HOME: join(workspace, '.arx'),
+          ARX_AGENTS_HOME: join(workspace, '.agents'),
           TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -297,7 +297,7 @@ describe('cxh web keyless CLI smoke', () => {
 
   it('retries a partial transport failure through the shipped Web composition', async () => {
     requireDist()
-    const workspace = mkdtempSync(join(tmpdir(), 'cxh-web-retry-'))
+    const workspace = mkdtempSync(join(tmpdir(), 'arx-web-retry-'))
     const promptMarker = 'WEB_RETRY_REQUEST'
     const recoveredMarker = 'WEB_RETRY_RECOVERED'
     let mainAttempts = 0
@@ -346,7 +346,7 @@ describe('cxh web keyless CLI smoke', () => {
           ...process.env,
           DEEPSEEK_API_KEY: 'keyless-web-retry',
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
-          CXH_HOME: join(workspace, '.cxh'),
+          ARX_HOME: join(workspace, '.arx'),
           TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -387,9 +387,9 @@ describe('cxh web keyless CLI smoke', () => {
     }
   }, 30_000)
 
-  it('CXH_TOOLS_MODE=code collapses the provider wire tools to run_code with the SDK prompt section', async () => {
+  it('ARX_TOOLS_MODE=code collapses the provider wire tools to run_code with the SDK prompt section', async () => {
     requireDist()
-    const workspace = mkdtempSync(join(tmpdir(), 'cxh-web-code-mode-'))
+    const workspace = mkdtempSync(join(tmpdir(), 'arx-web-code-mode-'))
 
     interface CodeModeProviderRequest {
       messages?: { role?: string; content?: string }[]
@@ -428,9 +428,9 @@ describe('cxh web keyless CLI smoke', () => {
           ...process.env,
           DEEPSEEK_API_KEY: 'keyless-web-code-mode',
           DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
-          CXH_TOOLS_MODE: 'code',
-          CXH_HOME: join(workspace, '.cxh'),
-          CXH_AGENTS_HOME: join(workspace, '.agents'),
+          ARX_TOOLS_MODE: 'code',
+          ARX_HOME: join(workspace, '.arx'),
+          ARX_AGENTS_HOME: join(workspace, '.agents'),
           TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -476,9 +476,9 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
 
   beforeAll(async () => {
     requireDist()
-    sessionsDir = mkdtempSync(join(tmpdir(), 'cxh-web-w5-'))
+    sessionsDir = mkdtempSync(join(tmpdir(), 'arx-web-w5-'))
     const port = await probeFreePort()
-    // tsx boot mirrors the runtime half of the root cxh script. Isolate
+    // tsx boot mirrors the runtime half of the root arx script. Isolate
     // the host-level Harness and shared-agent homes inside the temp world; tsx
     // also needs the repo's loader and tsconfig paths pointed at explicitly.
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
@@ -498,8 +498,8 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
         cwd: sessionsDir,
         env: {
           ...process.env,
-          CXH_HOME: join(sessionsDir, '.cxh'),
-          CXH_AGENTS_HOME: join(sessionsDir, '.agents'),
+          ARX_HOME: join(sessionsDir, '.arx'),
+          ARX_AGENTS_HOME: join(sessionsDir, '.agents'),
           TSX_TSCONFIG_PATH: join(REPO_ROOT, 'tsconfig.json'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -534,7 +534,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
 
   it('empty-state first send completes a real model round', async () => {
     onTestFailed(() => saveFailureShot(page, 'w5-first-round'))
-    // This scenario spawns its own server against a fresh $CXH_HOME with the
+    // This scenario spawns its own server against a fresh $ARX_HOME with the
     // DeepSeek credential inherited from the environment, so no onboarding
     // step mounts and the page is immediately interactive.
     // Fresh world: connect a Workspace so the composer starts live.

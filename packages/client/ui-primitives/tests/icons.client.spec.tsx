@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
-import * as primitives from '@centurionarx/cxh-client-ui-primitives'
+import * as primitives from '@arx-ai/arx-client-ui-primitives'
 import {
   IconApiOutline14, IconArchiveOutline20, IconFolderClose16, IconGoalOutline16, IconSendOutline16,
-} from '@centurionarx/cxh-client-ui-primitives'
+} from '@arx-ai/arx-client-ui-primitives'
 
 afterEach(cleanup)
 
@@ -54,28 +54,48 @@ describe('ic_ds_ icon set', () => {
   })
 })
 
-describe('FishLogo', () => {
-  it('renders the fish path in currentColor at the native ratio', () => {
-    const { container } = render(<primitives.FishLogo />)
-    const svg = container.querySelector('svg')!
-    expect(svg.getAttribute('width')).toBe('24')
-    expect(Number(svg.getAttribute('height'))).toBeCloseTo(17.66, 1)
-    expect(svg.getAttribute('viewBox')).toBe('0 0 23.16 17.04')
-    expect(container.querySelectorAll('path')).toHaveLength(1)
-    expect(container.innerHTML).toContain('currentColor')
-    expect(container.innerHTML).not.toContain('M0 0L23.16')
+describe('BrandMark', () => {
+  it('keeps the artwork proportion and carries a theme-swapped background', () => {
+    const { container } = render(<primitives.BrandMark size={34} />)
+    const mark = container.querySelector('span')!
+    expect(mark.style.width).toBe('34px')
+    // 253:136 native artwork.
+    expect(mark.style.height).toBe(`${34 / (253 / 136)}px`)
+    expect(mark.getAttribute('aria-hidden')).toBe('true')
+    expect(mark.className).not.toBe('')
+  })
+
+  it('keeps its own class when a layout class is supplied', () => {
+    const { container } = render(<primitives.BrandMark className="seat" />)
+    const mark = container.querySelector('span')!
+    expect(mark.className.split(' ')).toContain('seat')
+    expect(mark.className.split(' ').length).toBe(2)
   })
 })
 
 describe('BrandWordmark', () => {
-  it('can render the name artwork with or without its leading mark', () => {
+  it('sets the word in two blues and keeps its footprint under a font fallback', () => {
     const view = render(<primitives.BrandWordmark />)
     const svg = view.container.querySelector('svg')!
-    expect(svg.getAttribute('width')).toBe('182')
-    expect(svg.getAttribute('viewBox')).toBe('0 0 182 24')
+    expect(svg.getAttribute('width')).toBe('180')
+    expect(svg.getAttribute('viewBox')).toBe('0 0 180 34')
 
-    view.rerender(<primitives.BrandWordmark includeMark={false} />)
-    expect(svg.getAttribute('width')).toBe('156')
-    expect(svg.getAttribute('viewBox')).toBe('26 0 156 24')
+    const [word, plate] = [...svg.querySelectorAll('text')]
+    expect(plate?.textContent).toBe('HARNESS')
+    // Pinned advance width: a fallback face may draw other glyph shapes, but it
+    // cannot change how much room the wordmark takes in the layout.
+    expect(word?.getAttribute('textLength')).toBe('80')
+    expect(plate?.getAttribute('textLength')).toBe('64')
+    const [first, second] = [...(word?.querySelectorAll('tspan') ?? [])]
+    expect(first?.textContent).toBe('a')
+    expect(second?.textContent).toBe('rx')
+    expect(first?.getAttribute('class')).not.toBe(second?.getAttribute('class'))
+  })
+
+  it('scales width with the requested height', () => {
+    const view = render(<primitives.BrandWordmark size={17} />)
+    const svg = view.container.querySelector('svg')!
+    expect(svg.getAttribute('width')).toBe('90')
+    expect(svg.getAttribute('height')).toBe('17')
   })
 })

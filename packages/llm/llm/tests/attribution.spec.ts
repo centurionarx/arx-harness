@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { describe, expect, it } from 'vitest'
-import { APP_IDENTITY, attributionHeaders, userAgent } from '@centurionarx/cxh-llm'
-import type { AppIdentity } from '@centurionarx/cxh-llm'
+import { APP_IDENTITY, attributionHeaders, userAgent } from '@arx-ai/arx-llm'
+import type { AppIdentity } from '@arx-ai/arx-llm'
 
 const manifest = createRequire(import.meta.url)('../package.json') as { version: string }
 
@@ -19,9 +19,9 @@ describe('APP_IDENTITY', () => {
 
   it('carries only static public product facts', () => {
     expect(APP_IDENTITY).toEqual({
-      product: 'centurionarx-harness',
+      product: 'arx-harness',
       version: manifest.version,
-      url: 'https://github.com/centurionarx/centurionarx-harness',
+      url: 'https://github.com/centurionarx/arx-harness',
     })
   })
 })
@@ -29,7 +29,7 @@ describe('APP_IDENTITY', () => {
 describe('userAgent', () => {
   it('renders product/version with the +url comment', () => {
     expect(userAgent()).toBe(
-      `centurionarx-harness/${manifest.version} (+https://github.com/centurionarx/centurionarx-harness)`,
+      `arx-harness/${manifest.version} (+https://github.com/centurionarx/arx-harness)`,
     )
   })
 

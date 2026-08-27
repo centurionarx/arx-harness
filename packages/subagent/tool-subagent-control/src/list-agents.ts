@@ -4,15 +4,15 @@
  * `descendants` scope, `ctx.subagents.listDescendants()`. It stays separately
  * loadable from the root `send_message` plugin so a deployment can register
  * continuation delivery without exposing discovery.
- * @module @centurionarx/cxh-tool-subagent-control/list-agents
+ * @module @arx-ai/arx-tool-subagent-control/list-agents
  */
 
-import type { Context } from '@centurionarx/cordis'
-import { defineTool } from '@centurionarx/cxh-tools'
-import type { Agent } from '@centurionarx/cxh-agent'
-import type { SessionId } from '@centurionarx/cxh-session'
-import { assertNever } from '@centurionarx/cxh-llm'
-import type { SubagentDescendantListEntry, SubagentListEntry } from '@centurionarx/cxh-subagent'
+import type { Context } from '@arx-ai/cordis'
+import { defineTool } from '@arx-ai/arx-tools'
+import type { Agent } from '@arx-ai/arx-agent'
+import type { SessionId } from '@arx-ai/arx-session'
+import { assertNever } from '@arx-ai/arx-llm'
+import type { SubagentDescendantListEntry, SubagentListEntry } from '@arx-ai/arx-subagent'
 
 export const name = 'tool-subagent-list-agents'
 export const inject = ['tools', 'subagents', 'agents']

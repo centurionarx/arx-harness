@@ -1,4 +1,4 @@
-# @centurionarx/cxh-session-projection-cache
+# @arx-ai/arx-session-projection-cache
 
 [English](README.md) | 中文
 
@@ -40,7 +40,7 @@
 
 ```yaml
 - id: session-projection-cache
-  name: '@centurionarx/cxh-session-projection-cache'
+  name: '@arx-ai/arx-session-projection-cache'
   config:
     writeEveryEvents: 200
     writeIntervalMs: 5000

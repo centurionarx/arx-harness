@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import { stubSettingsScope, type StubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
+import { Context } from '@arx-ai/cordis'
+import { stubSettingsScope, type StubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import type {
   ThemeSettings,
   ThemeSnapshot,
   ThemeTokenOverrides,
-} from '@centurionarx/cxh-client-ui-theme/client'
-import { ThemeRuntime } from '@centurionarx/cxh-client-ui-theme/client'
+} from '@arx-ai/arx-client-ui-theme/client'
+import { ThemeRuntime } from '@arx-ai/arx-client-ui-theme/client'
 
 const make = (host = stubSettingsScope<ThemeSettings>()): {
   ctx: Context
@@ -74,10 +74,10 @@ describe('ThemeRuntime', () => {
 
   it('registered themes join the snapshot; disposing the active one resets to default', () => {
     const { theme, events, host } = make()
-    const dispose = theme.register({ id: 'sepia', colorScheme: 'light', tokens: { '--dsw-alias-bg-base': 'red' } })
+    const dispose = theme.register({ id: 'sepia', colorScheme: 'light', tokens: { '--arx-alias-bg-base': 'red' } })
     expect(theme.getTheme().themes.map(t => t.id)).toEqual(['light', 'dark', 'sepia'])
     theme.setTheme('sepia')
-    expect(theme.getTheme().active.tokens['--dsw-alias-bg-base']).toBe('red')
+    expect(theme.getTheme().active.tokens['--arx-alias-bg-base']).toBe('red')
     dispose()
     expect(theme.getTheme().preference).toBe('system')
     expect(theme.getTheme().themes.map(t => t.id)).toEqual(['light', 'dark'])
@@ -157,7 +157,7 @@ describe('ThemeRuntime', () => {
       id: 'custom',
       colorScheme: 'light',
       tokens: {
-        '--dsw-alias-bg-base': 'duplicate-built-in',
+        '--arx-alias-bg-base': 'duplicate-built-in',
         '--registered': 'registered',
       },
     })
@@ -175,7 +175,7 @@ describe('ThemeRuntime', () => {
     const semantic = tokens.find(token => token.name === 'semanticAccent')
     expect(semantic).toMatchObject({ valueType: 'CSS value' })
     expect(semantic).not.toHaveProperty('cssVariable')
-    expect(tokens.filter(token => token.name === '--dsw-alias-bg-base')).toHaveLength(1)
+    expect(tokens.filter(token => token.name === '--arx-alias-bg-base')).toHaveLength(1)
 
     tokens[0]!.description = 'caller mutation'
     expect(theme.exportInspectTokens()[0]!.description).not.toBe('caller mutation')

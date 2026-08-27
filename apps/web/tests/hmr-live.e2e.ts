@@ -1,4 +1,4 @@
-/** Published cxh web + pnpm dev:web → browser HMR, with no page reload. */
+/** Published arx web + pnpm dev:web → browser HMR, with no page reload. */
 
 import { existsSync, globSync } from 'node:fs'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
@@ -6,10 +6,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { chromium } from 'playwright'
 import { expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { Fiber } from '@centurionarx/cordis'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import type { SubprocessHandle, SubprocessSpawnSpec } from '@centurionarx/cxh-subprocess'
+import { Context } from '@arx-ai/cordis'
+import type { Fiber } from '@arx-ai/cordis'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 import { readClientBuildRecord } from '../../../scripts/client-build-environment.ts'
 import { REPO_ROOT } from './support.ts'
 
@@ -69,10 +69,10 @@ async function stopTree(child: SubprocessHandle): Promise<void> {
 }
 
 it('hot-reloads a real client-plugin source edit without refreshing the page', async () => {
-  const world = await mkdtemp(join(tmpdir(), 'cxh-web-hmr-world-'))
+  const world = await mkdtemp(join(tmpdir(), 'arx-web-hmr-world-'))
   const sourcePath = join(REPO_ROOT, 'packages/client/ui-conversation/src/client/locales.ts')
   const binPath = join(REPO_ROOT, 'apps/cli/lib/bin.js')
-  if (!existsSync(binPath)) throw new Error('HMR browser test needs the built cxh bin; run pnpm run build first')
+  if (!existsSync(binPath)) throw new Error('HMR browser test needs the built arx bin; run pnpm run build first')
   const clientBuildEnvironment = readClientBuildRecord(REPO_ROOT).environment
   const clientBundlePaths = globSync('packages/*/*/lib/client.js{,.map}', { cwd: REPO_ROOT })
     .map(path => join(REPO_ROOT, path))
@@ -103,10 +103,10 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
       world,
       {
         DEEPSEEK_API_KEY: 'keyless-hmr-no-call',
-        CXH_HOME: join(world, '.cxh'),
+        ARX_HOME: join(world, '.arx'),
       },
     ))
-    const baseUrl = await waitForOutput(host, /cxh web: (http:\/\/[^\s]+)/, 'built cxh web')
+    const baseUrl = await waitForOutput(host, /arx web: (http:\/\/[^\s]+)/, 'built arx web')
     browser = await chromium.launch()
     const page = await browser.newPage()
     const pageErrors: string[] = []
@@ -115,13 +115,13 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
     await page.getByText(oldText, { exact: true }).waitFor({ timeout: 15_000 })
     const pageIdentity = await page.evaluate(() => {
       const identity = crypto.randomUUID()
-      Object.defineProperty(window, '__cxhHmrPageIdentity', { value: identity })
+      Object.defineProperty(window, '__arxHmrPageIdentity', { value: identity })
       return identity
     })
 
     await writeFile(sourcePath, updatedSource)
     await page.getByText(newText, { exact: true }).waitFor({ timeout: 30_000 })
-    expect(await page.evaluate(() => (window as Window & { __cxhHmrPageIdentity?: string }).__cxhHmrPageIdentity))
+    expect(await page.evaluate(() => (window as Window & { __arxHmrPageIdentity?: string }).__arxHmrPageIdentity))
       .toBe(pageIdentity)
     expect(pageErrors).toEqual([])
   } catch (error) {

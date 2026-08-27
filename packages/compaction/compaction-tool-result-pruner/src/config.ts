@@ -1,6 +1,6 @@
 /** Configuration resolution for deterministic tool-result pruning. */
 
-import { deepFreeze } from '@centurionarx/cxh-llm'
+import { deepFreeze } from '@arx-ai/arx-llm'
 import type { ResolvedConfig, ToolResultPruneConfig } from './types.ts'
 
 /** Fixed marker substituted for every removed middle span. */

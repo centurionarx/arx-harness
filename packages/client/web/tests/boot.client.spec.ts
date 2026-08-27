@@ -1,20 +1,20 @@
 // @vitest-environment jsdom
-import type { Context } from '@centurionarx/cordis'
-import * as modulesClient from '@centurionarx/cxh-client-modules/client'
+import type { Context } from '@arx-ai/cordis'
+import * as modulesClient from '@arx-ai/arx-client-modules/client'
 import type {
-  ClientBundleRegistration, ClientModuleCreateOptions, ClientModuleLoaderTarget, CxhWindow,
+  ClientBundleRegistration, ClientModuleCreateOptions, ClientModuleLoaderTarget, ArxWindow,
   WebBootEntry,
-} from '@centurionarx/cxh-client-modules/client'
+} from '@arx-ai/arx-client-modules/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppWebEntry } from '../src/boot.ts'
 
-const MODULES_ID = '@centurionarx/cxh-client-modules'
-const win = globalThis as CxhWindow
+const MODULES_ID = '@arx-ai/arx-client-modules'
+const win = globalThis as ArxWindow
 const moduleFace = modulesClient as unknown as Record<string, unknown>
 
 afterEach(() => {
   vi.restoreAllMocks()
-  delete win.__CXH_BOOT__
+  delete win.__ARX_BOOT__
   delete win.__ModuleLoader__
   document.body.innerHTML = ''
 })
@@ -66,15 +66,15 @@ describe('bootstrap failure rendering', () => {
   it('renders a malformed boot manifest', async () => {
     await expectBootFailure(() => {
       installFacade()
-      delete win.__CXH_BOOT__
-    }, 'window.__CXH_BOOT__ is missing or not an object')
+      delete win.__ARX_BOOT__
+    }, 'window.__ARX_BOOT__ is missing or not an object')
   })
 
   it('renders a module-system construction failure', async () => {
     await expectBootFailure(() => {
       installFacade()
       const duplicate = { id: 'duplicate', url: '/duplicate/client.js', rev: '1' }
-      win.__CXH_BOOT__ = { rev: 'graph', entries: [duplicate, duplicate] }
+      win.__ARX_BOOT__ = { rev: 'graph', entries: [duplicate, duplicate] }
     }, 'duplicate graph entry "duplicate"')
   })
 })
@@ -90,7 +90,7 @@ describe('plugin activation', () => {
       { id: MODULES_ID, url: '/modules.js', rev: '1' },
       { id: 'renderer', url: '/renderer.js', rev: '1' },
     ]
-    win.__CXH_BOOT__ = { rev: 'graph', entries }
+    win.__ARX_BOOT__ = { rev: 'graph', entries }
     const registrations = new Map<string, ClientBundleRegistration>([
       ['/consumer.js', {
         id: 'consumer',

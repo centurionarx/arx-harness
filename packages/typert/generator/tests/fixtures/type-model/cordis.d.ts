@@ -1,4 +1,4 @@
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   export class Service { protected readonly __service?: never }
 
   export interface Context {}

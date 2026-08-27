@@ -1,10 +1,10 @@
-import { createUserMessage } from '@centurionarx/cxh-llm'
+import { createUserMessage } from '@arx-ai/arx-llm'
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@centurionarx/cordis'
-import type { ContentBlock } from '@centurionarx/cxh-llm'
-import SessionStore, { Session, SessionId, type SessionEvent } from '@centurionarx/cxh-session'
-import * as TimeInvariant from '@centurionarx/cxh-time-context/invariant'
-import InvariantRegistry from '@centurionarx/cxh-invariants'
+import { Context } from '@arx-ai/cordis'
+import type { ContentBlock } from '@arx-ai/arx-llm'
+import SessionStore, { Session, SessionId, type SessionEvent } from '@arx-ai/arx-session'
+import * as TimeInvariant from '@arx-ai/arx-time-context/invariant'
+import InvariantRegistry from '@arx-ai/arx-invariants'
 
 const SECOND = Date.parse('2026-07-14T00:00:00Z')
 

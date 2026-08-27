@@ -1,13 +1,13 @@
 /**
  * E2B provider for the filesystem capability seam. Paths, contents, and
  * atomic staging files remain inside the shared remote sandbox.
- * @module @centurionarx/cxh-fs-e2b
+ * @module @arx-ai/arx-fs-e2b
  */
 
 import { createHash, randomUUID } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import { posix } from 'node:path'
-import { FileSystem, FsError, FsTargetKey, FsVersion } from '@centurionarx/cxh-fs'
+import { FileSystem, FsError, FsTargetKey, FsVersion } from '@arx-ai/arx-fs'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -17,17 +17,17 @@ import type {
   FsTarget,
   FsWriteIntent,
   FsWriteOutcome,
-} from '@centurionarx/cxh-fs'
+} from '@arx-ai/arx-fs'
 import {
   CommandExitError,
   e2bControlEnvs,
   FileNotFoundError,
   FileType,
   quoteE2BShellArg,
-} from '@centurionarx/cxh-e2b'
-import type { EntryInfo, Sandbox } from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-e2b'
+import type { EntryInfo, Sandbox } from '@arx-ai/arx-e2b'
 
-const VERSION_METADATA_KEY = 'cxh-version'
+const VERSION_METADATA_KEY = 'arx-version'
 const BINARY_SAMPLE_BYTES = 8192
 const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
@@ -518,7 +518,7 @@ export class E2BFileSystem extends FileSystem {
     const sandbox = await this.ctx.e2b.getSandbox()
     const targetPath = String(target.targetKey)
     const versionId = randomUUID()
-    const stagingDirectory = posix.join(posix.dirname(targetPath), `.cxh-${randomUUID()}.tmp`)
+    const stagingDirectory = posix.join(posix.dirname(targetPath), `.arx-${randomUUID()}.tmp`)
     const temporary = posix.join(stagingDirectory, 'content')
     let stagingDirectoryCreated = false
     try {

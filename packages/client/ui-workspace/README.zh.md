@@ -1,4 +1,4 @@
-# @centurionarx/cxh-client-ui-workspace
+# @arx-ai/arx-client-ui-workspace
 
 [English](README.md) | 中文
 

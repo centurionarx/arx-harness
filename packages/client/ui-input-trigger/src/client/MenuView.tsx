@@ -9,8 +9,8 @@
  */
 import { Fragment, useEffect, useRef, useSyncExternalStore } from 'react'
 import clsx from 'clsx'
-import { useAnchoredMaxHeight } from '@centurionarx/cxh-client-ui-primitives'
-import type { PropsLocale } from '@centurionarx/cxh-client-ui-slots'
+import { useAnchoredMaxHeight } from '@arx-ai/arx-client-ui-primitives'
+import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
 import css from './MenuView.module.css'
 import type { MenuViewInjected } from './slots.ts'
 import type { MenuKey } from './locales.ts'
@@ -23,7 +23,7 @@ const MAX_HEIGHT = 320
 
 /** DOM id of one option row (the aria-activedescendant target). */
 function optionId(source: string, index: number): string {
-  return `cxh-slash-option-${source}-${index}`
+  return `arx-slash-option-${source}-${index}`
 }
 
 /**

@@ -3,19 +3,19 @@
  *
  * This package owns the Service Definition role of the skill capability seam.
  * Concrete
- * providers such as `@centurionarx/cxh-skill-filesystem` decide where skills come
+ * providers such as `@arx-ai/arx-skill-filesystem` decide where skills come
  * from; this service only merges provider catalogs, resolves the winning skill
  * for a name, and exposes the winning summaries and definitions to consumers.
  *
- * @module @centurionarx/cxh-skill
+ * @module @arx-ai/arx-skill
  */
 
-import { Context, Service } from '@centurionarx/cordis'
-import { assertNever } from '@centurionarx/cxh-llm'
-import { NamedEntries, ScopedLayers, scopeChainOf, scopeOf } from '@centurionarx/cxh-scope'
-import type { ScopeKey, ScopeLayer } from '@centurionarx/cxh-scope'
-import z from '@centurionarx/schemastery'
-import type Schema from '@centurionarx/schemastery'
+import { Context, Service } from '@arx-ai/cordis'
+import { assertNever } from '@arx-ai/arx-llm'
+import { NamedEntries, ScopedLayers, scopeChainOf, scopeOf } from '@arx-ai/arx-scope'
+import type { ScopeKey, ScopeLayer } from '@arx-ai/arx-scope'
+import z from '@arx-ai/schemastery'
+import type Schema from '@arx-ai/schemastery'
 
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DEFAULT_COLLECT_CACHE_ENTRIES = 128
@@ -36,7 +36,7 @@ export function isSkillName(name: string): boolean {
 }
 
 /** Origin bucket for a skill contribution. The value is prompt-visible metadata, not precedence by itself. */
-export type SkillSource = 'project-cxh' | 'project-agents' | 'runtime' | 'user-cxh' | 'user-agents' | 'custom' | 'bundled' | (string & {})
+export type SkillSource = 'project-arx' | 'project-agents' | 'runtime' | 'user-arx' | 'user-agents' | 'custom' | 'bundled' | (string & {})
 
 /** Optional provider-specific base used by loaded skill bodies to resolve relative resources. */
 export type SkillResourceBase =
@@ -152,7 +152,7 @@ export interface SkillInvocationSource {
   readonly form: 'instructions'
 }
 
-declare module '@centurionarx/cxh-llm' {
+declare module '@arx-ai/arx-llm' {
   interface MessageSourceMap {
     /** A user-explicit skill invocation injected by the host. */
     'skill-invocation': SkillInvocationSource
@@ -281,7 +281,7 @@ export interface Config {
   readonly collectCacheMaxEntries?: number
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     skills: SkillRegistry
   }

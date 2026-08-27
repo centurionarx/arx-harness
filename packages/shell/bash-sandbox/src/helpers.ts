@@ -1,12 +1,12 @@
 /**
  * Internal sandbox-result classification helpers.
  *
- * @module @centurionarx/cxh-bash-sandbox/helpers
+ * @module @arx-ai/arx-bash-sandbox/helpers
  */
 
 import { accessSync, constants, statSync } from 'node:fs'
-import type { ShellRunResult } from '@centurionarx/cxh-shell'
-import type { RunnerFailureRule } from '@centurionarx/cxh-sandbox'
+import type { ShellRunResult } from '@arx-ai/arx-shell'
+import type { RunnerFailureRule } from '@arx-ai/arx-sandbox'
 
 /** Node-local spawn codes proven to identify executable resolution or permission failure. */
 const EXECUTABLE_SPAWN_CODES = new Set(['EACCES', 'ENOENT'])

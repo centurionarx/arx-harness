@@ -7,15 +7,15 @@
  * scope-birth roster warm — is InputTriggerController behavior, tested on a real
  * session scope (createScope).
  */
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { createScope, scopeOf } from '@centurionarx/cxh-client-runtime/client'
-import type { SessionId } from '@centurionarx/cxh-client-runtime/client'
-import { InputTriggerController, InputTriggerService } from '@centurionarx/cxh-client-ui-input-trigger/client'
+import { createScope, scopeOf } from '@arx-ai/arx-client-runtime/client'
+import type { SessionId } from '@arx-ai/arx-client-runtime/client'
+import { InputTriggerController, InputTriggerService } from '@arx-ai/arx-client-ui-input-trigger/client'
 import type {
   BeginCommandRequest, ClientSessionContext, CommandClaim, InsertReferenceRequest, PickOutcome,
   ReferenceInsert, InputTriggerCandidate, InputTriggerPick, InputTriggerSource, SourceRoster, TriggerChar,
-} from '@centurionarx/cxh-client-ui-input-trigger/client'
+} from '@arx-ai/arx-client-ui-input-trigger/client'
 
 const sid = (k: string): SessionId => k as SessionId
 

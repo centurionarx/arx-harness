@@ -1,9 +1,9 @@
-import { Context } from '@centurionarx/cordis'
-import SystemPrompt, { renderPrompt } from '@centurionarx/cxh-system-prompt'
-import { createScope, type ScopeKey } from '@centurionarx/cxh-scope'
+import { Context } from '@arx-ai/cordis'
+import SystemPrompt, { renderPrompt } from '@arx-ai/arx-system-prompt'
+import { createScope, type ScopeKey } from '@arx-ai/arx-scope'
 import { describe, expect, it } from 'vitest'
-import * as Persona from '@centurionarx/cxh-persona'
-import { PERSONA_SECTION } from '@centurionarx/cxh-persona'
+import * as Persona from '@arx-ai/arx-persona'
+import { PERSONA_SECTION } from '@arx-ai/arx-persona'
 
 async function harness(deploymentPersona: string): Promise<Context> {
   const ctx = new Context()

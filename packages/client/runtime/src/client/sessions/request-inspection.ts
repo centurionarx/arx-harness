@@ -1,4 +1,4 @@
-import type { ContentBlock, ToolSchema } from '@centurionarx/cxh-llm/types'
+import type { ContentBlock, ToolSchema } from '@arx-ai/arx-llm/types'
 import type {
   AssistantProvenanceView, AssistantRequestConfig,
 } from './conversation.ts'

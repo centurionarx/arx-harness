@@ -1,5 +1,5 @@
 /**
- * Integration tests: the REAL `@centurionarx/cxh-pwsh-local` executor plus the
+ * Integration tests: the REAL `@arx-ai/arx-pwsh-local` executor plus the
  * `pwsh` tool, exercised through `ctx.tools.execute()` with a real PowerShell
  * process. These verify the world — actual commands run, stdout/stderr come
  * back, exit codes render, timeouts abort, background jobs settle through the
@@ -14,16 +14,16 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { Context } from '@centurionarx/cordis'
-import { CallId } from '@centurionarx/cxh-llm'
-import SystemPrompt from '@centurionarx/cxh-system-prompt'
-import ToolRuntime, { TOOL_ABORTED } from '@centurionarx/cxh-tools'
-import LocalJobRegistry from '@centurionarx/cxh-jobs-local'
-import * as ToolTasks from '@centurionarx/cxh-tool-jobs'
-import LocalSubprocessRuntime from '@centurionarx/cxh-subprocess-local'
-import { PwshLocalExecutor, resolvePwshPath } from '@centurionarx/cxh-pwsh-local'
-import * as ToolPwsh from '@centurionarx/cxh-tool-pwsh'
-import * as BashEnvPlugin from '@centurionarx/cxh-shell-env'
+import { Context } from '@arx-ai/cordis'
+import { CallId } from '@arx-ai/arx-llm'
+import SystemPrompt from '@arx-ai/arx-system-prompt'
+import ToolRuntime, { TOOL_ABORTED } from '@arx-ai/arx-tools'
+import LocalJobRegistry from '@arx-ai/arx-jobs-local'
+import * as ToolTasks from '@arx-ai/arx-tool-jobs'
+import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
+import { PwshLocalExecutor, resolvePwshPath } from '@arx-ai/arx-pwsh-local'
+import * as ToolPwsh from '@arx-ai/arx-tool-pwsh'
+import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 
 const testToolSignal = new AbortController().signal
 
@@ -54,7 +54,7 @@ function text(result: { content: { type: string; text?: string }[] }): string {
 
 describe.skipIf(!hasPwsh)('pwsh tool over the real pwsh executor', () => {
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'cxh-tool-pwsh-'))
+    dir = await mkdtemp(join(tmpdir(), 'arx-tool-pwsh-'))
     await writeFile(join(dir, 'greeting.txt'), 'hello pwsh\n')
 
     ctx = new Context()

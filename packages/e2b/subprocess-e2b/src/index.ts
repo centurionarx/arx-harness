@@ -1,22 +1,22 @@
 /**
  * E2B Service Provider for the subprocess capability seam. Each handle starts through the
  * shared sandbox and retains command output/status paths in that remote world.
- * @module @centurionarx/cxh-subprocess-e2b
+ * @module @arx-ai/arx-subprocess-e2b
  */
 
 import { randomUUID } from 'node:crypto'
 import { posix } from 'node:path'
-import { Context } from '@centurionarx/cordis'
-import z from '@centurionarx/schemastery'
-import { SubprocessRuntime } from '@centurionarx/cxh-subprocess'
-import { MAX_TIMER_DELAY_MS } from '@centurionarx/cxh-timeout'
+import { Context } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import { SubprocessRuntime } from '@arx-ai/arx-subprocess'
+import { MAX_TIMER_DELAY_MS } from '@arx-ai/arx-timeout'
 import type {
   SubprocessHandle,
   SubprocessSpawnSpec,
   SubprocessTerminalHandle,
   SubprocessTerminalSpawnSpec,
-} from '@centurionarx/cxh-subprocess'
-import { e2bControlEnvs, quoteE2BShellArg } from '@centurionarx/cxh-e2b'
+} from '@arx-ai/arx-subprocess'
+import { e2bControlEnvs, quoteE2BShellArg } from '@arx-ai/arx-e2b'
 import { E2BSubprocessHandle } from './process.ts'
 import { asError, signalOpts } from './remote.ts'
 import { spawnE2BTerminal } from './terminal.ts'

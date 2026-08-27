@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@centurionarx/cxh-compaction-basic`.
- * @module @centurionarx/cxh-compaction-basic/invariant
+ * Package-owned invariant companion for `@arx-ai/arx-compaction-basic`.
+ * @module @arx-ai/arx-compaction-basic/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@centurionarx/cordis'
-import type { InvariantInstaller } from '@centurionarx/cxh-invariants'
+import type { Context } from '@arx-ai/cordis'
+import type { InvariantInstaller } from '@arx-ai/arx-invariants'
 
-const PACKAGE_NAME = '@centurionarx/cxh-compaction-basic'
+const PACKAGE_NAME = '@arx-ai/arx-compaction-basic'
 
 /** Cordis companion plugin name. */
 export const name = 'compaction-basic-invariant'

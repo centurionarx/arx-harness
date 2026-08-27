@@ -1,14 +1,14 @@
-# CENTURIONarx Harness
+# arx Harness
 
 English | [中文](README.zh.md)
 
-CENTURIONarx Harness (`cxh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
+arx Harness (`arx`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
 
 It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
 ## Developer preview
 
-CENTURIONarx Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+arx Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
 
 ## Run
 
@@ -17,7 +17,7 @@ CENTURIONarx Harness is currently in _developer preview_ and is iterating rapidl
 Install `Node.js`, then run:
 
 ```sh
-npx @centurionarx/cxh web
+npx @arx-ai/arx web
 ```
 
 The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it in the default browser for a local launch. An SSH launch only prints the host URL because the SSH client or editor owns the local forwarded address. Pass `--no-open` to run the server without opening a browser. See [Web UI guide](docs/user/guide/index.md).
@@ -27,20 +27,20 @@ The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it
 To run from a repository checkout:
 
 ```sh
-git clone https://github.com/centurionarx/centurionarx-harness.git
-cd centurionarx-harness
+git clone https://github.com/centurionarx/arx-harness.git
+cd arx-harness
 pnpm install
 pnpm run build
-pnpm cxh web
+pnpm arx web
 ```
 
-`pnpm run build` prepares the repository artifacts. `pnpm cxh web` uses those built artifacts without rebuilding.
+`pnpm run build` prepares the repository artifacts. `pnpm arx web` uses those built artifacts without rebuilding.
 
 ## Community and support
 
-- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/centurionarx/centurionarx-harness/discussions).
-- Add the [`cxh-plugin`](https://github.com/topics/cxh-plugin) topic to your plugin repository for discoverability.
-- Join <a href="https://discord.gg/Ycq5dCaS4">CENTURIONarx Harness Discord community</a>.
+- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/centurionarx/arx-harness/discussions).
+- Add the [`arx-plugin`](https://github.com/topics/arx-plugin) topic to your plugin repository for discoverability.
+- Join <a href="https://discord.gg/Ycq5dCaS4">arx Harness Discord community</a>.
 
 ## Contributing
 

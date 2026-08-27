@@ -1,17 +1,17 @@
 /**
  * Execution types for the bash executor seam. Background job semantics belong
- * to `@centurionarx/cxh-jobs`; this seam exposes only process handles. The
+ * to `@arx-ai/arx-jobs`; this seam exposes only process handles. The
  * managed-environment and captured-output vocabulary is owned by the
  * subprocess seam and re-exported here so bash consumers keep one import
  * root.
- * @module cxh-shell/types
+ * @module arx-shell/types
  */
 
-import type { SandboxEnforcement, SandboxExecutionPolicy, SandboxMode } from '@centurionarx/cxh-sandbox'
-import type { CollectedOutput, CxhEnvironment } from '@centurionarx/cxh-subprocess'
+import type { SandboxEnforcement, SandboxExecutionPolicy, SandboxMode } from '@arx-ai/arx-sandbox'
+import type { CollectedOutput, ArxEnvironment } from '@arx-ai/arx-subprocess'
 
-export { CXH_ENV_PREFIX } from '@centurionarx/cxh-subprocess'
-export type { CollectedOutput, CxhEnvironment, CxhEnvironmentKey } from '@centurionarx/cxh-subprocess'
+export { ARX_ENV_PREFIX } from '@arx-ai/arx-subprocess'
+export type { CollectedOutput, ArxEnvironment, ArxEnvironmentKey } from '@arx-ai/arx-subprocess'
 
 /**
  * Sandbox facts for one run, present iff a sandboxing executor handled it.
@@ -60,20 +60,20 @@ export interface ShellExecRequest {
   stdin?: string | undefined
   /**
    * Ordinary environment entries for the command, merged after the credential
-   * scrub. Managed facts belong in {@link cxhEnv}, which merges after this
+   * scrub. Managed facts belong in {@link arxEnv}, which merges after this
    * map, so an entry here can never displace one. Set by in-process plugins
    * (the hooks bridges set `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT`, …); the
    * model-facing bash tool does not expose it as a parameter.
    */
   env?: Record<string, string> | undefined
   /**
-   * Harness-owned `CXH_*` variables for this execution (typed to managed
-   * keys). Executors discard ambient `CXH_*` entries before merging this
+   * Harness-owned `ARX_*` variables for this execution (typed to managed
+   * keys). Executors discard ambient `ARX_*` entries before merging this
    * snapshot last, so an unavailable current fact cannot inherit a stale
    * value from the harness process and a caller {@link env} entry cannot
    * displace a managed one.
    */
-  cxhEnv?: CxhEnvironment | undefined
+  arxEnv?: ArxEnvironment | undefined
   /** Fully resolved per-call sandbox policy; sandboxing executors default it. */
   sandboxPolicy?: SandboxExecutionPolicy | undefined
 }
@@ -98,13 +98,13 @@ export interface ShellExecSpec {
   stdin?: string | undefined
   /**
    * Ordinary environment entries carried through from
-   * {@link ShellExecRequest.env}; {@link cxhEnv} still merges after them.
+   * {@link ShellExecRequest.env}; {@link arxEnv} still merges after them.
    * OPTIONAL on the spec for the same reason as `stdin`: absent means no
    * ordinary extra environment.
    */
   env?: Record<string, string> | undefined
-  /** Managed `CXH_*` snapshot (typed to managed keys); merges after {@link env}. */
-  cxhEnv?: CxhEnvironment | undefined
+  /** Managed `ARX_*` snapshot (typed to managed keys); merges after {@link env}. */
+  arxEnv?: ArxEnvironment | undefined
   /** Resolved sandbox policy; ignored by executors that do not confine. */
   sandboxPolicy: SandboxExecutionPolicy | undefined
 }

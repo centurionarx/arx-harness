@@ -1,6 +1,6 @@
 /**
  * Public-API synchronous Zstandard frame decoder fallback.
- * @module cxh-session-persistence-jsonl/zstd-public-decoder
+ * @module arx-session-persistence-jsonl/zstd-public-decoder
  */
 
 import { zstdDecompressSync } from 'node:zlib'

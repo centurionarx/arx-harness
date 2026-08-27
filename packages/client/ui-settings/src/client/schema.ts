@@ -1,7 +1,7 @@
 /** Synchronous schema introspection and immutable settings-draft edits. */
-import { Service } from '@centurionarx/cordis'
-import type { Context } from '@centurionarx/cordis'
-import Schema from '@centurionarx/schemastery'
+import { Service } from '@arx-ai/cordis'
+import type { Context } from '@arx-ai/cordis'
+import Schema from '@arx-ai/schemastery'
 
 /** Live schemastery node used for settings introspection and validation. */
 export type SchemaNode = Schema
@@ -150,7 +150,7 @@ export class SettingsSchemaService extends Service {
   }
 }
 
-declare module '@centurionarx/cordis' {
+declare module '@arx-ai/cordis' {
   interface Context {
     /** Settings-owned synchronous schema and immutable path operations. */
     settingsSchema: SettingsSchemaService

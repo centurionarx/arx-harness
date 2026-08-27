@@ -17,11 +17,11 @@ This tutorial is the programmatic alternative to the Web UI. It installs the pub
 Clone the repository for its runnable example, create a virtual environment, and install the SDK with its same-version bundled runtime:
 
 ```sh
-git clone https://github.com/centurionarx/centurionarx-harness.git
-cd centurionarx-harness
+git clone https://github.com/centurionarx/arx-harness.git
+cd arx-harness
 python -m venv .venv
 . .venv/bin/activate
-python -m pip install centurionarx-harness-sdk
+python -m pip install arx-harness-sdk
 ```
 
 The installed runtime needs no system Node.js. Repository contributors who need to build the runtime or wheels from source should use the [Python contributor workflows](../../../python/development.md).
@@ -33,8 +33,8 @@ Set the credential in the environment. Set `DEEPSEEK_BASE_URL` as well when the 
 ```sh
 export DEEPSEEK_API_KEY=sk-your-key-here
 # export DEEPSEEK_BASE_URL=http://127.0.0.1:8000/v1
-# export CXH_MODEL=deepseek-v4-flash
-# export CXH_SYSTEM_PROMPT='You are a helpful software engineer assistant.'
+# export ARX_MODEL=deepseek-v4-flash
+# export ARX_SYSTEM_PROMPT='You are a helpful software engineer assistant.'
 ```
 
 Run one task against an isolated workspace and session directory:
@@ -56,13 +56,13 @@ The checked-in example is a thin wrapper around this SDK call:
 ```python
 from pathlib import Path
 
-from centurionarx_harness import CENTURIONarxHarness
+from arx_harness import ArxHarness
 
 config = Path("examples/jsonrpc-agent/minimal.cordis.yml").resolve()
 workspace = Path("/absolute/path/to/workspace").resolve()
 sessions = Path("/absolute/path/to/sessions").resolve()
 
-with CENTURIONarxHarness(
+with ArxHarness(
     provider="deepseek-official",
     model="deepseek-v4-flash",
     max_tokens=49_152,
@@ -78,20 +78,20 @@ with CENTURIONarxHarness(
 print(result.final_response)
 ```
 
-`CENTURIONarxHarness` starts the bundled runtime lazily and reuses it until the context manager exits. Reusing the same harness and session id preserves the session-owned Bash process, including its working directory, exported variables, and shell functions. Use a fresh session id for an independent task; reuse an id only when the next call should continue the same durable conversation.
+`ArxHarness` starts the bundled runtime lazily and reuses it until the context manager exits. Reusing the same harness and session id preserves the session-owned Bash process, including its working directory, exported variables, and shell functions. Use a fresh session id for an independent task; reuse an id only when the next call should continue the same durable conversation.
 
 ## Understand the example composition
 
 | Property | Value |
 |---|---|
-| System prompt | `CXH_SYSTEM_PROMPT`, falling back to `You are a helpful software engineer assistant.` |
-| Model in `minimal.py` | `--model`, then `CXH_MODEL`, then `deepseek-v4-flash` |
+| System prompt | `ARX_SYSTEM_PROMPT`, falling back to `You are a helpful software engineer assistant.` |
+| Model in `minimal.py` | `--model`, then `ARX_MODEL`, then `deepseek-v4-flash` |
 | Model-facing tools | Persistent `bash` and `str_replace_editor` only |
 | Bash timeout | 300 seconds |
 | Editor output limit | 16,000 characters |
 | Context compaction | Disabled |
 | Filesystem | Bare local backend; absolute editor paths may address any path visible to the runtime process |
-| Session persistence | Uncompressed JSONL under `CXH_SESSION_ROOT` |
+| Session persistence | Uncompressed JSONL under `ARX_SESSION_ROOT` |
 
 The composition omits harness identity, workspace prompt text, skills, one-shot Bash, task tools, compaction, and every other model-facing plugin. Sandbox-policy facts are logged as runtime user context rather than appended to the system prompt.
 

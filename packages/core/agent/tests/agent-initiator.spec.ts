@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@centurionarx/cordis'
+import { Context } from '@arx-ai/cordis'
 import { runInNewContext } from 'node:vm'
-import AgentRegistry from '@centurionarx/cxh-agent'
-import type { Agent } from '@centurionarx/cxh-agent'
-import { SessionId } from '@centurionarx/cxh-session'
+import AgentRegistry from '@arx-ai/arx-agent'
+import type { Agent } from '@arx-ai/arx-agent'
+import { SessionId } from '@arx-ai/arx-session'
 
 function agent(id: string): Agent {
   return { id: SessionId(id) } as Agent

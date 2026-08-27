@@ -1,16 +1,16 @@
-import type { Context } from '@centurionarx/cordis'
+import type { Context } from '@arx-ai/cordis'
 import type {
   CommandNode, CompactionSummaryNode, ConversationMatch, ConversationNodeContext,
   ConversationNodeDefinition,
-} from '@centurionarx/cxh-client-runtime/client'
-import { isReplacementSurfaceEvent } from '@centurionarx/cxh-client-runtime/client'
-import type { CompactionCheckpointSource } from '@centurionarx/cxh-compaction/checkpoint'
-import type {} from '@centurionarx/cxh-compaction/types'
-import type {} from '@centurionarx/cxh-commands/types'
+} from '@arx-ai/arx-client-runtime/client'
+import { isReplacementSurfaceEvent } from '@arx-ai/arx-client-runtime/client'
+import type { CompactionCheckpointSource } from '@arx-ai/arx-compaction/checkpoint'
+import type {} from '@arx-ai/arx-compaction/types'
+import type {} from '@arx-ai/arx-commands/types'
 import type { ManualCompactionChatData } from '../contract/chat-nodes.ts'
 import { chatNode } from './common.ts'
 
-declare module '@centurionarx/cxh-client-ui-conversation/client' {
+declare module '@arx-ai/arx-client-ui-conversation/client' {
   interface ChatNodeDataMap {
     /** Ordinary slash-command lifecycle. */
     command: CommandNode

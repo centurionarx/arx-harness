@@ -2,11 +2,11 @@
 /** Tool assembly acceptance through the real ui-conversation host. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, waitFor } from '@testing-library/react'
-import { LocaleRuntime } from '@centurionarx/cxh-client-locale/client'
-import type { ISession, SessionId, TodoItem, ToolResultNode } from '@centurionarx/cxh-client-runtime/client'
-import type { PropsRenderSlots } from '@centurionarx/cxh-client-ui-slots'
-import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@centurionarx/cxh-client-test-runtime'
-import { apply as applyConversation, inject as injectConversation } from '@centurionarx/cxh-client-ui-conversation/client'
+import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import type { ISession, SessionId, TodoItem, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
+import type { PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
+import { SlotTestRuntime, usePinnedBrowserLanguages, stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
+import { apply as applyConversation, inject as injectConversation } from '@arx-ai/arx-client-ui-conversation/client'
 import { apply as applyTool, inject as injectTool } from '../src/client/apply.ts'
 import { toolChatSnapshot } from './tool-details-render.client.tsx'
 
