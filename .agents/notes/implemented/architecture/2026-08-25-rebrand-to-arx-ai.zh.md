@@ -14,7 +14,7 @@ harness 此前以 DeepSeek 的产品身份交付：npm scope `@arx-ai`、包与�
 
 ## Decision
 
-新身份为 `@arx-ai`（npm scope）、`arx`（包与二进制前缀）、`ARX_`（环境变量前缀）、`arx_harness`（Python 模块）与 `github.com/arx-ai/arx-harness`。npm scope 与仓库 owner 取同一个词是主动选择；二者是彼此独立的命名空间，本可不同。
+新身份为 `@arx-ai`（npm scope）、`arx`（包与二进制前缀）、`ARX_`（环境变量前缀）、`arx_harness`（Python 模块）与 `github.com/centurionarx/arx-harness`。npm scope 与 GitHub owner 是彼此独立的字段，且取值不同：npm 上为 `arx-ai`，GitHub 上为 `centurionarx`。分类器把 owner 规则锚定在 GitHub 主机名上，因为未加锚定的规则也会吞掉裸露的 scope 字面量——只要两个字段取值相同，这一点就不可见。
 
 [`scripts/rebrand.ts`](../../../../scripts/rebrand.ts) 是可复现的唯一事实来源，且它是**分类器，而非替换**。受保护的 span 在任何改写规则运行之前被遮蔽、之后再还原，因此无论规则顺序如何，都无法触及它们。[`scripts/rebrand.spec.ts`](../../../../scripts/rebrand.spec.ts) 双向锁定：什么必须迁移，什么必须原样存活。
 

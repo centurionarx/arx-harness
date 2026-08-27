@@ -40,7 +40,7 @@ export interface AppIdentity {
 export const APP_IDENTITY: AppIdentity = {
   product: 'arx-harness',
   version,
-  url: 'https://github.com/arx-ai/arx-harness',
+  url: 'https://github.com/centurionarx/arx-harness',
 }
 
 /**

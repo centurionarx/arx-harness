@@ -23,7 +23,7 @@ import {
   splitMarkdownUrlTarget,
 } from './markdown.ts'
 
-const REPOSITORY_URL = 'https://github.com/arx-ai/arx-harness'
+const REPOSITORY_URL = 'https://github.com/centurionarx/arx-harness'
 const root = resolve(import.meta.dirname, '..')
 const generatedRoot = resolve(root, 'website/.generated')
 
@@ -140,7 +140,7 @@ function githubTarget(
   image: boolean,
 ): string {
   const path = repoPath(absPath, repoRoot)
-  if (image) return `https://raw.githubusercontent.com/arx-ai/arx-harness/${repositoryRef}/${path}${suffix}`
+  if (image) return `https://raw.githubusercontent.com/centurionarx/arx-harness/${repositoryRef}/${path}${suffix}`
   const kind = lstatSync(absPath).isDirectory() ? 'tree' : 'blob'
   const lineSuffix = line === undefined ? suffix : `#L${line}`
   return `${REPOSITORY_URL}/${kind}/${repositoryRef}/${path}${lineSuffix}`
