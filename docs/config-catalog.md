@@ -93,14 +93,14 @@ Source: [`packages/examples/acp-demo/src/index.ts:39`](../packages/examples/acp-
 ```ts config-catalog
 /** Composition entry for the default model selection. */
 export interface Config {
-  /** Registered provider route. */
-  provider: string
-  /** Provider-owned model id. */
-  model: string
+  /** Registered provider route; absent ships no default. */
+  provider?: string
+  /** Provider-owned model id; absent ships no default. */
+  model?: string
 }
 ```
 
-Source: [`packages/core/agent-default-model/src/index.ts:41`](../packages/core/agent-default-model/src/index.ts)
+Source: [`packages/core/agent-default-model/src/index.ts:47`](../packages/core/agent-default-model/src/index.ts)
 
 <a id="arx-aiarx-agent-instructions"></a>
 

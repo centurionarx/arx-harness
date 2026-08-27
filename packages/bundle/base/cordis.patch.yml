@@ -60,11 +60,12 @@
 
     # The transport-independent default for Agents created by entry points.
     # Settings may supply a saved selection; consumers read it at creation time.
+    # This bundle names none: which model a deployment runs is its own decision,
+    # and a shipped default silently spends whichever account it points at. A
+    # session therefore carries no model until someone picks one, and the first
+    # request without a pick is refused naming that.
     - id: agent-default-model
       name: '@arx-ai/arx-agent-default-model'
-      config:
-        provider: deepseek-official
-        model: deepseek-v4-flash
 
     - id: jobs
       name: '@arx-ai/arx-jobs-local'
@@ -409,10 +410,12 @@
     # protection and the model would choose the request target. Search is a full
     # auxiliary model request with server-side retrieval, so this shipped DeepSeek
     # route gets 60s while the provider-neutral tool default remains 30s.
+    # No provider is pinned: whichever registered provider a deployment's
+    # credentials actually make usable is the one that serves. Two usable
+    # providers fail loud as WEB_PROVIDER_AMBIGUOUS rather than one winning by
+    # composition order.
     - id: web
       name: '@arx-ai/arx-web'
-      config:
-        searchProvider: deepseek-official
 
     - id: web-search-deepseek
       name: '@arx-ai/arx-web-search-deepseek'

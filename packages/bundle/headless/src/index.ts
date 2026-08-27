@@ -104,6 +104,11 @@ async function run(ctx: Context, task: string, io: HeadlessIo): Promise<void> {
   if (agents === undefined || defaultModel === undefined || sessions === undefined) return
 
   const selection = defaultModel.currentSelection()
+  // Headless runs one task and exits: there is no picker to fall back on, so a
+  // deployment that ships no default has to say which model this run uses.
+  if (selection === undefined) {
+    throw new Error('headless: no default model is configured; set agent-default-model provider and model')
+  }
   // This bundle composes no preset roster, so the model-facing rows sit in the
   // host plane and the agent reads them from the global layer. A deployment
   // that DOES configure one has to join it here first
