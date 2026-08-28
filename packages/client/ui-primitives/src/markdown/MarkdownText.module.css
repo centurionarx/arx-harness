@@ -1,6 +1,5 @@
-/* Visual baseline: deepsuite `@deepseek/md` markdown.css, adapted to CSS
-   Modules. Cite pills, header anchors, and thinking-small variants are
-   intentionally absent (no matching DOM). Token names match that sheet. */
+/* Markdown presentation as CSS Modules. Cite pills, header anchors, and
+   thinking-small variants are intentionally absent: no DOM emits them. */
 
 .markdown {
   min-width: 0;

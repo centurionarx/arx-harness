@@ -1,5 +1,5 @@
-/* Visual baseline: deepsuite `@deepseek/md` code-block.css. Highlight colors
-   stay on the existing shiki `--shiki-*` sheet (not Prism highlight.css). */
+/* Code-block presentation. Highlight colors stay on the existing shiki
+   `--shiki-*` sheet, never a Prism highlight sheet. */
 
 .block {
   --dsl-code-block-banner-background-color: var(--arx-alias-markdown-code-block-banner);

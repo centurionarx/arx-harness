@@ -1,6 +1,6 @@
-/* Thumbnail geometry mirrors DeepSeek Chat's composer rail: 64px cards with a
-   16px radius, remove control fully inside the card, arrows overlaid at the
-   edges instead of a scrollbar. */
+/* Composer rail thumbnail geometry: 64px cards with a 16px radius, the
+   remove control fully inside the card, and arrows overlaid at the edges
+   instead of a scrollbar. */
 
 .root {
   position: relative;
