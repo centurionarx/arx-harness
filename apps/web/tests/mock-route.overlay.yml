@@ -1,0 +1,24 @@
+# Loader overlay for the real-host smoke (`arx web --patch`): declare the one
+# model route these scenarios talk to. The bundle ships no provider, so without
+# this the composition has no route at all and a prompt fails
+# `model-unavailable` before it reaches the wire.
+#
+# The endpoint comes from the launching environment, which is where each
+# scenario puts its mock server's address; the key rides the ordinary
+# credential reference.
+- id: llm-pi-ai
+  config:
+    providers:
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.PRIMARY_BASE_URL
+        defaultContextWindow: 128000
+        defaultMaxTokens: 4096
+        models:
+          - id: primary-flash
+- id: agent-default-model
+  config:
+    provider: primary
+    model: primary-flash

@@ -27,6 +27,9 @@ import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import { REPO_ROOT, connectFreshWorkspace, newEnglishPage, probeFreePort, requireDist, saveFailureShot } from './support.ts'
 
+// The bundle ships no provider, so every scenario that prompts declares the
+// route it talks to; its endpoint reads PRIMARY_BASE_URL from the launch env.
+const MOCK_ROUTE_OVERLAY = fileURLToPath(new URL('./mock-route.overlay.yml', import.meta.url))
 const WEB_SURFACE_PROMPT = fileURLToPath(new URL('./snapshots/web-runtime-context/web-surface-prompt.expected.md', import.meta.url))
 
 function waitForReadyLine(child: ChildProcess): Promise<string> {
@@ -226,7 +229,11 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      [
+        '--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', MOCK_ROUTE_OVERLAY,
+        '--no-open', '--port', '0',
+      ],
       {
         cwd: workspace,
         env: {
@@ -339,7 +346,11 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      [
+        '--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', MOCK_ROUTE_OVERLAY,
+        '--no-open', '--port', '0',
+      ],
       {
         cwd: workspace,
         env: {
@@ -421,7 +432,11 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      [
+        '--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', MOCK_ROUTE_OVERLAY,
+        '--no-open', '--port', '0',
+      ],
       {
         cwd: workspace,
         env: {

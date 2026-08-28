@@ -226,6 +226,30 @@ describe('SubagentHeaderLineage', () => {
     expect(screen.queryByRole('tree')).toBeNull()
   })
 
+  it('re-places the open menu when the viewport resizes or the page scrolls', async () => {
+    // The menu is portaled and positioned off the trigger's rect, so it has to
+    // follow the trigger rather than stay where it was first placed.
+    vi.useFakeTimers()
+    render(<SubagentHeaderLineage {...props(catalog())} />)
+    const trigger = screen.getByRole('button', { name: /2 个子代理/ })
+    fireEvent.mouseEnter(trigger.parentElement!)
+    await vi.advanceTimersByTimeAsync(150)
+    const tree = screen.getByRole('tree')
+    expect(tree.style.top).toBe('5px')
+    // Let the open-state passive effect attach its listeners before firing at them.
+    await act(async () => { await Promise.resolve() })
+
+    trigger.getBoundingClientRect = (): DOMRect => ({ bottom: 100, left: 40 }) as DOMRect
+    act(() => { fireEvent.resize(window) })
+    expect(screen.getByRole('tree').style.top).toBe('105px')
+    expect(screen.getByRole('tree').style.left).toBe('40px')
+
+    trigger.getBoundingClientRect = (): DOMRect => ({ bottom: 220, left: 40 }) as DOMRect
+    act(() => { fireEvent.scroll(document) })
+    expect(screen.getByRole('tree').style.top).toBe('225px')
+    vi.useRealTimers()
+  })
+
   it('opens only on hover and preserves the portaled-menu crossing grace', async () => {
     vi.useFakeTimers()
     const view = render(<SubagentHeaderLineage {...props(catalog())} />)

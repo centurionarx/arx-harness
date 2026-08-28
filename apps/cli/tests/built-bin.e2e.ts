@@ -189,6 +189,21 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
     arx: { profile: { bundles: ['@arx-ai/arx-base'] } },
   }, undefined, 2))
   writeFileSync(join(profileDir, 'cordis.patch.yml'), [
+    // The route this profile talks to: its endpoint comes from the launching
+    // environment and its key from the managed credential store, which is the
+    // pair this scenario exists to prove reaches the wire.
+    '- id: llm-pi-ai',
+    '  config:',
+    '    providers:',
+    '      primary:',
+    '        displayName: Primary',
+    '        apiKeyEnv: PRIMARY_API_KEY',
+    '        api: openai-completions',
+    '        baseURL: !!js process.env.PRIMARY_BASE_URL',
+    '        defaultContextWindow: 128000',
+    '        defaultMaxTokens: 4096',
+    '        models:',
+    '          - id: primary-flash',
     '- insert:',
     '    - id: environment-probe',
     `      name: ${pathToFileURL(pluginFile).href}`,
@@ -375,12 +390,36 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
       successText: 'published headless profile reached the mock',
     })
     const home = mkdtempSync(join(tmpdir(), 'arx-built-headless-'))
+    // The bundle ships no provider, so this run declares the one route it uses
+    // and starts headless on it — the same thing a deployment writes.
+    const overlay = join(home, 'route.overlay.yml')
+    writeFileSync(overlay, [
+      '- id: llm-pi-ai',
+      '  config:',
+      '    providers:',
+      '      primary:',
+      '        displayName: Primary',
+      '        apiKeyEnv: PRIMARY_API_KEY',
+      '        api: openai-completions',
+      `        baseURL: ${server.baseURL}`,
+      '        defaultContextWindow: 128000',
+      '        defaultMaxTokens: 4096',
+      '        models:',
+      '          - id: primary-flash',
+      '- id: agent-default-model',
+      '  config:',
+      '    provider: primary',
+      '    model: primary-flash',
+      '',
+    ].join('\n'))
     try {
-      const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
+      const result = await runBuiltBin([
+        '--profile', 'headless', '--patch', overlay,
+        'answer', 'from', 'the', 'published', 'entry',
+      ], {
         ARX_HOME: home,
         ARX_TELEMETRY_DISABLED: '1',
         PRIMARY_API_KEY: apiKey,
-        PRIMARY_BASE_URL: server.baseURL,
       })
       expect(result.code, result.stderr).toBe(0)
       expect(result.stdout).toBe('published headless profile reached the mock')

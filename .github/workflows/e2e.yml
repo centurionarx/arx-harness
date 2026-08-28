@@ -2,9 +2,10 @@ name: E2E (real Primary API)
 
 # Real-API end-to-end suite (`pnpm run test:e2e`). Unlike ci.yml this job
 # consumes the PRIMARY_API_KEY_EXTERNAL secret (mapped to the env var
-# PRIMARY_API_KEY the tests read) and hits the external API at
-# https://api.example-provider.test (PRIMARY_BASE_URL is pinned to it explicitly so a
-# stray repo-root .env can't redirect the run).
+# PRIMARY_API_KEY the tests read) and hits the endpoint the PRIMARY_BASE_URL
+# repository variable names. The harness ships no provider, so the endpoint is
+# the deployment's to choose; setting it here explicitly also stops a stray
+# repo-root .env from redirecting the run.
 #
 # pull_request IS a trigger, but GitHub withholds repo secrets from BOTH forked
 # PRs and Dependabot PRs (the latter are same-repo, fork==false, but still
@@ -91,6 +92,7 @@ jobs:
           # Repo secret PRIMARY_API_KEY_EXTERNAL holds the external-API key;
           # the tests read process.env.PRIMARY_API_KEY, so map it across here.
           PRIMARY_API_KEY: ${{ secrets.PRIMARY_API_KEY_EXTERNAL }}
+          PRIMARY_BASE_URL: ${{ vars.PRIMARY_BASE_URL }}
         run: |
           set -euo pipefail
           if [ -z "${PRIMARY_API_KEY:-}" ]; then
@@ -98,7 +100,12 @@ jobs:
             echo "::error::report a false green. Configure the repo secret PRIMARY_API_KEY_EXTERNAL."
             exit 1
           fi
-          echo "PRIMARY_API_KEY present."
+          if [ -z "${PRIMARY_BASE_URL:-}" ]; then
+            echo "::error::PRIMARY_BASE_URL is empty. The harness ships no provider, so the"
+            echo "::error::endpoint has to be named. Configure the repo variable PRIMARY_BASE_URL."
+            exit 1
+          fi
+          echo "PRIMARY_API_KEY and PRIMARY_BASE_URL present."
 
       # The e2e suites boot the example bins in `lib` mode (ARX_EXAMPLE_MODE=lib):
       # the built artifact under plain Node, resolving plugins through real package
@@ -109,12 +116,12 @@ jobs:
       # Real-API end-to-end tests only. The keyless gates (lint/typecheck/
       # coverage/snapshot/etc.) already run in ci.yml (pull requests) and
       # ci-master.yml (master push standby).
-      # PRIMARY_BASE_URL is pinned to the external API; the secret is scoped to
-      # this step (and preflight) only — never exposed to checkout/setup/install.
+      # PRIMARY_BASE_URL comes from the repository variable; the secret is scoped
+      # to this step (and preflight) only — never exposed to checkout/setup/install.
       - name: E2E tests (real Primary API)
         env:
           PRIMARY_API_KEY: ${{ secrets.PRIMARY_API_KEY_EXTERNAL }}
-          PRIMARY_BASE_URL: https://api.example-provider.test
+          PRIMARY_BASE_URL: ${{ vars.PRIMARY_BASE_URL }}
           ARX_E2E_MAX_WORKERS: 14
           ARX_EXAMPLE_MODE: lib
         run: pnpm run test:e2e

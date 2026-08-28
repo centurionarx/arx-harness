@@ -178,6 +178,25 @@ describe('headless runner', () => {
     await test.ctx.fiber.dispose()
   })
 
+  it('refuses to run when no default model is composed', async () => {
+    // Headless runs one task and exits: there is no picker behind it, so an
+    // unconfigured route has to say so rather than pick one.
+    const ctx = new Context()
+    let err = ''
+    internals.stdout = { write: () => true }
+    internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
+    const exited = new Promise<number>((resolve) => {
+      ctx.provide('appExit', resolve)
+    })
+    ctx.provide('agentDefaultModel', { currentSelection: () => undefined } as never)
+    ctx.provide('sessions', { flush: () => Promise.resolve(true) } as never)
+    ctx.provide('agents', { create: () => Promise.reject(new Error('never reached')) } as never)
+    apply(ctx, { task: 't' })
+    expect(await exited).toBe(1)
+    expect(err).toBe('arx: headless: no default model is configured; set agent-default-model provider and model\n')
+    await ctx.fiber.dispose()
+  })
+
   it('reports a direct Agent creation failure', async () => {
     const ctx = new Context()
     let err = ''
