@@ -49,13 +49,14 @@
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-scope": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-persistence": "workspace:^",
     "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-system-prompt": "workspace:^",
     "@arx-ai/arx-tools": "workspace:^",
-    "@arx-ai/cordis": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/cordis": "workspace:^"
   }
 }

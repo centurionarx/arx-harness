@@ -42,7 +42,6 @@
     "@arx-ai/arx-jobs-local": "workspace:*",
     "@arx-ai/arx-llm": "workspace:*",
     "@arx-ai/arx-llm-agent-cli": "workspace:*",
-    "@arx-ai/arx-llm-deepseek": "workspace:*",
     "@arx-ai/arx-llm-pi-ai": "workspace:*",
     "@arx-ai/arx-llm-replay": "workspace:*",
     "@arx-ai/arx-loader-smoke": "workspace:*",

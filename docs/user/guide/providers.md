@@ -4,17 +4,13 @@ English | [中文](providers.zh.md)
 
 This guide assumes you started the Web UI through the [root README](../../../README.md#run). Model changes take effect on the next request without restarting the server.
 
-## Configure DeepSeek
-
-Open **Settings → Models**. The DeepSeek card exposes one API-key field; enter the key and save it.
-
-![The Models page: the DeepSeek card, with Add provider and Add a custom provider below it](providers-models-page.png)
-
-Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$ARX_HOME/.credentials.yaml`, while settings retain only its credential reference.
-
 ## Add a catalog provider
 
-Choose **Add provider**, select a provider such as Anthropic or OpenAI, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
+No provider ships configured: a fresh install serves no model until you add one, and which one is your choice.
+
+Open **Settings → Models** and choose **Add provider**, select a provider such as Anthropic, OpenAI, or DeepSeek, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
+
+Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$ARX_HOME/.credentials.yaml`, while settings retain only its credential reference.
 
 Providers with native authentication need their native credentials instead. Bedrock, Vertex, Azure, and Codex use AWS credentials and a region, an ADC project, an `api-version`, and OAuth respectively; filling only the API-key field does not configure them.
 
@@ -148,9 +144,9 @@ If a saved default names a provider that was deleted, the composer displays **Se
 - **The gateway refuses every request although the key and URL are right** — Its request shape differs from OpenAI's. Start with `compat.supportsDeveloperRole: false` and `compat.maxTokensField: max_tokens` on the route.
 - **Only reasoning models fail** — pi-ai sends their system prompt as the `developer` role, which the gateway rejects. Set `compat.supportsDeveloperRole: false`.
 - **A compat switch is refused as having no value** — A key written with nothing after the colon. Give it a value, or remove the key to keep the installed catalog's.
-- **An image is refused before sending** — The model declares no image modality. Give a custom provider's model `input: [text, image]`; DeepSeek's own chat-completions route is text-only and cannot be configured otherwise.
+- **An image is refused before sending** — The model declares no image modality. Give a custom provider's model `input: [text, image]`; a text-only chat-completions route cannot be configured into accepting images.
 - **The provider rejects a request carrying an image** — The model declares images its endpoint does not actually serve. Remove `image` from whichever list granted it — the model's `input`, or the route's `defaultInput` — then start a new session: the attached image stays in the session log, so the same request repeats until the session moves off it.
 
 ## Advanced configuration
 
-The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`arx-llm-pi-ai`](../../config-catalog.md#arx-aiarx-llm-pi-ai) is the provider section this page configures. The [`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) and [`arx-llm-deepseek`](../../../packages/llm/llm-deepseek/README.md) references own direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors.
+The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`arx-llm-pi-ai`](../../config-catalog.md#arx-aiarx-llm-pi-ai) is the provider section this page configures. The [`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) reference owns direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors.

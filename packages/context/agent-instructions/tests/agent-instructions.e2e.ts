@@ -11,7 +11,7 @@ import ToolRuntime from '@arx-ai/arx-tools'
 import AgentRegistry from '@arx-ai/arx-agent'
 import type { Agent } from '@arx-ai/arx-agent'
 import AgentLoop from '@arx-ai/arx-agent-loop'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import * as WorkspaceContext from '@arx-ai/arx-agent-instructions'
 import { candidateScopeKey } from '../src/render.ts'
 import LocalFileSystem from '@arx-ai/arx-fs-local'
@@ -46,7 +46,7 @@ async function harness(): Promise<{ ctx: Context; agent: Agent }> {
   await ctx.plugin(ToolFs)
   await ctx.plugin(WorkspaceContext, { maxBytes: 65536 })
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(LlmDeepSeek, { models: [{ id: 'deepseek-v4-flash' }] })
+  await ctx.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY', models: [{ id: 'deepseek-v4-flash' }] } } })
   const handle = await ctx.agents.create({
     sessionId: SessionId('workspace-context-e2e-session'),
     meta: { cwd: workdir },

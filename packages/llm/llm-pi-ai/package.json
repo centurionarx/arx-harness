@@ -53,7 +53,6 @@
     "@arx-ai/arx-launch-environment": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
     "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-timeout": "workspace:^",
     "@arx-ai/cordis": "workspace:^"

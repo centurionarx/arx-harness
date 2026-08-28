@@ -8,7 +8,7 @@ Status: implemented
 
 一个含有 HTTP header value 无法承载的字符的 API Key，曾被每个配置入口接受，直到构造请求时才失败——离引发它的那个字段已经很远。
 
-把含 emoji、中日韩文字或全角标点的 Key 粘进 Web 模型设置页，保存会报成功。首个轮次随即失败，报错为 `Cannot convert argument to a ByteString because the character at index 7 has a value of 55357 which is greater than 255`——其中的下标与码点是 UTF-16 内部细节，不附带任何可执行动作，却泄露了 Key 中某一个字符的码点。`llm-deepseek` 之所以产出这句，是因为 `fetch` 在 [adapter.ts](../../../../packages/llm/llm-deepseek/src/adapter.ts) 的 `try` 内部构造 `Bearer` header，而那个 `catch` 把一切失败都标为 `TRANSPORT`；该标签又在 `DEFAULT_RETRYABLE_CODES` 之中，于是一个永久且确定的故障还会被重试三次。
+把含 emoji、中日韩文字或全角标点的 Key 粘进 Web 模型设置页，保存会报成功。首个轮次随即失败，报错为 `Cannot convert argument to a ByteString because the character at index 7 has a value of 55357 which is greater than 255`——其中的下标与码点是 UTF-16 内部细节，不附带任何可执行动作，却泄露了 Key 中某一个字符的码点。`llm-deepseek` 之所以产出这句，是因为 `fetch` 在 adapter.ts 的 `try` 内部构造 `Bearer` header，而那个 `catch` 把一切失败都标为 `TRANSPORT`；该标签又在 `DEFAULT_RETRYABLE_CODES` 之中，于是一个永久且确定的故障还会被重试三次。
 
 同样的输入在 `llm-pi-ai` 上更糟。它的探测路径在 [discovery.ts](../../../../packages/llm/llm-pi-ai/src/discovery.ts) 里用裸 `fetch` 构造同一个 header，并把一切失败包装成 `could not reach <url>`，于是一个本地的 Key 故障被报成网络不可达。这条探测在保存之前就够得着：`ProviderEditor` 把用户输入的 `keyDraft` 直接放进探测请求，所以「获取模型列表」按钮会在任何东西落盘之前就把非法 Key 发出去。
 

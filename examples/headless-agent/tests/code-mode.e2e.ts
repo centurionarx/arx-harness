@@ -16,7 +16,7 @@ import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
 import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as ToolBash from '@arx-ai/arx-tool-bash'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import { WorkerThreadCodeRuntime } from '@arx-ai/arx-code-runtime-worker-thread'
 import LocalFileSystem from '@arx-ai/arx-fs-local'
 import * as ToolFs from '@arx-ai/arx-tool-fs'
@@ -57,7 +57,7 @@ async function codeModeHarness(cwd: string): Promise<Context> {
   await harness.plugin(ToolRuntime, { mode: 'code' })
   await harness.plugin(AgentRegistry)
   await harness.plugin(AgentLoop, { agents: [] })
-  await harness.plugin(LlmDeepSeek)
+  await harness.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY' } } })
   await harness.plugin(LocalSubprocessRuntime)
   await harness.plugin(BashEnvPlugin)
   await harness.plugin(LocalBashExecutor, { cwd, timeoutMs: 30_000 })
@@ -77,7 +77,7 @@ async function workspaceCodeModeHarness(): Promise<Context> {
   await harness.plugin(ToolFs)
   await harness.plugin(WorkspaceContext, { maxBytes: 65536 })
   await harness.plugin(AgentLoop, { agents: [] })
-  await harness.plugin(LlmDeepSeek, { models: [{ id: 'deepseek-v4-flash' }] })
+  await harness.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY', models: [{ id: 'deepseek-v4-flash' }] } } })
   await harness.plugin(WorkerThreadCodeRuntime, {})
   return harness
 }

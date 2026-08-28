@@ -7,7 +7,7 @@ import ToolRuntime from '@arx-ai/arx-tools'
 import AgentRegistry from '@arx-ai/arx-agent'
 
 import AgentLoop from '@arx-ai/arx-agent-loop'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import SubagentRuntime from '@arx-ai/arx-subagent'
 import * as Spawn from '@arx-ai/arx-subagent-spawn-in-process'
 import WorkerThreadWorkflowEngine from '../src/index.ts'
@@ -36,7 +36,7 @@ async function harness(): Promise<Context> {
   await built.plugin(ToolRuntime)
   await built.plugin(AgentRegistry)
   await built.plugin(AgentLoop, { agents: [] })
-  await built.plugin(LlmDeepSeek)
+  await built.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY' } } })
   await built.plugin(SubagentRuntime)
   await built.plugin(Spawn, { providerName: 'spawn' })
   await built.plugin(WorkerThreadWorkflowEngine, { provider: 'spawn' })

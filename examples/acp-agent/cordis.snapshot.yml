@@ -16,8 +16,8 @@
       # `name` asserts the target: a mismatch skips the patch and warns only when
       # a logger exists. A renamed id leaves a stale adapter entry, but replay still
       # short-circuits through `llm-replay`.
-      - id: llm-deepseek
-        name: '@arx-ai/arx-llm-deepseek'
+      - id: llm
+        name: '@arx-ai/arx-llm-pi-ai'
         disabled: true
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'

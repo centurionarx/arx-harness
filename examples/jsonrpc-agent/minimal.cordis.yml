@@ -8,14 +8,15 @@
   config:
     maxTokensAsSuccess: false
 
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
   config:
-    apiKeyEnv: DEEPSEEK_API_KEY
-    streamIdleTimeoutMs: 172800000
-    models:
-      - id: !!js process.env.ARX_MODEL ?? 'deepseek-v4-flash'
-        contextWindow: !!js Number(process.env.ARX_CONTEXT_WINDOW ?? 1000000)
+    providers:
+      deepseek:
+        apiKeyEnv: DEEPSEEK_API_KEY
+        models:
+          - id: !!js process.env.ARX_MODEL ?? 'deepseek-v4-flash'
+            contextWindow: !!js Number(process.env.ARX_CONTEXT_WINDOW ?? 1000000)
 
 - id: sandbox
   name: '@arx-ai/arx-sandbox-local'

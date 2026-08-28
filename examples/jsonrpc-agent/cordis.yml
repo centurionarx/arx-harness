@@ -9,11 +9,13 @@
 # The DeepSeek adapter. Shipped default: full thinking at max effort on every
 # request; exact-model resolution materializes request defaults before logging.
 # The model arrives per session over JSON-RPC, so it is not pinned here.
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
   config:
-    thinking: enabled
-    reasoningEffort: max
+    providers:
+      deepseek:
+        apiKeyEnv: DEEPSEEK_API_KEY
+        reasoning: high
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess

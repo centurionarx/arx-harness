@@ -6,8 +6,8 @@
   config:
     path: ../../cordis.yml
     patches:
-      - id: llm-deepseek
-        name: '@arx-ai/arx-llm-deepseek'
+      - id: llm
+        name: '@arx-ai/arx-llm-pi-ai'
         disabled: true
       - id: agent-spine
         name: '@arx-ai/arx-agent-spine-demo'

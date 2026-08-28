@@ -145,10 +145,9 @@ The first argument lists provider routes handled by the adapter. `GenerateOption
 
 The repository contains complete implementations:
 
-- `packages/llm/llm-deepseek/` — DeepSeek API adapter using the OpenAI-compatible format
-- `packages/llm/llm-pi-ai/` — Pi AI adapter using a different API format
+- `packages/llm/llm-pi-ai/` — the shipped multi-provider adapter, which reaches catalog routes and hand-declared OpenAI-compatible gateways through one profile map.
 
-Compare the two shipped adapters to see the same harness contract implemented over different provider SDKs.
+Read it to see the harness contract implemented end to end over a provider SDK.
 
 ## Error handling
 

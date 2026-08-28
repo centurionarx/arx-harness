@@ -6,7 +6,7 @@ import { LocalBashExecutor } from '@arx-ai/arx-bash-local'
 import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as ToolBash from '@arx-ai/arx-tool-bash'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import SubagentRuntime from '@arx-ai/arx-subagent'
 import * as Spawn from '../src/index.ts'
 import * as ToolSubagent from '@arx-ai/arx-tool-subagent'
@@ -28,7 +28,7 @@ export async function spawnHarness(workdir: string): Promise<Context> {
     systemPrompt: { persona: 'You are a coding agent. Report only when the requested work is done.' },
   })
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(LlmDeepSeek)
+  await ctx.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY' } } })
   await ctx.plugin(LocalSubprocessRuntime)
   await ctx.plugin(BashEnvPlugin)
   await ctx.plugin(LocalBashExecutor, { cwd: workdir, timeoutMs: 30_000 })

@@ -38,7 +38,6 @@
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
     "@arx-ai/arx-scope": "workspace:^",
     "@arx-ai/arx-sdk-protocol": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
@@ -46,17 +45,17 @@
     "@arx-ai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@arx-ai/cordis-plugin-loader": "workspace:^",
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-agent-spine-demo": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
+    "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-scope": "workspace:^",
     "@arx-ai/arx-sdk-protocol": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^"
   }
 }

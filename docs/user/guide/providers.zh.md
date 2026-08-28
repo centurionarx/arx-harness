@@ -4,17 +4,13 @@
 
 本指南假定你已按照[根 README](../../../README.zh.md#run)启动 Web UI。模型变更会在下一次请求时生效，不需要重启服务器。
 
-## 配置 DeepSeek
-
-打开**设置 → 模型**。DeepSeek 卡片提供一个 API 密钥字段；输入密钥并保存。
-
-![模型页：DeepSeek 卡片，以及添加提供方与添加自定义提供方两个入口](providers-models-page.zh.png)
-
-密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$ARX_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
-
 ## 添加目录提供方
 
-选择**添加提供方**，选取 Anthropic 或 OpenAI 等提供方，输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
+没有任何提供方是预先配置好的：全新安装在你添加之前不提供任何模型，选哪一个由你决定。
+
+打开**设置 → 模型**，选择**添加提供方**，选取 Anthropic、OpenAI 或 DeepSeek 等提供方，输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
+
+密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$ARX_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
 
 使用原生认证的提供方需要各自的原生凭据。Bedrock、Vertex、Azure 和 Codex 分别使用 AWS 凭据与区域、ADC 项目、`api-version` 和 OAuth；只填写 API 密钥字段无法完成配置。
 
@@ -148,9 +144,9 @@ llm-pi-ai:
 - **密钥与地址都正确，网关却拒绝每一个请求**：它的请求形状与 OpenAI 不同。先在路由上设 `compat.supportsDeveloperRole: false` 与 `compat.maxTokensField: max_tokens`。
 - **只有推理模型失败**：pi-ai 把它们的系统提示词以 `developer` 角色发出，而网关拒绝该角色。设 `compat.supportsDeveloperRole: false`。
 - **某个 compat 开关因没有值而被拒绝**：冒号后什么都没写。给它一个值，或删掉该键以沿用已安装 catalog 的值。
-- **图片在发送前被拒绝**：该模型未声明图片模态。请给自定义提供方的模型加上 `input: [text, image]`；DeepSeek 自身的 chat-completions 路由是纯文本的，且无法通过配置改变。
+- **图片在发送前被拒绝**：该模型未声明图片模态。请给自定义提供方的模型加上 `input: [text, image]`；纯文本的 chat-completions 路由无法通过配置改成接受图片。
 - **提供方拒绝了带图片的请求**：该模型声明了其端点实际并不提供的图片能力。请从授予它图片能力的那个列表中移除 `image`——可能是模型的 `input`，也可能是路由的 `defaultInput`——然后开启新会话：附加的图片会留在会话日志里，因此在会话离开它之前，同一个请求会不断重复。
 
 ## 进阶配置
 
-自动生成的[插件配置目录](../../config-catalog.zh.md)列出每个插件的所有受支持字段与默认值；[`arx-llm-pi-ai`](../../config-catalog.zh.md#arx-aiarx-llm-pi-ai) 就是本页所配置的那个提供方段落。[`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.zh.md) 和 [`arx-llm-deepseek`](../../../packages/llm/llm-deepseek/README.zh.md) 参考文档负责直接 `settings.yaml` 配置、目录解析、推理控制、凭据与适配器错误。
+自动生成的[插件配置目录](../../config-catalog.zh.md)列出每个插件的所有受支持字段与默认值；[`arx-llm-pi-ai`](../../config-catalog.zh.md#arx-aiarx-llm-pi-ai) 就是本页所配置的那个提供方段落。[`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.zh.md) 参考文档负责直接 `settings.yaml` 配置、目录解析、推理控制、凭据与适配器错误。

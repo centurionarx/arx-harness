@@ -57,6 +57,7 @@
     "@arx-ai/arx-brand": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
     "@arx-ai/arx-subagent-spawn-in-process": "workspace:^",

@@ -8,7 +8,7 @@ English | [中文](2026-08-25-rebrand-to-arx-ai.zh.md)
 
 The harness shipped under DeepSeek's product identity: npm scope `@arx-ai`, package and binary prefix `arx`, environment prefix `ARX_`, Python module `arx_harness`, and the `arx-ai/arx-harness` repository. The product now ships as arx and needs its own identity across every one of those surfaces.
 
-A blind rename destroys the product it renames. Of the 29,604 case-insensitive `deepseek` spans in the tree, roughly 5,900 do not name the harness at all: they name the DeepSeek *model*, *provider*, *credential*, or *endpoint* that [`arx-llm-deepseek`](../../../../packages/llm/llm-deepseek/README.md) still speaks to. `DEEPSEEK_API_KEY`, `deepseek-official`, the `deepseek-v4` model ids, and `api.deepseek.com` are third-party facts, not branding.
+A blind rename destroys the product it renames. Of the 29,604 case-insensitive `deepseek` spans in the tree, roughly 5,900 do not name the harness at all: they name the DeepSeek *model*, *provider*, *credential*, or *endpoint* that `arx-llm-deepseek` still speaks to. `DEEPSEEK_API_KEY`, `deepseek-official`, the `deepseek-v4` model ids, and `api.deepseek.com` are third-party facts, not branding.
 
 Two further span families look like the product and are not. The `arx-harness` GitHub organization is a third party here — it hosts the forks whose commits [`vendor/README.md`](../../../../vendor/README.md) pins, and the pull requests the notes cite. And the archived Agent Note tree is frozen by [the archive policy](../../README.md), so its file names keep the old prefix while every link *into* it lives in a file the rewrite does touch.
 
