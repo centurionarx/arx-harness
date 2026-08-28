@@ -17,7 +17,8 @@
             "required": [
               "command"
             ]
-          }
+          },
+          "strict": false
         }
       },
       {
@@ -70,7 +71,8 @@
               "command",
               "path"
             ]
-          }
+          },
+          "strict": false
         }
       }
     ],
@@ -103,7 +105,8 @@
             "required": [
               "command"
             ]
-          }
+          },
+          "strict": false
         }
       },
       {
@@ -156,7 +159,8 @@
               "command",
               "path"
             ]
-          }
+          },
+          "strict": false
         }
       }
     ],
@@ -203,7 +207,8 @@
             "required": [
               "command"
             ]
-          }
+          },
+          "strict": false
         }
       },
       {
@@ -256,7 +261,8 @@
               "command",
               "path"
             ]
-          }
+          },
+          "strict": false
         }
       }
     ],
@@ -317,7 +323,8 @@
             "required": [
               "command"
             ]
-          }
+          },
+          "strict": false
         }
       },
       {
@@ -370,7 +377,8 @@
               "command",
               "path"
             ]
-          }
+          },
+          "strict": false
         }
       }
     ],

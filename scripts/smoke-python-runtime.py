@@ -823,6 +823,9 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
             session_root=str(sessions),
             cordis=str(MINIMAL_CORDIS),
             runtime_bin=str(executable),
+            # The minimal composition selects its one model from ARX_MODEL; the
+            # route serves that id and no other, so it must name what is asked for.
+            env={"ARX_MODEL": "smoke-model"},
             api_key="sk-keyless-smoke",
             base_url=base_url,
             request_timeout_seconds=60,
