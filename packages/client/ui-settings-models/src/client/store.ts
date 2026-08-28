@@ -224,6 +224,19 @@ export function providerUsable(row: ProviderRow): boolean {
   return row.credential?.configured === true
 }
 
+/**
+ * The route a first-run prompt can offer a key field for: any route whose
+ * profile lives in a named settings section, whether that profile is the
+ * section itself or one entry inside it. A route naming no section has nothing
+ * for the prompt to write into. With several composed, the first in directory
+ * order is offered and the Models page reaches the rest.
+ * @param state - current shared Models join snapshot.
+ * @returns that row, or undefined when no composed route qualifies.
+ */
+export function promptableRoute(state: ModelsSettingsState): ProviderRow | undefined {
+  return state.rows.find(candidate => candidate.entry.settingsNs.length > 0)
+}
+
 /** First-run onboarding readiness derived only from the shared Models join. */
 export type OnboardingReadiness =
   | { kind: 'loading' }
@@ -243,10 +256,10 @@ export type OnboardingReadiness =
 /**
  * Project first-run readiness from the provider/settings/credential join used
  * by the Models page. The step exists to leave the user with a model to talk
- * to, so ANY usable provider ends it; only when none exists does the official
- * DeepSeek route — the one route the prompt can offer a key field for — decide
- * whether prompting can help. A missing official configurable-provider
- * declaration means the adapter is not repairable by navigating to Models.
+ * to, so ANY usable provider ends it; only when none exists does the route the
+ * prompt can offer a key field for — see {@link promptableRoute} — decide
+ * whether prompting can help. No such route means nothing is repairable by
+ * navigating to Models.
  * @param state - current shared Models join snapshot.
  * @returns the onboarding state without reading a parallel fact source.
  */
@@ -261,10 +274,11 @@ export function onboardingReadiness(state: ModelsSettingsState): OnboardingReadi
     }
   }
   if (state.rows.some(providerUsable)) return { kind: 'provider-ready' }
-  const row = state.rows.find(candidate =>
-    candidate.entry.provider === 'deepseek-official'
-    && candidate.entry.settingsNs === 'llm-deepseek'
-    && candidate.entry.settingsPath.length === 0)
+  // Whichever route the deployment composed. The prompt edits a whole-section
+  // profile, so a row addressed below its namespace root has no key field to
+  // offer; with several composed, the first in directory order is offered and
+  // the Models page reaches the rest.
+  const row = promptableRoute(state)
   if (row === undefined) return { kind: 'adapter-absent' }
   if (!row.entry.active) {
     return {

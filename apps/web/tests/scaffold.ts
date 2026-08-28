@@ -5,8 +5,8 @@
 // layer stack the profile boot composes), patched the
 // snapshot way — so a real chromium exercises the real HTTP uplink/WebSocket
 // downlink, api-gateway, agent loop, tools, and persistence. Modes ride $ARX_SNAPSHOT:
-// replay (default, keyless: normally disables the llm-deepseek row and
-// inserts arx-llm-replay in providers mode), record (real adapter + key,
+// replay (default, keyless: inserts arx-llm-replay in providers mode),
+// record (real adapter + key,
 // harvests fixtures from live session memory), refresh (keyless replay that
 // rewrites goldens). A first-run option keeps the real adapter mounted while
 // masking its credential, without making a model call.
@@ -18,8 +18,8 @@
 // disabled (recorded fixtures must not embed this repo's AGENTS.md);
 // session-title-llm disabled (its fire-and-forget title call would race the
 // loop for the session's replay cursor); webserver pinned to port 0 with the
-// built dist; ordinary keyless modes disable llm-deepseek and fill the open
-// llm seam post-boot with installLlmReplay on the settled root ctx
+// built dist; ordinary keyless modes fill the open llm seam post-boot with
+// installLlmReplay on the settled root ctx
 // (the plugin-row path discards the ReplayHandle; the direct install keeps
 // assertConsumed for the teardown fixture-consumption check).
 import { existsSync, readFileSync } from 'node:fs'
@@ -109,8 +109,8 @@ const INSTALL_ANCHOR = join(REPO_ROOT, 'apps/cli/package.json')
 const SHIPPED_PRESET_DIR = join(REPO_ROOT, 'apps/cli/config/agent-presets')
 
 // Replay publishes the provider catalog the gateway routes to (providers
-// mode, never catch-all: with llm-deepseek disabled no adapter exists, so a
-// catch-all would leave resolveModelInfo unroutable and compaction-basic's
+// mode, never catch-all: the bundle ships no adapter, so a catch-all would
+// leave resolveModelInfo unroutable and compaction-basic's
 // post-step pressure check would warn every step). The published
 // contextWindow keeps that pressure path provably inert for small fixtures.
 const REPLAY_PROVIDER_ID = 'deepseek-official'
@@ -205,8 +205,8 @@ export interface LaunchOptions {
    * Replay fixture (session.jsonl) served by the inserted arx-llm-replay row
    * in replay/refresh modes; ignored in record mode (the real adapter
    * answers). Omit for scenarios issuing no model calls — a stray stream then
-   * fails loud with NO_ADAPTER (llm-deepseek is disabled and no replay row
-   * mounts). With {@link replayProvidersOnly}, the fixture must record no
+   * fails loud with NO_ADAPTER (the bundle ships no adapter and no replay
+   * row mounts). With {@link replayProvidersOnly}, the fixture must record no
    * model calls (its header alone mounts the catalog).
    */
   replayFixture?: string
@@ -255,24 +255,13 @@ export interface LaunchOptions {
    */
   cordisTools?: boolean
   /**
-   * Keep the shipped DeepSeek adapter mounted while masking the process
-   * environment's DEEPSEEK_API_KEY for this scaffold lifetime. This is the
-   * keyless first-run configuration lane; the default disables the adapter.
+   * Compose no model route and mask the ambient provider key for this
+   * scaffold lifetime, so the browser sees the first-run configuration state
+   * the shipped bundle starts in. The default seeds the replay route instead.
    */
-  deepSeekMissingCredential?: boolean
+  missingProviderCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
-  /**
-   * Patch the shipped DeepSeek search row to a deterministic endpoint and
-   * credential reference. Browser search scenarios keep the real provider and
-   * credentials seam while avoiding external search traffic and ambient keys.
-   */
-  deepSeekSearch?: {
-    /** Anthropic-compatible base URL; the provider appends `/messages`. */
-    baseURL: string
-    /** Credential reference resolved by the shipped search provider. */
-    apiKeyEnv: string
-  }
   /**
    * Replace the roster the scaffold mounts by default (the shipped directory
    * at `system` trust, default `standard`). Supply this only to change WHICH
@@ -329,19 +318,19 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       throw new Error('web e2e record mode needs DEEPSEEK_API_KEY (env or repo-root .env)')
     }
   }
-  if (mode === 'record' && options.deepSeekMissingCredential === true) {
-    throw new Error('deepSeekMissingCredential is a keyless replay/refresh option')
+  if (mode === 'record' && options.missingProviderCredential === true) {
+    throw new Error('missingProviderCredential is a keyless replay/refresh option')
   }
-  const maskDeepSeekCredential = mode !== 'record' && options.deepSeekMissingCredential === true
-  const originalDeepSeekCredential = process.env.DEEPSEEK_API_KEY
+  const maskProviderCredential = mode !== 'record' && options.missingProviderCredential === true
+  const originalProviderCredential = process.env.DEEPSEEK_API_KEY
   let credentialEnvironmentRestored = false
   const restoreCredentialEnvironment = (): void => {
-    if (credentialEnvironmentRestored || !maskDeepSeekCredential) return
+    if (credentialEnvironmentRestored || !maskProviderCredential) return
     credentialEnvironmentRestored = true
-    if (originalDeepSeekCredential === undefined) {
+    if (originalProviderCredential === undefined) {
       Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
     } else {
-      process.env.DEEPSEEK_API_KEY = originalDeepSeekCredential
+      process.env.DEEPSEEK_API_KEY = originalProviderCredential
     }
   }
   const workspaceCwd = await realpath(await mkdtemp(join(tmpdir(), 'arx-web-e2e-ws-')))
@@ -387,7 +376,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (failures.length > 1) throw new AggregateError(failures, 'web scaffold temp-root setup failed')
     throw error
   }
-  if (maskDeepSeekCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
+  if (maskProviderCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
 
   // The include patch set — the same layer stack the profile boot composes
   // (bundle patches in arx.profile.bundles order), applied over the SAME empty root (a
@@ -504,23 +493,11 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         { id: 'tool-cordis', name: '@arx-ai/arx-tool-cordis' },
       ] }]
       : [],
-    ...options.deepSeekSearch === undefined
-      ? []
-      : [{
-        id: 'web-search-deepseek',
-        config: {
-          apiKeyEnv: options.deepSeekSearch.apiKeyEnv,
-          baseURL: options.deepSeekSearch.baseURL,
-        },
-      }],
-    ...mode === 'record' || options.deepSeekMissingCredential === true
-      ? []
-      : [{ id: 'llm-deepseek', disabled: true }],
     // The shipped bundle pins no default model: a deployment picks its own, and
     // a session without a selection cannot start a turn. This composition IS
     // that deployment, so it seeds the one route replay publishes; otherwise a
     // scenario would have to drive the model picker before every prompt.
-    ...mode === 'record' || options.deepSeekMissingCredential === true
+    ...mode === 'record' || options.missingProviderCredential === true
       ? []
       : [{ id: 'agent-default-model', config: { provider: REPLAY_PROVIDER_ID, model: REPLAY_MODEL_ID } }],
   ]
@@ -582,10 +559,9 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     }
     port = boundPort
 
-    // Fill the open llm seam on the settled root ctx. Ordinary keyless modes
-    // disable llm-deepseek; the first-run lane keeps it mounted but has no
-    // replay fixture and never streams. The direct install, unlike the plugin
-    // row, returns the ReplayHandle for the teardown consumption check.
+    // Fill the open llm seam on the settled root ctx. The first-run lane
+    // composes no route at all and never streams. The direct install, unlike
+    // the plugin row, returns the ReplayHandle for the teardown check.
     if (options.replayProvidersOnly) {
       if (options.replayFixture === undefined) {
         throw new Error('replayProvidersOnly requires replayFixture (its file supplies the header)')
@@ -627,7 +603,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         ...(options.replayChildFixtures === undefined ? {} : { childFiles: options.replayChildFixtures }),
         ...(options.paceMs === undefined ? {} : { paceMs: options.paceMs }),
       })
-    } else if (mode !== 'record' && options.deepSeekMissingCredential !== true) {
+    } else if (mode !== 'record' && options.missingProviderCredential !== true) {
       // No fixture and no shipped adapter would leave the tree with ZERO
       // provider routes — a state no product composition has, and one the
       // composer refuses to type into. Register the same routes

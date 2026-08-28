@@ -128,6 +128,8 @@ export async function removeProviderProfile(
  * credential opens the setup card instead of showing a row. This is the
  * first-run posture alone — a user who can already reach some provider gets an
  * ordinary row with the missing-key dot, since nothing here is blocking them.
+ * The card replaces the row it stands for, so it is offered only where the
+ * profile IS the section and there is nothing else to render in its place.
  * @param row - the joined provider row.
  * @param anyUsable - whether any joined row can already serve requests.
  * @returns whether to render the setup card.

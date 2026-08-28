@@ -75,7 +75,7 @@ afterEach(async () => {
 })
 
 it('assembles the shipped Web catalog, file-reference guidance, retry policy, and confined access default', async () => {
-  scaffold = await launchWebScaffold({ deepSeekMissingCredential: true })
+  scaffold = await launchWebScaffold({ missingProviderCredential: true })
   const ctx = scaffold.ctx
   expect(ctx.llm.providerRetryPolicy('deepseek-official')).toMatchInlineSnapshot(`
     {

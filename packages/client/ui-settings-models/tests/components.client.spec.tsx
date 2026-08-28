@@ -10,9 +10,6 @@ import {
 } from '../src/client/ModelsSection.tsx'
 import type { ModelsSectionInjected, ModelsSectionProps } from '../src/client/ModelsSection.tsx'
 import { pathOps } from '../src/client/ProviderEditor.tsx'
-import {
-  DeepSeekModelsEditor, formatCapacity, modelDrafts, parseCapacity, validateDeepSeekModels,
-} from '../src/client/DeepSeekModelsEditor.tsx'
 import { apiKeyFailure } from '../src/client/apiKey.ts'
 import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import { deriveKeyRef, ModelsSettingsStore } from '../src/client/store.ts'
@@ -25,18 +22,8 @@ afterEach(cleanup)
 const t: ModelsSectionInjected['t'] = key => en[key]
 const OPENAI_TARGET = { provider: 'openai', displayName: 'openai' }
 const openaiCopy = (template: string): string => providerCopy(template, OPENAI_TARGET)
-const DEEPSEEK_TARGET = { provider: 'deepseek-official', displayName: 'DeepSeek' }
-const deepSeekCopy = (template: string): string => providerCopy(template, DEEPSEEK_TARGET)
-
-/** Open one row's capacity disclosure (1-based, as the labels read). */
-function expandRow(position: number): void {
-  fireEvent.click(screen.getByLabelText(`${en.modelAdvanced} ${String(position)}`))
-}
-
-/** The capacity inputs of every open row, in row order. */
-function capacityInputs(label: string): HTMLInputElement[] {
-  return screen.getAllByLabelText<HTMLInputElement>(new RegExp(label))
-}
+const PRIMARY_TARGET = { provider: 'primary', displayName: 'Primary Route' }
+const primaryCopy = (template: string): string => providerCopy(template, PRIMARY_TARGET)
 
 const PiAiConfig = Schema.object({
   providers: Schema.dict(Schema.object({
@@ -47,62 +34,8 @@ const PiAiConfig = Schema.object({
   })),
 })
 
-const DeepSeekConfig = Schema.object({
-  apiKeyEnv: Schema.string().role('credential-ref'),
-  baseURL: Schema.string().pattern(/^https:\/\//),
-  reasoningEffort: Schema.union(['off', 'low', 'high', 'max']),
-  defaultContextWindow: Schema.number().step(1).min(1),
-  models: Schema.array(Schema.object({
-    id: Schema.string().required(),
-    name: Schema.string(),
-    description: Schema.string(),
-    contextWindow: Schema.number().step(1).min(1),
-  // The adapter declares its catalog as a schema default rather than a
-  // composition entry, which is what the restore-defaults path has to read.
-  })).default([
-    {
-      id: 'deepseek-v4-flash',
-      name: 'DeepSeek-V4-Flash',
-      description: '',
-      contextWindow: 1_000_000,
-    },
-    {
-      id: 'deepseek-v4-pro',
-      name: 'DeepSeek-V4-Pro',
-      description: '',
-      contextWindow: 1_000_000,
-    },
-  ]),
-})
-
-const DEFAULT_DEEPSEEK_MODELS = [
-  {
-    id: 'deepseek-v4-flash',
-    name: 'DeepSeek-V4-Flash',
-    description: 'Preserved hidden detail',
-    contextWindow: 1_000_000,
-  },
-  { id: 'deepseek-v4-pro', name: 'DeepSeek-V4-Pro', contextWindow: 1_000_000 },
-]
-
 function wireNamespaces(): SettingsNamespaceView[] {
   return [
-    {
-      ns: 'llm-deepseek',
-      schema: JSON.parse(JSON.stringify(DeepSeekConfig.toJSON())) as unknown,
-      value: {
-        apiKeyEnv: 'DEEPSEEK_API_KEY',
-        baseURL: 'https://base',
-        defaultContextWindow: 1_000_000,
-        maxTokens: 256_000,
-        models: DEFAULT_DEEPSEEK_MODELS,
-      },
-      base: { defaultContextWindow: 1_000_000, maxTokens: 256_000, models: DEFAULT_DEEPSEEK_MODELS },
-      user: { baseURL: 'https://base' },
-      applies: 'live',
-      secrets: [],
-      revision: 0,
-    },
     {
       ns: 'llm-plain',
       schema: JSON.parse(JSON.stringify(Schema.object({
@@ -116,7 +49,7 @@ function wireNamespaces(): SettingsNamespaceView[] {
     {
       ns: 'llm-pi-ai',
       schema: JSON.parse(JSON.stringify(PiAiConfig.toJSON())) as unknown,
-      value: { providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://proxy', headers: { 'X-Team': 'a' } }, zombie: {} } },
+      value: { apiKeyEnv: 'PRIMARY_API_KEY', baseURL: 'https://base', providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://proxy', headers: { 'X-Team': 'a' } }, zombie: {} } },
       user: { providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://proxy', headers: { 'X-Team': 'a' } }, zombie: {} } },
       applies: 'live',
       secrets: [],
@@ -143,16 +76,16 @@ function scriptedFace(overrides: {
   set?: ReturnType<typeof vi.fn>
   unset?: ReturnType<typeof vi.fn>
 } = {}) {
-  const update = overrides.update ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[2])))
-  const replace = overrides.replace ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[2])))
-  const mutate = overrides.mutate ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[2])))
+  const update = overrides.update ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[1])))
+  const replace = overrides.replace ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[1])))
+  const mutate = overrides.mutate ?? vi.fn(() => Promise.resolve(ok(wireNamespaces()[1])))
   const set = overrides.set ?? vi.fn(() => Promise.resolve(ok({})))
   const unset = overrides.unset ?? vi.fn(() => Promise.resolve(ok({})))
   const face = {
     llm: {
       providers: vi.fn(() => Promise.resolve(ok({
         providers: [
-          { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
+          { provider: 'primary', displayName: 'Primary Route', settingsNs: 'llm-pi-ai', settingsPath: [], active: true },
           { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true },
           { provider: 'anthropic', displayName: 'anthropic', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'anthropic'], active: false },
           { provider: 'zombie', displayName: 'zombie', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'zombie'], active: false },
@@ -207,7 +140,7 @@ async function mountSection(overrides: Parameters<typeof scriptedFace>[0] = {}) 
 
 /**
  * Mount for a user who cannot reach any provider yet: no credential is stored
- * anywhere, so the whole-section DeepSeek route owns the first-run setup card.
+ * anywhere, so the primary route owns the first-run setup card.
  */
 async function mountFirstRun(overrides: Parameters<typeof scriptedFace>[0] = {}) {
   const scripted = scriptedFace(overrides)
@@ -219,13 +152,13 @@ async function mountFirstRun(overrides: Parameters<typeof scriptedFace>[0] = {})
 }
 
 /**
- * Mount and open the DeepSeek editor. The shared fixture already has a usable
- * openai route, so DeepSeek is an ordinary row whose card opens through Edit
- * rather than by itself.
+ * Mount and open the primary route's editor. The shared fixture already has a
+ * usable openai route, so this is an ordinary row whose card opens through
+ * Edit rather than by itself.
  */
-async function mountDeepSeekCard(overrides: Parameters<typeof scriptedFace>[0] = {}) {
+async function mountPrimaryCard(overrides: Parameters<typeof scriptedFace>[0] = {}) {
   const mounted = await mountSection(overrides)
-  fireEvent.click(screen.getByRole('button', { name: deepSeekCopy(en.editProvider) }))
+  fireEvent.click(screen.getByRole('button', { name: primaryCopy(en.editProvider) }))
   return mounted
 }
 
@@ -238,9 +171,9 @@ describe('ModelsSection', () => {
 
   it('renders the unkeyed whole-section provider as an open setup card in the first-run posture', async () => {
     await mountFirstRun()
-    // Nothing is reachable yet, and DeepSeek has no configured credential and
+    // Nothing is reachable yet, and the primary route has no configured credential and
     // no stored apiKey → setup card.
-    expect(screen.getByText('DeepSeek')).toBeTruthy()
+    expect(screen.getByText('Primary Route')).toBeTruthy()
     expect(screen.getByLabelText(en.keyInput)).toBeTruthy()
     expect(screen.getByText('openai')).toBeTruthy()
     expect(screen.queryByText('Active')).toBeNull()
@@ -258,9 +191,9 @@ describe('ModelsSection', () => {
     expect(configured.className).toContain('credentialDotConfigured')
     expect(configured.closest('li')?.textContent).toContain('openai')
     const missing = screen.getByRole('img', { name: en.credentialMissing })
-    expect(missing.closest('li')?.textContent).toContain('DeepSeek')
+    expect(missing.closest('li')?.textContent).toContain('Primary Route')
     // The card is still one click away.
-    fireEvent.click(screen.getByRole('button', { name: deepSeekCopy(en.editProvider) }))
+    fireEvent.click(screen.getByRole('button', { name: primaryCopy(en.editProvider) }))
     expect(screen.getByLabelText(en.keyInput)).toBeTruthy()
   })
 
@@ -308,7 +241,7 @@ describe('ModelsSection', () => {
   })
 
   it('decides setup need from the joined credential state and the first-run posture', () => {
-    const entry = { provider: 'p', displayName: 'p', settingsNs: 'llm-deepseek', settingsPath: [], active: true }
+    const entry = { provider: 'p', displayName: 'p', settingsNs: 'llm-pi-ai', settingsPath: [], active: true }
     const row = (credential: ProviderRow['credential']): ProviderRow => ({
       entry,
       configured: true,
@@ -318,6 +251,8 @@ describe('ModelsSection', () => {
     })
     expect(needsSetup(row(undefined), false)).toBe(true)
     expect(needsSetup(row({ configured: true, writable: true }), false)).toBe(false)
+    // The card replaces the row it stands for, so a profile inside a section
+    // keeps its ordinary row and its missing-key dot.
     const nested = { ...row(undefined), entry: { ...entry, settingsPath: ['providers', 'x'] } }
     expect(needsSetup(nested, false)).toBe(false)
     // A user who can already reach some provider is not in the first-run
@@ -331,9 +266,9 @@ describe('ModelsSection', () => {
   })
 
   it('uses one stable provider identity in action copy', () => {
-    const target = { provider: 'deepseek-official', displayName: 'DeepSeek' }
-    expect(providerTargetLabel(target)).toBe('DeepSeek (deepseek-official)')
-    expect(providerCopy(en.deleteTitle, target)).toBe('Delete DeepSeek (deepseek-official)?')
+    const target = { provider: 'primary', displayName: 'Primary' }
+    expect(providerTargetLabel(target)).toBe('Primary (primary)')
+    expect(providerCopy(en.deleteTitle, target)).toBe('Delete Primary (primary)?')
     expect(providerTargetLabel(OPENAI_TARGET)).toBe('openai')
   })
 
@@ -351,13 +286,13 @@ describe('ModelsSection', () => {
     const key = screen.getByLabelText<HTMLInputElement>(en.keyInput)
     fireEvent.change(key, { target: { value: '  sk-live  ' } })
     fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(set).toHaveBeenCalledWith({ ref: 'DEEPSEEK_API_KEY', value: 'sk-live' }) })
+    await waitFor(() => { expect(set).toHaveBeenCalledWith({ ref: 'PRIMARY_API_KEY', value: 'sk-live' }) })
     expect(update).not.toHaveBeenCalled()
     // The saved key re-loads the join; the settings answer rides the shared
     // mirror, so the reload shows as a directory read rather than a describe.
     await waitFor(() => { expect(face.llm.providers.mock.calls.length).toBeGreaterThan(1) })
     expect((await screen.findByRole('status')).textContent).toBe(
-      providerCopy(en.savedProvider, { provider: 'deepseek-official', displayName: 'DeepSeek' }),
+      providerCopy(en.savedProvider, { provider: 'primary', displayName: 'Primary Route' }),
     )
     fireEvent.click(screen.getByText(en.add))
     expect(screen.queryByRole('status')).toBeNull()
@@ -373,10 +308,10 @@ describe('ModelsSection', () => {
     const { ProviderEditor } = await import('../src/client/ProviderEditor.tsx')
 
     render(<ProviderEditor
-      provider="deepseek-official"
-      displayName="DeepSeek"
+      provider="primary"
+      displayName="Primary Route"
       hideTitle
-      namespace={wireNamespaces()[0]!}
+      namespace={wireNamespaces()[1]!}
       schema={settingsSchema}
       settingsPath={[]}
       api={face as never}
@@ -411,7 +346,7 @@ describe('ModelsSection', () => {
     fireEvent.click(save)
 
     expect(await screen.findByText(en.onboardingSaving)).toBeTruthy()
-    expect(set).toHaveBeenCalledWith({ ref: 'DEEPSEEK_API_KEY', value: 'sk-onboarding' })
+    expect(set).toHaveBeenCalledWith({ ref: 'PRIMARY_API_KEY', value: 'sk-onboarding' })
     expect(mutate).not.toHaveBeenCalled()
     expect(onClose).not.toHaveBeenCalled()
 
@@ -421,468 +356,6 @@ describe('ModelsSection', () => {
       await Promise.resolve()
     })
     expect(onClose).toHaveBeenCalledWith(true)
-  })
-
-  it('applies customized deepseek fields as path ops', async () => {
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    const baseURL = screen.getByLabelText<HTMLInputElement>(en.baseUrl)
-    // The deepseek placeholder is pinned to the public endpoint, not the
-    // effective value (which may reflect a launch-environment override).
-    expect(baseURL.placeholder).toBe('https://api.deepseek.com')
-    fireEvent.change(baseURL, { target: { value: 'https://next2' } })
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    // Only the field that actually changed: reasoningEffort was already
-    // 'high' in the loaded profile, so it produces no op.
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{ op: 'set', path: ['baseURL'], value: 'https://next2' }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('materializes inherited models and adds an arbitrary DeepSeek id', async () => {
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    expect(screen.getByText(en.modelsInherited)).toBeTruthy()
-    expect(screen.getAllByLabelText(new RegExp(en.modelId)).map(input => (input as HTMLInputElement).value))
-      .toEqual(['deepseek-v4-flash', 'deepseek-v4-pro'])
-
-    fireEvent.click(screen.getByText(en.addModel))
-    const ids = screen.getAllByLabelText(new RegExp(en.modelId))
-    const names = screen.getAllByLabelText(new RegExp(en.modelName))
-    expandRow(3)
-    fireEvent.change(ids[2] as HTMLInputElement, { target: { value: 'private-preview' } })
-    fireEvent.change(names[2] as HTMLInputElement, { target: { value: 'Private Preview' } })
-    // Only row 3 is open, so its capacity is addressed by its own label.
-    fireEvent.change(screen.getByLabelText(`${en.contextWindow} 3`), { target: { value: '131072' } })
-    fireEvent.click(screen.getByText(en.apply))
-
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{
-        op: 'set',
-        path: ['models'],
-        value: [
-          ...DEFAULT_DEEPSEEK_MODELS,
-          { id: 'private-preview', name: 'Private Preview', contextWindow: 131_072 },
-        ],
-      }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('rejects duplicate DeepSeek model ids before writing', async () => {
-    const { mutate } = await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    fireEvent.click(screen.getByText(en.addModel))
-    const ids = screen.getAllByLabelText(new RegExp(en.modelId))
-    fireEvent.change(ids[2] as HTMLInputElement, { target: { value: 'deepseek-v4-flash' } })
-    fireEvent.click(screen.getByText(en.apply))
-
-    await screen.findByText(`Model 3: ${en.modelIdDuplicate}`)
-    expect(mutate).not.toHaveBeenCalled()
-  })
-
-  it('validates every adapter-owned model catalog invariant', () => {
-    expect(modelDrafts(undefined)).toEqual([])
-    expect(modelDrafts([null, 'bad', { id: 'ok' }])).toEqual([{}, {}, { id: 'ok' }])
-    expect(validateDeepSeekModels([{}])).toEqual({ index: 0, key: 'modelIdRequired' })
-    expect(validateDeepSeekModels([{ id: 'same' }, { id: 'same' }]))
-      .toEqual({ index: 1, key: 'modelIdDuplicate' })
-    expect(validateDeepSeekModels([{ id: 'model', name: '' }]))
-      .toEqual({ index: 0, key: 'modelNameInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', contextWindow: null }]))
-      .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', contextWindow: 1.5 }]))
-      .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', contextWindow: 0 }]))
-      .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', contextWindow: 1 }])).toBeUndefined()
-    expect(validateDeepSeekModels([{ id: 'model', maxTokens: null }]))
-      .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', maxTokens: 1.5 }]))
-      .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', maxTokens: 0 }]))
-      .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateDeepSeekModels([{ id: 'model', maxTokens: 8192 }])).toBeUndefined()
-  })
-
-  it('reads context windows written as counts, thousands, or millions', () => {
-    expect(parseCapacity('')).toBeUndefined()
-    expect(parseCapacity('   ')).toBeUndefined()
-    expect(parseCapacity('131072')).toBe(131_072)
-    expect(parseCapacity(' 256K ')).toBe(256_000)
-    expect(parseCapacity('256k')).toBe(256_000)
-    expect(parseCapacity('1M')).toBe(1_000_000)
-    expect(parseCapacity('1m')).toBe(1_000_000)
-    // 1M is 1000K, not 1024K: capacities are quoted in decimal.
-    expect(parseCapacity('1M')).toBe(parseCapacity('1000K'))
-    // 2.3 * 1e6 is a few ULPs high in binary floating point; an integral
-    // intent must not become a fractional count the validator rejects.
-    expect(parseCapacity('2.3M')).toBe(2_300_000)
-    expect(Number.isInteger(parseCapacity('1.5M'))).toBe(true)
-    // A genuinely fractional count survives as one, for the validator to reject.
-    expect(parseCapacity('0.0001K')).toBeCloseTo(0.1)
-    expect(parseCapacity('abc')).toBeNaN()
-    expect(parseCapacity('1G')).toBeNaN()
-    expect(parseCapacity('1M1')).toBeNaN()
-  })
-
-  it('spells a stored count in the shortest form that round-trips', () => {
-    expect(formatCapacity(1_000_000)).toBe('1M')
-    expect(formatCapacity(256_000)).toBe('256K')
-    expect(formatCapacity(1_500_000)).toBe('1500K')
-    expect(formatCapacity(131_072)).toBe('131072')
-    // Values the validator will reject are shown as-is rather than dressed up.
-    expect(formatCapacity(Number.NaN)).toBe('NaN')
-    expect(formatCapacity(0)).toBe('0')
-    for (const text of ['1M', '256K', '131072', '1500K']) {
-      expect(formatCapacity(parseCapacity(text) as number)).toBe(text)
-    }
-  })
-
-  it('accepts a suffixed context window and stores the plain count', async () => {
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    expandRow(1)
-    expandRow(2)
-    const windows = capacityInputs(en.contextWindow)
-    // The inherited 1000000 reads back short.
-    expect((windows[0] as HTMLInputElement).value).toBe('1M')
-
-    // Keystrokes stay verbatim while the row has focus, so typing `1000` does
-    // not rewrite itself to `1K` mid-word.
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: '1000' } })
-    expect((windows[0] as HTMLInputElement).value).toBe('1000')
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: '1000K' } })
-    expect((windows[0] as HTMLInputElement).value).toBe('1000K')
-    // Blur settles the row to the canonical spelling of the same count.
-    fireEvent.blur(windows[0] as HTMLInputElement)
-    expect((windows[0] as HTMLInputElement).value).toBe('1M')
-
-    fireEvent.change(windows[1] as HTMLInputElement, { target: { value: '256K' } })
-    fireEvent.blur(windows[1] as HTMLInputElement)
-    fireEvent.click(screen.getByText(en.apply))
-
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{
-        op: 'set',
-        path: ['models'],
-        value: [
-          { ...DEFAULT_DEEPSEEK_MODELS[0], contextWindow: 1_000_000 },
-          { ...DEFAULT_DEEPSEEK_MODELS[1], contextWindow: 256_000 },
-        ],
-      }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('keeps unreadable context-window text on screen and refuses the write', async () => {
-    const { mutate } = await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    expandRow(1)
-    expandRow(2)
-    const windows = capacityInputs(en.contextWindow)
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: '1 gazillion' } })
-    // Blurring a row that is not the edited one leaves the buffer alone.
-    fireEvent.blur(windows[1] as HTMLInputElement)
-    fireEvent.blur(windows[0] as HTMLInputElement)
-    // The text the user typed is still there to correct.
-    expect((windows[0] as HTMLInputElement).value).toBe('1 gazillion')
-
-    fireEvent.click(screen.getByText(en.apply))
-    await screen.findByText(`Model 1: ${en.modelContextInvalid}`)
-    expect(mutate).not.toHaveBeenCalled()
-  })
-
-  it.each([
-    ['the schema default', undefined],
-    ['the composition entry', { models: [{ id: 'pinned-by-deployment' }] }],
-  ])('restores %s the moment the override is dropped, not after a reload', async (_label, base) => {
-    // The regression: reset read the EFFECTIVE value, which still carries the
-    // stored override until the unset is applied — so the rows did not change
-    // and the catalog only looked restored after reopening the card.
-    const { face } = scriptedFace()
-    const stored = { models: [{ id: 'user-only-model', name: 'User Only' }] }
-    const overridden: SettingsNamespaceView = {
-      ns: 'llm-deepseek',
-      schema: JSON.parse(JSON.stringify(DeepSeekConfig.toJSON())) as unknown,
-      value: { ...stored, defaultContextWindow: 1_000_000 },
-      ...base === undefined ? {} : { base },
-      user: stored,
-      applies: 'live',
-      secrets: [],
-      revision: 0,
-    }
-    const { ProviderEditor } = await import('../src/client/ProviderEditor.tsx')
-    render(<ProviderEditor
-      provider="deepseek-official"
-      displayName="DeepSeek"
-      namespace={overridden}
-      schema={settingsSchema}
-      settingsPath={[]}
-      api={face as never}
-      t={t}
-      readOnly={false}
-      onClose={() => {}}
-    />)
-    fireEvent.click(screen.getByText(en.customized))
-    expect(screen.getByText(en.modelsCustomized)).toBeTruthy()
-    expect(screen.getAllByLabelText(new RegExp(en.modelId)).map(input => (input as HTMLInputElement).value))
-      .toEqual(['user-only-model'])
-
-    fireEvent.click(screen.getByText(en.resetModels))
-
-    expect(screen.getByText(en.modelsInherited)).toBeTruthy()
-    expect(screen.getAllByLabelText(new RegExp(en.modelId)).map(input => (input as HTMLInputElement).value))
-      .toEqual(base === undefined ? ['deepseek-v4-flash', 'deepseek-v4-pro'] : ['pinned-by-deployment'])
-  })
-
-  it('keeps every row\'s unreadable text, not just the last one edited', async () => {
-    // The regression: one active buffer meant editing a second row displaced
-    // the first, which then fell back to rendering its stored NaN as `NaN` —
-    // losing the text the user was told they could still correct.
-    await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    expandRow(1)
-    expandRow(2)
-    const windows = capacityInputs(en.contextWindow)
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: 'not a number' } })
-    fireEvent.blur(windows[0] as HTMLInputElement)
-    fireEvent.change(windows[1] as HTMLInputElement, { target: { value: '2M' } })
-
-    expect((windows[0] as HTMLInputElement).value).toBe('not a number')
-    expect((windows[1] as HTMLInputElement).value).toBe('2M')
-  })
-
-  it('re-keys the typed text around a removed row', async () => {
-    await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    const windows = (): HTMLInputElement[] => capacityInputs(en.contextWindow)
-    const removeRow = (at: number): void => {
-      fireEvent.click(screen.getAllByLabelText(new RegExp(en.removeModel))[at] as HTMLElement)
-    }
-    // Three rows, with text parked on the outer two.
-    fireEvent.click(screen.getByText(en.addModel))
-    expandRow(1)
-    expandRow(2)
-    expandRow(3)
-    fireEvent.change(windows()[0] as HTMLInputElement, { target: { value: 'top text' } })
-    fireEvent.blur(windows()[0] as HTMLInputElement)
-    fireEvent.change(windows()[2] as HTMLInputElement, { target: { value: 'bottom text' } })
-    fireEvent.blur(windows()[2] as HTMLInputElement)
-
-    // Dropping the middle row leaves the row above untouched and carries the
-    // row below down with its own text, rather than stranding it.
-    removeRow(1)
-    expect(windows()).toHaveLength(2)
-    expect((windows()[0] as HTMLInputElement).value).toBe('top text')
-    expect((windows()[1] as HTMLInputElement).value).toBe('bottom text')
-
-    // Dropping a row that holds text takes that text with it; the survivor
-    // keeps its own rather than inheriting the deleted row's.
-    removeRow(0)
-    expect(windows()).toHaveLength(1)
-    expect((windows()[0] as HTMLInputElement).value).toBe('bottom text')
-  })
-
-  it('drops the typed text when reset replaces the rows it annotated', async () => {
-    // The regression: reset removed the override but left the buffer, so an
-    // inherited row displayed text no settings layer stores — and because an
-    // unreadable buffer never settles, it stayed there indefinitely.
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    expandRow(1)
-    const windows = capacityInputs(en.contextWindow)
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: 'garbage' } })
-    fireEvent.blur(windows[0] as HTMLInputElement)
-    fireEvent.click(screen.getByText(en.resetModels))
-
-    // Reset collapses every row, so the restored capacity needs opening again.
-    expandRow(1)
-    const restored = capacityInputs(en.contextWindow)
-    expect((restored[0] as HTMLInputElement).value).toBe('1M')
-
-    // Reset put the draft back where it started, so Apply writes nothing at
-    // all rather than persisting whatever the stale text had parsed to.
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(screen.queryByText(en.apply)).toBeNull() })
-    expect(mutate).not.toHaveBeenCalled()
-  })
-
-  it('edits an output cap per model and carries its text across a removal', async () => {
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    expandRow(1)
-    expandRow(2)
-    // The profile's own cap is the placeholder both rows inherit.
-    expect(capacityInputs(en.maxTokens).map(input => input.placeholder)).toEqual(['256K', '256K'])
-
-    fireEvent.change(screen.getByLabelText(`${en.maxTokens} 2`), { target: { value: '64K' } })
-    fireEvent.blur(screen.getByLabelText(`${en.maxTokens} 2`))
-    expect(screen.getByLabelText<HTMLInputElement>(`${en.maxTokens} 2`).value).toBe('64K')
-
-    // Dropping the row above carries the cap text down with its own row.
-    fireEvent.click(screen.getAllByLabelText(new RegExp(en.removeModel))[0] as HTMLElement)
-    expect(screen.getByLabelText<HTMLInputElement>(`${en.maxTokens} 1`).value).toBe('64K')
-    // The disclosure closes on a second press.
-    expandRow(1)
-    expect(screen.queryByLabelText(`${en.maxTokens} 1`)).toBeNull()
-
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{
-        op: 'set',
-        path: ['models'],
-        value: [{ ...DEFAULT_DEEPSEEK_MODELS[1], maxTokens: 64_000 }],
-      }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('settles a pasted id and refuses whitespace that would never match', async () => {
-    await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    const ids = screen.getAllByLabelText<HTMLInputElement>(new RegExp(en.modelId))
-    fireEvent.change(ids[0] as HTMLInputElement, { target: { value: '  deepseek-v4-flash  ' } })
-    fireEvent.blur(ids[0] as HTMLInputElement)
-    expect((ids[0] as HTMLInputElement).value).toBe('deepseek-v4-flash')
-    // A settled id needs no second trim.
-    fireEvent.blur(ids[0] as HTMLInputElement)
-    expect((ids[0] as HTMLInputElement).value).toBe('deepseek-v4-flash')
-
-    // An id that is only whitespace is as absent as an empty one, and a padded
-    // id is a duplicate of its trimmed twin.
-    expect(validateDeepSeekModels([{ id: '   ' }])).toEqual({ index: 0, key: 'modelIdRequired' })
-    expect(validateDeepSeekModels([{ id: 'model' }, { id: 'model ' }]))
-      .toEqual({ index: 1, key: 'modelIdDuplicate' })
-  })
-
-  it('renders malformed draft fallbacks without inventing catalog values', () => {
-    render(<DeepSeekModelsEditor
-      models={[{}]}
-      overridden={false}
-      defaultContextWindow={undefined}
-      defaultMaxTokens={undefined}
-      t={t}
-      disabled={true}
-      onChange={vi.fn()}
-      onReset={vi.fn()}
-    />)
-    expect(screen.getByLabelText<HTMLInputElement>(`${en.modelId} 1`).value).toBe('')
-    expandRow(1)
-    expect(screen.getByLabelText<HTMLInputElement>(`${en.contextWindow} 1`).placeholder)
-      .toBe(en.contextWindowPlaceholder)
-    expect(screen.getByLabelText<HTMLInputElement>(`${en.maxTokens} 1`).placeholder)
-      .toBe(en.maxTokensPlaceholder)
-  })
-
-  it('can empty and reset the model override, then clear optional fields without dropping hidden data', async () => {
-    const { mutate } = await mountDeepSeekCard({
-      mutate: vi.fn(() => Promise.resolve(ok(wireNamespaces()[0]))),
-    })
-    fireEvent.click(screen.getByText(en.customized))
-    fireEvent.click(screen.getAllByLabelText(new RegExp(en.removeModel))[0] as HTMLElement)
-    fireEvent.click(screen.getByLabelText(new RegExp(en.removeModel)))
-    expect(screen.getByText(en.modelsEmpty)).toBeTruthy()
-    fireEvent.click(screen.getByText(en.resetModels))
-    expect(screen.getByText(en.modelsInherited)).toBeTruthy()
-
-    const names = screen.getAllByLabelText(new RegExp(en.modelName))
-    expandRow(1)
-    const windows = capacityInputs(en.contextWindow)
-    fireEvent.change(names[0] as HTMLInputElement, { target: { value: '' } })
-    fireEvent.change(windows[0] as HTMLInputElement, { target: { value: '' } })
-    fireEvent.click(screen.getByText(en.apply))
-
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{
-        op: 'set',
-        path: ['models'],
-        value: [
-          { id: 'deepseek-v4-flash', description: 'Preserved hidden detail' },
-          DEFAULT_DEEPSEEK_MODELS[1],
-        ],
-      }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('clears an inherited override with an unset op, never a whole-section replace', async () => {
-    // A whole-section replace would clobber sibling overrides to clear one field.
-    const { replace, update, mutate } = await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    const url = screen.getByLabelText<HTMLInputElement>(en.baseUrl)
-    expect(url.value).toBe('https://base')
-    fireEvent.change(url, { target: { value: '' } })
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(replace).not.toHaveBeenCalled()
-    expect(update).not.toHaveBeenCalled()
-    expect(mutate.mock.calls[0]?.[0]).toEqual({
-      ns: 'llm-deepseek',
-      ops: [{ op: 'unset', path: ['baseURL'] }],
-      expectedRevision: 0,
-    })
-  })
-
-  it('pins the deepseek placeholder and clears typed input back to inherited', async () => {
-    const { face } = scriptedFace()
-    const bare: SettingsNamespaceView = {
-      ns: 'llm-deepseek',
-      schema: JSON.parse(JSON.stringify(DeepSeekConfig.toJSON())) as unknown,
-      value: {},
-      applies: 'live',
-      secrets: [],
-      revision: 0,
-    }
-    const { ProviderEditor } = await import('../src/client/ProviderEditor.tsx')
-    render(<ProviderEditor
-      provider="deepseek-official"
-      displayName="DeepSeek"
-      namespace={bare}
-      schema={settingsSchema}
-      settingsPath={[]}
-      api={face as never}
-      t={t}
-      readOnly={false}
-      onClose={() => {}}
-    />)
-    fireEvent.click(screen.getByText(en.customized))
-    const baseURL = screen.getByLabelText<HTMLInputElement>(en.baseUrl)
-    expect(baseURL.placeholder).toBe('https://api.deepseek.com')
-    fireEvent.change(baseURL, { target: { value: 'https://x' } })
-    expect(baseURL.value).toBe('https://x')
-    fireEvent.change(baseURL, { target: { value: '' } })
-    expect(baseURL.value).toBe('')
-  })
-
-  it('rejects an invalid draft before writing', async () => {
-    const { update } = await mountDeepSeekCard()
-    fireEvent.click(screen.getByText(en.customized))
-    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'not-a-url' } })
-    fireEvent.click(screen.getByText(en.apply))
-    await screen.findByText(/baseURL/)
-    expect(update).not.toHaveBeenCalled()
   })
 
   it('edits a pi-ai profile with the curated fields only', async () => {
@@ -946,7 +419,7 @@ describe('ModelsSection', () => {
   })
 
   it('retries only the credential after refreshed settings already committed', async () => {
-    const committed = wireNamespaces()[2]!
+    const committed = wireNamespaces()[1]!
     const afterSettings: SettingsNamespaceView = {
       ...committed,
       value: { providers: {
@@ -1033,7 +506,7 @@ describe('ModelsSection', () => {
         t={t}
       />)
       const key = await screen.findByLabelText<HTMLInputElement>(en.keyInput)
-      expect(key.placeholder).toBe(en.keyPlaceholder)
+      expect(key.placeholder).toBe(en.keyPlaceholderNative)
       await new Promise(resolve => setTimeout(resolve, 10))
       expect(unhandled).not.toHaveBeenCalled()
     } finally {
@@ -1044,7 +517,7 @@ describe('ModelsSection', () => {
   it('tells the user to reopen when another writer moved the namespace first', async () => {
     // The stale-draft overwrite: two tabs open the same card, the other saves,
     // and this one must be refused rather than replay its opening snapshot.
-    const { set } = await mountDeepSeekCard({
+    const { set } = await mountPrimaryCard({
       mutate: vi.fn(() => Promise.resolve(fail('changed since it was read', 'settings-conflict'))),
     })
     fireEvent.click(screen.getByText(en.customized))
@@ -1054,11 +527,29 @@ describe('ModelsSection', () => {
     expect(set).not.toHaveBeenCalled()
   })
 
+  it('emptying a typed endpoint stages inheritance, never an empty string', async () => {
+    // Clearing is how a user returns a route to the endpoint beneath it. The
+    // blank field stages no value at all, so it lands back on the stored state
+    // and the save has nothing to write — rather than pinning the route to an
+    // empty address that resolves nowhere.
+    const { mutate } = await mountPrimaryCard()
+    fireEvent.click(screen.getByText(en.customized))
+    const url = screen.getByLabelText<HTMLInputElement>(en.baseUrl)
+    fireEvent.change(url, { target: { value: 'https://typed' } })
+    expect(url.value).toBe('https://typed')
+    fireEvent.change(url, { target: { value: '' } })
+    expect(url.value).toBe('')
+    fireEvent.click(screen.getByText(en.apply))
+    // The card settles closed, as it does after any accepted save.
+    await waitFor(() => { expect(screen.queryByText(en.apply)).toBeNull() })
+    expect(mutate).not.toHaveBeenCalled()
+  })
+
   it('keeps the card usable when the write rejects instead of answering', async () => {
     // A transport failure (disconnect, or the 403 a non-loopback browser now
     // gets on the whole configuration plane) rejects rather than returning a
     // failed envelope: without a catch the card would stay busy forever.
-    await mountDeepSeekCard({ mutate: vi.fn(() => Promise.reject(new Error('connection lost'))) })
+    await mountPrimaryCard({ mutate: vi.fn(() => Promise.reject(new Error('connection lost'))) })
     fireEvent.click(screen.getByText(en.customized))
     fireEvent.change(screen.getByLabelText<HTMLInputElement>(en.baseUrl), { target: { value: 'https://next' } })
     fireEvent.click(screen.getByText(en.apply))
@@ -1069,7 +560,7 @@ describe('ModelsSection', () => {
 
   it('surfaces a shadowed credential write on the card', async () => {
     await mountFirstRun({
-      set: vi.fn(() => Promise.resolve(fail('credentials: DEEPSEEK_API_KEY is shadowed by the read-only environment', 'credential-rejected'))),
+      set: vi.fn(() => Promise.resolve(fail('credentials: PRIMARY_API_KEY is shadowed by the read-only environment', 'credential-rejected'))),
     })
     const key = screen.getByLabelText<HTMLInputElement>(en.keyInput)
     fireEvent.change(key, { target: { value: 'sk-live' } })
@@ -1152,7 +643,7 @@ describe('ModelsSection', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: en.close }))
     expect(screen.getByRole('dialog', { name: openaiCopy(en.deleteTitle) })).toBe(dialog)
     expect(mutate).toHaveBeenCalledOnce()
-    await act(async () => { resolveRemoval(ok(wireNamespaces()[2]!)) })
+    await act(async () => { resolveRemoval(ok(wireNamespaces()[1]!)) })
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: openaiCopy(en.deleteTitle) })).toBeNull()
     })
@@ -1234,12 +725,12 @@ describe('ModelsSection', () => {
     fireEvent.click(screen.getAllByText(en.cancel)[0] as HTMLElement)
     // The add card kept its draft…
     expect(screen.getByLabelText(en.provider)).toBeTruthy()
-    // …and DeepSeek collapsed to an ordinary row carrying the missing-key dot.
+    // …and the primary route collapsed to an ordinary row carrying the missing-key dot.
     expect(screen.getAllByLabelText(en.keyInput)).toHaveLength(1)
     expect(screen.getAllByRole('img', { name: en.credentialMissing })
-      .some(dot => dot.closest('li')?.textContent?.includes('DeepSeek') === true)).toBe(true)
+      .some(dot => dot.closest('li')?.textContent?.includes('Primary Route') === true)).toBe(true)
     // Its card reopens through Edit, which closes the add card as any row does.
-    fireEvent.click(screen.getByRole('button', { name: deepSeekCopy(en.editProvider) }))
+    fireEvent.click(screen.getByRole('button', { name: primaryCopy(en.editProvider) }))
     expect(screen.getAllByLabelText(en.keyInput)).toHaveLength(1)
     expect(screen.queryByLabelText(en.provider)).toBeNull()
   })
@@ -1254,7 +745,7 @@ describe('ModelsSection', () => {
       schema={settingsSchema}
       t={t}
     />)
-    await screen.findByText('DeepSeek')
+    await screen.findByText('Primary Route')
   })
 
   it('removes by unsetting the profile path, never by rebuilding the section', async () => {
@@ -1290,7 +781,7 @@ describe('ModelsSection', () => {
   it('keeps a failed identified deletion recoverable in its confirmation dialog', async () => {
     const mutate = vi.fn()
       .mockResolvedValueOnce(fail('the host refused'))
-      .mockResolvedValueOnce(ok(wireNamespaces()[2]!))
+      .mockResolvedValueOnce(ok(wireNamespaces()[1]!))
     const { unset } = await mountSection({ mutate })
     fireEvent.click(screen.getByRole('button', { name: openaiCopy(en.removeProvider) }))
     const dialog = screen.getByRole('dialog', { name: openaiCopy(en.deleteTitle) })
@@ -1389,7 +880,7 @@ describe('apiKeyFailure', () => {
   })
 
   it.each([
-    ['a pasted environment line', 'DEEPSEEK_API_KEY=sk-abc'],
+    ['a pasted environment line', 'PRIMARY_API_KEY=sk-abc'],
     ['double quotes', '"sk-abc"'],
     ['single quotes', '\'sk-abc\''],
     ['backticks', '`sk-abc`'],
