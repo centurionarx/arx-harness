@@ -12,8 +12,8 @@ flowchart LR
   cfg --> plugin_headless_settings
   plugin_headless_credentials["credentials<br/>@arx-ai/arx-credentials-local"]
   cfg --> plugin_headless_credentials
-  plugin_headless_llm_deepseek["llm-deepseek<br/>@arx-ai/arx-llm-deepseek"]
-  cfg --> plugin_headless_llm_deepseek
+  plugin_headless_llm["llm<br/>@arx-ai/arx-llm-pi-ai"]
+  cfg --> plugin_headless_llm
   plugin_headless_subprocess["subprocess<br/>@arx-ai/arx-subprocess-local"]
   cfg --> plugin_headless_subprocess
   plugin_headless_bash["bash<br/>@arx-ai/arx-bash-local"]
@@ -64,7 +64,7 @@ flowchart LR
 | --- | --- |
 | `settings` | `@arx-ai/arx-settings-file` |
 | `credentials` | `@arx-ai/arx-credentials-local` |
-| `llm-deepseek` | `@arx-ai/arx-llm-deepseek` |
+| `llm` | `@arx-ai/arx-llm-pi-ai` |
 | `subprocess` | `@arx-ai/arx-subprocess-local` |
 | `bash` | `@arx-ai/arx-bash-local` |
 | `agent-spine` | `@arx-ai/arx-agent-spine-demo` |

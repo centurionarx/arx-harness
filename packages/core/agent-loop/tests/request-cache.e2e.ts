@@ -8,7 +8,7 @@ import ToolRuntime, { defineContentToolFixture } from '@arx-ai/arx-tools'
 import AgentRegistry, { type Agent } from '@arx-ai/arx-agent'
 
 import AgentLoop from '@arx-ai/arx-agent-loop'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 
 /**
  * With-key proof that log-derived requests translate into real provider cache hits: a
@@ -45,7 +45,7 @@ async function loopHarness(): Promise<Context> {
   await created.plugin(ToolRuntime)
   await created.plugin(AgentRegistry)
   await created.plugin(AgentLoop, { agents: [] })
-  await created.plugin(LlmDeepSeek)
+  await created.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY' } } })
   created.tools.register(defineContentToolFixture({
     name: 'lookup',
     description: 'Look up the stored value for a key.',

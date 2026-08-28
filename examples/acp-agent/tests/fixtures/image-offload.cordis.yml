@@ -6,8 +6,8 @@
   config:
     path: ../../cordis.yml
     patches:
-      - id: llm-deepseek
-        name: '@arx-ai/arx-llm-deepseek'
+      - id: llm
+        name: '@arx-ai/arx-llm-pi-ai'
         config:
           apiKeyEnv: ARX_SNAPSHOT_API_KEY
           baseURL: !!js process.env.ARX_SNAPSHOT_BASE_URL

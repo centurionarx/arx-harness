@@ -13,7 +13,6 @@ import { carrierKeyOf, type Scoped } from '@arx-ai/arx-scope'
 import { SessionId } from '@arx-ai/arx-session'
 import type SubagentRuntime from '@arx-ai/arx-subagent'
 import type { SubagentRunEndInfo } from '@arx-ai/arx-subagent'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
 import type {
   InitializeParams,
   InitializeResult,
@@ -52,10 +51,12 @@ function successStatus(reason: string, options: HarnessSdkJsonRpcServerOptions):
  */
 export class HarnessSdkJsonRpcServer {
   private cwd = process.cwd()
-  private provider = 'deepseek-official'
-  private model = 'deepseek-official'
+  // Replaced by `initialize`, which every other method runs after. Empty
+  // names no route, so a read before the handshake fails loud instead of
+  // reaching a provider nobody selected.
+  private provider = ''
+  private model = ''
   private maxTokens: number | undefined
-  private llmFiber: { dispose(): Promise<void> } | undefined
   private readonly sessions = new Map<string, SessionRecord>()
   private readonly sessionCreations = new Map<string, Promise<SessionRecord>>()
   private readonly disposers: (() => void)[] = []
@@ -104,10 +105,13 @@ export class HarnessSdkJsonRpcServer {
   }
 
   /**
-   * Configure the SDK route, mounting the DeepSeek fallback only when unowned.
+   * Record the SDK route the caller selected, refusing one no mounted adapter
+   * serves. Declared async because the handshake is awaited across the wire,
+   * not because it does any awaiting of its own.
    * @param params - SDK handshake parameters.
    * @returns server identity for the handshake.
    */
+  // eslint-disable-next-line @typescript-eslint/require-await -- the wire contract is a Promise; nothing here suspends.
   async initialize(params: InitializeParams): Promise<InitializeResult> {
     if (params.maxTokens !== undefined
       && (!Number.isSafeInteger(params.maxTokens) || params.maxTokens <= 0)) {
@@ -117,9 +121,12 @@ export class HarnessSdkJsonRpcServer {
     this.provider = params.provider
     this.model = params.model
     this.maxTokens = params.maxTokens
+    // No adapter is mounted on the caller's behalf. A composition serving no
+    // route for the requested provider is a misconfigured deployment, and
+    // mounting one here would answer with a provider the caller neither asked
+    // for nor configured.
     if (!this.hasAdapterFor(this.provider)) {
-      if (this.provider !== 'deepseek-official') throw new Error(`no adapter registered for provider "${this.provider}"`)
-      this.llmFiber = await this.ctx.plugin(LlmDeepSeek, {})
+      throw new Error(`no adapter registered for provider "${this.provider}"`)
     }
     return { serverInfo: { name: 'arx-harness-sdk-runtime', version: '0.0.1' } }
   }
@@ -169,9 +176,7 @@ export class HarnessSdkJsonRpcServer {
     }
     const teardownResults = await Promise.allSettled([
       ...records.map(rec => Promise.resolve().then(() => rec.handle.dispose())),
-      ...(this.llmFiber === undefined ? [] : [Promise.resolve().then(() => this.llmFiber?.dispose())]),
     ])
-    this.llmFiber = undefined
     failures.push(...teardownResults
       .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
       .map(result => result.reason as unknown))

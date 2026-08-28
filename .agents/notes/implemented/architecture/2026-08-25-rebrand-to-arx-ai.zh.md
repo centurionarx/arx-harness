@@ -8,7 +8,7 @@ Status: implemented
 
 harness 此前以 DeepSeek 的产品身份交付：npm scope `@arx-ai`、包与二进制前缀 `arx`、环境变量前缀 `ARX_`、Python 模块 `arx_harness`，以及 `arx-ai/arx-harness` 仓库。产品现在以 arx 交付，上述每一处接口都需要自己的身份。
 
-盲目改名会摧毁它所改名的产品。仓库中 29,604 处不区分大小写的 `deepseek` 里，约 5,900 处根本不指 harness：它们指的是 [`arx-llm-deepseek`](../../../../packages/llm/llm-deepseek/README.zh.md) 至今仍在对接的 DeepSeek *模型*、*提供方*、*凭据* 或 *端点*。`DEEPSEEK_API_KEY`、`deepseek-official`、`deepseek-v4` 系列模型 id 与 `api.deepseek.com` 是第三方事实，不是品牌。
+盲目改名会摧毁它所改名的产品。仓库中 29,604 处不区分大小写的 `deepseek` 里，约 5,900 处根本不指 harness：它们指的是 `arx-llm-deepseek` 至今仍在对接的 DeepSeek *模型*、*提供方*、*凭据* 或 *端点*。`DEEPSEEK_API_KEY`、`deepseek-official`、`deepseek-v4` 系列模型 id 与 `api.deepseek.com` 是第三方事实，不是品牌。
 
 另有两类 span 看起来像产品，实则不是。`arx-harness` 这个 GitHub 组织在此处属于第三方——[`vendor/README.md`](../../../../vendor/README.md) 钉住的 fork 提交托管于此，Agent Note 引用的 pull request 亦然。而归档 Agent Note 树按[归档策略](../../README.zh.md)冻结，其文件名保留旧前缀，但每一条*指向*它的链接都位于改写会触及的文件里。
 

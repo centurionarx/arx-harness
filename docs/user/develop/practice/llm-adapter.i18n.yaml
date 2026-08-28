@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/user/develop/practice/llm-adapter.md
-llm-adapter.md: 02bed5cb40a2a5f33adc7c7ef701101150d7b866
-llm-adapter.zh.md: a6d62fa27f3f9ec81e8526746aac1169e83b5633
+llm-adapter.md: 765e08c729d9f0a81b456fe686821db294b13fd8
+llm-adapter.zh.md: 79ad83a929d940ec17f48e0f4d782c2b3b15e79f

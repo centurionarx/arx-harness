@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-25-rebrand-to-arx-ai.md
-2026-08-25-rebrand-to-arx-ai.md: 8301e438aa36133fbc8130d053891302285067a8
-2026-08-25-rebrand-to-arx-ai.zh.md: e2bfd125d4f78566df31abba8fae378fc5509740
+2026-08-25-rebrand-to-arx-ai.md: 7f3594948c887383c0c52a42e003f63ee27cb065
+2026-08-25-rebrand-to-arx-ai.zh.md: 3596e9969648caf0f801da68d70a7820a13db5a7

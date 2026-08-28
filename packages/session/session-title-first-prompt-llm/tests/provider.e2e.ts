@@ -2,7 +2,7 @@ import { createUserMessage } from '@arx-ai/arx-llm'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import LlmRuntime from '@arx-ai/arx-llm'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import SessionTitleService from '@arx-ai/arx-session-title'
 import * as FirstMessageTitleProvider from '@arx-ai/arx-session-title-first-prompt-llm'
@@ -18,7 +18,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)('first-prompt title provider with
     const ctx = new Context()
     contexts.push(ctx)
     await ctx.plugin(LlmRuntime)
-    await ctx.plugin(LlmDeepSeek, { thinking: 'disabled' })
+    await ctx.plugin(LlmPiAi, { providers: { deepseek: { apiKeyEnv: 'DEEPSEEK_API_KEY', reasoning: 'off' } } })
     await ctx.plugin(SessionStore)
     await ctx.plugin(SessionTitleService, {
       fallbackMaxWords: 5,

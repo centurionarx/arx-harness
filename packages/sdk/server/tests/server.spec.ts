@@ -11,7 +11,7 @@ import AgentRegistry, { type Agent, type AgentHandle } from '@arx-ai/arx-agent'
 import SessionStore, { SessionId } from '@arx-ai/arx-session'
 import * as agentCore from '@arx-ai/arx-agent-spine-demo'
 import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import SubagentRuntime, { type SubagentResult, type SubagentRunEndInfo } from '@arx-ai/arx-subagent'
 import type { JsonRpcTransportPeer } from '@arx-ai/arx-sdk-protocol'
 import { HarnessSdkJsonRpcServer } from '../src/index.ts'
@@ -59,9 +59,32 @@ async function mockCompletionServer(): Promise<{ url: string; requests: unknown[
   return { url: `http://127.0.0.1:${address.port}`, requests, headers }
 }
 
+/** Model ids these scenarios name at `initialize`; the endpoint is always a mock. */
+const SDK_TEST_MODELS = [
+  'apply-model', 'dsagent-model', 'preinstalled-model', 'plain-model', 'new-model', 'model', 'x',
+].map(id => ({ id, name: id, contextWindow: 65_536, maxTokens: 4_096 }))
+
 async function makeHarness(storageDir: string) {
   const ctx = new Context()
   await ctx.plugin(agentCore, { workspaceContext: false })
+  // The SDK server mounts no adapter on the caller's behalf, so the test
+  // composition serves the route its initialize call names. The endpoint is a
+  // per-test mock, so the route is declared outright rather than inherited
+  // from a catalog whose model ids these scenarios do not use.
+  await ctx.plugin(LlmPiAi, {
+    providers: {
+      deepseek: {
+        displayName: 'DeepSeek',
+        apiKeyEnv: 'DEEPSEEK_API_KEY',
+        api: 'openai-completions',
+        baseURL: process.env['DEEPSEEK_BASE_URL'] ?? 'https://api.deepseek.example/v1',
+        // The mock reads the classic field; pi-ai cannot infer the request
+        // shape of a URL it does not recognize.
+        compat: { maxTokensField: 'max_tokens' },
+        models: SDK_TEST_MODELS,
+      },
+    },
+  })
   await ctx.plugin(SubagentRuntime)
   await ctx.plugin(JsonlSessionPersistence, { root: storageDir })
   await new Promise(resolve => setTimeout(resolve, 50))
@@ -121,7 +144,7 @@ describe('HarnessSdkJsonRpcServer', () => {
 
       const init = await server.handleRequest('initialize', {
         cwd: storageDir,
-        provider: 'deepseek-official',
+        provider: 'deepseek',
         model: 'dsagent-model',
         maxTokens: 321,
       }) as { serverInfo: { name: string } }
@@ -157,7 +180,7 @@ describe('HarnessSdkJsonRpcServer', () => {
       const orphanHandle = await ctx.agents.create({
         sessionId: SessionId('orphan-session'),
         meta: { cwd: storageDir },
-        agentOptions: { provider: 'deepseek-official', model: 'dsagent-model' },
+        agentOptions: { provider: 'deepseek', model: 'dsagent-model' },
       })
       orphanHandle.agent.followup(createUserMessage({ content: [{ type: 'text', text: 'outside the sdk session map' }], source: { kind: 'user' } }))
       await orphanHandle.agent.whenIdle()
@@ -304,7 +327,7 @@ describe('HarnessSdkJsonRpcServer', () => {
     try {
       const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
 
-      await server.initialize({ cwd: storageDir, provider: 'deepseek-official', model: 'plain-model' })
+      await server.initialize({ cwd: storageDir, provider: 'deepseek', model: 'plain-model' })
       await server.prompt({
         sessionId: 'plain',
         contentBlocks: [{ type: 'text', text: 'hello' }],
@@ -328,14 +351,14 @@ describe('HarnessSdkJsonRpcServer', () => {
       const parentHandle = await ctx.agents.create({
         sessionId: SessionId('main'),
         meta: { cwd: storageDir },
-        agentOptions: { provider: 'deepseek-official', model: 'deepseek-official' },
+        agentOptions: { provider: 'deepseek', model: 'deepseek-official' },
       })
       // A custom in-process provider may own its child at the provider/root
       // scope while preserving durable parent lineage.
       const handle = await ctx.agents.create({
         sessionId: SessionId('child-session'),
         meta: { cwd: storageDir, parentSession: SessionId('main') },
-        agentOptions: { provider: 'deepseek-official', model: 'deepseek-official' },
+        agentOptions: { provider: 'deepseek', model: 'deepseek-official' },
       })
       expect(ctx.agents.roots()).toContain(handle.agent)
       const parentlessHandle = await parentHandle.agent.ctx.agents.create({
@@ -674,18 +697,18 @@ describe('HarnessSdkJsonRpcServer', () => {
       parentHandle = await ctx.agents.create({
         sessionId: SessionId('fallback-parent'),
         meta: { cwd: storageDir },
-        agentOptions: { provider: 'deepseek-official', model: 'deepseek-official' },
+        agentOptions: { provider: 'deepseek', model: 'deepseek-official' },
       })
       handle = await parentHandle.agent.ctx.agents.create({
         sessionId: SessionId('fallback-child-session'),
         meta: { cwd: storageDir, parentSession: SessionId('fallback-parent') },
-        agentOptions: { provider: 'deepseek-official', model: 'deepseek-official' },
+        agentOptions: { provider: 'deepseek', model: 'deepseek-official' },
       })
       const fallbackChild = handle.agent
       failedHandle = await parentHandle.agent.ctx.agents.create({
         sessionId: SessionId('failed-child-session'),
         meta: { cwd: storageDir },
-        agentOptions: { provider: 'deepseek-official', model: 'deepseek-official' },
+        agentOptions: { provider: 'deepseek', model: 'deepseek-official' },
       })
       const missedStartResult = Promise.withResolvers<SubagentResult>()
       const disposeMissedStartProvider = ctx.subagents.registerProvider({
@@ -779,16 +802,15 @@ describe('HarnessSdkJsonRpcServer', () => {
     const storageDir = await mkdtemp(join(tmpdir(), 'arx-jsonrpc-existing-llm-'))
     const ctx = await makeHarness(storageDir)
     vi.stubEnv('DEEPSEEK_API_KEY', 'test-key')
-    await ctx.plugin(LlmDeepSeek)
     try {
       const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
       const inspect = server as unknown as { hasAdapterFor(provider: string): boolean }
 
-      expect(inspect.hasAdapterFor('deepseek-official')).toBe(true)
+      expect(inspect.hasAdapterFor('deepseek')).toBe(true)
       expect(inspect.hasAdapterFor('missing-provider')).toBe(false)
-      await server.initialize({ cwd: storageDir, provider: 'deepseek-official', model: 'preinstalled-model' })
+      await server.initialize({ cwd: storageDir, provider: 'deepseek', model: 'preinstalled-model' })
 
-      expect(ctx.get('llm')?.listProviders().filter(provider => provider.id === 'deepseek-official')).toEqual([{ id: 'deepseek-official', name: 'DeepSeek' }])
+      expect(ctx.get('llm')?.listProviders().filter(provider => provider.id === 'deepseek')).toEqual([{ id: 'deepseek', name: 'DeepSeek' }])
       await server.shutdown()
     } finally {
       await ctx.fiber.dispose()
@@ -796,18 +818,17 @@ describe('HarnessSdkJsonRpcServer', () => {
     }
   })
 
-  it('rejects a missing non-DeepSeek provider when an LLM service already exists', async () => {
+  it('rejects a provider no mounted adapter serves, even with an LLM service present', async () => {
     const storageDir = await mkdtemp(join(tmpdir(), 'arx-jsonrpc-new-llm-'))
     const ctx = await makeHarness(storageDir)
     vi.stubEnv('DEEPSEEK_API_KEY', 'test-key')
-    await ctx.plugin(LlmDeepSeek)
     try {
       const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
 
       await expect(server.initialize({ cwd: storageDir, provider: 'private', model: 'new-model' }))
         .rejects.toThrow('no adapter registered for provider "private"')
 
-      expect(ctx.get('llm')?.listProviders()).toEqual([{ id: 'deepseek-official', name: 'DeepSeek' }])
+      expect(ctx.get('llm')?.listProviders()).toEqual([{ id: 'deepseek', name: 'DeepSeek' }])
       await server.shutdown()
     } finally {
       await ctx.fiber.dispose()
@@ -824,7 +845,7 @@ describe('HarnessSdkJsonRpcServer', () => {
         const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
         await expect(server.initialize({
           cwd: storageDir,
-          provider: 'deepseek-official',
+          provider: 'deepseek',
           model: 'model',
           maxTokens,
         })).rejects.toThrow('initialize maxTokens must be a positive safe integer')

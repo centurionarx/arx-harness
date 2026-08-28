@@ -7,6 +7,7 @@ import { PassThrough, Writable } from 'node:stream'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import Loader from '@arx-ai/cordis-plugin-loader'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import * as agentCore from '@arx-ai/arx-agent-spine-demo'
 import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
 import * as jsonrpc from '../src/index.ts'
@@ -40,6 +41,11 @@ interface ApplyHarness {
 }
 
 /** Poll asynchronous output for up to five seconds. */
+/** Model ids these scenarios name at `initialize`; the endpoint is always a mock. */
+const SDK_TEST_MODELS = [
+  'apply-model', 'dsagent-model', 'preinstalled-model', 'plain-model', 'new-model', 'model', 'x',
+].map(id => ({ id, name: id, contextWindow: 65_536, maxTokens: 4_096 }))
+
 async function waitFor<T>(get: () => T | undefined, description: string): Promise<T> {
   const deadline = Date.now() + 5000
   for (;;) {
@@ -66,6 +72,21 @@ async function mountPlugin(
 ): Promise<ApplyHarness> {
   const ctx = new Context()
   await ctx.plugin(agentCore, { workspaceContext: false })
+  // The SDK server mounts no adapter on the caller's behalf, so the test
+  // composition serves the route its initialize call names. The endpoint is a
+  // per-test mock, so the route is declared outright rather than inherited
+  // from a catalog whose model ids these scenarios do not use.
+  await ctx.plugin(LlmPiAi, {
+    providers: {
+      deepseek: {
+        displayName: 'DeepSeek',
+        apiKeyEnv: 'DEEPSEEK_API_KEY',
+        api: 'openai-completions',
+        baseURL: process.env['DEEPSEEK_BASE_URL'] ?? 'https://api.deepseek.example/v1',
+        models: SDK_TEST_MODELS,
+      },
+    },
+  })
   await ctx.plugin(JsonlSessionPersistence, { root: storageDir })
   await new Promise(resolve => setTimeout(resolve, 50))
   await options.beforeServer?.(ctx)
@@ -161,7 +182,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
     vi.stubEnv('DEEPSEEK_API_KEY', 'test-key')
     const harness = await mountPlugin(storageDir)
     try {
-      harness.send({ jsonrpc: '2.0', id: 'init-1', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek-official', model: 'apply-model' } })
+      harness.send({ jsonrpc: '2.0', id: 'init-1', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek', model: 'apply-model' } })
 
       const response = await harness.waitForFrame(frame => frame.id === 'init-1', 'initialize response')
       expect(response).toEqual({
@@ -202,7 +223,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
         jsonrpc: '2.0',
         id: 'init-delayed',
         method: 'initialize',
-        params: { cwd: storageDir, provider: 'deepseek-official', model: 'apply-model' },
+        params: { cwd: storageDir, provider: 'deepseek', model: 'apply-model' },
       }
       const probe = { jsonrpc: '2.0', id: 'probe-during-delay', method: 'nope/unknown' }
       harness.sendRaw(`${JSON.stringify(initialize)}\n${JSON.stringify(probe)}\n`)
@@ -235,7 +256,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
     vi.stubEnv('DEEPSEEK_BASE_URL', llmServer.url)
     const harness = await mountPlugin(storageDir)
     try {
-      harness.send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { cwd: storageDir, provider: 'deepseek-official', model: 'dsagent-model' } })
+      harness.send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { cwd: storageDir, provider: 'deepseek', model: 'dsagent-model' } })
       await harness.waitForFrame(frame => frame.id === 1, 'initialize response')
 
       harness.send({
@@ -304,7 +325,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
       expect(harness.events.filter(event => event.kind === 'root-disposed')).toHaveLength(1)
 
       const before = harness.frames().length
-      harness.send({ jsonrpc: '2.0', id: 'after-exit', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek-official', model: 'x' } })
+      harness.send({ jsonrpc: '2.0', id: 'after-exit', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek', model: 'x' } })
       await settle()
       expect(harness.frames().length).toBe(before)
     } finally {
@@ -326,7 +347,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
       expect(harness.outputErrors.map(error => error.message)).toEqual(['flush callback failed'])
 
       const before = harness.frames().length
-      harness.send({ jsonrpc: '2.0', id: 'after-flush-failure', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek-official', model: 'x' } })
+      harness.send({ jsonrpc: '2.0', id: 'after-flush-failure', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek', model: 'x' } })
       await settle()
       expect(harness.frames().length).toBe(before)
     } finally {
@@ -351,7 +372,7 @@ describe('arx-sdk-jsonrpc-server plugin apply', () => {
       expect(harness.events.some(event => event.kind === 'root-disposed')).toBe(false)
 
       const before = harness.frames().length
-      harness.send({ jsonrpc: '2.0', id: 'probe-2', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek-official', model: 'x' } })
+      harness.send({ jsonrpc: '2.0', id: 'probe-2', method: 'initialize', params: { cwd: storageDir, provider: 'deepseek', model: 'x' } })
       await settle()
       expect(harness.frames().length).toBe(before)
       expect(harness.exits()).toEqual([])

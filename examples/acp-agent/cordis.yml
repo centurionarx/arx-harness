@@ -6,16 +6,18 @@
 
 # The DeepSeek adapter. Shipped default: full thinking at max effort on every
 # request; exact-model resolution materializes request defaults before logging.
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
   config:
-    thinking: enabled
-    reasoningEffort: max
-    models:
-      - id: deepseek-v4-flash
-      - id: deepseek-v4-pro
-      - id: deepseek-v4-flash-vision-exp
-        inputModalities: [text, image]
+    providers:
+      deepseek:
+        apiKeyEnv: DEEPSEEK_API_KEY
+        reasoning: high
+        models:
+          - id: deepseek-v4-flash
+          - id: deepseek-v4-pro
+          - id: deepseek-v4-flash-vision-exp
+            input: [text, image]
 
 # The default composition confines bash AND the filesystem tools to the
 # workspace and asks before a wider retry. Snapshot runs select

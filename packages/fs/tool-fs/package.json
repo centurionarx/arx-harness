@@ -58,7 +58,7 @@
     "@arx-ai/arx-fs-observation-policy": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
+    "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-sandbox": "workspace:^",
     "@arx-ai/arx-sandbox-policy": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",

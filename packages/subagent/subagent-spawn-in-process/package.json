@@ -41,20 +41,20 @@
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@arx-ai/cordis-plugin-loader": "workspace:^",
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-agent-loop": "workspace:^",
     "@arx-ai/arx-agent-loop-testkit": "workspace:^",
     "@arx-ai/arx-bash-local": "workspace:^",
-    "@arx-ai/arx-subprocess-local": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/arx-llm-deepseek": "workspace:^",
+    "@arx-ai/arx-llm-pi-ai": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
     "@arx-ai/arx-subagent-in-process-driver": "workspace:^",
+    "@arx-ai/arx-subprocess-local": "workspace:^",
     "@arx-ai/arx-tool-bash": "workspace:^",
     "@arx-ai/arx-tool-subagent": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/cordis-plugin-loader": "workspace:^"
   }
 }

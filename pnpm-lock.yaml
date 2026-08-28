@@ -514,9 +514,6 @@ importers:
       '@arx-ai/arx-llm-agent-cli':
         specifier: workspace:*
         version: link:../packages/llm/llm-agent-cli
-      '@arx-ai/arx-llm-deepseek':
-        specifier: workspace:*
-        version: link:../packages/llm/llm-deepseek
       '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:*
         version: link:../packages/llm/llm-pi-ai
@@ -3482,9 +3479,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@arx-ai/arx-llm-deepseek':
+      '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
-        version: link:../../llm/llm-deepseek
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -3714,6 +3711,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
+      '@arx-ai/arx-llm-pi-ai':
+        specifier: workspace:^
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-scope':
         specifier: workspace:^
         version: link:../scope
@@ -4599,9 +4599,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@arx-ai/arx-llm-deepseek':
+      '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
-        version: link:../../llm/llm-deepseek
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-sandbox':
         specifier: workspace:^
         version: link:../../sandbox/sandbox
@@ -5565,52 +5565,6 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
-  packages/llm/llm-deepseek:
-    dependencies:
-      '@arx-ai/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-      eventsource-parser:
-        specifier: ^3.1.0
-        version: 3.1.0
-    devDependencies:
-      '@arx-ai/arx-anonymous-user-id':
-        specifier: workspace:^
-        version: link:../../identity/anonymous-user-id
-      '@arx-ai/arx-atomic-write':
-        specifier: workspace:^
-        version: link:../../util/atomic-write
-      '@arx-ai/arx-attachment':
-        specifier: workspace:^
-        version: link:../../attachment/attachment
-      '@arx-ai/arx-brand':
-        specifier: workspace:^
-        version: link:../../util/brand
-      '@arx-ai/arx-credentials':
-        specifier: workspace:^
-        version: link:../../credentials/credentials
-      '@arx-ai/arx-home-paths':
-        specifier: workspace:^
-        version: link:../../util/home-paths
-      '@arx-ai/arx-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@arx-ai/arx-launch-environment':
-        specifier: workspace:^
-        version: link:../../util/launch-environment
-      '@arx-ai/arx-llm':
-        specifier: workspace:^
-        version: link:../llm
-      '@arx-ai/arx-settings':
-        specifier: workspace:^
-        version: link:../../settings/settings
-      '@arx-ai/arx-timeout':
-        specifier: workspace:^
-        version: link:../../util/timeout
-      '@arx-ai/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-
   packages/llm/llm-pi-ai:
     dependencies:
       '@arx-ai/schemastery':
@@ -5638,9 +5592,6 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../llm
-      '@arx-ai/arx-llm-deepseek':
-        specifier: workspace:^
-        version: link:../llm-deepseek
       '@arx-ai/arx-settings':
         specifier: workspace:^
         version: link:../../settings/settings
@@ -5675,12 +5626,12 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../llm
-      '@arx-ai/arx-llm-deepseek':
-        specifier: workspace:^
-        version: link:../llm-deepseek
       '@arx-ai/arx-llm-mock-server':
         specifier: workspace:^
         version: link:../../test-support/llm-mock-server
+      '@arx-ai/arx-llm-pi-ai':
+        specifier: workspace:^
+        version: link:../llm-pi-ai
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -6194,9 +6145,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@arx-ai/arx-llm-deepseek':
+      '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
-        version: link:../../llm/llm-deepseek
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-scope':
         specifier: workspace:^
         version: link:../../core/scope
@@ -6688,9 +6639,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@arx-ai/arx-llm-deepseek':
+      '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
-        version: link:../../llm/llm-deepseek
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -7779,9 +7730,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
-      '@arx-ai/arx-llm-deepseek':
+      '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
-        version: link:../../llm/llm-deepseek
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -8521,40 +8472,6 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
-  packages/web/web-search-deepseek:
-    dependencies:
-      '@arx-ai/schemastery':
-        specifier: link:../../../vendor/schemastery
-        version: link:../../../vendor/schemastery
-    devDependencies:
-      '@arx-ai/arx-agent':
-        specifier: workspace:^
-        version: link:../../core/agent
-      '@arx-ai/arx-credentials':
-        specifier: workspace:^
-        version: link:../../credentials/credentials
-      '@arx-ai/arx-credentials-local':
-        specifier: workspace:^
-        version: link:../../credentials/credentials-local
-      '@arx-ai/arx-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@arx-ai/arx-launch-environment':
-        specifier: workspace:^
-        version: link:../../util/launch-environment
-      '@arx-ai/arx-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@arx-ai/arx-settings':
-        specifier: workspace:^
-        version: link:../../settings/settings
-      '@arx-ai/arx-web':
-        specifier: workspace:^
-        version: link:../web
-      '@arx-ai/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-
   packages/web/web-search-exa:
     dependencies:
       '@arx-ai/schemastery':
@@ -8727,6 +8644,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
+      '@arx-ai/arx-llm-pi-ai':
+        specifier: workspace:^
+        version: link:../../llm/llm-pi-ai
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -8896,9 +8816,6 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../packages/llm/llm
-      '@arx-ai/arx-llm-deepseek':
-        specifier: workspace:^
-        version: link:../../packages/llm/llm-deepseek
       '@arx-ai/arx-llm-pi-ai':
         specifier: workspace:^
         version: link:../../packages/llm/llm-pi-ai
@@ -9100,9 +9017,6 @@ importers:
       '@arx-ai/arx-web-fetch-http':
         specifier: workspace:^
         version: link:../../packages/web/web-fetch-http
-      '@arx-ai/arx-web-search-deepseek':
-        specifier: workspace:^
-        version: link:../../packages/web/web-search-deepseek
       '@arx-ai/arx-web-search-exa':
         specifier: workspace:^
         version: link:../../packages/web/web-search-exa

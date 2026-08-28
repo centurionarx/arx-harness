@@ -8,7 +8,7 @@ import * as BashEnvPlugin from '@arx-ai/arx-shell-env'
 import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as ToolBash from '@arx-ai/arx-tool-bash'
 import * as ToolTodo from '@arx-ai/arx-tool-todo'
-import * as LlmDeepSeek from '@arx-ai/arx-llm-deepseek'
+import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import TokenMeter from '@arx-ai/arx-token-meter'
 import ToolResultPruner from '@arx-ai/arx-compaction-tool-result-pruner'
 import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
@@ -59,8 +59,15 @@ export async function codingHarness(workdir: string, options: CodingHarnessOptio
     systemPrompt: { persona: options.persona ?? '' },
   })
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(LlmDeepSeek, options.modelContextWindow === undefined ? {} : {
-    models: [{ id: 'deepseek-v4-flash', contextWindow: options.modelContextWindow }],
+  await ctx.plugin(LlmPiAi, {
+    providers: {
+      deepseek: {
+        apiKeyEnv: 'DEEPSEEK_API_KEY',
+        ...options.modelContextWindow === undefined ? {} : {
+          models: [{ id: 'deepseek-v4-flash', contextWindow: options.modelContextWindow }],
+        },
+      },
+    },
   })
   await ctx.plugin(LocalSubprocessRuntime)
   await ctx.plugin(BashEnvPlugin)

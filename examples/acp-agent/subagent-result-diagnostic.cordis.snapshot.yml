@@ -24,6 +24,6 @@
               toolName: subagent_codex
               backgroundMode: one-shot
               maxDepth: provider-managed
-      - id: llm-deepseek
-        name: '@arx-ai/arx-llm-deepseek'
+      - id: llm
+        name: '@arx-ai/arx-llm-pi-ai'
         disabled: true
