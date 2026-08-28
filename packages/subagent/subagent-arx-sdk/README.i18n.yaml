@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/subagent/subagent-arx-sdk/README.md
-README.md: 006886ebbf5e155ba85ad197bf8890c12d3b2e42
-README.zh.md: cc6c68ef0c6c9ed1d631ce572ce93f5ef6d6e920
+README.md: 4642c73cfeae3b978da97d6166109970ed83e278
+README.zh.md: a38ccc3c3f4a7a10069ecb1d7797a165a7cf702c

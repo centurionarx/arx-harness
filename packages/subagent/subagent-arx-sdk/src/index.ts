@@ -1,5 +1,5 @@
 /**
- * Out-of-process SDK subagent backend. Each child is a complete DeepSeek
+ * Out-of-process SDK subagent backend. Each child is a complete arx
  * Harness runtime in its own process — own `cordis.yml`-decided composition,
  * session, model route, and tools — driven over stdio JSON-RPC through the
  * TypeScript SDK client, so it shares no Cordis context and advertises no
@@ -42,15 +42,15 @@ export interface Config {
    * fails.
    */
   cwd?: string
-  /** Provider route the child runtime initializes with (default `deepseek-official`). */
+  /** Provider route the child runtime initializes with. Required: an out-of-process child has no picker to fall back to. */
   provider: string
-  /** Model the child runtime initializes with (default `deepseek-v4-flash`). */
+  /** Model the child runtime initializes with. Required for the same reason as {@link Config.provider}. */
   model: string
   /** Optional per-request output-token cap for the child runtime. */
   maxTokens?: number
   /**
    * Extra environment variables for the child process — e.g. the child
-   * runtime's own `DEEPSEEK_API_KEY`, or `ARX_CORDIS_CONFIG` naming its
+   * runtime's own provider key, or `ARX_CORDIS_CONFIG` naming its
    * config. Forwarded on top of a credential-scrubbed copy of the parent
    * env, so an explicit key here reaches the child while ambient secrets do
    * not leak implicitly.
@@ -73,8 +73,8 @@ export const Config: z<Config> = z.object({
   command: z.string().required(),
   args: z.array(z.string()).default([]),
   cwd: z.string(),
-  provider: z.string().default('deepseek-official'),
-  model: z.string().default('deepseek-v4-flash'),
+  provider: z.string().required(),
+  model: z.string().required(),
   maxTokens: z.number().step(1).min(1).max(Number.MAX_SAFE_INTEGER),
   env: z.dict(z.string()).default({}),
   shutdownTimeoutMs: z.number().default(DEFAULT_SHUTDOWN_TIMEOUT_MS),
