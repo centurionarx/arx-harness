@@ -15,7 +15,7 @@
 import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import type {} from '@arx-ai/arx-agent-default-model'
-// Declaration merge only: it is what types `ctx.get('appExit')`.
+// Declaration merge only: it is what types `ctx.get('appExit')` and `ctx.get('appVersion')`.
 import type {} from '@arx-ai/arx-cmdline'
 import type { ApiProxy } from './api/index.ts'
 import { createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from './api-proxy.ts'
@@ -29,7 +29,7 @@ export { RpcId } from './api/rpc.ts'
 export { toFetchHandler } from './fetch/handler.ts'
 export { AbstractApiClient, InProcessApiClient } from './fetch/client.ts'
 export type { IApiClient } from './fetch/client.ts'
-export { createApiProxy } from './api-proxy.ts'
+export { createApiProxy, UNDECLARED_APP_VERSION } from './api-proxy.ts'
 export type { ApiProxyDefaults } from './api-proxy.ts'
 
 declare module '@arx-ai/cordis' {
@@ -38,6 +38,7 @@ declare module '@arx-ai/cordis' {
     apiProxy: ApiProxy
   }
 }
+
 
 /** Gateway plugin configuration. */
 export interface Config {
@@ -100,6 +101,7 @@ export class ApiProxyService extends Service implements ApiProxy {
     const api = createApiProxy(ctx, {
       defaultModelSelection: () => ctx.agentDefaultModel.currentSelection(),
       requestExit: () => ctx.get('appExit'),
+      appVersion: () => ctx.get('appVersion'),
       saveDefaultModelSelection: selection => ctx.agentDefaultModel.saveSelection(selection),
       cwd: process.cwd(),
       ...config.nativeOpen === undefined ? {} : { canOpenPath: () => config.nativeOpen as boolean },

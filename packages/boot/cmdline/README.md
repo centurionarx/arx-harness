@@ -10,8 +10,9 @@ A launcher calls `provideCmdline(ctx, host)` before any tree entry mounts, which
 
 - `ctx.cmdlineArgs` — the invocation's inner arguments. `get()` is the whole interface, and it returns a snapshot: `arx --profile tui --resume abc` yields `['--resume', 'abc']`.
 - `ctx.appExit` — a bounded process-exit request, wired to the launcher's shutdown controller.
+- `ctx.appVersion` — the launcher app's released version, as its own manifest declares it. The gateway reports it through `host.describe`, and the Web shell prints it under the sidebar wordmark, so no package below the launcher reads a manifest to learn what is running.
 
-An embedding host with no command line provides an empty list; that is the honest answer, not a missing value.
+An embedding host with no command line provides an empty list; that is the honest answer, not a missing value. It still reports a version — whatever app it embeds has one.
 
 ## Ordinary providers and injected config
 

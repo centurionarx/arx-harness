@@ -65,13 +65,24 @@ describe('SidebarRoot.module.css', () => {
   })
 
   // The row seats the mark, which is twice the name's height; `.brand` clips
-  // overflow, so a row shorter than the mark loses the artwork's edges.
+  // overflow, so a row shorter than the mark loses the artwork's edges. The
+  // name is now a column (wordmark row, then the version), so the artwork
+  // height belongs to the inner row.
   it('keeps the slotted brand row at the full artwork height', () => {
     expect(declarations('.brandIdentity')?.get('height')).toBe('48px')
-    expect(declarations('.brandName')?.get('height')).toBe('24px')
+    expect(declarations('.brandName')?.get('flex-direction')).toBe('column')
+    expect(declarations('.brandNameRow')?.get('height')).toBe('24px')
     expect(declarations('.brandName')?.get('line-height')).toBe('24px')
     expect(declarations('.brandName')?.get('font-size')).toBe('18px')
     expect(declarations('.fallbackBrandName')?.get('font-size')).toBe('17px')
     expect(declarations('.fallbackBrandName')?.get('white-space')).toBe('nowrap')
+  })
+
+  // A caption, not a second wordmark: the version must not compete with the
+  // name it sits under.
+  it('prints the version as a quiet caption under the wordmark', () => {
+    expect(declarations('.brandVersion')?.get('font-size')).toBe('10px')
+    expect(declarations('.brandVersion')?.get('color')).toBe('var(--arx-alias-label-secondary)')
+    expect(declarations('.brandVersion')?.get('white-space')).toBe('nowrap')
   })
 })

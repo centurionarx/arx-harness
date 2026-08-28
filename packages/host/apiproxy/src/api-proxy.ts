@@ -122,6 +122,15 @@ const COLD_SUMMARY_BATCH_SIZE = 16
 /** Default maximum artifact size eligible for one cold blankness read. */
 export const DEFAULT_COLD_BLANK_PROBE_MAX_BYTES = 1024
 
+/**
+ * The version `host.describe` reports when the composition names no launcher
+ * version: an embedding host that mounts this gateway without `provideCmdline`,
+ * or a test tree. The wire field is required, so the absence resolves here
+ * rather than reaching clients as a missing field they would each interpret.
+ * It is a version nobody released, which is what "undeclared" means.
+ */
+export const UNDECLARED_APP_VERSION = '0.0.0'
+
 /** Conversation message event types (the pagination counting unit). */
 const MESSAGE_TYPES = new Set(['user/message', 'assistant/message'])
 
@@ -586,6 +595,13 @@ export interface ApiProxyDefaults {
    * launcher provides it before the tree mounts and a test tree provides none.
    */
   requestExit?: () => ((code: number) => void) | undefined
+  /**
+   * The launcher app's released version, reported verbatim by `host.describe`.
+   * Read per call for the same reason as {@link ApiProxyDefaults.requestExit}:
+   * a launcher provides it before the tree mounts and a test tree provides
+   * none. Absent, the wire reports {@link UNDECLARED_APP_VERSION}.
+   */
+  appVersion?: () => string | undefined
   /**
    * Record a selection as the new default. Either absent, or a closure that
    * may itself decline — the gateway plugin always passes one, and it no-ops
@@ -2846,10 +2862,12 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
 
     host: {
       describe(request) {
-        // TODO: version should read apps/cli's package.json; placeholder for now.
         const selection = defaults.defaultModelSelection()
         return Promise.resolve(ok(request, {
-          version: '0.0.1',
+          // Read per call, not captured: the launcher provides it before the
+          // tree mounts, and a reconnecting client must see the running app's
+          // version rather than one this closure froze at construction.
+          version: defaults.appVersion?.() ?? UNDECLARED_APP_VERSION,
           // Same source as session.create's fallback: the UI's default project
           // must match where an unspecified-cwd session actually lands.
           cwd: defaults.cwd,

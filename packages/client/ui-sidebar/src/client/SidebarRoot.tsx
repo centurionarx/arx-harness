@@ -16,7 +16,7 @@
  * scrollbar indirection away while it is elsewhere, so a list the user is not
  * pointing at carries no bar.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import clsx from 'clsx'
 import {
   BrandMark, IconNewChatOutline16, IconPanelLeftOutline16, Tooltip,
@@ -45,9 +45,17 @@ export function SidebarRoot({
   width,
   startSession,
   toggleSidebar,
+  hostDescription,
   t,
   renderSlot,
 }: SidebarRootComponentProps) {
+  // The running app's version, printed under the wordmark. Absent before the
+  // first handshake and across a reconnect gap, when the row prints nothing
+  // rather than a stale number from the generation that just ended.
+  const version = useSyncExternalStore(
+    hostDescription.subscribe,
+    () => hostDescription.getSnapshot()?.version,
+  )
   // Wide content stays mounted while the collapse animates (fading via
   // .collapsed .wide), unmounts at settle, and remounts right away on expand.
   const [settled, setSettled] = useState(collapsed)
@@ -141,16 +149,19 @@ export function SidebarRoot({
                 {renderSlot('sidebar.brand.mark', { size: 48 }, { fallback: <BrandMark size={48} /> })}
               </span>
               <span className={css.brandName}>
-                {renderSlot('sidebar.brand.name', {}, {
-                  fallback: (
-                    <>
-                      <span className={css.fallbackBrandName}>ARX Local Build</span>
-                      {process.env.ARX_CLIENT_COMMIT_HASH
-                        ? <span className={css.buildRevision}>{process.env.ARX_CLIENT_COMMIT_HASH}</span>
-                        : null}
-                    </>
-                  ),
-                })}
+                <span className={css.brandNameRow}>
+                  {renderSlot('sidebar.brand.name', {}, {
+                    fallback: (
+                      <>
+                        <span className={css.fallbackBrandName}>ARX Local Build</span>
+                        {process.env.ARX_CLIENT_COMMIT_HASH
+                          ? <span className={css.buildRevision}>{process.env.ARX_CLIENT_COMMIT_HASH}</span>
+                          : null}
+                      </>
+                    ),
+                  })}
+                </span>
+                {version === undefined ? null : <span className={css.brandVersion}>{version}</span>}
               </span>
             </span>
           </button>

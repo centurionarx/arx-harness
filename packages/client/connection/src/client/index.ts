@@ -42,12 +42,17 @@ export type { ConnectionConfig, ConnectionSinks, ConnectionState }
 export type { ClientConnectionRpc } from '../rpc.ts'
 export type { RpcFetch } from './rpc.ts'
 
-/** Observable Host description published by each completed connection handshake. */
+/**
+ * Observable Host description published by each completed connection handshake.
+ * Both members are closures on a plain object, declared as properties so a
+ * consumer can hand them to `useSyncExternalStore` by reference — a stable
+ * identity is what keeps that hook from resubscribing on every render.
+ */
 export interface HostDescriptionSource {
   /** Latest connected-generation description; absent before connect and while reconnecting. */
-  getSnapshot(): HostDescription | undefined
+  readonly getSnapshot: () => HostDescription | undefined
   /** Subscribe to description replacement and connection loss. */
-  subscribe(listener: () => void): () => void
+  readonly subscribe: (listener: () => void) => () => void
 }
 
 /** Required services (none — this is the wire root). */

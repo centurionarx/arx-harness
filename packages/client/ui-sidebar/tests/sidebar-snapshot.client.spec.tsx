@@ -34,6 +34,11 @@ afterEach(() => {
 async function bench(options: { locale?: 'en' } = {}) {
   const runtime = await SlotTestRuntime.create()
   runtime.provide('layout', { toggleSidebar: vi.fn() })
+  // A fixed version, not the repository's: the snapshots pin that the brand
+  // column prints one, and a release bump must not rewrite them.
+  runtime.provide('connection', {
+    hostDescription: { getSnapshot: () => ({ version: '9.9.9-bench' }), subscribe: () => () => {} },
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   if (options.locale === 'en') locale.setLocale('en')
   runtime.provide('locale', locale)

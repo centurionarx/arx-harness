@@ -135,21 +135,30 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
           <span
             class="brandName"
           >
-            <div
-              data-slot="sidebar.brand.name"
-              style="display: contents;"
+            <span
+              class="brandNameRow"
             >
-              <span
-                class="fallbackBrandName"
+              <div
+                data-slot="sidebar.brand.name"
+                style="display: contents;"
               >
-                ARX Local Build
-              </span>
-              <span
-                class="buildRevision"
-              >
-                abc1234
-              </span>
-            </div>
+                <span
+                  class="fallbackBrandName"
+                >
+                  ARX Local Build
+                </span>
+                <span
+                  class="buildRevision"
+                >
+                  abc1234
+                </span>
+              </div>
+            </span>
+            <span
+              class="brandVersion"
+            >
+              9.9.9-bench
+            </span>
           </span>
         </span>
       </button>
@@ -266,21 +275,30 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
           <span
             class="brandName"
           >
-            <div
-              data-slot="sidebar.brand.name"
-              style="display: contents;"
+            <span
+              class="brandNameRow"
             >
-              <span
-                class="fallbackBrandName"
+              <div
+                data-slot="sidebar.brand.name"
+                style="display: contents;"
               >
-                ARX Local Build
-              </span>
-              <span
-                class="buildRevision"
-              >
-                abc1234
-              </span>
-            </div>
+                <span
+                  class="fallbackBrandName"
+                >
+                  ARX Local Build
+                </span>
+                <span
+                  class="buildRevision"
+                >
+                  abc1234
+                </span>
+              </div>
+            </span>
+            <span
+              class="brandVersion"
+            >
+              9.9.9-bench
+            </span>
           </span>
         </span>
       </button>

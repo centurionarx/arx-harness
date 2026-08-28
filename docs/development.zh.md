@@ -126,6 +126,16 @@ vendor manifest 守卫检查 `vendor/*/src` 下的改动是否连同对应的 `v
 
 keyless [CI 工作流](../.github/workflows/ci.yml) 将独立门禁分组到若干宽粒度 lane，并在受支持的 Node 版本上运行一组较小的兼容性检查。产物消费方在各自 lane 内等待一次 build。单独的真实 API 工作流按其配置的 worker 上限运行 `pnpm run test:e2e`。当前门禁和 job 清单以 [scripts/run-gates.ts](../scripts/run-gates.ts) 和工作流文件为准。
 
+<a id="version-cadence"></a>
+
+### 版本节奏
+
+arx 家族在所有清单中共用一个版本号，运行中的应用会在侧边栏字标下方打印它，因此用户读到的数字指明了他们正在使用的代码树。
+
+- **修订号**（`1.0.1` 到 `1.0.2`）：每一次发布的变更或修复都要递增。`pnpm run release:arx patch` 会改写清单并提交，锁文件随后跟进。
+- **次版本号**（`1.0.x` 到 `1.1.0`）：当一次发布积累的新能力足以让修订号显得不足时递增，由执行该工作的人决定时机。
+- **主版本号**（`1.x` 到 `2.0.0`）：仅在仓库所有者提出时递增。变更累积得再多，其本身也不会把一次发布提升为新的主版本。
+
 ### 日常命令
 
 根目录的[贡献者说明](../AGENTS.md#commands)概述常用命令，[`package.json`](../package.json) 与 [scripts/run-gates.ts](../scripts/run-gates.ts) 则负责当前脚本和门禁清单。请选择覆盖变更表面的最小检查集。文档变更使用 `pnpm run doc-sync`；包公开行为变更还需更新所属 README 或 JSDoc，而基于构建产物的检查需要先运行 `pnpm run build`。

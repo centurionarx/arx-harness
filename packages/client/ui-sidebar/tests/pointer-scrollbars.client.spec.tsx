@@ -34,6 +34,9 @@ function mountColumn(): { column: HTMLElement; quiet: () => boolean } {
       collapsed={false} width={300}
       useSessions={neverHook} useWorkspaces={neverHook}
       startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      // This spec is about pointer geometry; the brand row's version needs a
+      // source, and an unconnected one keeps that row out of the way.
+      hostDescription={{ getSnapshot: () => undefined, subscribe: () => () => {} }}
       renderSlot={((_key: string, owner: SidebarSectionOwnerProps) =>
         <div data-testid="region" data-wide={owner.wide} />) as SidebarRootComponentProps['renderSlot']}
     />,

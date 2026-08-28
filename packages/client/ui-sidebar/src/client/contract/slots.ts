@@ -7,6 +7,7 @@
  * `sidebar.settings` registrant's (ui-settings), with optional footer actions
  * in `sidebar.footer.action` above it and the `sidebar.exit` seat below.
  */
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 // Type-only: pulls ui-layout's SlotMap merge (the 'sidebar' entry) into every
 // program that sees this contract, so PropsRuntime<'sidebar'> resolves.
@@ -114,6 +115,12 @@ export type SidebarRootInjected = {
   startSession: (workspaceId?: WorkspaceId) => void
   /** Toggle the sidebar column through the layout service. */
   toggleSidebar: () => void
+  /**
+   * Generation-scoped Host facts, subscribed for the running app's version.
+   * Undefined before the first description lands and across a reconnect gap,
+   * which is why the shell reads it through the source rather than a prop.
+   */
+  hostDescription: HostDescriptionSource
 }
 
 /**
