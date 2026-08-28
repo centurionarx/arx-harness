@@ -98,10 +98,25 @@ SMOKE_LLM_ROUTE = """\
         apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
         baseURL: !!js process.env.PRIMARY_BASE_URL
+        # The capacities and effort the recorded snapshots assert. A declared
+        # route inherits no catalog, so it states them rather than leaning on
+        # the adapter's own much smaller defaults.
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
+        reasoning: high
         compat:
           maxTokensField: max_tokens
         models:
           - id: !!js process.env.ARX_MODEL ?? 'smoke-model'
+            # The route's defaultMaxTokens is the model's capability, not a
+            # request default; only an explicit per-model cap is sent.
+            maxTokens: 256000
+            # Quoted because YAML 1.1 reads a bare `off` as a boolean.
+            reasoningEfforts:
+              'off':
+              'low': low
+              'medium': medium
+              'high': high
 """
 
 CUSTOM_CORDIS = SMOKE_LLM_ROUTE + """\

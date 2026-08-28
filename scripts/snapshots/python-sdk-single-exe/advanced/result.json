@@ -177,7 +177,7 @@
             "type": "tool-call",
             "id": "advanced-define",
             "name": "cordis_define",
-            "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+            "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
           }
         }
       }
@@ -209,6 +209,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -227,13 +242,28 @@
               "type": "tool-call",
               "id": "advanced-define",
               "name": "cordis_define",
-              "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+              "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -260,7 +290,7 @@
         "step": 1,
         "callId": "advanced-define",
         "name": "cordis_define",
-        "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+        "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
       }
     },
     {
@@ -363,7 +393,7 @@
             "type": "tool-call",
             "id": "advanced-run",
             "name": "cordis_run",
-            "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+            "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
           }
         }
       }
@@ -395,6 +425,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -413,13 +458,28 @@
               "type": "tool-call",
               "id": "advanced-run",
               "name": "cordis_run",
-              "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+              "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -446,7 +506,7 @@
         "step": 2,
         "callId": "advanced-run",
         "name": "cordis_run",
-        "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+        "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
       }
     },
     {
@@ -587,7 +647,7 @@
             "type": "tool-call",
             "id": "advanced-code",
             "name": "run_code",
-            "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+            "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
           }
         }
       }
@@ -619,6 +679,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -637,13 +712,28 @@
               "type": "tool-call",
               "id": "advanced-code",
               "name": "run_code",
-              "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+              "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -670,7 +760,7 @@
         "step": 3,
         "callId": "advanced-code",
         "name": "run_code",
-        "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+        "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
       }
     },
     {
@@ -804,7 +894,7 @@
             "type": "tool-call",
             "id": "advanced-direct-child",
             "name": "subagent",
-            "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+            "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
           }
         }
       }
@@ -836,6 +926,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -854,13 +959,28 @@
               "type": "tool-call",
               "id": "advanced-direct-child",
               "name": "subagent",
-              "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+              "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -887,7 +1007,7 @@
         "step": 4,
         "callId": "advanced-direct-child",
         "name": "subagent",
-        "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+        "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
       }
     },
     {
@@ -986,7 +1106,7 @@
             "type": "tool-call",
             "id": "advanced-workflow",
             "name": "workflow",
-            "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+            "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
           }
         }
       }
@@ -1018,6 +1138,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -1036,13 +1171,28 @@
               "type": "tool-call",
               "id": "advanced-workflow",
               "name": "workflow",
-              "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+              "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -1069,7 +1219,7 @@
         "step": 5,
         "callId": "advanced-workflow",
         "name": "workflow",
-        "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+        "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
       }
     },
     {
@@ -1208,7 +1358,7 @@
             "type": "tool-call",
             "id": "advanced-undefine",
             "name": "cordis_undefine",
-            "arguments": "{\"pluginId\": \"snap-1\"}"
+            "arguments": "{\"pluginId\":\"snap-1\"}"
           }
         }
       }
@@ -1240,6 +1390,21 @@
           "type": "finish",
           "reason": {
             "kind": "tool-calls"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "toolUse"
+            },
+            "blocks": [
+              {
+                "type": "tool-call"
+              }
+            ]
           }
         }
       }
@@ -1258,13 +1423,28 @@
               "type": "tool-call",
               "id": "advanced-undefine",
               "name": "cordis_undefine",
-              "arguments": "{\"pluginId\": \"snap-1\"}"
+              "arguments": "{\"pluginId\":\"snap-1\"}"
             }
           ],
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "toolUse"
+              },
+              "blocks": [
+                {
+                  "type": "tool-call"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -1291,7 +1471,7 @@
         "step": 6,
         "callId": "advanced-undefine",
         "name": "cordis_undefine",
-        "arguments": "{\"pluginId\": \"snap-1\"}"
+        "arguments": "{\"pluginId\":\"snap-1\"}"
       }
     },
     {
@@ -1454,6 +1634,21 @@
           "type": "finish",
           "reason": {
             "kind": "stop"
+          },
+          "replayState": {
+            "response": {
+              "kind": "pi-ai",
+              "version": 2,
+              "api": "openai-completions",
+              "provider": "primary",
+              "model": "smoke-model",
+              "stopReason": "stop"
+            },
+            "blocks": [
+              {
+                "type": "text"
+              }
+            ]
           }
         }
       }
@@ -1476,7 +1671,22 @@
           "source": {
             "kind": "model",
             "provider": "primary",
-            "model": "smoke-model"
+            "model": "smoke-model",
+            "replayState": {
+              "response": {
+                "kind": "pi-ai",
+                "version": 2,
+                "api": "openai-completions",
+                "provider": "primary",
+                "model": "smoke-model",
+                "stopReason": "stop"
+              },
+              "blocks": [
+                {
+                  "type": "text"
+                }
+              ]
+            }
           },
           "id": "{{messageId}}"
         },
@@ -1762,7 +1972,7 @@
                 "type": "tool-call",
                 "id": "advanced-define",
                 "name": "cordis_define",
-                "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+                "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
               }
             }
           }
@@ -1806,6 +2016,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -1830,13 +2055,28 @@
                   "type": "tool-call",
                   "id": "advanced-define",
                   "name": "cordis_define",
-                  "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+                  "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -1869,7 +2109,7 @@
             "step": 1,
             "callId": "advanced-define",
             "name": "cordis_define",
-            "arguments": "{\"plugin\": {\"kind\": \"new\", \"idPrefix\": \"snap\"}, \"name\": \"Snapshot Double\", \"purpose\": \"Expose a deterministic doubling tool for executable snapshot verification.\", \"code\": {\"host\": \"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
+            "arguments": "{\"plugin\":{\"kind\":\"new\",\"idPrefix\":\"snap\"},\"name\":\"Snapshot Double\",\"purpose\":\"Expose a deterministic doubling tool for executable snapshot verification.\",\"code\":{\"host\":\"return (ctx) => {\\n  harness.registerTool(ctx, harness.defineTool({\\n    name: 'snapshot_double',\\n    description: 'Double a number for executable snapshot verification.',\\n    parameters: { value: { type: 'number', required: true } },\\n    output: {\\n      schema: { type: 'number' },\\n      render(_args, value) {\\n        return [{ type: 'text', text: String(value) }]\\n      }\\n    },\\n    async execute(args) {\\n      return args.value * 2\\n    }\\n  }))\\n}\\n\"}}"
           }
         }
       }
@@ -2008,7 +2248,7 @@
                 "type": "tool-call",
                 "id": "advanced-run",
                 "name": "cordis_run",
-                "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+                "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
               }
             }
           }
@@ -2052,6 +2292,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -2076,13 +2331,28 @@
                   "type": "tool-call",
                   "id": "advanced-run",
                   "name": "cordis_run",
-                  "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+                  "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -2115,7 +2385,7 @@
             "step": 2,
             "callId": "advanced-run",
             "name": "cordis_run",
-            "arguments": "{\"pluginId\": \"snap-1\", \"packageId\": \"pkg-1\", \"mode\": \"run\"}"
+            "arguments": "{\"pluginId\":\"snap-1\",\"packageId\":\"pkg-1\",\"mode\":\"run\"}"
           }
         }
       }
@@ -2298,7 +2568,7 @@
                 "type": "tool-call",
                 "id": "advanced-code",
                 "name": "run_code",
-                "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+                "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
               }
             }
           }
@@ -2342,6 +2612,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -2366,13 +2651,28 @@
                   "type": "tool-call",
                   "id": "advanced-code",
                   "name": "run_code",
-                  "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+                  "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -2405,7 +2705,7 @@
             "step": 3,
             "callId": "advanced-code",
             "name": "run_code",
-            "arguments": "{\"code\": \"return await tools.snapshot_double({ value: 21 })\", \"description\": \"Run the temporary Plugin tool\"}"
+            "arguments": "{\"code\":\"return await tools.snapshot_double({ value: 21 })\",\"description\":\"Run the temporary Plugin tool\"}"
           }
         }
       }
@@ -2587,7 +2887,7 @@
                 "type": "tool-call",
                 "id": "advanced-direct-child",
                 "name": "subagent",
-                "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+                "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
               }
             }
           }
@@ -2631,6 +2931,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -2655,13 +2970,28 @@
                   "type": "tool-call",
                   "id": "advanced-direct-child",
                   "name": "subagent",
-                  "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+                  "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -2694,7 +3024,7 @@
             "step": 4,
             "callId": "advanced-direct-child",
             "name": "subagent",
-            "arguments": "{\"description\": \"Check direct child\", \"prompt\": \"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
+            "arguments": "{\"description\":\"Check direct child\",\"prompt\":\"Reply with exactly DIRECT_CHILD_OK and nothing else.\"}"
           }
         }
       }
@@ -3043,6 +3373,21 @@
               "type": "finish",
               "reason": {
                 "kind": "stop"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "stop"
+                },
+                "blocks": [
+                  {
+                    "type": "text"
+                  }
+                ]
               }
             }
           }
@@ -3071,7 +3416,22 @@
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "stop"
+                  },
+                  "blocks": [
+                    {
+                      "type": "text"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -3277,7 +3637,7 @@
                 "type": "tool-call",
                 "id": "advanced-workflow",
                 "name": "workflow",
-                "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+                "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
               }
             }
           }
@@ -3321,6 +3681,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -3345,13 +3720,28 @@
                   "type": "tool-call",
                   "id": "advanced-workflow",
                   "name": "workflow",
-                  "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+                  "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -3384,7 +3774,7 @@
             "step": 5,
             "callId": "advanced-workflow",
             "name": "workflow",
-            "arguments": "{\"script\": \"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\", \"meta\": {\"name\": \"advanced-exe-snapshot\", \"description\": \"exercise one packaged workflow child\"}}"
+            "arguments": "{\"script\":\"phase('Delegate')\\nconst reply = await agent('Reply with exactly WORKFLOW_CHILD_OK and nothing else.', { label: 'workflow-child' })\\nreturn { reply }\",\"meta\":{\"name\":\"advanced-exe-snapshot\",\"description\":\"exercise one packaged workflow child\"}}"
           }
         }
       }
@@ -3765,6 +4155,21 @@
               "type": "finish",
               "reason": {
                 "kind": "stop"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "stop"
+                },
+                "blocks": [
+                  {
+                    "type": "text"
+                  }
+                ]
               }
             }
           }
@@ -3793,7 +4198,22 @@
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "stop"
+                  },
+                  "blocks": [
+                    {
+                      "type": "text"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -4030,7 +4450,7 @@
                 "type": "tool-call",
                 "id": "advanced-undefine",
                 "name": "cordis_undefine",
-                "arguments": "{\"pluginId\": \"snap-1\"}"
+                "arguments": "{\"pluginId\":\"snap-1\"}"
               }
             }
           }
@@ -4074,6 +4494,21 @@
               "type": "finish",
               "reason": {
                 "kind": "tool-calls"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "toolUse"
+                },
+                "blocks": [
+                  {
+                    "type": "tool-call"
+                  }
+                ]
               }
             }
           }
@@ -4098,13 +4533,28 @@
                   "type": "tool-call",
                   "id": "advanced-undefine",
                   "name": "cordis_undefine",
-                  "arguments": "{\"pluginId\": \"snap-1\"}"
+                  "arguments": "{\"pluginId\":\"snap-1\"}"
                 }
               ],
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "toolUse"
+                  },
+                  "blocks": [
+                    {
+                      "type": "tool-call"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
@@ -4137,7 +4587,7 @@
             "step": 6,
             "callId": "advanced-undefine",
             "name": "cordis_undefine",
-            "arguments": "{\"pluginId\": \"snap-1\"}"
+            "arguments": "{\"pluginId\":\"snap-1\"}"
           }
         }
       }
@@ -4354,6 +4804,21 @@
               "type": "finish",
               "reason": {
                 "kind": "stop"
+              },
+              "replayState": {
+                "response": {
+                  "kind": "pi-ai",
+                  "version": 2,
+                  "api": "openai-completions",
+                  "provider": "primary",
+                  "model": "smoke-model",
+                  "stopReason": "stop"
+                },
+                "blocks": [
+                  {
+                    "type": "text"
+                  }
+                ]
               }
             }
           }
@@ -4382,7 +4847,22 @@
               "source": {
                 "kind": "model",
                 "provider": "primary",
-                "model": "smoke-model"
+                "model": "smoke-model",
+                "replayState": {
+                  "response": {
+                    "kind": "pi-ai",
+                    "version": 2,
+                    "api": "openai-completions",
+                    "provider": "primary",
+                    "model": "smoke-model",
+                    "stopReason": "stop"
+                  },
+                  "blocks": [
+                    {
+                      "type": "text"
+                    }
+                  ]
+                }
               },
               "id": "{{messageId}}"
             },
