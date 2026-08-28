@@ -42,7 +42,10 @@ it('boots the built plugin graph and renders a fixture session end to end', asyn
 
   // The sidebar renders from the boot graph: every inject layer activated.
   const tree = await screen.findByRole('tree', { name: 'Sessions' }, { timeout: 10_000 })
-  expect(document.querySelector('svg[viewBox="26 0 156 24"]')).not.toBeNull()
+  // The brand wordmark is decorative and `aria-hidden`, so it has no accessible
+  // handle; its artwork viewBox is the only stable one. Repeated as a literal
+  // rather than imported, because this file reads the BUILT bundles.
+  expect(document.querySelector('svg[viewBox="0 0 180 34"]')).not.toBeNull()
   expect(screen.queryByText('ARX Local Build')).toBeNull()
   // The compact layout dropped group session counts; the fixture workspace
   // group row renders immediately with its sessions beneath it.
