@@ -17,7 +17,7 @@
   - img
   - text: Context injection @arx-ai/arx-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: arx running…
 - button "2 queued messages" [disabled] [expanded]
 - list:
   - listitem:

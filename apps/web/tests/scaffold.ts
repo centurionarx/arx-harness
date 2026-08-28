@@ -113,10 +113,12 @@ const SHIPPED_PRESET_DIR = join(REPO_ROOT, 'apps/cli/config/agent-presets')
 // catch-all would leave resolveModelInfo unroutable and compaction-basic's
 // post-step pressure check would warn every step). The published
 // contextWindow keeps that pressure path provably inert for small fixtures.
+const REPLAY_PROVIDER_ID = 'deepseek-official'
+const REPLAY_MODEL_ID = 'deepseek-v4-flash'
 const REPLAY_PROVIDERS = [{
-  id: 'deepseek-official',
+  id: REPLAY_PROVIDER_ID,
   name: 'DeepSeek',
-  models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
+  models: [{ id: REPLAY_MODEL_ID, name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
 }]
 
 /**
@@ -514,6 +516,13 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ...mode === 'record' || options.deepSeekMissingCredential === true
       ? []
       : [{ id: 'llm-deepseek', disabled: true }],
+    // The shipped bundle pins no default model: a deployment picks its own, and
+    // a session without a selection cannot start a turn. This composition IS
+    // that deployment, so it seeds the one route replay publishes; otherwise a
+    // scenario would have to drive the model picker before every prompt.
+    ...mode === 'record' || options.deepSeekMissingCredential === true
+      ? []
+      : [{ id: 'agent-default-model', config: { provider: REPLAY_PROVIDER_ID, model: REPLAY_MODEL_ID } }],
   ]
 
   // Sessions inherit the gateway's process.cwd() default; run the boot from
