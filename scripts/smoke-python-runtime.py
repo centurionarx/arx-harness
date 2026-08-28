@@ -34,8 +34,14 @@ FS_SEARCH_TEXT = "filesystem search smoke ok"
 FS_SEARCH_MARKER = "PACKAGED_FS_SEARCH_OK"
 MCP_PROMPT = "Exercise the packaged MCP client with one external stdio server."
 MCP_TEXT = "MCP client smoke ok"
+# The shipped minimal composition reached through an overlay that points its
+# endpoint at this run's mock server; the shipped file keeps its own literal.
 MINIMAL_CORDIS = (
-    Path(__file__).resolve().parent.parent / "examples" / "jsonrpc-agent" / "minimal.cordis.yml"
+    Path(__file__).resolve().parent.parent
+    / "examples"
+    / "jsonrpc-agent"
+    / "tests"
+    / "minimal-smoke.cordis.yml"
 )
 MINIMAL_BASH_COMMAND = (
     "counter=$(( ${counter:-0} + 1 )); export counter; "
@@ -82,7 +88,23 @@ MINIMAL_SNAPSHOT_FILENAMES = ("model-visible.json",)
 # expected output cannot carry: the same composition emits it on macOS and not on Linux
 # (arx-harness#2488), and the file must replay on both. Everything else is compared.
 RUNTIME_CONTEXT_PREFIX = "Current runtime context"
-CUSTOM_CORDIS = """\
+SMOKE_LLM_ROUTE = """\
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.PRIMARY_BASE_URL
+        compat:
+          maxTokensField: max_tokens
+        models:
+          - id: !!js process.env.ARX_MODEL ?? 'smoke-model'
+"""
+
+CUSTOM_CORDIS = SMOKE_LLM_ROUTE + """\
 - id: sdk-jsonrpc-server
   name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
@@ -122,7 +144,7 @@ CUSTOM_CORDIS = """\
 - id: cordis-tool
   name: '@arx-ai/arx-tool-cordis'
 """
-FS_SEARCH_CORDIS = """\
+FS_SEARCH_CORDIS = SMOKE_LLM_ROUTE + """\
 - id: sdk-jsonrpc-server
   name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
@@ -223,12 +245,30 @@ for line in sys.stdin:
 """
 
 
-def mcp_cordis(server_script: Path) -> str:
+def mcp_cordis(server_script: Path, base_url: str) -> str:
     """Build an external config that mounts the packaged MCP client."""
     return json.dumps([
         {
             "id": "sdk-jsonrpc-server",
             "name": "@arx-ai/arx-sdk-jsonrpc-server",
+        },
+        # JSON carries no `!!js`, so the endpoint arrives as an argument
+        # rather than being read back from the environment at load.
+        {
+            "id": "llm",
+            "name": "@arx-ai/arx-llm-pi-ai",
+            "config": {
+                "providers": {
+                    "primary": {
+                        "displayName": "Primary",
+                        "apiKeyEnv": "PRIMARY_API_KEY",
+                        "api": "openai-completions",
+                        "baseURL": base_url,
+                        "compat": {"maxTokensField": "max_tokens"},
+                        "models": [{"id": "smoke-model"}],
+                    }
+                }
+            },
         },
         {
             "id": "agent-core",
@@ -839,7 +879,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         server_script = root / "mcp_server.py"
         server_script.write_text(MCP_SERVER_SCRIPT)
         cordis = root / "cordis.yml"
-        cordis.write_text(mcp_cordis(server_script))
+        cordis.write_text(mcp_cordis(server_script, base_url))
         discovery_log = server_script.with_suffix(".log")
         with ArxHarness(
             provider="primary",

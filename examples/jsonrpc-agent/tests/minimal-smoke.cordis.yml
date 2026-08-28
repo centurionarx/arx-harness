@@ -1,0 +1,27 @@
+# The shipped minimal composition with its endpoint pointed at a caller's
+# server. The example ships a placeholder literal because shipped composition
+# outranks the launching shell, so the endpoint moves in the tier above it: a
+# patch overlay, the same lever a deployment uses. Test configuration may read
+# the environment directly; the shipped tree it includes may not.
+#
+# A patch replaces an entry's `config` outright rather than merging into it, so
+# the route is restated here in full. Keep it in step with ../minimal.cordis.yml.
+- id: shipped
+  name: cordis:include
+  config:
+    path: ../minimal.cordis.yml
+    patches:
+      - id: llm
+        config:
+          providers:
+            primary:
+              displayName: Primary
+              apiKeyEnv: PRIMARY_API_KEY
+              api: openai-completions
+              baseURL: !!js process.env.PRIMARY_BASE_URL
+              defaultContextWindow: !!js "Number(process.env.ARX_CONTEXT_WINDOW ?? 1000000)"
+              defaultMaxTokens: 256000
+              compat:
+                maxTokensField: max_tokens
+              models:
+                - id: !!js process.env.ARX_MODEL ?? 'primary-flash'

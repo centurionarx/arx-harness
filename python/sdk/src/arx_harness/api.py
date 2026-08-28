@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import shutil
+import tempfile
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -70,6 +73,10 @@ class ArxHarness:
             env["PRIMARY_BASE_URL"] = self.config.base_url
         if self.config.api_key is not None:
             env["PRIMARY_API_KEY"] = self.config.api_key
+        self._overlay_root: str | None = None
+        overlay = self._write_route_overlay(env)
+        if overlay is not None:
+            env["ARX_CORDIS_CONFIG"] = overlay
 
         self._client = HarnessClient(
             HarnessConfig(
@@ -109,6 +116,71 @@ class ArxHarness:
     def close(self) -> None:
         self._client.close()
         self._initialized = False
+        if self._overlay_root is not None:
+            shutil.rmtree(self._overlay_root, ignore_errors=True)
+            self._overlay_root = None
+
+    def _write_route_overlay(self, env: dict[str, str]) -> str | None:
+        """Compose ``base_url`` and ``model`` into the bundled zero-config tree.
+
+        The bundled composition ships a placeholder endpoint and a fixed model
+        list, because shipped configuration outranks the launching shell and so
+        must not read either from the environment. A caller that named an
+        endpoint states it explicitly, and the composition tier is where such a
+        statement belongs, so the endpoint and the named model arrive as a
+        patch layer over the bundled tree rather than as variables the runtime
+        reads back. Returns the overlay path, or ``None`` when the launch is
+        not a bundled zero-config one or named no endpoint to compose.
+        """
+        if self.config.base_url is None:
+            return None
+        uses_bundled_runtime = (
+            self.config.launch_args_override is None
+            and self.config.runtime_bin is None
+            and self.config.cordis is None
+        )
+        if not uses_bundled_runtime or env.get("ARX_CORDIS_CONFIG"):
+            return None
+        try:
+            from arx_harness_runtime import bundled_default_config_path
+        except ImportError:
+            # No bundled runtime installed, so there is no tree to overlay and
+            # the launch will fail on its own terms with the install error.
+            return None
+        bundled = bundled_default_config_path()
+        # A patch replaces an entry's `config` outright rather than merging into
+        # it, so the route is restated in full. JSON is a YAML subset, which
+        # keeps the quoting of `off` (a YAML 1.1 boolean) unambiguous.
+        overlay = [
+            {
+                "id": "bundled",
+                "name": "cordis:include",
+                "config": {
+                    "path": bundled.as_uri(),
+                    "patches": [
+                        {
+                            "id": "llm-pi-ai",
+                            "config": {
+                                "providers": {
+                                    self.config.provider: {
+                                        "displayName": "Primary",
+                                        "apiKeyEnv": "PRIMARY_API_KEY",
+                                        "api": "openai-completions",
+                                        "baseURL": self.config.base_url,
+                                        "compat": {"maxTokensField": "max_tokens"},
+                                        "models": [{"id": self.config.model}],
+                                    }
+                                }
+                            },
+                        }
+                    ],
+                },
+            }
+        ]
+        self._overlay_root = tempfile.mkdtemp(prefix="arx-sdk-overlay-")
+        path = Path(self._overlay_root) / "cordis.yml"
+        path.write_text(json.dumps(overlay, indent=2), encoding="utf-8")
+        return str(path)
 
     def start_session(self, session_id: str | None = None) -> "Session":
         self.start()

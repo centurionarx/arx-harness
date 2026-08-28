@@ -29,6 +29,12 @@ pi-ai 的内置 catalog 不描述 `primary` 路由，因此指名它的 profile 
 - `compat.maxTokensField`——`openai-completions` 默认发送 `max_completion_tokens`，普通 chat-completions 宿主会忽略该字段。
 - `baseURL`——内置 catalog 不提供，因此缺少它的路由会在加载时被拒绝。
 
+## 调用方指名的端点
+
+Python SDK 的 `base_url` 选项原本能把打包的零配置启动指向选定端点，被删除的适配器通过读取环境来兑现它。`arx-llm-pi-ai` 不读，随包配置也不允许把它读回来——因此，指名了端点的零配置启动现在改为**组合**它：`ArxHarness` 写出一份临时 overlay，include 打包的那棵树，并用调用方的端点和其指名的那一个模型给路由打 patch。没有指名端点的启动仍沿用打包的占位地址，不受影响。
+
+这样端点就始终是显式参数，而不是环境里的既有权限。任何 wrapper、CI 步骤或父进程偶然导出的变量，都无法改变已解析的凭据和承载用户代码的提示词被发往何处；而且该路由只服务调用方指名的那一个模型，而不是握手请求什么就接受什么。
+
 ## Alternatives considered
 
 **保留前一份笔记所决定的厂商路由键。** 它的论据是 `deepseek-v4-pro` 正是端点应答的 id。这里是取代而非否定：对于已配置的路由，那句话成立，而本仓库不再配置任何路由。指名真实厂商模型的占位名才是谎言，反过来不是。

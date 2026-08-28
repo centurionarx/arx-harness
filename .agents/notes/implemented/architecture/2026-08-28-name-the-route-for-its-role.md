@@ -29,6 +29,12 @@ pi-ai's installed catalog describes no `primary` route, so a profile naming it i
 - `compat.maxTokensField` — `openai-completions` sends `max_completion_tokens` by default, which a plain chat-completions host ignores.
 - `baseURL` — the installed catalog supplies none, so a route without one is refused at load.
 
+## The endpoint a caller names
+
+The Python SDK's `base_url` option pointed a bundled zero-config launch at a chosen endpoint, and the deleted adapter honoured it by reading the environment. `arx-llm-pi-ai` does not, and shipped configuration may not read it back — so a zero-config launch that names an endpoint now composes it: `ArxHarness` writes a temporary overlay that includes the bundled tree and patches the route with the caller's endpoint and the one model they named. A launch that names no endpoint keeps the bundled placeholder, unchanged.
+
+That keeps the endpoint an explicit argument rather than ambient authority. No variable a wrapper, CI step, or parent process happens to export can redirect where a resolved credential and the prompts carrying a user's code are sent, and the route serves exactly the model the caller asked for rather than anything a handshake requests.
+
 ## Alternatives considered
 
 **Keeping the vendor route key, as the prior note decided.** Its argument was that `deepseek-v4-pro` is the id the endpoint answers to. Superseded rather than contradicted: that is true of a configured route, and this repository no longer configures one. A placeholder that names a real vendor's models is the lie, not the other way round.

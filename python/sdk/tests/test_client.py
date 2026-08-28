@@ -951,7 +951,9 @@ def resolve_bundled_launch_args(mode=None):
 
 
 def bundled_default_config_path():
-    return {str(default_config)!r}
+    from pathlib import Path
+
+    return Path({str(default_config)!r})
 """.strip()
     )
 
@@ -975,6 +977,47 @@ def test_client_default_launch_uses_bundled_runtime_and_injects_default_config(
         init = client.initialize(provider="primary", cwd="/workspace", model="primary-pro")
 
     assert init.serverInfo.name == "bundled-runtime"
+    assert json.loads(env_dump.read_text())["ARX_CORDIS_CONFIG"] == str(default_config)
+
+
+def test_zero_config_base_url_arrives_as_a_patch_layer_not_a_variable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_dump = tmp_path / "env.json"
+    default_config = _install_fake_bundled_runtime(tmp_path, monkeypatch)
+    monkeypatch.delenv("ARX_CORDIS_CONFIG", raising=False)
+
+    with ArxHarness(
+        model="named-model",
+        cwd=str(tmp_path),
+        base_url="http://127.0.0.1:9",
+        env={"ENV_DUMP": str(env_dump)},
+    ) as harness:
+        injected = json.loads(env_dump.read_text())["ARX_CORDIS_CONFIG"]
+        # The bundled tree is included, not replaced, and the endpoint and the
+        # one named model ride the patch above it.
+        overlay = json.loads(Path(injected).read_text())
+        overlay_root = harness._overlay_root
+
+    assert injected != str(default_config)
+    assert overlay[0]["config"]["path"] == default_config.as_uri()
+    route = overlay[0]["config"]["patches"][0]["config"]["providers"]["primary"]
+    assert route["baseURL"] == "http://127.0.0.1:9"
+    assert route["models"] == [{"id": "named-model"}]
+    # The overlay is the harness's to clean up; close() removes it.
+    assert overlay_root is not None and not Path(overlay_root).exists()
+
+
+def test_zero_config_without_an_endpoint_keeps_the_bundled_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_dump = tmp_path / "env.json"
+    default_config = _install_fake_bundled_runtime(tmp_path, monkeypatch)
+    monkeypatch.delenv("ARX_CORDIS_CONFIG", raising=False)
+
+    with ArxHarness(cwd=str(tmp_path), env={"ENV_DUMP": str(env_dump)}):
+        pass
+
     assert json.loads(env_dump.read_text())["ARX_CORDIS_CONFIG"] == str(default_config)
 
 
