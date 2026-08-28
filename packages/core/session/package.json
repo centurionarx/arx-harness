@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session",
   "description": "Event-sourced session store for the arx Harness",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publishConfig": {
     "access": "public"
   },

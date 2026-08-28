@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-home-paths",
   "description": "Shared filesystem path helpers for the arx Harness",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publishConfig": {
     "access": "public"
   },

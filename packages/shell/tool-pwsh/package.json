@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-pwsh",
   "description": "Model-facing pwsh tool over the bash executor seam",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publishConfig": {
     "access": "public"
   },
