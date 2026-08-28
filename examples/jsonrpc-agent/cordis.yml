@@ -6,23 +6,45 @@
   config:
     maxTokensAsSuccess: !!js "process.env.ARX_MAX_TOKENS_AS_SUCCESS === undefined ? true : JSON.parse(process.env.ARX_MAX_TOKENS_AS_SUCCESS)"
 
-# The Primary adapter. Shipped default: full thinking at max effort on every
-# request; exact-model resolution materializes request defaults before logging.
-# The model arrives per session over JSON-RPC, so it is not pinned here.
+# The OpenAI-compatible adapter. Shipped default: full thinking at max effort
+# on every request; exact-model resolution materializes request defaults before
+# logging. The model arrives per session over JSON-RPC, so the route lists the
+# ids it serves rather than pinning one.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `primary` catalog route, so this profile
-      # declares the whole provider instead of narrowing an inherited one.
+      # The installed catalog describes no `primary` route, so this profile
+      # declares the whole provider — endpoint and models included — instead of
+      # narrowing an inherited one. `?? ''` turns an unset endpoint into a
+      # load-time refusal rather than a request that goes nowhere.
       primary:
         displayName: Primary
         apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.example-provider.test
+        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high
+        # A declared route inherits no vendor dialect, so the endpoint's own
+        # spelling of the output cap is named here. `openai-completions`
+        # otherwise sends `max_completion_tokens`, which reasoning-era OpenAI
+        # reads and a plain chat-completions host ignores.
+        compat:
+          maxTokensField: max_tokens
+        # A hand-declared model inherits no catalog capability, so the route's
+        # `reasoning` level is only servable where the model spells the effort
+        # ladder out. The keys are quoted because YAML 1.1 reads a bare `off`
+        # as a boolean.
+        models:
+          - id: primary-pro
+            reasoningEfforts: &efforts
+              'off':
+              'low': low
+              'medium': medium
+              'high': high
+          - id: primary-flash
+            reasoningEfforts: *efforts
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess

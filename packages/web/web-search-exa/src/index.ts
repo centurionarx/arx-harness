@@ -2,7 +2,7 @@
  * `@arx-ai/arx-web-search-exa`: registers an Exa-backed `WebSearchProvider`
  * with `ctx.web`. A function/namespace plugin (NOT a default-export service):
  * a search provider does not own the `ctx.web` key — it registers INTO the
- * seam's provider registry, exactly as `@arx-ai/arx-llm-primary`
+ * seam's provider registry, exactly as `@arx-ai/arx-llm-pi-ai`
  * registers an adapter into `ctx.llm`. The key is owned by `@arx-ai/arx-web`.
  *
  * @module @arx-ai/arx-web-search-exa

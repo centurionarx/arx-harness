@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Shared anonymous identity for session telemetry, direct feedback acknowledgement, and Primary provider requests. `getOrCreateAnonymousUserId()` returns a random UUID v4 scoped to one harness home, persisted as the bare line `$ARX_HOME/.anonymous-user-id` (`~/.arx/.anonymous-user-id` when `ARX_HOME` is unset). The OpenTelemetry backend reports it as Resource `user.id`; `/feedback` includes the same value in its acknowledgement; and `arx-llm-primary` sends it as `x-arx-harness-user-id`, allowing the receiving systems to correlate records without independently generated identities.
+Shared anonymous identity for session telemetry, direct feedback acknowledgement, and Primary provider requests. `getOrCreateAnonymousUserId()` returns a random UUID v4 scoped to one harness home, persisted as the bare line `$ARX_HOME/.anonymous-user-id` (`~/.arx/.anonymous-user-id` when `ARX_HOME` is unset). The OpenTelemetry backend reports it as Resource `user.id`; `/feedback` includes the same value in its acknowledgement; and a provider adapter may send it as `x-arx-harness-user-id`, allowing the receiving systems to correlate records without independently generated identities.
 
 The identity is never derived from the hostname, network address, git remote, or another identifying source. Deleting `.anonymous-user-id` resets the identity on the next process launch. Separate harness homes have separate identities.
 
@@ -27,4 +27,4 @@ None; the transport header changes neither tokens nor the model-visible prefix.
 - **No recovery after deletion** — loss mints a new anonymous identity by design; recovery would require stable derivation material that weakens anonymity.
 - **Best-effort concurrency** — a reader landing in the narrow interval between a concurrent process's exclusive create and completed write can use a different in-memory UUID for that run; later launches converge on the persisted value.
 - **No cross-home identity** — different `$ARX_HOME` values cannot be correlated.
-- **Configured Primary gateways receive the id** — `arx-llm-primary` sends the stable header to its resolved `baseURL`, including deployment overrides, independently of telemetry sharing mode.
+- **A configured gateway receives the id** — an adapter that opts in sends the stable header to its resolved `baseURL`, including deployment overrides, independently of telemetry sharing mode.

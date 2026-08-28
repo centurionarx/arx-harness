@@ -31,8 +31,17 @@ const repoTsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.m
 // A minimal opt-in leaf that loads this app + the two backends and the optional
 // session-query consumer/policies, inlined so the package test owns its fixture.
 const CORDIS_YML = `
-- id: llm-primary
-  name: '@arx-ai/arx-llm-primary'
+- id: llm-pi-ai
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
+        api: openai-completions
+        baseURL: https://127.0.0.1:1
+        models:
+          - id: primary-flash
 - id: subprocess
   name: '@arx-ai/arx-subprocess-local'
 - id: bash

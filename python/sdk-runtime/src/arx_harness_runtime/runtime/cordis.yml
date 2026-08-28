@@ -13,12 +13,34 @@
     workspaceContext:
       maxBytes: 65536
 
-# Stock Primary adapters. The adapter resolves PRIMARY_API_KEY through the
-# credential seam and, with no provider mounted here, from the launching
-# environment; PRIMARY_BASE_URL follows the same environment ladder. Neither
-# is inlined, so this file names no secret and no route.
-- id: llm-primary
-  name: '@arx-ai/arx-llm-primary'
+# The OpenAI-compatible adapter, serving the one route the Python SDK's own
+# defaults name. Endpoint and credential come from the launching environment,
+# so this file still holds no secret and names no vendor; a deployment that
+# wants a different route supplies its own $ARX_CORDIS_CONFIG. `?? ''` turns an
+# unset endpoint into a load-time refusal rather than a request that goes
+# nowhere. The declared route inherits no catalog, so it spells out its models,
+# its effort ladder, and the endpoint's own output-cap field.
+- id: llm-pi-ai
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
+        api: openai-completions
+        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
+        compat:
+          maxTokensField: max_tokens
+        # Quoted because YAML 1.1 reads a bare `off` as a boolean.
+        models:
+          - id: primary-pro
+            reasoningEfforts: &efforts
+              'off':
+              'low': low
+              'medium': medium
+              'high': high
+          - id: primary-flash
+            reasoningEfforts: *efforts
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions

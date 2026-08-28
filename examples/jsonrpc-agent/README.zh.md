@@ -18,7 +18,7 @@
 | 变量 | 用途 |
 |---|---|
 | `PRIMARY_API_KEY` | 传给 OpenAI 兼容宿主端点的凭据 |
-| `PRIMARY_BASE_URL` | `arx-llm-primary` 使用的宿主端点 |
+| `PRIMARY_BASE_URL` | `primary` 路由发送请求的宿主端点；未设置会导致加载被拒绝 |
 | `ARX_CWD` | bash 和文件系统工具使用的 agent workspace |
 | `ARX_CONTEXT_WINDOW` | 极简变体中为 `ARX_MODEL` 目录项记录的上下文容量 |
 | `ARX_MAX_TOKENS_AS_SUCCESS` | `true`（默认）接受受 token 上限限制的结果；`false` 将其报告为错误 |

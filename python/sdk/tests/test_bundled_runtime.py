@@ -18,10 +18,22 @@ _MODES = ("exe", "node")
 _REPO_ROOT = Path(__file__).parents[3]
 _MINIMAL_CONFIG = _REPO_ROOT / "examples" / "jsonrpc-agent" / "minimal.cordis.yml"
 
-# The config must include the JSON-RPC serving plugin.
+# The config must include the JSON-RPC serving plugin and a route for the
+# provider `initialize` names: nothing is mounted on the caller's behalf.
 _CORDIS_YML = """\
 - id: sdk-jsonrpc-server
   name: '@arx-ai/arx-sdk-jsonrpc-server'
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
+        api: openai-completions
+        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
+        models:
+          - id: primary-pro
 - id: agent-core
   name: '@arx-ai/arx-agent-spine-demo'
   config:
@@ -61,7 +73,7 @@ def _client(tmp_path: Path, launch_args: tuple[str, ...]) -> HarnessClient:
                 "ARX_CORDIS_CONFIG": "./cordis.yml",
                 "ARX_SESSION_ROOT": str(tmp_path / "sessions"),
                 "ARX_CWD": str(tmp_path),
-                # The lazily mounted adapter requires a key even without a model call.
+                # The adapter requires a key even without a model call.
                 "PRIMARY_API_KEY": "sk-dummy-for-boot",
                 "PRIMARY_BASE_URL": "http://127.0.0.1:9",
             },

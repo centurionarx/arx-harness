@@ -12,15 +12,23 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `primary` catalog route, so this profile
-      # declares the whole provider instead of narrowing an inherited one.
+      # The installed catalog describes no `primary` route, so this profile
+      # declares the whole provider — endpoint and models included — instead of
+      # narrowing an inherited one. `?? ''` turns an unset endpoint into a
+      # load-time refusal rather than a request that goes nowhere.
       primary:
         displayName: Primary
         apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.example-provider.test
+        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
+        # A declared route inherits no vendor dialect, so the endpoint's own
+        # spelling of the output cap is named here. `openai-completions`
+        # otherwise sends `max_completion_tokens`, which reasoning-era OpenAI
+        # reads and a plain chat-completions host ignores.
+        compat:
+          maxTokensField: max_tokens
         models:
           - id: !!js process.env.ARX_MODEL ?? 'primary-flash'
 

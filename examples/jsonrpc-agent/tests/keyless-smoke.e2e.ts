@@ -185,6 +185,9 @@ describe('jsonrpc-agent keyless smoke', () => {
       cwd: repoRoot,
       env: {
         PRIMARY_API_KEY: 'keyless-smoke-no-call',
+        // The config refuses an unset endpoint at load; this case is about the
+        // mapping value, so give it one no request will reach.
+        PRIMARY_BASE_URL: 'http://127.0.0.1:1',
         ARX_MAX_TOKENS_AS_SUCCESS: 'sometimes',
       },
       stdin: 'ignore',
