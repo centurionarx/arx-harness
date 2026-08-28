@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-deepseek",
   "description": "DeepSeek chat-completions adapter for the arx Harness LLM seam",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publishConfig": {
     "access": "public"
   },
