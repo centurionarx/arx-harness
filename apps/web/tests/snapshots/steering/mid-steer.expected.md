@@ -25,7 +25,7 @@
   - img
   - img
   - text: Ask question waiting
-- status: Deep diving...
+- status: arx running…
 - text: "Interjection: include the word BANANA in your final reply."
 - button "Copy":
   - img

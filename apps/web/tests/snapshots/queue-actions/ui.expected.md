@@ -17,7 +17,7 @@
   - img
   - text: Context injection @arx-ai/arx-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: arx running…
 - list:
   - listitem:
     - text: Edited queue item

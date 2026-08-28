@@ -17,7 +17,7 @@
   - img
   - text: Context injection @arx-ai/arx-system-prompt
 - paragraph: partial
-- status: Deep diving...
+- status: arx running…
 - textbox "Message the agent"
 - button "Commands":
   - img
