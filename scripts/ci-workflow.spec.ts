@@ -80,7 +80,10 @@ describe('CI workflow', () => {
     expect(windowsNative['runs-on']).not.toContain('ARX_CI_FAILOVER_LINUX')
     expect(windowsNative['runs-on']).toContain('self-hosted')
     expect(windowsNative['runs-on']).toContain('arx-win-ci')
-    expect(windowsNative['runs-on']).toContain('arx-windows-2025-16core')
+    // A hosted pool this organization does not define never fails: the job
+    // queues until GitHub's 24-hour limit expires. Pin the standard label so a
+    // reintroduced private pool name is a deliberate edit, not a silent stall.
+    expect(windowsNative['runs-on']).toContain('windows-2025')
     expect(windowsNative.name).toBe('windows node 24 / native complete')
     expect(windowsNative.if).toBe("github.event_name == 'pull_request'")
     expect(windowsNative.env).toMatchObject({
