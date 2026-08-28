@@ -12,11 +12,17 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      deepseek:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
         apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: https://api.deepseek.com
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
         models:
           - id: !!js process.env.ARX_MODEL ?? 'deepseek-v4-flash'
-            contextWindow: !!js Number(process.env.ARX_CONTEXT_WINDOW ?? 1000000)
 
 - id: sandbox
   name: '@arx-ai/arx-sandbox-local'

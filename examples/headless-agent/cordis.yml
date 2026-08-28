@@ -24,14 +24,25 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      deepseek:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
         apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: https://api.deepseek.com
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
         reasoning: high
         models:
           - id: deepseek-v4-pro
-            contextWindow: 128000
+            reasoningEfforts:
+              off:
+              high: high
           - id: deepseek-v4-flash
-            contextWindow: 128000
+            reasoningEfforts:
+              off:
+              high: high
 
 # Managed child-process groups for the bash executor (spawn/kill/output plumbing).
 - id: subprocess
