@@ -47,6 +47,8 @@ declare module '@arx-ai/cordis' {
     cmdlineArgs?: CmdlineArgs
     /** Bounded process-exit request; provided by a launcher before the tree mounts. */
     appExit?: AppExit
+    /** The launcher app's released version; provided by a launcher before the tree mounts. */
+    appVersion?: string
   }
 }
 
@@ -56,19 +58,23 @@ export interface CmdlineHost {
   args: readonly string[]
   /** Bounded process-exit request. */
   exit: AppExit
+  /** The launcher app's released version, as its own manifest declares it. */
+  version: string
 }
 
 /**
- * Provide the command line and the exit request on a host context before any
- * tree entry mounts. Both are launcher facts, not config: an embedding host
- * with no command line provides an empty argument list.
+ * Provide the command line, the exit request, and the app version on a host
+ * context before any tree entry mounts. All three are launcher facts, not
+ * config: an embedding host with no command line provides an empty argument
+ * list, and reports the version of whatever app it is embedding.
  * @param ctx - the host context the tree will mount under.
- * @param host - the invocation's arguments and its exit request.
+ * @param host - the invocation's arguments, its exit request, and its version.
  */
 export function provideCmdline(ctx: Context, host: CmdlineHost): void {
   const snapshot: readonly string[] = Object.freeze([...host.args])
   ctx.provide('cmdlineArgs', { get: () => snapshot })
   ctx.provide('appExit', host.exit)
+  ctx.provide('appVersion', host.version)
 }
 
 /** The process streams commander output is written to; production writes to the process. */

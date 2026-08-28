@@ -2,6 +2,7 @@
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@arx-ai/arx-client-locale/client'
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 import type { SidebarRootInjected } from './contract/slots.ts'
 import { SidebarRoot } from './SidebarRoot.tsx'
 import { en, zh, type SidebarKey } from './locales.ts'
@@ -23,7 +24,7 @@ declare module '@arx-ai/arx-client-ui-slots' {
 const NS = 'sidebar'
 
 /** Services required by the sidebar plugin. */
-export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'locale']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'locale', 'connection']
 
 /** Registers the sidebar shell and its service callbacks.
  * @param ctx - Client root context.
@@ -36,6 +37,9 @@ export function apply(ctx: ClientContext): void {
     // (current Session Workspace, then recent Workspace).
     startSession: (workspaceId) => { ctx.workspaces.startSession(workspaceId) },
     toggleSidebar: () => { ctx.layout.toggleSidebar() },
+    // The shell prints the running app's version under the wordmark; the
+    // source, not a snapshot, so a reconnect that changes the answer repaints.
+    hostDescription: (ctx.get('connection') as ConnectionHandle).hostDescription,
   })
   ctx.effect(
     () => ctx.slots.register({

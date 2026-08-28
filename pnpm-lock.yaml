@@ -2807,6 +2807,9 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
     devDependencies:
+      '@arx-ai/arx-client-connection':
+        specifier: workspace:^
+        version: link:../connection
       '@arx-ai/arx-client-locale':
         specifier: workspace:^
         version: link:../locale

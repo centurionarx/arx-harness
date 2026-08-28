@@ -143,7 +143,7 @@ async function bootWeb(
   const rootConfig = join(profileDir, 'cordis.yml')
   await writeFile(rootConfig, '[]\n')
   return await boot('arx-test', rootConfig, [...bundlePatches, ...overrides], (bootCtx) => {
-    provideCmdline(bootCtx, { args: [], exit: () => {} })
+    provideCmdline(bootCtx, { args: [], exit: () => {}, version: '0.0.0-test' })
   })
 }
 

@@ -553,6 +553,10 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       exit: (code) => {
         throw new Error(`web e2e scaffold: the web app requested exit ${String(code)} with no arguments to reject`)
       },
+      // Fixed, not the repository's version: a release bump must not move a
+      // golden. The brand row that prints it is aria-hidden, so no capture
+      // sees this value at all.
+      version: '0.0.0-web-e2e',
     })
     await ctx.plugin(Loader)
     ctx.loader.builtins.include = Include

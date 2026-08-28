@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import type {
   SidebarExitOwnerProps, SidebarFooterActionOwnerProps, SidebarRootComponentProps,
@@ -23,7 +23,36 @@ afterEach(() => {
 // props share; stub them as never-called functions.
 const neverHook = (() => { throw new Error('shell must not read global hooks') }) as never
 
-function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; width?: number } = {}) {
+/**
+ * A Host-description source whose value the test drives, so the shell can be
+ * observed both while a generation is live and across the gap where the wire
+ * publishes nothing.
+ * @param initial - the version the first handshake carries, or none.
+ * @returns the source plus a publisher that replaces the description.
+ */
+function stubHostDescription(initial?: string) {
+  let description = initial === undefined ? undefined : { version: initial }
+  const listeners = new Set<() => void>()
+  return {
+    source: {
+      getSnapshot: () => description,
+      subscribe: (listener: () => void) => {
+        listeners.add(listener)
+        return () => { listeners.delete(listener) }
+      },
+    } as SidebarRootComponentProps['hostDescription'],
+    publish: (next?: string) => {
+      description = next === undefined ? undefined : { version: next }
+      for (const listener of [...listeners]) listener()
+    },
+  }
+}
+
+function mountShell(
+  { collapsed = false, width = 300, version }:
+  { collapsed?: boolean; width?: number; version?: string } = {},
+) {
+  const host = stubHostDescription(version)
   const startSession = vi.fn()
   const toggleSidebar = vi.fn()
   let regionOwner: SidebarSectionOwnerProps | undefined
@@ -38,6 +67,7 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
       collapsed={current.collapsed} width={current.width}
       useSessions={neverHook} useWorkspaces={neverHook}
       startSession={startSession} toggleSidebar={toggleSidebar} t={t}
+      hostDescription={host.source}
       renderSlot={((
         key: string,
         owner: SidebarExitOwnerProps | SidebarFooterActionOwnerProps | SidebarSectionOwnerProps
@@ -66,6 +96,7 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
   return {
     startSession,
     toggleSidebar,
+    publishHost: host.publish,
     regionOwner: () => {
       if (regionOwner === undefined) throw new Error('region owner not rendered')
       return regionOwner
@@ -109,6 +140,7 @@ describe('SidebarRoot shell', () => {
       collapsed={false} width={300}
       useSessions={neverHook} useWorkspaces={neverHook}
       startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      hostDescription={stubHostDescription().source}
       renderSlot={((_key: string, _owner: unknown, options?: { fallback?: ReactNode }) =>
         options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
     />)
@@ -116,6 +148,24 @@ describe('SidebarRoot shell', () => {
     expect(screen.getByText('ARX Local Build')).toBeTruthy()
     expect(screen.getByText('0123456')).toBeTruthy()
     expect(container.querySelector('svg')).not.toBeNull()
+  })
+
+  it('prints the running version under the wordmark and drops it across a reconnect gap', () => {
+    const b = mountShell({ version: '1.0.2' })
+    const printed = screen.getByText('1.0.2')
+    // Under, not beside: the version follows the wordmark row inside the same
+    // brand-name column, which is what "below the logo" resolves to in DOM order.
+    const row = printed.previousElementSibling
+    expect(row).not.toBeNull()
+    expect(row?.contains(screen.getByTestId('custom-brand-name'))).toBe(true)
+
+    // A reconnect publishes no description; printing the ended generation's
+    // version would claim the running app is one it is not.
+    act(() => { b.publishHost(undefined) })
+    expect(screen.queryByText('1.0.2')).toBeNull()
+
+    act(() => { b.publishHost('1.0.3') })
+    expect(screen.getByText('1.0.3')).toBeTruthy()
   })
 
   it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {

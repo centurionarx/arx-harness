@@ -122,6 +122,14 @@ Contributors can opt into the comprehensive local gate set with `pnpm run check:
 
 The keyless [CI workflow](../.github/workflows/ci.yml) groups independent gates into broad lanes and runs a smaller compatibility signal across supported Node versions. Artifact consumers wait for one build within their lane. The separate real-API workflow runs `pnpm run test:e2e` with its configured worker bound. See [scripts/run-gates.ts](../scripts/run-gates.ts) and the workflow files for the current gate and job inventory.
 
+### Version cadence
+
+The arx family shares one version across every manifest, and the running app prints it under the sidebar wordmark, so the number a user reads names the tree they are looking at.
+
+- **Patch** (`1.0.1` to `1.0.2`) for every shipped change or fix. `pnpm run release:arx patch` rewrites the manifests and commits; the lockfile follows.
+- **Minor** (`1.0.x` to `1.1.0`) when a release gathers enough new capability that a patch understates it. Whoever does the work decides the moment.
+- **Major** (`1.x` to `2.0.0`) only when the repository owner calls for it. No amount of accumulated change promotes a release to a new major on its own.
+
 ### Daily commands
 
 The root [contributor instructions](../AGENTS.md#commands) summarize common commands, while [`package.json`](../package.json) and [scripts/run-gates.ts](../scripts/run-gates.ts) own the current script and gate inventories. Select the smallest checks that cover the changed surface. Documentation changes use `pnpm run doc-sync`; package-public behavior changes also update the owning README or JSDoc, and built-artifact checks require `pnpm run build` first.
