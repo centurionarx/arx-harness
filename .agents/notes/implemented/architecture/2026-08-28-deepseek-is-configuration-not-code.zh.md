@@ -43,6 +43,10 @@ SDK server 不再替调用方挂载任何东西。`initialize` 过去会在组�
 
 干净截断的 SSE 流现在会走完而不再失败。专用适配器把它报告为 `STREAM_CLOSED`，该码不在默认可重试集合内，因此该轮以错误告终；pi-ai 把同样的截断表述为传输失败，而传输失败默认可重试，于是请求被重新发出、该轮得以完成。`transport-recovery.spec.ts` 固定了这一新行为，并点明了这处变化。
 
+示例组合声明路由，而不是继承路由。pi-ai 自带 `deepseek` 目录键，但每个场景与录制好的 fixture 指名的路由都是 `deepseek-official`，而 pi-ai 并不提供该键——因此每份示例 profile 都完整给出整个提供方（`api`、`baseURL`、模型 id，以及手工声明的模型必须指名的 `reasoningEfforts` 级别）。若改为重命名路由，则会使每个 replay fixture 头部所记录的提供方 id 全部失效。
+
+SSE 注释帧不再重置流的空闲计时器。某个 mock 服务器会在分片之间发送 keep-alive 注释的场景一直重试，直到其 `streamIdleTimeoutMs` 被提高到 keep-alive 频率之上；此前那个专用适配器把这些帧计为活动。
+
 `packages/client/ui-settings-models` 中仍留有厂商专属的引导对话框与一套以已删除 namespace 为键的精选卡片布局。它们针对的是没有任何组合会注册的 namespace，属于死路径；移除它们是本文未覆盖的后续工作。
 
 真实 API 的 e2e 场景仍通过各自声明的路由解析 `DEEPSEEK_API_KEY`，`e2e` CI 作业也仍需要该 secret。把它们指向另一家厂商，如今是每个场景里改一段配置，而不是改代码——这正是本次变更的意义。

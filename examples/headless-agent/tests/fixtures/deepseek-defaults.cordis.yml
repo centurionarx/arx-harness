@@ -3,12 +3,29 @@
   config:
     path: ../../cordis.yml
     patches:
+      # A patch replaces the row's whole config, so the route is restated in
+      # full with this scenario's mock endpoint and its pinned defaults.
       - id: llm
         config:
-          baseURL: !!js process.env.ARX_SNAPSHOT_BASE_URL
-          thinking: enabled
-          reasoningEffort: low
-          streamIdleTimeoutMs: 150
+          providers:
+            deepseek-official:
+              displayName: DeepSeek
+              apiKeyEnv: DEEPSEEK_API_KEY
+              api: openai-completions
+              baseURL: !!js process.env.ARX_SNAPSHOT_BASE_URL
+              compat:
+                maxTokensField: max_tokens
+              reasoning: low
+              # Above the mock's keep-alive cadence: the SSE comment frames it
+              # sends between chunks do not reset this adapter's idle timer.
+              streamIdleTimeoutMs: 5000
+              models:
+                - id: deepseek-v4-flash
+                  contextWindow: 1000000
+                  maxTokens: 256000
+                  reasoningEfforts:
+                    off:
+                    low: low
       - id: agent-spine
         config:
           agents:

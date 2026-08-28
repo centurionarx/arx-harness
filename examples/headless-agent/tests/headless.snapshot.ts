@@ -451,13 +451,13 @@ describe('headless stream-json snapshots', () => {
     if (refreshing) await writeFile(streamExpected, normalized)
     expect(normalized).toBe(await readFile(streamExpected, 'utf8'))
     // The durable failure leads with the credential store — the path that
-    // keeps the secret out of configuration files — then names the launching
-    // environment, and stops there: configuration carries the reference, so
-    // there is no literal-key escape hatch left to offer.
+    // keeps the secret out of configuration files — then names exporting it,
+    // and stops there: configuration carries the reference, so there is no
+    // literal-key escape hatch left to offer.
     expect(normalized).toContain(
-      'store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it),',
+      'store DEEPSEEK_API_KEY through the credentials service (the web Models page writes it)',
     )
-    expect(normalized).toContain('or export DEEPSEEK_API_KEY in the launching environment')
+    expect(normalized).toContain('or export it')
     expect(normalized).not.toContain('as a last resort')
   }, LOADER_SMOKE_TEST_TIMEOUT_MS)
 

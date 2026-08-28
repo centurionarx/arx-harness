@@ -82,8 +82,8 @@ describe.skipIf(!builtArtifactsExist)('arx web browser-open assembled snapshot',
     }).toMatchInlineSnapshot(`
       {
         "apiKeyPresent": false,
-        "bootManifest": true,
         "arxHomePresent": false,
+        "bootManifest": true,
         "exitCode": 0,
         "openedUrl": "http://127.0.0.1:{{port}}",
         "opening": true,

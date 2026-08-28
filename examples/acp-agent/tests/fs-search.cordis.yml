@@ -3,8 +3,15 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      deepseek:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
         apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: https://api.deepseek.com
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
         models:
           - id: deepseek-v4-pro
 

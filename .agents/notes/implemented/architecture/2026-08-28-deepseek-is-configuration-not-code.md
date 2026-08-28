@@ -43,6 +43,10 @@ Scenarios that drove the bespoke adapter drive a declared pi-ai route instead. W
 
 A cleanly truncated SSE stream now completes instead of failing. The bespoke adapter reported it as `STREAM_CLOSED`, which the default retryable set excludes, so the turn ended in error; pi-ai surfaces the same truncation as a transport failure, which is retryable, so the request is reissued and the turn completes. `transport-recovery.spec.ts` pins the new behavior and names the change.
 
+The example compositions declare the route rather than inheriting one. pi-ai ships a `deepseek` catalog key, but every scenario and recorded fixture names the route `deepseek-official`, which pi-ai does not ship — so each example profile supplies the whole provider (`api`, `baseURL`, model ids, and the `reasoningEfforts` levels a hand-declared model must name). Renaming the route instead would have invalidated the provider id recorded in every replay fixture header.
+
+SSE comment frames no longer reset the stream idle timer. A scenario whose mock server emits keep-alive comments between chunks retried until its `streamIdleTimeoutMs` was raised above the keep-alive cadence; the bespoke adapter had counted those frames as activity.
+
 `packages/client/ui-settings-models` still carries a vendor-specific onboarding dialog and a curated card layout keyed on the deleted namespace. They are dead paths against a namespace no composition registers; removing them is remaining work this note does not cover.
 
 The real-API e2e scenarios still resolve `DEEPSEEK_API_KEY` through their declared route, and the `e2e` CI job still requires that secret. Pointing them at another vendor is now a configuration edit in each scenario rather than a code change, which is the point.
