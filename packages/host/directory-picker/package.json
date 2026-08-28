@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-directory-picker",
   "description": "Abstract workspace-directory picking seam (ctx.directoryPicker) for the arx Harness web GUI host",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publishConfig": {
     "access": "public"
   },
