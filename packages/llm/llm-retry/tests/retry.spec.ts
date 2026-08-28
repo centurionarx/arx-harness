@@ -82,7 +82,7 @@ function textResponse(text: string): StreamChunk[] {
 /**
  * A degenerate empty provider completion as an error finish chunk. Both
  * adapters emit this shape and the EMPTY_RESPONSE code (the field the policy
- * routes on); the message text here is the deepseek adapter's phrasing (pi-ai
+ * routes on); the message text here is the primary adapter's phrasing (pi-ai
  * qualifies it with the model name).
  */
 function emptyCompletion(): StreamChunk[] {

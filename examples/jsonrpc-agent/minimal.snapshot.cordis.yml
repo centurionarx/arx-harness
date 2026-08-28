@@ -1,5 +1,5 @@
 # Keyless replay keeps the complete minimal composition intact and replaces
-# only its live DeepSeek adapter with the fixture-backed provider. The replay
+# only its live Primary adapter with the fixture-backed provider. The replay
 # catalog claims the same route initialized by the SDK.
 - id: base
   name: '@arx-ai/cordis-plugin-include'
@@ -14,7 +14,7 @@
             name: '@arx-ai/arx-llm-replay'
             config:
               providers:
-                - id: deepseek-official
-                  name: DeepSeek
+                - id: primary
+                  name: Primary
                   models:
-                    - id: deepseek-v4-flash
+                    - id: primary-flash

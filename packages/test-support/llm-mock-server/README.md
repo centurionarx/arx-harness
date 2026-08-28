@@ -18,11 +18,11 @@ pnpm run mock:llm -- \
   --partial-text "discard this half"
 ```
 
-Point the shipping DeepSeek adapter at the server; it appends `/chat/completions` to the configured base:
+Point the shipping Primary adapter at the server; it appends `/chat/completions` to the configured base:
 
 ```sh
-DEEPSEEK_BASE_URL=http://127.0.0.1:8000/v1 \
-DEEPSEEK_API_KEY=mock-key \
+PRIMARY_BASE_URL=http://127.0.0.1:8000/v1 \
+PRIMARY_API_KEY=mock-key \
 pnpm arx --profile headless "test provider recovery"
 ```
 

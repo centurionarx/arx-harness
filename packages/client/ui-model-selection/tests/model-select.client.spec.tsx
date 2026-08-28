@@ -31,12 +31,12 @@ const reasoning = {
 
 function state(overrides: Partial<ModelDirectoryState> = {}): ModelDirectoryState {
   return {
-    current: { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
+    current: { provider: 'primary', model: 'primary-flash' },
     routable: true,
     groups: [{
-      id: 'deepseek-official',
-      name: 'DeepSeek',
-      models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', reasoning }],
+      id: 'primary',
+      name: 'Primary',
+      models: [{ id: 'primary-flash', name: 'Primary Flash', reasoning }],
     }],
     failures: [],
     status: 'ready',
@@ -64,7 +64,7 @@ describe('ModelSelect reasoning effort', () => {
     />)
 
     const trigger = screen.getByRole('button', {
-      name: '选择模型，当前 DeepSeek-V4-Flash，推理等级 High',
+      name: '选择模型，当前 Primary Flash，推理等级 High',
     })
     fireEvent.click(trigger)
     fireEvent.click(screen.getByRole('menuitem', { name: /推理等级/ }))
@@ -74,11 +74,11 @@ describe('ModelSelect reasoning effort', () => {
     fireEvent.click(screen.getByRole('menuitemradio', { name: /Max/ }))
     await waitFor(() => {
       expect(select).toHaveBeenCalledWith({
-        provider: 'deepseek-official',
-        model: 'deepseek-v4-flash',
+        provider: 'primary',
+        model: 'primary-flash',
         reasoningEffort: 'max',
       })
-      expect(trigger.getAttribute('aria-label')).toBe('选择模型，当前 DeepSeek-V4-Flash，推理等级 Max')
+      expect(trigger.getAttribute('aria-label')).toBe('选择模型，当前 Primary Flash，推理等级 Max')
     })
   })
 
@@ -114,7 +114,7 @@ describe('ModelSelect reasoning effort', () => {
 
   it('prompts for a selection when the current model is no longer advertised', () => {
     const directory = createSnapshotStore(state({
-      current: { provider: 'deepseek-official', model: 'removed-model' },
+      current: { provider: 'primary', model: 'removed-model' },
     }))
     const select = vi.fn().mockResolvedValue(true)
     render(<ModelSelect
@@ -132,16 +132,16 @@ describe('ModelSelect reasoning effort', () => {
     expect(screen.queryByRole('menuitem', { name: /推理等级/ })).toBeNull()
     fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
     expect(screen.queryByText('removed-model')).toBeNull()
-    expect(screen.getByRole('menuitemradio', { name: 'DeepSeek-V4-Flash' })).toBeTruthy()
+    expect(screen.getByRole('menuitemradio', { name: 'Primary Flash' })).toBeTruthy()
   })
 
   it('announces a rejected selection as a transient toast and keeps the in-menu strip for loads', async () => {
     const groups = [{
-      id: 'deepseek-official',
-      name: 'DeepSeek',
+      id: 'primary',
+      name: 'Primary',
       models: [
-        { id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', reasoning },
-        { id: 'deepseek-v4-pro', name: 'DeepSeek-V4-Pro' },
+        { id: 'primary-flash', name: 'Primary Flash', reasoning },
+        { id: 'primary-pro', name: 'Primary Pro' },
       ],
     }]
     const directory = createSnapshotStore<ModelDirectoryState>(state({ groups }))
@@ -160,7 +160,7 @@ describe('ModelSelect reasoning effort', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /选择模型|当前/ }))
     fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /DeepSeek-V4-Pro/ }))
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Primary Pro/ }))
     const toast = await screen.findByRole('alert')
     expect(toast.textContent).toContain('模型操作失败：model-unavailable: session already contains images')
     // The selection failure does not render the in-menu load strip (no Retry).

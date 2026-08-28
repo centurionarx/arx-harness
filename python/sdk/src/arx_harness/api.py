@@ -15,12 +15,12 @@ class ArxHarnessConfig:
     """Configuration for launching the local arx Harness SDK runtime.
 
     The runtime inherits the caller's environment by default, so existing
-    DEEPSEEK_API_KEY and DEEPSEEK_BASE_URL settings keep working. Use ``env`` to
+    PRIMARY_API_KEY and PRIMARY_BASE_URL settings keep working. Use ``env`` to
     intentionally override or inject variables for a subprocess.
     """
 
-    provider: str = "deepseek-official"
-    model: str = "deepseek-v4-flash"
+    provider: str = "primary"
+    model: str = "primary-flash"
     max_tokens: int | None = None
     cwd: str | None = None
     runtime_cwd: str | None = None
@@ -67,9 +67,9 @@ class ArxHarness:
             env["ARX_CORDIS_CONFIG"] = self.config.cordis
         env["ARX_CWD"] = cwd
         if self.config.base_url is not None:
-            env["DEEPSEEK_BASE_URL"] = self.config.base_url
+            env["PRIMARY_BASE_URL"] = self.config.base_url
         if self.config.api_key is not None:
-            env["DEEPSEEK_API_KEY"] = self.config.api_key
+            env["PRIMARY_API_KEY"] = self.config.api_key
 
         self._client = HarnessClient(
             HarnessConfig(

@@ -1,4 +1,4 @@
-# Keyless replay for the retry overlay: disable the key-requiring DeepSeek
+# Keyless replay for the retry overlay: disable the key-requiring Primary
 # adapter, insert `llm-replay`, and give its provider the same deterministic
 # 1 ms zero-jitter retry policy as the live sibling. The app patch still
 # restates its whole config for raw JSONL persistence and the recorded model.
@@ -13,8 +13,8 @@
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: primary
+          model: primary-flash
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:
@@ -28,8 +28,8 @@
             name: '@arx-ai/arx-llm-replay'
             config:
               providers:
-                - id: deepseek-official
-                  name: DeepSeek
+                - id: primary
+                  name: Primary
                   retryPolicy:
                     mode: normal
                     maxRetries: 2
@@ -38,5 +38,5 @@
                       maxDelayMs: 1
                       jitterRatio: 0
                   models:
-                    - id: deepseek-v4-flash
-                    - id: deepseek-v4-pro
+                    - id: primary-flash
+                    - id: primary-pro

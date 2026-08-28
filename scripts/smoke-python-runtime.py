@@ -724,7 +724,7 @@ def smoke_sdk_default(base_url: str) -> None:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -746,7 +746,7 @@ def smoke_sdk_custom(base_url: str, executable: Path) -> None:
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -777,7 +777,7 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
         prompt = f"{MINIMAL_PROMPT}\n{MINIMAL_EDITOR_PATH_PREFIX}{editor_path}"
         sessions = root / "sessions"
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -813,7 +813,7 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
         cordis = root / "cordis.yml"
         cordis.write_text(FS_SEARCH_CORDIS)
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -842,7 +842,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         cordis.write_text(mcp_cordis(server_script))
         discovery_log = server_script.with_suffix(".log")
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -874,7 +874,7 @@ def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) 
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
         with ArxHarness(
-            provider="deepseek-official",
+            provider="primary",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
@@ -920,12 +920,12 @@ def smoke_direct(base_url: str, executable: Path) -> None:
             "ARX_CORDIS_CONFIG": str(cordis),
             "ARX_SESSION_ROOT": str(sessions),
             "ARX_CWD": str(root),
-            "DEEPSEEK_API_KEY": "sk-keyless-smoke",
-            "DEEPSEEK_BASE_URL": base_url,
+            "PRIMARY_API_KEY": "sk-keyless-smoke",
+            "PRIMARY_BASE_URL": base_url,
         }
         peer = RuntimePeer([str(executable)], root, environment)
         try:
-            peer.send({"jsonrpc": "2.0", "id": "initialize", "method": "initialize", "params": {"cwd": str(root), "provider": "deepseek-official", "model": "smoke-model"}})
+            peer.send({"jsonrpc": "2.0", "id": "initialize", "method": "initialize", "params": {"cwd": str(root), "provider": "primary", "model": "smoke-model"}})
             peer.read_until(lambda message: message.get("id") == "initialize")
             peer.send({
                 "jsonrpc": "2.0",

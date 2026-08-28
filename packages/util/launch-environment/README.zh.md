@@ -18,14 +18,14 @@
 
 **省略某一层是拒绝，不是降级**——绝不能接受某一层的调用方直接不把它列进去，后续任何重新排序都无法让它回来。提供方适配器三层全列，因为产品信任它所运行的项目；该机制是为那些「并非如此」的决策准备的。
 
-变量名按平台自身的规则匹配：POSIX 上精确匹配，Windows 上不区分大小写。在 Windows 上做大小写敏感的查找会选错层——shell 里的 `deepseek_api_key` 与项目 `.env` 里的 `DEEPSEEK_API_KEY` 对操作系统而言是同一个变量，把它们当成两个就会让项目胜出。
+变量名按平台自身的规则匹配：POSIX 上精确匹配，Windows 上不区分大小写。在 Windows 上做大小写敏感的查找会选错层——shell 里的 `primary_api_key` 与项目 `.env` 里的 `PRIMARY_API_KEY` 对操作系统而言是同一个变量，把它们当成两个就会让项目胜出。
 
 ```ts
 import type { Context } from '@arx-ai/cordis'
 import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
 
 declare const ctx: Context
-const endpoint = launchEnvironmentOf(ctx).get('DEEPSEEK_BASE_URL')?.value
+const endpoint = launchEnvironmentOf(ctx).get('PRIMARY_BASE_URL')?.value
 ```
 
 当产品 CLI（命令行界面）启动了这棵树时，`launchEnvironmentOf(ctx)` 返回启动器的快照；否则返回只含继承环境的那一层。该回退并不削弱规则：SDK 宿主或裸 `cordis.yml` 从未发现过任何文件，因此它拥有的一切确实就是它被启动时的环境。

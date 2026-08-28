@@ -25,7 +25,7 @@ import { cleanupAcpExampleTest } from './cleanup.ts'
  * sandbox executor AND the approval service. No prompt is sent, so neither the
  * model nor a sandbox runner is ever exercised.
  *
- * With-key escalation flow (self-skips without DEEPSEEK_API_KEY or a usable
+ * With-key escalation flow (self-skips without PRIMARY_API_KEY or a usable
  * platform runner): a scripted ACP client supplies machine policy. The subprocess
  * starts read-only, its first real bash write is denied, the model retries with
  * `sandbox_permissions` + `justification`, and the bridge prompts THIS client
@@ -69,7 +69,7 @@ function launchExampleAcpAgent(
     cwd,
     // A dummy key lets the adapter boot keylessly; live tests carry the real key.
     env: {
-      DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY ?? 'sk-dummy-for-boot',
+      PRIMARY_API_KEY: process.env.PRIMARY_API_KEY ?? 'sk-dummy-for-boot',
       ARX_PERMISSION_MODE: sandboxMode,
     },
     requestPermission(params) {
@@ -120,7 +120,7 @@ describe('default sandbox composition keyless smoke (real cordis.yml via the Loa
 
 })
 
-describe.skipIf(!process.env.DEEPSEEK_API_KEY || !hasRunner)('default sandbox composition e2e: the live approval loop', () => {
+describe.skipIf(!process.env.PRIMARY_API_KEY || !hasRunner)('default sandbox composition e2e: the live approval loop', () => {
   it('denial → model escalation → machine allow-once → the retried write lands on disk', async () => {
     workdir = await mkdtemp(join(tmpdir(), 'sandbox-acp-e2e-'))
     spawned = launchExampleAcpAgent(workdir, 'allow-once', 'read-only')

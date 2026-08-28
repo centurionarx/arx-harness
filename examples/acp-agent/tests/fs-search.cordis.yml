@@ -3,17 +3,17 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # pi-ai ships no `primary` catalog route, so this profile
       # declares the whole provider instead of narrowing an inherited one.
-      deepseek-official:
-        displayName: DeepSeek
-        apiKeyEnv: DEEPSEEK_API_KEY
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.deepseek.com
+        baseURL: https://api.example-provider.test
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         models:
-          - id: deepseek-v4-pro
+          - id: primary-pro
 
 - id: subprocess
   name: '@arx-ai/arx-subprocess-local'
@@ -24,8 +24,8 @@
 - id: acp-agent
   name: '@arx-ai/arx-acp-demo'
   config:
-    provider: deepseek-official
-    model: deepseek-v4-pro
+    provider: primary
+    model: primary-pro
     persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
     persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
     workspaceContext: false

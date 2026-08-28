@@ -8,7 +8,7 @@ This guide assumes you started the Web UI through the [root README](../../../REA
 
 No provider ships configured: a fresh install serves no model until you add one, and which one is your choice.
 
-Open **Settings → Models** and choose **Add provider**, select a provider such as Anthropic, OpenAI, or DeepSeek, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
+Open **Settings → Models** and choose **Add provider**, select a provider such as Anthropic, OpenAI, or Primary, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
 
 Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$ARX_HOME/.credentials.yaml`, while settings retain only its credential reference.
 
@@ -121,7 +121,7 @@ A route's `compat` is the default for its models, and a model's own wins field b
         - id: my-model
         - id: my-reasoner
           compat:
-            thinkingFormat: deepseek
+            thinkingFormat: primary
 ```
 
 What neither sets keeps the installed catalog's value for that model, and what the catalog does not describe falls to pi-ai's detection. Give every switch you name a value: a key left empty (`supportsDeveloperRole:`) is refused rather than ignored, because an empty value would erase what the catalog knows while saying nothing in its place. A name no protocol accepts is refused too, and the message lists the ones that are available.

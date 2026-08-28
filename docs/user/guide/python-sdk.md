@@ -9,7 +9,7 @@ This tutorial is the programmatic alternative to the Web UI. It installs the pub
 - Python 3.10 or newer
 - Git
 - Linux x64, Linux arm64, or macOS 14 or newer on arm64
-- A DeepSeek-compatible API endpoint and credential
+- A Primary-compatible API endpoint and credential
 - An isolated workspace that the agent may modify
 
 ## Install the SDK
@@ -28,12 +28,12 @@ The installed runtime needs no system Node.js. Repository contributors who need 
 
 ## Run the checked-in example
 
-Set the credential in the environment. Set `DEEPSEEK_BASE_URL` as well when the model is served by an OpenAI-compatible proxy rather than the default DeepSeek endpoint.
+Set the credential in the environment. Set `PRIMARY_BASE_URL` as well when the model is served by an OpenAI-compatible proxy rather than the default Primary endpoint.
 
 ```sh
-export DEEPSEEK_API_KEY=sk-your-key-here
-# export DEEPSEEK_BASE_URL=http://127.0.0.1:8000/v1
-# export ARX_MODEL=deepseek-v4-flash
+export PRIMARY_API_KEY=sk-your-key-here
+# export PRIMARY_BASE_URL=http://127.0.0.1:8000/v1
+# export ARX_MODEL=primary-flash
 # export ARX_SYSTEM_PROMPT='You are a helpful software engineer assistant.'
 ```
 
@@ -63,8 +63,8 @@ workspace = Path("/absolute/path/to/workspace").resolve()
 sessions = Path("/absolute/path/to/sessions").resolve()
 
 with ArxHarness(
-    provider="deepseek-official",
-    model="deepseek-v4-flash",
+    provider="primary",
+    model="primary-flash",
     max_tokens=49_152,
     cwd=str(workspace),
     session_root=str(sessions),
@@ -85,7 +85,7 @@ print(result.final_response)
 | Property | Value |
 |---|---|
 | System prompt | `ARX_SYSTEM_PROMPT`, falling back to `You are a helpful software engineer assistant.` |
-| Model in `minimal.py` | `--model`, then `ARX_MODEL`, then `deepseek-v4-flash` |
+| Model in `minimal.py` | `--model`, then `ARX_MODEL`, then `primary-flash` |
 | Model-facing tools | Persistent `bash` and `str_replace_editor` only |
 | Bash timeout | 300 seconds |
 | Editor output limit | 16,000 characters |

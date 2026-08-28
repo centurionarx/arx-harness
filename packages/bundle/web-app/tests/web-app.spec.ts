@@ -319,7 +319,7 @@ describe('web-app runtime glue', () => {
   })
 
   it('scrubs the helper environment and reports helper spawn or exit failures', async () => {
-    vi.stubEnv('DEEPSEEK_API_KEY', 'must-not-reach-browser')
+    vi.stubEnv('PRIMARY_API_KEY', 'must-not-reach-browser')
     vi.stubEnv('ARX_HOME', '/must-not-reach-browser')
     const completed = launcher()
     vi.mocked(spawn).mockReturnValueOnce(completed)
@@ -333,7 +333,7 @@ describe('web-app runtime glue', () => {
     ])
     expect(args?.[2]).toContain("if (process.platform === 'win32')")
     expect(args?.[2]).toContain('launcher.ref()')
-    expect(options?.env).not.toHaveProperty('DEEPSEEK_API_KEY')
+    expect(options?.env).not.toHaveProperty('PRIMARY_API_KEY')
     expect(options?.env).not.toHaveProperty('ARX_HOME')
     expect(options?.env?.PATH).toBe(process.env.PATH)
     expect(options?.stdio).toEqual(['ignore', 'inherit', 'pipe'])

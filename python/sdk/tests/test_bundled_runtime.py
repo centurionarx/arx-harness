@@ -62,8 +62,8 @@ def _client(tmp_path: Path, launch_args: tuple[str, ...]) -> HarnessClient:
                 "ARX_SESSION_ROOT": str(tmp_path / "sessions"),
                 "ARX_CWD": str(tmp_path),
                 # The lazily mounted adapter requires a key even without a model call.
-                "DEEPSEEK_API_KEY": "sk-dummy-for-boot",
-                "DEEPSEEK_BASE_URL": "http://127.0.0.1:9",
+                "PRIMARY_API_KEY": "sk-dummy-for-boot",
+                "PRIMARY_BASE_URL": "http://127.0.0.1:9",
             },
             request_timeout_seconds=120,
         )
@@ -76,7 +76,7 @@ def test_bundled_runtime_boots_a_cordis_config(tmp_path: Path, mode: str) -> Non
     (tmp_path / "cordis.yml").write_text(_CORDIS_YML)
 
     with _client(tmp_path, launch_args) as client:
-        init = client.initialize(provider="deepseek-official", cwd=str(tmp_path), model="deepseek-v4-pro")
+        init = client.initialize(provider="primary", cwd=str(tmp_path), model="primary-pro")
 
     assert init.serverInfo is not None
     assert init.serverInfo.name == "arx-harness-sdk-runtime"
@@ -117,7 +117,7 @@ def test_bundled_runtime_surfaces_unbundled_plugin_failure(tmp_path: Path, mode:
     client.start()
     try:
         with pytest.raises((TransportClosedError, TimeoutError)) as excinfo:
-            client.initialize(provider="deepseek-official", cwd=str(tmp_path), model="deepseek-v4-pro")
+            client.initialize(provider="primary", cwd=str(tmp_path), model="primary-pro")
     finally:
         client.close()
 
@@ -137,7 +137,7 @@ def test_zero_config_run_injects_bundled_default_cordis_config(
         monkeypatch.setenv("ARX_CORDIS_CONFIG", ambient_config)
 
     harness = ArxHarness(
-        model="deepseek-v4-pro",
+        model="primary-pro",
         cwd=str(tmp_path),
         session_root=str(tmp_path / "sessions"),
         api_key="sk-dummy-for-boot",

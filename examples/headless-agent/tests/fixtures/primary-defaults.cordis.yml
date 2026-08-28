@@ -8,9 +8,9 @@
       - id: llm
         config:
           providers:
-            deepseek-official:
-              displayName: DeepSeek
-              apiKeyEnv: DEEPSEEK_API_KEY
+            primary:
+              displayName: Primary
+              apiKeyEnv: PRIMARY_API_KEY
               api: openai-completions
               baseURL: !!js process.env.ARX_SNAPSHOT_BASE_URL
               compat:
@@ -20,7 +20,7 @@
               # sends between chunks do not reset this adapter's idle timer.
               streamIdleTimeoutMs: 5000
               models:
-                - id: deepseek-v4-flash
+                - id: primary-flash
                   contextWindow: 1000000
                   maxTokens: 256000
                   reasoningEfforts:
@@ -30,11 +30,11 @@
         config:
           agents:
             - id: main
-              provider: deepseek-official
-              model: deepseek-v4-flash
+              provider: primary
+              model: primary-flash
               cwd: !!js process.cwd()
           workspaceContext: false
-          persona: 'Keyless DeepSeek adapter defaults snapshot.'
+          persona: 'Keyless Primary adapter defaults snapshot.'
       - id: persistence
         config:
           root: './.sessions'

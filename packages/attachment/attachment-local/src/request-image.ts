@@ -18,7 +18,7 @@ import { detectImage, encodedAlphaIsCompatible, probeImage } from './image.ts'
 
 /** Transform version included in every cache and upload-index identity. */
 export const REQUEST_IMAGE_TRANSFORM_VERSION = 'request-image-v4'
-/** DeepSeek request versions normally fit at these two preferred qualities. */
+/** Request versions normally fit at these two preferred qualities. */
 export const REQUEST_IMAGE_QUALITIES = [85, 80] as const
 
 interface EncodedRequestImage {

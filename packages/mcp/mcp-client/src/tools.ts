@@ -5,7 +5,7 @@
  *
  * Naming contract (see the mcp-client Agent Note "Naming invariants"): every MCP tool
  * has the stable identity `(serverName, rawName)`; the model-facing public name
- * is `mcp__<serverName>__<rawName>`, normalized to the DeepSeek function-name
+ * is `mcp__<serverName>__<rawName>`, normalized to the function-name
  * constraints. The raw name is only ever sent on the wire (`tools/call`); the
  * public name is never parsed to recover it.
  *
@@ -43,12 +43,12 @@ export type McpResult<Structured extends JsonValue = JsonValue> = {
 }
 
 /**
- * DeepSeek function-name contract: at most 64 characters. Wire-protocol
+ * Function-name contract: at most 64 characters. Wire-protocol
  * constant, not configuration.
  */
 const MAX_PUBLIC_NAME_LENGTH = 64
 
-/** DeepSeek function-name contract: only `[A-Za-z0-9_-]` is allowed. */
+/** function-name contract: only `[A-Za-z0-9_-]` is allowed. */
 const INVALID_NAME_CHARS = /[^A-Za-z0-9_-]/g
 
 /** Hex chars of the SHA-256 identity hash appended on lossy normalization. */
@@ -99,7 +99,7 @@ function callToolUncached(
  *
  * Deterministic pure function of `(serverName, rawName)`: the clean case is
  * `mcp__<serverName>__<rawName>` verbatim. When character replacement or
- * truncation to the DeepSeek function-name contract (64 chars,
+ * truncation to the function-name contract (64 chars,
  * `[A-Za-z0-9_-]`) changes the name, a 12-hex-char SHA-256 hash of the
  * identity is appended so distinct MCP identities never collapse into the
  * same public name.

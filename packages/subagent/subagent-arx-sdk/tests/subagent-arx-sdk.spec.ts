@@ -131,15 +131,15 @@ describe('arx-subagent-arx-sdk provider', () => {
     process.env.ARX_TEST_AMBIENT_SECRET_KEY = 'leak-me-not'
     try {
       const ctx = await setup({
-        FAKE_ECHO_ENV: 'ARX_TEST_AMBIENT_SECRET_KEY,DEEPSEEK_API_KEY',
-        DEEPSEEK_API_KEY: 'explicit-child-key',
+        FAKE_ECHO_ENV: 'ARX_TEST_AMBIENT_SECRET_KEY,PRIMARY_API_KEY',
+        PRIMARY_API_KEY: 'explicit-child-key',
         FAKE_TEXT: 'done',
       })
       const run = await ctx.subagents.start('arx-sdk', request())
       const result = await run.result
       const answer = text(result.output)
       expect(answer).toContain('ARX_TEST_AMBIENT_SECRET_KEY=\n')
-      expect(answer).toContain('DEEPSEEK_API_KEY=explicit-child-key')
+      expect(answer).toContain('PRIMARY_API_KEY=explicit-child-key')
       await run.dispose()
       await ctx.fiber.dispose()
     } finally {

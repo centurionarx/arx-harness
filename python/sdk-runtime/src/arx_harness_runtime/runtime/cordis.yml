@@ -13,12 +13,12 @@
     workspaceContext:
       maxBytes: 65536
 
-# Stock DeepSeek adapters. The adapter resolves DEEPSEEK_API_KEY through the
+# Stock Primary adapters. The adapter resolves PRIMARY_API_KEY through the
 # credential seam and, with no provider mounted here, from the launching
-# environment; DEEPSEEK_BASE_URL follows the same environment ladder. Neither
+# environment; PRIMARY_BASE_URL follows the same environment ladder. Neither
 # is inlined, so this file names no secret and no route.
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+- id: llm-primary
+  name: '@arx-ai/arx-llm-primary'
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions

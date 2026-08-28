@@ -6,20 +6,20 @@
   config:
     maxTokensAsSuccess: !!js "process.env.ARX_MAX_TOKENS_AS_SUCCESS === undefined ? true : JSON.parse(process.env.ARX_MAX_TOKENS_AS_SUCCESS)"
 
-# The DeepSeek adapter. Shipped default: full thinking at max effort on every
+# The Primary adapter. Shipped default: full thinking at max effort on every
 # request; exact-model resolution materializes request defaults before logging.
 # The model arrives per session over JSON-RPC, so it is not pinned here.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # pi-ai ships no `primary` catalog route, so this profile
       # declares the whole provider instead of narrowing an inherited one.
-      deepseek-official:
-        displayName: DeepSeek
-        apiKeyEnv: DEEPSEEK_API_KEY
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.deepseek.com
+        baseURL: https://api.example-provider.test
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high

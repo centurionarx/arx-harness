@@ -1,35 +1,35 @@
 # ACP automation server and backend snapshot-record composition. With
-# `ARX_SNAPSHOT=record`, the app bin runs the real DeepSeek adapter and the
+# `ARX_SNAPSHOT=record`, the app bin runs the real Primary adapter and the
 # harness harvests its persisted log. The bin loads the gitignored root `.env`
 # before this config. This tree has no stdout logger or HMR because stdout
 # carries ACP JSON-RPC.
 
-# The DeepSeek adapter. Shipped default: full thinking at max effort on every
+# The Primary adapter. Shipped default: full thinking at max effort on every
 # request; exact-model resolution materializes request defaults before logging.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # pi-ai ships no `primary` catalog route, so this profile
       # declares the whole provider instead of narrowing an inherited one.
-      deepseek-official:
-        displayName: DeepSeek
-        apiKeyEnv: DEEPSEEK_API_KEY
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.deepseek.com
+        baseURL: https://api.example-provider.test
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high
         models:
-          - id: deepseek-v4-flash
+          - id: primary-flash
             reasoningEfforts:
               off:
               high: high
-          - id: deepseek-v4-pro
+          - id: primary-pro
             reasoningEfforts:
               off:
               high: high
-          - id: deepseek-v4-flash-vision-exp
+          - id: primary-flash-vision
             reasoningEfforts:
               off:
               high: high
@@ -70,8 +70,8 @@
 - id: acp-agent
   name: '@arx-ai/arx-acp-demo'
   config:
-    provider: deepseek-official
-    model: deepseek-v4-pro
+    provider: primary
+    model: primary-pro
     persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
     persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
     workspaceContext:

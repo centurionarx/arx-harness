@@ -37,8 +37,8 @@ fixture 是持久化会话日志（`<scenario>/session.jsonl`）的投影：它�
   name: '@arx-ai/arx-llm-replay'
   config:
     providers:
-      - id: deepseek-official
-        name: DeepSeek
+      - id: primary
+        name: Primary
         retryPolicy:
           mode: normal
           backoff:
@@ -46,9 +46,9 @@ fixture 是持久化会话日志（`<scenario>/session.jsonl`）的投影：它�
             maxDelayMs: 1
             jitterRatio: 0
         models:
-          - id: deepseek-v4-flash
+          - id: primary-flash
             contextWindow: 128000
-          - id: deepseek-v4-pro
+          - id: primary-pro
   # file/overrideFile/childFiles default to $ARX_SNAPSHOT_FILE /
   # $ARX_SNAPSHOT_OVERRIDE / $ARX_SNAPSHOT_CHILD_FILES, set by the snapshot
   # harness per scenario.

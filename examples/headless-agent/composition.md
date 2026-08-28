@@ -3,7 +3,7 @@
 
 # Headless Agent Snapshot Composition
 
-The headless snapshot composition combines the real DeepSeek adapter and coding capabilities with one explicitly configured persisted top-level agent; its JSONL driver is test-only.
+The headless snapshot composition combines the real Primary adapter and coding capabilities with one explicitly configured persisted top-level agent; its JSONL driver is test-only.
 
 ```mermaid
 flowchart LR

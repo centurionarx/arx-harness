@@ -201,18 +201,18 @@ describe('sessions domain schemas', () => {
     expect(sessionHistoryValueSchema.parse({
       events: [],
       hasMore: false,
-      modelSelection: { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
+      modelSelection: { provider: 'primary', model: 'primary-flash' },
     }).hasMore).toBe(false)
     expect(sessionModelsRequestSchema.parse({ sessionId: 's1' }).sessionId).toBe('s1')
     expect(sessionModelsValueSchema.parse({
-      current: { provider: 'deepseek-official', model: 'deepseek-v4-flash', reasoningEffort: 'max' },
+      current: { provider: 'primary', model: 'primary-flash', reasoningEffort: 'max' },
       routable: true,
       groups: [{
-        id: 'deepseek-official',
-        name: 'DeepSeek',
+        id: 'primary',
+        name: 'Primary',
         models: [{
-          id: 'deepseek-v4-flash',
-          name: 'DeepSeek V4 Flash',
+          id: 'primary-flash',
+          name: 'Primary V4 Flash',
           description: 'fast',
           reasoning: {
             efforts: [
@@ -224,15 +224,15 @@ describe('sessions domain schemas', () => {
         }],
       }],
       failures: [{ id: 'broken', name: 'Broken', message: 'offline' }],
-    }).groups[0]?.models[0]?.id).toBe('deepseek-v4-flash')
+    }).groups[0]?.models[0]?.id).toBe('primary-flash')
     expect(sessionSelectModelRequestSchema.parse({
       sessionId: 's1',
-      provider: 'deepseek-official',
-      model: 'deepseek-v4-pro',
+      provider: 'primary',
+      model: 'primary-pro',
       reasoningEffort: 'max',
     }).reasoningEffort).toBe('max')
     expect(sessionSelectModelValueSchema.parse({
-      selected: { provider: 'deepseek-official', model: 'deepseek-v4-pro', reasoningEffort: 'max' },
+      selected: { provider: 'primary', model: 'primary-pro', reasoningEffort: 'max' },
     }).selected.reasoningEffort).toBe('max')
     expect(() => sessionSelectModelRequestSchema.parse({
       sessionId: 's1',
@@ -241,15 +241,15 @@ describe('sessions domain schemas', () => {
     })).toThrow()
     expect(() => sessionSelectModelRequestSchema.parse({
       sessionId: 's1',
-      provider: 'deepseek-official',
+      provider: 'primary',
       model: 'm',
       reasoningEffort: '',
     })).toThrow()
     expect(() => sessionModelsValueSchema.parse({
-      current: { provider: 'deepseek-official', model: 'm' },
+      current: { provider: 'primary', model: 'm' },
       groups: [{
-        id: 'deepseek-official',
-        name: 'DeepSeek',
+        id: 'primary',
+        name: 'Primary',
         models: [{ id: 'm', name: 'M', reasoning: { efforts: [] } }],
       }],
       failures: [],

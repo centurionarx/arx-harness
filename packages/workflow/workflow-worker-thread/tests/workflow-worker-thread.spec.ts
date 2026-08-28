@@ -213,7 +213,7 @@ describe('arx-workflow-worker-thread', () => {
         reply: () => ({ output: [], structured: { files: ['x.ts', 'y.ts'] }, stopReason: 'completed' }),
       })
       const result = await run(ctx, parent, scripted(`
-        const found = await agent('list files', { model: 'deepseek-v4-pro', schema: { type: 'object', properties: { files: { type: 'array', items: { type: 'string' } } }, required: ['files'] } })
+        const found = await agent('list files', { model: 'primary-pro', schema: { type: 'object', properties: { files: { type: 'array', items: { type: 'string' } } }, required: ['files'] } })
         return { first: found.files[0], count: found.files.length }
       `))
       expect(result.value).toEqual({ first: 'x.ts', count: 2 })
@@ -222,7 +222,7 @@ describe('arx-workflow-worker-thread', () => {
         properties: { files: { type: 'array', items: { type: 'string' } } },
         required: ['files'],
       })
-      expect(provider.runs[0]!.request.agentOptions).toEqual({ model: 'deepseek-v4-pro' })
+      expect(provider.runs[0]!.request.agentOptions).toEqual({ model: 'primary-pro' })
       expect(provider.runs[0]!.request.parent).toBeDefined()
     })
 
@@ -564,7 +564,7 @@ describe('arx-workflow-worker-thread', () => {
     it('the worker spawns with a scrubbed environment: an escaped script finds no ambient credentials', async () => {
       const { ctx, parent } = await setup()
       // A canary in the HARNESS process's env: with an inherited environment
-      // the escape below would read it back (exactly how DEEPSEEK_API_KEY
+      // the escape below would read it back (exactly how PRIMARY_API_KEY
       // would leak); the worker env keeps every ambient variable out. Windows
       // additionally receives the host temp path (TMP/TEMP) so `os.tmpdir()`
       // inside the worker resolves instead of degrading to a cwd-relative

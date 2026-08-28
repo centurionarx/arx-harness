@@ -9,7 +9,7 @@
  * > $ARX_HOME/.env                   (read-only fallback)
  * ```
  *
- * The inherited environment wins because `DEEPSEEK_API_KEY=… arx`, a CI
+ * The inherited environment wins because `PRIMARY_API_KEY=… arx`, a CI
  * secret, or a container `-e` is this run's explicit intent; it cannot be
  * edited from inside, so it must be *visibly* read-only rather than silently
  * shadow writes. Everything below it loses to the managed store, so a key the

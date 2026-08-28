@@ -10,12 +10,12 @@
   name: '@arx-ai/arx-settings-file'
 
 # Credential store: the live process environment over `$ARX_HOME/.credentials.yaml`
-# (owner-only file, hot-reloaded). The adapter resolves `DEEPSEEK_API_KEY`
+# (owner-only file, hot-reloaded). The adapter resolves `PRIMARY_API_KEY`
 # through it at each request, so no key is inlined in this file.
 - id: credentials
   name: '@arx-ai/arx-credentials-local'
 
-# The DeepSeek adapter. Swap to '@arx-ai/arx-llm-pi-ai' for the pi-ai-backed
+# The Primary adapter. Swap to '@arx-ai/arx-llm-pi-ai' for the pi-ai-backed
 # twin (a `providers` dict keyed by route; `reasoning: high` replaces
 # thinking/reasoningEffort). Shipped default: full thinking at max effort on
 # every request. Exact-model resolution materializes request defaults before
@@ -24,22 +24,22 @@
   name: '@arx-ai/arx-llm-pi-ai'
   config:
     providers:
-      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # pi-ai ships no `primary` catalog route, so this profile
       # declares the whole provider instead of narrowing an inherited one.
-      deepseek-official:
-        displayName: DeepSeek
-        apiKeyEnv: DEEPSEEK_API_KEY
+      primary:
+        displayName: Primary
+        apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: https://api.deepseek.com
+        baseURL: https://api.example-provider.test
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high
         models:
-          - id: deepseek-v4-pro
+          - id: primary-pro
             reasoningEfforts:
               off:
               high: high
-          - id: deepseek-v4-flash
+          - id: primary-flash
             reasoningEfforts:
               off:
               high: high
@@ -59,11 +59,11 @@
   config:
     agents:
       - id: main
-        provider: deepseek-official
+        provider: primary
         # Stays on flash: the goal/ralph replay corpora were recorded on it, and
         # their nested-include overlays cannot re-pin the app config (a config
         # patch cannot target an entry behind a nested include).
-        model: deepseek-v4-flash
+        model: primary-flash
         cwd: !!js process.cwd()
     workspaceContext:
       maxBytes: 65536

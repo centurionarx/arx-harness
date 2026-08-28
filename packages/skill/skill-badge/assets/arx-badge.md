@@ -5,7 +5,7 @@ Add the official “powered by arx” badge without recreating or restyling it.
 ## Assets
 
 - Local PNG: [`arx-badge.png`](arx-badge.png), 726×120 source image; render at 121×20
-- Shields.io image URL: `https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white`
+- Shields.io image URL: `https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=primary&logoColor=white`
 - Project URL: `https://github.com/centurionarx/arx-harness`
 
 ## Markdown
@@ -13,13 +13,13 @@ Add the official “powered by arx” badge without recreating or restyling it.
 Use this linked badge in Markdown:
 
 ```markdown
-[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=primary&logoColor=white)](https://github.com/centurionarx/arx-harness)
 ```
 
 If attribution should not be linked, use:
 
 ```markdown
-![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)
+![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=primary&logoColor=white)
 ```
 
 ## Usage rules

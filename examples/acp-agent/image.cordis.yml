@@ -11,8 +11,8 @@
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash-vision-exp
+          provider: primary
+          model: primary-flash-vision
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:

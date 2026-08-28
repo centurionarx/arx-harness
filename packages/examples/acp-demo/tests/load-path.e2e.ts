@@ -31,8 +31,8 @@ const repoTsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.m
 // A minimal opt-in leaf that loads this app + the two backends and the optional
 // session-query consumer/policies, inlined so the package test owns its fixture.
 const CORDIS_YML = `
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+- id: llm-primary
+  name: '@arx-ai/arx-llm-primary'
 - id: subprocess
   name: '@arx-ai/arx-subprocess-local'
 - id: bash
@@ -40,8 +40,8 @@ const CORDIS_YML = `
 - id: acp-agent
   name: '@arx-ai/arx-acp-demo'
   config:
-    provider: deepseek-official
-    model: deepseek-v4-flash
+    provider: primary
+    model: primary-flash
     persona: 'You are a test agent.'
     workspaceContext: false
 - id: tool-session-query
@@ -88,7 +88,7 @@ async function boot(): Promise<Spawned & { cwd: string }> {
         ...process.env,
         TSX_TSCONFIG_PATH: repoTsconfig,
         // Key-present check only; no prompt is sent, so the model is never called.
-        DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY ?? 'keyless-acp-agent-smoke',
+        PRIMARY_API_KEY: process.env.PRIMARY_API_KEY ?? 'keyless-acp-agent-smoke',
         ARX_HOME: join(cwd, '.arx'),
         ARX_AGENTS_HOME: join(cwd, '.agents'),
       },

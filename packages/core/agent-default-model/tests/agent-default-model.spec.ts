@@ -34,8 +34,8 @@ async function boot(): Promise<{
   const settingsFiber = ctx.plugin(MemorySettings)
   await settingsFiber.await()
   await ctx.plugin(AgentDefaultModelConfig, {
-    provider: 'deepseek-official',
-    model: 'deepseek-v4-flash',
+    provider: 'primary',
+    model: 'primary-flash',
   })
   return { ctx, settingsFiber, defaultModel: ctx.agentDefaultModel }
 }
@@ -44,7 +44,7 @@ describe('AgentDefaultModelConfig', () => {
   it('resolves the user layer over the composition entry', async () => {
     const bench = await boot()
     expect(bench.defaultModel.currentSelection()).toEqual({
-      provider: 'deepseek-official', model: 'deepseek-v4-flash',
+      provider: 'primary', model: 'primary-flash',
     })
 
     await bench.defaultModel.saveSelection({
@@ -69,10 +69,10 @@ describe('AgentDefaultModelConfig', () => {
   it('layers a hand-written partial section over the entry', async () => {
     const bench = await boot()
     await bench.settingsFiber.ctx.settings.replace(AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE, {
-      model: 'deepseek-reasoner',
+      model: 'primary-reasoner',
     })
     expect(bench.defaultModel.currentSelection()).toEqual({
-      provider: 'deepseek-official', model: 'deepseek-reasoner',
+      provider: 'primary', model: 'primary-reasoner',
     })
     await bench.ctx.fiber.dispose()
   })
@@ -83,7 +83,7 @@ describe('AgentDefaultModelConfig', () => {
     expect(bench.defaultModel.currentSelection()?.provider).toBe('acme-gateway')
     await bench.settingsFiber.dispose()
     expect(bench.defaultModel.currentSelection()).toEqual({
-      provider: 'deepseek-official', model: 'deepseek-v4-flash',
+      provider: 'primary', model: 'primary-flash',
     })
     await bench.ctx.fiber.dispose()
   })

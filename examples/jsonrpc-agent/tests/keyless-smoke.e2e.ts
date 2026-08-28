@@ -79,8 +79,8 @@ describe('jsonrpc-agent keyless smoke', () => {
     ], {
       cwd: repoRoot,
       env: {
-        DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
-        DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}`,
+        PRIMARY_API_KEY: 'keyless-smoke-no-call',
+        PRIMARY_BASE_URL: `http://127.0.0.1:${address.port}`,
         ARX_CWD: root,
         ARX_SESSION_ROOT: join(root, '.sessions'),
         ...(envValue === undefined ? {} : { ARX_MAX_TOKENS_AS_SUCCESS: envValue }),
@@ -105,7 +105,7 @@ describe('jsonrpc-agent keyless smoke', () => {
         jsonrpc: '2.0',
         id: 1,
         method: 'initialize',
-        params: { cwd: root, provider: 'deepseek-official', model: 'deepseek-v4-pro', maxTokens: 1234 },
+        params: { cwd: root, provider: 'primary', model: 'primary-pro', maxTokens: 1234 },
       })}\n`)
       const initialized = await waitForLine(lines, value => value.id === 1, () => stderr)
       expect(initialized).toMatchObject({
@@ -184,7 +184,7 @@ describe('jsonrpc-agent keyless smoke', () => {
     ], {
       cwd: repoRoot,
       env: {
-        DEEPSEEK_API_KEY: 'keyless-smoke-no-call',
+        PRIMARY_API_KEY: 'keyless-smoke-no-call',
         ARX_MAX_TOKENS_AS_SUCCESS: 'sometimes',
       },
       stdin: 'ignore',

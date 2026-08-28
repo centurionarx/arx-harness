@@ -78,7 +78,7 @@ const MARKDOWN_FIXTURE = [
   '| history | rendered |',
   '| streaming | stable |',
   '',
-  '[DeepSeek](https://www.deepseek.com)',
+  '[Primary](https://www.example-provider.test)',
   '',
   '```ts',
   'const markdown = true',
@@ -262,11 +262,11 @@ const WEB_SEARCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'sear
       publishedAt: '2026-07-01',
     },
     {
-      url: 'https://www.deepseek.com/blog/harness-architecture',
+      url: 'https://www.example-provider.test/blog/harness-architecture',
       snippet: 'The capability-seam pattern splits each capability into interface, implementation, and consumer packages.',
     },
     {
-      url: 'https://docs.deepseek.com/harness/plugins',
+      url: 'https://docs.example-provider.test/harness/plugins',
       title: 'Writing a harness plugin',
       publishedAt: '2026-06-15',
     },
@@ -276,12 +276,12 @@ const WEB_SEARCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'sear
 
 /** The `web_fetch` result view for the web-fetch turn, authored inline for the same reason. */
 const WEB_FETCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'fetch' }>, 'card' | 'kind'> = {
-  url: 'https://www.deepseek.com/blog/harness-architecture',
+  url: 'https://www.example-provider.test/blog/harness-architecture',
   statusCode: 200,
   truncated: false,
 }
 
-const DEEPSEEK_REASONING = {
+const PRIMARY_REASONING = {
   efforts: [
     { id: 'off', name: 'Off' },
     { id: 'high', name: 'High' },
@@ -304,20 +304,20 @@ const OPENAI_REASONING = {
 function fixtureModelGroups(): ModelProviderGroup[] {
   return [
     {
-      id: 'deepseek-official',
-      name: 'DeepSeek',
+      id: 'primary',
+      name: 'Primary',
       models: [
         {
-          id: 'deepseek-v4-flash',
-          name: 'DeepSeek-V4-Flash',
+          id: 'primary-flash',
+          name: 'Primary Flash',
           description: '快速响应',
-          reasoning: DEEPSEEK_REASONING,
+          reasoning: PRIMARY_REASONING,
         },
         {
-          id: 'deepseek-v4-pro',
-          name: 'DeepSeek-V4-Pro',
+          id: 'primary-pro',
+          name: 'Primary Pro',
           description: '复杂任务',
-          reasoning: DEEPSEEK_REASONING,
+          reasoning: PRIMARY_REASONING,
         },
       ],
     },
@@ -377,7 +377,7 @@ function buildAlphaLog(): SessionEvent[] {
   // route capacity that accompanied them just as the live prompt path does.
   push({
     type: 'request/context',
-    data: { provider: 'deepseek-official', model: 'deepseek-v4-flash', contextWindow: 128_000 },
+    data: { provider: 'primary', model: 'primary-flash', contextWindow: 128_000 },
   })
   for (let turn = 0; turn < 60; turn++) {
     push({ type: 'turn/start', data: { turn } })
@@ -546,7 +546,7 @@ function buildAlphaLog(): SessionEvent[] {
   // the todo turn for the same reason turn 66 is: the standing plan retires at
   // the next turn/start, so a turn after it would empty the dock's plan strip.
   toolTurn(70, 'web_search', '{"queries":["arx harness architecture"]}', 'Search results for arx harness architecture.')
-  toolTurn(71, 'web_fetch', '{"url":"https://www.deepseek.com/blog/harness-architecture"}', '# Harness architecture\n\nEverything is a plugin.')
+  toolTurn(71, 'web_fetch', '{"url":"https://www.example-provider.test/blog/harness-architecture"}', '# Harness architecture\n\nEverything is a plugin.')
 
   // Turn 72: max-tokens sample — the provider ends the turn at its output cap
   // mid-sentence, so the chat flow must render the turn-max-tokens notice
@@ -1532,7 +1532,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
   const logs = new Map<SessionId, SessionEvent[]>([[sid('fx-alpha'), buildAlphaLog()]])
   const modelSelections = new Map<SessionId, ModelSelection>(sessions.map(session => [
     session.sessionId,
-    { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
+    { provider: 'primary', model: 'primary-flash' },
   ]))
   const attachments = new Map<string, { attachment: ImageAttachmentRef; data: string }>([[
     String(FIXTURE_IMAGE_REF.attachmentId),
@@ -1541,8 +1541,8 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
   /** Credential store double: set/unset flip the describe badge, values never read back. */
   const fixtureCredentials = new Map<string, true>([
     // The assembled fixture represents an already-configured shipped
-    // DeepSeek route so unrelated GUI journeys do not enter first-run setup.
-    ['DEEPSEEK_API_KEY', true],
+    // Primary route so unrelated GUI journeys do not enter first-run setup.
+    ['PRIMARY_API_KEY', true],
   ])
   /**
    * Preset compositions the fixture serves. Held as state rather than
@@ -1593,8 +1593,8 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
     ['/home', ['fixture']],
     [FIXTURE_HOME, ['Documents', 'Downloads', '.config']],
     [`${FIXTURE_HOME}/Documents`, [
-      'project', 'deepseek-iOS', 'deepseek-android', 'deepseek-platform',
-      'deepseek-web', 'arx-harness', 'deepseek-app', 'deepseek-landing-blog',
+      'project', 'primary-iOS', 'primary-android', 'primary-platform',
+      'primary-web', 'arx-harness', 'primary-app', 'primary-landing-blog',
     ]],
   ])
   const childrenOf = (path: string): string[] | undefined => {
@@ -2354,7 +2354,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           sessionId: requestedId ?? sid(`fx-${nextSession++}`), updatedAt: Date.now(), running: false, blank: true, cwd,
         }
         sessions.push(created)
-        modelSelections.set(created.sessionId, { provider: 'deepseek-official', model: 'deepseek-v4-flash' })
+        modelSelections.set(created.sessionId, { provider: 'primary', model: 'primary-flash' })
         attachedSessions += 1
         const emitSession = (): void => {
           // Mirrors the host: the frame fires at creation, so blank is constantly true.
@@ -2464,7 +2464,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       },
       models: request => ok(request, {
         current: modelSelections.get(request.payload.sessionId)
-          ?? { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
+          ?? { provider: 'primary', model: 'primary-flash' },
         // The fixture's routes all serve; a surface exercising the blocked
         // posture drives it through its own stub.
         routable: true,
@@ -2542,7 +2542,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         // Capacity parallel of the host token-meter's request/context record:
         // log-only, appended inside the open turn, and deduplicated against the
         // route already recorded (the fixture never varies contextWindow).
-        const selection = modelSelections.get(id) ?? { provider: 'deepseek', model: 'deepseek-v4-flash' }
+        const selection = modelSelections.get(id) ?? { provider: 'primary', model: 'primary-flash' }
         if (lastRequestContext(logOf(id))?.model !== selection.model) {
           append(id, {
             type: 'request/context',
@@ -2988,16 +2988,16 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       },
     },
     settings: {
-      // Only the resolved DeepSeek address needed by first-run readiness is
+      // Only the resolved Primary address needed by first-run readiness is
       // represented here. Fixture-backed journeys do not open its Models
       // editor; real schema-driven forms ride the HTTP transport.
       describe: request => ok(request, {
         writable: true,
         hasDocument: true,
         namespaces: [{
-          ns: 'llm-deepseek',
+          ns: 'llm-primary',
           schema: {},
-          value: { apiKeyEnv: 'DEEPSEEK_API_KEY' },
+          value: { apiKeyEnv: 'PRIMARY_API_KEY' },
           applies: 'live',
           secrets: [{ path: ['apiKey'], set: false }],
           revision: 0,
@@ -3041,7 +3041,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
     llm: {
       providers: request => ok(request, {
         providers: [
-          { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
+          { provider: 'primary', displayName: 'Primary', settingsNs: 'llm-primary', settingsPath: [], active: true },
           { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true, declared: false },
           { provider: 'anthropic', displayName: 'anthropic', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'anthropic'], active: false, declared: false },
           // One hand-declared route, so a surface reading this fixture meets

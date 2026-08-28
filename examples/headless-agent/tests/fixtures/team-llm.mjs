@@ -190,5 +190,5 @@ export const inject = ['llm']
 
 /** Register the keyless adapter on the shipped default provider route. */
 export function apply(ctx) {
-  ctx.llm.registerAdapter(['deepseek-official'], new TeamFixtureAdapter())
+  ctx.llm.registerAdapter(['primary'], new TeamFixtureAdapter())
 }

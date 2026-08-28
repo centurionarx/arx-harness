@@ -37,8 +37,8 @@ Replay keys every call by its calling session id (`GenerateOptions.sessionId`, s
   name: '@arx-ai/arx-llm-replay'
   config:
     providers:
-      - id: deepseek-official
-        name: DeepSeek
+      - id: primary
+        name: Primary
         retryPolicy:
           mode: normal
           backoff:
@@ -46,9 +46,9 @@ Replay keys every call by its calling session id (`GenerateOptions.sessionId`, s
             maxDelayMs: 1
             jitterRatio: 0
         models:
-          - id: deepseek-v4-flash
+          - id: primary-flash
             contextWindow: 128000
-          - id: deepseek-v4-pro
+          - id: primary-pro
   # file/overrideFile/childFiles default to $ARX_SNAPSHOT_FILE /
   # $ARX_SNAPSHOT_OVERRIDE / $ARX_SNAPSHOT_CHILD_FILES, set by the snapshot
   # harness per scenario.

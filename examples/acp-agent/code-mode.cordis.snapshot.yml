@@ -1,4 +1,4 @@
-# Keyless Code Mode combines the runtime/registry patch with the DeepSeek-to-replay
+# Keyless Code Mode combines the runtime/registry patch with the Primary-to-replay
 # swap. Include patches cannot target entries behind a nested include, so this file
 # applies both overlays directly to `cordis.yml`.
 - id: base
@@ -12,8 +12,8 @@
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: primary
+          model: primary-flash
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: 'none'
           workspaceContext:
@@ -31,8 +31,8 @@
             name: '@arx-ai/arx-llm-replay'
             config:
               providers:
-                - id: deepseek-official
-                  name: DeepSeek
+                - id: primary
+                  name: Primary
                   models:
-                    - id: deepseek-v4-flash
-                    - id: deepseek-v4-pro
+                    - id: primary-flash
+                    - id: primary-pro

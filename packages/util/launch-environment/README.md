@@ -18,14 +18,14 @@ Values do also reach `process.env` — a user's `--config` tree and third-party 
 
 **Omitting a layer is a refusal, not a demotion** — a caller that must never accept a layer leaves it out of the list, so no future reordering can let it back in. The provider adapters name all three, because the product trusts the project it runs in; the mechanism exists for the decisions where that is not true.
 
-Names match the way the platform matches them: exactly on POSIX, case-insensitively on Windows. A case-sensitive lookup there would rank the wrong layer — a shell's `deepseek_api_key` and a project `.env`'s `DEEPSEEK_API_KEY` are one variable to the OS, and treating them as two would let the project win.
+Names match the way the platform matches them: exactly on POSIX, case-insensitively on Windows. A case-sensitive lookup there would rank the wrong layer — a shell's `primary_api_key` and a project `.env`'s `PRIMARY_API_KEY` are one variable to the OS, and treating them as two would let the project win.
 
 ```ts
 import type { Context } from '@arx-ai/cordis'
 import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
 
 declare const ctx: Context
-const endpoint = launchEnvironmentOf(ctx).get('DEEPSEEK_BASE_URL')?.value
+const endpoint = launchEnvironmentOf(ctx).get('PRIMARY_BASE_URL')?.value
 ```
 
 `launchEnvironmentOf(ctx)` returns the launcher's snapshot when the product CLI booted the tree, and otherwise the inherited environment as the only layer. That fallback does not weaken the rules: an SDK host or a bare `cordis.yml` discovered no files, so everything it has really is the environment it was launched with.

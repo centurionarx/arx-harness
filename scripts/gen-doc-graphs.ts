@@ -738,7 +738,7 @@ const APP_EXAMPLES = [
     title: 'Headless Agent Snapshot Composition',
     label: 'examples/headless-agent',
     config: 'examples/headless-agent/cordis.yml',
-    summary: 'The headless snapshot composition combines the real DeepSeek adapter and coding capabilities with one explicitly configured persisted top-level agent; its JSONL driver is test-only.',
+    summary: 'The headless snapshot composition combines the real Primary adapter and coding capabilities with one explicitly configured persisted top-level agent; its JSONL driver is test-only.',
   },
   {
     id: 'acp',

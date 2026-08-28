@@ -1,7 +1,7 @@
 # Text-route image overlay: the attachment store registers read_image, but the
 # strict execution gate refuses on a route that does not declare image input,
 # so a text-only deployment keeps its durable history text-clean. The app
-# config is restated to re-pin `deepseek-v4-flash` (base ships pro; the
+# config is restated to re-pin `primary-flash` (base ships pro; the
 # authored fixture and the pinned header class are flash), because a config
 # patch replaces the whole app config.
 - id: base
@@ -12,8 +12,8 @@
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: primary
+          model: primary-flash
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: none
           workspaceContext:

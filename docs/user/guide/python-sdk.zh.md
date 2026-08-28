@@ -9,7 +9,7 @@
 - Python 3.10 或更高版本
 - Git
 - Linux x64、Linux arm64 或 macOS 14 或更高版本的 arm64
-- DeepSeek 兼容的 API 端点与凭据
+- Primary 兼容的 API 端点与凭据
 - agent 可以修改的隔离 workspace
 
 ## 安装 SDK
@@ -28,12 +28,12 @@ python -m pip install arx-harness-sdk
 
 ## 运行仓库内置示例
 
-请在环境中设置凭据。如果模型不是由默认 DeepSeek 端点提供，而是通过 OpenAI 兼容代理提供，还需要设置 `DEEPSEEK_BASE_URL`。
+请在环境中设置凭据。如果模型不是由默认 Primary 端点提供，而是通过 OpenAI 兼容代理提供，还需要设置 `PRIMARY_BASE_URL`。
 
 ```sh
-export DEEPSEEK_API_KEY=sk-your-key-here
-# export DEEPSEEK_BASE_URL=http://127.0.0.1:8000/v1
-# export ARX_MODEL=deepseek-v4-flash
+export PRIMARY_API_KEY=sk-your-key-here
+# export PRIMARY_BASE_URL=http://127.0.0.1:8000/v1
+# export ARX_MODEL=primary-flash
 # export ARX_SYSTEM_PROMPT='You are a helpful software engineer assistant.'
 ```
 
@@ -63,8 +63,8 @@ workspace = Path("/absolute/path/to/workspace").resolve()
 sessions = Path("/absolute/path/to/sessions").resolve()
 
 with ArxHarness(
-    provider="deepseek-official",
-    model="deepseek-v4-flash",
+    provider="primary",
+    model="primary-flash",
     max_tokens=49_152,
     cwd=str(workspace),
     session_root=str(sessions),
@@ -85,7 +85,7 @@ print(result.final_response)
 | 属性 | 值 |
 |---|---|
 | 系统提示词 | `ARX_SYSTEM_PROMPT`；未设置时使用 `You are a helpful software engineer assistant.` |
-| `minimal.py` 使用的模型 | `--model`，其次为 `ARX_MODEL`，最后为 `deepseek-v4-flash` |
+| `minimal.py` 使用的模型 | `--model`，其次为 `ARX_MODEL`，最后为 `primary-flash` |
 | 面向模型的工具 | 仅持久 `bash` 与 `str_replace_editor` |
 | Bash 超时 | 300 秒 |
 | 编辑器输出上限 | 16,000 个字符 |

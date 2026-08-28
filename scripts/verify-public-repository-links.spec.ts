@@ -3,8 +3,8 @@ import { findUnavailableRepositoryReferences } from './verify-public-repository-
 
 describe('repository link policy', () => {
   it('rejects encoded and case-varied references to the unavailable repository', () => {
-    const unavailableOwner = ['deepseek', 'ai'].join('-')
-    const unavailableName = ['deepseek', 'harness', 'sdk'].join('-')
+    const unavailableOwner = ['primary', 'ai'].join('-')
+    const unavailableName = ['primary', 'harness', 'sdk'].join('-')
     const unavailableRepository = `${unavailableOwner}/${unavailableName}`
     const encodedRepository = unavailableRepository.replaceAll('-', '%2D').replace('/', '%2F')
     const htmlEncodedRepository = unavailableRepository.replace('/', '&#x2f;')
@@ -31,8 +31,8 @@ describe('repository link policy', () => {
   })
 
   it('preserves frozen archived Agent Notes', () => {
-    const unavailableOwner = ['deepseek', 'ai'].join('-')
-    const unavailableName = ['deepseek', 'harness', 'sdk'].join('-')
+    const unavailableOwner = ['primary', 'ai'].join('-')
+    const unavailableName = ['primary', 'harness', 'sdk'].join('-')
     const unavailableRepository = `${unavailableOwner}/${unavailableName}`
 
     expect(findUnavailableRepositoryReferences(

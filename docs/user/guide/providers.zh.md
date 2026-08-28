@@ -8,7 +8,7 @@
 
 没有任何提供方是预先配置好的：全新安装在你添加之前不提供任何模型，选哪一个由你决定。
 
-打开**设置 → 模型**，选择**添加提供方**，选取 Anthropic、OpenAI 或 DeepSeek 等提供方，输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
+打开**设置 → 模型**，选择**添加提供方**，选取 Anthropic、OpenAI 或 Primary 等提供方，输入其 API 密钥并保存。已安装目录会提供端点、协议和模型列表。
 
 密钥是只写的。保存后，页面只会收到脱敏描述符，永远不会收到明文密钥。密钥存储在 `$ARX_HOME/.credentials.yaml` 中，settings 只保留它的凭据引用。
 
@@ -121,7 +121,7 @@ llm-pi-ai:
         - id: my-model
         - id: my-reasoner
           compat:
-            thinkingFormat: deepseek
+            thinkingFormat: primary
 ```
 
 两者都未设置的字段，沿用已安装 catalog 为该模型记录的值；catalog 也未描述的，落到 pi-ai 的检测。凡是写下的开关都要给值：冒号后留空的键（`supportsDeveloperRole:`）会被拒绝而不是被忽略，因为空值会抹掉 catalog 已知的信息，却又没有给出任何替代。任何协议都不接受的名字同样会被拒绝，报错会列出可用的那些。

@@ -166,8 +166,8 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
     '  void ctx.loader.await().then(async () => {',
     "    let text = ''",
     '    for await (const chunk of ctx.llm.stream({',
-    "      provider: 'deepseek-official',",
-    "      model: 'deepseek-v4-flash',",
+    "      provider: 'primary',",
+    "      model: 'primary-flash',",
     '      messages: [],',
     '      maxTokens: 32,',
     '    })) {',
@@ -379,8 +379,8 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
       const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
         ARX_HOME: home,
         ARX_TELEMETRY_DISABLED: '1',
-        DEEPSEEK_API_KEY: apiKey,
-        DEEPSEEK_BASE_URL: server.baseURL,
+        PRIMARY_API_KEY: apiKey,
+        PRIMARY_BASE_URL: server.baseURL,
       })
       expect(result.code, result.stderr).toBe(0)
       expect(result.stdout).toBe('published headless profile reached the mock')
@@ -426,7 +426,7 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     })
     const home = mkdtempSync(join(tmpdir(), 'arx-home-environment-'))
     const project = mkdtempSync(join(tmpdir(), 'arx-home-project-'))
-    writeFileSync(join(home, '.credentials.yaml'), `version: 1\nrefs:\n  DEEPSEEK_API_KEY: ${apiKey}\n`, { mode: 0o600 })
+    writeFileSync(join(home, '.credentials.yaml'), `version: 1\nrefs:\n  PRIMARY_API_KEY: ${apiKey}\n`, { mode: 0o600 })
     createEnvironmentProbeProfile(home, project)
     try {
       const result = await runBuiltBin(
@@ -434,8 +434,8 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
         {
           ARX_HOME: home,
           ARX_TELEMETRY_DISABLED: '1',
-          DEEPSEEK_API_KEY: undefined,
-          DEEPSEEK_BASE_URL: server.baseURL,
+          PRIMARY_API_KEY: undefined,
+          PRIMARY_BASE_URL: server.baseURL,
         },
         project,
       )
@@ -466,7 +466,7 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     try {
       const result = await runBuiltBin(['--profile', 'web', '--patch', invalidProvider], {
         ARX_HOME: home,
-        DEEPSEEK_API_KEY: 'keyless-invalid-config',
+        PRIMARY_API_KEY: 'keyless-invalid-config',
         ARX_TELEMETRY_DISABLED: '1',
       })
       expect(result.code).toBe(1)

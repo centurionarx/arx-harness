@@ -20,7 +20,7 @@
 import type { Config } from '@arx-ai/arx-hooks-codex'
 const config: Config = {
   configPath: '/path/to/.codex/hooks.json', // required
-  model: 'deepseek-v4',                      // optional: stamped on every payload (Codex includes `model`)
+  model: 'primary-v4',                      // optional: stamped on every payload (Codex includes `model`)
   defaultTimeoutMs: 600_000,                 // optional: per-hook timeout when a hook sets none
   stderrSummaryMaxChars: 500,                // optional: char cap on the hook/result event's persisted stderr summary
 }
@@ -31,7 +31,7 @@ const config: Config = {
 ```yaml
 - arx-hooks-codex:
     configPath: ./.codex/hooks.json
-    model: deepseek-v4
+    model: primary-v4
 ```
 
 配置只在加载时解析**一次**。`configPath` 是**进程级**配置：相对路径在加载时根据进程启动 cwd 解析，而非每会话解析（`TODO(per-session-hook-config)`）。读取／解析失败会被隔离处理（记录 + 不注册任何内容）；实际消费 matcher 的事件所带的无效 matcher 正则属于此类失败，并报告其 pattern 与事件。只运行同步 `type: 'command'` hook；非 command 或 `async: true` hook 会被解析并跳过，同时记录警告。hook 接受 `timeout` 或 `timeoutSec` alias；两者都未设置时，使用协议参考默认值 `DEFAULT_HOOK_TIMEOUT_MS`（来自 `arx-hook-protocol`，10 分钟）。五个桥接支持点之外的事件会在解析时丢弃。

@@ -13,8 +13,8 @@ import { ArxHarness } from '@arx-ai/arx-sdk-client'
 
 await using harness = new ArxHarness({
   launch: { command: 'node', args: ['lib/bin.js', 'cordis.yml'] },
-  provider: 'deepseek-official',
-  model: 'deepseek-v4-flash',
+  provider: 'primary',
+  model: 'primary-flash',
   maxTokens: 49_152,
 })
 const result = await harness.run('say hi')

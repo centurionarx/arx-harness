@@ -113,12 +113,12 @@ const SHIPPED_PRESET_DIR = join(REPO_ROOT, 'apps/cli/config/agent-presets')
 // leave resolveModelInfo unroutable and compaction-basic's
 // post-step pressure check would warn every step). The published
 // contextWindow keeps that pressure path provably inert for small fixtures.
-const REPLAY_PROVIDER_ID = 'deepseek-official'
-const REPLAY_MODEL_ID = 'deepseek-v4-flash'
+const REPLAY_PROVIDER_ID = 'primary'
+const REPLAY_MODEL_ID = 'primary-flash'
 const REPLAY_PROVIDERS = [{
   id: REPLAY_PROVIDER_ID,
-  name: 'DeepSeek',
-  models: [{ id: REPLAY_MODEL_ID, name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
+  name: 'Primary',
+  models: [{ id: REPLAY_MODEL_ID, name: 'Primary Flash', contextWindow: 128_000 }],
 }]
 
 /**
@@ -314,23 +314,23 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
   if (mode === 'record') {
     // Both owning vitest configs (web unconditionally, snapshot in record
     // mode) load the repo-root .env before this file runs.
-    if (process.env.DEEPSEEK_API_KEY === undefined || process.env.DEEPSEEK_API_KEY.length === 0) {
-      throw new Error('web e2e record mode needs DEEPSEEK_API_KEY (env or repo-root .env)')
+    if (process.env.PRIMARY_API_KEY === undefined || process.env.PRIMARY_API_KEY.length === 0) {
+      throw new Error('web e2e record mode needs PRIMARY_API_KEY (env or repo-root .env)')
     }
   }
   if (mode === 'record' && options.missingProviderCredential === true) {
     throw new Error('missingProviderCredential is a keyless replay/refresh option')
   }
   const maskProviderCredential = mode !== 'record' && options.missingProviderCredential === true
-  const originalProviderCredential = process.env.DEEPSEEK_API_KEY
+  const originalProviderCredential = process.env.PRIMARY_API_KEY
   let credentialEnvironmentRestored = false
   const restoreCredentialEnvironment = (): void => {
     if (credentialEnvironmentRestored || !maskProviderCredential) return
     credentialEnvironmentRestored = true
     if (originalProviderCredential === undefined) {
-      Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
+      Reflect.deleteProperty(process.env, 'PRIMARY_API_KEY')
     } else {
-      process.env.DEEPSEEK_API_KEY = originalProviderCredential
+      process.env.PRIMARY_API_KEY = originalProviderCredential
     }
   }
   const workspaceCwd = await realpath(await mkdtemp(join(tmpdir(), 'arx-web-e2e-ws-')))
@@ -376,7 +376,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (failures.length > 1) throw new AggregateError(failures, 'web scaffold temp-root setup failed')
     throw error
   }
-  if (maskProviderCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
+  if (maskProviderCredential) Reflect.deleteProperty(process.env, 'PRIMARY_API_KEY')
 
   // The include patch set — the same layer stack the profile boot composes
   // (bundle patches in arx.profile.bundles order), applied over the SAME empty root (a

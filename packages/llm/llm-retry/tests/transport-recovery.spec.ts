@@ -34,17 +34,17 @@ async function harness(
   baseURL: string,
   options: { streamIdleTimeoutMs?: number; initialDelayMs?: number } = {},
 ): Promise<Context> {
-  vi.stubEnv('DEEPSEEK_API_KEY', 'mock-key')
+  vi.stubEnv('PRIMARY_API_KEY', 'mock-key')
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
   await ctx.plugin(LlmPiAi, {
     providers: {
-      deepseek: {
+      primary: {
         // Declared outright, not inherited: the endpoint is this spec's mock
         // server, and the catalog's model ids and request shape describe a
         // real provider this test never reaches.
-        displayName: 'DeepSeek',
-        apiKeyEnv: 'DEEPSEEK_API_KEY',
+        displayName: 'Primary',
+        apiKeyEnv: 'PRIMARY_API_KEY',
         api: 'openai-completions',
         compat: { maxTokensField: 'max_tokens' },
         models: [{ id: 'mock-model', name: 'Mock Model', contextWindow: 65_536, maxTokens: 4_096 }],
@@ -99,7 +99,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     const port = await unusedPort()
     context = await harness(`http://127.0.0.1:${port}`, { initialDelayMs: 100 })
     const agent = context.agentLoop.create(SessionId('wire-refused'), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
     let recoveryServer: Promise<MockLlmServer> | undefined
@@ -137,7 +137,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     })
     context = await harness(server.baseURL)
     const agent = context.agentLoop.create(SessionId(`wire-${behavior}`), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
 
@@ -166,7 +166,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     })
     context = await harness(server.baseURL)
     const agent = context.agentLoop.create(SessionId('wire-empty'), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
 
@@ -200,7 +200,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     })
     context = await harness(server.baseURL)
     const agent = context.agentLoop.create(SessionId('wire-partial-eof'), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
 
@@ -226,7 +226,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     // the stalled attempt and the mock server's immediate successful response.
     context = await harness(server.baseURL, { streamIdleTimeoutMs: 1_000 })
     const agent = context.agentLoop.create(SessionId('wire-stall'), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
 
@@ -244,7 +244,7 @@ describe('bounded retry through the real HTTP/SSE adapter', () => {
     })
     context = await harness(server.baseURL)
     const agent = context.agentLoop.create(SessionId('wire-exhausted'), {
-      provider: 'deepseek',
+      provider: 'primary',
       model: 'mock-model',
     })
 

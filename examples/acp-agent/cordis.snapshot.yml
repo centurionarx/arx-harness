@@ -1,7 +1,7 @@
 # Keyless replay includes the live `cordis.yml`, disables the key-requiring
-# DeepSeek adapter, and inserts `llm-replay` to serve recorded JSONL without a key
+# Primary adapter, and inserts `llm-replay` to serve recorded JSONL without a key
 # or network; every other app entry remains shared. It also restates the acp-agent
-# config to re-pin `deepseek-v4-flash`: `cordis.yml` ships `deepseek-v4-pro`, but the
+# config to re-pin `primary-flash`: `cordis.yml` ships `primary-pro`, but the
 # recorded corpus (request headers, provenance, system prompt) was captured on flash,
 # so replay holds the recorded model to stay reproducible without a re-record. A config
 # patch replaces the whole app config, so the base fields are restated verbatim.
@@ -22,8 +22,8 @@
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: primary
+          model: primary-flash
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           # Replay fixtures are raw JSONL; the whole-config patch must restate
           # the compression choice or the default zstd frames hide the logs
@@ -50,11 +50,11 @@
             name: '@arx-ai/arx-llm-replay'
             config:
               providers:
-                - id: deepseek-official
-                  name: DeepSeek
+                - id: primary
+                  name: Primary
                   models:
-                    - id: deepseek-v4-flash
-                    - id: deepseek-v4-pro
+                    - id: primary-flash
+                    - id: primary-pro
           # Authored scenarios can fence a later parent action on the real
           # child settlement edge without exposing a test-only model tool.
           - id: subagent-settlement-marker

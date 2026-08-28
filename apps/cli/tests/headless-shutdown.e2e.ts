@@ -88,7 +88,7 @@ async function runHeadlessPtySmoke(): Promise<string> {
       env: {
         ARX_HOME: home,
         ARX_AGENTS_HOME: join(cwd, '.agents'),
-        DEEPSEEK_API_KEY: 'keyless-shutdown-no-call',
+        PRIMARY_API_KEY: 'keyless-shutdown-no-call',
         ARX_TELEMETRY_DISABLED: '1',
         ARX_TEST_SHUTDOWN_ARM_FILE: join(cwd, 'shutdown-armed'),
       },

@@ -303,8 +303,8 @@ async function runScenario(scenario: SdkScenario): Promise<{
       requestTimeoutMs: 110_000,
     },
     cwd,
-    provider: 'deepseek-official',
-    model: 'deepseek-v4-flash',
+    provider: 'primary',
+    model: 'primary-flash',
   })
   try {
     const notifications: HarnessNotification[] = []

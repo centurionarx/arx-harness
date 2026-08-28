@@ -346,7 +346,7 @@ describe('subagent descriptors', () => {
       mode: 'continuable' as const,
       provider: 'spawn',
       label: 'complete child',
-      agentProvider: 'deepseek',
+      agentProvider: 'primary',
       agentModel: 'chat',
       persona: 'reviewer',
       toolFilter: { allow: ['read'], deny: ['bash'] },

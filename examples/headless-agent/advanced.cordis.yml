@@ -9,8 +9,8 @@
         config:
           agents:
             - id: main
-              provider: deepseek-official
-              model: deepseek-v4-pro
+              provider: primary
+              model: primary-pro
               cwd: !!js process.cwd()
           workspaceContext:
             maxBytes: 65536

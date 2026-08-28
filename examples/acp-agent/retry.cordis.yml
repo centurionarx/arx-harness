@@ -23,13 +23,13 @@
               maxDelayMs: 1
               jitterRatio: 0
           models:
-            - id: deepseek-v4-flash
-            - id: deepseek-v4-pro
+            - id: primary-flash
+            - id: primary-pro
       - id: acp-agent
         name: '@arx-ai/arx-acp-demo'
         config:
-          provider: deepseek-official
-          model: deepseek-v4-flash
+          provider: primary
+          model: primary-flash
           persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
           persistenceCompression: !!js "process.env.ARX_SNAPSHOT === undefined ? 'zstd' : 'none'"
           workspaceContext:

@@ -18,7 +18,7 @@ import type { BasicCompactionConfig } from '@arx-ai/arx-compaction-basic'
 
 /**
  * Shared harness for the headless-agent e2e suites: the full plugin stack
- * with the real DeepSeek adapter and the real bash + todo_write tools. Lives
+ * with the real Primary adapter and the real bash + todo_write tools. Lives
  * outside the *.e2e.ts pattern so importing it never re-registers another
  * file's tests.
  */
@@ -49,7 +49,7 @@ export interface CodingHarnessOptions {
    * compaction plugin (the default suites run without it).
    */
   compact?: BasicCompactionConfig
-  /** Test-only context capacity advertised for `deepseek-v4-flash`. */
+  /** Test-only context capacity advertised for `primary-flash`. */
   modelContextWindow?: number
 }
 
@@ -61,10 +61,10 @@ export async function codingHarness(workdir: string, options: CodingHarnessOptio
   await ctx.plugin(AgentLoop, { agents: [] })
   await ctx.plugin(LlmPiAi, {
     providers: {
-      deepseek: {
-        apiKeyEnv: 'DEEPSEEK_API_KEY',
+      primary: {
+        apiKeyEnv: 'PRIMARY_API_KEY',
         ...options.modelContextWindow === undefined ? {} : {
-          models: [{ id: 'deepseek-v4-flash', contextWindow: options.modelContextWindow }],
+          models: [{ id: 'primary-flash', contextWindow: options.modelContextWindow }],
         },
       },
     },
