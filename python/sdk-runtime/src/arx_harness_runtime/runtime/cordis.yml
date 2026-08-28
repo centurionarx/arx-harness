@@ -14,12 +14,12 @@
       maxBytes: 65536
 
 # The OpenAI-compatible adapter, serving the one route the Python SDK's own
-# defaults name. Endpoint and credential come from the launching environment,
-# so this file still holds no secret and names no vendor; a deployment that
-# wants a different route supplies its own $ARX_CORDIS_CONFIG. `?? ''` turns an
-# unset endpoint into a load-time refusal rather than a request that goes
-# nowhere. The declared route inherits no catalog, so it spells out its models,
-# its effort ladder, and the endpoint's own output-cap field.
+# defaults name. The credential travels as a reference the adapter resolves, so
+# this file holds no secret. The endpoint is a reserved-TLD placeholder that
+# never resolves: shipped composition outranks the shell, so a deployment names
+# its own endpoint by pointing $ARX_CORDIS_CONFIG at its own config. The
+# declared route inherits no catalog, so it spells out its models, its effort
+# ladder, and the endpoint's own output-cap field.
 - id: llm-pi-ai
   name: '@arx-ai/arx-llm-pi-ai'
   config:
@@ -28,7 +28,7 @@
         displayName: Primary
         apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
+        baseURL: https://api.example-provider.test
         compat:
           maxTokensField: max_tokens
         # Quoted because YAML 1.1 reads a bare `off` as a boolean.

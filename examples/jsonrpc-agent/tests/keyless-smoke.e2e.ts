@@ -9,7 +9,9 @@ import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 
 const binScript = fileURLToPath(new URL('../../../packages/examples/jsonrpc-demo/src/bin.ts', import.meta.url))
-const configPath = fileURLToPath(new URL('../cordis.yml', import.meta.url))
+// The shipped composition reached through an overlay that points its
+// endpoint at each scenario's mock server; see keyless-smoke.cordis.yml.
+const configPath = fileURLToPath(new URL('./keyless-smoke.cordis.yml', import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 const decompress = promisify(zstdDecompress)
 

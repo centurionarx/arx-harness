@@ -18,13 +18,14 @@
 | 变量 | 用途 |
 |---|---|
 | `PRIMARY_API_KEY` | 传给 OpenAI 兼容宿主端点的凭据 |
-| `PRIMARY_BASE_URL` | `primary` 路由发送请求的宿主端点；未设置会导致加载被拒绝 |
 | `ARX_CWD` | bash 和文件系统工具使用的 agent workspace |
 | `ARX_CONTEXT_WINDOW` | 极简变体中为 `ARX_MODEL` 目录项记录的上下文容量 |
 | `ARX_MAX_TOKENS_AS_SUCCESS` | `true`（默认）接受受 token 上限限制的结果；`false` 将其报告为错误 |
 | `ARX_MODEL` | `minimal.py` 使用的默认模型；`--model` 优先 |
 | `ARX_SESSION_ROOT` | JSONL 会话目录 |
 | `ARX_SYSTEM_PROMPT` | 由部署提供的编码人格 |
+
+端点不是环境变量：随包组合的优先级高于启动 shell，因此 [`cordis.yml`](cordis.yml) 里放的是一个永远解析不到的占位地址，由部署方在那里替换，或通过 patch overlay 覆盖——[`tests/keyless-smoke.cordis.yml`](tests/keyless-smoke.cordis.yml) 正是这样把同一棵树指向 mock 服务器的。
 
 通过 Python SDK 的 `cordis` 选项或 `ARX_CORDIS_CONFIG` 传入配置路径。内置可执行文件已携带此文件中指定的每个插件；目标机器无需 Node.js。
 

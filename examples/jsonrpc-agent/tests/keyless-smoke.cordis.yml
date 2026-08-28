@@ -1,0 +1,35 @@
+# The shipped composition with its endpoint pointed at the scenario's mock
+# server. The example ships a placeholder literal because shipped composition
+# outranks the launching shell, so the endpoint moves in the tier above it: a
+# patch overlay, the same lever a deployment uses. Test configuration may read
+# the environment directly; the shipped tree it includes may not.
+#
+# A patch replaces an entry's `config` outright rather than merging into it, so
+# the route is restated here in full. Keep it in step with ../cordis.yml.
+- id: shipped
+  name: cordis:include
+  config:
+    path: ../cordis.yml
+    patches:
+      - id: llm
+        config:
+          providers:
+            primary:
+              displayName: Primary
+              apiKeyEnv: PRIMARY_API_KEY
+              api: openai-completions
+              baseURL: !!js process.env.PRIMARY_BASE_URL
+              defaultContextWindow: 1000000
+              defaultMaxTokens: 256000
+              reasoning: high
+              compat:
+                maxTokensField: max_tokens
+              models:
+                - id: primary-pro
+                  reasoningEfforts: &efforts
+                    'off':
+                    'low': low
+                    'medium': medium
+                    'high': high
+                - id: primary-flash
+                  reasoningEfforts: *efforts

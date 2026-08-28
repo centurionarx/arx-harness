@@ -18,13 +18,14 @@ The surrounding runtime also loads JSONL session persistence and automatic conte
 | Variable | Purpose |
 |---|---|
 | `PRIMARY_API_KEY` | Credential passed to the OpenAI-compatible host endpoint |
-| `PRIMARY_BASE_URL` | Host endpoint the `primary` route sends to; unset refuses the load |
 | `ARX_CWD` | Agent workspace for bash and filesystem tools |
 | `ARX_CONTEXT_WINDOW` | Context capacity recorded for the `ARX_MODEL` catalog entry in the minimal variant |
 | `ARX_MAX_TOKENS_AS_SUCCESS` | `true` (default) accepts token-limited results; `false` reports them as errors |
 | `ARX_MODEL` | Default model used by `minimal.py`; `--model` takes precedence |
 | `ARX_SESSION_ROOT` | JSONL session directory |
 | `ARX_SYSTEM_PROMPT` | Deployment-provided coding persona |
+
+The endpoint is not an environment variable: shipped composition outranks the launching shell, so [`cordis.yml`](cordis.yml) carries a placeholder that never resolves and a deployment replaces it there or through a patch overlay — the way [`tests/keyless-smoke.cordis.yml`](tests/keyless-smoke.cordis.yml) points the same tree at a mock server.
 
 Pass the config path through the Python SDK's `cordis` option or `ARX_CORDIS_CONFIG`. The bundled executable already carries every plugin named by this file; the target machine does not need Node.js.
 

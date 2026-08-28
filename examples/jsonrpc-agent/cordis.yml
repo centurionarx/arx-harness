@@ -16,13 +16,15 @@
     providers:
       # The installed catalog describes no `primary` route, so this profile
       # declares the whole provider — endpoint and models included — instead of
-      # narrowing an inherited one. `?? ''` turns an unset endpoint into a
-      # load-time refusal rather than a request that goes nowhere.
+      # narrowing an inherited one. The endpoint is a reserved-TLD placeholder
+      # that never resolves: shipped composition outranks the shell, so a
+      # deployment replaces it here or through a patch overlay, and an
+      # unreplaced one fails visibly instead of dialling somebody's host.
       primary:
         displayName: Primary
         apiKeyEnv: PRIMARY_API_KEY
         api: openai-completions
-        baseURL: !!js "process.env.PRIMARY_BASE_URL ?? ''"
+        baseURL: https://api.example-provider.test
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high
