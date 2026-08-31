@@ -44,7 +44,7 @@ schema 块使用 ` ```json `，而非自定义的 `ts` 系围栏。`doc-typechec
 ## 曾考虑的替代方案
 
 - **纯 TypeScript AST 遍历，如 Cordis 目录**：工具 schema 在静态层面不可知（见上文核心要点）：运行时展开、字符串拼接、配置选定的名称，以及原始 `ctx.tools.register()` 注册，都会让 AST 推导出的文档说谎。
-- **从各包的 inject 推断启动配方**：属于[发现包清单提案](../../proposed/process/2026-06-20-discover-package-inventory.zh.md)所警告的「过度聪明」路径；配方保持为手写策略，清单由文件系统发现并由完整性守卫把关。
+- **从各包的 inject 推断启动配方**：属于[发现包清单提案](../../implemented/process/2026-06-20-discover-package-inventory.zh.md)所警告的「过度聪明」路径；配方保持为手写策略，清单由文件系统发现并由完整性守卫把关。
 - **为 schema 块使用自定义 `ts` 系围栏**：不必要。普通 ` ```json ` 围栏对 `doc-typecheck` 不可见，无需 `BlockKind` 白名单。
 
 ## 后果

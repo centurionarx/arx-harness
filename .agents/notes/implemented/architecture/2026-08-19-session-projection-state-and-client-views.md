@@ -18,7 +18,7 @@ A unit whose key also appears in `SessionProjectionMap` supplies `wire.viewSchem
 
 Projection state and client values are independently typed and validated without introducing a second client DTO vocabulary. A unit may expose a compact or compatibility-preserving client value while retaining richer host state. Malformed cached state cannot seed `viewCheckpoint`; restore rejects malformed state and the cache's existing full-read fallback rebuilds it from the log. Host consumers can replace private log scans with the same incremental fold used by carriers.
 
-The original [session-projection proposal](../../proposed/architecture/2026-07-27-session-projection-and-command-log.md) now records this split. The earlier [subagent identity projection](2026-08-06-subagent-list-identity-projection.md) and [projected token usage](2026-07-29-projected-token-usage-and-request-context.md) decisions remain current; their domain folds move to the state table without changing their user-facing values.
+The original [session-projection proposal](../../implemented/architecture/2026-07-27-session-projection-and-command-log.md) now records this split. The earlier [subagent identity projection](2026-08-06-subagent-list-identity-projection.md) and [projected token usage](2026-07-29-projected-token-usage-and-request-context.md) decisions remain current; their domain folds move to the state table without changing their user-facing values.
 
 ## Alternatives considered
 

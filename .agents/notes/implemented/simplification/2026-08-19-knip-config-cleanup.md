@@ -28,4 +28,4 @@ The change is a deletion only: `knip.json` went from 790 to 655 lines with no be
 - `knip.json` is 135 lines shorter and names only packages that exist with config that differs from the glob default.
 - Still-explicit entries (54) all carry a real reason to differ — an `e2e`/fixture/tsx `entry`, a `project` outside the default, or a workspace-scoped `ignoreDependencies`.
 - knip 6.16 cannot itself detect the next stale key, so a package removal must still remember to drop its `knip.json` key; upgrading to 6.18+ (after the analysis-semantics change is separately assessed) restores that guard.
-- This realizes the "never a restatement of the default stanza" criterion of the package-inventory proposal ([topic](../../proposed/process/2026-06-20-discover-package-inventory.md)); its remaining items — the e2e entry folding and the generated inventory — stay open there.
+- This realizes the "never a restatement of the default stanza" criterion of the package-inventory proposal ([topic](../../implemented/process/2026-06-20-discover-package-inventory.md)); its remaining items — the e2e entry folding and the generated inventory — stay open there.

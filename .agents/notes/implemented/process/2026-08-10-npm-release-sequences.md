@@ -128,7 +128,7 @@ The verification also packs the Landlock entry, which `arx-sandbox-local` declar
 
 ### Relationship to the earlier proposal
 
-This Agent Note replaces the version scheme and the release-set boundary in [artifact-first npm baseline publication](../../proposed/process/2026-08-04-artifact-first-npm-baseline-publication.md): its `<base>-<timestamp>-<short SHA>` prerelease versions and `dev-<base>` dist-tag are not adopted, and vendor is not excluded from the release set. What both agree on stands: pack and publish are separate, publish consumes only verified tarballs, and the payload and installed-artifact probes are release gates.
+This Agent Note replaces the version scheme and the release-set boundary in [artifact-first npm baseline publication](../../implemented/process/2026-08-04-artifact-first-npm-baseline-publication.md): its `<base>-<timestamp>-<short SHA>` prerelease versions and `dev-<base>` dist-tag are not adopted, and vendor is not excluded from the release set. What both agree on stands: pack and publish are separate, publish consumes only verified tarballs, and the payload and installed-artifact probes are release gates.
 
 ## Alternatives considered
 

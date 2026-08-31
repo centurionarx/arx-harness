@@ -86,6 +86,6 @@ The on-disk session format remains the pre-release pinned version `0`, with no c
 - Keyless loop/session tests and ACP snapshots exercise durable provider/model metadata, resume and fork propagation, workflow/subagent overrides, and unchanged user-visible transcripts; the key-gated DeepSeek e2e retains real provider streaming and tool follow-up coverage.
 - Public JSDoc, package READMEs, architecture and subsystem docs, generated catalogs, examples, session fixtures, and Python SDK pairs use provider/model targets consistently and are checked by the repository documentation and type-equivalence gates.
 
-## Risks
+## Consequences
 
 This is a repo-wide pre-release API break: model-only request construction, adapter registration, app protocols, fixtures, and persisted version-0 event shapes all change together, with no compatibility aliases. The provider exclusivity rule deliberately prevents two implementations of the same upstream from coexisting in one context. A pi-ai dependency update can change the accepted provider/model catalog, so the lockfile and adapter e2e matrix define the tested set. Custom `baseURL` endpoints inherit the chosen catalog model's protocol assumptions and cannot repair an incompatible proxy. Catalog-external model descriptors and multimodal content remain unsupported. pi-ai replay state may contain opaque encrypted reasoning signatures; it is persisted because the provider requires it for continuity, but it is never rendered or logged outside the existing session record.

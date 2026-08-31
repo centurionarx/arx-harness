@@ -28,7 +28,7 @@ mode 与 label 由新的 `subagent` projection unit（纯身份两臂）折叠�
 与既有记录的关系：
 
 - 本记录取代 [durable-subagent-catalog](../feature/2026-07-22-durable-subagent-catalog-and-list-agents.zh.md) 中列表读路径的两项设计：经 `sessionQuery.traceSession` 枚举，与逐 child 读取描述符事件（`listEvents` 加精确 `readEvent` 双读、就地诊断分类）。diagnostic 行语义保留，分类改由列表按投影值缺席与 activity 派生；描述符事件仍是 mode/label 的唯一持久权威与折叠输入，恢复鉴权与激活约定不动。属部分取代，两记录保持交叉链接。
-- [session-projection RFC](../../proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md) 的 registry 约定（`ProjectionDefinition`、`snapshot`、`restore`）零改动，本记录只为其新增 `subagent` 身份 unit 一个注册项，并成为 snapshot（live）与 restore（cold）两处既有读法的又一消费实例——GUI history 的冷读已是同款。折叠规则只在 registry 注册一份；任何消费面都经 registry 计算，不存在第二份折叠逻辑。
+- [session-projection RFC](../../implemented/architecture/2026-07-27-session-projection-and-command-log.zh.md) 的 registry 约定（`ProjectionDefinition`、`snapshot`、`restore`）零改动，本记录只为其新增 `subagent` 身份 unit 一个注册项，并成为 snapshot（live）与 restore（cold）两处既有读法的又一消费实例——GUI history 的冷读已是同款。折叠规则只在 registry 注册一份；任何消费面都经 registry 计算，不存在第二份折叠逻辑。
 
 ### `subagent` projection unit
 
@@ -179,6 +179,6 @@ export type SubagentListEntry =
 ## 相关
 
 - [durable-subagent-catalog 与 list_agents](../feature/2026-07-22-durable-subagent-catalog-and-list-agents.zh.md)——被本记录部分取代：描述符仍是 mode/label 的持久权威与折叠输入，列表的枚举与取值改为自管合并加投影阶梯。
-- [session projections 与命令生命周期日志](../../proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md)——registry 约定的权威；本记录为其新增 `subagent` 身份 unit，并成为 snapshot/restore 两处既有读法的消费实例。
+- [session projections 与命令生命周期日志](../../implemented/architecture/2026-07-27-session-projection-and-command-log.zh.md)——registry 约定的权威；本记录为其新增 `subagent` 身份 unit，并成为 snapshot/restore 两处既有读法的消费实例。
 - [web subagent conversations](../feature/2026-07-27-web-subagent-conversations.zh.md)——`SessionHeader.origin` 的出处（#1569），身份判定去日志化的前半步；其 history 冷读（inspect 前缀加 registry 折叠）是本记录取值阶梯的同款先例。
 - [发布前可复用的 Session 准备阶段](2026-08-05-session-preparation.zh.md)——`inspect()` 冷读与 LRU 复用；cold child 整读的成本模型建立其上。

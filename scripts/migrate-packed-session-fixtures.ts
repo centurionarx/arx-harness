@@ -2,7 +2,7 @@
 /**
  * Temporary branch-convergence command for canonical projected session fixtures.
  *
- * @see ../.agents/notes/proposed/process/2026-07-26-remove-packed-session-fixture-migrator.md
+ * @see ../.agents/notes/implemented/process/2026-07-26-remove-packed-session-fixture-migrator.md
  */
 
 import { writeFileSync } from 'node:fs'

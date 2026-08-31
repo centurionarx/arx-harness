@@ -45,7 +45,7 @@ The current GUI opens one local folder through a native picker on macOS, Windows
 
 The added host, runtime, component, and GUI tests cover the native boundary, request trust checks, cancellation and failure handling, existing-path reuse, same-basename adoption, and the immediate visible-name update. The privileged RPC remains specific to the local desktop carrier; a remote Web directory browser is outside this decision.
 
-## Risks
+## Consequences
 
 - Linux desktop environments may provide neither supported picker. The GUI reports that limitation instead of falling back to a typed path.
 - Browser metadata varies outside the supported local carrier. The endpoint intentionally rejects requests that cannot prove the required local same-origin context.

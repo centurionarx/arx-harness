@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-19-cooperative-tool-cancellation.md
-2026-07-19-cooperative-tool-cancellation.md: 941f047bbf0e1966688ea3933d850dd93e1e6a36
-2026-07-19-cooperative-tool-cancellation.zh.md: b08e7f68b946ea1a0dc09770902824dfd32e9e1f
+2026-07-19-cooperative-tool-cancellation.md: 11a99df11054a7a249158c93d18e550ff9a45401
+2026-07-19-cooperative-tool-cancellation.zh.md: e2f69ed5a2191868fdcd61a313f7c364a19ab8cc
