@@ -14,7 +14,7 @@ The acceptance bar is stronger than "the socket connects": each reference must s
 
 Ship three default-off Cordis overlay examples under `examples/mcp-memory`: Memorix, MCP Reference Memory, and Engram. Every file inserts exactly one `@arx-ai/arx-mcp-client` row. None is referenced by the shipped composition, and the CLI declares the generic bridge only so an explicitly selected overlay can resolve it.
 
-These third-party configurations are provided as interoperability examples only. Their inclusion does not imply endorsement, recommendation, partnership, or ongoing support by DeepSeek. There is no memory preset registry, vendor-specific ARX plugin, universal memory service, installation UI, migration layer, health checker, or reconnect controller. Another memory MCP server uses the same documented stdio or Streamable HTTP row.
+These third-party configurations are provided as interoperability examples only. Their inclusion does not imply endorsement, recommendation, partnership, or ongoing support by Centurionarx. There is no memory preset registry, vendor-specific ARX plugin, universal memory service, installation UI, migration layer, health checker, or reconnect controller. Another memory MCP server uses the same documented stdio or Streamable HTTP row.
 
 ## Responsibility boundary
 

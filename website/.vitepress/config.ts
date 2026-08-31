@@ -1,6 +1,6 @@
 /** VitePress configuration for the locally projected documentation site. */
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { DefaultTheme, PageData, SiteConfig } from 'vitepress'
 import type { ViteDevServer } from 'vite'
@@ -210,12 +210,10 @@ const siteIdentity = {
 }
 
 /**
- * The DeepSeek wordmark, inlined so its `currentColor` fills follow the active
- * theme. An `<img>` would freeze the mark at the colors the file declares.
+ * The navigation wordmark: a typographic `arx` mark, so the lockup needs no
+ * image asset and inherits the active theme's text color.
  */
-const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.svg'), 'utf8')
-  .trim()
-  .replace('<svg ', '<svg class="arx-wordmark" ')
+const wordmark = '<span class="arx-wordmark">arx</span>'
 
 /**
  * Styles the default theme does not provide, carried inline because the site
@@ -230,7 +228,7 @@ const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.s
  */
 const siteStyle = `
 .arx-lockup { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.arx-wordmark { display: block; height: 22px; width: auto; color: var(--vp-c-text-1); }
+.arx-wordmark { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; line-height: 1; color: var(--vp-c-text-1); }
 .arx-tag {
   display: inline-flex;
   align-items: center;
@@ -282,7 +280,7 @@ const scrollbarScript = `
 `
 
 /**
- * Navigation-bar title: the DeepSeek wordmark and the release-stage tag.
+ * Navigation-bar title: the arx wordmark and the release-stage tag.
  * VitePress renders `siteTitle` as HTML.
  *
  * @param previewTag - Localized release-stage label.

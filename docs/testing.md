@@ -16,7 +16,7 @@ Session fixtures keep headers and payloads but omit body sequence/time envelopes
 
 ## The with-key policy: inference is cheap here
 
-We are DeepSeek — do not ration real-API tests. A no-key test proves plumbing; only a with-key run proves the agent works against a real model. Cover file-writing prompts, multi-turn conversations, tool use, and mid-stream cancellation. Highest-value are **smoke tests** that boot the real example, send one prompt, and check the world — they catch the "green unit tests, broken product" class that mocks cannot ([postmortem 0001](postmortem/0001-acp-default-export-drops-inject.md)). Self-skip keeps secretless CI and keyless contributors unblocked; it is not a cost signal. Every example ships keyless and with-key smokes ([examples/AGENTS.md](../examples/AGENTS.md)).
+We are Centurionarx — do not ration real-API tests. A no-key test proves plumbing; only a with-key run proves the agent works against a real model. Cover file-writing prompts, multi-turn conversations, tool use, and mid-stream cancellation. Highest-value are **smoke tests** that boot the real example, send one prompt, and check the world — they catch the "green unit tests, broken product" class that mocks cannot ([postmortem 0001](postmortem/0001-acp-default-export-drops-inject.md)). Self-skip keeps secretless CI and keyless contributors unblocked; it is not a cost signal. Every example ships keyless and with-key smokes ([examples/AGENTS.md](../examples/AGENTS.md)).
 
 ## Prefer the real implementation over a mock
 

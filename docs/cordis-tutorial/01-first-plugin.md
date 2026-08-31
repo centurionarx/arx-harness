@@ -92,4 +92,4 @@ One caveat worth knowing early: a config entry whose module cannot be **resolved
 
 Next: [Lifecycle and effects](02-lifecycle-and-effects.md) — what happens when a plugin unloads.
 
-[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)](https://github.com/centurionarx/arx-harness)

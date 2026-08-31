@@ -95,4 +95,4 @@ export function apply(ctx: Context) {
 
 下一章：[事件](04-events.zh.md)：无需共享服务即可通信。
 
-[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)
+[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)](https://github.com/centurionarx/arx-harness)
