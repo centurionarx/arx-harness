@@ -1,6 +1,6 @@
 # arx Harness Brand Asset Usage Guidelines
 
-English | [中文](BRAND_GUIDELINES.zh.md)
+English | [Português](BRAND_GUIDELINES.pt-BR.md)
 
 To maintain the long\-term healthy development of the arx Harness ecosystem, avoid user confusion, and facilitate the retrieval and identification of related resources, we have established these specifications and hope that everyone will adhere to them:
 

@@ -2,7 +2,7 @@
 
 Status: implemented
 
-English | [中文](2026-08-31-translation-language-brazilian-portuguese.zh.md)
+English | [Português](2026-08-31-translation-language-brazilian-portuguese.pt-BR.md)
 
 ## Problem
 

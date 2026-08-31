@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-31-translation-language-brazilian-portuguese.md
-2026-08-31-translation-language-brazilian-portuguese.md: 3d368357d4eb2e53fecb5d85e6042ce5783550ca
-2026-08-31-translation-language-brazilian-portuguese.zh.md: 789544a5691df9f2e2e71ab36d7e2f974503da46
+2026-08-31-translation-language-brazilian-portuguese.md: 3e6eb5c44aa2a6aa0c503f74092dd8d8390b5389
+2026-08-31-translation-language-brazilian-portuguese.pt-BR.md: 8a260c26154783e15beabe7eb61d30d41e7a55e1

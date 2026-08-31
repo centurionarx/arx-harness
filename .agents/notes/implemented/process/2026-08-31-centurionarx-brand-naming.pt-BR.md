@@ -2,7 +2,7 @@
 
 Status: implemented
 
-[English](2026-08-31-centurionarx-brand-naming.md) | 中文
+[English](2026-08-31-centurionarx-brand-naming.md) | Português
 
 ## Problem
 
