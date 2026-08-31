@@ -3,9 +3,8 @@
  * promises to honor `exec.signal`; this wrapper arms that deadline and maps its
  * own expiry to `TOOL_TIMEOUT` without racing or abandoning the tool promise.
  *
- * FIXME: settle the intended `@arx-ai/arx-timeout-guard` rename before the
- * first tagged release — suggestion only, aligning the name with its `guard/`
- * home; decide at resolution time
+ * The package name `@arx-ai/arx-tool-call-timeout-policy` names the exact
+ * operation limited by the policy, per the repository naming contract
  * ([regrouping Agent Note](../../../../.agents/notes/implemented/architecture/2026-07-29-package-regrouping.md)).
  *
  * @module @arx-ai/arx-tool-call-timeout-policy
