@@ -2,12 +2,18 @@
 
 import { basename } from 'node:path'
 
+/** The accepted counterpart suffixes of the bilingual corpus. */
+export type CounterpartSuffix = '.zh.md' | '.pt-BR.md'
+
+/** All counterpart suffixes the pairing machinery accepts. */
+export const COUNTERPART_SUFFIXES: readonly CounterpartSuffix[] = ['.zh.md', '.pt-BR.md']
+
 /** The three repository-relative paths that form one bilingual pair. */
 export interface TranslationPairPaths {
   /** English document path. */
   source: string
-  /** Simplified Chinese document path. */
-  zh: string
+  /** Translated counterpart path (Simplified Chinese or Brazilian Portuguese). */
+  counterpart: string
   /** Generated consistency-record path. */
   meta: string
 }
@@ -16,8 +22,8 @@ export interface TranslationPairPaths {
 export interface TranslationPairingRecord {
   /** Git blob hash of the English document. */
   sourceHash: string
-  /** Git blob hash of the Simplified Chinese document. */
-  zhHash: string
+  /** Git blob hash of the translated counterpart. */
+  counterpartHash: string
 }
 
 const META_LINE = /^([^:#]+\.md): ([0-9a-f]{40})$/
@@ -26,15 +32,20 @@ const META_LINE = /^([^:#]+\.md): ([0-9a-f]{40})$/
  * Derive the counterpart and consistency-record paths from an English document.
  *
  * @param source - Repository-relative English Markdown path.
+ * @param counterpartSuffix - Counterpart suffix; defaults to the Simplified
+ *   Chinese corpus. Callers resolve which suffix exists on disk before recording.
  * @returns The complete three-path pair.
  */
-export function translationPairPaths(source: string): TranslationPairPaths {
-  if (!source.endsWith('.md') || source.endsWith('.zh.md')) {
+export function translationPairPaths(
+  source: string,
+  counterpartSuffix: CounterpartSuffix = '.zh.md',
+): TranslationPairPaths {
+  if (!source.endsWith('.md') || COUNTERPART_SUFFIXES.some(suffix => source.endsWith(suffix))) {
     throw new Error(`expected an English Markdown path, received ${JSON.stringify(source)}`)
   }
   return {
     source,
-    zh: source.replace(/\.md$/, '.zh.md'),
+    counterpart: source.replace(/\.md$/, counterpartSuffix),
     meta: source.replace(/\.md$/, '.i18n.yaml'),
   }
 }
@@ -43,13 +54,38 @@ export function translationPairPaths(source: string): TranslationPairPaths {
  * Derive one pair from its consistency-record path.
  *
  * @param meta - Repository-relative `foo.i18n.yaml` path.
+ * @param counterpartSuffix - Counterpart suffix; defaults to the Simplified
+ *   Chinese corpus. The record's own keys are authoritative for validation.
  * @returns The complete three-path pair.
  */
-export function translationPairPathsFromMeta(meta: string): TranslationPairPaths {
+export function translationPairPathsFromMeta(
+  meta: string,
+  counterpartSuffix: CounterpartSuffix = '.zh.md',
+): TranslationPairPaths {
   if (!meta.endsWith('.i18n.yaml')) {
     throw new Error(`expected a bilingual consistency-record path, received ${JSON.stringify(meta)}`)
   }
-  return translationPairPaths(meta.replace(/\.i18n\.yaml$/, '.md'))
+  return translationPairPaths(meta.replace(/\.i18n\.yaml$/, '.md'), counterpartSuffix)
+}
+
+/**
+ * Read the counterpart suffix a consistency record confirms, from the one key
+ * that is not the English source's basename. Merges need this because the
+ * sidecar path alone does not identify the counterpart language.
+ *
+ * @param content - Complete sidecar text.
+ * @param source - Repository-relative English Markdown path.
+ * @returns The recorded counterpart suffix, or `undefined` for a malformed record.
+ */
+export function counterpartSuffixFromRecord(content: string, source: string): CounterpartSuffix | undefined {
+  const sourceBase = basename(source)
+  for (const line of content.split('\n')) {
+    const match = META_LINE.exec(line)
+    const key = match?.[1]
+    if (key === undefined || key === sourceBase) continue
+    return COUNTERPART_SUFFIXES.find(suffix => key.endsWith(suffix))
+  }
+  return undefined
 }
 
 /**
@@ -71,9 +107,9 @@ export function parseTranslationPairingRecord(
     hashes.set(match[1], match[2])
   }
   const sourceHash = hashes.get(basename(paths.source))
-  const zhHash = hashes.get(basename(paths.zh))
-  if (hashes.size !== 2 || sourceHash === undefined || zhHash === undefined) return undefined
-  return { sourceHash, zhHash }
+  const counterpartHash = hashes.get(basename(paths.counterpart))
+  if (hashes.size !== 2 || sourceHash === undefined || counterpartHash === undefined) return undefined
+  return { sourceHash, counterpartHash }
 }
 
 /**
@@ -93,7 +129,7 @@ export function renderTranslationPairingRecord(
     '# after editing either side, bring the other along and re-record with:',
     `#   pnpm run verify-translation-pairing --write ${paths.source}`,
     `${basename(paths.source)}: ${record.sourceHash}`,
-    `${basename(paths.zh)}: ${record.zhHash}`,
+    `${basename(paths.counterpart)}: ${record.counterpartHash}`,
     '',
   ].join('\n')
 }

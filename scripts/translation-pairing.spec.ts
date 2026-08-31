@@ -254,7 +254,7 @@ describe('translation pairing records', () => {
   const paths = translationPairPaths('docs/foo.md')
   const record = {
     sourceHash: '1'.repeat(40),
-    zhHash: '2'.repeat(40),
+    counterpartHash: '2'.repeat(40),
   }
 
   it('round-trips the canonical two-hash record', () => {

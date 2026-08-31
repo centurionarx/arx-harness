@@ -11,6 +11,7 @@ import {
   visitMarkdown,
   type MarkdownDestination,
 } from './markdown.ts'
+import { COUNTERPART_SUFFIXES } from './translation-pairing-record.ts'
 
 /** Repository and source document used to resolve one relative link. */
 export interface TranslationLinkContext {
@@ -40,7 +41,6 @@ export interface TranslationLinkRewriteResult {
 
 interface TranslationPairTarget {
   source: string
-  zh: string
 }
 
 interface ResolvedTranslationLink {
@@ -49,8 +49,17 @@ interface ResolvedTranslationLink {
   suffix: string
   expectedPath: string
   expectedUrl: string
-  locale: 'en' | 'zh'
+  locale: 'en' | 'zh' | 'pt'
 }
+
+/** The locale a document belongs to, from its own counterpart suffix. */
+function documentLocale(sourcePath: string): 'en' | 'zh' | 'pt' {
+  if (sourcePath.endsWith('.zh.md')) return 'zh'
+  if (sourcePath.endsWith('.pt-BR.md')) return 'pt'
+  return 'en'
+}
+
+const LOCALE_COUNTERPART_SUFFIX = { zh: '.zh.md', pt: '.pt-BR.md' } as const
 
 interface Replacement {
   start: number
@@ -77,7 +86,7 @@ export function languageSwitcherLinkOffset(
     const end = node.position.end.offset
     if (start === undefined || end === undefined) continue
     const authored = markdown.slice(start, end)
-    if (!/^(?:English \| \[中文\]\([^\n]+\)|\[English\]\([^\n]+\) \| 中文)$/.test(authored)) continue
+    if (!/^(?:English \| \[(?:中文|Português)\]\([^\n]+\)|\[English\]\([^\n]+\) \|(?: 中文| Português))$/.test(authored)) continue
     const links = node.children.filter((child): child is Extract<Nodes, { type: 'link' }> => child.type === 'link')
     if (links.length === 1 && accepted.has(links[0]?.url ?? '')) {
       return links[0]?.position?.start.offset
@@ -135,12 +144,26 @@ function resolveRepositoryTarget(
 }
 
 function translationPairTarget(targetPath: string, context: TranslationLinkContext): TranslationPairTarget | undefined {
-  const source = targetPath.endsWith('.zh.md')
-    ? targetPath.replace(/\.zh\.md$/, '.md')
+  const stripped = COUNTERPART_SUFFIXES.find(suffix => targetPath.endsWith(suffix))
+  const source = stripped !== undefined
+    ? targetPath.slice(0, -stripped.length) + '.md'
     : targetPath.endsWith('.md') ? targetPath : undefined
   if (source === undefined || !context.isTranslationPairSource(source)) return undefined
-  const zh = source.replace(/\.md$/, '.zh.md')
-  return { source, zh }
+  return { source }
+}
+
+/**
+ * The counterpart path a reader in `locale` should reach for one pair: their
+ * own locale's counterpart, always. A missing sibling is a fail-closed
+ * violation — the pair is incomplete — never a silent fallback to the English
+ * source. The English source stays the source.
+ */
+function expectedCounterpartPath(
+  pair: TranslationPairTarget,
+  locale: 'en' | 'zh' | 'pt',
+): string {
+  if (locale === 'en') return pair.source
+  return pair.source.replace(/\.md$/, LOCALE_COUNTERPART_SUFFIX[locale])
 }
 
 function encodePathSegment(segment: string): string {
@@ -159,19 +182,6 @@ function relativeExpectedPath(
   return rawPath.startsWith('./') && !encoded.startsWith('.') ? `./${encoded}` : encoded
 }
 
-function expectedLocalePath(
-  rawPath: string,
-  locale: 'en' | 'zh',
-  context: TranslationLinkContext,
-  expectedPath: string,
-): string {
-  if (locale === 'zh' && rawPath.endsWith('.md') && !rawPath.endsWith('.zh.md')) {
-    return rawPath.replace(/\.md$/, '.zh.md')
-  }
-  if (locale === 'en' && rawPath.endsWith('.zh.md')) return rawPath.replace(/\.zh\.md$/, '.md')
-  return relativeExpectedPath(context, expectedPath, rawPath)
-}
-
 function resolveTranslationLink(
   url: string,
   context: TranslationLinkContext,
@@ -185,14 +195,14 @@ function resolveTranslationLink(
   if (targetPath === undefined) return undefined
   const pair = translationPairTarget(targetPath, context)
   if (pair === undefined) return undefined
-  const locale = context.sourcePath.endsWith('.zh.md') ? 'zh' : 'en'
-  const expectedPath = locale === 'zh' ? pair.zh : pair.source
+  const locale = documentLocale(context.sourcePath)
+  const expectedPath = expectedCounterpartPath(pair, locale)
   return {
     pair,
     targetPath,
     suffix: authored.suffix,
     expectedPath,
-    expectedUrl: `${expectedLocalePath(authored.path, locale, context, expectedPath)}${authored.suffix}`,
+    expectedUrl: `${relativeExpectedPath(context, expectedPath, authored.path)}${authored.suffix}`,
     locale,
   }
 }

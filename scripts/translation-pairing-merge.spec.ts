@@ -132,10 +132,10 @@ function createFixture(attributes = true): Fixture {
 function record(root: string, path: string, source: string, zh: string): string {
   const paths = translationPairPaths(path)
   write(root, paths.source, source)
-  write(root, paths.zh, zh)
+  write(root, paths.counterpart, zh)
   const content = renderTranslationPairingRecord(paths, {
     sourceHash: storeGitBlob(root, Buffer.from(source)),
-    zhHash: storeGitBlob(root, Buffer.from(zh)),
+    counterpartHash: storeGitBlob(root, Buffer.from(zh)),
   })
   write(root, paths.meta, content)
   return content
@@ -256,7 +256,7 @@ function expectMergedPair(fixture: Fixture): void {
   expect(readFileSync(join(fixture.root, 'docs/guide.i18n.yaml'), 'utf8')).toBe(
     renderTranslationPairingRecord(translationPairPaths('docs/guide.md'), {
       sourceHash: gitBlobHash(Buffer.from(mergedSource)),
-      zhHash: gitBlobHash(Buffer.from(mergedZh)),
+      counterpartHash: gitBlobHash(Buffer.from(mergedZh)),
     }),
   )
 }
@@ -301,9 +301,9 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     )
 
     expect(result.sourceContent.toString('utf8')).toBe(mergedSource)
-    expect(result.zhContent.toString('utf8')).toBe(mergedZh)
+    expect(result.counterpartContent.toString('utf8')).toBe(mergedZh)
     expect(result.sourceHash).toBe(gitBlobHash(Buffer.from(mergedSource)))
-    expect(result.zhHash).toBe(gitBlobHash(Buffer.from(mergedZh)))
+    expect(result.counterpartHash).toBe(gitBlobHash(Buffer.from(mergedZh)))
   })
 
   it('accepts locale-specific paths to the same paired document', () => {
@@ -325,7 +325,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
       ancestor,
       current,
       other,
-    ).zhContent.toString('utf8')).toBe(zh)
+    ).counterpartContent.toString('utf8')).toBe(zh)
   })
 
   it('rejects a clean merge whose Chinese link uses the English sibling', () => {
@@ -365,7 +365,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     expect(result.sourceContent.toString('utf8')).toBe(
       generatedCurrentSource.replace('Beta base.', 'Beta other.'),
     )
-    expect(result.zhContent.toString('utf8')).toBe(generatedCurrentZh.replace('乙基础。', '乙对侧。'))
+    expect(result.counterpartContent.toString('utf8')).toBe(generatedCurrentZh.replace('乙基础。', '乙对侧。'))
   })
 
   it('rejects an authored source without an English language switcher', () => {
@@ -582,7 +582,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     expect(git(fixture, ['diff', '--name-only', '--diff-filter=U'])).toBe('docs/guide.i18n.yaml')
     const canonicalRecord = renderTranslationPairingRecord(translationPairPaths('docs/guide.md'), {
       sourceHash: gitBlobHash(Buffer.from(currentSource)),
-      zhHash: gitBlobHash(Buffer.from(otherZh)),
+      counterpartHash: gitBlobHash(Buffer.from(otherZh)),
     })
     expect(readFileSync(join(fixture.root, 'docs/guide.i18n.yaml'), 'utf8')).toBe(
       canonicalRecord.replace(

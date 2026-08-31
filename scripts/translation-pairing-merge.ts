@@ -27,9 +27,10 @@ import {
   translationLinkLocaleViolations,
 } from './translation-links.ts'
 import {
+  counterpartSuffixFromRecord,
   parseTranslationPairingRecord,
   renderTranslationPairingRecord,
-  translationPairPathsFromMeta,
+  translationPairPaths,
   type TranslationPairPaths,
   type TranslationPairingRecord,
 } from './translation-pairing-record.ts'
@@ -42,8 +43,10 @@ export interface TranslationPairingMergeResult extends TranslationPairingRecord 
   record: string
   /** Clean three-way merge of the English owner. */
   sourceContent: Buffer
-  /** Clean three-way merge of the Simplified Chinese owner. */
-  zhContent: Buffer
+  /** Clean three-way merge of the translated owner. */
+  counterpartContent: Buffer
+  /** The translated counterpart path the records resolved to. */
+  counterpart: string
 }
 
 interface UnmergedStages {
@@ -79,7 +82,7 @@ function readMergeDefault(root: string): string | undefined {
 function assertDefaultTextMerge(root: string, paths: TranslationPairPaths): void {
   const output = runGit(
     root,
-    ['check-attr', '-z', 'merge', '--', paths.source, paths.zh],
+    ['check-attr', '-z', 'merge', '--', paths.source, paths.counterpart],
     'checking bilingual owner merge attributes',
   ).toString('utf8')
   const fields = output.split('\0')
@@ -159,12 +162,12 @@ function loadRecordOwners(
   label: string,
   content: string,
   paths: TranslationPairPaths,
-): { source: Buffer; zh: Buffer } {
+): { source: Buffer; counterpart: Buffer } {
   const record = parseTranslationPairingRecord(content, paths)
   if (record === undefined) throw new Error(`${label} ${paths.meta} is not a valid two-hash pairing record`)
   return {
     source: readGitBlob(root, record.sourceHash, `${label} ${paths.source}`),
-    zh: readGitBlob(root, record.zhHash, `${label} ${paths.zh}`),
+    counterpart: readGitBlob(root, record.counterpartHash, `${label} ${paths.counterpart}`),
   }
 }
 
@@ -172,23 +175,23 @@ function assertMergedPairStructure(
   root: string,
   paths: TranslationPairPaths,
   source: Buffer,
-  zh: Buffer,
+  counterpart: Buffer,
   isTranslationPairSource: (sourcePath: string) => boolean,
 ): void {
   const sourceText = source.toString('utf8')
-  const zhText = zh.toString('utf8')
+  const counterpartText = counterpart.toString('utf8')
   const sourceTree = parseTranslationMarkdown(sourceText)
-  const zhTree = parseTranslationMarkdown(zhText)
+  const counterpartTree = parseTranslationMarkdown(counterpartText)
   const indexFiles = gitMergeInputPaths(root)
   const repositoryFileExists = (path: string): boolean => indexFiles.has(path)
   const sourceSwitcherTargets = languageSwitcherTargets(paths.source)
-  const zhSwitcherTargets = languageSwitcherTargets(paths.zh)
+  const counterpartSwitcherTargets = languageSwitcherTargets(paths.counterpart)
   if (requiresSourceLanguageSwitcher(paths.source)
-    && !hasLanguageSwitcher(sourceTree, sourceText, zhSwitcherTargets)) {
-    throw new Error(`${paths.source} clean merge lost its language-switcher link to ${basename(paths.zh)}`)
+    && !hasLanguageSwitcher(sourceTree, sourceText, counterpartSwitcherTargets)) {
+    throw new Error(`${paths.source} clean merge lost its language-switcher link to ${basename(paths.counterpart)}`)
   }
-  if (!hasLanguageSwitcher(zhTree, zhText, sourceSwitcherTargets)) {
-    throw new Error(`${paths.zh} clean merge lost its language-switcher link to ${basename(paths.source)}`)
+  if (!hasLanguageSwitcher(counterpartTree, counterpartText, sourceSwitcherTargets)) {
+    throw new Error(`${paths.counterpart} clean merge lost its language-switcher link to ${basename(paths.source)}`)
   }
   const localeViolations = [
     ...translationLinkLocaleViolations(sourceText, {
@@ -196,10 +199,10 @@ function assertMergedPairStructure(
       sourcePath: paths.source,
       isTranslationPairSource,
       repositoryFileExists,
-    }, zhSwitcherTargets),
-    ...translationLinkLocaleViolations(zhText, {
+    }, counterpartSwitcherTargets),
+    ...translationLinkLocaleViolations(counterpartText, {
       repoRoot: root,
-      sourcePath: paths.zh,
+      sourcePath: paths.counterpart,
       isTranslationPairSource,
       repositoryFileExists,
     }, sourceSwitcherTargets),
@@ -210,23 +213,23 @@ function assertMergedPairStructure(
     throw new Error(`${violation.sourcePath}:${violation.line} clean merge uses ${JSON.stringify(violation.url)}; expected ${JSON.stringify(violation.expectedUrl)}`)
   }
   const divergences = translationStructureDiff(
-    translationStructureSignature(sourceTree, zhSwitcherTargets, {
+    translationStructureSignature(sourceTree, counterpartSwitcherTargets, {
       repoRoot: root,
       sourcePath: paths.source,
       isTranslationPairSource,
       repositoryFileExists,
       markdown: sourceText,
     }),
-    translationStructureSignature(zhTree, sourceSwitcherTargets, {
+    translationStructureSignature(counterpartTree, sourceSwitcherTargets, {
       repoRoot: root,
-      sourcePath: paths.zh,
+      sourcePath: paths.counterpart,
       isTranslationPairSource,
       repositoryFileExists,
-      markdown: zhText,
+      markdown: counterpartText,
     }),
   )
   if (divergences.length > 0) {
-    throw new Error(`${paths.source} and ${paths.zh} clean merges diverge structurally: ${divergences.join('; ')}`)
+    throw new Error(`${paths.source} and ${paths.counterpart} clean merges diverge structurally: ${divergences.join('; ')}`)
   }
 }
 
@@ -266,7 +269,15 @@ export function mergeTranslationPairingRecords(
   if (!isTranslationScopeFile(normalizedMeta)) {
     throw new Error(`${normalizedMeta} is outside the active bilingual documentation corpus`)
   }
-  const paths = translationPairPathsFromMeta(normalizedMeta)
+  const sourcePath = normalizedMeta.replace(/\.i18n\.yaml$/, '.md')
+  // The sidecar path does not identify the counterpart language; the records'
+  // own keys do. Fall back to the Simplified Chinese corpus for a malformed
+  // input so the validation below reports the record, not the resolution.
+  const suffix = counterpartSuffixFromRecord(ancestorRecord, sourcePath)
+    ?? counterpartSuffixFromRecord(currentRecord, sourcePath)
+    ?? counterpartSuffixFromRecord(otherRecord, sourcePath)
+    ?? '.zh.md'
+  const paths = translationPairPaths(sourcePath, suffix)
   if (!isTranslationPairSource(paths.source)) {
     throw new Error(`${normalizedMeta} is excluded from the active bilingual documentation corpus`)
   }
@@ -275,16 +286,17 @@ export function mergeTranslationPairingRecords(
   const current = loadRecordOwners(root, 'current', currentRecord, paths)
   const other = loadRecordOwners(root, 'other', otherRecord, paths)
   const sourceContent = mergeBlobTriplet(root, paths.source, ancestor.source, current.source, other.source)
-  const zhContent = mergeBlobTriplet(root, paths.zh, ancestor.zh, current.zh, other.zh)
-  assertMergedPairStructure(root, paths, sourceContent, zhContent, isTranslationPairSource)
+  const counterpartContent = mergeBlobTriplet(root, paths.counterpart, ancestor.counterpart, current.counterpart, other.counterpart)
+  assertMergedPairStructure(root, paths, sourceContent, counterpartContent, isTranslationPairSource)
   const sourceHash = storeGitBlob(root, sourceContent)
-  const zhHash = storeGitBlob(root, zhContent)
+  const counterpartHash = storeGitBlob(root, counterpartContent)
   return {
-    record: renderTranslationPairingRecord(paths, { sourceHash, zhHash }),
+    record: renderTranslationPairingRecord(paths, { sourceHash, counterpartHash }),
     sourceContent,
     sourceHash,
-    zhContent,
-    zhHash,
+    counterpartContent,
+    counterpartHash,
+    counterpart: paths.counterpart,
   }
 }
 
@@ -374,14 +386,11 @@ export function resolveTranslationPairingConflicts(
         otherRecord,
         isTranslationPairSource,
       )
-      const paths = translationPairPathsFromMeta(metaPath)
-      if (readGitIndexBlob(root, paths.source)?.objectId !== result.sourceHash) {
-        throw new Error(`${paths.source} staged merge does not match the pairing driver's clean merge`)
+      if (readGitIndexBlob(root, result.counterpart)?.objectId !== result.counterpartHash) {
+        throw new Error(`${result.counterpart} staged merge does not match the pairing driver's clean merge`)
       }
-      if (readGitIndexBlob(root, paths.zh)?.objectId !== result.zhHash) {
-        throw new Error(`${paths.zh} staged merge does not match the pairing driver's clean merge`)
-      }
-      for (const [path, expected] of [[paths.source, result.sourceHash], [paths.zh, result.zhHash]] as const) {
+      const sourcePath = metaPath.replace(/\.i18n\.yaml$/, '.md')
+      for (const [path, expected] of [[sourcePath, result.sourceHash], [result.counterpart, result.counterpartHash]] as const) {
         if (gitBlobHash(readFileSync(join(root, path))) !== expected) {
           throw new Error(`${path} has unstaged content; refusing to confirm bytes outside the merge result`)
         }
