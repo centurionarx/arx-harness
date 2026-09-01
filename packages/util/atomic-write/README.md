@@ -1,7 +1,5 @@
 # arx-atomic-write
 
-English | [中文](README.zh.md)
-
 Zero-dependency atomic file replacement shared by file-backed stores that must never leave partial, symlink-hijacked, or wider-than-intended content on disk — the user-settings document (`arx-settings-file`) and the credentials store (`arx-credentials-local`).
 
 ## Surface

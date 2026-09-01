@@ -5,7 +5,7 @@
  */
 
 /** The counterpart suffixes whose files are translated derivatives. */
-const DERIVATIVE_SUFFIXES = ['.zh.md', '.pt-BR.md'] as const
+const DERIVATIVE_SUFFIXES = ['.pt-BR.md', '.pt-BR.md'] as const
 
 /** The result of separating canonical blocks from paired translated derivatives. */
 export interface MarkdownDerivativePartition<T> {

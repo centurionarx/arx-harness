@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-11-remove-sdk-project-toolchain.zh.md)
-
 ## Problem
 
 The repository carried an unreleased developer-project product with no consumers. `@arx-ai/create-sdk` generated an editable Cordis project, `@arx-ai/arx-scripts` supplied its `arx-sdk` development, build, start, configuration, and plugin-install commands, `@arx-ai/arx-helper` coordinated feature definitions and multi-file project edits, and `@arx-ai/arx-telemetry` reported launcher activity. The design aimed to keep generated projects editable while giving creation and later configuration one definition of dependencies, Cordis entries, environment placeholders, and owned files.

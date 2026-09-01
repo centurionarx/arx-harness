@@ -1,7 +1,5 @@
 # arx-home-paths
 
-English | [中文](README.zh.md)
-
 Shared filesystem path helpers for arx Harness user data.
 
 ## ARX home

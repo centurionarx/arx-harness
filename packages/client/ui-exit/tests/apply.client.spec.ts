@@ -11,7 +11,6 @@ async function bench(exitResult: { ok: true; value: { stopping: true } } | { ok:
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
-  locale.setLocale('zh')
   ctx.provide('locale', locale)
   const exit = vi.fn(() => Promise.resolve({ rpcId: 'exit' as never, result: exitResult }))
   ctx.provide('connection', { api: { host: { exit } }, isLoopback: true } as never)
@@ -39,11 +38,9 @@ describe('ui-exit apply', () => {
     expect(inject).toEqual(['slots', 'locale', 'connection'])
   })
 
-  it('registers both dictionaries under the exit namespace', async () => {
+  it('registers the dictionary under the exit namespace', async () => {
     const subject = await bench(stopped)
     await subject.ctx.plugin({ inject: [...inject], apply }).await()
-    expect(subject.locale.bind('exit')('trigger')).toBe('退出')
-    subject.locale.setLocale('en')
     expect(subject.locale.bind('exit')('trigger')).toBe('Exit')
   })
 

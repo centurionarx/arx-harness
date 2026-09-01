@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-27-no-shipped-default-model.zh.md)
-
 ## Problem
 
 The base bundle named `deepseek-official` / `deepseek-v4-flash` as the default for every Agent an entry point creates, and pinned `deepseek-official` as the web-search provider. A shipped default silently spends whichever account it points at, and it decides for a deployment what only that deployment knows.

@@ -219,7 +219,7 @@ for (const source of sources) {
   if (isExcluded(source)) continue
   const suffix = resolveCounterpartSuffix(source)
   if (suffix === undefined) {
-    errors.push(`${source}: in-scope documentation must merge bilingual (docs/i18n/README.md); add the counterpart (.zh.md or .pt-BR.md) and record the pair`)
+    errors.push(`${source}: in-scope documentation must merge bilingual (docs/i18n/README.md); add the counterpart (.pt-BR.md) and record the pair`)
     state.set(source, 'missing')
   } else if (suffix === 'both') {
     errors.push(`${source}: both counterpart suffixes exist; a pair carries one language — remove one`)
@@ -236,7 +236,7 @@ for (const meta of metas) pairAnchors.add(meta.replace(/\.i18n\.yaml$/, '.md'))
 
 for (const source of [...pairAnchors].sort()) {
   const suffix = resolveCounterpartSuffix(source)
-  const paths = translationPairPaths(source, suffix === 'both' || suffix === undefined ? '.zh.md' : suffix)
+  const paths = translationPairPaths(source, suffix === 'both' || suffix === undefined ? '.pt-BR.md' : suffix)
   const { counterpart, meta } = paths
   const have = {
     source: repositoryFileExists(source),

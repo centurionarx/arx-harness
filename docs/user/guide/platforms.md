@@ -1,7 +1,5 @@
 # Platform support
 
-English | [中文](platforms.zh.md)
-
 arx Harness runs on Linux, macOS, and Windows. The agent loop, session persistence, plugin resolution, settings, credentials, and every tool except the shell behave the same on all three. This page names what differs and links to the package that owns each contract.
 
 ## One shell stack per host

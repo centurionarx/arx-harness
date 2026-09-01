@@ -1,6 +1,0 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-02-goal-round-wrapup-message.md
-2026-08-02-goal-round-wrapup-message.md: 1207f3a8c6cf0523c21edf31c6cf1600099c3b53
-2026-08-02-goal-round-wrapup-message.zh.md: 94ec054da5c535e092e9435c8ab0a65152f02750

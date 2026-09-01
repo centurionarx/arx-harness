@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-26-vendor-cli-as-model-route.zh.md)
-
 ## Problem
 
 Every shipped model route reaches a provider over HTTP with an API key. A user already paying for a product subscription could not use this harness without buying API access separately.

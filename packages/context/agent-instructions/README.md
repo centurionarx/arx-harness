@@ -1,7 +1,5 @@
 # @arx-ai/arx-agent-instructions
 
-English | [中文](README.zh.md)
-
 Per-session workspace instruction loading for `AGENTS.md`-compatible files. The plugin injects the initial user-global and project instruction chain into durable history, then discovers nested files and reports later changes or removals after successful filesystem tool calls.
 
 ## Lifecycle

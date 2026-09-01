@@ -1,7 +1,5 @@
 # @arx-ai/arx-fs-e2b
 
-English | [中文](README.zh.md)
-
 E2B implementation of the [`@arx-ai/arx-fs`](../../fs/fs/README.md) provider contract. It has no config: load [`@arx-ai/arx-e2b`](../e2b/README.md) first, then this service in place of `arx-fs-local`. The provider uses the owner's remote cwd and SDK handle, so file tools observe the same world as E2B-backed Bash processes.
 
 ## Behavior

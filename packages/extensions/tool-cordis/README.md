@@ -1,7 +1,5 @@
 # @arx-ai/arx-tool-cordis
 
-English | [中文](README.zh.md)
-
 The self-referential Cordis toolset: five model-facing tools over the live runtime in the current ARX process. The registry, the vm sandbox, and the browser broadcast belong to [`@arx-ai/arx-cordis-host-runner`](../cordis-host-runner/README.md) (`ctx.dynamic`), which this toolset injects — a composition with these tools but no runner never activates them. Design home — sandbox semantics, dynamic-package lifecycle and composition, standing decisions: [the toolset Agent Note](../../../.agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.md).
 
 ## What it does

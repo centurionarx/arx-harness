@@ -26,25 +26,6 @@ declare module '@arx-ai/arx-client-ui-slots' {
     'trajectory': TrajectoryKey
   }
 }
-
-/** Simplified Chinese dictionary (the key-set source of truth). */
-export const zh: Record<TrajectoryKey, string> = {
-  'view.trajectory': '轨迹',
-  'toolbar.aria': '轨迹工具栏',
-  'toolbar.duration': 'Duration',
-  'toolbar.useActualDuration': 'Use actual duration',
-  'toolbar.useEqualWidth': 'Use equal-width operations',
-  'toolbar.actualTime': '实际时间',
-  'toolbar.turns': 'Turns',
-  'toolbar.expandTurns': 'Expand turns',
-  'toolbar.collapseTurns': 'Collapse turns',
-  'toolbar.calls': 'Calls',
-  'toolbar.expandCalls': 'Expand calls',
-  'toolbar.collapseCalls': 'Collapse calls',
-  'toolbar.search': '搜索轨迹',
-  'toolbar.searchPlaceholder': '搜索',
-}
-
 /** English dictionary. */
 export const en: Record<TrajectoryKey, string> = {
   'view.trajectory': 'Trajectory',

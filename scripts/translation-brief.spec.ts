@@ -97,43 +97,43 @@ describe('markdown spans', () => {
 
 describe('mechanical code updates', () => {
   const en = '# T\n\nProse.\n\n```sh\nrun one\n```\n'
-  const zh = '# T\n\n中文。\n\n```sh\nrun one\n```\n'
+  const pt = '# T\n\nProsa em português.\n\n```sh\nrun one\n```\n'
 
   it('splices a fence-only edit into the counterpart', () => {
     const edited = en.replace('run one', 'run two')
-    expect(computeMechanicalUpdate(en, edited, zh)).toBe(zh.replace('run one', 'run two'))
+    expect(computeMechanicalUpdate(en, edited, pt)).toBe(pt.replace('run one', 'run two'))
   })
 
   it('refuses when prose changed too', () => {
     const edited = en.replace('Prose.', 'Prose!').replace('run one', 'run two')
-    expect(computeMechanicalUpdate(en, edited, zh)).toBeUndefined()
+    expect(computeMechanicalUpdate(en, edited, pt)).toBeUndefined()
   })
 
   it('refuses when the counterpart fences already diverge from last-confirmed', () => {
     const edited = en.replace('run one', 'run two')
-    expect(computeMechanicalUpdate(en, edited, zh.replace('run one', 'run stale'))).toBeUndefined()
+    expect(computeMechanicalUpdate(en, edited, pt.replace('run one', 'run stale'))).toBeUndefined()
   })
 
   it('refuses when fence counts differ or nothing changed', () => {
-    expect(computeMechanicalUpdate(en, `${en}\n\`\`\`sh\nextra\n\`\`\`\n`, zh)).toBeUndefined()
-    expect(computeMechanicalUpdate(en, en, zh)).toBeUndefined()
+    expect(computeMechanicalUpdate(en, `${en}\n\`\`\`sh\nextra\n\`\`\`\n`, pt)).toBeUndefined()
+    expect(computeMechanicalUpdate(en, en, pt)).toBeUndefined()
   })
 })
 
 const TERMINOLOGY = [
-  '| English | 中文 | 首次出现 | 不要译作 | 备注 |',
+  '| English | Portuguese | First occurrence | Do not translate as | Notes |',
   '|---|---|---|---|---|',
-  '| agent | agent | agent（智能体） | 智能体 | |',
-  '| session log | 会话日志 | | 会话记录 | |',
-  '| gate | 门禁 | | | |',
-  '| registry | 注册表 | | | |',
+  '| agent | agente | agente (agent) | | |',
+  '| session log | registro de sessão | | histórico de sessão | |',
+  '| gate | gate | | portão | |',
+  '| registry | registry | | registro | |',
 ].join('\n')
 
 describe('terminology', () => {
   it('parses data rows and skips the header and separator', () => {
     const rows = parseTerminologyRows(TERMINOLOGY)
     expect(rows.map(row => row.english)).toEqual(['agent', 'session log', 'gate', 'registry'])
-    expect(rows[0]).toMatchObject({ chinese: 'agent', first: 'agent（智能体）' })
+    expect(rows[0]).toMatchObject({ portuguese: 'agente', first: 'agente (agent)' })
   })
 
   it('matches English terms on word boundaries with plural inflections', () => {
@@ -144,11 +144,11 @@ describe('terminology', () => {
   })
 
   it('selects rows for the changed text per direction', () => {
-    expect(relevantTerminologyRows(TERMINOLOGY, 'en-to-zh', 'All agents write a session log.').map(row => row.english))
+    expect(relevantTerminologyRows(TERMINOLOGY, 'en-to-pt', 'All agents write a session log.').map(row => row.english))
       .toEqual(['agent', 'session log'])
-    expect(relevantTerminologyRows(TERMINOLOGY, 'zh-to-en', '门禁在提交时运行。').map(row => row.english))
-      .toEqual(['gate'])
-    expect(relevantTerminologyRows(TERMINOLOGY, 'en-to-zh', 'delegate the work')).toEqual([])
+    expect(relevantTerminologyRows(TERMINOLOGY, 'pt-to-en', 'O gate roda no commit de um registro de sessão.').map(row => row.english))
+      .toEqual(['session log', 'gate'])
+    expect(relevantTerminologyRows(TERMINOLOGY, 'en-to-pt', 'delegate the work')).toEqual([])
   })
 })
 
@@ -188,10 +188,10 @@ describe('first-occurrence tracking', () => {
 describe('brief rendering', () => {
   const base = {
     sourcePath: 'docs/foo.md',
-    counterpartPath: 'docs/foo.zh.md',
-    direction: 'en-to-zh' as const,
+    counterpartPath: 'docs/foo.pt-BR.md',
+    direction: 'en-to-pt' as const,
     diff: '@@ -5 +5 @@\n-old text about the agent\n+new text about the agent',
-    terminology: relevantTerminologyRows(TERMINOLOGY, 'en-to-zh', 'the agent'),
+    terminology: relevantTerminologyRows(TERMINOLOGY, 'en-to-pt', 'the agent'),
   }
   const bundle = {
     index: 4,
@@ -209,13 +209,13 @@ describe('brief rendering', () => {
     })
     expect(brief).toContain('# Translation update briefing: docs/foo.md')
     expect(brief).toContain('## Changed units')
-    expect(brief).toContain('### #4 paragraph — counterpart at docs/foo.zh.md:9')
+    expect(brief).toContain('### #4 paragraph — counterpart at docs/foo.pt-BR.md:9')
     expect(brief).toContain('Last-confirmed English:')
-    expect(brief).toContain('Current Chinese (bring this along):')
+    expect(brief).toContain('Current Portuguese (bring this along):')
     expect(brief).toContain('## First-occurrence notes')
     expect(brief).toContain('agent（智能体）')
-    expect(brief).toContain('首次出现 annotations attach to the document-wide first occurrence only')
-    expect(brief).toContain('targets in the active bilingual corpus use `.zh.md` for Chinese')
+    expect(brief).toContain('First-occurrence annotations attach to the document-wide first occurrence only')
+    expect(brief).toContain('targets in the active bilingual corpus use `.pt-BR.md` for Portuguese')
     expect(brief).toContain('a missing in-scope counterpart is an error')
     expect(brief).toContain('verify-translation-pairing --write docs/foo.md')
   })
@@ -259,11 +259,11 @@ describe('brief rendering', () => {
     expect(brief).toContain('locate the affected regions yourself')
   })
 
-  it('renders the English-target digest for zh-to-en updates', () => {
+  it('renders the English-target digest for pt-to-en updates', () => {
     const brief = renderTranslationBrief({
       ...base,
-      direction: 'zh-to-en',
-      sourcePath: 'docs/foo.zh.md',
+      direction: 'pt-to-en',
+      sourcePath: 'docs/foo.pt-BR.md',
       counterpartPath: 'docs/foo.md',
       scope: { kind: 'units', bundles: [bundle], firstOccurrenceNotes: [] },
     })

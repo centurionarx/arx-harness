@@ -1,6 +1,0 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-24-single-harness-home-resolver.md
-2026-07-24-single-harness-home-resolver.md: fcdbefc652fcaee3ecc1a8c64a1013519d77fdfd
-2026-07-24-single-harness-home-resolver.zh.md: 075045b13168c833011472fd4f83d845e4c066d0

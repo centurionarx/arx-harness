@@ -1,6 +1,6 @@
 # arx Harness
 
-English | [中文](README.zh.md)
+English | [Português](README.pt-BR.md)
 
 arx Harness (`arx`) is a closed-source agent harness developed by CENTURIONarx.
 

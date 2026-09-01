@@ -4,7 +4,7 @@
  * declaration; `public-api` entries preserve a class's body-stripped public
  * declaration. Blocks and entries have a one-to-one relationship; comparison
  * ignores whitespace and non-JSDoc comments but preserves declaration
- * structure and every original JSDoc comment. Byte-identical `.zh.md` blocks
+ * structure and every original JSDoc comment. Byte-identical `.pt-BR.md` blocks
  * reuse the manifest-backed check of their unsuffixed sibling.
  */
 

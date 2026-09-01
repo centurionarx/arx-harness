@@ -12,9 +12,9 @@ export type DocsLocale = 'root' | 'en'
 
 /** Sidebar collection rendered for one locale and top-level module. */
 export type DocsSidebar =
-  | 'zh-guide'
-  | 'zh-develop'
-  | 'zh-reference'
+  | 'pt-br-guide'
+  | 'pt-br-develop'
+  | 'pt-br-reference'
   | 'en-guide'
   | 'en-develop'
   | 'en-reference'
@@ -24,7 +24,7 @@ export interface DocsPage {
   /** VitePress locale whose route tree owns this projection. */
   locale: DocsLocale
   /** Language of the canonical source currently projected at this route. */
-  contentLocale: 'zh-CN' | 'en-US'
+  contentLocale: 'pt-BR' | 'en-US'
   /** Repository-relative canonical Markdown source. */
   source: string
   /** VitePress route, including the `.md` suffix. */
@@ -56,7 +56,7 @@ interface MirroredPage {
 }
 
 type PairedPage = Omit<MirroredPage, 'source' | 'contentLocale' | 'sourceAliases'> & {
-  /** English side of a sibling `foo.md` / `foo.zh.md` pair. */
+  /** English side of a sibling `foo.md` / `foo.pt-BR.md` pair. */
   source: string
   /** Language-neutral repository aliases, such as the directory of an index page. */
   sourceAliases?: string[]
@@ -90,12 +90,12 @@ function mirroredPages(pages: MirroredPage[]): DocsPage[] {
 
 function pairedPages(pages: PairedPage[]): DocsPage[] {
   return mirroredPages(pages.map((page) => {
-    const chineseSource = page.source.replace(/\.md$/, '.zh.md')
+    const chineseSource = page.source.replace(/\.md$/, '.pt-BR.md')
     const sharedAliases = page.sourceAliases ?? []
     return {
       ...page,
       source: { root: chineseSource, en: page.source },
-      contentLocale: { root: 'zh-CN', en: 'en-US' },
+      contentLocale: { root: 'pt-BR', en: 'en-US' },
       sourceAliases: {
         root: [...sharedAliases, page.source],
         en: [...sharedAliases, chineseSource],
@@ -117,7 +117,7 @@ const homeAndGuide = pairedPages([
     source: 'docs/user/guide/index.md',
     route: 'guide/quickstart.md',
     label: { root: '使用 Web UI', en: 'Use the Web UI' },
-    sidebar: { root: 'zh-guide', en: 'en-guide' },
+    sidebar: { root: 'pt-br-guide', en: 'en-guide' },
     section: { root: '入门', en: 'Guide' },
     order: 1,
     sourceAliases: ['docs/user/guide'],
@@ -126,7 +126,7 @@ const homeAndGuide = pairedPages([
     source: 'docs/user/guide/providers.md',
     route: 'guide/providers.md',
     label: { root: '配置模型', en: 'Configure models' },
-    sidebar: { root: 'zh-guide', en: 'en-guide' },
+    sidebar: { root: 'pt-br-guide', en: 'en-guide' },
     section: { root: '入门', en: 'Guide' },
     order: 2,
   },
@@ -134,7 +134,7 @@ const homeAndGuide = pairedPages([
     source: 'docs/user/guide/platforms.md',
     route: 'guide/platforms.md',
     label: { root: '平台支持', en: 'Platform support' },
-    sidebar: { root: 'zh-guide', en: 'en-guide' },
+    sidebar: { root: 'pt-br-guide', en: 'en-guide' },
     section: { root: '入门', en: 'Guide' },
     order: 3,
   },
@@ -142,7 +142,7 @@ const homeAndGuide = pairedPages([
     source: 'docs/user/guide/python-sdk.md',
     route: 'guide/python-sdk.md',
     label: { root: 'Python', en: 'Python' },
-    sidebar: { root: 'zh-guide', en: 'en-guide' },
+    sidebar: { root: 'pt-br-guide', en: 'en-guide' },
     section: { root: 'SDK', en: 'SDK' },
     order: 1,
   },
@@ -153,7 +153,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/basic/index.md',
     route: 'develop/basic/index.md',
     label: { root: '第一个 Harness 插件', en: 'Your first Harness plugin' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '基础', en: 'Basics' },
     order: 1,
     sourceAliases: ['docs/user/develop/basic'],
@@ -162,7 +162,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/basic/tool.md',
     route: 'develop/basic/tool.md',
     label: { root: '开发一个 Tool', en: 'Build a tool' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '基础', en: 'Basics' },
     order: 2,
   },
@@ -170,7 +170,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/basic/config.md',
     route: 'develop/basic/config.md',
     label: { root: '插件配置', en: 'Plugin configuration' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '基础', en: 'Basics' },
     order: 3,
   },
@@ -178,7 +178,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/basic/publish.md',
     route: 'develop/basic/publish.md',
     label: { root: '打包与安装插件', en: 'Package and install' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '基础', en: 'Basics' },
     order: 4,
   },
@@ -186,7 +186,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/framework/index.md',
     route: 'develop/framework/index.md',
     label: { root: '插件与生命周期', en: 'Plugin lifecycle' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '框架能力', en: 'Framework' },
     order: 1,
     sourceAliases: ['docs/user/develop/framework'],
@@ -195,7 +195,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/framework/service.md',
     route: 'develop/framework/service.md',
     label: { root: '服务与依赖', en: 'Services and dependencies' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '框架能力', en: 'Framework' },
     order: 2,
   },
@@ -203,7 +203,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/framework/events.md',
     route: 'develop/framework/events.md',
     label: { root: '事件系统', en: 'Event system' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '框架能力', en: 'Framework' },
     order: 3,
   },
@@ -211,7 +211,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/practice/index.md',
     route: 'develop/practice/index.md',
     label: { root: '能力的三层拆分', en: 'Capability layering' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '实战', en: 'Practice' },
     order: 1,
     sourceAliases: ['docs/user/develop/practice'],
@@ -220,7 +220,7 @@ const develop = pairedPages([
     source: 'docs/user/develop/practice/llm-adapter.md',
     route: 'develop/practice/llm-adapter.md',
     label: { root: 'LLM 适配器', en: 'LLM adapter' },
-    sidebar: { root: 'zh-develop', en: 'en-develop' },
+    sidebar: { root: 'pt-br-develop', en: 'en-develop' },
     section: { root: '实战', en: 'Practice' },
     order: 2,
   },
@@ -239,7 +239,7 @@ const cordisTutorial = pairedPages(([
   source: `docs/cordis-tutorial/${file}`,
   route: `develop/cordis-tutorial/${file}`,
   label: { root: rootLabel, en: enLabel },
-  sidebar: { root: 'zh-develop', en: 'en-develop' },
+  sidebar: { root: 'pt-br-develop', en: 'en-develop' },
   section: { root: 'Cordis 框架教程', en: 'Cordis framework tutorial' },
   order,
   ...(file === 'index.md' ? { sourceAliases: ['docs/cordis-tutorial'] } : {}),
@@ -250,7 +250,7 @@ const cordisPrimerReference = pairedPages([
     source: 'docs/cordis-primer.md',
     route: 'reference/cordis-primer.md',
     label: { root: 'Cordis 入门', en: 'Cordis primer' },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '概念', en: 'Concepts' },
     order: 1,
   },
@@ -326,7 +326,7 @@ const subsystemsReference = subsystemGroups.flatMap(([rootSection, enSection, fi
     source: `docs/subsystems/${file}`,
     route: file === 'README.md' ? 'reference/subsystems/index.md' : `reference/subsystems/${file}`,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: rootSection, en: enSection },
     order,
     // Subsystem pages carry long third-level sections a two-level outline reaches.
@@ -342,7 +342,7 @@ const reference = [
     source,
     route,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '概念', en: 'Concepts' },
     order,
   }))),
@@ -354,7 +354,7 @@ const reference = [
     source,
     route,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '概念', en: 'Concepts' },
     order,
   }))),
@@ -366,7 +366,7 @@ const reference = [
     source,
     route,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '生成参考', en: 'Generated reference' },
     order,
     ...(outline === undefined ? {} : { outline }),
@@ -381,7 +381,7 @@ const reference = [
     source: `docs/cordis-api/${file}`,
     route: `reference/cordis-api/${file}`,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: 'Cordis API', en: 'Cordis Core API' },
     order,
   }))),
@@ -392,7 +392,7 @@ const reference = [
     route: `reference/cordis-api/${file}`,
     contentLocale: 'en-US',
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: 'Cordis API', en: 'Cordis Core API' },
     order: order + 5,
   }))),
@@ -406,7 +406,7 @@ const reference = [
     source: `docs/cookbook/${file}`,
     route: `reference/cookbook/${file}`,
     label: { root: rootLabel, en: enLabel },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '开发手册', en: 'Cookbook' },
     order,
   }))),
@@ -414,7 +414,7 @@ const reference = [
     source: 'docs/cookbook/adding-a-conversation-node.md',
     route: 'reference/cookbook/adding-a-conversation-node.md',
     label: { root: '新增 Conversation Node', en: 'Adding a Conversation Node' },
-    sidebar: { root: 'zh-reference', en: 'en-reference' },
+    sidebar: { root: 'pt-br-reference', en: 'en-reference' },
     section: { root: '开发手册', en: 'Cookbook' },
     order: 5,
   }]),
@@ -426,7 +426,7 @@ const reference = [
  * sequence, so a new collection lands in both surfaces together.
  */
 export const localeCollections = {
-  root: ['zh-guide', 'zh-develop', 'zh-reference'],
+  root: ['pt-br-guide', 'pt-br-develop', 'pt-br-reference'],
   en: ['en-guide', 'en-develop', 'en-reference'],
 } as const satisfies Record<DocsLocale, readonly DocsSidebar[]>
 

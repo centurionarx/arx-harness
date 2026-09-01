@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-07-31-browser-derived-initial-locale.zh.md)
-
 ## Problem
 
 The Settings Language row opened every first visit in Chinese: `LocaleRuntime` read `arx.locale` from localStorage and fell straight back to `zh` when nothing was stored. The browser already states which languages its user reads — `navigator.languages` is that statement — and the app ignored it, so an English reader met a Chinese product and had to find a Chinese-labelled settings row to escape it. The fallback was doing two jobs at once: the last resort for an unresolvable locale, and the answer for every user who had simply never chosen.
@@ -41,6 +39,6 @@ Reading the browser fixed the readers whose browser names a language this app sh
 
 - A first visit from an English browser lands in English, a Chinese browser in Chinese, and a browser naming neither lands in English rather than Chinese. The Language row still shows the same two self-described options, so the escape hatch is unchanged in either direction.
 - Dictionary resolution reverses direction: a key missing from the active locale now falls to `en`, not `zh`. With symmetric dictionaries no shipped key changes behavior, which is why the parity gate exists — it is the assumption that reversal rests on.
-- `<html lang>` now reports the language on screen in both directions, which closes [#2160](https://github.com/deepseek-harness/deepseek-harness/issues/2160). A client that never activates the locale plugin keeps the served default, so the attribute degrades to the old static behavior rather than to a blank value.
+- `<html lang>` now reports the language on screen in both directions, which closes [#2160](https://github.com/centurionarx/arx-harness/issues/2160). A client that never activates the locale plugin keeps the served default, so the attribute degrades to the old static behavior rather than to a blank value.
 - Non-browser runs of the client tree (node boots, the non-jsdom unit lane) now open in `en`. Specs that assert shipped Chinese copy must set `setLocale('zh')` explicitly on the runtime they construct; a suite-level `usePinnedBrowserLanguages('zh-CN')` only works in files that also declare `@vitest-environment jsdom`, because without a `window` the detection path never reads `navigator` at all. Seven `*.client.spec.ts` files carried such a dead pin and were relying on the old `zh` fallback instead.
 - Detection cost is one array walk per service construction and no implicit settings write; an explicit Host preference may cause one live convergence after plugin activation.

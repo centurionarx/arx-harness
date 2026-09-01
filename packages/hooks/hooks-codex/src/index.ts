@@ -169,8 +169,6 @@ export function apply(ctx: Context, config: Config): void {
     return mergeHookOutputs(outputs)
   }
 
-  // TODO(hook-continue-false): `merged.stop` is logged but needs a run-level halt mechanism.
-
   function contextFrom(merged: MergedHookOutcome): UserMessage | undefined {
     if (merged.additionalContext.length === 0) return undefined
     const content: ContentBlock[] = merged.additionalContext.map(text => ({ type: 'text', text }))
@@ -188,6 +186,10 @@ export function apply(ctx: Context, config: Config): void {
   ctx.on('agent/session-start', ({ agent, source }) => {
     detached.track(runPoint('SessionStart', source, { ...base(ctx, agent, 'SessionStart', model), source }, { agent, plainStdoutAsContext: true, signal: detached.signal })
       .then((merged) => {
+        if (merged.stop) {
+          agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by SessionStart hook' })
+          return
+        }
         const context = contextFrom(merged)
         if (context) agent.inject(context)
       })
@@ -207,6 +209,10 @@ export function apply(ctx: Context, config: Config): void {
       agent, turn, plainStdoutAsContext: true, signal,
     })
     /* jscpd:ignore-start */
+    if (merged.stop) {
+      agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by UserPromptSubmit hook' })
+      return { kind: 'reject' }
+    }
     if (merged.decision === 'deny') {
       return { kind: 'reject' }
     }
@@ -226,6 +232,10 @@ export function apply(ctx: Context, config: Config): void {
     const turn = lastTurn(exec.agent)
     const merged = await runPoint('PreToolUse', exec.name, preToolPayload(ctx, exec, model), { ...exec.agent ? { agent: exec.agent } : {}, turn, signal: exec.signal })
     /* jscpd:ignore-end */
+    if (merged.stop) {
+      exec.agent?.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by PreToolUse hook' })
+      return { kind: 'deny', reason: merged.reason ?? merged.stopReason ?? 'halted by PreToolUse hook' }
+    }
     if (merged.decision === 'deny') return { kind: 'deny', reason: merged.reason ?? 'blocked by PreToolUse hook' }
     return next()
   })
@@ -236,6 +246,10 @@ export function apply(ctx: Context, config: Config): void {
     /* jscpd:ignore-start */
     const merged = await runPoint('PostToolUse', exec.name, postToolPayload(ctx, exec, result, model), { ...exec.agent ? { agent: exec.agent } : {}, turn, signal: exec.signal })
     const context = contextFrom(merged)
+    if (merged.stop) {
+      exec.agent?.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by PostToolUse hook' })
+      return { kind: 'block', feedback: [{ type: 'text', text: merged.reason ?? merged.stopReason ?? 'halted by PostToolUse hook' }], ...context ? { additionalContexts: [context] } : {} }
+    }
     if (merged.decision === 'deny') {
       return { kind: 'block', feedback: [{ type: 'text', text: merged.reason ?? 'blocked by PostToolUse hook' }], ...context ? { additionalContexts: [context] } : {} }
     }

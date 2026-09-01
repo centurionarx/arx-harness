@@ -20,12 +20,12 @@ import type {
 } from '@arx-ai/arx-client-ui-input-trigger/client'
 import { FakeApiClient, fakeRemote, ok } from '../../runtime/tests/fake-api.client.ts'
 import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
-import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
 import type { DraftAttachmentId } from '../src/client/input/contract.ts'
 import { SessionInputShell } from '../src/client/input/facade.ts'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'
 import type { InputBarProps } from '../src/client/skeleton/InputBar.tsx'
-import { zh } from '../src/client/locales.ts'
+import { en } from '../src/client/locales.ts'
 import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { ConversationSnapshot } from '@arx-ai/arx-client-runtime/client'
@@ -177,7 +177,7 @@ async function scopedBench(register?: (inputTriggers: InputTriggerService) => vo
     stop: vi.fn(),
     command: () => Promise.resolve(true),
     // Mirrors the real lookup chain (conversation namespace, then common).
-    t: makeTranslate(zh, commonZh),
+    t: makeTranslate(en, commonEn),
     variant: 'composer',
   }
   const view = render(<InputBar {...barProps} />)
@@ -211,8 +211,8 @@ describe('scenario A: menu-pick /goal, type args, enter submits', () => {
     expect(b.shell.snapshot.phase).toBe('claimed')
     expect(b.textarea.value).toBe('/goal ')
     expect(b.view.container.querySelector('[data-decoration="token"]')?.textContent).toBe('/goal ')
-    // The zh dictionary owns a hint.goal entry, which overrides the machine's raw hint (production behavior).
-    expect(b.view.container.querySelector('[data-decoration="hint"]')?.textContent).toBe('输入目标，智能体将持续执行')
+    // The en dictionary owns a hint.goal entry, which overrides the machine's raw hint (production behavior).
+    expect(b.view.container.querySelector('[data-decoration="hint"]')?.textContent).toBe('describe the objective for a long-running task')
     // Continue typing args; hint drops; claim holds.
     b.type('/goal 发布 v1')
     expect(b.shell.snapshot.phase).toBe('claimed')

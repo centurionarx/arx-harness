@@ -1,7 +1,5 @@
 # @arx-ai/arx-subagent-claude-code
 
-English | [中文](README.zh.md)
-
 This package registers a Profile-named Claude Code subagent provider whose default name is `claude-code`. Each accepted run invokes the official Claude Agent SDK in the delegating Session's workspace, lets the pinned SDK select its installed platform CLI, submits one self-contained text task, and returns either the strict final answer or a separate safe failure diagnostic through the shared [`arx-subagent`](../subagent/README.md) result contract.
 
 ## Start and ownership

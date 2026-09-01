@@ -1,7 +1,5 @@
 # @arx-ai/arx-compaction-tool-result-pruner
 
-English | [中文](README.zh.md)
-
 The replay-safe model-free pruning service (`ctx.toolResultPruner`). It rewrites over-budget `tool/result` surface nodes to a bounded head, a fixed omission marker, and a bounded tail while retaining the full original event in the append-only session log.
 
 This is a concrete companion to [`arx-compaction-basic`](../compaction-basic/README.md), not a compaction backend or model-facing tool. Compact-basic reads it through optional `ctx.get('toolResultPruner')`, so either package remains independently composable.

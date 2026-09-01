@@ -2,8 +2,6 @@
 
 Status: rejected — More compaction backends are planned, so the Service Definition and basic provider packages remain separate.
 
-English | [中文](2026-07-19-fold-compaction-package-split.zh.md)
-
 ## Problem
 
 Compaction is split between `@arx-ai/arx-compaction`, which owns an abstract two-method service and shared types, and `@arx-ai/arx-compaction-basic`, which owns the only complete provider. Shipped configurations load only the basic package, and no production package independently consumes the Service Definition package except that provider.

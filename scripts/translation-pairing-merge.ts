@@ -276,7 +276,7 @@ export function mergeTranslationPairingRecords(
   const suffix = counterpartSuffixFromRecord(ancestorRecord, sourcePath)
     ?? counterpartSuffixFromRecord(currentRecord, sourcePath)
     ?? counterpartSuffixFromRecord(otherRecord, sourcePath)
-    ?? '.zh.md'
+    ?? '.pt-BR.md'
   const paths = translationPairPaths(sourcePath, suffix)
   if (!isTranslationPairSource(paths.source)) {
     throw new Error(`${normalizedMeta} is excluded from the active bilingual documentation corpus`)

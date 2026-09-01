@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [Português](2026-08-31-translation-language-brazilian-portuguese.pt-BR.md)
-
 ## Problem
 
 Every document in pairing scope was maintained in English and Simplified Chinese. The project's readership is Portuguese-speaking, and no Chinese-first contribution had landed; every pair cost a full translation pass into a language with no readers. The pairing machinery — terminology, prompt template, gates, merge driver — was built around a second language the project no longer serves.
@@ -12,7 +10,7 @@ Every document in pairing scope was maintained in English and Simplified Chinese
 
 The second language of the pairing contract is Brazilian Portuguese. Concretely:
 
-- The counterpart suffix is `.pt-BR.md`, replacing `.zh.md` across the active pairing scope; each pair remains the same three sibling files (English source, Portuguese counterpart, consistency record).
+- The counterpart suffix is `.pt-BR.md`, replacing `.pt-BR.md` across the active pairing scope; each pair remains the same three sibling files (English source, Portuguese counterpart, consistency record).
 - The website's second locale is `pt-BR`, with `pt-br-*` route prefixes and switchers of the form `English | [Português](…)`.
 - The terminology source of truth, the translation rules, and the pipeline prompt template are rewritten for Portuguese, and `translation-prompt.ts` renders the Portuguese direction.
 - The consistency-record keys and the gates that read them (`verify-translation-pairing`, `verify-archived-agent-notes`, the pairing manifest, the `arx-translation-pairing` merge driver configuration) accept the new suffix.

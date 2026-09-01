@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-28-ci-runs-on-runners-this-org-has.zh.md)
-
 ## Problem
 
 Every pull request in `centurionarx/arx-harness` was unmergeable, and the reason did not look like a runner problem.

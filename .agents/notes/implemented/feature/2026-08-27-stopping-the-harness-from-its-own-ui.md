@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-27-stopping-the-harness-from-its-own-ui.zh.md)
-
 ## Problem
 
 A user who started the Web server had no way to stop it from the surface they were using. The launcher already owned a bounded process exit and provided it as `ctx.appExit`, but nothing reached it from a client, so ending the harness meant finding the process in a terminal.

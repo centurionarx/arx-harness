@@ -18,9 +18,9 @@ import type {
 import type { ToolResultView } from '@arx-ai/arx-api-remotes/client'
 import type { SelectionTarget } from '@arx-ai/arx-client-ui-conversation/client'
 import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
-import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
 import { CHAT_SEARCH_MAX_LINES, searchCardModel } from '../src/client/tool/models/search-card-model.ts'
-import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
+import { en } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
 import { createChatStore } from '@arx-ai/arx-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 import { DetailsPanel } from '@arx-ai/arx-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
@@ -33,7 +33,7 @@ type SearchRowProps = Parameters<typeof SearchRow>[0]
 afterEach(cleanup)
 
 /** Conversation-locale translate stub for the render sites' `t` seat. */
-const t: GenericToolCardProps['t'] = makeTranslate(zh, commonZh)
+const t: GenericToolCardProps['t'] = makeTranslate(en, commonEn)
 
 /** The rendered search card's kind attribute, so a render site cannot silently drop it. */
 function searchKindOf(container: HTMLElement): string | null {
@@ -457,7 +457,7 @@ describe('DetailsPanel Output section (search)', () => {
       nodes: [settledGrep({ callView: null, resultView: null })],
     }), grepTarget)
     expect(searchKindOf(view.container)).toBeNull()
-    const output = view.getByText('输出').closest('section')
+    const output = view.getByText('Output').closest('section')
     expect(output?.querySelector('pre')?.textContent).toContain('const foo = 1')
   })
 })

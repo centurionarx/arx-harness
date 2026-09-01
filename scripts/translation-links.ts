@@ -54,12 +54,12 @@ interface ResolvedTranslationLink {
 
 /** The locale a document belongs to, from its own counterpart suffix. */
 function documentLocale(sourcePath: string): 'en' | 'zh' | 'pt' {
-  if (sourcePath.endsWith('.zh.md')) return 'zh'
+  if (sourcePath.endsWith('.pt-BR.md')) return 'zh'
   if (sourcePath.endsWith('.pt-BR.md')) return 'pt'
   return 'en'
 }
 
-const LOCALE_COUNTERPART_SUFFIX = { zh: '.zh.md', pt: '.pt-BR.md' } as const
+const LOCALE_COUNTERPART_SUFFIX = { zh: '.pt-BR.md', pt: '.pt-BR.md' } as const
 
 interface Replacement {
   start: number

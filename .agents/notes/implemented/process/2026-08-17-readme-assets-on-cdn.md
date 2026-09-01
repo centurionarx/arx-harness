@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-17-readme-assets-on-cdn.zh.md)
-
 ## Problem
 
 The public Chinese README embeds three community QR codes. Repository-relative images make each replacement depend on a source change and the separate public-repository publication flow, even though the image bytes do not change product code or documentation text.
@@ -12,7 +10,7 @@ The images need stable public URLs while their source bytes, publication credent
 
 ## Decision
 
-The README references fixed URLs under `https://cdn.deepseek.com/harness/readme/`. The private [`arx-harness/readme-cdn-assets`](https://github.com/deepseek-harness/readme-cdn-assets) repository owns the three allowlisted PNG files, their tests, and their publication code. A push to its `master` branch runs `publish.yml`, which installs the pinned Huawei OBS SDK, tests `scripts/upload.mjs`, and publishes the images.
+The README references fixed URLs under `https://cdn.deepseek.com/harness/readme/`. The private [`arx-harness/readme-cdn-assets`](https://github.com/centurionarx/readme-cdn-assets) repository owns the three allowlisted PNG files, their tests, and their publication code. A push to its `master` branch runs `publish.yml`, which installs the pinned Huawei OBS SDK, tests `scripts/upload.mjs`, and publishes the images.
 
 The uploader accepts only the three README filenames, verifies each source is a PNG file, and uploads it to `dp-cdn-deepseek/harness/readme/` with `Content-Type: image/png` and `Cache-Control: no-store`. It checks the OBS response status, reports the resulting public URL, and closes the client on both success and failure. Repository Actions Secrets supply `OBS_ARX_README_ACCESS_KEY_ID` and `OBS_ARX_README_SECRET_ACCESS_KEY`; the OBS identity needs write access only to that object prefix.
 

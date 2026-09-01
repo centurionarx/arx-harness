@@ -1,7 +1,5 @@
 # arx Harness Python SDK
 
-English | [中文](https://github.com/centurionarx/arx-harness/blob/master/python/sdk/README.zh.md)
-
 Python subprocess SDK for driving arx Harness over JSON-RPC stdio. The
 runtime inherits normal arx Harness environment variables such as
 `DEEPSEEK_BASE_URL` and `DEEPSEEK_API_KEY`, so callers can use real model

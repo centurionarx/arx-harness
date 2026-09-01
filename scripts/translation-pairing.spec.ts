@@ -37,7 +37,7 @@ const fixturePairSource = (): boolean => true
 function signature(markdown: string) {
   return translationStructureSignature(
     parseTranslationMarkdown(markdown),
-    'counterpart.zh.md',
+    'counterpart.pt-BR.md',
     {
       repoRoot: process.cwd(), sourcePath: 'counterpart.md',
       isTranslationPairSource: fixturePairSource, markdown,
@@ -142,12 +142,12 @@ describe('translation pairing snapshots', () => {
       })
       mkdirSync(join(root, 'docs'), { recursive: true })
       writeFileSync(join(root, 'docs/reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'docs/reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'docs/reference.pt-BR.md'), '# 参考\n')
       execFileSync('git', ['-C', root, 'add', 'docs'])
 
       expect(gitIndexPaths(root)).toEqual(new Set([
         'docs/reference.md',
-        'docs/reference.zh.md',
+        'docs/reference.pt-BR.md',
       ]))
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -208,10 +208,10 @@ describe('translation pairing switchers', () => {
   })
 
   it('accepts only the canonical public URL for an absolute switcher', () => {
-    const targets = languageSwitcherTargets('python/sdk/README.zh.md')
-    const canonicalMarkdown = '# README\n\nEnglish | [中文](https://github.com/centurionarx/arx-harness/blob/master/python/sdk/README.zh.md)\n'
+    const targets = languageSwitcherTargets('python/sdk/README.pt-BR.md')
+    const canonicalMarkdown = '# README\n\nEnglish | [中文](https://github.com/centurionarx/arx-harness/blob/master/python/sdk/README.pt-BR.md)\n'
     const canonical = parseTranslationMarkdown(canonicalMarkdown)
-    const wrongMarkdown = '# README\n\nEnglish | [中文](https://github.com/centurionarx/arx-harness/blob/master/other/README.zh.md)\n'
+    const wrongMarkdown = '# README\n\nEnglish | [中文](https://github.com/centurionarx/arx-harness/blob/master/other/README.pt-BR.md)\n'
     const wrongPath = parseTranslationMarkdown(wrongMarkdown)
 
     expect(translationStructureSignature(canonical, targets, {
@@ -226,7 +226,7 @@ describe('translation pairing switchers', () => {
       isTranslationPairSource: fixturePairSource,
       markdown: wrongMarkdown,
     }).links).toEqual([
-      'https://github.com/centurionarx/arx-harness/blob/master/other/README.zh.md',
+      'https://github.com/centurionarx/arx-harness/blob/master/other/README.pt-BR.md',
     ])
   })
 
@@ -234,13 +234,13 @@ describe('translation pairing switchers', () => {
     const root = mkdtempSync(join(tmpdir(), 'arx-translation-switcher-'))
     try {
       writeFileSync(join(root, 'guide.md'), '# Guide\n')
-      writeFileSync(join(root, 'guide.zh.md'), '# 指南\n')
+      writeFileSync(join(root, 'guide.pt-BR.md'), '# 指南\n')
       const markdown = '# 指南\n\n[English](guide.md) | 中文\n\n[正文](guide.md)\n'
       expect(translationStructureSignature(
         parseTranslationMarkdown(markdown),
         languageSwitcherTargets('guide.md'),
         {
-          repoRoot: root, sourcePath: 'guide.zh.md',
+          repoRoot: root, sourcePath: 'guide.pt-BR.md',
           isTranslationPairSource: fixturePairSource, markdown,
         },
       ).links).toEqual(['arx-translation-target:guide.md'])
@@ -265,12 +265,12 @@ describe('translation pairing records', () => {
     expect(parseTranslationPairingRecord([
       `foo.md: ${'1'.repeat(40)}`,
       `foo.md: ${'3'.repeat(40)}`,
-      `foo.zh.md: ${'2'.repeat(40)}`,
+      `foo.pt-BR.md: ${'2'.repeat(40)}`,
       '',
     ].join('\n'), paths)).toBeUndefined()
     expect(parseTranslationPairingRecord([
       `foo.md: ${'1'.repeat(40)}`,
-      `bar.zh.md: ${'2'.repeat(40)}`,
+      `bar.pt-BR.md: ${'2'.repeat(40)}`,
       '',
     ].join('\n'), paths)).toBeUndefined()
   })
@@ -280,14 +280,14 @@ describe('translation scope discovery', () => {
   it.each([
     'README.md',
     'CONTRIBUTING.md',
-    'CONTRIBUTING.zh.md',
+    'CONTRIBUTING.pt-BR.md',
     'CONTRIBUTING.i18n.yaml',
     'BRAND_GUIDELINES.md',
-    'BRAND_GUIDELINES.zh.md',
+    'BRAND_GUIDELINES.pt-BR.md',
     'BRAND_GUIDELINES.i18n.yaml',
     'apps/cli/README.md',
     'future/subtree/readme.md',
-    'packages/example/README.zh.md',
+    'packages/example/README.pt-BR.md',
     'native/example/README.i18n.yaml',
     '.agents/notes/proposed/feature.md',
     'docs/guide.md',
@@ -333,11 +333,11 @@ describe('translation structural signature', () => {
     const root = mkdtempSync(join(tmpdir(), 'arx-translation-structure-'))
     try {
       writeFileSync(join(root, 'reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'reference.pt-BR.md'), '# 参考\n')
       const sourceMarkdown = '[Reference](reference.md?view=full#section)\n'
-      const counterpartMarkdown = '[参考](reference.zh.md?view=full#section)\n'
-      const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.zh.md')
-      const counterpart = fixtureSignature(root, 'guide.zh.md', counterpartMarkdown, 'guide.md')
+      const counterpartMarkdown = '[参考](reference.pt-BR.md?view=full#section)\n'
+      const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.pt-BR.md')
+      const counterpart = fixtureSignature(root, 'guide.pt-BR.md', counterpartMarkdown, 'guide.md')
       expect(translationStructureDiff(source, counterpart)).toEqual([])
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -348,19 +348,19 @@ describe('translation structural signature', () => {
     const root = mkdtempSync(join(tmpdir(), 'arx-translation-structure-'))
     try {
       writeFileSync(join(root, 'reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'reference.pt-BR.md'), '# 参考\n')
       const markdown = [
         '[Reference][doc]',
         '',
         '![Preview][asset]',
         '',
         '[doc]: reference.md',
-        '[asset]: reference.zh.md',
+        '[asset]: reference.pt-BR.md',
         '',
       ].join('\n')
       expect(translationStructureSignature(
         parseTranslationMarkdown(markdown),
-        'guide.zh.md',
+        'guide.pt-BR.md',
         {
           repoRoot: root, sourcePath: 'guide.md',
           isTranslationPairSource: fixturePairSource, markdown,
@@ -376,12 +376,12 @@ describe('translation structural signature', () => {
     try {
       for (const name of ['reference', 'different', 'other']) {
         writeFileSync(join(root, `${name}.md`), `# ${name}\n`)
-        writeFileSync(join(root, `${name}.zh.md`), `# ${name} zh\n`)
+        writeFileSync(join(root, `${name}.pt-BR.md`), `# ${name} zh\n`)
       }
       const sourceMarkdown = '[Reference][ref]\n\n[ref]: reference.md\n[ref]: other.md\n'
-      const counterpartMarkdown = '[参考][ref]\n\n[ref]: different.zh.md\n[ref]: other.zh.md\n'
-      const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.zh.md')
-      const counterpart = fixtureSignature(root, 'guide.zh.md', counterpartMarkdown, 'guide.md')
+      const counterpartMarkdown = '[参考][ref]\n\n[ref]: different.pt-BR.md\n[ref]: other.pt-BR.md\n'
+      const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.pt-BR.md')
+      const counterpart = fixtureSignature(root, 'guide.pt-BR.md', counterpartMarkdown, 'guide.md')
       expect(translationStructureDiff(source, counterpart)).toEqual([
         'link target #1 diverges between the pair: "arx-translation-target:reference.md" vs "arx-translation-target:different.md"',
       ])
@@ -424,14 +424,14 @@ describe('translation structural signature', () => {
 describe('pair CLI arguments', () => {
   it('normalizes any pair file or bare stem to the English anchor', () => {
     expect(pairAnchorOfArgument('docs/foo.md')).toBe('docs/foo.md')
-    expect(pairAnchorOfArgument('docs/foo.zh.md')).toBe('docs/foo.md')
+    expect(pairAnchorOfArgument('docs/foo.pt-BR.md')).toBe('docs/foo.md')
     expect(pairAnchorOfArgument('docs/foo.i18n.yaml')).toBe('docs/foo.md')
     expect(pairAnchorOfArgument('docs/foo')).toBe('docs/foo.md')
-    expect(pairAnchorOfArgument('.\\docs\\foo.zh.md')).toBe('docs/foo.md')
+    expect(pairAnchorOfArgument('.\\docs\\foo.pt-BR.md')).toBe('docs/foo.md')
   })
 
   it('scopes a check to named pairs and dedupes the three spellings', () => {
-    expect(parseTranslationPairingCliArgs(['docs/foo.zh.md', 'docs/foo.i18n.yaml', 'docs/bar.md'])).toEqual({
+    expect(parseTranslationPairingCliArgs(['docs/foo.pt-BR.md', 'docs/foo.i18n.yaml', 'docs/bar.md'])).toEqual({
       input: 'worktree',
       mode: 'check',
       scope: 'pairs',

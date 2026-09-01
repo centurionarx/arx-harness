@@ -1,6 +1,0 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-15-persistent-bash-keeps-controlled-prompt.md
-2026-08-15-persistent-bash-keeps-controlled-prompt.md: 3e2417a10b72c4bd399706953cc3c90bce8145c4
-2026-08-15-persistent-bash-keeps-controlled-prompt.zh.md: 810ede2d2d589e4c5125c0dd436242c54ca42478

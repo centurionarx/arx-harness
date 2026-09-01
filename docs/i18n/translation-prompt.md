@@ -1,34 +1,34 @@
 # Translation prompt (pipeline asset)
 
-本文件是自动翻译流水线的 prompt 模板；从 `# Translation Prompt` 开始的正文会逐字进入模型请求，因此本文件不参与双语配对（见 [README.md](README.md) 排除清单）。模板正文与内嵌 few-shot 正误例由 jingtingxiang 基于对存量译文的质量评审撰写，是流水线行为的拍板基线。渲染时把 [terminology.md](terminology.md) 整表填入 `{{terminology}}`；除此之外不注入任何其他仓库文件（translation-rules.md 约束人和 agent 的翻译工作，不注入本模板）。[style-samples.md](style-samples.md) 定义文体，模板中的 Examples 只用于说明典型问题，两者冲突时以文体样例为准。本模板遵循 [提示词 v4 约定 Agent Note](../../.agents/notes/implemented/process/2026-07-23-translation-prompt-v4-contract.md) 记录的兼容协议。修改本文件会改变翻译行为，需正常经过 PR 评审。
+This file is the prompt template of the automated translation pipeline; the body starting at `# Translation Prompt` enters the model request verbatim, so this file is a documented exclusion from bilingual pairing (see the exclusions list in [README.md](README.md)). The template body and the embedded few-shot correction examples are the settling baseline of pipeline behavior. Rendering injects the full table of [terminology.md](terminology.md) into `{{terminology}}`; no other repository file is injected (translation-rules.md governs human and agent translation work and is not injected into this template). [style-samples.md](style-samples.md) defines the voice; the template's Examples only illustrate typical problems, and where they conflict the style samples win. This template follows the compatibility protocol recorded in the [translation-prompt-v4-contract Agent Note](../../.agents/notes/implemented/process/2026-07-23-translation-prompt-v4-contract.md). Editing this file changes translation behavior and goes through ordinary PR review.
 
-## 占位符约定
+## Placeholder contract
 
-流水线渲染模板时替换以下占位符，除此之外不改写系统消息：
+The pipeline replaces the following placeholders when rendering; it rewrites nothing else in the system message:
 
-| 占位符 | 填入内容 | 来源 |
+| Placeholder | Filled with | Source |
 |---|---|---|
-| `{{source_lang}}` | 源语言名（`English` / `Chinese`） | 由改动侧文件推断：`.zh.md` 被改则为 `Chinese` |
-| `{{target_lang}}` | 目标语言名（`Chinese` / `English`） | 与 `{{source_lang}}` 相对 |
-| `{{terminology}}` | [terminology.md](terminology.md) 的完整表格（Markdown 原文） | 渲染时读取仓库当前版本，不缓存 |
+| `{{source_lang}}` | Source language name (`English` / `Portuguese`) | Inferred from the edited side: if the `.pt-BR.md` file was edited, `Portuguese` |
+| `{{target_lang}}` | Target language name (`Portuguese` / `English`) | The counterpart of `{{source_lang}}` |
+| `{{terminology}}` | The complete table of [terminology.md](terminology.md) (raw Markdown) | Read from the repository's current version at render time, never cached |
 
-流水线只识别上表中的占位符，并且一次翻译整篇文档。它不支持 `{{to}}`、`{{title_prompt}}`、`{{summary_prompt}}`、`{{terms_prompt}}`、`{{imt_style_guide}}`、`{{translation_rules}}` 或 `%%` 分段协议；输出采用模板正文规定的三段 XML，流水线解析取 `<final>` 段。
+The pipeline recognizes only the placeholders above and translates a whole document per request. It does not support `{{to}}`, `{{title_prompt}}`, `{{summary_prompt}}`, `{{terms_prompt}}`, `{{imt_style_guide}}`, `{{translation_rules}}`, or a `%%` segmentation protocol; the output uses the three-section XML defined by the template body, and the pipeline parses and takes the `<final>` section.
 
-语言切换行：已有配对的源文件自带切换行，模型按模板规则翻转即可。全新配对的源文件没有切换行，模型也无从得知文件名——此时由流水线在解析 `<final>` 后按目标文件名插入或校正切换行（机械后处理，配对门禁兜底校验）。
+Language switcher line: a source file with an existing pair carries its own switcher, and the model flips it per the template's rule. A brand-new pair's source has no switcher, and the model cannot know the filename — in that case the pipeline inserts or corrects the switcher from the target filename after parsing `<final>` (mechanical post-processing, double-checked by the pairing gate).
 
-## Few-shot 金标
+## Few-shot gold pairs
 
-流水线使用**整篇文档**的中英对照作为 few-shot，不是模板内嵌的句子级正误例。以下 5 组配对文档均经过人工评审，以仓库当前版本为准、随仓库更新：
+The pipeline uses **whole-document** English–Portuguese pairs as few-shot, not the sentence-level correction examples embedded in the template. The following 5 paired documents are human-reviewed, track the repository's current version, and update with it:
 
-- `README.md` ↔ `README.zh.md`
-- `docs/development.md` ↔ `docs/development.zh.md`
-- `docs/i18n/README.md` ↔ `docs/i18n/README.zh.md`
-- `docs/i18n/translation-rules.md` ↔ `docs/i18n/translation-rules.zh.md`
-- `.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md` ↔ 对应 `.zh.md`
+- `README.md` ↔ `README.pt-BR.md`
+- `docs/development.md` ↔ `docs/development.pt-BR.md`
+- `docs/i18n/README.md` ↔ `docs/i18n/README.pt-BR.md`
+- `docs/i18n/translation-rules.md` ↔ `docs/i18n/translation-rules.pt-BR.md`
+- `.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md` ↔ its `.pt-BR.md`
 
-注入方式：在系统消息（本模板）之后、待译文档之前，每组作为一轮示例对话——user 消息为源文档全文，assistant 消息为定稿译文全文（裸文本，不带三段 XML 包装；只有真实请求要求三段输出）。上下文不足时按上列顺序从后往前删减组数。这 5 组也是评审校准锚点（见 [style-samples.md](style-samples.md)），改动任何一组即改变流水线行为。
+Injection: after the system message (this template) and before the document to translate, each pair is one example dialogue round — the user message is the full source document, the assistant message is the full approved translation (bare text, no three-section XML wrapper; only real requests require three-section output). When context is short, drop groups from the back of the list above. These 5 groups are also the review calibration anchors (see [style-samples.md](style-samples.md)); changing any one of them changes pipeline behavior.
 
-## 模板正文
+## Template body
 
 ````text
 # Translation Prompt
@@ -56,8 +56,8 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 - Keep each prose paragraph on one physical line. Use paragraph breaks, not hard-wrapped lines inside a paragraph.
 - Fenced code blocks must be byte-identical to the source, including info strings, whitespace, and ALL comments inside them. Do NOT translate or reformat any content inside code blocks. This is a hard rule with no exceptions.
 - Inline code spans must be kept verbatim. This includes commands, flags, paths, identifiers, API and event names, config keys, protocol values, version numbers, and other machine-readable tokens. Never translate or reformat them.
-- Every repository-relative document link must keep the source link's semantic target and exact query/fragment suffix. When the target belongs to the active bilingual corpus, English output uses its `.md` path and Chinese output uses its `.zh.md` path; a missing counterpart in that corpus is an error, while targets outside it keep the original path. External URLs, images, and pure in-page fragments stay unchanged. Translate link text.
-- Language switcher line: when an English source contains `English | [中文](source-filename.zh.md)`, write `[English](source-filename.md) | 中文`. When a Chinese source contains `[English](source-filename.md) | 中文`, write `English | [中文](source-filename.zh.md)`. Do NOT copy the source switcher unchanged. If the source has no switcher, do not invent a filename or switcher; the pipeline inserts the canonical target switcher after parsing `<final>`.
+- Every repository-relative document link must keep the source link's semantic target and exact query/fragment suffix. When the target belongs to the active bilingual corpus, English output uses its `.md` path and Portuguese output uses its `.pt-BR.md` path; a missing counterpart in that corpus is an error, while targets outside it keep the original path. External URLs, images, and pure in-page fragments stay unchanged. Translate link text.
+- Language switcher line: when an English source contains `English | [Português](source-filename.pt-BR.md)`, write `[English](source-filename.md) | Português`. When a Portuguese source contains `[English](source-filename.md) | Português`, write `English | [Português](source-filename.pt-BR.md)`. Do NOT copy the source switcher unchanged. If the source has no switcher, do not invent a filename or switcher; the pipeline inserts the canonical target switcher after parsing `<final>`.
 - Preserve emphasis marker types and the semantic spans they cover. Do not add, remove, move, or change bold and italic markers.
 
 ### Faithfulness
@@ -71,7 +71,7 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 - Write in a professional, formal tone appropriate for developer documentation. Never use colloquial or casual expressions.
 - Name an actor when the target language would otherwise obscure an actor that the source states or unambiguously implies. Never invent responsibility merely to avoid a passive construction.
 - Prefer established target-language engineering terms over literal renderings. Replace metaphors with direct descriptions that preserve the source meaning.
-- Use polite imperative forms where the text instructs the reader to do something. In Chinese, address the reader as `你`, not `您`.
+- Use polite imperative forms where the text instructs the reader to do something. In Portuguese, address the reader as `você` (or an imperative verb on its own), never `tu`.
 - Keep the author's register: concise stays concise, detailed stays detailed.
 
 ### Sentence Structure
@@ -90,38 +90,38 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 - Do not use the same word to translate distinct source-language concepts when their distinction matters.
 - Avoid repeating the same ordinary verb in close proximity when a natural equivalent preserves the exact meaning. Never vary a terminology-table form, defined concept, or contract verb merely for stylistic variety.
 
-#### When translating into Chinese
-- When a number modifies a noun, include a natural Chinese classifier or measure word when Chinese grammar requires one. For example: "three-role capability seam" → "包含三种角色的能力 seam", not "三角色 seam". Do not add classifiers to code, identifiers, versions, units, or fixed names.
+#### When translating into Portuguese
+- Adapt English noun chains in natural Portuguese order rather than stacking prepositional phrases. For example: "three-role capability seam" → "seam de capacidade com três papéis". Do not reorder inside code spans, identifiers, versions, units, or fixed names.
 
 ### Punctuation
 
-#### When translating into Chinese
-- Use full-width Chinese punctuation in Chinese prose: `，。：；？！（）「」`. Keep half-width punctuation inside code spans, numbers, and complete verbatim English text.
-- Prefer colons, periods, commas, or parentheses over em dashes when they make the sentence clearer or more natural. Keep an em dash when it is the clearest natural punctuation.
-- Use enumeration commas (、) between parallel Chinese items, not regular commas.
+#### When translating into Portuguese
+- Write Brazilian Portuguese (pt-BR): prefer Brazilian forms over European ones (`usuário`, not `utilizador`; `arquivo`, not `ficheiro`) whenever the terminology table does not decide otherwise.
+- Use half-width punctuation as in English; Portuguese prose does not use CJK punctuation forms.
+- Prefer colons, periods, commas, or parentheses over em dashes when they make the sentence clearer or more natural. Keep an em dash (travessão) when it is the clearest natural punctuation.
 - Keep list-item endings consistent with their grammar. Complete sentences may end with periods or other grammatically required punctuation; do not end list items with commas.
-- Put one half-width space between Chinese text and Latin words or numerals. Do not add a space next to full-width punctuation, and do not leave a meaningless half-width space between two Chinese characters.
-- Markdown emphasis markers do not create a word boundary. Determine spacing from the rendered adjacent characters: Chinese next to Chinese takes no space, while Chinese next to a Latin word or numeral takes one half-width space.
-- Use half-width digits and Latin letters, never full-width forms.
-- For RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY), translate to the corresponding Chinese term (必须、禁止、应当、可以), preserve the SOURCE emphasis span exactly, and do not weaken its normative strength: plain source stays plain (必须), italic source stays italic (*必须*), and bold source stays bold (**必须**).
+- Follow the current orthographic agreement (Acordo Ortográfico de 1990): no trema, accent-bearing words keep their accents (`ação`, `sequência`, `não`).
+- Markdown emphasis markers do not create a word boundary. A bold or italic Portuguese word keeps ordinary single spaces around surrounding words; never glue a regular prose word to `**` without the spacing the surrounding grammar needs.
+- Use half-width digits and Latin letters.
+- For RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY), translate to the corresponding Portuguese term (DEVE, NÃO DEVE, DEVERIA, PODE), preserve the SOURCE emphasis span exactly, and do not weaken its normative strength: plain source stays plain (DEVE), italic source stays italic (*DEVERIA*), and bold source stays bold (**DEVE**).
 
 #### When translating into English
-- Use half-width English punctuation and standard English spacing. Preserve full-width punctuation only in verbatim Chinese text.
-- Convert enumeration commas (、) to English commas and Chinese prose quotation marks to English double quotes.
-- Convert Chinese topic-comment sentences and omitted-subject constructions into clear English subjects when the actor is stated or unambiguously implied. Do not invent an actor.
-- Use concise professional developer prose and established English technical terms. Do not transliterate Chinese engineering idioms literally.
-- Use the terminology table's English column exactly and do not carry Chinese first-occurrence glosses into English prose.
+- Use half-width English punctuation and standard English spacing. Preserve source-language punctuation only in verbatim quoted text.
+- Convert Portuguese prose quotation marks and dash conventions into standard English punctuation.
+- Render Portuguese sentence constructions into clear English subjects when the actor is stated or unambiguously implied. Do not invent an actor.
+- Use concise professional developer prose and established English technical terms. Do not translate Portuguese engineering idioms literally into words that a native technical author would not use.
+- Use the terminology table's English column exactly and do not carry Portuguese first-occurrence glosses into English prose.
 
 ## Terminology
 
 A terminology table is provided below. Follow it strictly:
 - Render every listed term exactly as specified.
-- When the target language is Chinese, use the "中文" column. On the document's first prose occurrence, write the "首次出现" value when one is specified; on later occurrences, write only the part before the parenthetical gloss.
-- When the target language is English, use the "English" column without a Chinese gloss; do not copy the "中文" or "首次出现" value into English prose.
+- When the target language is Portuguese, use the "Portuguese" column. On the document's first prose occurrence, write the "First occurrence" value when one is specified; on later occurrences, write only the part before the parenthetical gloss.
+- When the target language is English, use the "English" column without a Portuguese gloss; do not copy the "Portuguese" or "First occurrence" value into English prose.
 - If a term has already been glossed as part of a compound term, do not gloss it again when it appears alone later.
-- NEVER use translations listed in the "不要译作" column.
+- NEVER use translations listed in the "Do not translate as" column.
 - Code spans and other protected tokens remain verbatim even when their text resembles a listed term.
-- For an unlisted technical term, use an established target-language technical term when its meaning is unambiguous in context. For a Chinese target, use an established Chinese rendering from a major Chinese-language OSS or vendor source; if you cannot reliably determine such a rendering, preserve the source term and record `[Terminology: pending]` in `<review>` with a tentative rendering for human review. For an English target, use the established English technical term; if the source term has no unambiguous established equivalent, preserve it with the shortest English gloss needed to make it intelligible and record `[Terminology: pending]` in `<review>`. A tentative rendering may appear in `<review>` but must not be silently adopted in `<translation>` or `<final>`, and you must not invent or claim a specific external precedent. This rule applies to terminology only; for general prose, freely restructure and paraphrase for natural expression.
+- For an unlisted technical term, use an established target-language technical term when its meaning is unambiguous in context. For a Portuguese target, use an established Brazilian-Portuguese rendering from a major Portuguese-language OSS or vendor source; if you cannot reliably determine such a rendering, preserve the source term and record `[Terminology: pending]` in `<review>` with a tentative rendering for human review. For an English target, use the established English technical term; if the source term has no unambiguous established equivalent, preserve it with the shortest English gloss needed to make it intelligible and record `[Terminology: pending]` in `<review>`. A tentative rendering may appear in `<review>` but must not be silently adopted in `<translation>` or `<final>`, and you must not invent or claim a specific external precedent. This rule applies to terminology only; for general prose, freely restructure and paraphrase for natural expression.
 
 {{terminology}}
 
@@ -138,9 +138,9 @@ The outer section tags are framing. If Markdown inside any section body contains
 
 <review>
 (Second pass: actual corrections only, one correction per line with a category tag, e.g.)
-- [Tone] "旁挂记录" → "伴随记录"（生造词）
-- [Sentence] 第 3 段补充逗号断句
-- [Punctuation] 两处破折号替换为冒号
+- [Tone] "registro sidecar" → "registro-acompanhante"
+- [Sentence] paragraph 3 gains a comma and reads as two sentences
+- [Punctuation] two ambiguous em dashes replaced by colons
 - [Terminology: pending] source term → tentative rendering
 - 无修正
 </review>
@@ -160,7 +160,7 @@ After writing `<translation>`, verify it in two directions. First re-read it in 
 - Are inline code spans and machine-readable tokens verbatim?
 - Is an existing language switcher correctly flipped, and is no switcher or filename invented when the source lacks one?
 - Do links preserve their semantic targets and exact query/fragment suffixes while using target-locale paths, and are emphasis spans preserved?
-- Does spacing across emphasis boundaries follow the same Chinese/Latin/numeral rule as ordinary prose?
+- Does spacing around emphasis markers follow ordinary prose spacing rules?
 - Are wrapper-tag lines inside section bodies escaped with one additional backslash?
 
 **Faithfulness**
@@ -185,77 +185,77 @@ After writing `<translation>`, verify it in two directions. First re-read it in 
 - Is any slang or internal jargon present?
 
 **Terminology**
-- For a Chinese target, are first-occurrence glosses correctly applied to the true first prose occurrence, neither missing nor repeated? For an English target, are Chinese glosses absent?
-- Are any "不要译作" forbidden translations present?
+- For a Portuguese target, are first-occurrence glosses correctly applied to the true first prose occurrence, neither missing nor repeated? For an English target, are Portuguese glosses absent?
+- Are any "Do not translate as" forbidden translations present?
 - Do protected tokens remain untouched even when they resemble terminology entries?
-- For an unlisted term, does a Chinese target use an established Chinese rendering or preserve the source term as pending when no reliable rendering is known, and does an English target use the established English technical term or preserve only an ambiguous source term with the shortest necessary gloss and a pending notice?
+- For an unlisted term, does a Portuguese target use an established Brazilian-Portuguese rendering or preserve the source term as pending when no reliable rendering is known, and does an English target use the established English technical term or preserve only an ambiguous source term with the shortest necessary gloss and a pending notice?
 
-**Punctuation** (when target is Chinese)
+**Punctuation** (when the target is Portuguese)
 - Are punctuation, mixed-script spacing, quotation marks, Latin letters, and digits in their required forms?
 - Are there em dashes that make the sentence less clear and should be replaced, while natural em dashes remain intact?
 - Are list-item endings grammatically consistent, with none ending in commas?
 - Do RFC 2119 keywords preserve the source emphasis span and normative strength exactly?
 
-Record actual corrections in `<review>`, then output the corrected complete document in `<final>`. If no correction or pending terminology notice is needed, write exactly `- 无修正` in `<review>` and copy `<translation>` unchanged into `<final>`. If `<review>` contains only pending terminology notices, copy `<translation>` unchanged into `<final>`.
+Record actual corrections in `<review>`, then output the corrected complete document in `<final>`. If no correction or pending terminology notice is needed, write exactly `- No corrections` in `<review>` and copy `<translation>` unchanged into `<final>`. If `<review>` contains only pending terminology notices, copy `<translation>` unchanged into `<final>`.
 
 ## Examples
 
 Below are representative examples of common problems and their corrections. Follow the "Good" versions within the rule each example illustrates; examples do not override source context or higher-priority requirements.
 
-### Colloquial verb → Professional verb
+### Calço semântico (false friend) → Termo profissional
 - Source: `The repo pins pnpm@11.7.0 in package.json`
-- Bad: `仓库在 package.json 中钉住 pnpm@11.7.0`
-- Good: `该仓库在 package.json 中固定使用 pnpm@11.7.0`
+- Bad: `O repo crava o pnpm@11.7.0 no package.json`
+- Good: `O repositório fixa o pnpm@11.7.0 no package.json`
 
 ### Run-on sentence → Natural phrasing with pause
 - Source: `Read docs/architecture.md before changing anything under packages/.`
-- Bad: `改动 packages/ 下的任何东西之前先读 docs/architecture.md。`
-- Good: `在修改 packages/ 目录下的任何内容之前，请先阅读 docs/architecture.md。`
+- Bad: `Ler docs/architecture.md antes mudar qualquer coisa sob packages/.`
+- Good: `Leia docs/architecture.md antes de alterar qualquer coisa em packages/.`
 
 ### Stiff passive voice → Active and natural
 - Source: `a green gate means the pair was confirmed consistent at these exact contents, not that the confirmation was sound.`
-- Bad: `门禁绿意味着这对文档曾在当前内容上被确认一致，不意味着这次确认本身是对的。`
-- Good: `门禁通过意味着这组文档在当前内容上的一致性得到了确认，不代表确认本身正确可靠。`
+- Bad: `a porta verde significa que o par foi confirmado consistente nesses conteúdos exatos, não que a confirmação era sólida.`
+- Good: `o gate verde significa que a consistência do par foi confirmada nesses conteúdos exatos, e não que a confirmação em si seja sólida.`
 
 ### Invented word → Natural expression
 - Source: `A sidecar record of both blob hashes makes consistency checkable`
-- Bad: `旁挂记录两侧 blob hash，使一致性可检查`
-- Good: `伴随记录保存两侧 blob hash，使一致性可检查`
+- Bad: `Um registro sidecar do blob hash de ambos torna a consistência checável`
+- Good: `Um registro-acompanhante com os blob hashes de ambos os lados torna a consistência verificável`
 
 ### Em-dash → Colon/period
 - Source: `FIXME — an issue that should block a new release. A release should not ship with an open FIXME unless reviewers explicitly agree the change can be merged anyway.`
-- Bad: `FIXME——应当阻塞新版本发布的问题。除非评审者明确同意可以照常合入，发布不应带着未解决的 FIXME 出门。`
-- Good: `FIXME：应当阻塞新版本发布的问题。除非评审者明确同意该更改可以合并，否则发布版本不应包含未解决的 FIXME。`
+- Bad: `FIXME — um problema que deveria bloquear um novo release. O release não deveria sair com um FIXME aberto a menos que revisores concordem explicitamente que a mudança pode ser mesclada assim mesmo.`
+- Good: `FIXME: um problema que deveria bloquear um novo release. O release não deveria sair com um FIXME em aberto, a menos que a revisão concorde explicitamente que a mudança pode ser mesclada ainda assim.`
 
 ### Overly literal → Meaningful rendering
 - Source: `awkward phrasing is easier to notice when you read the translation without comparing it with the source`
-- Bad: `不把译文和原文比较时，尴尬的措辞更容易被注意`
-- Good: `不对照原文阅读译文时，更容易察觉别扭的表达`
+- Bad: `frasear-se sem jeito é mais fácil de notar quando você lê a tradução sem compará-la com a fonte`
+- Good: `um texto sem naturalidade fica mais evidente quando lemos a tradução sem compará-la com o original`
 
 ### Terminology — do not translate what should be kept in English
 - Source: `typed service seams, and explicit extension points`
-- Bad: `类型化的服务 seam（扩展点）与显式扩展点`
-- Good: `类型化的服务 seam 与显式扩展点`
+- Bad: `costuras de serviço tipadas, e pontos de extensão explícitos`
+- Good: `os typed service seams e os explicit extension points`
 
 ### Slang/jargon → Professional phrasing
 - Source: `The committed agent workflow lives in .agents/skills/arx-translate-docs`
-- Bad: `进仓的 agent 工作流见 .agents/skills/arx-translate-docs`
-- Good: `仓库内置的 agent 工作流见 .agents/skills/arx-translate-docs`
+- Bad: `O workflow do agent comitado mora em .agents/skills/arx-translate-docs`
+- Good: `O fluxo de trabalho do agente versionado no repositório fica em .agents/skills/arx-translate-docs`
 
 ### "For humans" — translate the intent, not the word
 - Source: `For humans, start with the development guide`
-- Bad: `对于人工读者，请先从开发指南开始`（"人工读者"生硬）
-- Good: `面向开发者：请先阅读开发指南`（"开发者"自然，且中文里冒号在此处更自然）
+- Bad: `Para humanos, comece com o guia de desenvolvimento`
+- Good: `Para leitura por humanos, comece pelo guia de desenvolvimento`
 
 ### Code block comments — NEVER translate
 - Source code block contains: `# full-screen TUI coding agent (needs DEEPSEEK_API_KEY)`
-- Bad: `# 全屏 TUI coding agent（需要 DEEPSEEK_API_KEY）`
+- Bad: `# agente de codificação TUI em tela cheia (precisa de DEEPSEEK_API_KEY)`
 - Good: `# full-screen TUI coding agent (needs DEEPSEEK_API_KEY)` (keep exactly as-is, byte-for-byte)
 
 ### Language switcher — flip direction
-- Source file (English) has: `English | [中文](README.zh.md)`
-- Bad (copying source unchanged): `English | [中文](README.zh.md)`
-- Good (flipped for Chinese file): `[English](README.md) | 中文`
+- Source file (English) has: `English | [Português](README.pt-BR.md)`
+- Bad (copying source unchanged): `English | [Português](README.pt-BR.md)`
+- Good (flipped for the Portuguese file): `[English](README.md) | Português`
 
 ---
 

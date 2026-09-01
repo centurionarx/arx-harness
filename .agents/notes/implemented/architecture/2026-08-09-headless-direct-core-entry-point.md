@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-09-headless-direct-core-entry-point.zh.md)
-
 ## Problem
 
 The `headless` product contract is one local task with final assistant text on stdout, a success-sensitive exit code, empty stderr on success, and no listening port. A composition containing Workspace Host services, ApiProxy, HTTP, the Web runtime, or browser plugins contradicts that contract and makes local completion depend on an unrelated transport tree.
@@ -20,7 +18,7 @@ The shipped `headless` profile contains `arx-base` and `arx-headless`. The headl
 
 `loadProfile` recognizes the exact installation-owned headless tuple (`arx-base`, `arx-web-app`, `arx-headless`) and normalizes it to the shipped headless template while preserving every other manifest field. Extra, missing, or reordered bundle lists are user-owned and remain untouched.
 
-This note owns the headless transport and completion contracts. [Apps own their command lines](2026-08-06-app-owned-command-line.md) owns the current `arx --profile headless` grammar; the former [`arx run` decision](../../archived/feature/2026-08-08-dsh-run-headless-command.md) records the superseded launcher-owned grammar, [GUI layering and RPC protocol](2026-07-19-gui-layering-and-rpc-protocol.md) owns browser gateway boundaries, [web config-tree boot and transport layering](2026-07-24-web-config-tree-boot-and-transport-layering.md) owns the Web tree, and [the default model follows the picker](../feature/2026-08-07-default-model-follows-the-picker.md) owns persistence of the shared Agent default.
+This note owns the headless transport and completion contracts. [Apps own their command lines](2026-08-06-app-owned-command-line.md) owns the current `arx --profile headless` grammar; the former `arx run` decision records the superseded launcher-owned grammar, [GUI layering and RPC protocol](2026-07-19-gui-layering-and-rpc-protocol.md) owns browser gateway boundaries, [web config-tree boot and transport layering](2026-07-24-web-config-tree-boot-and-transport-layering.md) owns the Web tree, and [the default model follows the picker](../feature/2026-08-07-default-model-follows-the-picker.md) owns persistence of the shared Agent default.
 
 ## Verification
 

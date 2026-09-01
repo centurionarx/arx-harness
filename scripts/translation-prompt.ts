@@ -17,12 +17,12 @@ export const TRANSLATION_PROMPT_PLACEHOLDERS = ['source_lang', 'target_lang', 't
 type TranslationPromptPlaceholder = (typeof TRANSLATION_PROMPT_PLACEHOLDERS)[number]
 
 /** Languages accepted by the bidirectional prompt. */
-type TranslationLanguage = 'English' | 'Chinese'
+type TranslationLanguage = 'English' | 'Portuguese'
 
 /** Inputs that vary for one rendered translation request. */
 export interface TranslationPromptInput {
   sourceLanguage: TranslationLanguage
-  /** Source basename, including `.md` or `.zh.md`. */
+  /** Source basename, including `.md` or `.pt-BR.md`. */
   sourceFilename: string
   /** Complete current `terminology.md` contents. */
   terminology: string
@@ -31,7 +31,7 @@ export interface TranslationPromptInput {
 /** One reviewed whole-document example available in both directions. */
 export interface TranslationExample {
   english: string
-  chinese: string
+  portuguese: string
 }
 
 /** Inputs for one complete model request. */
@@ -60,11 +60,11 @@ export interface TranslationResponse {
 }
 
 const PLACEHOLDER = /{{([a-z_]+)}}/g
-const TEMPLATE_OPEN = '## 模板正文\n\n````text\n'
+const TEMPLATE_OPEN = '## Template body\n\n````text\n'
 const TEMPLATE_CLOSE = '\n````'
 const RESPONSE_SECTIONS = ['translation', 'review', 'final'] as const
 const RESPONSE_DELIMITERS = new Set(RESPONSE_SECTIONS.flatMap(section => [`<${section}>`, `</${section}>`]))
-const LANGUAGE_SWITCHER = /^(?:English \| \[中文\]\(.+\)|\[English\]\(.+\) \| 中文)$/
+const LANGUAGE_SWITCHER = /^(?:English \| \[Português\]\(.+\)|\[English\]\(.+\) \| Português)$/
 
 interface TranslationFiles {
   targetFilename: string
@@ -75,27 +75,27 @@ function translationFiles(input: Pick<TranslationPromptInput, 'sourceFilename' |
   if (basename(input.sourceFilename) !== input.sourceFilename) {
     throw new Error(`translation prompt: sourceFilename must be a basename; got ${JSON.stringify(input.sourceFilename)}`)
   }
-  const sourceIsChinese = input.sourceFilename.endsWith('.zh.md')
-  const sourceIsEnglish = input.sourceFilename.endsWith('.md') && !sourceIsChinese
-  if (input.sourceLanguage === 'Chinese' ? !sourceIsChinese : !sourceIsEnglish) {
+  const sourceIsPortuguese = input.sourceFilename.endsWith('.pt-BR.md')
+  const sourceIsEnglish = input.sourceFilename.endsWith('.md') && !sourceIsPortuguese
+  if (input.sourceLanguage === 'Portuguese' ? !sourceIsPortuguese : !sourceIsEnglish) {
     throw new Error(`translation prompt: ${input.sourceFilename} does not match source language ${input.sourceLanguage}`)
   }
-  if (sourceIsChinese) {
+  if (sourceIsPortuguese) {
     return {
-      targetFilename: input.sourceFilename.replace(/\.zh\.md$/, '.md'),
-      targetSwitcher: `English | [中文](${input.sourceFilename})`,
+      targetFilename: input.sourceFilename.replace(/\.pt-BR\.md$/, '.md'),
+      targetSwitcher: `English | [Português](${input.sourceFilename})`,
     }
   }
   return {
-    targetFilename: input.sourceFilename.replace(/\.md$/, '.zh.md'),
-    targetSwitcher: `[English](${input.sourceFilename}) | 中文`,
+    targetFilename: input.sourceFilename.replace(/\.md$/, '.pt-BR.md'),
+    targetSwitcher: `[English](${input.sourceFilename}) | Português`,
   }
 }
 
 /** Extract the machine-consumed text fence from `translation-prompt.md`. */
 function extractTranslationPrompt(document: string): string {
   const start = document.indexOf(TEMPLATE_OPEN)
-  if (start === -1) throw new Error('translation prompt: missing `## 模板正文` text fence')
+  if (start === -1) throw new Error('translation prompt: missing `## Template body` text fence')
   const contentStart = start + TEMPLATE_OPEN.length
   const end = document.indexOf(TEMPLATE_CLOSE, contentStart)
   if (end === -1) throw new Error('translation prompt: missing closing four-backtick fence')
@@ -112,7 +112,7 @@ export function documentedTranslationPromptPlaceholders(document: string): strin
 /** Render one system prompt from the checked-in template. */
 export function renderTranslationPrompt(document: string, input: TranslationPromptInput): string {
   translationFiles(input)
-  const targetLanguage: TranslationLanguage = input.sourceLanguage === 'English' ? 'Chinese' : 'English'
+  const targetLanguage: TranslationLanguage = input.sourceLanguage === 'English' ? 'Portuguese' : 'English'
   const values: Record<TranslationPromptPlaceholder, string> = {
     source_lang: input.sourceLanguage,
     target_lang: targetLanguage,
@@ -141,8 +141,8 @@ export function renderTranslationPrompt(document: string, input: TranslationProm
  */
 export function renderTranslationRequest(document: string, input: TranslationRequestInput): TranslationRequest {
   const files = translationFiles(input)
-  const sourceKey = input.sourceLanguage === 'English' ? 'english' : 'chinese'
-  const targetKey = input.sourceLanguage === 'English' ? 'chinese' : 'english'
+  const sourceKey = input.sourceLanguage === 'English' ? 'english' : 'portuguese'
+  const targetKey = input.sourceLanguage === 'English' ? 'portuguese' : 'english'
   const messages: TranslationMessage[] = [{ role: 'system', content: renderTranslationPrompt(document, input) }]
   for (const example of input.examples) {
     messages.push(

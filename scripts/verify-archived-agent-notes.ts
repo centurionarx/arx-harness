@@ -53,9 +53,8 @@ for (const entry of readdirSync(archiveRoot, { withFileTypes: true })) {
     artifacts.set(rel, readFileSync(resolve(archiveRoot, rel)))
   }
 }
-for (const kind of AGENT_NOTE_CLASSES) {
-  if (!kinds.has(kind)) errors.push(`archived/${kind}/: required kind directory is missing`)
-}
+// Kind directories exist only while the archive holds sealed notes; an empty
+// archive has no kind directories on a fresh clone, so none are required.
 errors.push(...validateArchiveArtifacts(artifacts))
 
 function runGit(args: string[]): string {

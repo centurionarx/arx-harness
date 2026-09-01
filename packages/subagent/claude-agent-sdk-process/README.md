@@ -1,7 +1,5 @@
 # @arx-ai/arx-claude-agent-sdk-process
 
-English | [中文](README.zh.md)
-
 The official Claude Agent SDK spawns a Claude Code CLI of its own. This package makes the harness own that process tree instead. It is **NOT a cordis plugin** — it registers nothing and injects nothing. It is a library that the SDK's `spawnClaudeCodeProcess` hook uses to route a spawn request through [`arx-subprocess`](../../subprocess/subprocess/README.md), so termination escalation and whole-tree exit proof stay with the service that owns them.
 
 It exists as a package because more than one seam drives the same SDK: [`arx-subagent-claude-code`](../subagent-claude-code/README.md) delegates a whole task to it, and an LLM adapter can drive the same CLI as an ordinary model route. Copying this projection into a second consumer would fork the process-ownership contract.

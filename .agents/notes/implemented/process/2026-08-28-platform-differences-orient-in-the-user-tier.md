@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-28-platform-differences-orient-in-the-user-tier.zh.md)
-
 ## Problem
 
 Every Windows-specific contract was already documented, and none of it was findable.

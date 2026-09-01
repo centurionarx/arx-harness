@@ -1,7 +1,5 @@
 # @arx-ai/arx-client-ui-exit
 
-English | [中文](README.zh.md)
-
 This package fills `sidebar.exit`, the seat ui-sidebar declares below Settings, with a foot row that stops the harness. The shutdown itself belongs to the launcher: the row asks for it over `host.exit`, which the launcher answers by starting its own bounded process exit.
 
 The row confirms before asking. The control ends the server that serves the page, so the viewer cannot undo it from the UI they are looking at; session logs are durable, so a restart resumes them. A started shutdown never returns to idle — the page it lives on is going — and the row reports `Stopping…` until the connection dies with the server. A deployment whose launcher provided no exit request answers `exit-unavailable`, and the row says so instead of resolving on a shutdown that will not happen.

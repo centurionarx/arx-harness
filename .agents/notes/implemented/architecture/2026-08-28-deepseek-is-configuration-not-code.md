@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-28-deepseek-is-configuration-not-code.zh.md)
-
 ## Problem
 
 Two packages existed only to speak to one vendor: `arx-llm-deepseek`, a hand-written chat-completions adapter with its own SSE framing, files API, and upload index, and `arx-web-search-deepseek`, a search provider bound to the same account. Around them the repository had grown a default naming that vendor — a shipped adapter row, a shipped default model, a shipped search provider, an onboarding dialog with a vendor-specific card, and an SDK server that mounted the adapter for any caller whose provider it did not recognize.

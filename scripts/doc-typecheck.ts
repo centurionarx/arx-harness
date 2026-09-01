@@ -1,7 +1,7 @@
 /**
  * Typecheck Markdown `ts` fences against the workspace API. `ignore-check` fences are reported as
  * opt-outs; generated catalog fragments and source-equivalence blocks are skipped here because their
- * owning gates verify them. Byte-identical `.zh.md` copies reuse their unsuffixed sibling's check. A
+ * owning gates verify them. Byte-identical `.pt-BR.md` copies reuse their unsuffixed sibling's check. A
  * build-coordinated mode consumes existing declarations without emit.
  */
 

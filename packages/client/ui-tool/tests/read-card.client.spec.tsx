@@ -14,7 +14,7 @@ import {
   createSnapshotStore, EMPTY_CONVERSATION_VIEWS,
 } from '@arx-ai/arx-client-runtime/client'
 import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
-import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
 import type {
   ConversationSnapshot, RunningToolCall, SessionId, SessionListState, ToolResultNode, WorkspaceListState,
 } from '@arx-ai/arx-client-runtime/client'
@@ -23,7 +23,7 @@ import type { SelectionTarget } from '@arx-ai/arx-client-ui-conversation/client'
 import { CHAT_READ_MAX_LINES, readCardModel } from '../src/client/tool/models/read-card-model.ts'
 import { createChatStore } from '@arx-ai/arx-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
-import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
+import { en } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
 import { DetailsPanel } from '@arx-ai/arx-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
 import { ReadRow, readToolview } from '../src/client/tool/toolviews/read-row.tsx'
 import { renderToolDetails, SessionProviderStub, toolChatSnapshot } from './tool-details-render.client.tsx'
@@ -33,7 +33,7 @@ afterEach(cleanup)
 const SID = 's1' as SessionId
 
 /** The chat-view locale seat: this package's namespace over the common fallback. */
-const t: GenericToolCardProps['t'] = makeTranslate(zh, commonZh)
+const t: GenericToolCardProps['t'] = makeTranslate(en, commonEn)
 
 // The read tool's real schema key is `file_path`; the top-level read samples
 // use it so the row exercises a production-shaped call. `web_fetch` (below) has
@@ -344,7 +344,7 @@ describe('DetailsPanel Output section (read)', () => {
       })],
     }), target)
     expect(view.container.querySelector('[data-read]')).toBeNull()
-    expect(view.getByText('输出').closest('section')?.querySelector('pre')?.textContent).toBe('plain result')
+    expect(view.getByText('Output').closest('section')?.querySelector('pre')?.textContent).toBe('plain result')
   })
 
   it('abbreviates a leftover POSIX home path on the read card label', () => {
@@ -356,9 +356,9 @@ describe('DetailsPanel Output section (read)', () => {
     expect(view.getByText('~/notes.md')).toBeTruthy()
   })
 
-  it('a running read keeps the 运行中… placeholder (no result view)', () => {
+  it('a running read keeps the Running… placeholder (no result view)', () => {
     const view = mount(snapshot({ runningCalls: [running()] }), target)
-    expect(view.getByText('运行中…')).toBeTruthy()
+    expect(view.getByText('Running…')).toBeTruthy()
     expect(view.container.querySelector('[data-read]')).toBeNull()
   })
 })

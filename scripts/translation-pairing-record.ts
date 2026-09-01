@@ -3,10 +3,10 @@
 import { basename } from 'node:path'
 
 /** The accepted counterpart suffixes of the bilingual corpus. */
-export type CounterpartSuffix = '.zh.md' | '.pt-BR.md'
+export type CounterpartSuffix = '.pt-BR.md'
 
 /** All counterpart suffixes the pairing machinery accepts. */
-export const COUNTERPART_SUFFIXES: readonly CounterpartSuffix[] = ['.zh.md', '.pt-BR.md']
+export const COUNTERPART_SUFFIXES: readonly CounterpartSuffix[] = ['.pt-BR.md']
 
 /** The three repository-relative paths that form one bilingual pair. */
 export interface TranslationPairPaths {
@@ -38,7 +38,7 @@ const META_LINE = /^([^:#]+\.md): ([0-9a-f]{40})$/
  */
 export function translationPairPaths(
   source: string,
-  counterpartSuffix: CounterpartSuffix = '.zh.md',
+  counterpartSuffix: CounterpartSuffix = '.pt-BR.md',
 ): TranslationPairPaths {
   if (!source.endsWith('.md') || COUNTERPART_SUFFIXES.some(suffix => source.endsWith(suffix))) {
     throw new Error(`expected an English Markdown path, received ${JSON.stringify(source)}`)
@@ -60,7 +60,7 @@ export function translationPairPaths(
  */
 export function translationPairPathsFromMeta(
   meta: string,
-  counterpartSuffix: CounterpartSuffix = '.zh.md',
+  counterpartSuffix: CounterpartSuffix = '.pt-BR.md',
 ): TranslationPairPaths {
   if (!meta.endsWith('.i18n.yaml')) {
     throw new Error(`expected a bilingual consistency-record path, received ${JSON.stringify(meta)}`)

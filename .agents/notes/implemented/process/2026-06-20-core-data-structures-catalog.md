@@ -2,13 +2,11 @@
 
 Status: implemented
 
-English | [中文](2026-06-20-core-data-structures-catalog.zh.md)
-
 ## Problem
 
 A reader trying to understand the harness could find its *behavior* in [architecture.md](../../../../docs/architecture.md) (the service map, the session/turn/step lifecycle, the event taxonomy) but had no single place describing its *vocabulary* — the data structures that behavior moves around. The type shapes lived only in source, scattered across `packages/*/src/types.ts`, so understanding "what is a `Message`, a `SessionEvent`, a `StreamChunk`" meant reading the declarations directly. A prose catalog would help, but a catalog that paraphrases or paste-copies type definitions rots the instant a field changes — and an out-of-sync type doc is worse than none, because a reader trusts it.
 
-So the work had two intertwined questions: **what belongs in such a catalog** (the scoping problem — a harness has dozens of cross-package types and dumping all of them helps no one), and **how to keep pasted type definitions from drifting** (the durability problem). This Agent Note records both decisions. Its historical sibling, [the archived generated Cordis events + services catalog decision](../../archived/process/2026-06-20-generated-cordis-catalog.md), is the *wiring*-axis complement: this one catalogs the data structures, that one the events and services that move them.
+So the work had two intertwined questions: **what belongs in such a catalog** (the scoping problem — a harness has dozens of cross-package types and dumping all of them helps no one), and **how to keep pasted type definitions from drifting** (the durability problem). This Agent Note records both decisions. Its historical sibling, the archived generated Cordis events + services catalog decision, is the *wiring*-axis complement: this one catalogs the data structures, that one the events and services that move them.
 
 ## Decision
 
@@ -35,7 +33,7 @@ The durability requirement was specific: the doc shows the **literal** current t
 
 - Complete type declarations and their JSDoc are pasted verbatim into a dedicated ` ```ts type-equiv ` fence. A concise ` ```ts public-api ` fence carries the source-equivalent ambient projection for a class whose implementation bodies do not belong in the catalog. `doc-typecheck` recognizes both and skips them (the bare declarations are not standalone-compilable), and **excludes them from the opt-out ratio** — they are a separately-checked category, not unchecked sketches.
 - A new `scripts/verify-type-equiv.ts` extracts each block via the TypeScript parser and asserts that its declaration structure and every JSDoc comment match the declared symbol, ignoring only formatting whitespace and non-JSDoc comments. Ordinary blocks retain the complete declaration. A `public-api` projection retains a class's public fields, constructor, accessors, and methods with their original JSDoc while removing implementation bodies and private or protected members. This is chosen over a compiled `_Check` assertion because source names and documentation identity, not assignability, are the properties the catalog preserves.
-- Each type block's document, symbol, and source file are recorded in `scripts/type-equiv.manifest.json` (`{ doc, symbol, source }` entries), **not** in directive comments in the prose. The script enforces a **1:1 correspondence** between each primary type-equiv block and one manifest entry, so a block can never be silently unchecked and an entry can never rot. A paired `.zh.md` block reuses the unsuffixed sibling's entry only when the complete tracked fence sequence matches in order, kind, and byte-exact body; otherwise the gate checks it independently, finds no manifest entry, and fails.
+- Each type block's document, symbol, and source file are recorded in `scripts/type-equiv.manifest.json` (`{ doc, symbol, source }` entries), **not** in directive comments in the prose. The script enforces a **1:1 correspondence** between each primary type-equiv block and one manifest entry, so a block can never be silently unchecked and an entry can never rot. A paired `.pt-BR.md` block reuses the unsuffixed sibling's entry only when the complete tracked fence sequence matches in order, kind, and byte-exact body; otherwise the gate checks it independently, finds no manifest entry, and fails.
 - Wired into `doc-sync`, so relevant documentation changes run it locally and CI runs it with the other documentation checks.
 
 ### Maintenance is the author's job, with a gate backstop
@@ -50,7 +48,7 @@ The durability requirement was specific: the doc shows the **literal** current t
 
 ## Verification lesson
 
-`verify-type-equiv` must scan the complete Markdown scope, not only manifest-named documents. Otherwise an unmanifested `type-equiv` block escapes the claimed one-to-one check. The gate therefore reports such blocks as orphans. This Agent Note records that fail-closed scan rule together with the spine-vs-subsystem and verbatim-match decisions; the generated Cordis catalog has the symmetric design record in [its archived Agent Note](../../archived/process/2026-06-20-generated-cordis-catalog.md).
+`verify-type-equiv` must scan the complete Markdown scope, not only manifest-named documents. Otherwise an unmanifested `type-equiv` block escapes the claimed one-to-one check. The gate therefore reports such blocks as orphans. This Agent Note records that fail-closed scan rule together with the spine-vs-subsystem and verbatim-match decisions; the generated Cordis catalog has the symmetric design record in its archived Agent Note.
 
 ## Consequences
 

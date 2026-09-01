@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-27-images-through-the-vendor-cli-route.zh.md)
-
 ## Problem
 
 The vendor-CLI route refused every image block with `UNSUPPORTED_CONTENT`. That looked like a limit of the CLI, and it was not: it was a consequence of how this adapter opened a run.

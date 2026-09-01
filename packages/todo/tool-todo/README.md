@@ -1,7 +1,5 @@
 # @arx-ai/arx-tool-todo
 
-English | [中文](README.zh.md)
-
 The model-facing `todo_write` tool: the agent's whole task list, replaced wholesale on each call.
 
 ## What it does

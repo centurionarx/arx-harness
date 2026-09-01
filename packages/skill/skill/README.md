@@ -1,7 +1,5 @@
 # @arx-ai/arx-skill
 
-English | [中文](README.zh.md)
-
 Pure agent skill provider registry.
 
 This package owns the `ctx.skills` interface. It does not know whether skills come from local files, embedded plugin data, HTTP, or another backend; providers register those sources with `ctx.skills.registerProvider(...)`. The shipped local implementation is [`@arx-ai/arx-skill-filesystem`](../skill-filesystem).

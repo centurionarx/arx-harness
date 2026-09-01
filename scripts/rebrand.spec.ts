@@ -75,7 +75,7 @@ const PRESERVED: readonly string[] = [
   'https://github.com/deepseek-harness/deepseek-harness/issues/2488',
   // archived notes are frozen, so links into them keep the file names they had
   '../../archived/architecture/2026-07-28-dsh-native-typescript-source-launch.md',
-  '[note](../../archived/feature/2026-08-08-dsh-run-headless-command.zh.md)',
+  '[note](../../archived/feature/2026-08-08-dsh-run-headless-command.pt-BR.md)',
   // `dsw` outside the custom-property namespace: a String method, an opaque
   // id, and DeepSeek's own web product
   'value.endsWith(suffix)',
@@ -131,7 +131,7 @@ describe('rebrandText', () => {
   })
 
   it('keeps the bilingual link label intact', () => {
-    expect(rebrandText('English | [中文](CONTRIBUTING.zh.md)')).toBe('English | [中文](CONTRIBUTING.zh.md)')
+    expect(rebrandText('English | [中文](CONTRIBUTING.pt-BR.md)')).toBe('English | [中文](CONTRIBUTING.pt-BR.md)')
   })
 
   it('is idempotent', () => {

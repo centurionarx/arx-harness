@@ -5,7 +5,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 import type { SidebarRootInjected } from './contract/slots.ts'
 import { SidebarRoot } from './SidebarRoot.tsx'
-import { en, zh, type SidebarKey } from './locales.ts'
+import { en, type SidebarKey } from './locales.ts'
 
 export type {
   SidebarBrandMarkOwnerProps, SidebarBrandNameOwnerProps, SidebarFooterActionOwnerProps,
@@ -30,7 +30,7 @@ export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'locale', 'c
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-sidebar: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-sidebar: dictionaries')
 
   const injectProps = (): SidebarRootInjected => ({
     // The shell's New Session button rides the runtime's shared action

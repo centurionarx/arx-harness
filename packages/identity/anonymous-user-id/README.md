@@ -1,7 +1,5 @@
 # @arx-ai/arx-anonymous-user-id
 
-English | [中文](README.zh.md)
-
 Shared anonymous identity for session telemetry, direct feedback acknowledgement, and DeepSeek provider requests. `getOrCreateAnonymousUserId()` returns a random UUID v4 scoped to one harness home, persisted as the bare line `$ARX_HOME/.anonymous-user-id` (`~/.arx/.anonymous-user-id` when `ARX_HOME` is unset). The OpenTelemetry backend reports it as Resource `user.id`; `/feedback` includes the same value in its acknowledgement; and `arx-llm-deepseek` sends it as `x-arx-harness-user-id`, allowing the receiving systems to correlate records without independently generated identities.
 
 The identity is never derived from the hostname, network address, git remote, or another identifying source. Deleting `.anonymous-user-id` resets the identity on the next process launch. Separate harness homes have separate identities.

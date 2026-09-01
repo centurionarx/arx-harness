@@ -15,15 +15,15 @@ The Cordis framework and its foundation libraries are source-vendored into this 
 
 | Package | Upstream name | Upstream | License |
 | --- | --- | --- | --- |
-| `@arx-ai/cosmokit` | `cosmokit` | [github.com/deepseek-harness/cosmokit](https://github.com/deepseek-harness/cosmokit) | MIT |
-| `@arx-ai/schemastery` | `schemastery` | [github.com/deepseek-harness/schemastery](https://github.com/deepseek-harness/schemastery) | MIT |
+| `@arx-ai/cosmokit` | `cosmokit` | [github.com/centurionarx/cosmokit](https://github.com/centurionarx/cosmokit) | MIT |
+| `@arx-ai/schemastery` | `schemastery` | [github.com/centurionarx/schemastery](https://github.com/centurionarx/schemastery) | MIT |
 | `@arx-ai/cordis` | `cordis` | [github.com/cordiverse/cordis](https://github.com/cordiverse/cordis) | MIT |
 | `@arx-ai/cordis-plugin-loader` | `@cordisjs/plugin-loader` | [github.com/cordiverse/cordis](https://github.com/cordiverse/cordis) | MIT |
-| `@arx-ai/cordis-plugin-include` | `@cordisjs/plugin-include` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
-| `@arx-ai/cordis-plugin-group` | `@cordisjs/plugin-group` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
-| `@arx-ai/cordis-plugin-timer` | `@cordisjs/plugin-timer` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
-| `@arx-ai/cordis-plugin-hmr` | `@cordisjs/plugin-hmr` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
-| `@arx-ai/cordis-plugin-logger-console` | `@cordisjs/plugin-logger-console` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
+| `@arx-ai/cordis-plugin-include` | `@cordisjs/plugin-include` | [github.com/centurionarx/cordis](https://github.com/centurionarx/cordis) | MIT |
+| `@arx-ai/cordis-plugin-group` | `@cordisjs/plugin-group` | [github.com/centurionarx/cordis](https://github.com/centurionarx/cordis) | MIT |
+| `@arx-ai/cordis-plugin-timer` | `@cordisjs/plugin-timer` | [github.com/centurionarx/cordis](https://github.com/centurionarx/cordis) | MIT |
+| `@arx-ai/cordis-plugin-hmr` | `@cordisjs/plugin-hmr` | [github.com/centurionarx/cordis](https://github.com/centurionarx/cordis) | MIT |
+| `@arx-ai/cordis-plugin-logger-console` | `@cordisjs/plugin-logger-console` | [github.com/centurionarx/cordis](https://github.com/centurionarx/cordis) | MIT |
 
 ## Runtime npm dependencies
 

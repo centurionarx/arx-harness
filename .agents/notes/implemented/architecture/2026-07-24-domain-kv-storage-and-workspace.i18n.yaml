@@ -1,6 +1,0 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-24-domain-kv-storage-and-workspace.md
-2026-07-24-domain-kv-storage-and-workspace.md: 6af7e4f57fa66480aca820d880c495b46717e3a7
-2026-07-24-domain-kv-storage-and-workspace.zh.md: 40c9fabdbef2798b34867f7637e0f4f35b27b3f5

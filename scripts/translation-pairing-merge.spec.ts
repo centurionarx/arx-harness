@@ -141,7 +141,7 @@ function record(root: string, path: string, source: string, zh: string): string 
   return content
 }
 
-const baseSource = '# Guide\n\nEnglish | [中文](guide.zh.md)\n\nAlpha base.\n\nBeta base.\n'
+const baseSource = '# Guide\n\nEnglish | [中文](guide.pt-BR.md)\n\nAlpha base.\n\nBeta base.\n'
 const baseZh = '# 指南\n\n[English](guide.md) | 中文\n\n甲基础。\n\n乙基础。\n'
 const currentSource = baseSource.replace('Alpha base.', 'Alpha current.')
 const currentZh = baseZh.replace('甲基础。', '甲当前。')
@@ -155,7 +155,7 @@ const generatedCurrentSource = generatedBaseSource.replace('Alpha base.', 'Alpha
 const generatedCurrentZh = generatedBaseZh.replace('甲基础。', '甲当前。')
 const generatedOtherSource = generatedBaseSource.replace('Beta base.', 'Beta other.')
 const generatedOtherZh = generatedBaseZh.replace('乙基础。', '乙对侧。')
-const manualBaseSource = baseSource.replace('guide.zh.md', 'manual.zh.md')
+const manualBaseSource = baseSource.replace('guide.pt-BR.md', 'manual.pt-BR.md')
 const manualBaseZh = baseZh.replace('guide.md', 'manual.md')
 const manualCurrentSource = manualBaseSource.replace('Alpha base.', 'Alpha current.')
 const manualCurrentZh = manualBaseZh.replace('甲基础。', '甲当前。')
@@ -174,7 +174,7 @@ function commitTextCleanPair(fixture: Fixture, source: string, zh: string, messa
   write(
     fixture.root,
     'docs/guide.i18n.yaml',
-    sidecar.replace('\nguide.zh.md:', '\n# Stable separator for independent line merges.\nguide.zh.md:'),
+    sidecar.replace('\nguide.pt-BR.md:', '\n# Stable separator for independent line merges.\nguide.pt-BR.md:'),
   )
   git(fixture, ['add', '.'])
   git(fixture, ['commit', '-m', message])
@@ -252,7 +252,7 @@ function startMixedPairingMerge(fixture: Fixture): void {
 
 function expectMergedPair(fixture: Fixture): void {
   expect(readFileSync(join(fixture.root, 'docs/guide.md'), 'utf8')).toBe(mergedSource)
-  expect(readFileSync(join(fixture.root, 'docs/guide.zh.md'), 'utf8')).toBe(mergedZh)
+  expect(readFileSync(join(fixture.root, 'docs/guide.pt-BR.md'), 'utf8')).toBe(mergedZh)
   expect(readFileSync(join(fixture.root, 'docs/guide.i18n.yaml'), 'utf8')).toBe(
     renderTranslationPairingRecord(translationPairPaths('docs/guide.md'), {
       sourceHash: gitBlobHash(Buffer.from(mergedSource)),
@@ -309,15 +309,15 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
   it('accepts locale-specific paths to the same paired document', () => {
     const fixture = createFixture(false)
     write(fixture.root, 'docs/reference.md', '# Overview\n')
-    write(fixture.root, 'docs/reference.zh.md', '# 概览\n')
-    git(fixture, ['add', 'docs/reference.md', 'docs/reference.zh.md'])
+    write(fixture.root, 'docs/reference.pt-BR.md', '# 概览\n')
+    git(fixture, ['add', 'docs/reference.md', 'docs/reference.pt-BR.md'])
     const source = baseSource.replace('Alpha base.', '[Reference](reference.md#overview)')
-    const zh = baseZh.replace('甲基础。', '[参考](reference.zh.md#overview)')
+    const zh = baseZh.replace('甲基础。', '[参考](reference.pt-BR.md#overview)')
     const ancestor = record(fixture.root, 'docs/guide.md', source, zh)
     const current = record(fixture.root, 'docs/guide.md', source, zh)
     const other = record(fixture.root, 'docs/guide.md', source, zh)
     rmSync(join(fixture.root, 'docs/reference.md'))
-    rmSync(join(fixture.root, 'docs/reference.zh.md'))
+    rmSync(join(fixture.root, 'docs/reference.pt-BR.md'))
 
     expect(mergeTranslationPairingRecords(
       fixture.root,
@@ -331,8 +331,8 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
   it('rejects a clean merge whose Chinese link uses the English sibling', () => {
     const fixture = createFixture(false)
     write(fixture.root, 'docs/reference.md', '# Overview\n')
-    write(fixture.root, 'docs/reference.zh.md', '# 概览\n')
-    git(fixture, ['add', 'docs/reference.md', 'docs/reference.zh.md'])
+    write(fixture.root, 'docs/reference.pt-BR.md', '# 概览\n')
+    git(fixture, ['add', 'docs/reference.md', 'docs/reference.pt-BR.md'])
     const source = baseSource.replace('Alpha base.', '[Reference](reference.md)')
     const zh = baseZh.replace('甲基础。', '[参考](reference.md)')
     const ancestor = record(fixture.root, 'docs/guide.md', source, zh)
@@ -345,7 +345,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
       ancestor,
       current,
       other,
-    )).toThrow('docs/guide.zh.md:5 clean merge uses "reference.md"; expected "reference.zh.md"')
+    )).toThrow('docs/guide.pt-BR.md:5 clean merge uses "reference.md"; expected "reference.pt-BR.md"')
   })
 
   it('merges a generated source without an English language switcher', () => {
@@ -370,7 +370,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
 
   it('rejects an authored source without an English language switcher', () => {
     const fixture = createFixture(false)
-    const source = baseSource.replace('English | [中文](guide.zh.md)\n\n', '')
+    const source = baseSource.replace('English | [中文](guide.pt-BR.md)\n\n', '')
     const ancestor = record(fixture.root, 'docs/guide.md', source, baseZh)
     const current = record(fixture.root, 'docs/guide.md', source, baseZh)
     const other = record(fixture.root, 'docs/guide.md', source, baseZh)
@@ -381,7 +381,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
       ancestor,
       current,
       other,
-    )).toThrow('docs/guide.md clean merge lost its language-switcher link to guide.zh.md')
+    )).toThrow('docs/guide.md clean merge lost its language-switcher link to guide.pt-BR.md')
   })
 
   it('rejects generated Chinese content without its English backlink', () => {
@@ -398,7 +398,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
       current,
       other,
     )).toThrow(
-      'docs/module-graph.zh.md clean merge lost its language-switcher link to module-graph.md',
+      'docs/module-graph.pt-BR.md clean merge lost its language-switcher link to module-graph.md',
     )
   })
 
@@ -501,12 +501,12 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
       fixture.root,
       'docs/guide.md',
       baseSource.replace('Beta base.', '[Reference](reference.md#overview)'),
-      baseZh.replace('乙基础。', '[参考](reference.zh.md#overview)'),
+      baseZh.replace('乙基础。', '[参考](reference.pt-BR.md#overview)'),
     )
     record(
       fixture.root,
       'docs/reference.md',
-      '# Reference\n\nEnglish | [中文](reference.zh.md)\n\nOverview.\n',
+      '# Reference\n\nEnglish | [中文](reference.pt-BR.md)\n\nOverview.\n',
       '# 参考\n\n[English](reference.md) | 中文\n\n概览。\n',
     )
     git(fixture, ['add', '.'])
@@ -529,8 +529,8 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     expect(readFileSync(join(fixture.root, 'docs/guide.md'), 'utf8')).toContain(
       '[Reference](reference.md#overview)',
     )
-    expect(readFileSync(join(fixture.root, 'docs/guide.zh.md'), 'utf8')).toContain(
-      '[参考](reference.zh.md#overview)',
+    expect(readFileSync(join(fixture.root, 'docs/guide.pt-BR.md'), 'utf8')).toContain(
+      '[参考](reference.pt-BR.md#overview)',
     )
   })
 
@@ -586,14 +586,14 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     })
     expect(readFileSync(join(fixture.root, 'docs/guide.i18n.yaml'), 'utf8')).toBe(
       canonicalRecord.replace(
-        '\nguide.zh.md:',
-        '\n# Stable separator for independent line merges.\nguide.zh.md:',
+        '\nguide.pt-BR.md:',
+        '\n# Stable separator for independent line merges.\nguide.pt-BR.md:',
       ),
     )
 
     expect(resolveTranslationPairingConflicts(fixture.root)).toEqual(['docs/guide.i18n.yaml'])
     expect(readFileSync(join(fixture.root, 'docs/guide.md'), 'utf8')).toBe(currentSource)
-    expect(readFileSync(join(fixture.root, 'docs/guide.zh.md'), 'utf8')).toBe(otherZh)
+    expect(readFileSync(join(fixture.root, 'docs/guide.pt-BR.md'), 'utf8')).toBe(otherZh)
     expect(readFileSync(join(fixture.root, 'docs/guide.i18n.yaml'), 'utf8')).toBe(canonicalRecord)
   })
 
@@ -689,7 +689,7 @@ describe('translation pairing merge composition', { timeout: 15_000 }, () => {
     expect(git(fixture, ['diff', '--name-only', '--diff-filter=U']).split('\n')).toEqual([
       'docs/manual.i18n.yaml',
       'docs/manual.md',
-      'docs/manual.zh.md',
+      'docs/manual.pt-BR.md',
     ])
     expectMergedPair(fixture)
   })

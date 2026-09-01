@@ -1,7 +1,5 @@
 # @arx-ai/arx-llm-agent-cli
 
-English | [中文](README.zh.md)
-
 An `LlmAdapter` that drives a subscription-authenticated vendor CLI as an ordinary model route. The harness keeps its agent loop, its tools, its sandbox, and its session log; only the transport to the model changes. No API key is involved anywhere: the CLI reads the login the host already has.
 
 The route is dormant until configured. A composition mounts the plugin; a deployment decides whether it serves anything.

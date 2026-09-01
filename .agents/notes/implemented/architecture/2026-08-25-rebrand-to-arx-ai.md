@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-25-rebrand-to-arx-ai.zh.md)
-
 ## Problem
 
 The harness shipped under DeepSeek's product identity: npm scope `@arx-ai`, package and binary prefix `arx`, environment prefix `ARX_`, Python module `arx_harness`, and the `arx-ai/arx-harness` repository. The product now ships as arx and needs its own identity across every one of those surfaces.

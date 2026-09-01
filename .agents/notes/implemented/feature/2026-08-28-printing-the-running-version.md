@@ -2,8 +2,6 @@
 
 Status: implemented
 
-English | [中文](2026-08-28-printing-the-running-version.zh.md)
-
 ## Problem
 
 The sidebar named the product but never said which build was serving the page. A user comparing behavior across two checkouts, or reporting a defect, had nothing to quote.

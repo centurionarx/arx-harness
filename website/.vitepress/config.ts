@@ -45,7 +45,7 @@ interface GuideModuleLink {
  */
 interface GuideModules {
   /** Guide sidebar collection for the locale. */
-  guide: 'zh-guide' | 'en-guide'
+  guide: 'pt-br-guide' | 'en-guide'
   /** Development module link. */
   develop: GuideModuleLink
   /** Reference module link. */
@@ -312,7 +312,7 @@ export default withMermaid({
   locales: {
     root: {
       label: '简体中文',
-      lang: 'zh-CN',
+      lang: 'pt-BR',
       themeConfig: {
         siteTitle: siteTitle('技术预览'),
         nav: [
@@ -321,8 +321,8 @@ export default withMermaid({
         ],
         sidebar: {
           '/guide/': guideSidebar('root'),
-          '/develop/': sidebar('root', 'zh-develop'),
-          '/reference/': sidebar('root', 'zh-reference'),
+          '/develop/': sidebar('root', 'pt-br-develop'),
+          '/reference/': sidebar('root', 'pt-br-reference'),
         },
         outline: { label: '本页目录' },
         docFooter: { prev: '上一篇', next: '下一篇' },

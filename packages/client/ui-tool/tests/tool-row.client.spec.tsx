@@ -4,18 +4,18 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import type { RunningToolCall, ToolResultNode } from '@arx-ai/arx-client-runtime/client'
 import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
-import { zh as commonZh } from '@arx-ai/arx-client-locale/src/locales/zh.ts'
+import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
 import { classifyTool, resultText, toolRowModel } from '../src/client/tool/models/tool-call-model.ts'
 import { ToolRow } from '../src/client/tool/components/ToolRow.tsx'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
-import { zh } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
+import { en } from '@arx-ai/arx-client-ui-conversation/src/client/locales.ts'
 
 afterEach(() => {
   cleanup()
 })
 
 // Mirrors the real lookup chain (conversation namespace, then common).
-const t: GenericToolCardProps['t'] = makeTranslate(zh, commonZh)
+const t: GenericToolCardProps['t'] = makeTranslate(en, commonEn)
 
 const running = (over?: Partial<RunningToolCall>): RunningToolCall => ({
   callId: 'c1', name: 'bash', argsRaw: '{"command":"ls -la","description":"List files"}',

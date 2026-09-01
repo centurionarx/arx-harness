@@ -13,35 +13,35 @@ import {
 
 const root = resolve(import.meta.dirname, '..')
 const document = readFileSync(join(root, 'docs/i18n/translation-prompt.md'), 'utf8')
-const terminology = '| English | 中文 |\n|---|---|\n| agent | agent |'
+const terminology = '| English | Portuguese |\n|---|---|\n| agent | agente |'
 
 const retainedExamples = [
-  ['### Colloquial verb → Professional verb', 'The repo pins pnpm@11.7.0 in package.json', '该仓库在 package.json 中固定使用 pnpm@11.7.0'],
-  ['### Run-on sentence → Natural phrasing with pause', 'Read docs/architecture.md before changing anything under packages/.', '在修改 packages/ 目录下的任何内容之前，请先阅读 docs/architecture.md。'],
-  ['### Stiff passive voice → Active and natural', 'a green gate means the pair was confirmed consistent at these exact contents, not that the confirmation was sound.', '门禁通过意味着这组文档在当前内容上的一致性得到了确认，不代表确认本身正确可靠。'],
-  ['### Invented word → Natural expression', 'A sidecar record of both blob hashes makes consistency checkable', '伴随记录保存两侧 blob hash，使一致性可检查'],
-  ['### Em-dash → Colon/period', 'FIXME — an issue that should block a new release.', 'FIXME：应当阻塞新版本发布的问题。'],
-  ['### Overly literal → Meaningful rendering', 'awkward phrasing is easier to notice when you read the translation without comparing it with the source', '不对照原文阅读译文时，更容易察觉别扭的表达'],
-  ['### Terminology — do not translate what should be kept in English', 'typed service seams, and explicit extension points', '类型化的服务 seam 与显式扩展点'],
-  ['### Slang/jargon → Professional phrasing', 'The committed agent workflow lives in .agents/skills/arx-translate-docs', '仓库内置的 agent 工作流见 .agents/skills/arx-translate-docs'],
-  ['### "For humans" — translate the intent, not the word', 'For humans, start with the development guide', '面向开发者：请先阅读开发指南'],
+  ['### Calço semântico (false friend) → Termo profissional', 'The repo pins pnpm@11.7.0 in package.json', 'O repositório fixa o pnpm@11.7.0 no package.json'],
+  ['### Run-on sentence → Natural phrasing with pause', 'Read docs/architecture.md before changing anything under packages/.', 'Leia docs/architecture.md antes de alterar qualquer coisa em packages/.'],
+  ['### Stiff passive voice → Active and natural', 'a green gate means the pair was confirmed consistent at these exact contents, not that the confirmation was sound.', 'o gate verde significa que a consistência do par foi confirmada nesses conteúdos exatos, e não que a confirmação em si seja sólida.'],
+  ['### Invented word → Natural expression', 'A sidecar record of both blob hashes makes consistency checkable', 'Um registro-acompanhante com os blob hashes de ambos os lados torna a consistência verificável'],
+  ['### Em-dash → Colon/period', 'FIXME — an issue that should block a new release.', 'FIXME: um problema que deveria bloquear um novo release.'],
+  ['### Overly literal → Meaningful rendering', 'awkward phrasing is easier to notice when you read the translation without comparing it with the source', 'um texto sem naturalidade fica mais evidente quando lemos a tradução sem compará-la com o original'],
+  ['### Terminology — do not translate what should be kept in English', 'typed service seams, and explicit extension points', 'os typed service seams e os explicit extension points'],
+  ['### Slang/jargon → Professional phrasing', 'The committed agent workflow lives in .agents/skills/arx-translate-docs', 'O fluxo de trabalho do agente versionado no repositório fica em .agents/skills/arx-translate-docs'],
+  ['### "For humans" — translate the intent, not the word', 'For humans, start with the development guide', 'Para leitura por humanos, comece pelo guia de desenvolvimento'],
   ['### Code block comments — NEVER translate', '# full-screen TUI coding agent (needs DEEPSEEK_API_KEY)', 'keep exactly as-is, byte-for-byte'],
-  ['### Language switcher — flip direction', 'English | [中文](README.zh.md)', '[English](README.md) | 中文'],
+  ['### Language switcher — flip direction', 'English | [Português](README.pt-BR.md)', '[English](README.md) | Português'],
 ]
 
 describe('translation prompt rendering', () => {
   it('renders both directions with every placeholder resolved', () => {
     const en = renderTranslationPrompt(document, { sourceLanguage: 'English', sourceFilename: 'guide.md', terminology })
-    expect(en).toContain('from English to Chinese')
+    expect(en).toContain('from English to Portuguese')
     expect(en).toContain(terminology)
     expect(en).not.toContain('{{')
-    expect(en).toContain('plain source stays plain (必须)')
+    expect(en).toContain('plain source stays plain (DEVE)')
     expect(en).toContain('For an English target, use the established English technical term')
-    expect(en).toContain('does a Chinese target use an established Chinese rendering')
+    expect(en).toContain('does a Portuguese target use an established Brazilian-Portuguese rendering')
     expect(en).toContain('does an English target use the established English technical term')
     expect(en).toContain('The parser removes exactly one framing escape')
-    const zh = renderTranslationPrompt(document, { sourceLanguage: 'Chinese', sourceFilename: 'guide.zh.md', terminology })
-    expect(zh).toContain('from Chinese to English')
+    const pt = renderTranslationPrompt(document, { sourceLanguage: 'Portuguese', sourceFilename: 'guide.pt-BR.md', terminology })
+    expect(pt).toContain('from Portuguese to English')
   })
 
   it('contains every embedded example', () => {
@@ -58,7 +58,7 @@ describe('translation prompt rendering', () => {
     expect(rendered).toContain('Markdown emphasis markers do not create a word boundary')
     expect(rendered).toContain('Never invent responsibility merely to avoid a passive construction')
     expect(rendered).toContain('Never vary a terminology-table form, defined concept, or contract verb merely for stylistic variety')
-    expect(rendered).toContain('Chinese output uses its `.zh.md` path')
+    expect(rendered).toContain('Portuguese output uses its `.pt-BR.md` path')
     expect(rendered).toContain('belongs to the active bilingual corpus')
     expect(rendered).toContain('a missing counterpart in that corpus is an error')
     expect(rendered).toContain('exact query/fragment suffix')
@@ -89,45 +89,45 @@ describe('translation prompt rendering', () => {
       sourceFilename: 'guide.md',
       sourceDocument: '# Guide\n\nNew source.',
       terminology,
-      examples: [{ english: '# Example\n\nEnglish.', chinese: '# 示例\n\n中文。' }],
+      examples: [{ english: '# Example\n\nEnglish.', portuguese: '# Exemplo\n\nPortuguês.' }],
     })
-    expect(request.targetFilename).toBe('guide.zh.md')
+    expect(request.targetFilename).toBe('guide.pt-BR.md')
     expect(request.messages.map(message => message.role)).toEqual(['system', 'user', 'assistant', 'user'])
     expect(request.messages.slice(1).map(message => message.content)).toEqual([
       '# Example\n\nEnglish.',
-      '# 示例\n\n中文。',
+      '# Exemplo\n\nPortuguês.',
       '# Guide\n\nNew source.',
     ])
 
     const reverse = renderTranslationRequest(document, {
-      sourceLanguage: 'Chinese',
-      sourceFilename: 'guide.zh.md',
-      sourceDocument: '# 指南\n\n新源文。',
+      sourceLanguage: 'Portuguese',
+      sourceFilename: 'guide.pt-BR.md',
+      sourceDocument: '# Guia\n\nNova fonte.',
       terminology,
-      examples: [{ english: '# Example\n\nEnglish.', chinese: '# 示例\n\n中文。' }],
+      examples: [{ english: '# Example\n\nEnglish.', portuguese: '# Exemplo\n\nPortuguês.' }],
     })
     expect(reverse.targetFilename).toBe('guide.md')
     expect(reverse.messages.slice(1).map(message => message.content)).toEqual([
-      '# 示例\n\n中文。',
+      '# Exemplo\n\nPortuguês.',
       '# Example\n\nEnglish.',
-      '# 指南\n\n新源文。',
+      '# Guia\n\nNova fonte.',
     ])
   })
 })
 
 describe('translation response sections', () => {
   it('round-trips Markdown bodies', () => {
-    const response = { translation: '# 标题\n\n正文 **加粗**。', review: '- [Tone] 修正一处。\n- 无修正', final: '# 标题\n\n定稿。' }
+    const response = { translation: '# Título\n\ncorpo **negrito**.', review: '- [Tone] uma correção.\n- No corrections', final: '# Título\n\ntexto final.' }
     expect(parseTranslationResponse(renderTranslationResponse(response))).toEqual(response)
   })
 
   it('tolerates a fenced xml wrapper around the whole response', () => {
-    const fenced = '```xml\n<translation>\nA\n</translation>\n\n<review>\n- 无修正\n</review>\n\n<final>\nA\n</final>\n```'
+    const fenced = '```xml\n<translation>\nA\n</translation>\n\n<review>\n- No corrections\n</review>\n\n<final>\nA\n</final>\n```'
     expect(parseTranslationResponse(fenced).final).toBe('A')
   })
 
   it('keeps an inline close tag inside prose from terminating the section', () => {
-    const doc = { translation: 'the wire format uses </translation> as its close tag', review: '- 无修正', final: 'F' }
+    const doc = { translation: 'the wire format uses </translation> as its close tag', review: '- No corrections', final: 'F' }
     expect(parseTranslationResponse(renderTranslationResponse(doc))).toEqual(doc)
   })
 
@@ -158,32 +158,32 @@ describe('translation response sections', () => {
 
   it('inserts or corrects the target switcher after parsing a new-pair response', () => {
     const response = renderTranslationResponse({
-      translation: '# 指南\n\n初稿。',
-      review: '- 无修正',
-      final: '# 指南\n\nEnglish | [中文](guide.zh.md)\n\n定稿。',
+      translation: '# Guia\n\ndraft.',
+      review: '- No corrections',
+      final: '# Guia\n\nEnglish | [Português](guide.pt-BR.md)\n\nversão final.',
     })
     expect(consumeTranslationResponse(response, { sourceLanguage: 'English', sourceFilename: 'guide.md' }).final).toBe([
-      '# 指南',
+      '# Guia',
       '',
-      '[English](guide.md) | 中文',
+      '[English](guide.md) | Português',
       '',
-      '定稿。',
+      'versão final.',
       '',
     ].join('\n'))
   })
 
   it('preserves YAML frontmatter before inserting the target switcher', () => {
     const response = renderTranslationResponse({
-      translation: '# 指南\n\n初稿。',
-      review: '- 无修正',
+      translation: '# Guia\n\ndraft.',
+      review: '- No corrections',
       final: [
         '---',
         'layout: home',
         '---',
         '',
-        '# 指南',
+        '# Guia',
         '',
-        '定稿。',
+        'versão final.',
       ].join('\n'),
     })
     expect(consumeTranslationResponse(response, { sourceLanguage: 'English', sourceFilename: 'guide.md' }).final).toBe([
@@ -191,20 +191,20 @@ describe('translation response sections', () => {
       'layout: home',
       '---',
       '',
-      '# 指南',
+      '# Guia',
       '',
-      '[English](guide.md) | 中文',
+      '[English](guide.md) | Português',
       '',
-      '定稿。',
+      'versão final.',
       '',
     ].join('\n'))
   })
 
   it('rejects unterminated YAML frontmatter before the target H1', () => {
     const response = renderTranslationResponse({
-      translation: '# 指南\n\n初稿。',
-      review: '- 无修正',
-      final: '---\nlayout: home\n\n# 指南\n\n定稿。',
+      translation: '# Guia\n\ndraft.',
+      review: '- No corrections',
+      final: '---\nlayout: home\n\n# Guia\n\nversão final.',
     })
     expect(() => consumeTranslationResponse(response, {
       sourceLanguage: 'English',
@@ -214,21 +214,21 @@ describe('translation response sections', () => {
 
   it('rejects a source filename that contradicts the translation direction', () => {
     expect(() => renderTranslationPrompt(document, {
-      sourceLanguage: 'Chinese',
+      sourceLanguage: 'Portuguese',
       sourceFilename: 'guide.md',
       terminology,
-    })).toThrow(/does not match source language Chinese/)
+    })).toThrow(/does not match source language Portuguese/)
   })
 
-  it('inserts the English target switcher for a Chinese source', () => {
+  it('inserts the English target switcher for a Portuguese source', () => {
     const response = renderTranslationResponse({
       translation: '# Guide\n\nDraft.',
       review: '- [None] No corrections.',
       final: '# Guide\n\nFinal.',
     })
     expect(consumeTranslationResponse(response, {
-      sourceLanguage: 'Chinese',
-      sourceFilename: 'guide.zh.md',
-    }).final).toContain('\n\nEnglish | [中文](guide.zh.md)\n\n')
+      sourceLanguage: 'Portuguese',
+      sourceFilename: 'guide.pt-BR.md',
+    }).final).toContain('\n\nEnglish | [Português](guide.pt-BR.md)\n\n')
   })
 })
