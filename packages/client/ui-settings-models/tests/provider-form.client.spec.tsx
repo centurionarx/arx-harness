@@ -1287,6 +1287,39 @@ describe('hand-declared providers', () => {
     await waitFor(() => { expect(onClose).toHaveBeenCalledWith(true) })
     expect(set).not.toHaveBeenCalled()
   })
+
+  it('drafts the OpenAI-compatible preset and writes it after the user fills the three fields', async () => {
+    const { mutate, onClose } = mountCard({
+      preset: { route: 'openai-compatible', displayName: 'OpenAI Compatible', protocol: 'openai-completions' },
+    })
+
+    // Drafting did the naming; the fields a preset cannot know stay empty.
+    expect(screen.getByLabelText<HTMLInputElement>(en.customRoute).value).toBe('openai-compatible')
+    expect(screen.getByLabelText<HTMLInputElement>(en.customDisplayName).value).toBe('OpenAI Compatible')
+    expect(screen.getByLabelText<HTMLSelectElement>(en.customApi).value).toBe('openai-completions')
+    expect(screen.getByLabelText<HTMLInputElement>(en.baseUrl).value).toBe('')
+
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://gateway.example/v1' } })
+    fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'k' } })
+    fireEvent.click(screen.getByRole('button', { name: en.addModel }))
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'llama-3' } })
+    expect(buttonNamed(en.create).disabled).toBe(false)
+    fireEvent.click(screen.getByText(en.create))
+
+    await waitFor(() => { expect(onClose).toHaveBeenCalledWith(true) })
+    expect(firstMutate(mutate).ops[0]?.value).toMatchObject({
+      displayName: 'OpenAI Compatible',
+      apiKeyEnv: 'OPENAI_COMPATIBLE_API_KEY',
+      api: 'openai-completions',
+      baseURL: 'https://gateway.example/v1',
+      models: [{ id: 'llama-3' }],
+    })
+  })
+
+  it('falls back to the adapter choice when a preset names a protocol outside the choices', () => {
+    mountCard({ preset: { route: 'acme', displayName: 'Acme', protocol: 'not-a-protocol' } })
+    expect(screen.getByLabelText<HTMLSelectElement>(en.customApi).value).toBe('openai-completions')
+  })
 })
 
 describe('API key field', () => {
@@ -1397,6 +1430,26 @@ describe('API key field', () => {
     fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://acme.test/v1' } })
     fireEvent.click(screen.getByRole('button', { name: en.addModel }))
     fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'm' } })
+    fireEvent.click(screen.getByText(en.create))
+
+    await waitFor(() => { expect(mutate).toHaveBeenCalledOnce() })
+    await waitFor(() => { expect(load).toHaveBeenCalledOnce() })
+    expect(screen.queryByText(en.customTitle)).toBeNull()
+  })
+
+  it('opens the custom card prefilled when adding an OpenAI-compatible gateway', async () => {
+    const { controller, mutate } = await mountSection()
+    const load = vi.spyOn(controller, 'load')
+
+    fireEvent.click(screen.getByRole('button', { name: en.openaiCompatibleAdd }))
+    // The preset drafts the identity; the fields a route cannot know stay empty.
+    expect(screen.getByLabelText<HTMLInputElement>(en.customRoute).value).toBe('openai-compatible')
+    expect(screen.getByLabelText<HTMLInputElement>(en.customDisplayName).value).toBe('OpenAI Compatible')
+    expect(screen.getByLabelText<HTMLInputElement>(en.baseUrl).value).toBe('')
+
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://gateway.example/v1' } })
+    fireEvent.click(screen.getByRole('button', { name: en.addModel }))
+    fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'llama-3' } })
     fireEvent.click(screen.getByText(en.create))
 
     await waitFor(() => { expect(mutate).toHaveBeenCalledOnce() })

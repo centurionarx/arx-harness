@@ -12,7 +12,10 @@
  *
  * The three fields a hand-declared route cannot default — endpoint, protocol,
  * and at least one model — are required here rather than at load, so the
- * failure names the field while the user is still looking at it.
+ * failure names the field while the user is still looking at it. A
+ * {@link CustomProviderPreset} entry point drafts the identity an
+ * OpenAI-compatible gateway needs and leaves exactly those three fields to
+ * the user.
  *
  * There is deliberately no reasoning-effort control, here or on the editor
  * card: effort is a per-MODEL capability, and the models under one provider
@@ -46,8 +49,25 @@ const NS = 'llm-pi-ai'
  */
 const ROUTE_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
+/**
+ * A prefilled identity for a card opened from a one-click entry point that
+ * knows the endpoint family (an OpenAI-compatible gateway). Only the draft
+ * starts filled: the three fields a route cannot default — endpoint, key,
+ * model list — stay empty, and every field stays editable.
+ */
+export interface CustomProviderPreset {
+  /** Route id the card drafts; still editable, uniqueness still applies. */
+  route: string
+  /** Display name the card drafts. */
+  displayName: string
+  /** Protocol the card drafts, when the adapter's choices carry it. */
+  protocol?: string
+}
+
 /** Props of {@link CustomProviderCard}. */
 export interface CustomProviderCardProps {
+  /** Prefilled identity, when the card opened from a preset entry point. */
+  preset?: CustomProviderPreset | undefined
   /** Route ids already declared, so the card refuses to shadow one. */
   taken: readonly string[]
   /** Wire protocols the adapter can serve, in the order it reports them. */
@@ -74,14 +94,21 @@ export interface CustomProviderCardProps {
  * @returns the creation card.
  */
 export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
-  const { taken, protocols, api, t } = props
+  const { taken, protocols, api, t, preset } = props
   // Captured at mount, like the editor's: the write must be judged against the
   // section this card was drafted over, not whatever it grew into meanwhile.
   const [openedAt] = useState(() => props.revision)
-  const [route, setRoute] = useState('')
-  const [displayName, setDisplayName] = useState('')
+  const [route, setRoute] = useState(preset?.route ?? '')
+  const [displayName, setDisplayName] = useState(preset?.displayName ?? '')
   const [baseURL, setBaseURL] = useState('')
-  const [protocol, setProtocol] = useState(protocols[0] ?? '')
+  // A preset naming a protocol the adapter does not offer falls back to the
+  // adapter's own first choice rather than drafting an unusable select value.
+  const presetProtocol = preset?.protocol
+  const [protocol, setProtocol] = useState(
+    presetProtocol !== undefined && protocols.includes(presetProtocol)
+      ? presetProtocol
+      : protocols[0] ?? '',
+  )
   const [keyDraft, setKeyDraft] = useState('')
   const [models, setModels] = useState<readonly ModelDraft[]>([])
   const [busy, setBusy] = useState(false)

@@ -76,6 +76,7 @@ export const en = {
   fetchDeselectAll: 'Deselect all',
   fetchAdopt: 'Add selected',
   customAdd: 'Add a custom provider',
+  openaiCompatibleAdd: 'Add OpenAI compatible',
   customTitle: 'Custom provider',
   customTag: 'Custom',
   customRoute: 'Provider ID',

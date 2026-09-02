@@ -17,7 +17,7 @@ import type { ReactNode } from 'react'
 import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@arx-ai/arx-client-ui-primitives'
 import type { InjectFace } from '@arx-ai/arx-client-ui-slots'
-import { CustomProviderCard } from './CustomProviderCard.tsx'
+import { CustomProviderCard, type CustomProviderPreset } from './CustomProviderCard.tsx'
 import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
@@ -165,6 +165,17 @@ export function providerTargetLabel(target: ProviderIdentity): string {
     : `${target.displayName} (${target.provider})`
 }
 
+/**
+ * The preset an OpenAI-compatible entry point drafts. The protocol is the
+ * wire shape gateways in this family serve; the card falls back to the
+ * adapter's first choice when the schema union does not offer it.
+ */
+const OPENAI_COMPATIBLE_PRESET: CustomProviderPreset = {
+  route: 'openai-compatible',
+  displayName: 'OpenAI Compatible',
+  protocol: 'openai-completions',
+}
+
 /** Replace the one provider placeholder in localized destructive-action copy. */
 export function providerCopy(template: string, target: ProviderIdentity): string {
   return template.replace('{provider}', () => providerTargetLabel(target))
@@ -193,7 +204,8 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
   const [deleting, setDeleting] = useState(false)
   const [deleteFailure, setDeleteFailure] = useState<string | undefined>(undefined)
   const [savedTarget, setSavedTarget] = useState<ProviderIdentity | undefined>(undefined)
-  const [declaring, setDeclaring] = useState(false)
+  /** Which hand-declaration entry point is open, if any. */
+  const [declaring, setDeclaring] = useState<false | 'custom' | 'openai-compatible'>(false)
   const [dismissedSetup, setDismissedSetup] = useState<ReadonlySet<string>>(() => new Set())
 
   const announceSaved = (target: ProviderIdentity): void => {
@@ -440,10 +452,11 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
               />
             </div>
           )
-          : declaring
+          : declaring !== false
             ? (
               <div className={styles['addCard']}>
                 <CustomProviderCard
+                  preset={declaring === 'openai-compatible' ? OPENAI_COMPATIBLE_PRESET : undefined}
                   taken={state.rows.map(row => row.entry.provider)}
                   protocols={protocols}
                   /* v8 ignore next -- the card only opens from a button disabled without this namespace */
@@ -459,10 +472,11 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
               </div>
             )
             : (
-              // One row for the two ways to gain a provider: adopt one the
-              // adapter already knows, or declare one it does not. Side by side
-              // and equal-width so they read as siblings and line up with the
-              // rows above, rather than two pills of different lengths.
+              // One row for the ways to gain a provider: adopt one the
+              // adapter already knows, or declare one it does not — directly,
+              // or through the OpenAI-compatible preset that drafts the
+              // gateway identity. Side by side and equal-width so they read
+              // as siblings and line up with the rows above.
               <div className={styles['addActions']}>
                 <button
                   type="button"
@@ -490,7 +504,21 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
                     setSavedTarget(undefined)
                     setAdding(false)
                     setEditing(undefined)
-                    setDeclaring(true)
+                    setDeclaring('openai-compatible')
+                  }}
+                >
+                  <IconPlusOutline16 size={14} />
+                  {t('openaiCompatibleAdd')}
+                </button>
+                <button
+                  type="button"
+                  className={styles['addButton']}
+                  disabled={protocols.length === 0 || !state.writable}
+                  onClick={() => {
+                    setSavedTarget(undefined)
+                    setAdding(false)
+                    setEditing(undefined)
+                    setDeclaring('custom')
                   }}
                 >
                   <IconPlusOutline16 size={14} />
