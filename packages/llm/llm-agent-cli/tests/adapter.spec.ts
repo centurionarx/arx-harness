@@ -13,6 +13,7 @@ vi.mock('@anthropic-ai/claude-agent-sdk', () => ({
 const { AgentCliAdapter } = await import('../src/adapter.ts')
 const plugin = await import('../src/index.ts')
 const { resolveRoutes } = await import('../src/config.ts')
+const { TRANSCRIPT_PREAMBLE } = await import('../src/prompt.ts')
 type AgentCliProfile = import('../src/config.ts').AgentCliProfile
 
 /** One vendor run whose messages the test supplies, pulled like the real one. */
@@ -232,7 +233,7 @@ describe('stream', () => {
   it('opens a run with the history it must know', async () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(adapter().stream({ provider: 'claude', model: 'sonnet', messages: [ask] }))
-    expect(await delivered(0)).toEqual([{ type: 'text', text: 'user: list files' }])
+    expect(await delivered(0)).toEqual([{ type: 'text', text: `${TRANSCRIPT_PREAMBLE}\n\nuser: list files` }])
   })
 
   it('opens its own run per call, replaying what came before', async () => {
@@ -244,7 +245,7 @@ describe('stream', () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
     await drain(one.stream({ provider: 'claude', model: 'sonnet', messages: [ask, next], sessionId }))
     expect(queryMock).toHaveBeenCalledTimes(2)
-    expect(await delivered(1)).toEqual([{ type: 'text', text: 'user: list files\n\nuser: again' }])
+    expect(await delivered(1)).toEqual([{ type: 'text', text: `${TRANSCRIPT_PREAMBLE}\n\nuser: list files\n\nuser: again` }])
   })
 
   it('releases the run when the caller cancels mid-turn', async () => {
@@ -326,7 +327,7 @@ describe('stream', () => {
     expect(attached.reads).toHaveLength(1)
     expect((attached.reads[0] as { policy: unknown }).policy).toEqual({ maxPixels: 1_150_000, maxBytes: 5_000_000 })
     expect(await delivered(0)).toEqual([
-      { type: 'text', text: 'user: see' },
+      { type: 'text', text: `${TRANSCRIPT_PREAMBLE}\n\nuser: see` },
       { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'CQk=' } },
     ])
   })

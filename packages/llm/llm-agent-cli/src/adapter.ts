@@ -17,6 +17,7 @@ import {
   type LlmProviderInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
+  type ToolSchema,
 } from '@arx-ai/arx-llm'
 import type { AttachmentId, AttachmentStore, ImageRequestPolicy, RequestImageAttachment } from '@arx-ai/arx-attachment'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
@@ -242,13 +243,24 @@ export class AgentCliAdapter extends LlmAdapter {
           abortController: controller,
         },
       })
-      yield* translate(run)
+      yield* translate(run, servedNames(options.tools))
     } finally {
       options.signal?.removeEventListener('abort', release)
       // The turn is over, but the run would keep going on its own.
       release()
     }
   }
+}
+
+/**
+ * The harness tool names this request assembled, or `undefined` when it names
+ * none: the stream repair converts only trailing records over these names,
+ * and a request without tools has nothing to convert.
+ * @param tools - the tools assembled for this request.
+ * @returns the names, or `undefined` when no list was assembled.
+ */
+function servedNames(tools: readonly ToolSchema[] | undefined): ReadonlySet<string> | undefined {
+  return tools === undefined ? undefined : new Set(tools.map(tool => tool.name))
 }
 
 /**

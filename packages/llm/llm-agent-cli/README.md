@@ -37,6 +37,14 @@ The vendor's own `resume` would not remove it: resuming requires `persistSession
 
 A run owns a CLI process tree, so it is released when its turn ends, fails, or is cancelled.
 
+## The record notation is a leak surface, closed twice
+
+The replayed transcript states past tool calls as `[requested NAME with ARGS]` records. That notation is the one place on this route where a tool call exists as text, and a model that continues the transcript in prose can end its turn by writing records instead of emitting a `tool_use` block: the user then reads the call's JSON interleaved with the answer, and no tool runs. Two mechanisms close it.
+
+The replay opens with a guardrail naming the records archival — history the harness already executed — and naming tool use as the only way to call a tool now. A turn that still emits a trailing run of well-formed records is repaired by the stream translation: the records become real tool-call blocks over the names this request serves, the protected text before them is kept, the finish reason reports `tool-calls`, and the normal loop executes the tools. Anything malformed — a name outside the harness convention, non-JSON arguments, a tool the request does not serve, a record quoted mid-sentence — stays text.
+
+Deltas already streamed for a repaired block are superseded by its authoritative close; the assembled message, the session log, and every replay therefore hold the corrected content.
+
 ## Config
 
 `contextWindow` is required per model. Automatic compaction resolves capacity from the route serving the request and refuses to run against a route that advertises none, and the vendor CLI discloses no capacity of its own.

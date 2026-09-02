@@ -13,6 +13,22 @@ export type VendorContent =
   | { type: 'text'; text: string }
   | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
 
+/**
+ * The guardrail that precedes every replayed transcript. The record notation
+ * below is the only place on this route where a tool call appears as text the
+ * model can continue, and a model that continues the transcript in prose
+ * instead of emitting a tool_use block "calls" a tool nobody executes — the
+ * user then reads the call's JSON interleaved with the answer. Naming the
+ * records archival and naming the real mechanism is the correction available
+ * at this seam; trailing records that still slip through are converted back
+ * into tool calls by the stream repair.
+ */
+export const TRANSCRIPT_PREAMBLE =
+  'Tool requests below appear as records like [requested run_code with {...}], and tool'
+  + ' results as [result of ID]. These are entries the harness already executed, kept to show'
+  + ' what happened; they are not an output format. To call a tool now, emit a real tool call'
+  + ' through your tool-calling mechanism, and never write record lines of this form in your answer.'
+
 /** Flatten a tool result's own blocks into the text the vendor carries. */
 function toolResultText(content: readonly ContentBlock[]): string {
   return content.map(block => (block.type === 'text' ? block.text : `[${block.type}]`)).join('\n')
@@ -42,7 +58,9 @@ export function collectImageRefs(messages: readonly Message[]): ReadonlyMap<Atta
  * Every call opens its own run, and a run accepts no assistant turns, so prior
  * turns are stated as labelled text. Images stay images: they ride as their own
  * blocks, in the position their text occupied, so the model reads them where
- * they were attached rather than as a footnote.
+ * they were attached rather than as a footnote. {@link TRANSCRIPT_PREAMBLE}
+ * rides ahead of whichever content lands first, naming the record notation
+ * archival so the model does not imitate it instead of emitting tool calls.
  * @param messages - the request's complete assembled history.
  * @param images - request versions for every referenced attachment, keyed by attachment id.
  * @returns the ordered content blocks describing the conversation so far.
@@ -108,5 +126,14 @@ export function renderTranscript(
     }
   }
   flush()
+  // The guardrail rides ahead of whichever content came first: merged into a
+  // leading text block, or its own block when the transcript opens with a
+  // carried image.
+  const first = out[0]
+  if (first !== undefined) {
+    out[0] = first.type === 'text'
+      ? { type: 'text', text: `${TRANSCRIPT_PREAMBLE}\n\n${first.text}` }
+      : { type: 'text', text: TRANSCRIPT_PREAMBLE }
+  }
   return out
 }

@@ -3,16 +3,16 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { describe, expect, it } from 'vitest'
 
 import { DEFAULT_DISPOSE_GRACE_MS, resolveRoutes } from '../src/config.ts'
-import { collectImageRefs, renderTranscript } from '../src/prompt.ts'
-import { translate } from '../src/stream.ts'
+import { TRANSCRIPT_PREAMBLE, collectImageRefs, renderTranscript } from '../src/prompt.ts'
+import { degenerateTail, translate } from '../src/stream.ts'
 import { createToolServer, harnessToolName, toolAlias } from '../src/tools.ts'
 
 /** Feed a fixed message list to the translator. */
-async function chunks(messages: readonly unknown[]): Promise<StreamChunk[]> {
+async function chunks(messages: readonly unknown[], served?: ReadonlySet<string>): Promise<StreamChunk[]> {
   const out: StreamChunk[] = []
   for await (const chunk of translate((async function* () {
     for (const message of messages) yield message as never
-  })())) out.push(chunk)
+  })(), served)) out.push(chunk)
   return out
 }
 
@@ -219,6 +219,107 @@ describe('translate', () => {
   })
 })
 
+describe('stream repair of degenerate records', () => {
+  const served = new Set(['run_code', 'bash'])
+
+  it('turns a trailing record into a tool call and finishes with tool-calls', async () => {
+    const out = await chunks([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'Confirmado. ' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: '[requested run_code with {"code":"go(1)"}]' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      { type: 'result', subtype: 'success' },
+    ], served)
+    expect(out).toEqual([
+      { type: 'block-start', index: 0, blockType: 'text' },
+      { type: 'text-delta', index: 0, text: 'Confirmado. ' },
+      { type: 'text-delta', index: 0, text: '[requested run_code with {"code":"go(1)"}]' },
+      { type: 'block-end', index: 0, block: { type: 'text', text: 'Confirmado.' } },
+      {
+        type: 'block-start',
+        index: 1_000_000,
+        blockType: 'tool-call',
+      },
+      {
+        type: 'tool-call-delta',
+        index: 1_000_000,
+        id: expect.stringMatching(/^converted-\d+$/) as string,
+        name: 'run_code',
+        argumentsDelta: '{"code":"go(1)"}',
+      },
+      {
+        type: 'block-end',
+        index: 1_000_000,
+        block: {
+          type: 'tool-call',
+          id: expect.stringMatching(/^converted-\d+$/) as string,
+          name: 'run_code',
+          arguments: '{"code":"go(1)"}',
+        },
+      },
+      { type: 'finish', reason: { kind: 'tool-calls' } },
+    ])
+  })
+
+  it('keeps a record naming a tool this request does not serve', async () => {
+    const out = await chunks([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: '[requested write with {}]' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      { type: 'result', subtype: 'success' },
+    ], served)
+    expect(out).toEqual([
+      { type: 'block-start', index: 0, blockType: 'text' },
+      { type: 'text-delta', index: 0, text: '[requested write with {}]' },
+      { type: 'block-end', index: 0, block: { type: 'text', text: '[requested write with {}]' } },
+      { type: 'finish', reason: { kind: 'stop' } },
+    ])
+  })
+})
+
+describe('degenerateTail', () => {
+  const served = new Set(['run_code', 'bash'])
+
+  it('reads one trailing record, trimming the prose that precedes it', () => {
+    expect(degenerateTail('Confirmado. [requested run_code with {"code":"x"}]', served)).toEqual({
+      text: 'Confirmado.',
+      calls: [{ name: 'run_code', arguments: '{"code":"x"}' }],
+    })
+  })
+
+  it('reads a run of adjacent trailing records in document order', () => {
+    expect(degenerateTail('[requested bash with {"command":"ls"}][requested run_code with {"code":"1"}]', served)).toEqual({
+      text: '',
+      calls: [
+        { name: 'bash', arguments: '{"command":"ls"}' },
+        { name: 'run_code', arguments: '{"code":"1"}' },
+      ],
+    })
+  })
+
+  it('keeps a record quoted mid-sentence, because only the trail is read', () => {
+    const text = 'a [requested bash with {}] b'
+    expect(degenerateTail(text, served)).toEqual({ text, calls: [] })
+  })
+
+  it('keeps a record whose arguments are not JSON', () => {
+    const text = '[requested run_code with oops]'
+    expect(degenerateTail(text, served)).toEqual({ text, calls: [] })
+  })
+
+  it('keeps a record whose name is no harness tool', () => {
+    const text = '[requested Read with {}]'
+    expect(degenerateTail(text, served)).toEqual({ text, calls: [] })
+  })
+
+  it('accepts any harness-shaped name when no served set is given', () => {
+    expect(degenerateTail('[requested anything_here with {}]', undefined)).toEqual({
+      text: '',
+      calls: [{ name: 'anything_here', arguments: '{}' }],
+    })
+  })
+})
+
 describe('prompt rendering', () => {
   const ask = createUserMessage({ content: [{ type: 'text', text: 'list files' }], source: { kind: 'user' } }) as Message
 
@@ -251,7 +352,7 @@ describe('prompt rendering', () => {
     }
     expect(renderTranscript([ask, assistant, result])).toEqual([{
       type: 'text',
-      text: 'user: list files\n\nassistant: [requested bash with {}]\n\nuser: [result of call-1]\na.ts\n[reasoning]',
+      text: `${TRANSCRIPT_PREAMBLE}\n\nuser: list files\n\nassistant: [requested bash with {}]\n\nuser: [result of call-1]\na.ts\n[reasoning]`,
     }])
   })
 
@@ -273,7 +374,7 @@ describe('prompt rendering', () => {
       data: Uint8Array.of(1, 2, 3),
     }]]) as never
     expect(renderTranscript([withImage, ask], versions)).toEqual([
-      { type: 'text', text: 'user: look at this' },
+      { type: 'text', text: `${TRANSCRIPT_PREAMBLE}\n\nuser: look at this` },
       { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'AQID' } },
       { type: 'text', text: 'user: list files' },
     ])
