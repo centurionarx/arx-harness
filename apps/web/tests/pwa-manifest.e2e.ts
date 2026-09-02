@@ -26,10 +26,17 @@ it('ships install metadata with the built web application', async () => {
   })
 })
 
-it('ships a favicon that switches to a light mark under dark color scheme', async () => {
+it('ships a favicon carrying the full brand logo that swaps palette under a dark scheme', async () => {
   const favicon = await readFile(join(DIST_ROOT, 'favicon.svg'), 'utf8')
-  // The light fill must live inside the dark-scheme media query, so the icon
-  // stays black in light mode and only turns white under a dark scheme.
-  expect(favicon).toMatch(/@media \(prefers-color-scheme: dark\)\s*{\s*path\s*{[^}]*fill:\s*#fff/i)
-  expect(favicon).toContain('fill="#000"')
+  // The brand eye is raster-only, so the SVG seat embeds one PNG per theme:
+  // the light artwork renders by default and the style block swaps the pair.
+  expect(favicon).toContain('<image class="light" href="data:image/png;base64,')
+  expect(favicon).toContain('<image class="dark" href="data:image/png;base64,')
+  expect(favicon).toMatch(/\.dark\s*{\s*display:\s*none;\s*}/i)
+  expect(favicon).toMatch(/@media \(prefers-color-scheme: dark\)\s*{\s*\.light\s*{\s*display:\s*none;\s*}/i)
+  // The wordmark rides the seat at the eye's width, same ink pair and plate
+  // geometry as BrandWordmark, with the deep blue tone swapping on dark.
+  expect(favicon).toContain('>HARNESS</text>')
+  expect(favicon).toContain('class="plate"')
+  expect(favicon).toContain('stroke: #0b4c9e')
 })
