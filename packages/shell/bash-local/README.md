@@ -44,7 +44,7 @@ No direct invalidation; the named consumer owns any request-prefix changes.
 
 - **Unconfined by itself** — this executor always runs commands with the harness process's authority; deployments needing confinement compose [`arx-bash-sandbox`](../bash-sandbox/README.md), while per-call allow/deny/ask policy belongs on `tools/pre-execute`.
 - **No persistent shell or PTY** — every call starts a fresh non-login `bash -c`; cwd-only persistence and interactive terminal sessions remain deferred until a real workflow requires them.
-- **POSIX-only** — the `bash` binary is hardcoded, and the underlying service's group semantics are POSIX; Windows is unsupported.
+- **Windows resolves one Git Bash at activation** — POSIX spawns the name `bash` through the executor seam; Windows probes an explicit `bashPath`, then the well-known Git for Windows locations, then `PATH` entries (excluding the WSL `System32` stub), re-resolving when settings change and failing the load loudly on a miss. Termination there follows the Windows child contract (`taskkill /T /F`, no signal reporting).
 - **A background spawn-failure note is single-delivery** — the subprocess service buffers no output for a process that never ran, so the executor injects `spawn failed: …` into exactly one `readOutput()` delta; a reader that discards that delta cannot recover it.
 
 Scrub-heuristic and spill-retention caveats live with [`arx-subprocess-local`](../../subprocess/subprocess-local/README.md), which owns those mechanics.
