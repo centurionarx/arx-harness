@@ -48,7 +48,12 @@ PLATFORMS = load_platforms()
 
 
 def runtime_suffixes(executable_name: str) -> tuple[str, ...]:
-    suffixes = ("", "-rg")
+    if executable_name.endswith(".exe"):
+        # CreateProcess appends `.exe` and never finds an extensionless PE, so
+        # the windows twin keeps the spawnable extension on both helpers.
+        suffixes = ("", "-rg.exe")
+    else:
+        suffixes = ("", "-rg")
     return (*suffixes, "-spawn-helper") if "-macos-" in executable_name else suffixes
 
 

@@ -4,9 +4,12 @@ Two runtime carriers coexist under ``runtime/``, both injected by the repo's
 ``scripts/build-exe-for-python-sdk.ts`` build (neither is checked into git):
 
 - **exe (production)**: single-file Node executables named
-  ``arx-jsonrpc-agent-pkg-<platform>-<arch>`` (platform in {linux, macos}, arch in
-  {x64, arm64}) with a sibling ``-rg`` executable; macOS also uses a sibling
-  ``-spawn-helper``. The target machine needs no Node installation.
+  ``arx-jsonrpc-agent-pkg-<platform>-<arch>`` (platform in {linux, macos, win},
+  arch in {x64, arm64}) with a sibling ``-rg`` executable; the windows twin is
+  ``.exe``-suffixed (``...win-x64.exe`` with a ``...-rg.exe`` sibling, because
+  ``CreateProcess`` appends ``.exe`` and never finds an extensionless PE) and
+  macOS also uses a sibling ``-spawn-helper``. The target machine needs no Node
+  installation.
 - **node (dev-only)**: the full deploy closure under ``runtime/node/``
   (``package.json`` + ``node_modules/``), executed as ``node
   runtime/node/node_modules/@arx-ai/arx-sdk-jsonrpc-demo/lib/packaged-bin.js`` on a
@@ -31,7 +34,7 @@ PACKAGE_METADATA_FILENAME = "arx-harness-runtime.json"
 
 RUNTIME_MODE_ENV_VAR = "ARX_RUNTIME_MODE"
 
-_PLATFORM_TAGS = {"linux": "linux", "darwin": "macos"}
+_PLATFORM_TAGS = {"linux": "linux", "darwin": "macos", "win32": "win"}
 _ARCH_TAGS = {"x86_64": "x64", "amd64": "x64", "arm64": "arm64", "aarch64": "arm64"}
 
 _EXE_ACQUISITION_HINT = (
@@ -84,7 +87,7 @@ def bundled_runtime_path() -> Path:
             f"arx-harness-runtime-bin is missing the runtime executable at {path}. "
             + _EXE_ACQUISITION_HINT
         )
-    ripgrep = Path(f"{path}-rg")
+    ripgrep = Path(f"{path}-rg.exe") if tag.startswith("win-") else Path(f"{path}-rg")
     if not ripgrep.is_file():
         raise FileNotFoundError(
             f"arx-harness-runtime-bin is missing the ripgrep sidecar at {ripgrep}. "
@@ -130,7 +133,7 @@ def _current_platform_tag() -> str:
         raise FileNotFoundError(
             "no bundled arx-jsonrpc-agent executable exists for this platform "
             f"(sys.platform={sys.platform!r}, machine={platform.machine()!r}); supported: "
-            "linux/macos on x64/arm64. " + _EXE_ACQUISITION_HINT
+            "linux/macos/win on x64/arm64. " + _EXE_ACQUISITION_HINT
         )
     return f"{plat}-{arch}"
 

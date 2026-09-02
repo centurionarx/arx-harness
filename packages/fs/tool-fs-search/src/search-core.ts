@@ -157,6 +157,18 @@ function completeStdout(toolName: string, stdout: SubprocessOutputRead, rawOutpu
 let rgPathPromise: Promise<string> | undefined
 
 /**
+ * The executable sidecar's file-name suffix appended to `process.execPath`.
+ * Windows `CreateProcess` appends `.exe` to any extensionless candidate and
+ * never finds the PE, so the packaged runtime ships a `.exe`-suffixed twin
+ * sidecar there.
+ * @param platform - the platform whose sidecar is being named; defaults to the process platform.
+ * @returns the literal suffix appended to the executable path.
+ */
+export function rgSidecarSuffix(platform: NodeJS.Platform = process.platform): string {
+  return platform === 'win32' ? '-rg.exe' : '-rg'
+}
+
+/**
  * The packaged ripgrep binary path, resolved lazily once per process.
  *
  * A single-file runtime uses the executable's `-rg` sidecar because a native
@@ -170,7 +182,7 @@ let rgPathPromise: Promise<string> | undefined
  */
 export function resolveRgPath(): Promise<string> {
   rgPathPromise ??= Promise.resolve().then(async () => {
-    const executableSidecar = `${process.execPath}-rg`
+    const executableSidecar = `${process.execPath}${rgSidecarSuffix()}`
     if ('pkg' in process && existsSync(executableSidecar)) return executableSidecar
     return (await import('@vscode/ripgrep')).rgPath
   })

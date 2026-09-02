@@ -4,9 +4,11 @@ arx Harness runs on Linux, macOS, and Windows. The agent loop, session persisten
 
 ## One shell stack per host
 
-The base bundle mounts exactly one shell family, chosen by platform: `bash-sandbox` and `tool-bash` on POSIX, `pwsh-sandbox` and `tool-pwsh` on Windows, because bash has no Windows runner. The permission surface is identical either way — the same sandbox policy, permission switcher, approval service, and `ctx.fs` fencing apply ([row set and the bash-restore recipe](../../../packages/bundle/base/README.md)).
+The base bundle mounts exactly one shell family, chosen by platform: `bash-sandbox` and `tool-bash` on POSIX, `pwsh-sandbox` and `tool-pwsh` on Windows by default. The permission surface is identical either way — the same sandbox policy, permission switcher, approval service, and `ctx.fs` fencing apply ([row set and the bash-restore recipe](../../../packages/bundle/base/README.md)).
 
-A model working on Windows therefore writes PowerShell, not bash. Commands, skills, and hooks authored as shell scripts do not carry over.
+A model working on Windows therefore writes PowerShell by default. The bash family also runs on Windows through Git Bash (resolved from the well-known Git for Windows locations, `PATH` minus the WSL `System32` stub, or an explicit `bashPath`; a probing miss fails the load loudly), so a Windows host that prefers POSIX-authored components can follow the bash-restore recipe — skills and hooks written as shell scripts then carry over verbatim ([bash resolution rules](../../../packages/shell/bash-local/README.md)).
+
+`verify:windows-parity` keeps this contract load-bearing: it re-proves the base patch's complementary win32 rungs, the cross-platform executability of pre-commit and Windows gate commands, and that product `SKILL.md` files carry a pwsh variant for any POSIX-only shell syntax ([gate](../../../scripts/verify-windows-parity.ts)).
 
 PowerShell itself is resolved rather than required: an explicit `pwshPath`, then PowerShell 7's install location, then `PATH`, then Windows PowerShell 5.1 as a legacy last resort ([resolution rules and their caveats](../../../packages/shell/pwsh-local/README.md)).
 

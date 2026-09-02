@@ -1,6 +1,8 @@
 /**
  * Local Service Provider for the bash capability seam over the subprocess
- * capability seam. Public commands run as `bash -c` in a managed process group spawned
+ * capability seam. Public commands run as `bash -c` under the resolved bash
+ * executable (POSIX `bash` by name; a probed Git Bash on Windows — see
+ * `resolve.ts`) in a managed process group spawned
  * through `ctx.subprocess`; subclasses may reuse the same mechanics with an
  * explicit argv. This executor owns command defaulting, deadlines and cause
  * classification, the model-friendly terminal environment, and the model-facing
@@ -16,6 +18,8 @@ import type { ShellExecRequest, ShellExecSpec, ShellProcess, ShellProcessRead, S
 import type { SubprocessCollect, SubprocessHandle, SubprocessOutputReader, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 import { installSettingsSection } from '@arx-ai/arx-settings'
 import { clampTimeout, deadline, MAX_TIMER_DELAY_MS, timeoutOf } from '@arx-ai/arx-timeout'
+import { resolveBashPath } from './resolve.ts'
+
 
 /**
  * Model-friendly environment overrides: disable colors, pagers, and
@@ -41,6 +45,14 @@ const DEFAULT_MAX_SPILL_BYTES = 64 * 1024 * 1024
 export interface Config {
   /** Default working directory for commands (default: process.cwd()). */
   cwd?: string
+  /**
+   * Explicit bash executable, trusted as-is. When omitted, POSIX resolves the
+   * name `bash` through spawn and Windows probes the well-known Git for
+   * Windows locations plus PATH (`resolve.ts`); a Windows probing miss fails
+   * the activation loudly instead of spawning a substitute such as the WSL
+   * launcher.
+   */
+  bashPath?: string
   /** Default foreground timeout in milliseconds. */
   timeoutMs?: number
   /** Upper bound for per-call timeout overrides. */
@@ -53,8 +65,8 @@ export interface Config {
   graceMs?: number
 }
 
-/** The shape after schemastery applied the defaults (cwd has none). */
-type ResolvedConfig = Required<Omit<Config, 'cwd'>> & Pick<Config, 'cwd'>
+/** The shape after schemastery applied the defaults (cwd/bashPath have none). */
+type ResolvedConfig = Required<Omit<Config, 'cwd' | 'bashPath'>> & Pick<Config, 'cwd' | 'bashPath'>
 
 /** Project a settled collect-mode reader into the final CollectedOutput shape. */
 function finalOutput(reader: SubprocessOutputReader): CollectedOutput {
@@ -104,6 +116,7 @@ export class LocalBashExecutor extends ShellExecutor {
 
   static Config: z<Config> = z.object({
     cwd: z.string(),
+    bashPath: z.string(),
     timeoutMs: z.number().default(120_000),
     maxTimeoutMs: z.number().default(600_000),
     maxOutputBytes: z.number().default(64_000),
@@ -114,9 +127,21 @@ export class LocalBashExecutor extends ShellExecutor {
   /** The currently authoritative config: the settings section, or the composition entry. */
   private source: () => ResolvedConfig
 
+  /** The resolved bash executable snapshot; see {@link bashPath}. */
+  private resolvedBashPath: string
+
   /** Validated config (schemastery applied the defaults before construction). */
   get config(): ResolvedConfig {
     return this.source()
+  }
+
+  /**
+   * The bash executable the next commands spawn. POSIX resolves `bash` at
+   * spawn time; Windows fixes the probed Git Bash path here and re-resolves
+   * when the settings document changes.
+   */
+  get bashPath(): string {
+    return this.resolvedBashPath
   }
 
   constructor(ctx: Context, config: Config) {
@@ -125,14 +150,19 @@ export class LocalBashExecutor extends ShellExecutor {
     const entry = config as ResolvedConfig
     assertServiceableBashConfig(entry)
     this.source = () => entry
+    this.resolvedBashPath = resolveBashPath(entry.bashPath)
     installSettingsSection(ctx, SHELL_SETTINGS_NAMESPACE, LocalBashExecutor.Config, entry, {
       validate: assertServiceableBashConfig,
       setSource: (current) => {
         this.source = current as () => ResolvedConfig
       },
-      // Every field is read through the getter at each command, so nothing
-      // derived from the source needs rebuilding when the document changes.
-      onChange: () => {},
+      onChange: () => {
+        // Every other field is read through the getter at each command, so
+        // only the executable snapshot derived from the source needs
+        // rebuilding when the document changes.
+        const declared = this.source().bashPath
+        this.resolvedBashPath = resolveBashPath(declared)
+      },
     })
   }
 
@@ -209,7 +239,18 @@ export class LocalBashExecutor extends ShellExecutor {
   }
 
   async run(spec: ShellExecSpec): Promise<ShellRunResult> {
-    return this.runArgv(spec, ['bash', '-c', spec.command])
+    return this.runArgv(spec, this.shellArgv(spec.command))
+  }
+
+  /**
+   * The exact local bash argv: the resolved executable plus the command
+   * string. Sandboxing consumers wrap this same argv through `ctx.sandbox`, so
+   * the confined inner shell matches the executor's runtime everywhere.
+   * @param command - shell source for the inner `bash -c`.
+   * @returns the full argv handed to the subprocess seam.
+   */
+  protected shellArgv(command: string): readonly string[] {
+    return [this.bashPath, '-c', command]
   }
 
   /**
@@ -240,7 +281,7 @@ export class LocalBashExecutor extends ShellExecutor {
   }
 
   start(spec: ShellExecSpec): ShellProcess {
-    return this.startArgv(spec, ['bash', '-c', spec.command])
+    return this.startArgv(spec, this.shellArgv(spec.command))
   }
 
   /**
@@ -329,5 +370,7 @@ export class LocalBashExecutor extends ShellExecutor {
    */
   protected onProcessDone(_proc: ShellProcess, _stderr: string, _spawnFailed: boolean, _spawnError?: unknown): void {}
 }
+
+export { candidateBashPaths, resolveBashPath } from './resolve.ts'
 
 export default LocalBashExecutor

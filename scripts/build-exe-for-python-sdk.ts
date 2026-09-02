@@ -50,7 +50,7 @@ const ASSET_GLOBS = [
   'node_modules/**/*.wasm',
 ]
 
-const PLATFORMS = ['linux', 'macos'] as const
+const PLATFORMS = ['linux', 'macos', 'win'] as const
 const ARCHES = ['x64', 'arm64'] as const
 type Platform = (typeof PLATFORMS)[number]
 type Arch = (typeof ARCHES)[number]
@@ -71,8 +71,9 @@ class Target {
     /** pkg Node range (`node<major>`). */
     readonly nodeRange: string,
     /**
-     * pkg platform tag. Windows is a documented non-goal
-     * (.agents/notes/implemented/architecture/2026-07-10-single-file-executable-sdk-runtime-distribution.md).
+     * pkg platform tag (`linux`, `macos`, `win`). Windows support, including
+     * its `.exe`-suffixed executable and ripgrep twin sidecar, restored
+     * 2026-09-01 (see the Windows-new-release-runs Agent Note).
      */
     readonly platform: Platform,
     /** pkg CPU tag. */
@@ -112,7 +113,11 @@ class Target {
    * @returns the host target; throws on an unsupported host platform or arch.
    */
   static host(): Target {
-    const platform = process.platform === 'darwin' ? 'macos' : process.platform === 'linux' ? 'linux' : undefined
+    const platform = process.platform === 'darwin'
+      ? 'macos'
+      : process.platform === 'linux'
+        ? 'linux'
+        : process.platform === 'win32' ? 'win' : undefined
     if (platform === undefined) {
       throw new Error(`build-exe-for-python-sdk: unsupported host platform ${process.platform}; pass --targets explicitly.`)
     }
@@ -381,7 +386,14 @@ class SingleExeBuild {
    * @returns the executable and ripgrep sidecar paths, plus the macOS spawn helper path when required.
    */
   async pack(target: Target): Promise<string[]> {
-    const product = join(this.outDir, `${OUTPUT_BASENAME}-${target.platform}-${target.arch}`)
+    // Windows PE products carry the `.exe` extension: CreateProcess appends it
+    // and never finds an extensionless binary, so the wheel payload must too.
+    const product = join(
+      this.outDir,
+      target.platform === 'win'
+        ? `${OUTPUT_BASENAME}-win-${target.arch}.exe`
+        : `${OUTPUT_BASENAME}-${target.platform}-${target.arch}`,
+    )
     await this.prepareNativePty(target)
     if (!this.cli.dryRun) await mkdir(this.outDir, { recursive: true })
     await this.run(`pkg ${target.spec}`, pnpmBin(), [
@@ -410,18 +422,23 @@ class SingleExeBuild {
     return [product, ripgrep, spawnHelper]
   }
 
-  /** Copy the target ripgrep binary beside the executable so Node can spawn it outside pkg's virtual filesystem. */
+  /**
+   * Copy the target ripgrep binary beside the executable so Node can spawn it
+   * outside pkg's virtual filesystem. The windows binary keeps the spawnable
+   * `.exe` name (`rg.exe`).
+   */
   private async copyRipgrepSidecar(target: Target, product: string): Promise<string> {
     const platform = target.platform === 'macos' ? 'darwin' : target.platform
+    const binary = target.platform === 'win' ? 'rg.exe' : 'rg'
     const source = join(
       this.staging,
       'node_modules',
       '@vscode',
       `ripgrep-${platform}-${target.arch}`,
       'bin',
-      'rg',
+      binary,
     )
-    const destination = `${product}-rg`
+    const destination = target.platform === 'win' ? `${product}-rg.exe` : `${product}-rg`
     if (this.cli.dryRun) {
       console.log(`build-exe-for-python-sdk: [dry-run] cp ${source} ${destination}`)
       return destination

@@ -49,4 +49,21 @@ describe('ripgrep resolution', () => {
     await expect(resolveRgPath()).resolves.toBe(dependencyRgPath)
     expect(existsSync).toHaveBeenCalledWith(`${process.execPath}-rg`)
   })
+
+  it('names the windows sidecar with the spawnable .exe twin', async () => {
+    const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { configurable: true, value: 'win32' })
+    Reflect.defineProperty(process, 'pkg', { configurable: true, value: {} })
+    try {
+      existsSync.mockReturnValue(true)
+      const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
+
+      const sidecar = `${process.execPath}-rg.exe`
+      await expect(resolveRgPath()).resolves.toBe(sidecar)
+      expect(existsSync).toHaveBeenCalledWith(sidecar)
+    } finally {
+      Object.defineProperty(process, 'platform', originalPlatform as PropertyDescriptor)
+      Reflect.deleteProperty(process, 'pkg')
+    }
+  })
 })

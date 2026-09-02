@@ -1,6 +1,6 @@
 # @arx-ai/arx-bash-local
 
-Local Service Provider for the `@arx-ai/arx-shell` executor seam over the [`@arx-ai/arx-subprocess`](../../subprocess/subprocess/README.md) service: `LocalBashExecutor` spawns `bash -c <command>` per call as a managed process group through `ctx.subprocess`, and owns everything bash-shaped — command defaulting and caps, timeout/cancel classification, the model-friendly terminal environment, and the model-facing stdout/stderr merge for background reads. Group mechanics (bounded spill-backed output, credential scrub, kill escalation, disposal) are the subprocess service's.
+Local Service Provider for the `@arx-ai/arx-shell` executor seam over the [`@arx-ai/arx-subprocess`](../../subprocess/subprocess/README.md) service: `LocalBashExecutor` spawns `<bash> -c <command>` (the resolved executable, below) per call as a managed process group through `ctx.subprocess`, and owns everything bash-shaped — command defaulting and caps, timeout/cancel classification, the model-friendly terminal environment, and the model-facing stdout/stderr merge for background reads. Group mechanics (bounded spill-backed output, credential scrub, kill escalation, disposal) are the subprocess service's.
 
 The package root exports the default and named `LocalBashExecutor` plugin plus its `Config`.
 
@@ -11,12 +11,17 @@ The package root exports the default and named `LocalBashExecutor` plugin plus i
   name: '@arx-ai/arx-bash-local'
   config:
     cwd: /path/to/workspace   # default: process.cwd()
+    bashPath: /path/to/bash   # optional; see "Executable resolution" below
     timeoutMs: 120000          # default foreground timeout
     maxTimeoutMs: 600000       # cap for per-call overrides
     maxOutputBytes: 64000      # per-stream in-memory cap; overflow spills to disk
     maxSpillBytes: 67108864    # per-stream full-output spill cap
     graceMs: 3000              # kill escalation and post-exit pipe-drain grace
 ```
+
+## Executable resolution
+
+POSIX resolves the name `bash` through spawn; no probe runs. On Windows the executor resolves ONE Git Bash at activation (and re-resolves when the settings document changes, like every other config field): an explicit `bashPath` wins, then the well-known Git for Windows install locations are probed, then `PATH` entries naming `bash.exe` — with the `C:\Windows\System32` WSL launcher deliberately excluded, because executing it would run commands in WSL instead of Git Bash. A probing miss fails the activation loudly, naming the search and both repairs (install Git for Windows, or set `bashPath`). The sandboxing consumer wraps the same resolved argv through `ctx.sandbox`, so the confined inner shell always matches the executor's runtime.
 
 ## Behavior
 

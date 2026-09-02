@@ -11,7 +11,7 @@ pnpm install
 pnpm exec tsx scripts/build-exe-for-python-sdk.ts
 ```
 
-Use `--skip-build` when the required `lib/` artifacts already exist, or `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64` to select platforms. Products land in `dist-exe/` and the script syncs the selected carriers into `python/sdk-runtime/`. macOS builds also sync the matching spawn helper required by `node-pty`.
+Use `--skip-build` when the required `lib/` artifacts already exist, or `--targets=node24-linux-x64,node24-linux-arm64,node24-macos-arm64,node24-win-x64` to select platforms. Products land in `dist-exe/` and the script syncs the selected carriers into `python/sdk-runtime/`. macOS builds also sync the matching spawn helper required by `node-pty`, and Windows builds name the executable and its ripgrep twin with the spawnable `.exe` extension.
 
 ## Validate the SDK
 

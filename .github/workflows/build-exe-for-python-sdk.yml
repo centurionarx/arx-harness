@@ -11,7 +11,7 @@ on:
   workflow_call:
     inputs:
       targets:
-        description: Comma-separated pkg targets to build; empty builds all three.
+        description: Comma-separated pkg targets to build; empty builds all four.
         type: string
         required: false
         default: ''
@@ -30,8 +30,8 @@ on:
       targets:
         description: >-
           Comma-separated pkg targets to build. Any subset of:
-          node24-linux-x64, node24-linux-arm64, node24-macos-arm64.
-          Empty builds all three.
+          node24-linux-x64, node24-linux-arm64, node24-macos-arm64, node24-win-x64.
+          Empty builds all four.
         type: string
         required: false
         default: ''
@@ -86,7 +86,7 @@ jobs:
         id: plan
         env:
           # Label runs and blank dispatch inputs build all targets.
-          TARGETS: ${{ inputs.targets || 'node24-linux-x64,node24-linux-arm64,node24-macos-arm64' }}
+          TARGETS: ${{ inputs.targets || 'node24-linux-x64,node24-linux-arm64,node24-macos-arm64,node24-win-x64' }}
         run: |
           set -euo pipefail
           matrix='[]'
@@ -100,8 +100,9 @@ jobs:
               node24-linux-x64)   runner=ubuntu-latest ;;
               node24-linux-arm64) runner=ubuntu-24.04-arm ;;
               node24-macos-arm64) runner=macos-latest ;;
+              node24-win-x64)     runner=windows-2025 ;;
               *)
-                echo "::error::Unknown target '$t'. Supported: node24-linux-x64, node24-linux-arm64, node24-macos-arm64."
+                echo "::error::Unknown target '$t'. Supported: node24-linux-x64, node24-linux-arm64, node24-macos-arm64, node24-win-x64."
                 exit 1
                 ;;
             esac
@@ -147,6 +148,11 @@ jobs:
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
+    # The windows leg renders every step through Git Bash (preinstalled on
+    # windows-2025), so the bash-bodied steps stay one language per job.
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -232,11 +238,14 @@ jobs:
           set -euo pipefail
           platform="${TARGET#node24-}"
           exe="$PWD/dist-exe/arx-jsonrpc-agent-pkg-$platform"
+          # The windows leg's executable and ripgrep twin carry the spawnable `.exe`.
+          [ "$platform" = win-x64 ] && exe="$exe.exe"
           [ -x "$exe" ] || { echo "::error::$exe missing or not executable"; exit 1; }
           case "$platform" in
             linux-x64) wheel=arx_harness_runtime_bin-$VERSION-py3-none-manylinux_2_28_x86_64.whl ;;
             linux-arm64) wheel=arx_harness_runtime_bin-$VERSION-py3-none-manylinux_2_28_aarch64.whl ;;
             macos-arm64) wheel=arx_harness_runtime_bin-$VERSION-py3-none-macosx_14_0_arm64.whl ;;
+            win-x64) wheel=arx_harness_runtime_bin-$VERSION-py3-none-win_amd64.whl ;;
             *) echo "::error::Unsupported runtime platform $platform"; exit 1 ;;
           esac
           echo "platform=$platform" >> "$GITHUB_OUTPUT"
@@ -270,13 +279,16 @@ jobs:
         run: |
           set -euo pipefail
           python -m venv "$RUNNER_TEMP/arx-sdk-smoke"
-          "$RUNNER_TEMP/arx-sdk-smoke/bin/python" -m pip install \
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            venv_python="$RUNNER_TEMP/arx-sdk-smoke/Scripts/python.exe"
+          else
+            venv_python="$RUNNER_TEMP/arx-sdk-smoke/bin/python"
+          fi
+          "$venv_python" -m pip install \
             "dist-python/$SDK_WHEEL" \
             "dist-python/$RUNTIME_WHEEL"
-          "$RUNNER_TEMP/arx-sdk-smoke/bin/python" scripts/smoke-python-runtime.py \
-            --scenario sdk-default
-          "$RUNNER_TEMP/arx-sdk-smoke/bin/python" scripts/smoke-python-runtime.py \
-            --scenario sdk-mcp
+          "$venv_python" scripts/smoke-python-runtime.py --scenario sdk-default
+          "$venv_python" scripts/smoke-python-runtime.py --scenario sdk-mcp
 
       - name: Check Linux GLIBC requirements
         if: runner.os == 'Linux'

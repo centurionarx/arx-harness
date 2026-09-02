@@ -39,7 +39,7 @@ def _host_platform_tag() -> str:
     machine = platform.machine().lower()
     arch = "arm64" if machine in {"arm64", "aarch64"} else "x64" if machine in {"x86_64", "amd64"} else machine
     system = platform.system().lower()
-    key = f"macos-{arch}" if system == "darwin" else f"linux-{arch}" if system == "linux" else system
+    key = f"macos-{arch}" if system == "darwin" else f"linux-{arch}" if system == "linux" else f"win-{arch}" if system == "windows" else system
     try:
         return _PLATFORMS[key][0]
     except KeyError as exc:
@@ -67,7 +67,8 @@ class RuntimeBuildHook(BuildHookInterface):
         expected_executable = matches[0][1]
         runtime_dir = Path(self.root) / "src" / "arx_harness_runtime" / "runtime"
         runtime_files = sorted(runtime_dir.glob("arx-jsonrpc-agent-pkg-*") if runtime_dir.is_dir() else [])
-        expected_files = [expected_executable, f"{expected_executable}-rg"]
+        ripgrep_sidecar = f"{expected_executable}-rg.exe" if expected_executable.endswith(".exe") else f"{expected_executable}-rg"
+        expected_files = [expected_executable, ripgrep_sidecar]
         if "-macos-" in expected_executable:
             expected_files.append(f"{expected_executable}-spawn-helper")
         found_files = [path.name for path in runtime_files]

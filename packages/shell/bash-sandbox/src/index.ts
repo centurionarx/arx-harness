@@ -167,15 +167,16 @@ export class SandboxBashExecutor extends LocalBashExecutor {
   }
 
   /**
-   * Wrap one shell command via the `ctx.sandbox` provider. Provider errors
+   * Wrap one shell command via the `ctx.sandbox` provider around the resolved
+   * local bash argv (a probed Git Bash path on Windows). Provider errors
    * propagate unchanged; the returned argv is handed directly to the local
    * executor's subprocess path.
-   * @param command - shell source for the confined inner `bash -c`.
+   * @param command - shell source for the confined inner `bash -c` under the resolved executable.
    * @param policy - resolved confined execution policy.
    * @returns the provider's exact argv and settlement-classification facts.
    */
   private confine(command: string, policy: SandboxPolicy): ConfinedArgv {
-    return this.ctx.sandbox.confine(['bash', '-c', command], policy)
+    return this.ctx.sandbox.confine([...this.shellArgv(command)], policy)
   }
 }
 

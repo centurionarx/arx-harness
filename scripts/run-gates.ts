@@ -465,6 +465,52 @@ function ciWindowsBlockingGates(): Gate[] {
   return [
     ciBuildGate('windows-build', { label: 'build' }),
     pnpmScript('windows-site', 'docs:build', { label: 'production site' }),
+    pnpmScript('windows-parity', 'verify:windows-parity', { label: 'Windows parity' }),
+    ...ciWindowsPackedInstallGates(),
+  ]
+}
+
+/**
+ * Prove the npm publish channel shape on Windows before anything publishes:
+ * pack every tarball family and drive the installed executable from a
+ * throwaway consumer, exactly as the release lanes do (the README quickstart
+ * `npx @arx-ai/arx` depends on this being shippable per platform).
+ * @returns the pack + packed-install gate graph for the blocking lane.
+ */
+function ciWindowsPackedInstallGates(): Gate[] {
+  const afterBuild = { needs: ['windows-build'] }
+  return [
+    pnpmExec('windows-pack-arx', ['run', 'release:pack', '--family', 'arx', '--out', 'dist/npm'], {
+      label: 'pack arx tarballs',
+      ...afterBuild,
+    }),
+    pnpmExec('windows-pack-vendor', ['run', 'release:pack', '--family', 'vendor', '--out', 'dist/npm-vendor'], {
+      label: 'pack vendored framework tarballs',
+      ...afterBuild,
+    }),
+    pnpmExec('windows-pack-landlock-build', ['run', '--dir', 'native/landlock-run', 'build:ts'], {
+      label: 'build Landlock entry types',
+      ...afterBuild,
+    }),
+    pnpmExec('windows-pack-landlock', ['run', '--dir', 'native/landlock-run/packages/entry', 'pack', '--pack-destination', 'dist/npm-landlock'], {
+      label: 'pack Landlock entry tarball',
+      needs: ['windows-pack-landlock-build'],
+    }),
+    pnpmExec('windows-packed-install', [
+      'run',
+      'release:verify-packed-install',
+      '--family',
+      'arx',
+      '--from',
+      'dist/npm',
+      '--from',
+      'dist/npm-vendor',
+      '--from',
+      'dist/npm-landlock',
+    ], {
+      label: 'packed install smoke',
+      needs: ['windows-pack-arx', 'windows-pack-vendor', 'windows-pack-landlock'],
+    }),
   ]
 }
 
@@ -669,6 +715,7 @@ function docSyncLeafGates(options: {
     pnpmScript('public-repository-links', 'verify-public-repository-links', { label: 'public repository links' }),
     pnpmScript('doc-refs', 'verify-doc-refs', { label: 'doc refs' }),
     pnpmScript('package-paths', 'verify-package-paths', { label: 'package paths' }),
+    pnpmScript('windows-parity', 'verify:windows-parity', { label: 'Windows parity' }),
     pnpmScript('config-source-ownership', 'verify-config-source-ownership', { label: 'config source ownership' }),
     pnpmScript('package-readme-model-experience', 'verify-package-readme-model-experience', { label: 'package README model experience' }),
     pnpmScript('agent-note-classification', 'verify-agent-note-classification', { label: 'agent note classification' }),
