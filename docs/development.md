@@ -9,7 +9,7 @@ The setup tutorial takes a new contributor from prerequisites to a checked check
 ### Prerequisites
 
 - Node.js supports 22.19+ and 24+. CI covers 22.19, 24, and 26; see the [Node engine floor Agent Note](../.agents/notes/implemented/process/2026-07-06-node-engine-floor.md).
-- Corepack-enabled pnpm. The repo pins `pnpm@11.7.0` in `package.json`; run `corepack enable` if `pnpm --version` does not resolve through Corepack.
+- Corepack-enabled pnpm. The repo pins pnpm in `package.json`; run `corepack enable` if `pnpm --version` does not resolve through Corepack.
 - Git 2.26 or newer; hook setup enables Git's worktree-specific configuration extension.
 - Optional: a DeepSeek API key for the Web, headless, and ACP automation demos and real-API e2e tests.
 
@@ -127,7 +127,7 @@ The keyless [CI workflow](../.github/workflows/ci.yml) groups independent gates 
 The arx family shares one version across every manifest, and the running app prints it under the sidebar wordmark, so the number a user reads names the tree they are looking at.
 
 - **Patch** (`1.0.1` to `1.0.2`) for every shipped change or fix. `pnpm run release:arx patch` rewrites the manifests and commits; the lockfile follows.
-- **Minor** (`1.0.x` to `1.1.0`) when a release gathers enough new capability that a patch understates it. Whoever does the work decides the moment.
+- **Minor** (`1.0.x` to `1.1.0`) only when the repository owner calls for it. No amount of accumulated work promotes a release to a new minor without that explicit request.
 - **Major** (`1.x` to `2.0.0`) only when the repository owner calls for it. No amount of accumulated change promotes a release to a new major on its own.
 
 ### Daily commands
