@@ -74,6 +74,12 @@ export interface RpcErrorDetailsMap {
   /** A credential write was refused (read-only shadowing layer or storage failure); the message is the seam's own text. */
   'credential-rejected': { ref: string }
   /**
+   * The Host names no native document opener (a headless deployment): a
+   * window/document open gesture refused. The browser surfaces the path as
+   * text instead of retrying.
+   */
+  'open-unavailable': Record<never, never>
+  /**
    * Interrogating a draft provider endpoint did not produce a model listing:
    * no adapter family serves the namespace, the protocol has no listing this
    * build can read, or the endpoint was unreachable, refused the credential,

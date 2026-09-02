@@ -33,6 +33,8 @@ export const settingsDescribeRequestSchema = z.object({}) satisfies z.ZodType<Wi
 export const settingsDescribeValueSchema = z.object({
   writable: z.boolean(),
   hasDocument: z.boolean(),
+  documentPath: z.string().optional(),
+  canOpen: z.boolean().optional(),
   namespaces: z.array(settingsNamespaceViewSchema),
 }) satisfies z.ZodType<Wire<ResponseValue<'settings.describe'>>>
 

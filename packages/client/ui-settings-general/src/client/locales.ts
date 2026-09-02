@@ -9,5 +9,7 @@ export const en = {
   'close': 'Close',
   'openDocument': 'Open configuration file',
   'openDocument.error': 'Could not open configuration file',
+  'openDocument.copy': 'Copy path',
+  'openDocument.copied': 'Copied',
   'general.nav': 'General',
 } satisfies Record<string, string>

@@ -1892,6 +1892,17 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     return defaults.openPath !== undefined || canOpenNativePath()
   }
 
+  /**
+   * Whether the settings `openDocument` gesture can reach an opener: either
+   * the composition injected the text-file opener itself (Electron owns the
+   * desktop), or the platform carries a native opener. A headless Host
+   * reports false, so the browser surfaces the document path as text instead
+   * of a gesture that would spawn an opener into nothing.
+   */
+  function canOpenDocuments(): boolean {
+    return defaults.openTextFile !== undefined || canOpenPaths()
+  }
+
   /** Missing-service report shared by the credentials domain. */
   function credentialsAbsent(): RpcError {
     return { code: 'internal', message: 'credentials service is absent: this deployment does not mount a credential provider (e.g. @arx-ai/arx-credentials-local) in its composition', details: {} }
@@ -3226,12 +3237,21 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         return Promise.resolve(ok(request, {
           writable: settings.writable,
           hasDocument: settings.documentPath !== undefined,
+          ...settings.documentPath === undefined ? {} : { documentPath: settings.documentPath },
+          canOpen: canOpenDocuments(),
           namespaces: settings.describe({ redactSecrets: true }).map(namespaceView),
         }))
       },
       async openDocument(request, signal) {
         const settings = ctx.get('settings')
         if (settings === undefined) return err(request, settingsAbsent())
+        if (!canOpenDocuments()) {
+          return err(request, {
+            code: 'open-unavailable',
+            message: 'this deployment has no native document opener; open the configuration file directly at its path',
+            details: {},
+          })
+        }
         if (isAborted(signal)) {
           return err(request, {
             code: 'cancelled',

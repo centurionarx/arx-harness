@@ -54,13 +54,20 @@ export interface SettingsApi {
   /**
    * Describe every registered namespace: redacted layered values plus the
    * serialized schema a client renders its form from. `hasDocument` reports
-   * whether a file-backed provider owns a local document without exposing its
-   * Host path. This method is loopback-only; `writable: false` (read-only
-   * provider) tells the client to disable every write control.
+   * whether a file-backed provider owns a local document; `documentPath` is
+   * that document's Host path, so a deployment without a desktop opener can
+   * surface it as text. `canOpen` reports whether `openDocument` can hand the
+   * document to a native opener at all (a desktop exists on the Host, or the
+   * composition injected one); false tells the client to present the path
+   * instead of an open gesture. This method is loopback-only;
+   * `writable: false` (read-only provider) tells the client to disable every
+   * write control.
    */
   describe(request: RpcRequest<{}>): Promise<RpcResponse<{
     writable: boolean
     hasDocument: boolean
+    documentPath?: string
+    canOpen?: boolean
     namespaces: SettingsNamespaceView[]
   }>>
 

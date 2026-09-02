@@ -22,6 +22,14 @@ export interface SettingsDescribeView {
   writable: boolean
   /** Whether a native settings document exists for the Host to open. */
   hasDocument: boolean
+  /** The document's Host path; a deployment without a desktop opener surfaces it as text. */
+  documentPath?: string
+  /**
+   * Whether the Host can hand the document to a native opener at all. Older
+   * views may omit it; absence then keeps the plain open gesture, which was
+   * the only behavior those Hosts ever shipped.
+   */
+  canOpen?: boolean
 }
 
 /** Mirror state every derived settings surface renders from. */

@@ -14,3 +14,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* The document path a headless deployment surfaces instead of an open
+   gesture: one line, ellipsized, full value on hover through the title
+   attribute. */
+.location {
+  max-width: 320px;
+  overflow: hidden;
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

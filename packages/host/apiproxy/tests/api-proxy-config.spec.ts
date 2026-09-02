@@ -282,10 +282,13 @@ describe('settings domain', () => {
       documentPath: '/tmp/custom-settings.yaml',
     } })
     ctx.settings.register(NS, AdapterConfig, { base: { baseURL: 'https://base' } })
-    const api = createApiProxy(ctx, DEFAULTS)
+    const api = createApiProxy(ctx, { ...DEFAULTS, canOpenPath: () => false })
     const value = expectOk(await api.settings.describe(request({})))
     expect(value.writable).toBe(true)
     expect(value.hasDocument).toBe(true)
+    // A deployment that names no opener surfaces the document path as text.
+    expect(value.canOpen).toBe(false)
+    expect(value.documentPath).toBe('/tmp/custom-settings.yaml')
     expect(value.namespaces).toHaveLength(1)
     const view = value.namespaces[0]!
     expect(view.ns).toBe('llm-deepseek')
@@ -319,11 +322,22 @@ describe('settings domain', () => {
 
   it('refuses to open settings when the provider has no local document', async () => {
     const ctx = await harness()
-    const api = createApiProxy(ctx, DEFAULTS)
+    const api = createApiProxy(ctx, { ...DEFAULTS, canOpenPath: () => true })
     expect(expectOk(await api.settings.describe(request({}))).hasDocument).toBe(false)
     const error = expectErr(await api.settings.openDocument(request({}), new AbortController().signal))
     expect(error.code).toBe('internal')
     expect(error.message).toContain('no local document')
+  })
+
+  it('rejects the open gesture on a deployment with no opener instead of spawning one', async () => {
+    const ctx = await harness({ settings: { documentPath: '/tmp/settings.yaml' } })
+    const prepare = vi.spyOn(ctx.settings, 'prepareDocument')
+    const api = createApiProxy(ctx, { ...DEFAULTS, canOpenPath: () => false })
+    const error = expectErr(await api.settings.openDocument(request({}), new AbortController().signal))
+    expect(error.code).toBe('open-unavailable')
+    expect(error.message).toContain('no native document opener')
+    // The rejection is the gate: nothing was materialized or spawned.
+    expect(prepare).not.toHaveBeenCalled()
   })
 
   it('does not prepare or open a settings document after cancellation', async () => {

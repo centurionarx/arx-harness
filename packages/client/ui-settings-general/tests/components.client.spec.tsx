@@ -138,7 +138,7 @@ describe('SettingsDocumentAction', () => {
           rpcId: 'document-action' as never,
           result: {
             ok: true as const,
-            value: { writable: true, hasDocument: true, namespaces: [] },
+            value: { writable: true, hasDocument: true, canOpen: true, namespaces: [] },
           },
         })),
         openDocument: vi.fn(() => Promise.resolve({
@@ -156,5 +156,39 @@ describe('SettingsDocumentAction', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Open configuration file' }))
     expect((await screen.findByRole('alert')).textContent).toBe('Could not open configuration file')
     expect(screen.getByRole('button', { name: 'Open configuration file' })).toBeTruthy()
+  })
+
+  it('surfaces the document path with a copy action on a headless deployment', async () => {
+    const openDocument = vi.fn()
+    const writeText = vi.fn(() => Promise.resolve())
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    const controller = derivedDocumentStore({
+      settings: {
+        describe: vi.fn(() => Promise.resolve({
+          rpcId: 'document-action-headless' as never,
+          result: {
+            ok: true as const,
+            value: {
+              writable: true, hasDocument: true, canOpen: false,
+              documentPath: '/home/arx/.arx/settings.yaml', namespaces: [],
+            },
+          },
+        })),
+        openDocument,
+      },
+    })
+    render(<SettingsDocumentAction
+      {...kit}
+      t={t}
+      controller={controller}
+      useSnapshot={bindSnapshotSelector(controller.store)}
+    />)
+    const path = await screen.findByText('/home/arx/.arx/settings.yaml')
+    expect(path.getAttribute('title')).toBe('/home/arx/.arx/settings.yaml')
+    expect(screen.queryByRole('button', { name: 'Open configuration file' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Copy path' }))
+    expect(writeText).toHaveBeenCalledWith('/home/arx/.arx/settings.yaml')
+    expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy()
+    expect(openDocument).not.toHaveBeenCalled()
   })
 })

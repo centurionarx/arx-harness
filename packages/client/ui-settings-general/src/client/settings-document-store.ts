@@ -10,6 +10,14 @@ export interface SettingsDocumentState {
   status: 'idle' | 'loading' | 'ready' | 'unavailable'
   /** Whether one native-open request is in flight. */
   opening: boolean
+  /**
+   * Whether the Host can hand the document to a native opener. False renders
+   * the document path as text instead of an open gesture — a headless host
+   * would only spawn that opener into nothing.
+   */
+  canOpen: boolean
+  /** The document's Host path; empty while unknown or not file-backed. */
+  documentPath: string
   /** Last metadata/native-open diagnostic; UI exposes only localized copy. */
   error: string | null
 }
@@ -18,11 +26,11 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-/** Derives local-document availability from the shared mirror and invokes the pathless Host-owned open operation. */
+/** derives local-document availability from the shared mirror and invokes the pathless Host-owned open operation. */
 export class SettingsDocumentStore {
   /** uSES-safe state source shared by the registered header action. */
   readonly store: SnapshotStore<SettingsDocumentState> = createSnapshotStore({
-    status: 'idle', opening: false, error: null,
+    status: 'idle', opening: false, canOpen: true, documentPath: '', error: null,
   })
 
   private following: (() => void) | undefined
@@ -57,7 +65,7 @@ export class SettingsDocumentStore {
    */
   async open(): Promise<void> {
     const current = this.store.getSnapshot()
-    if (current.status !== 'ready' || current.opening) return
+    if (current.status !== 'ready' || current.opening || !current.canOpen) return
     this.store.update((state) => {
       state.opening = true
       state.error = null
@@ -91,9 +99,11 @@ export class SettingsDocumentStore {
       }
       return
     }
-    const { hasDocument } = mirrored.view
+    const { hasDocument, canOpen, documentPath } = mirrored.view
     this.store.update((state) => {
       state.status = hasDocument ? 'ready' : 'unavailable'
+      state.canOpen = canOpen ?? true
+      state.documentPath = documentPath ?? ''
       state.error = null
     })
   }

@@ -9,16 +9,28 @@ function derivedDocumentStore(api: object) {
   return new SettingsDocumentStore(wire, new SettingsDescribeMirror(wire))
 }
 
-function response(hasDocument = false): RpcResponse<{
+function response(options: {
+  hasDocument?: boolean
+  canOpen?: boolean
+  documentPath?: string
+} = {}): RpcResponse<{
   writable: boolean
   hasDocument: boolean
+  documentPath?: string
+  canOpen?: boolean
   namespaces: []
 }> {
   return {
     rpcId: 'settings-document' as never,
     result: {
       ok: true,
-      value: { writable: true, hasDocument, namespaces: [] },
+      value: {
+        writable: true,
+        hasDocument: options.hasDocument ?? false,
+        ...options.documentPath === undefined ? {} : { documentPath: options.documentPath },
+        ...options.canOpen === undefined ? {} : { canOpen: options.canOpen },
+        namespaces: [],
+      },
     },
   }
 }
@@ -39,15 +51,42 @@ function describeFailed(message: string): RpcResponse<never> {
 
 describe('SettingsDocumentStore', () => {
   it('loads provider metadata and asks the settings domain to open its document', async () => {
-    const describe = vi.fn(() => Promise.resolve(response(true)))
+    const describe = vi.fn(() => Promise.resolve(response({ hasDocument: true, canOpen: true, documentPath: '/h/settings.yaml' })))
     const openDocument = vi.fn(() => Promise.resolve(opened()))
     const controller = derivedDocumentStore({ settings: { describe, openDocument } })
     await controller.load()
     expect(controller.store.getSnapshot()).toEqual({
-      status: 'ready', opening: false, error: null,
+      status: 'ready', opening: false, canOpen: true, documentPath: '/h/settings.yaml', error: null,
     })
     await controller.open()
     expect(openDocument).toHaveBeenCalledWith({})
+  })
+
+  it('treats an older view without the open capability as openable', async () => {
+    const openDocument = vi.fn(() => Promise.resolve(opened()))
+    const controller = derivedDocumentStore({
+      settings: { describe: () => Promise.resolve(response({ hasDocument: true })), openDocument },
+    })
+    await controller.load()
+    expect(controller.store.getSnapshot().canOpen).toBe(true)
+  })
+
+  it('keeps a headless deployment ready with its path but never opens', async () => {
+    const openDocument = vi.fn(() => Promise.resolve(opened()))
+    const controller = derivedDocumentStore({
+      settings: {
+        describe: () => Promise.resolve(response({
+          hasDocument: true, canOpen: false, documentPath: '/home/arx/.arx/settings.yaml',
+        })),
+        openDocument,
+      },
+    })
+    await controller.load()
+    expect(controller.store.getSnapshot()).toMatchObject({
+      status: 'ready', canOpen: false, documentPath: '/home/arx/.arx/settings.yaml',
+    })
+    await controller.open()
+    expect(openDocument).not.toHaveBeenCalled()
   })
 
   it('marks absent or failed metadata unavailable without opening anything', async () => {
@@ -79,7 +118,7 @@ describe('SettingsDocumentStore', () => {
     let resolveOpen!: (response: RpcResponse<{ opened: true }>) => void
     const openDocument = vi.fn(() => new Promise<RpcResponse<{ opened: true }>>((resolve) => { resolveOpen = resolve }))
     const controller = derivedDocumentStore({
-      settings: { describe: () => Promise.resolve(response(true)), openDocument },
+      settings: { describe: () => Promise.resolve(response({ hasDocument: true, canOpen: true })), openDocument },
     })
     await controller.load()
     const first = controller.open()
@@ -99,7 +138,7 @@ describe('SettingsDocumentStore', () => {
     let rejectOpen!: (reason?: unknown) => void
     const controller = derivedDocumentStore({
       settings: {
-        describe: vi.fn(() => Promise.resolve(response(true))),
+        describe: vi.fn(() => Promise.resolve(response({ hasDocument: true, canOpen: true }))),
         openDocument: () => new Promise((_, reject) => { rejectOpen = reject }),
       },
     })
@@ -118,7 +157,7 @@ describe('SettingsDocumentStore', () => {
       settings: {
         describe: vi.fn()
           .mockRejectedValueOnce(new Error('offline'))
-          .mockResolvedValueOnce(response(true)),
+          .mockResolvedValueOnce(response({ hasDocument: true, canOpen: true })),
         openDocument: vi.fn(),
       },
     } as never
