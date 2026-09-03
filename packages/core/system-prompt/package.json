@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-system-prompt",
   "description": "System prompt assembly registry for the arx Harness",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "publishConfig": {
     "access": "public"
   },

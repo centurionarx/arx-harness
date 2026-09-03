@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-title-llm",
   "description": "Shared LLM generation policy for arx Harness session-title providers",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "publishConfig": {
     "access": "public"
   },

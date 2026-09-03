@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-apiproxy",
   "description": "API gateway: the ApiProxy contract (api/), the fetch carrier pair (fetch/), and the host-side gateway plugin providing ctx.apiProxy",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "publishConfig": {
     "access": "public"
   },
