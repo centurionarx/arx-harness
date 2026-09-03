@@ -21,5 +21,5 @@ export const en = {
   'duration.title.done': 'Took {duration}',
 }
 
-/** Key domain of the `job` namespace (zh is the source of truth). */
+/** Key domain of the `job` namespace (en is the source of truth). */
 export type JobKey = keyof typeof en

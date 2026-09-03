@@ -87,11 +87,9 @@ declare module '@arx-ai/cordis' {
 /**
  * English is both the locale the UI opens in when the browser names no shipped
  * language (and for non-browser runs), and the dictionary consulted after the
- * active locale misses a key. One constant serves both because the shipped
- * `zh`/`en` dictionaries carry identical key sets, so neither direction can
- * leave a key unresolved; the residual case points at English rather than
- * zh because a browser naming neither shipped language is the reader least
- * likely to read Chinese.
+ * active locale misses a key. One constant serves both, and while English is
+ * the only shipped locale the second role never resolves anything the first
+ * did not already supply.
  */
 export const FALLBACK_LOCALE: LocaleId = 'en'
 
@@ -111,8 +109,8 @@ const LOCALES: readonly LocaleDefinition[] = Object.freeze([
  * vocabulary (primary subtag); the document attribute wants a BCP 47 tag,
  * which assistive technology and browser features (pronunciation rules,
  * translation offers, font fallback, spell check) read to pick their own
- * behavior. `zh` alone leaves the script ambiguous, so the shipped Chinese
- * copy names the variant it actually is.
+ * behavior. A locale whose script or region is ambiguous names the variant it
+ * actually is; `en` needs no such qualification.
  */
 const DOCUMENT_LANGUAGE: Record<LocaleId, string> = { en: 'en' }
 
@@ -356,8 +354,8 @@ function resolveInitialLocale(): LocaleId {
 
 /**
  * The first shipped locale the browser asks for, matched on the primary
- * subtag so every regional variant lands on its language (`zh-Hans-CN` -> zh,
- * `en-GB` -> en). `window` is the browser test, not `navigator`: Node exposes
+ * subtag so every regional variant lands on its language (`en-GB` -> en).
+ * `window` is the browser test, not `navigator`: Node exposes
  * a global `navigator` reporting the machine's own language, which would
  * otherwise decide the locale for non-browser runs (node e2e booting the
  * client tree). `navigator.language` trails the ordered `languages` list and

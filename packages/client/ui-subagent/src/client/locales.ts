@@ -40,5 +40,5 @@ export const en = {
   'readonly.body': 'The parent session is offline; reopen it to continue sending messages.',
 }
 
-/** Key domain of the `subagent` namespace (zh is the source of truth). */
+/** Key domain of the `subagent` namespace (en is the source of truth). */
 export type SubagentKey = keyof typeof en
