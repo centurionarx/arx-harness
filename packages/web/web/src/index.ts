@@ -48,13 +48,17 @@ interface Selection<P> {
 }
 
 /**
+ * Settings namespace resolving {@link WebRuntimeConfig}, so a deployment's
+ * provider selection is editable at runtime rather than fixed at composition.
+ */
+export const WEB_SETTINGS_NAMESPACE = settingsNamespace('web')
+
+/**
  * Config for the web seam. `searchProvider` / `fetchProvider` pin which provider
  * wins for each capability; both are optional (a single registered usable
  * provider auto-selects). Operational overrides such as environment variables
  * must feed these same fields rather than introduce a hidden priority chain.
  */
-export const WEB_SETTINGS_NAMESPACE = settingsNamespace('web')
-
 export interface WebRuntimeConfig {
   /** Explicit search provider id. Omitted = auto-select when exactly one usable. */
   readonly searchProvider?: string

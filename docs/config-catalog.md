@@ -359,6 +359,14 @@ Requires: `subprocess`
 export interface Config {
   /** Default working directory for commands (default: process.cwd()). */
   cwd?: string
+  /**
+   * Explicit bash executable, trusted as-is. When omitted, POSIX resolves the
+   * name `bash` through spawn and Windows probes the well-known Git for
+   * Windows locations plus PATH (`resolve.ts`); a Windows probing miss fails
+   * the activation loudly instead of spawning a substitute such as the WSL
+   * launcher.
+   */
+  bashPath?: string
   /** Default foreground timeout in milliseconds. */
   timeoutMs?: number
   /** Upper bound for per-call timeout overrides. */
@@ -372,7 +380,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/shell/bash-local/src/index.ts:41`](../packages/shell/bash-local/src/index.ts)
+Source: [`packages/shell/bash-local/src/index.ts:45`](../packages/shell/bash-local/src/index.ts)
 
 <a id="arx-aiarx-bash-sandbox"></a>
 
@@ -3049,7 +3057,7 @@ export interface WebRuntimeConfig {
 }
 ```
 
-Source: [`packages/web/web/src/index.ts:55`](../packages/web/web/src/index.ts)
+Source: [`packages/web/web/src/index.ts:62`](../packages/web/web/src/index.ts)
 
 <a id="arx-aiarx-web-app"></a>
 

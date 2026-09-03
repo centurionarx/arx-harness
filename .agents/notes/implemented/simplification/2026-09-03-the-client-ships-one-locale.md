@@ -6,11 +6,11 @@ Status: implemented
 
 The Web UI shipped two locales, `zh` and `en`, and the whole locale subsystem was built around that pair: `FALLBACK_LOCALE` served double duty as both the opening locale and the dictionary fallback *because* the two dictionaries were symmetric, and `scripts/locale-dictionary-parity.spec.ts` existed to gate that symmetry.
 
-The product retired Chinese. `LOCALE_IDS` became `['en']` and every namespace dictionary was rewritten to English, but the change stopped at the source: `packages/client/locale/src/locales/zh.ts` stayed on disk with nothing importing it, five `*.client.spec` files still staged `zh` on the runtime they constructed, and JSDoc across three packages still named `zh` as the key-set source of truth. `LocaleRuntime.setLocale` throws on an unregistered locale, so the specs that staged `zh` failed with `locale "zh" is not registered` — twenty-six failing assertions describing a language the product no longer ships.
+The product retired Chinese. `LOCALE_IDS` became `['en']` and every namespace dictionary was rewritten to English, but the change stopped at the source: the client locale package's `zh.ts` dictionary stayed on disk with nothing importing it, five `*.client.spec` files still staged `zh` on the runtime they constructed, and JSDoc across three packages still named `zh` as the key-set source of truth. `LocaleRuntime.setLocale` throws on an unregistered locale, so the specs that staged `zh` failed with `locale "zh" is not registered` — twenty-six failing assertions describing a language the product no longer ships.
 
 ## Decision
 
-**English is the only shipped locale, and the dictionaries that encoded a second one are gone.** `packages/client/locale/src/locales/zh.ts` is deleted; `locales/index.ts` already exported `en` alone, so nothing lost a referent.
+**English is the only shipped locale, and the dictionaries that encoded a second one are gone.** that `zh.ts` dictionary is deleted; `locales/index.ts` already exported `en` alone, so nothing lost a referent.
 
 **The parity gate is retired with the invariant it guarded.** `scripts/locale-dictionary-parity.spec.ts` asserted that every shipped dictionary declares the same keys in `zh` and `en`. With one locale there is no second side to disagree, so the gate could only pass vacuously — and its own opening paragraph says a gate that silently narrows is worse than no gate. Restoring a real parity check is the job of whichever change adds the second locale, against that locale's dictionaries.
 
