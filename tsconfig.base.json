@@ -229,6 +229,7 @@
       "@arx-ai/arx-client-ui-settings": ["./packages/client/ui-settings/src"],
       "@arx-ai/arx-client-ui-settings-general": ["./packages/client/ui-settings-general/src"],
       "@arx-ai/arx-client-ui-settings-models": ["./packages/client/ui-settings-models/src"],
+      "@arx-ai/arx-client-ui-settings-web": ["./packages/client/ui-settings-web/src"],
       "@arx-ai/arx-client-ui-settings-plugin-inventory": ["./packages/client/ui-settings-plugin-inventory/src"],
       "@arx-ai/arx-client-locale": ["./packages/client/locale/src"],
       "@arx-ai/arx-client-web": ["./packages/client/web/src"],

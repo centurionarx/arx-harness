@@ -3057,7 +3057,7 @@ export interface WebRuntimeConfig {
 }
 ```
 
-Source: [`packages/web/web/src/index.ts:62`](../packages/web/web/src/index.ts)
+Source: [`packages/web/web/src/index.ts:72`](../packages/web/web/src/index.ts)
 
 <a id="arx-aiarx-web-app"></a>
 
@@ -3121,8 +3121,14 @@ Requires: `web`
 ```ts config-catalog
 /** Plugin config (all optional — `apply` fills env-var and constant defaults). */
 export interface Config {
-  /** Exa API key. Falls back to `$EXA_API_KEY`. Empty → provider unavailable. */
+  /** Exa API key inlined in the composition; set, it wins over every other source. */
   apiKey?: string
+  /**
+   * Credential reference the key resolves through when `apiKey` is not
+   * inlined: the managed credential store first, then the launch environment.
+   * Defaults to `EXA_API_KEY`; an empty result makes the provider unavailable.
+   */
+  apiKeyEnv?: string
   /** Endpoint base; `/search` is appended. Defaults to the public API. */
   baseURL?: string
   /** Retrieval mode sent as Exa's `type`. Defaults to `auto`. */
@@ -3134,7 +3140,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/web/web-search-exa/src/index.ts:38`](../packages/web/web-search-exa/src/index.ts)
+Source: [`packages/web/web-search-exa/src/index.ts:41`](../packages/web/web-search-exa/src/index.ts)
 
 <a id="arx-aiarx-web-search-perplexity"></a>
 
@@ -3145,8 +3151,14 @@ Requires: `web`
 ```ts config-catalog
 /** Plugin config (all optional — `apply` fills env-var and constant defaults). */
 export interface Config {
-  /** Perplexity API key. Falls back to `$PERPLEXITY_API_KEY`. Empty → unavailable. */
+  /** Perplexity API key inlined in the composition; set, it wins over every other source. */
   apiKey?: string
+  /**
+   * Credential reference the key resolves through when `apiKey` is not
+   * inlined: the managed credential store first, then the launch environment.
+   * Defaults to `PERPLEXITY_API_KEY`; an empty result makes the provider unavailable.
+   */
+  apiKeyEnv?: string
   /** Endpoint base; `/chat/completions` is appended. Defaults to the public API. */
   baseURL?: string
   /** Search model name. Defaults to `sonar`. */
@@ -3158,7 +3170,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/web/web-search-perplexity/src/index.ts:32`](../packages/web/web-search-perplexity/src/index.ts)
+Source: [`packages/web/web-search-perplexity/src/index.ts:40`](../packages/web/web-search-perplexity/src/index.ts)
 
 <a id="arx-aiarx-workflow-worker-thread"></a>
 
@@ -3226,6 +3238,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
 - `@arx-ai/arx-client-ui-settings-plugin-inventory` ([`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts))
 - `@arx-ai/arx-client-ui-settings-plugins` ([`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts))
+- `@arx-ai/arx-client-ui-settings-web` ([`packages/client/ui-settings-web/src/index.ts`](../packages/client/ui-settings-web/src/index.ts))
 - `@arx-ai/arx-client-ui-sidebar` ([`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts))
 - `@arx-ai/arx-client-ui-skill` ([`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts))
 - `@arx-ai/arx-client-ui-subagent` ([`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts))

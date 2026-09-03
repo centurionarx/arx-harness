@@ -203,6 +203,9 @@
     - id: ui-settings-models
       name: '@arx-ai/arx-client-ui-settings-models'
 
+    - id: ui-settings-web
+      name: '@arx-ai/arx-client-ui-settings-web'
+
     - id: ui-settings-plugin-inventory
       name: '@arx-ai/arx-client-ui-settings-plugin-inventory'
 

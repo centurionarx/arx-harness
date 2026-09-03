@@ -2248,6 +2248,30 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'request', description: 'the URL plus retrieval options.' }, { name: 'signal', description: 'optional cancellation signal forwarded to the provider.' }],
         returns: 'the retrieval outcome; non-2xx responses resolve descriptively.',
       },
+      {
+        signature: 'searchSelection(): WebProviderSelection',
+        description: 'The search selection as the next `search()` would resolve it, without running one: the pinned id, the provider the rules name, and otherwise the failure code a call would throw.',
+        parameters: [],
+        returns: 'the current selection, detached.',
+      },
+      {
+        signature: 'listSearchProviders(): WebRegisteredSearchProvider[]',
+        description: 'Describe every registered search provider with its usability answer.',
+        parameters: [],
+        returns: 'detached entries in registration order.',
+      },
+      {
+        signature: 'listConfigurableSearchProviders(): WebConfigurableProvider[]',
+        description: 'List every declared configurable search provider.',
+        parameters: [],
+        returns: 'detached directory entries in declaration order.',
+      },
+      {
+        signature: 'registerConfigurableSearchProviders(entries: readonly WebConfigurableProvider[]): WebDirectoryRegistrationHandle',
+        description: 'Declare search providers a plugin makes configurable through a settings section. Registration is all-or-nothing: an empty list, invalid entry, or a provider already declared by any registration throws `WebError` without registering the rest. Disposed with the fiber.',
+        parameters: [{ name: 'entries', description: 'every configurable search provider this plugin owns.' }],
+        returns: 'a handle that withdraws all of them, and can atomically replace them.',
+      },
     ],
   },
   {
@@ -2780,6 +2804,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     summary: 'Observe the frozen, lossless-JSON final outcome.',
     description: 'Observe the frozen, lossless-JSON final outcome. Listener failures are contained. Scope-filtered dispatch (`@arx-ai/arx-scope`): keyed by `exec.agent`.',
     parameters: [{ name: 'exec', description: 'the execution object that traversed the pipeline.' }, { name: 'result', description: 'a deep-frozen snapshot of the final returned result.' }],
+  },
+  {
+    name: 'web/providers-updated',
+    mode: 'emit',
+    signature: '\'web/providers-updated\'(): void',
+    summary: 'The search-provider topology changed: a search provider registered or unregistered, or the configurable directory gained, lost, or replaced entries.',
+    description: 'The search-provider topology changed: a search provider registered or unregistered, or the configurable directory gained, lost, or replaced entries. This payload-free registry notification fires at each commit point, registration disposal included; consumers re-read `listSearchProviders()`, `listConfigurableSearchProviders()`, or `searchSelection()` for the new state. Observer failures are contained and cannot veto the registry mutation.',
+    parameters: [],
   },
   {
     name: 'webserver/index-inject',
@@ -4954,6 +4986,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface WebBootGraph {\n    rev: string;\n    entries: WebBootEntry[];\n}',
   },
   {
+    name: 'WebConfigurableProvider',
+    declaration: 'export interface WebConfigurableProvider {\n    provider: string;\n    displayName: string;\n    settingsNs: string;\n    settingsPath: readonly string[];\n}',
+  },
+  {
+    name: 'WebDirectoryRegistrationHandle',
+    declaration: 'export interface WebDirectoryRegistrationHandle {\n    (): void;\n    replace(entries: readonly WebConfigurableProvider[]): void;\n}',
+  },
+  {
     name: 'WebFetchBody',
     declaration: 'export type WebFetchBody = {\n    readonly kind: \'html\';\n    readonly content: string;\n} | {\n    readonly kind: \'text\';\n    readonly content: string;\n};',
   },
@@ -4972,6 +5012,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WebFetchResultView',
     declaration: 'export interface WebFetchResultView {\n    card: \'web\';\n    kind: \'fetch\';\n    title?: string;\n    url: string;\n    statusCode: number;\n    truncated: boolean;\n}',
+  },
+  {
+    name: 'WebProviderSelection',
+    declaration: 'export interface WebProviderSelection {\n    readonly configured: string | undefined;\n    readonly effective: string | undefined;\n    readonly failure?: WebSelectionFailure;\n}',
+  },
+  {
+    name: 'WebRegisteredSearchProvider',
+    declaration: 'export interface WebRegisteredSearchProvider {\n    readonly id: string;\n    readonly available: boolean;\n}',
   },
   {
     name: 'WebResultView',
@@ -5004,6 +5052,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WebSearchSource',
     declaration: 'export interface WebSearchSource {\n    readonly url: string;\n    readonly title?: string;\n    readonly snippet?: string;\n    readonly publishedAt?: string;\n}',
+  },
+  {
+    name: 'WebSelectionFailure',
+    declaration: 'export type WebSelectionFailure = \'WEB_PROVIDER_CONFIGURED_MISSING\' | \'WEB_PROVIDER_CONFIGURED_UNAVAILABLE\' | \'WEB_PROVIDER_UNAVAILABLE\' | \'WEB_PROVIDER_AMBIGUOUS\';',
   },
   {
     name: 'WebSource',
