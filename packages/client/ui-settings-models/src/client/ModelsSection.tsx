@@ -231,6 +231,7 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
    */
   const closeSetup = (changed: boolean, target: ProviderIdentity): void => {
     setDismissedSetup(previous => new Set([...previous, target.provider]))
+    /* v8 ignore next -- no shipped whole-section namespace carries a curated layout, so a setup card's footer cannot submit */
     if (changed) announceSaved(target)
   }
 
@@ -281,8 +282,8 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
     ? savedTarget
     : { provider: savedRow.entry.provider, displayName: savedRow.entry.displayName }
 
-  // One fact decides both first-run postures on this page and the onboarding
-  // step: whether the user already has a provider to talk to.
+  // One fact decides the first-run posture on this page: whether the user
+  // already has a provider to talk to.
   const anyUsable = state.rows.some(providerUsable)
   const configured = state.rows.filter(row => row.configured)
   const addable = state.rows.filter(row => !row.configured && row.entry.settingsNs !== '')

@@ -11,7 +11,7 @@ The setup tutorial takes a new contributor from prerequisites to a checked check
 - Node.js supports 22.19+ and 24+. CI covers 22.19, 24, and 26; see the [Node engine floor Agent Note](../.agents/notes/implemented/process/2026-07-06-node-engine-floor.md).
 - Corepack-enabled pnpm. The repo pins pnpm in `package.json`; run `corepack enable` if `pnpm --version` does not resolve through Corepack.
 - Git 2.26 or newer; hook setup enables Git's worktree-specific configuration extension.
-- Optional: a DeepSeek API key for the Web, headless, and ACP automation demos and real-API e2e tests.
+- Optional: a provider API key (`DEEPSEEK_API_KEY`) for the Web, headless, and ACP automation demos and real-API e2e tests.
 
 ### First-time setup
 
@@ -91,7 +91,7 @@ pnpm run build
 
 ### Environment variables
 
-The real DeepSeek adapter and key-backed agent demos read credentials from the environment or from a gitignored `.env` at the repo root:
+The real provider adapter and key-backed agent demos read credentials from the environment or from a gitignored `.env` at the repo root:
 
 ```sh
 DEEPSEEK_API_KEY=sk-...

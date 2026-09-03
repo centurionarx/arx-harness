@@ -14,7 +14,7 @@ Two further span families look like the product and are not. The `arx-harness` G
 
 Identity is `@arx-ai` (npm scope), `arx` (package and binary prefix), `ARX_` (environment prefix), `arx_harness` (Python module), and `github.com/centurionarx/arx-harness`. The npm scope and the GitHub owner are independent fields and differ: `arx-ai` on npm, `centurionarx` on GitHub. The classifier anchors its owner rule to the GitHub host, because an unanchored one also claims a bare occurrence of the scope literal — invisibly, for as long as the two fields agree.
 
-[`scripts/rebrand.ts`](../../../../scripts/rebrand.ts) is the reproducible source of truth, and it is a **classifier, not a substitution**. Protected spans are masked before any rewrite rule runs and restored afterwards, so no rule can reach them whatever its order. [`scripts/rebrand.spec.ts`](../../../../scripts/rebrand.spec.ts) pins both directions: what must move, and what must survive untouched.
+The rename ran through a **classifier, not a substitution**: protected spans were masked before any rewrite rule ran and restored afterwards, so no rule could reach them whatever its order, and its tests pinned both directions — what had to move, and what had to survive untouched. The tool was retired once the rename landed; its input was the identity being left behind, which the project no longer has.
 
 The classifier preserves, in addition to the model and provider spans: `github.com/arx-harness/<repo>` for every repository except this product's own clone URL in [`native/`](../../../../native/README.md), which follows the product; the `arxharness/` fixture in the issue-management policy test; and every relative link naming a file under `archived/`.
 

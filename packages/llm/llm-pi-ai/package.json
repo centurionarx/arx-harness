@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-llm-pi-ai",
-  "description": "pi-ai-backed DeepSeek adapter for the arx Harness LLM seam (design-verification twin of arx-llm-deepseek)",
+  "description": "pi-ai-backed multi-provider adapter for the arx Harness LLM seam",
   "version": "1.0.8",
   "publishConfig": {
     "access": "public"

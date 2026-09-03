@@ -1,10 +1,10 @@
 # ACP automation server and backend snapshot-record composition. With
-# `ARX_SNAPSHOT=record`, the app bin runs the real DeepSeek adapter and the
+# `ARX_SNAPSHOT=record`, the app bin runs the real model adapter and the
 # harness harvests its persisted log. The bin loads the gitignored root `.env`
 # before this config. This tree has no stdout logger or HMR because stdout
 # carries ACP JSON-RPC.
 
-# The DeepSeek adapter. Shipped default: full thinking at max effort on every
+# The routed model adapter. Shipped default: full thinking at max effort on every
 # request; exact-model resolution materializes request defaults before logging.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'

@@ -255,19 +255,19 @@ export interface LaunchOptions {
    */
   cordisTools?: boolean
   /**
-   * Keep the shipped DeepSeek adapter mounted while masking the process
+   * Keep the shipped model adapter mounted while masking the process
    * environment's DEEPSEEK_API_KEY for this scaffold lifetime. This is the
    * keyless first-run configuration lane; the default disables the adapter.
    */
-  deepSeekMissingCredential?: boolean
+  missingModelCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
   /**
-   * Patch the shipped DeepSeek search row to a deterministic endpoint and
-   * credential reference. Browser search scenarios keep the real provider and
-   * credentials seam while avoiding external search traffic and ambient keys.
+   * Patch the shipped search row to a deterministic endpoint and credential
+   * reference. Browser search scenarios keep the real provider and credentials
+   * seam while avoiding external search traffic and ambient keys.
    */
-  deepSeekSearch?: {
+  webSearch?: {
     /** Anthropic-compatible base URL; the provider appends `/messages`. */
     baseURL: string
     /** Credential reference resolved by the shipped search provider. */
@@ -329,19 +329,19 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       throw new Error('web e2e record mode needs DEEPSEEK_API_KEY (env or repo-root .env)')
     }
   }
-  if (mode === 'record' && options.deepSeekMissingCredential === true) {
-    throw new Error('deepSeekMissingCredential is a keyless replay/refresh option')
+  if (mode === 'record' && options.missingModelCredential === true) {
+    throw new Error('missingModelCredential is a keyless replay/refresh option')
   }
-  const maskDeepSeekCredential = mode !== 'record' && options.deepSeekMissingCredential === true
-  const originalDeepSeekCredential = process.env.DEEPSEEK_API_KEY
+  const maskModelCredential = mode !== 'record' && options.missingModelCredential === true
+  const originalModelCredential = process.env.DEEPSEEK_API_KEY
   let credentialEnvironmentRestored = false
   const restoreCredentialEnvironment = (): void => {
-    if (credentialEnvironmentRestored || !maskDeepSeekCredential) return
+    if (credentialEnvironmentRestored || !maskModelCredential) return
     credentialEnvironmentRestored = true
-    if (originalDeepSeekCredential === undefined) {
+    if (originalModelCredential === undefined) {
       Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
     } else {
-      process.env.DEEPSEEK_API_KEY = originalDeepSeekCredential
+      process.env.DEEPSEEK_API_KEY = originalModelCredential
     }
   }
   const workspaceCwd = await realpath(await mkdtemp(join(tmpdir(), 'arx-web-e2e-ws-')))
@@ -387,7 +387,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (failures.length > 1) throw new AggregateError(failures, 'web scaffold temp-root setup failed')
     throw error
   }
-  if (maskDeepSeekCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
+  if (maskModelCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
 
   // The include patch set — the same layer stack the profile boot composes
   // (bundle patches in arx.profile.bundles order), applied over the SAME empty root (a
@@ -504,23 +504,23 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         { id: 'tool-cordis', name: '@arx-ai/arx-tool-cordis' },
       ] }]
       : [],
-    ...options.deepSeekSearch === undefined
+    ...options.webSearch === undefined
       ? []
       : [{
         id: 'web-search-deepseek',
         config: {
-          apiKeyEnv: options.deepSeekSearch.apiKeyEnv,
-          baseURL: options.deepSeekSearch.baseURL,
+          apiKeyEnv: options.webSearch.apiKeyEnv,
+          baseURL: options.webSearch.baseURL,
         },
       }],
-    ...mode === 'record' || options.deepSeekMissingCredential === true
+    ...mode === 'record' || options.missingModelCredential === true
       ? []
       : [{ id: 'llm-deepseek', disabled: true }],
     // The shipped bundle pins no default model: a deployment picks its own, and
     // a session without a selection cannot start a turn. This composition IS
     // that deployment, so it seeds the one route replay publishes; otherwise a
     // scenario would have to drive the model picker before every prompt.
-    ...mode === 'record' || options.deepSeekMissingCredential === true
+    ...mode === 'record' || options.missingModelCredential === true
       ? []
       : [{ id: 'agent-default-model', config: { provider: REPLAY_PROVIDER_ID, model: REPLAY_MODEL_ID } }],
   ]
@@ -627,7 +627,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         ...(options.replayChildFixtures === undefined ? {} : { childFiles: options.replayChildFixtures }),
         ...(options.paceMs === undefined ? {} : { paceMs: options.paceMs }),
       })
-    } else if (mode !== 'record' && options.deepSeekMissingCredential !== true) {
+    } else if (mode !== 'record' && options.missingModelCredential !== true) {
       // No fixture and no shipped adapter would leave the tree with ZERO
       // provider routes — a state no product composition has, and one the
       // composer refuses to type into. Register the same routes

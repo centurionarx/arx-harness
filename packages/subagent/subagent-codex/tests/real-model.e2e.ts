@@ -19,9 +19,9 @@ import type { SubprocessHandle } from '@arx-ai/arx-subprocess'
 import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as codex from '../src/index.ts'
 import {
-  startDeepSeekResponsesBridge,
-  type DeepSeekResponsesBridge,
-} from './deepseek-responses-bridge.ts'
+  startResponsesModelBridge,
+  type ResponsesModelBridge,
+} from './responses-model-bridge.ts'
 
 const execFileAsync = promisify(execFile)
 const codexPackageJson = createRequire(import.meta.url).resolve('@openai/codex/package.json')
@@ -33,7 +33,7 @@ const codexEntry = resolve(dirname(codexPackageJson), codexPackage.bin.codex)
 
 const roots: string[] = []
 const contexts: Context[] = []
-const bridges: DeepSeekResponsesBridge[] = []
+const bridges: ResponsesModelBridge[] = []
 
 afterEach(async () => {
   await Promise.all(contexts.splice(0).map(ctx => ctx.fiber.dispose()))
@@ -50,19 +50,19 @@ async function expectQuiescent(handles: readonly SubprocessHandle[]): Promise<vo
 }
 
 describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
-  'Codex provider with real DeepSeek API',
+  'Codex provider against the real model API',
   () => {
     it('returns one unique nonce through the production provider and real Codex', async () => {
       const apiKey = process.env.DEEPSEEK_API_KEY
       if (apiKey === undefined) throw new Error('e2e ran without DEEPSEEK_API_KEY')
-      const root = mkdtempSync(join(tmpdir(), 'arx-codex-deepseek-e2e-'))
+      const root = mkdtempSync(join(tmpdir(), 'arx-codex-model-e2e-'))
       roots.push(root)
       const workspace = join(root, 'workspace')
       const codexHome = join(root, 'codex-home')
       mkdirSync(workspace)
       mkdirSync(codexHome)
-      const nonce = `ARX_CODEX_DEEPSEEK_${randomUUID()}`
-      const bridge = await startDeepSeekResponsesBridge(nonce)
+      const nonce = `ARX_CODEX_E2E_${randomUUID()}`
+      const bridge = await startResponsesModelBridge(nonce)
       bridges.push(bridge)
       writeFileSync(join(codexHome, 'config.toml'), [
         'model = "deepseek-v4-flash"',
@@ -73,7 +73,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
         'check_for_update_on_startup = false',
         '',
         '[model_providers.deepseek-e2e]',
-        'name = "DeepSeek E2E bridge"',
+        'name = "E2E responses bridge"',
         `base_url = "${bridge.baseUrl}"`,
         'env_key = "DEEPSEEK_API_KEY"',
         'wire_api = "responses"',
@@ -113,7 +113,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
       expect(version.stdout.trim()).toBe('codex-cli 0.147.0')
 
       const parent = {
-        id: 'deepseek-e2e-parent',
+        id: 'model-e2e-parent',
         session: { header: { cwd: workspace } },
       } as unknown as Agent
       const run = await ctx.subagents.start('codex', {

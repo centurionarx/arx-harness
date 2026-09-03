@@ -7,7 +7,7 @@ This tutorial is the programmatic alternative to the Web UI. It installs the pub
 - Python 3.10 or newer
 - Git
 - Linux x64, Linux arm64, Windows 10 or newer on x64, or macOS 14 or newer on arm64
-- A DeepSeek-compatible API endpoint and credential
+- An OpenAI-compatible model API endpoint and credential
 - An isolated workspace that the agent may modify
 
 ## Install the SDK
@@ -26,7 +26,7 @@ The installed runtime needs no system Node.js. Repository contributors who need 
 
 ## Run the checked-in example
 
-Set the credential in the environment. Set `DEEPSEEK_BASE_URL` as well when the model is served by an OpenAI-compatible proxy rather than the default DeepSeek endpoint.
+Set the credential in the environment. Set `DEEPSEEK_BASE_URL` as well when the model is served by an OpenAI-compatible proxy rather than the route's default endpoint.
 
 ```sh
 export DEEPSEEK_API_KEY=sk-your-key-here

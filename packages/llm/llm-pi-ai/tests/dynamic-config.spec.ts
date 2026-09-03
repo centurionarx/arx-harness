@@ -37,7 +37,7 @@ async function home(): Promise<string> {
   return dir
 }
 
-/** Real dynamic composition mirroring the deepseek twin's harness. */
+/** Real dynamic composition: the plugin over live settings and credential providers. */
 async function boot(
   dir: string,
   config: LlmPiAi.Config,

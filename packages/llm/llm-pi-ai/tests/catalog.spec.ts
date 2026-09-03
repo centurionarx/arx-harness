@@ -128,7 +128,7 @@ describe('hand-declared providers', () => {
     // `off` actually disable thinking.
     const withCatalog = await harness({ providers: { deepseek: { baseURL: server.url } } })
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     expect((await withCatalog.llm.resolveModelInfo('deepseek', catalogModel.id)).reasoning?.efforts.map(e => e.id))
       .toContain('off')
   })
@@ -265,7 +265,7 @@ describe('hand-declared providers', () => {
     // model without declaring modalities must keep the catalog's rather than
     // describe a model that accepts nothing.
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     const resolved = resolveProfiles({
       'deepseek': { baseURL: 'https://catalog.test', models: [{ id: catalogModel.id, input: [] }] },
       'acme-gateway': {
@@ -412,7 +412,7 @@ describe('catalog routes with per-model configuration', () => {
   it('overrides one catalog model field and defaults the rest from the catalog', async () => {
     const server = await mockServer([])
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     const ctx = await harness({
       providers: {
         deepseek: {
@@ -436,7 +436,7 @@ describe('catalog routes with per-model configuration', () => {
   it('materializes a request default only from a configured output cap', async () => {
     const server = await mockServer([])
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     const ctx = await harness({
       providers: {
         deepseek: {
@@ -504,9 +504,9 @@ describe('catalog routes with per-model configuration', () => {
     const server = await mockServer([{ events: textEvents }, { events: textEvents }])
     const resolved = resolveProfiles({ deepseek: { baseURL: `${server.url}/v1` } })
     const built = resolved.get('deepseek')?.piProvider
-    if (built === undefined) throw new Error('the deepseek route built no provider')
+    if (built === undefined) throw new Error('the configured route built no provider')
     const [model] = built.getModels()
-    if (model === undefined) throw new Error('the deepseek route resolved no models')
+    if (model === undefined) throw new Error('the configured route resolved no models')
     const context = { messages: [{ role: 'user' as const, content: 'hi', timestamp: 0 }] }
 
     // `stream` is interface-required and unused by the harness adapter, which
@@ -636,7 +636,7 @@ describe('per-model reasoning efforts', () => {
 
   it('narrows a catalog model’s levels in place', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     expect(getSupportedThinkingLevels(catalogModel as Model<Api>)).toEqual(['off', 'high', 'max'])
 
     const model = modelOf({
@@ -651,7 +651,7 @@ describe('per-model reasoning efforts', () => {
 
   it('strips reasoning from a catalog model with false', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     expect(catalogModel.reasoning).toBe(true)
 
     const model = modelOf({ deepseek: { models: [{ id: catalogModel.id, reasoningEfforts: false }] } }, 'deepseek')
@@ -662,7 +662,7 @@ describe('per-model reasoning efforts', () => {
 
   it('inherits the catalog capability when the field is absent', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
 
     const model = modelOf({ deepseek: { models: [{ id: catalogModel.id }] } }, 'deepseek')
 
@@ -686,20 +686,20 @@ describe('per-model reasoning efforts', () => {
 })
 
 describe('modelOverrides', () => {
-  const deepseekModel = (): Model<Api> => {
+  const firstCatalogModel = (): Model<Api> => {
     const [model] = getBuiltinModels('deepseek')
-    if (model === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (model === undefined) throw new Error('the installed catalog ships no model for this route')
     return model
   }
 
   it('reshapes one catalog model while the rest of the catalog keeps serving', () => {
     const catalogSize = getBuiltinModels('deepseek').length
-    const target = deepseekModel()
+    const target = firstCatalogModel()
     const resolved = resolveProfiles({
       deepseek: {
         modelOverrides: {
           [target.id]: {
-            name: 'DeepSeek (proxied)',
+            name: 'Proxied catalog model',
             maxTokens: 4096,
             reasoningEfforts: { off: null, high: 'high' },
           },
@@ -713,7 +713,7 @@ describe('modelOverrides', () => {
     // The whole catalog still serves — that is the difference from `models`,
     // which replaces it.
     expect(models).toHaveLength(catalogSize)
-    expect(reshaped.name).toBe('DeepSeek (proxied)')
+    expect(reshaped.name).toBe('Proxied catalog model')
     expect(getSupportedThinkingLevels(reshaped)).toEqual(['off', 'high'])
     // An override's cap is explicit configuration, so it becomes the request
     // default exactly as a models entry's would.
@@ -735,7 +735,7 @@ describe('modelOverrides', () => {
         modelOverrides: { m: { name: 'renamed' } },
       },
     })).toThrow(/a declared route spells every model out/)
-    const declaredOnly = deepseekModel()
+    const declaredOnly = firstCatalogModel()
     expect(() => resolveProfiles({
       deepseek: {
         models: [{ id: declaredOnly.id }],
@@ -751,7 +751,7 @@ describe('modelOverrides', () => {
     // indirection mirrors that boundary by sidestepping the literal check.
     const smuggled = { name: 'x', id: 'other' }
     expect(() => resolveProfiles({
-      deepseek: { modelOverrides: { [deepseekModel().id]: smuggled } },
+      deepseek: { modelOverrides: { [firstCatalogModel().id]: smuggled } },
     })).toThrow(/sets "id", which is the dict key/)
   })
 })
@@ -782,7 +782,7 @@ describe('compat switches', () => {
 
   it('merges the switches over the catalog entry’s own compat instead of replacing it', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
-    if (catalogModel === undefined) throw new Error('the installed catalog ships no deepseek model')
+    if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
     const inherited = catalogModel.compat as OpenAICompletionsCompat
     expect(inherited.requiresReasoningContentOnAssistantMessages).toBe(true)
 
@@ -1119,7 +1119,7 @@ describe('configurable-provider directory', () => {
   it('keeps the previous directory when a route collides with another adapter family', async () => {
     const dir = await home()
     const ctx = await bootWithSettings(dir, {})
-    // Another adapter family owns this route id, exactly as llm-deepseek does.
+    // Another adapter family owns this route id.
     ctx.llm.registerConfigurableProviders([
       { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [] },
     ])

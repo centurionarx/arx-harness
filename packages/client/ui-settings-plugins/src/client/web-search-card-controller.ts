@@ -17,8 +17,8 @@ import {
 } from './card-form.ts'
 
 /**
- * Namespace of the DeepSeek search provider. Spelled here rather than
- * imported: a client package must not depend on a Host package.
+ * Namespace of the web-search provider. Spelled here rather than imported:
+ * a client package must not depend on a Host package.
  */
 export const WEB_SEARCH_NS = 'web-search-deepseek'
 

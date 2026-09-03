@@ -1,9 +1,9 @@
 // Keyless browser e2e: a user who configures some OTHER provider is not asked
-// for the official DeepSeek key again, and the first-run setup card is a card
-// they can close. The shipped DeepSeek adapter stays mounted without a
-// credential throughout, so the only thing that ends onboarding here is the
-// pi-ai route the user configures through the real wire. Zero model calls:
-// configuration is pure settings/credentials/llm-domain traffic.
+// for the shipped route's key again, and the first-run setup card is a card
+// they can close. The shipped adapter stays mounted without a credential
+// throughout, so the only thing that ends onboarding here is the pi-ai route
+// the user configures through the real wire. Zero model calls: configuration
+// is pure settings/credentials/llm-domain traffic.
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -28,7 +28,7 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true })
+    scaffold = await launchWebScaffold({ missingModelCredential: true })
     browser = await chromium.launch()
     // The scenario asserts the shipped Chinese copy, so the browser asks for it.
     page = await browser.newPage({ viewport: { width: 1440, height: 960 }, locale: ZH_BROWSER_LOCALE })
@@ -85,14 +85,14 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
-  it('stops prompting for DeepSeek once the other provider can serve requests', async () => {
+  it('stops prompting for a key once the other provider can serve requests', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-other-provider'))
     const settings = page.getByRole('dialog', { name: '设置' })
     await settings.getByRole('textbox', { name: 'API 密钥', exact: true }).fill('sk-e2e-minimax')
     await settings.getByRole('button', { name: '保存', exact: true }).click()
     await settings.getByText('已保存 minimax-cn。', { exact: true }).waitFor({ timeout: 15_000 })
 
-    // Only minimax-cn is reachable; DeepSeek still holds no credential.
+    // Only minimax-cn is reachable; the shipped route still holds no credential.
     const document = await readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8')
     expect(document).toContain('apiKeyEnv: MINIMAX_CN_API_KEY')
     const credentials = await readFile(join(scaffold.harnessHome, '.credentials.yaml'), 'utf8')
@@ -111,8 +111,9 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     ).toBe(0)
     expect(await page.locator('#root').evaluate(root => (root as HTMLElement).inert)).toBe(false)
 
-    // The Models page agrees: DeepSeek stays a row rather than reopening its
-    // setup card over a user who already has somewhere to send a request.
+    // The Models page agrees: the shipped route stays a row rather than
+    // reopening its setup card over a user who already has somewhere to send a
+    // request.
     await page.getByRole('button', { name: '设置', exact: true }).click()
     await settings.waitFor({ timeout: 10_000 })
     await settings.getByRole('button', { name: '模型' }).click()

@@ -23,11 +23,11 @@ export interface MessageImageLabels {
   lightbox: ImageLightboxLabels
 }
 
-/** Display box for a lone image (DeepSeek Chat rule): long edge 240px with
- * the rendered aspect ratio clamped to [0.25, 4] — the overflow is cropped by
- * `object-fit: cover` — and never upscaled past the image's natural size. The
- * crop anchor keeps the top of very tall images and the left of very wide
- * ones, where the informative content usually starts. */
+/** Display box for a lone image: long edge 240px with the rendered aspect
+ * ratio clamped to [0.25, 4], the overflow cropped by `object-fit: cover`,
+ * and never upscaled past the image's natural size. The crop anchor keeps the
+ * top of very tall images and the left of very wide ones, where the
+ * informative content usually starts. */
 function singleFit(attachment: ImageAttachmentRef): { width: number; height: number; objectPosition: string } {
   const natural = attachment.width / attachment.height
   const ratio = Math.min(4, Math.max(0.25, natural))
@@ -101,7 +101,7 @@ export function MessageImage({ attachment, load, variant, labels }: {
 }
 
 /** Wrapping image group shared by user and assistant history: a lone image
- * renders large, several render as 64px square tiles (DeepSeek Chat rule). */
+ * renders large, several render as 64px square tiles. */
 export function ImageGallery({ images, load, align, labels }: {
   images: readonly { attachment: ImageAttachmentRef }[]
   load: ImageLoader

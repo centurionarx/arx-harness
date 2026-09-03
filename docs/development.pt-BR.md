@@ -11,7 +11,7 @@ O tutorial de configuração leva um contribuidor novo dos pré-requisitos a um 
 - Node.js suporta 22.19+ e 24+. O CI cobre 22.19, 24 e 26; veja a [nota de agente do piso de engine Node](../.agents/notes/implemented/process/2026-07-06-node-engine-floor.pt-BR.md).
 - pnpm com Corepack habilitado. O repositório fixa `pnpm@11.7.0` no `package.json`; execute `corepack enable` se `pnpm --version` não resolver via Corepack.
 - Git 2.26 ou mais novo; a configuração de hooks habilita a extensão de configuração específica de worktree do Git.
-- Opcional: uma API key da DeepSeek para as demos Web, headless e de automação ACP e para os e2e de API real.
+- Opcional: uma API key de provedor (`DEEPSEEK_API_KEY`) para as demos Web, headless e de automação ACP e para os e2e de API real.
 
 ### Configuração inicial
 
@@ -91,7 +91,7 @@ pnpm run build
 
 ### Variáveis de ambiente
 
-O adapter DeepSeek real e as demos de agente com API key leem credenciais do ambiente ou de um `.env` gitignored na raiz do repositório:
+O adapter de provedor real e as demos de agente com API key leem credenciais do ambiente ou de um `.env` gitignored na raiz do repositório:
 
 ```sh
 DEEPSEEK_API_KEY=sk-...

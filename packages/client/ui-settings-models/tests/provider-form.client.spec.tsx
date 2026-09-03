@@ -8,7 +8,7 @@ import type { RpcResponse, SettingsNamespaceView } from '@arx-ai/arx-api-remotes
 import { ModelsSection, providerCopy } from '../src/client/ModelsSection.tsx'
 import type { ModelsSectionInjected, ModelsSectionProps } from '../src/client/ModelsSection.tsx'
 import { CustomProviderCard } from '../src/client/CustomProviderCard.tsx'
-import { formatCapacity, parseCapacity } from '../src/client/DeepSeekModelsEditor.tsx'
+import { formatCapacity, parseCapacity } from '../src/client/model-catalog.ts'
 import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import { ModelsSettingsStore, deriveKeyRef, protocolChoices } from '../src/client/store.ts'
 import { en } from '../src/client/locales.ts'
@@ -321,6 +321,48 @@ describe('model list editing', () => {
     // says so; taking it over is an explicit act, not a side effect of opening.
     expect(screen.getByText(en.modelsInherited)).toBeTruthy()
     expect(screen.queryByText(en.resetModels)).toBeNull()
+  })
+
+  it('restores the composition entry the moment the override is dropped, not after a reload', async () => {
+    // Reset has to read the layer BENEATH the user's: the effective value still
+    // carries the stored override until the unset is applied, so reading it
+    // would echo that override straight back and leave the rows unchanged.
+    await mountSection({
+      providers: { openai: { baseURL: 'https://proxy.example/v1', models: [{ id: 'user-only-model' }] } },
+      userProviders: { openai: { baseURL: 'https://proxy.example/v1', models: [{ id: 'user-only-model' }] } },
+      baseProviders: { openai: { models: [{ id: 'pinned-by-deployment' }] } },
+    })
+    openEditor('openai')
+
+    expect(screen.getByText(en.modelsCustomized)).toBeTruthy()
+    expect(screen.getByLabelText<HTMLInputElement>(`${en.modelId} 1`).value).toBe('user-only-model')
+
+    fireEvent.click(screen.getByText(en.resetModels))
+
+    expect(screen.getByText(en.modelsInherited)).toBeTruthy()
+    expect(screen.getByLabelText<HTMLInputElement>(`${en.modelId} 1`).value).toBe('pinned-by-deployment')
+  })
+
+  it('keeps a field the row editor does not show when that row is edited', async () => {
+    // A profile field a future schema adds, or one hand-written into
+    // settings.yaml, has to survive an edit rather than being dropped by a
+    // rebuild of the row.
+    const { mutate } = await mountSection({
+      providers: {
+        openai: {
+          baseURL: 'https://proxy.example/v1',
+          models: [{ id: 'kept', description: 'Preserved hidden detail' }],
+        },
+      },
+    })
+    openEditor('openai')
+
+    fireEvent.change(screen.getByLabelText(`${en.modelName} 1`), { target: { value: 'Kept' } })
+    fireEvent.click(screen.getByText(en.apply))
+
+    await waitFor(() => { expect(mutate).toHaveBeenCalled() })
+    expect(firstMutate(mutate).ops[0]?.value)
+      .toEqual([{ id: 'kept', description: 'Preserved hidden detail', name: 'Kept' }])
   })
 
 

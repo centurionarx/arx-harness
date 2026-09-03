@@ -1,8 +1,8 @@
 /**
  * `@arx-ai/arx-web-search-perplexity`: registers a Perplexity-backed
  * `WebSearchProvider` with `ctx.web`. A function/namespace plugin (NOT a
- * default-export service): it registers INTO the seam's provider registry, like
- * `@arx-ai/arx-llm-deepseek` registers an adapter into `ctx.llm`.
+ * default-export service): it registers INTO the seam's provider registry, the
+ * way a model adapter package registers into `ctx.llm`.
  *
  * @module @arx-ai/arx-web-search-perplexity
  */

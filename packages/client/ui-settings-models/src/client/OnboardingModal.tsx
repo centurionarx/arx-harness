@@ -9,16 +9,14 @@ const ignoreImplicitDismiss = (): void => {}
 
 /**
  * Render a blocking onboarding dialog and keep the application root inert.
+ * The title takes focus on mount, since a step's body carries no control a
+ * screen reader should land on ahead of the heading that names the step.
  * @param props.title - accessible and visible dialog title.
- * @param props.focusTitle - focus the title when the step has no form control.
  * @param props.children - step-owned body and actions.
  * @returns the body-portaled modal.
  */
-export function OnboardingModal({
-  title, focusTitle = false, children,
-}: {
+export function OnboardingModal({ title, children }: {
   title: string
-  focusTitle?: boolean
   children: ReactNode
 }): ReactNode {
   const titleRef = useRef<HTMLHeadingElement | null>(null)
@@ -32,8 +30,8 @@ export function OnboardingModal({
   }, [])
 
   useEffect(() => {
-    if (focusTitle) titleRef.current?.focus()
-  }, [focusTitle])
+    titleRef.current?.focus()
+  }, [])
 
   return (
     <Modal
@@ -44,7 +42,7 @@ export function OnboardingModal({
       className={css.dialog as string}
     >
       <div className={css.content}>
-        <h2 ref={titleRef} className={css.title} tabIndex={focusTitle ? -1 : undefined}>{title}</h2>
+        <h2 ref={titleRef} className={css.title} tabIndex={-1}>{title}</h2>
         <div className={css.body}>{children}</div>
       </div>
     </Modal>

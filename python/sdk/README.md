@@ -22,7 +22,7 @@ with ArxHarness() as harness:
 
 `ArxHarness` keeps its lazily started runtime subprocess for reuse across calls. Use it as a context manager, as above, or call `close()` explicitly when finished.
 
-By default, the SDK launches the bundled single-file `arx-jsonrpc-agent` executable from the `arx-harness-runtime-bin` package and injects that package's default configuration (the stdio JSON-RPC server, agent core, preloaded DeepSeek adapter, JSONL session persistence with an explicitly composed semantic checkpoint policy, local bash) via `ARX_CORDIS_CONFIG`. To run a plugin composition of your own, keep the `@arx-ai/arx-sdk-jsonrpc-server` entry in the config and pass the Cordis config path.
+By default, the SDK launches the bundled single-file `arx-jsonrpc-agent` executable from the `arx-harness-runtime-bin` package and injects that package's default configuration (the stdio JSON-RPC server, agent core, preloaded model adapter, JSONL session persistence with an explicitly composed semantic checkpoint policy, local bash) via `ARX_CORDIS_CONFIG`. To run a plugin composition of your own, keep the `@arx-ai/arx-sdk-jsonrpc-server` entry in the config and pass the Cordis config path.
 
 ```py
 from arx_harness import ArxHarness

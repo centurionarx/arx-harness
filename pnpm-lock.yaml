@@ -1473,6 +1473,12 @@ importers:
       '@arx-ai/arx-web-frontend':
         specifier: workspace:^
         version: link:../../../apps/web
+      '@arx-ai/arx-web-search-exa':
+        specifier: workspace:^
+        version: link:../../web/web-search-exa
+      '@arx-ai/arx-web-search-perplexity':
+        specifier: workspace:^
+        version: link:../../web/web-search-perplexity
       '@arx-ai/arx-workspace':
         specifier: workspace:^
         version: link:../../workspace/workspace
@@ -8452,6 +8458,9 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
+      '@arx-ai/arx-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -8978,6 +8987,12 @@ importers:
       '@arx-ai/arx-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
+      '@arx-ai/arx-tool-pwsh':
+        specifier: workspace:^
+        version: link:../../packages/shell/tool-pwsh
+      '@arx-ai/arx-tool-pwsh-persistent':
+        specifier: workspace:^
+        version: link:../../packages/shell/tool-pwsh-persistent
       '@arx-ai/arx-tool-ralph':
         specifier: workspace:^
         version: link:../../packages/workflow/tool-ralph
