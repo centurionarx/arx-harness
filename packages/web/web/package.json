@@ -40,7 +40,9 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^"
   },
   "dependencies": {
     "@arx-ai/schemastery": "workspace:^"
@@ -49,6 +51,8 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^"
   }
 }

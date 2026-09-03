@@ -24,6 +24,8 @@ import type {
 } from './types.ts'
 import { WebError } from './types.ts'
 
+export { providerKeySource } from './provider-key.ts'
+export type { ProviderKeyOptions, ProviderKeySource } from './provider-key.ts'
 export {
   WebError,
 } from './types.ts'

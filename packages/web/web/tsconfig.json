@@ -24,6 +24,12 @@
       "path": "../../settings/settings"
     },
     {
+      "path": "../../credentials/credentials"
+    },
+    {
+      "path": "../../util/launch-environment"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     }
   ]

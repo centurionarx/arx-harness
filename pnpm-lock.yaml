@@ -1377,6 +1377,9 @@ importers:
       '@arx-ai/arx-client-ui-settings-plugins':
         specifier: workspace:^
         version: link:../../client/ui-settings-plugins
+      '@arx-ai/arx-client-ui-settings-web':
+        specifier: workspace:^
+        version: link:../../client/ui-settings-web
       '@arx-ai/arx-client-ui-sidebar':
         specifier: workspace:^
         version: link:../../client/ui-sidebar
@@ -2791,6 +2794,42 @@ importers:
       '@arx-ai/arx-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+
+  packages/client/ui-settings-web:
+    devDependencies:
+      '@arx-ai/arx-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@arx-ai/arx-client-connection':
+        specifier: workspace:^
+        version: link:../connection
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
       '@arx-ai/arx-client-ui-settings':
         specifier: workspace:^
         version: link:../ui-settings
@@ -8458,9 +8497,15 @@ importers:
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
+      '@arx-ai/arx-credentials':
+        specifier: workspace:^
+        version: link:../../credentials/credentials
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-launch-environment':
+        specifier: workspace:^
+        version: link:../../util/launch-environment
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../../llm/llm
@@ -8502,9 +8547,6 @@ importers:
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@arx-ai/arx-launch-environment':
-        specifier: workspace:^
-        version: link:../../util/launch-environment
       '@arx-ai/arx-settings':
         specifier: workspace:^
         version: link:../../settings/settings
@@ -8527,9 +8569,6 @@ importers:
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-      '@arx-ai/arx-launch-environment':
-        specifier: workspace:^
-        version: link:../../util/launch-environment
       '@arx-ai/arx-settings':
         specifier: workspace:^
         version: link:../../settings/settings

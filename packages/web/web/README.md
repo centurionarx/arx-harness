@@ -44,6 +44,10 @@ Selection never depends on registration, config, or HMR order. A capability has 
 
 The failure branches throw `WebError`, whose structured code (plus message detail — the missing id, the ambiguous candidate set) is the direct callers route on. A provider's own `available()` is a cheap local check (credential presence, parseable config) that feeds this execution-time selection and **must not make network calls**; `arx-tool-web` never calls it — the tool executes through `ctx.web.search()`/`fetch()` and routes on the thrown codes, so provider selection has one owner.
 
+## Provider helpers
+
+`providerKeySource(ctx, { plugin, inline, ref })` is the one key-resolution policy a search provider binds to: an inlined key wins, then the managed credential store, then every launch-environment layer. The store's answer is cached and re-read at once, on every `refresh()` the provider's settings section triggers, and whenever a credential is written under the watched reference, so `available()` stays a cheap synchronous check. A reference outside the seam's grammar skips the store; a store failure warns and leaves the environment answering.
+
 ## Vocabulary
 
 `WebSearchRequest` (`query`, `maxResults?`) → `WebSearchResult` (`content?`, `sources[]`, `truncated`); each `WebSearchSource` has a required `url` and optional `title`/`snippet`/`publishedAt` (Perplexity citations may be URL-only). `WebFetchRequest` (`url`) → `WebFetchResult` (final `url`, `statusCode`, `body`, `truncated`); cancellation is a direct optional `AbortSignal` argument to `search()`/`fetch()`. `WebFetchBody` is a CLOSED discriminated union (`html` | `text`) owned here — consumers `switch` to exhaustiveness so a new kind breaks their compilation until handled. See `src/types.ts` for the full contracts and the `WebError` code taxonomy.

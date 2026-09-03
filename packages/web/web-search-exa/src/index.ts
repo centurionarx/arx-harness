@@ -9,11 +9,9 @@
  */
 
 import type { Context } from '@arx-ai/cordis'
-import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
-import { credentialRef, isCredentialRefName } from '@arx-ai/arx-credentials'
 import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 import z from '@arx-ai/schemastery'
-import type {} from '@arx-ai/arx-web'
+import { providerKeySource } from '@arx-ai/arx-web'
 import {
   EXA_DEFAULT_BASE_URL,
   EXA_DEFAULT_HIGHLIGHTS_PER_RESULT,
@@ -82,31 +80,16 @@ const DEFAULT_API_KEY_ENV = 'EXA_API_KEY'
  */
 export function apply(ctx: Context, config: Config): void {
   let source: () => Config = () => config
-  // The managed store answers asynchronously, so its value is cached here and
-  // refreshed on every commit that can change it; `available()` then stays
-  // the cheap synchronous answer the seam requires.
-  let storedKey: string | undefined
-  const keyRef = (): string => source().apiKeyEnv ?? DEFAULT_API_KEY_ENV
-  const refreshStoredKey = async (): Promise<void> => {
-    const ref = keyRef()
-    const credentials = ctx.get('credentials')
-    storedKey = credentials !== undefined && isCredentialRefName(ref)
-      ? (await credentials.resolve(credentialRef(ref)))?.value
-      : undefined
-  }
-  const refresh = (): void => {
-    refreshStoredKey().catch((error: unknown) => {
-      ctx.logger.warn(`web-search-exa: resolving credential "${keyRef()}" failed; the launch environment answers until it succeeds`)
-      ctx.logger.warn(error)
-    })
-  }
+  const key = providerKeySource(ctx, {
+    plugin: 'web-search-exa',
+    inline: () => source().apiKey,
+    ref: () => source().apiKeyEnv ?? DEFAULT_API_KEY_ENV,
+  })
 
   ctx.web.registerSearchProvider(new ExaSearchProvider(() => {
     const current = source()
     return {
-      // An inlined key wins; otherwise the managed store, then every launch
-      // environment layer — the product trusts the project it is launched in.
-      apiKey: current.apiKey ?? storedKey ?? launchEnvironmentOf(ctx).get(keyRef())?.value ?? '',
+      apiKey: key.current(),
       baseURL: current.baseURL ?? EXA_DEFAULT_BASE_URL,
       searchType: current.searchType ?? EXA_DEFAULT_SEARCH_TYPE,
       highlightsPerResult: current.highlightsPerResult ?? EXA_DEFAULT_HIGHLIGHTS_PER_RESULT,
@@ -116,17 +99,12 @@ export function apply(ctx: Context, config: Config): void {
   ctx.web.registerConfigurableSearchProviders([
     { provider: EXA_PROVIDER_ID, displayName: 'Exa', settingsNs: NS, settingsPath: [] },
   ])
-  ctx.on('credentials/reference-updated', (ref) => {
-    if (ref === keyRef()) refresh()
-  })
   installSettingsSection(ctx, NS, Config, config, {
     setSource: (current) => {
       source = current
     },
-    // Only the cached store value can be stale after a commit, and only when
-    // the reference it was read through moved; re-reading is cheaper than
-    // diffing the section for that one field.
-    onChange: refresh,
+    // The provider reads its options at each call; only the cached store
+    // value can be stale after a commit, so the key source re-reads it.
+    onChange: () => { key.refresh() },
   })
-  refresh()
 }

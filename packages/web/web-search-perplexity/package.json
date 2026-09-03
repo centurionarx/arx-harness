@@ -32,7 +32,6 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@arx-ai/arx-launch-environment": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
@@ -43,7 +42,6 @@
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@arx-ai/arx-launch-environment": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
