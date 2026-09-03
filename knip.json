@@ -18,6 +18,7 @@
     "python/sdk-runtime"
   ],
   "ignoreDependencies": [
+    "@arx-ai/arx",
     "@yarnpkg/cli-dist",
     "lightningcss"
   ],

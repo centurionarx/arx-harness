@@ -22,6 +22,10 @@ npx @arx-ai/arx web
 
 O comando inicia a Web UI em `http://127.0.0.1:3080` por padrão e a abre no navegador padrão em uma execução local. Uma execução via SSH imprime apenas a URL da máquina, porque o cliente ou editor SSH é dono do endereço encaminhado local. Passe `--no-open` para rodar o servidor sem abrir um navegador. Veja o [guia da Web UI](docs/user/guide/index.pt-BR.md).
 
+Ele resolve `@arx-ai/arx` a partir do registry, então só funciona onde essa release está publicada. Rode-o de fora de um checkout do repositório: dentro de um, o `npm exec` tira o nome do comando do workspace e em seguida executa o `arx` que o `PATH` já tiver — uma release instalada antes, não este checkout. [Executar a partir do código-fonte](#run-from-source) é como um checkout inicia.
+
+<a id="run-from-source"></a>
+
 ### Executar a partir do código-fonte
 
 Para executar a partir de um checkout do repositório:
@@ -35,6 +39,8 @@ pnpm arx web
 ```
 
 `pnpm run build` prepara os artefatos do repositório. `pnpm arx web` usa esses artefatos construídos sem reconstruir.
+
+Esse build não carrega a marca: a Web UI mostra o marcador `ARX Local Build` no lugar do símbolo do produto, porque o símbolo oficial só é embarcado no perfil oficial do cliente. Use `pnpm run build:official` para construir o cliente com a marca a partir de um checkout.
 
 ## Comunidade e suporte
 

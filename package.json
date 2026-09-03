@@ -145,6 +145,7 @@
   },
   "devDependencies": {
     "@agentclientprotocol/sdk": "0.25.1",
+    "@arx-ai/arx": "workspace:^",
     "@arx-ai/arx-tool-session-query": "workspace:^",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@testing-library/dom": "^10.4.1",
