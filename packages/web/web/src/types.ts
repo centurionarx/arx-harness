@@ -127,3 +127,83 @@ export interface WebFetchProvider {
  * structured error metadata.
  */
 export class WebError extends HarnessError {}
+
+/** Why the selection rules name no search provider; the `WebError` code `search()` would throw. */
+export type WebSelectionFailure =
+  | 'WEB_PROVIDER_CONFIGURED_MISSING'
+  | 'WEB_PROVIDER_CONFIGURED_UNAVAILABLE'
+  | 'WEB_PROVIDER_UNAVAILABLE'
+  | 'WEB_PROVIDER_AMBIGUOUS'
+
+/**
+ * The search selection as the next `search()` call would resolve it, computed
+ * without running one. `configured` is the id the settings document or the
+ * environment pins; `effective` is the provider the rules name, absent when
+ * `failure` says why none serves.
+ */
+export interface WebProviderSelection {
+  readonly configured: string | undefined
+  readonly effective: string | undefined
+  readonly failure?: WebSelectionFailure
+}
+
+/** One registered search provider and its current cheap usability answer. */
+export interface WebRegisteredSearchProvider {
+  readonly id: string
+  readonly available: boolean
+}
+
+/**
+ * One search provider a plugin declares as configurable through a settings
+ * section: where a configuration surface finds its profile, and how to name
+ * it. Declared beside the provider registration, never inferred from it, so a
+ * provider mounted without a settings section stays selectable but shows no
+ * configuration address.
+ */
+export interface WebConfigurableProvider {
+  /** The registered search provider id this entry describes. */
+  provider: string
+  /** Human-readable provider name for configuration surfaces. */
+  displayName: string
+  /** User-settings namespace whose section configures this provider. */
+  settingsNs: string
+  /**
+   * Path from that namespace's section root to this provider's profile
+   * object; empty when the whole section is the profile.
+   */
+  settingsPath: readonly string[]
+}
+
+/**
+ * A live configurable-provider registration, disposable and atomically
+ * replaceable. Calling it withdraws every entry it holds; `replace` validates
+ * the whole candidate set before publishing, so a refused set leaves the
+ * current entries serving.
+ */
+export interface WebDirectoryRegistrationHandle {
+  (): void
+  /**
+   * Replace this registration's entries with `entries`. An entry another
+   * registration already declares, a duplicate within the set, or invalid
+   * metadata throws `WebError` and leaves the current entries untouched; an
+   * empty array is legal here, unlike an empty initial registration.
+   * @param entries - the complete next entry set for this registration.
+   */
+  replace(entries: readonly WebConfigurableProvider[]): void
+}
+
+declare module '@arx-ai/cordis' {
+  interface Events {
+    /**
+     * The search-provider topology changed: a search provider registered or
+     * unregistered, or the configurable directory gained, lost, or replaced
+     * entries. This payload-free registry notification fires at each commit
+     * point, registration disposal included; consumers re-read
+     * `listSearchProviders()`, `listConfigurableSearchProviders()`, or
+     * `searchSelection()` for the new state. Observer failures are contained
+     * and cannot veto the registry mutation.
+     * @mode emit
+     */
+    'web/providers-updated'(): void
+  }
+}
