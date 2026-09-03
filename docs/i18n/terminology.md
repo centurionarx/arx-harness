@@ -1,214 +1,214 @@
 # Terminology
 
-本表约定本仓库的中英术语统一译法。
+Esta tabela fixa a tradução unificada dos termos técnicos entre inglês e português do Brasil neste repositório.
 
-**通用规则：**
-- "中文"列为中文译文的正文默认用词。若该列为英文，则中文译文的正文中保留英文不翻译。
-- 首次出现按"首次出现"列书写（带括号注释）；后续出现只写括号前的部分（可能为中文，也可能为英文），不出现括号内的注释。
-- "不要译作"列为严格禁止的译法。
-- 如果某术语已经作为另一个术语的组成部分被括注过（如 `agent loop（智能体循环）` 中已包含 `agent` 的括注），则该术语后续单独出现时无需再次括注。
+**Regras gerais:**
+- A coluna "Português" traz a palavra usada por padrão na prosa em português. Quando essa coluna repete o termo em inglês, a prosa em português mantém o inglês sem traduzir.
+- A primeira ocorrência segue a coluna "Primeira ocorrência" (com a anotação entre parênteses); as ocorrências seguintes escrevem só a parte anterior aos parênteses (em português ou em inglês, conforme a linha), sem repetir a anotação.
+- A coluna "Não traduzir como" lista renderizações estritamente proibidas.
+- Se o termo já foi anotado como parte de outro termo (por exemplo, `compactação de contexto (context compaction)` já contém a anotação de `compaction`), ele dispensa nova anotação quando aparecer sozinho depois disso.
 
-## 缩写类（中英文文本中均使用缩写）
+## Classe de siglas (os dois idiomas usam a sigla)
 
-| English | 中文 | 首次出现 | 不要译作 | 备注 |
+| English | Português | Primeira ocorrência | Não traduzir como | Notas |
 |---|---|---|---|---|
-| ACP | ACP | ACP（Agent Client Protocol） | | |
-| AI | AI | AI（人工智能） | | |
+| ACP | ACP | ACP (Agent Client Protocol) | | O nome por extenso fica em inglês |
+| AI | IA | IA (inteligência artificial) | | A sigla em português é `IA`; `AI` permanece verbatim em identificadores de código, como o escopo `@arx-ai/*` |
 | API | API | | | |
 | CI | CI | | | |
-| CLI | CLI | CLI（命令行界面） | | |
+| CLI | CLI | CLI (interface de linha de comando) | | |
 | e2e | e2e | | | |
-| HMR | HMR | HMR（热模块替换） | | |
-| JSON Schema | JSON Schema | | | |
+| HMR | HMR | HMR (Hot Module Replacement) | | O nome por extenso fica em inglês, como na documentação brasileira de Vite e webpack |
+| JSON Schema | JSON Schema | | | Nome da especificação; preserve as maiúsculas e o espaço |
 | JSONL | JSONL | | | |
-| LLM | LLM | LLM（大语言模型） | | |
+| LLM | LLM | LLM (modelo de linguagem de grande porte) | | Expansão conforme a documentação pt-BR de AWS e Google Cloud |
 | MCP | MCP | | | |
-| PR | PR | PR（Pull Request） | | |
-| RAG | RAG | RAG（检索增强生成） | | |
-| SDK | SDK | | | 只指受支持的 Python 与 TypeScript SDK 所使用的 JSON-RPC 客户端／服务器协议；arx Harness 项目本身不是 SDK |
-| SSE | SSE | SSE（Server-Sent Events） | | |
+| PR | PR | PR (Pull Request) | | O nome por extenso fica em inglês, como na documentação brasileira do GitHub |
+| RAG | RAG | RAG (geração aumentada de recuperação) | | Expansão conforme a documentação pt-BR de AWS, Google Cloud e Microsoft |
+| SDK | SDK | | | Designa apenas o protocolo JSON-RPC cliente/servidor usado pelos SDKs Python e TypeScript suportados; o projeto arx Harness em si não é um SDK |
+| SSE | SSE | SSE (Server-Sent Events) | | |
 
-## 英文类（中英文文本中均使用英文）
+## Classe inglês (os dois idiomas usam o termo em inglês)
 
-| English | 中文 | 首次出现 | 不要译作 | 备注 |
+| English | Português | Primeira ocorrência | Não traduzir como | Notas |
 |---|---|---|---|---|
-| agent | agent | agent（智能体） | | |
-| Agent Note | Agent Note | | 智能体注记、智能体笔记 | 仓库定义的文档类型，涵盖提案、已实现决策和被否决提案；中文对侧 H1 保持固定前缀 `# Agent Note: `，标题中不加术语括注 |
-| agent harness | agent harness | agent harness（智能体框架） | | agent 组合词（agent harness/workflow/loop/skill 等）整体保留英文；未括注过 agent 时首现按对应组合词或 agent 行处理 |
-| agent loop | agent loop | agent loop（智能体循环） | | |
-| blob hash | blob hash | | | `git hash-object` 的结果 |
-| coding agent | coding agent | coding agent（编程智能体） | | agent 组合词，正文保留英文 |
+| agent | agent | agent (agente) | | A prosa em português mantém `agent`, inclusive no plural (`agents`); `agente` aparece só na anotação de primeira ocorrência e dentro de outras anotações |
+| Agent Note | Agent Note | | nota do agente, anotação do agente | Tipo de documento definido pelo repositório, que abrange propostas, decisões implementadas e propostas rejeitadas; o H1 do lado em português mantém o prefixo fixo `# Agent Note: ` e o título não recebe anotação do termo |
+| agent harness | agent harness | agent harness (framework de execução de agentes) | | Compostos com `agent` (agent harness, agent workflow, agent loop, agent skill) ficam inteiros em inglês; se `agent` ainda não tiver sido anotado, a primeira ocorrência segue a linha do composto ou a linha `agent` |
+| agent loop | agent loop | agent loop (ciclo do agent) | laço do agent | |
+| blob hash | blob hash | | | Resultado de `git hash-object` |
+| coding agent | coding agent | coding agent (agente de programação) | | Composto com `agent`; a prosa mantém o inglês |
 | Cordis | Cordis | | | |
-| dispose | dispose | dispose（资源释放） | | |
-| doc-sync | doc-sync | doc-sync（文档同步门禁） | | |
-| fiber | fiber | | | |
-| fixture | fixture | fixture（测试前置数据） | | |
-| fork | fork | | | |
-| Function Calling | Function Calling | Function Calling（函数调用） | | |
-| harness | harness | | | |
-| harness engineering | harness engineering | | | |
-| KV Cache | KV Cache | | | 专有技术名称，保持大小写与空格 |
-| lint | lint | | | |
-| mock | mock | | | 保留英文；指测试替身 |
-| loader | loader | | | |
-| manifest | manifest | manifest（元数据清单） | | |
+| dispose | dispose | dispose (liberação de recursos) | descartar, destruir | |
+| doc-sync | doc-sync | doc-sync (gate de sincronização da documentação) | | |
+| fiber | fiber | | fibra | Unidade de execução do Cordis que é dona dos efeitos e do ciclo de vida de um plugin |
+| fixture | fixture | fixture (dados de teste pré-montados) | | Mantido em inglês; é assim que a comunidade brasileira de pytest e Vitest escreve |
+| fork | fork | | bifurcação, ramificação | Vale tanto para o fork de repositório quanto para o de processo |
+| Function Calling | Function Calling | Function Calling (chamada de função) | | Nome próprio da funcionalidade do modelo; preserve as maiúsculas |
+| harness | harness | | arreio, arcabouço | A anotação explicativa fica na linha `agent harness` |
+| harness engineering | harness engineering | | | Composto com `harness`; fica em inglês |
+| KV Cache | KV Cache | | | Nome técnico consagrado; preserve as maiúsculas e o espaço |
+| lint | lint | | lintar | Como verbo, escreva `rodar o lint` |
+| mock | mock | | | Mantido em inglês; designa o dublê de teste |
+| loader | loader | | carregador | Vale também para o loader do Cordis |
+| manifest | manifest | manifest (lista de metadados) | manifesto | `manifesto` em português designa um documento programático e não serve aqui |
 | monorepo | monorepo | | | |
-| Round | Round | | 回合、目标回合、Ralph 回合 | 外层策略使用 Round 时，领域层级为 Session > Round > Turn（轮次） > Step（步骤）；Round 是可选的外层策略迭代，并非每个会话轮次都具有的通用层级。Goal Round 与 Ralph Round 均保留英文。一个 Round 承载一个轮次，步骤隶属于该轮次；明确的零步骤轮次仍保持原义。 |
-| schema | schema | | | |
+| Round | Round | | rodada, rodada de objetivo, rodada Ralph | Quando a estratégia externa usa Round, a hierarquia do domínio é Session > Round > Turn (turno) > Step (etapa); Round é uma iteração opcional da estratégia externa, não um nível presente em todo turno de sessão. Goal Round e Ralph Round também ficam em inglês. Um Round carrega um turno e as etapas pertencem a esse turno; um turno explicitamente sem etapas mantém esse sentido |
+| schema | schema | | esquema | `esquema` em português também significa diagrama e fica ambíguo |
 | schema DSL | schema DSL | | | |
-| seam | seam | | 接缝 | 一个可替换能力的整体，包含 Service Definition / Service Provider / Consumer 三种角色；角色需要独立演化时才拆包，也可由同一包承担多个角色。以 `packages/shell` 为范例；Service Definition 是 Cordis `Service`（抽象类或具体 registry 服务），不是 TypeScript interface。任何单一角色、普通边界或扩展点都不能称为 seam。本仓库正文保留英文；与 `extension point` 是不同概念 |
-| Service Provider | Service Provider | | Service provider | 能力 seam 的命名角色；单数固定写作 Service Provider，复数写作 Service Providers。泛指提供服务的 provider 不适用本词条 |
-| skill | skill | skill（技能） | | |
-| slot | slot | | 坑位、孔位 | 客户端架构中的具名可注册位置，保留英文 |
-| spill | spill | | | 工具输出超限落盘机制；组合词写 `spill 文件`、`spill 路径` |
-| spawn | spawn | | | |
-| steering | steering | steering（中途引导） | | |
-| job id | job id | | 任务 id | 保留英文 |
-| subagent | subagent | | | |
-| transcript | transcript | transcript（文本记录） | | 指会话渲染给用户或编辑器的完整文本，区别于事件日志 |
-| Typert | Typert | | TypeRT、typeRT、Type RT | arx Harness 类型图、生成器、loader 与运行时 registry 的产品拼写 |
-| waterfall | waterfall | waterfall（瀑布式事件） | | |
-| wheel | wheel 包 | | | Python 打包格式 |
-| worktree | worktree | | | git 工作区概念 |
-| Zstandard | Zstandard | | | RFC 8878 compression format; `zstd` remains a code value. |
+| seam | seam | | costura, emenda, junção | O conjunto inteiro de uma capacidade substituível, com os três papéis Service Definition / Service Provider / Consumer; separe em pacotes distintos só quando os papéis evoluírem de forma independente, e um mesmo pacote pode assumir vários papéis. `packages/shell` é o exemplo de referência; o Service Definition é um `Service` do Cordis (classe abstrata ou serviço de registry concreto), não uma interface TypeScript. Nenhum papel isolado, fronteira comum ou ponto de extensão pode ser chamado de seam. A prosa deste repositório mantém o inglês; é um conceito distinto de `extension point` |
+| Service Provider | Service Provider | | Service provider, provedor de serviço | Papel nomeado do seam de capacidade; o singular escreve-se sempre Service Provider e o plural, Service Providers. Um `provider` genérico que fornece um serviço não se enquadra nesta linha |
+| skill | skill | skill (habilidade) | | A prosa mantém `skill`; `habilidade` aparece só na anotação de primeira ocorrência |
+| slot | slot | | encaixe, vaga, ranhura | Posição nomeada e registrável na arquitetura do cliente; mantida em inglês |
+| spill | spill | | vazamento, transbordo | Mecanismo que grava em disco a saída de ferramenta que excede o limite; nos compostos, escreva `arquivo de spill` e `caminho de spill` |
+| spawn | spawn | | gerar, desovar | Fica em inglês inclusive como verbo: `fazer spawn de um subprocesso` |
+| steering | steering | steering (direcionamento no meio da execução) | | |
+| job id | job id | | id de tarefa | Mantido em inglês |
+| subagent | subagent | | subagente | Composto com `agent`; a prosa mantém o inglês, inclusive no plural (`subagents`) |
+| transcript | transcript | transcript (registro textual da sessão) | transcrição | O texto completo que a sessão renderiza para o usuário ou para o editor, distinto do log de eventos |
+| Typert | Typert | | TypeRT, typeRT, Type RT | Grafia de produto do grafo de tipos, do gerador, do loader e do registry de runtime do arx Harness |
+| waterfall | waterfall | waterfall (evento em cascata) | cascata | A prosa mantém `waterfall`; `cascata` aparece só na anotação de primeira ocorrência |
+| wheel | pacote wheel | | roda | Formato de empacotamento do Python |
+| worktree | worktree | | árvore de trabalho | Conceito de worktree do Git |
+| Zstandard | Zstandard | | | Formato de compressão da RFC 8878; `zstd` continua sendo um valor de código |
 
-## 双语类（中英文文本各自使用中英文）
+## Classe bilíngue (cada idioma usa a forma do próprio idioma)
 
-| English | 中文 | 首次出现 | 不要译作 | 备注 |
+| English | Português | Primeira ocorrência | Não traduzir como | Notas |
 |---|---|---|---|---|
-| adapter | 适配器 | | | |
-| adapter contract | 适配器约定 | 适配器约定（adapter contract） | | |
-| append-only | 仅追加 | | | |
-| artifact | 产物 | | 制品 | |
-| backend | 后端 | | | |
-| binder | 绑定器 | | | 命名角色：把已声明接口绑定到调用方 context 或生命周期 |
-| config | 配置 | | | 命名角色：一个已解析配置值或边界严格的配置记录 |
-| controller | 控制器 | | | 命名角色：接受意图并改变一项既有领域或展示状态 |
-| directory | 目录 | | | 命名角色：暴露供发现或选择的条目及元数据 |
-| engine | 引擎 | | | 命名角色：实现领域算法或有状态执行模型 |
-| gateway | 网关 | | | 命名角色：适配进程、网络、RPC 或 API 边界 |
-| handle | 句柄 | | | 命名角色：引用并控制或观察一个实时资源 |
-| policy | 策略 | | | 命名角色：决定允许、选择、限制或观察什么 |
-| presenter | 展示转换器 | | | 命名角色：把领域值纯转换为渲染意图 |
-| resolver | 解析器 | | | 命名角色：根据输入计算或定位一个答案 |
-| store | 存储 | | | 命名角色：拥有一组数据并主要提供数据操作 |
-| background job | 后台任务 | | | |
-| block | 块 | | | |
-| build target | 构建目标 | | | |
-| cancel | 取消 | | | |
-| canary test | canary 测试 | | 金丝雀测试 | 本仓库保留 `canary` |
-| capability | 能力 | | | 必须与 `feature` → `功能` 区分 |
-| capability seam | 能力 seam | | 功能 seam、能力接缝 | 本仓库 Service Definition、Service Provider 与 Consumer 三种角色组成完整可替换能力的命名架构概念；普通 `seam` 仍按其词条处理 |
-| feature | 功能 | | 能力 | SDK 产品与工程模型中的可管理产品单元 |
-| feature option | 功能选项 | | variant | 一项 SDK 功能内有限、可选择的实现或配置 |
-| checkpoint | 检查点 | | | |
-| chunk | 分片 | | | |
-| compaction | 压缩 | 压缩（compaction） | | |
-| companion tool | 配套工具 | | | |
-| composition bundle | 组合包 | | | 只约束应用或插件的组合语境，不约束所有 `bundle` |
-| Cordis plugin config | Cordis 插件配置 | | | Cordis 插件公开的 `Config` 对象或配置结构 |
-| config key | 配置键 | | | Cordis 插件配置中的单个字段 |
-| consumer | 消费方 | | 消费者 | |
-| content block | 内容块 | | | |
-| Cookbook | 实操手册 | | | 文档标题用语 |
-| context | 上下文 | | | |
-| counterpart | 对侧文件 | | 对应物、配对物 | 双语配对语境；泛指"另一侧"时可写「另一侧」 |
-| configurable-provider directory | 可配置提供方目录 | | | llm seam 中 `registerConfigurableProviders()` 维护的目录；沿用 Service Catalog →「服务目录」先例 |
-| context compaction | 上下文压缩 | 上下文压缩（context compaction） | | |
-| contract | 约定 | | | 如：`pairing contract` →`配对约定` |
-| Cordis config entry | Cordis 配置项 | | | 指 `cordis.yml` 插件列表中的一项；插件实现本身写`Cordis 插件` |
-| Cordis plugin | Cordis 插件 | | | Cordis 加载的插件实现，不指 `cordis.yml` 中的一项配置 |
-| crash recovery | 崩溃恢复 | | | |
-| deploy root | 部署根目录 | | | |
-| dormant | 休眠 | | 睡眠、蛰伏 | 指已声明可配置但当前未注册路由的提供方 |
-| durability | 持久性 | | | |
-| feature requirement | 功能依赖 | | | 功能或功能选项通过 `requires` 声明的关系 |
-| event | 事件 | | | |
-| event log | 事件日志 | | | |
-| event stream | 事件流 | | | |
-| event-sourced | 事件溯源 | | | 沿用 DDD 社区通行译法 |
-| Executive summary | 摘要 | | | 事故复盘标题用语 |
-| executor | 执行器 | | | |
-| expected output | 预期输出 | | 金标 | 指 snapshot 比较产物；翻译语料的人工校准样例不在此列 |
-| extension | 扩展 | | | |
-| extension point | 扩展点 | | | 注意与 `seam` 区分 |
-| fail-fast | 快速失败 | | | |
-| fenced code block | 围栏代码块 | | | 沿用 MDN 中文翻译 |
-| fingerprint | 指纹 | | | 通用内容指纹；双语配对机制使用 sidecar record 记录两侧 blob hash |
-| finish reason | 结束原因 | | | |
-| fold | 折叠区 | | | 配置界面语境：默认收起的字段分区（collapsed →「收起」）|
-| foreground run | 前台运行 | | | |
-| freshness | 新鲜度 | | | 沿用 MDN 中文翻译；在本项目中指译文相对源文的同步状态 |
-| hook | 钩子 | | | |
-| implementation | 实现 | | | |
-| inference | 推理 | 推理（inference） | | 需要和 `reasoning` 区分时保留英文括注 |
-| info string | 信息字符串 | | | 沿用 CommonMark 中文翻译；指代码围栏 ``` 之后的语言标注 |
-| injection | 注入 | | | |
-| integration | 集成 | | | |
-| interface | 接口 | | | |
-| language switcher | 语言切换行 | | | i18n 配对机制用语：双语配对文件顶部的互链行 |
-| merge | 合并 | | | |
-| message | 消息 | | | |
-| mod | 模组 | | | |
-| model provider | 模型提供方 | | | |
-| model selection | 模型选择 | | 模型目标 | 面向 Agent 的提供方、模型和可选推理强度选择。 |
-| module | 模块 | | | |
-| non-escalation | 非升权 | | 非升级、不可升级 | 仅用于安全与权限语境，指主体不得获得超出既有授权的权限；普通升级不适用此行 |
-| npm dependency | NPM 依赖 | | | `package.json` 中的包关系；`dependencies`、`devDependencies` 等字段保持原样 |
-| opt-out ratio | opt-out 比例 | | 退出检查比例 | |
-| orphan | 遗留 | | 孤儿、孤立 | 指英文源已不存在的 `.pt-BR.md`（如「遗留译文」）；进程语境按 OS 惯用语译「孤儿进程」 |
-| orphan branch | 孤立分支 | | 孤儿分支 | 沿用 git 官方中文翻译 |
-| package | 包 | | | 指 npm 包（`@arx-ai/arx-*`）；`package.json` 等代码标识保持原样 |
-| pairing | 配对 | | | |
-| parent-subset grants | 父级子集授权 | | 父集合授权 | 指授权范围仅限于父级所持授权的子集 |
-| peer dependency | 对等依赖 | 对等依赖（peer dependency） | | |
-| permission | 权限 | | | |
-| persistence | 持久化 | | | |
-| pipeline | 流水线 | | | |
-| plugin | 插件 | | | |
-| postmortem | 事故复盘 | 事故复盘（postmortem） | 事后分析、事故记录 | 事故记录与分析文档；目录或路径中的 `postmortem` 保持代码形式 |
-| prompt | 提示词 | | | |
-| provider | 提供方 | | | |
-| provider-neutral | 提供方无关 | | 提供方中立 | |
-| quality gate | 质量门禁 | | | |
-| quiescence | 完全停稳 | | 静默、静止状态 | 指生命周期工作全部结算后的状态 |
-| reasoning | 推理 | 推理（reasoning） | | 需要和 `inference` 区分时保留英文括注 |
-| reasoning_content | 思考内容 | | | |
-| registry | 注册表 | | | |
-| replay | 回放 | | | |
-| resume | 恢复 | | | |
-| runtime | 运行时 | | | |
-| same-world subprocess | 与宿主共享文件系统和内核的子进程 | | 同世界子进程 | |
-| sandbox | 沙箱 | | | |
-| service | 服务 | | | |
-| serving interface | 对外服务接口 | | | |
-| session | 会话 | | | |
-| session event | 会话事件 | | | |
-| setup card | 设置卡片 | | | 首次运行时代替行卡直接展开的配置卡 |
-| sidecar file | 伴随文件 | | | 指与文档同目录的普通伴随文件 |
-| sidecar record | 伴随记录 | | 旁挂记录 | 指与文档同目录的伴随记录文件 |
-| smoke test | 冒烟测试 | | | |
-| snapshot | 快照 | | | |
-| source of truth | 真源 | | 事实来源、唯一来源 | |
-| spine | 主干 | | | |
-| stale | 陈旧 | | 过期 | 与 `fresh`（`新鲜`）成对；门禁输出中保留英文 `stale` 不翻译；`expired` 才译为`过期` |
-| step | 步骤 | | | |
-| stream | 流 | | | |
-| structural signature | 结构签名 | | | i18n 配对机制用语：门禁比对两侧文件时提取的有序结构序列（标题层级、代码块、列表等） |
-| Summary | 概述 | | | 事故复盘标题用语 |
-| system prompt | 系统提示词 | | | |
-| taxonomy | 分类体系 | | | |
-| token usage | token 用量 | | | |
-| tool | 工具 | | | |
-| tool call | 工具调用 | | | |
-| tool result | 工具结果 | | | |
-| tool schema | 工具 schema | | | |
-| toolkit | 工具包 | | | |
-| turn | 轮次 | | | |
-| VFS | VFS | 虚拟文件系统（VFS） | | |
-| typecheck | 类型检查 | | | |
-| vocabulary | 词汇 | | | |
-| wire format | 协议格式 | 协议格式（wire format） | | |
-| workflow | 工作流 | | | |
-| wrapper | 包装层 | | | 软件层或 SDK 包装层 |
-| wrapper script | 包装脚本 | | | 可执行脚本包装层 |
+| adapter | adaptador | | | Renderização consagrada na literatura brasileira de padrões de projeto |
+| adapter contract | contrato do adaptador | contrato do adaptador (adapter contract) | | |
+| append-only | append-only | | somente anexação, apenas acréscimo | Mantido em inglês; é assim que a engenharia brasileira descreve logs e arquivos que só recebem acréscimos |
+| artifact | artefato | | artefacto, produto | `artefacto` é a forma europeia; a grafia brasileira é `artefato` |
+| backend | backend | | retaguarda, camada de fundo | Mantido em inglês, como `frontend`; uso corrente no Brasil |
+| binder | binder | | vinculador, ligador | Papel de nomenclatura: liga uma interface já declarada ao contexto ou ao ciclo de vida de quem chama. Mantido em inglês porque nomeia o sufixo `*Binder` no código e porque `vinculador` e `ligador` já designam o linker |
+| config | configuração | | | Papel de nomenclatura: um valor de configuração já resolvido ou um registro de configuração de limites estritos. `config` permanece em inglês apenas em identificadores de código (`Config`, `cordis.yml`) |
+| controller | controlador | | regente | Papel de nomenclatura: recebe uma intenção e altera um estado de domínio ou de apresentação já existente |
+| directory | diretório | | catálogo, listagem | Papel de nomenclatura: expõe entradas e seus metadados para descoberta ou seleção. O mesmo termo serve para o diretório do sistema de arquivos; o contexto separa os dois |
+| engine | motor | | engenho, máquina, mecanismo | Papel de nomenclatura: implementa um algoritmo de domínio ou um modelo de execução com estado. Segue o uso do MDN pt-BR (`motor de renderização`) |
+| gateway | gateway | | portal, porta de entrada | Papel de nomenclatura: adapta uma fronteira de processo, rede, RPC ou API. Mantido em inglês, como em `gateway de pagamento` e `API gateway` |
+| handle | handle | | alça, punho, identificador | Papel de nomenclatura: referencia um recurso vivo para controlá-lo ou observá-lo. Mantido em inglês e masculino (`o handle`); `identificador` fica reservado para `id` |
+| policy | política | | diretiva, regra, apólice | Papel de nomenclatura: decide o que é permitido, escolhido, limitado ou observado. `política` é a renderização consagrada em segurança e permissões no Brasil; `regra` fica reservado para `rule` |
+| presenter | presenter | | apresentador, exibidor | Papel de nomenclatura: converte de forma pura um valor de domínio em intenção de renderização. Mantido em inglês, como o `Presenter` do padrão MVP na literatura brasileira; `apresentador` designa quem apresenta um programa |
+| resolver | resolver | | resolvedor, solucionador | Papel de nomenclatura: calcula ou localiza uma resposta a partir da entrada. Mantido em inglês, como na documentação brasileira de GraphQL e DNS; escreva sempre com artigo (`o resolver`) para não confundir com o verbo homógrafo |
+| store | store | | loja, armazenamento, repositório | Papel de nomenclatura: é dono de um conjunto de dados e oferece principalmente operações sobre eles. Mantido em inglês, como na documentação brasileira de Redux, Vuex e Pinia; `repositório` designa o repositório Git e `armazenamento`, o storage |
+| background job | tarefa em segundo plano | | tarefa de fundo | `job id` continua em inglês, conforme a linha própria |
+| block | bloco | | | |
+| build target | alvo de build | | alvo de compilação | `build` fica em inglês na prosa em português: `o build`, `rodar o build` |
+| cancel | cancelar | | abortar | O substantivo é `cancelamento`; `abortar` fica reservado para `abort` |
+| canary test | teste canary | | teste canário | Este repositório mantém `canary` em inglês |
+| capability | capacidade | | funcionalidade, recurso | Deve ficar distinta de `feature` → `funcionalidade`; `recurso` fica reservado para `resource` |
+| capability seam | seam de capacidade | | seam de funcionalidade, costura de capacidade | Conceito de arquitetura nomeado deste repositório: os três papéis Service Definition, Service Provider e Consumer formam juntos uma capacidade substituível completa; um `seam` comum continua seguindo a linha dele |
+| feature | funcionalidade | | capacidade, recurso | Unidade de produto gerenciável no modelo de produto e de engenharia do SDK; `recurso` fica reservado para `resource` |
+| feature option | opção de funcionalidade | | variante | Implementação ou configuração finita e selecionável dentro de uma funcionalidade do SDK |
+| checkpoint | checkpoint | | ponto de verificação, ponto de controle | Mantido em inglês: é um estado salvo para retomar, não uma verificação, e é o termo que times brasileiros usam em banco de dados e em execução de agents |
+| chunk | chunk | | pedaço, fragmento | Mantido em inglês; uso corrente no Brasil em streaming, empacotamento e RAG. `bloco` fica reservado para `block` |
+| compaction | compactação | compactação (compaction) | compressão | Redução do histórico ou do contexto; `compressão` fica reservado para `compression` (Zstandard e afins) |
+| companion tool | ferramenta complementar | | ferramenta acompanhante | |
+| composition bundle | bundle de composição | | pacote de composição | Vale apenas no contexto de composição de aplicação ou de plugins; não rege todo uso de `bundle`. `bundle` fica em inglês e `pacote` fica reservado para `package` |
+| Cordis plugin config | configuração de plugin do Cordis | | | Objeto `Config` ou estrutura de configuração que um plugin do Cordis expõe |
+| config key | chave de configuração | | | Um campo isolado da configuração de um plugin do Cordis |
+| consumer | consumidor | | usuário, cliente | Quem consome o serviço no código; distinto de `user` (`usuário`). O papel nomeado `Consumer` do seam permanece em inglês e com maiúscula |
+| content block | bloco de conteúdo | | | |
+| Cookbook | manual prático | manual prático (cookbook) | livro de receitas | Termo de título de documento |
+| context | contexto | | | O tipo `Context` do Cordis e a variável `ctx` permanecem como código |
+| counterpart | counterpart | | parâmetro, contrapartida, equivalente | Contexto de pareamento bilíngue: o arquivo do outro idioma. Mantido em inglês conforme translation-rules.md, que fixa `atualizar o counterpart`; para o sentido genérico de "o outro lado", escreva `o outro lado` |
+| configurable-provider directory | diretório de provedores configuráveis | | | Diretório mantido por `registerConfigurableProviders()` no seam de llm; segue o precedente de Service Catalog → `catálogo de serviços` |
+| context compaction | compactação de contexto | compactação de contexto (context compaction) | | |
+| contract | contrato | | acordo, convenção, combinado | Pré-condições, pós-condições, invariantes e promessas de compatibilidade que quem chama, implementa, provê ou consome pode exigir, nunca um combinado informal. Exemplo: `pairing contract` → `contrato de pareamento` |
+| Cordis config entry | entrada de configuração do Cordis | | | Designa um item da lista de plugins em `cordis.yml`; a implementação do plugin em si escreve-se `plugin do Cordis` |
+| Cordis plugin | plugin do Cordis | | | Implementação de plugin que o Cordis carrega, não um item de configuração de `cordis.yml` |
+| crash recovery | recuperação após falha | | recuperação de acidente, recuperação de desastres | Retomada depois que o processo cai de forma abrupta; `recuperação de desastres` é `disaster recovery` e não se aplica aqui |
+| deploy root | raiz do deploy | | raiz de implantação | `deploy` fica em inglês na prosa em português |
+| dormant | dormente | | adormecido, inativo | Designa um provedor já declarado como configurável, mas ainda sem rota registrada; `inativo` fica reservado para `inactive` |
+| durability | durabilidade | | | Propriedade dos dados que sobrevivem a uma queda |
+| feature requirement | dependência de funcionalidade | | requisito de funcionalidade | Relação que uma funcionalidade ou opção de funcionalidade declara por `requires` |
+| event | evento | | | |
+| event log | log de eventos | | registro de eventos | `log` fica em inglês; `registro` fica reservado para `record` |
+| event stream | stream de eventos | | fluxo de eventos | Segue a linha `stream` |
+| event-sourced | baseado em event sourcing | | orientado a eventos, baseado em origem de eventos | O estado é reconstruído a partir do log de eventos. A comunidade brasileira de DDD mantém `event sourcing` em inglês, e `orientado a eventos` designa outro conceito (event-driven) |
+| Executive summary | Resumo executivo | | Sumário executivo | Termo de título em postmortem; `sumário` em pt-BR é índice |
+| executor | executor | | | |
+| expected output | saída esperada | | gabarito, padrão ouro | Designa o artefato de comparação de snapshot; as amostras de calibração humana do corpus de tradução não entram nesta linha |
+| extension | extensão | | plugin | `plugin` fica em inglês e é outro conceito |
+| extension point | ponto de extensão | | | Atenção à distinção em relação a `seam` |
+| fail-fast | fail-fast | | falha rápida | Mantido em inglês; é como a prática é nomeada na engenharia brasileira |
+| fenced code block | bloco de código cercado | | bloco de código isolado | Bloco delimitado por cercas de crases ou tis; o delimitador em si aparece como `code fence` na prosa deste repositório, e a anotação depois dele é a `info string` |
+| fingerprint | fingerprint | | impressão digital, digital | Impressão de conteúdo genérica; mantida em inglês, como no uso brasileiro em segurança. O mecanismo de pareamento bilíngue usa o registro sidecar para guardar o blob hash dos dois lados |
+| finish reason | motivo de término | | razão final | O nome de campo `finish_reason` permanece verbatim em código |
+| fold | seção recolhível | | dobra, prega | Contexto de interface de configuração: seção de campos recolhida por padrão (`collapsed` → `recolhido`) |
+| foreground run | execução em primeiro plano | | | |
+| freshness | atualidade | | frescor | Forma par com `fresh` (`atualizado`) e `stale` (`desatualizado`); neste projeto designa o estado de sincronia da tradução ou do arquivo gerado em relação à fonte |
+| hook | hook | | gancho | Mantido em inglês, como no uso brasileiro corrente (hooks do Git, hooks de React) |
+| implementation | implementação | | | |
+| inference | inferência | inferência (inference) | raciocínio | A execução do modelo que produz a resposta; distinta de `reasoning` → `raciocínio`. Mantenha a anotação em inglês apenas quando o texto contrastar os dois |
+| info string | info string | | string de informação | Termo do CommonMark, mantido em inglês como já ocorre em translation-rules.pt-BR.md; designa a anotação de linguagem escrita logo depois da cerca de abertura |
+| injection | injeção | | | Por exemplo, `injeção de dependência` |
+| integration | integração | | | |
+| interface | interface | | | Feminino: `a interface` |
+| language switcher | seletor de idioma | | switcher de idioma, alternador de idioma | Termo do mecanismo de pareamento i18n: a linha de links recíprocos logo abaixo do H1 dos arquivos pareados |
+| merge | merge | | fusão, mesclagem | Mantido em inglês, inclusive nos compostos (`merge driver`, `merge-forward`); como verbo, `fazer merge` |
+| message | mensagem | | | |
+| mod | mod | | modificação, módulo | Mantido em inglês; distinto de `module` → `módulo` |
+| model provider | provedor de modelos | | fornecedor de modelos | |
+| model selection | seleção de modelo | | alvo de modelo, destino de modelo | Escolha de provedor, de modelo e da intensidade opcional de raciocínio, voltada ao agent |
+| module | módulo | | | |
+| non-escalation | não escalonamento de privilégios | | não atualização, não promoção | Só vale em contextos de segurança e de permissão: o sujeito não pode obter permissões além das que já detém; um `upgrade` comum não usa esta linha |
+| npm dependency | dependência npm | | dependência NPM | Relação entre pacotes declarada em `package.json`; campos como `dependencies` e `devDependencies` permanecem verbatim, e `npm` mantém a grafia minúscula canônica |
+| opt-out ratio | proporção de opt-out | | proporção de saída, taxa de desistência | `opt-out` fica em inglês; uso consagrado em pt-BR |
+| orphan | órfão | | abandonado, solto | Designa um `.pt-BR.md` cuja fonte em inglês não existe mais (`tradução órfã`); em contexto de processos, segue o uso de sistema operacional (`processo órfão`) |
+| orphan branch | branch órfão | | ramo órfão | `branch` fica em inglês e é masculino (`o branch`), como na documentação pt-BR do GitHub |
+| package | pacote | | | Designa um pacote npm (`@arx-ai/arx-*`); identificadores de código como `package.json` permanecem verbatim |
+| pairing | pareamento | | emparelhamento, casamento | |
+| parent-subset grants | concessões de subconjunto do pai | | concessões do conjunto pai | O escopo concedido fica restrito a um subconjunto do que o pai já detém; `autorização` fica reservado para `authorization` |
+| peer dependency | peer dependency | | dependência de par, dependência par | Mantida em inglês, junto ao campo `peerDependencies` do `package.json`; é assim que a comunidade brasileira de npm e pnpm escreve |
+| permission | permissão | | autorização | `autorização` fica reservado para `authorization` |
+| persistence | persistência | | | |
+| pipeline | pipeline | | esteira, linha de montagem | Mantido em inglês; uso corrente no Brasil em CI/CD e em processamento de dados |
+| plugin | plugin | | plug-in, complemento, extensão | Mantido em inglês; `extensão` fica reservado para `extension` |
+| postmortem | postmortem | | autópsia, análise pós-morte, relato de incidente | Documento que registra e analisa um incidente; mantido em inglês, como nos times brasileiros de SRE, e em diretórios ou caminhos permanece como código |
+| prompt | prompt | | instrução, comando | Mantido em inglês; uso corrente no Brasil, e `comando` fica reservado para `command` |
+| provider | provedor | | fornecedor | O papel nomeado do seam permanece `Service Provider` em inglês |
+| provider-neutral | independente de provedor | | neutro em relação ao provedor, agnóstico a provedor | |
+| quality gate | gate de qualidade | | portão de qualidade, barreira de qualidade | `gate` fica em inglês e é feminino em português (`a gate`), como já ocorre em translation-rules.pt-BR.md; o repositório chama de gate toda verificação bloqueante |
+| quiescence | parada completa | | quiescência, silêncio, ociosidade | Estado alcançado depois que todo o trabalho de ciclo de vida se encerrou; o `dispose` precisa alcançá-la, não apenas pedi-la, e `ocioso` fica reservado para `idle` |
+| reasoning | raciocínio | raciocínio (reasoning) | inferência | O texto de deliberação do modelo; distinto de `inference` → `inferência`. Mantenha a anotação em inglês apenas quando o texto contrastar os dois |
+| reasoning_content | conteúdo de raciocínio | | conteúdo de pensamento | O nome de campo `reasoning_content` permanece verbatim em código |
+| registry | registry | | registro, cadastro | Mantido em inglês e masculino (`o registry`); `registro` fica reservado para `record` |
+| replay | replay | | reprodução, repetição | Mantido em inglês; uso consagrado em pt-BR para replay de eventos e de snapshot. Como verbo, `fazer replay de` |
+| resume | retomar | | resumir, sumarizar | `resumir` é falso cognato e significa `summarize`. O substantivo é `retomada`; distinto de `crash recovery` → `recuperação após falha` |
+| runtime | runtime | | tempo de execução | Como substantivo, fica em inglês (`o runtime do Node`); a locução `at runtime` traduz-se `em tempo de execução` |
+| same-world subprocess | subprocesso que compartilha o sistema de arquivos e o kernel com o host | | subprocesso do mesmo mundo | Descreva a relação; não calque `same-world` |
+| sandbox | sandbox | | caixa de areia | Mantido em inglês e masculino (`o sandbox`); uso corrente no Brasil |
+| service | serviço | | | Os papéis nomeados `Service Definition`, `Service Provider` e `Consumer` permanecem em inglês |
+| serving interface | interface exposta pelo serviço | | interface de atendimento, interface de serviço | Os métodos que um serviço oferece a quem o consome; não confundir com o papel `Service Definition` |
+| session | sessão | | | |
+| session event | evento de sessão | | | |
+| setup card | cartão de configuração | | cartão de instalação | Cartão de configuração que, na primeira execução, aparece já expandido no lugar do cartão de linha |
+| sidecar file | arquivo sidecar | | arquivo acompanhante, arquivo lateral | Arquivo comum que acompanha o documento no mesmo diretório; `sidecar` fica em inglês, como na documentação brasileira de Kubernetes |
+| sidecar record | registro sidecar | | registro anexo, registro pendurado | Arquivo de registro que acompanha o documento no mesmo diretório |
+| smoke test | teste de fumaça | | teste de fumo | Termo do glossário BSTQB/ISTQB em pt-BR |
+| snapshot | snapshot | | instantâneo, captura | Mantido em inglês, como na documentação pt-BR da AWS e na prática brasileira de testes |
+| source of truth | fonte da verdade | | fonte de informação, fonte única | Escreva `fonte única da verdade` apenas quando a fonte disser `single source of truth` |
+| spine | espinha dorsal | | coluna, tronco | Identificadores como `arx-agent-spine-demo` permanecem em inglês |
+| stale | desatualizado | | expirado, obsoleto | Forma par com `fresh` (`atualizado`); na saída das gates, o literal `stale` permanece em inglês. `expired` é que se traduz `expirado`, e `obsoleto` fica reservado para `deprecated` |
+| step | etapa | | | Nível da hierarquia Session > Round > Turn > Step; segue o uso pt-BR do GitHub e da Microsoft |
+| stream | stream | | fluxo | Mantido em inglês (`o stream`, `streaming`); uso corrente no Brasil, e `fluxo` fica reservado para `flow` |
+| structural signature | assinatura estrutural | | | Termo do mecanismo de pareamento i18n: a sequência estrutural ordenada que a gate extrai ao comparar os dois lados (níveis de cabeçalho, blocos de código, listas e afins) |
+| Summary | Resumo | | Sumário | Termo de título em postmortem; `sumário` em pt-BR é índice |
+| system prompt | prompt de sistema | | prompt do sistema operacional | |
+| taxonomy | taxonomia | | | |
+| token usage | uso de tokens | | consumo de fichas | `token` fica em inglês; uso corrente no Brasil |
+| tool | ferramenta | | | Distinto de `toolkit` → `kit de ferramentas` |
+| tool call | chamada de ferramenta | | | |
+| tool result | resultado da ferramenta | | | |
+| tool schema | schema da ferramenta | | esquema da ferramenta | Segue a linha `schema` |
+| toolkit | kit de ferramentas | | caixa de ferramentas | |
+| turn | turno | | rodada, vez | Nível da hierarquia Session > Round > Turn > Step; `rodada` fica proibido porque disputaria com `Round` |
+| VFS | VFS | sistema de arquivos virtual (VFS) | sistema de ficheiros virtual | `arquivos`, nunca `ficheiros`, que é a forma europeia |
+| typecheck | verificação de tipos | | checagem de tipos | O comando `pnpm run typecheck` permanece como código |
+| vocabulary | vocabulário | | | |
+| wire format | formato de transmissão | formato de transmissão (wire format) | formato de fio, formato de cabo | O formato dos bytes trocados na conexão |
+| workflow | workflow | | fluxo de trabalho | Mantido em inglês: nomeia uma capacidade, um pacote e uma ferramenta deste repositório, os compostos com `agent` já ficam inteiros em inglês, e é a forma usada por desenvolvedores brasileiros |
+| wrapper | wrapper | | invólucro, empacotador | Camada de software ou camada de SDK que embrulha outra; mantido em inglês e masculino (`o wrapper`) |
+| wrapper script | script wrapper | | script invólucro | Camada executável de script |

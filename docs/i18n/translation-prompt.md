@@ -142,7 +142,7 @@ The outer section tags are framing. If Markdown inside any section body contains
 - [Sentence] paragraph 3 gains a comma and reads as two sentences
 - [Punctuation] two ambiguous em dashes replaced by colons
 - [Terminology: pending] source term → tentative rendering
-- 无修正
+- No corrections
 </review>
 
 <final>
