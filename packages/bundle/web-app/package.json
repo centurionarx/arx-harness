@@ -110,6 +110,8 @@
     "@arx-ai/arx-storage-json": "workspace:^",
     "@arx-ai/arx-subprocess": "workspace:^",
     "@arx-ai/arx-web-frontend": "workspace:^",
+    "@arx-ai/arx-web-search-exa": "workspace:^",
+    "@arx-ai/arx-web-search-perplexity": "workspace:^",
     "@arx-ai/arx-workspace": "workspace:^",
     "@arx-ai/schemastery": "workspace:^",
     "commander": "^15.0.0",

@@ -8,6 +8,7 @@
 
 import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 import type {
   WebFetchProvider,
   WebFetchRequest,
@@ -52,6 +53,8 @@ interface Selection<P> {
  * provider auto-selects). Operational overrides such as environment variables
  * must feed these same fields rather than introduce a hidden priority chain.
  */
+export const WEB_SETTINGS_NAMESPACE = settingsNamespace('web')
+
 export interface WebRuntimeConfig {
   /** Explicit search provider id. Omitted = auto-select when exactly one usable. */
   readonly searchProvider?: string
@@ -84,13 +87,30 @@ export class WebRuntime extends Service {
 
   private searchProviders = new Map<string, WebSearchProvider>()
   private fetchProviders = new Map<string, WebFetchProvider>()
-  private readonly searchProviderId: string | undefined
-  private readonly fetchProviderId: string | undefined
+  private source: () => WebRuntimeConfig
 
   constructor(ctx: Context, config: WebRuntimeConfig = {}) {
     super(ctx, 'web')
-    this.searchProviderId = config.searchProvider ?? process.env.ARX_WEB_SEARCH_PROVIDER
-    this.fetchProviderId = config.fetchProvider ?? process.env.ARX_WEB_FETCH_PROVIDER
+    this.source = () => config
+    installSettingsSection(ctx, WEB_SETTINGS_NAMESPACE, WebRuntime.Config, config, {
+      setSource: (current) => {
+        this.source = current
+      },
+      // Both selections resolve per call through the getters below, so a
+      // committed change is already in force the next time a capability runs.
+      // Nothing is derived from the source at attach time to rebuild here.
+      onChange: () => {},
+    })
+  }
+
+  /** Search provider pinned by the settings document, else by the environment. */
+  private get searchProviderId(): string | undefined {
+    return this.source().searchProvider ?? process.env.ARX_WEB_SEARCH_PROVIDER
+  }
+
+  /** Fetch provider pinned by the settings document, else by the environment. */
+  private get fetchProviderId(): string | undefined {
+    return this.source().fetchProvider ?? process.env.ARX_WEB_FETCH_PROVIDER
   }
 
   /**
