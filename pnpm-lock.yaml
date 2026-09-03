@@ -902,6 +902,9 @@ importers:
       '@arx-ai/arx-typert-registry':
         specifier: workspace:^
         version: link:../../typert/registry
+      '@arx-ai/arx-web':
+        specifier: workspace:^
+        version: link:../../web/web
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -5101,6 +5104,9 @@ importers:
       '@arx-ai/arx-user-questions':
         specifier: workspace:^
         version: link:../../interaction/user-questions
+      '@arx-ai/arx-web':
+        specifier: workspace:^
+        version: link:../../web/web
       '@arx-ai/arx-workspace':
         specifier: workspace:^
         version: link:../../workspace/workspace
@@ -8490,12 +8496,18 @@ importers:
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
+      '@arx-ai/arx-credentials':
+        specifier: workspace:^
+        version: link:../../credentials/credentials
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
       '@arx-ai/arx-launch-environment':
         specifier: workspace:^
         version: link:../../util/launch-environment
+      '@arx-ai/arx-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
       '@arx-ai/arx-web':
         specifier: workspace:^
         version: link:../web
@@ -8509,12 +8521,18 @@ importers:
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
     devDependencies:
+      '@arx-ai/arx-credentials':
+        specifier: workspace:^
+        version: link:../../credentials/credentials
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
       '@arx-ai/arx-launch-environment':
         specifier: workspace:^
         version: link:../../util/launch-environment
+      '@arx-ai/arx-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
       '@arx-ai/arx-web':
         specifier: workspace:^
         version: link:../web

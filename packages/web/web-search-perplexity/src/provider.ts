@@ -86,35 +86,45 @@ export function mapPerplexityResponse(response: PerplexityResponse): WebSearchRe
 export class PerplexitySearchProvider implements WebSearchProvider {
   readonly id = PERPLEXITY_PROVIDER_ID
 
-  constructor(private readonly options: PerplexitySearchProviderOptions) {}
+  private readonly options: () => PerplexitySearchProviderOptions
+
+  /**
+   * @param options - the resolved options, or a thunk read at every call so a
+   *   settings or credential change reaches the next search without
+   *   re-registering the provider.
+   */
+  constructor(options: PerplexitySearchProviderOptions | (() => PerplexitySearchProviderOptions)) {
+    this.options = typeof options === 'function' ? options : () => options
+  }
 
   // Availability checks stay beside each provider's distinct config contract;
   // a shared base class would obscure which fields make this backend usable.
   /* jscpd:ignore-start */
   available(): boolean {
-    return this.options.apiKey.length > 0
-      && URL.canParse(this.options.baseURL)
-      && isPositiveInteger(this.options.maxTokens)
+    const options = this.options()
+    return options.apiKey.length > 0
+      && URL.canParse(options.baseURL)
+      && isPositiveInteger(options.maxTokens)
   }
   /* jscpd:ignore-end */
 
   async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearchResult> {
     let response: Response
     try {
-      response = await fetch(`${this.options.baseURL}/chat/completions`, {
+      response = await fetch(`${this.options().baseURL}/chat/completions`, {
         method: 'POST',
         redirect: 'error',
         headers: {
-          'authorization': `Bearer ${this.options.apiKey}`,
+          'authorization': `Bearer ${this.options().apiKey}`,
           'content-type': 'application/json',
           'accept': 'application/json',
           'user-agent': USER_AGENT,
         },
         body: JSON.stringify({
-          model: this.options.model,
-          max_tokens: this.options.maxTokens,
+          model: this.options().model,
+          max_tokens: this.options().maxTokens,
           messages: [{ role: 'user', content: request.query }],
-          ...this.options.searchRecency !== undefined ? { search_recency_filter: this.options.searchRecency } : {},
+          ...this.options().searchRecency !== undefined ? { search_recency_filter: this.options().searchRecency } : {},
         }),
         ...signal !== undefined ? { signal } : {},
       })

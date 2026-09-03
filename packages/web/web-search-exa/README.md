@@ -8,7 +8,8 @@ This is an **implementation** package: it registers a provider into `ctx.web`, i
 
 | Key | Default | Meaning |
 |---|---|---|
-| `apiKey` | `$EXA_API_KEY` | Exa API key. Empty/absent makes the provider unavailable. |
+| `apiKey` | (unset) | Exa API key inlined in the composition. Set, it wins over every other source; unset, the key resolves through `apiKeyEnv`. |
+| `apiKeyEnv` | `EXA_API_KEY` | Credential reference the key resolves through: the managed credential store first, then every launch-environment layer. An empty result makes the provider unavailable. |
 | `baseURL` | `https://api.exa.ai` | Endpoint base; `/search` is appended. An unparseable value makes the provider unavailable. |
 | `searchType` | `auto` | Retrieval mode sent as Exa's `type`: `auto` (Exa decides), `keyword`, or `neural`. |
 | `numResults` | (unset) | Default result count when a request carries no `maxResults`. Unset sends no default. Must be a positive integer. |
@@ -20,6 +21,8 @@ This is an **implementation** package: it registers a provider into `ctx.web`, i
   config:
     apiKey: !!js process.env.EXA_API_KEY
 ```
+
+The same keys are the runtime-editable `web-search-exa` settings section: a settings document overrides any of them, and the provider reads its options at every search, so a committed change is in force at the next call without re-registering. The key never rides the section — a configuration surface writes it through the credentials domain under `apiKeyEnv`, and the provider re-reads the managed store when that reference changes. The plugin also declares the provider in `ctx.web`'s configurable directory (`provider: exa`, this namespace, an empty path), which is how a configuration surface finds where its profile lives.
 
 ## Mapping
 

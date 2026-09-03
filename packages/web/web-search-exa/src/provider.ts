@@ -84,33 +84,43 @@ export function mapExaResponse(response: ExaSearchResponse): WebSearchResult {
 export class ExaSearchProvider implements WebSearchProvider {
   readonly id = EXA_PROVIDER_ID
 
-  constructor(private readonly options: ExaSearchProviderOptions) {}
+  private readonly options: () => ExaSearchProviderOptions
+
+  /**
+   * @param options - the resolved options, or a thunk read at every call so a
+   *   settings or credential change reaches the next search without
+   *   re-registering the provider.
+   */
+  constructor(options: ExaSearchProviderOptions | (() => ExaSearchProviderOptions)) {
+    this.options = typeof options === 'function' ? options : () => options
+  }
 
   available(): boolean {
-    return this.options.apiKey.length > 0
-      && isValidBaseUrl(this.options.baseURL)
-      && isPositiveInteger(this.options.highlightsPerResult)
-      && (this.options.numResults === undefined || isPositiveInteger(this.options.numResults))
+    const options = this.options()
+    return options.apiKey.length > 0
+      && isValidBaseUrl(options.baseURL)
+      && isPositiveInteger(options.highlightsPerResult)
+      && (options.numResults === undefined || isPositiveInteger(options.numResults))
   }
 
   async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearchResult> {
     // A per-request bound wins over the configured default; either may be absent.
-    const numResults = request.maxResults ?? this.options.numResults
+    const numResults = request.maxResults ?? this.options().numResults
     let response: Response
     try {
-      response = await fetch(`${this.options.baseURL}/search`, {
+      response = await fetch(`${this.options().baseURL}/search`, {
         method: 'POST',
         redirect: 'error',
         headers: {
-          'authorization': `Bearer ${this.options.apiKey}`,
+          'authorization': `Bearer ${this.options().apiKey}`,
           'content-type': 'application/json',
           'accept': 'application/json',
           'user-agent': USER_AGENT,
         },
         body: JSON.stringify({
           query: request.query,
-          type: this.options.searchType,
-          contents: { highlights: { highlightsPerUrl: this.options.highlightsPerResult } },
+          type: this.options().searchType,
+          contents: { highlights: { highlightsPerUrl: this.options().highlightsPerResult } },
           ...numResults !== undefined ? { numResults } : {},
         }),
         ...signal !== undefined ? { signal } : {},
