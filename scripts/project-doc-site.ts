@@ -104,7 +104,7 @@ function sourceMap(pages: DocsPage[]): Map<string, Map<DocsLocale, DocsPage>> {
 
 function counterpartSource(source: string): string {
   return source.endsWith('.pt-BR.md')
-    ? source.replace(/\.zh\.md$/, '.md')
+    ? source.replace(/\.pt-BR\.md$/, '.md')
     : source.replace(/\.md$/, '.pt-BR.md')
 }
 
