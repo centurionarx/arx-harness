@@ -13,12 +13,32 @@
     workspaceContext:
       maxBytes: 65536
 
-# Stock DeepSeek adapters. The adapter resolves DEEPSEEK_API_KEY through the
-# credential seam and, with no provider mounted here, from the launching
-# environment; DEEPSEEK_BASE_URL follows the same environment ladder. Neither
-# is inlined, so this file names no secret and no route.
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+# Model access: the pi-ai adapter takes a `providers` dict keyed by route. The
+# credential resolves through the credential seam and, with no provider mounted
+# here, from the launching environment, so this file names no secret.
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
+        apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: https://api.deepseek.com
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
+        reasoning: high
+        models:
+          - id: deepseek-v4-pro
+            reasoningEfforts:
+              off:
+              high: high
+          - id: deepseek-v4-flash
+            reasoningEfforts:
+              off:
+              high: high
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions

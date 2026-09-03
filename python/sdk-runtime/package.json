@@ -98,6 +98,8 @@
     "@arx-ai/arx-tool-fs": "workspace:^",
     "@arx-ai/arx-tool-fs-search": "workspace:^",
     "@arx-ai/arx-tool-goal": "workspace:^",
+    "@arx-ai/arx-tool-pwsh": "workspace:^",
+    "@arx-ai/arx-tool-pwsh-persistent": "workspace:^",
     "@arx-ai/arx-tool-ralph": "workspace:^",
     "@arx-ai/arx-tool-skill": "workspace:^",
     "@arx-ai/arx-tool-str-replace-editor": "workspace:^",
