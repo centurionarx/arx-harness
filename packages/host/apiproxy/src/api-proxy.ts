@@ -3,6 +3,8 @@
  * narrow RpcRequest<P> and echoes request.rpcId on the RpcResponse<T>.
  */
 
+// Type-only: the `ctx.web` Context merge, read optionally below.
+import type {} from '@arx-ai/arx-web'
 import { randomUUID } from 'node:crypto'
 import { mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -37,7 +39,7 @@ import {
 import type { PresetBearingSession } from '@arx-ai/arx-agent-presets'
 import type {} from '@arx-ai/arx-tools'
 import type {
-  ApiProxy, ConfigurableProviderView, CredentialView, GoalRef, HistoryEntry, HostFrame,
+  ApiProxy, ConfigurableProviderView, CredentialView, GoalRef, HistoryEntry, HostFrame, WebProviderView, WebSelectionView,
   ModelCatalogFailure, ModelProviderGroup,
   ModelReasoning, MuxFrame, PromptContentPart, QuestionResponsePayload, SessionListMetadata, SessionProjectionsBlock, SessionSearchItem,
   QueuedInboxItem, SessionSummary, SettingsNamespaceView, SubagentAddress, JobView, ToolEventView,
@@ -1904,6 +1906,10 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
   }
 
   /** Missing-service report shared by the credentials domain. */
+  function webAbsent(): RpcError {
+    return { code: 'internal', message: 'web service is absent: this deployment does not mount the web seam (@arx-ai/arx-web) in its composition', details: {} }
+  }
+
   function credentialsAbsent(): RpcError {
     return { code: 'internal', message: 'credentials service is absent: this deployment does not mount a credential provider (e.g. @arx-ai/arx-credentials-local) in its composition', details: {} }
   }
@@ -3402,6 +3408,47 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
             details: { settingsNs, ...baseURL === undefined ? {} : { baseURL } },
           })
         }
+      },
+    },
+
+    web: {
+      providers(request) {
+        const web = ctx.get('web')
+        if (web === undefined) return Promise.resolve(err(request, webAbsent()))
+        const directory = new Map(web.listConfigurableSearchProviders().map(entry => [entry.provider, entry]))
+        const registered = new Set<string>()
+        const providers: WebProviderView[] = web.listSearchProviders().map(({ id, available }) => {
+          registered.add(id)
+          // A provider that declared no entry is still selectable; it only
+          // has no settings address, so the id doubles as its name.
+          const entry = directory.get(id)
+          return {
+            provider: id,
+            displayName: entry?.displayName ?? id,
+            settingsNs: entry?.settingsNs ?? '',
+            settingsPath: entry === undefined ? [] : [...entry.settingsPath],
+            available,
+          }
+        })
+        // A declaration whose provider has not registered still names where
+        // its profile lives; it cannot serve, so it reads as unavailable.
+        for (const entry of directory.values()) {
+          if (registered.has(entry.provider)) continue
+          providers.push({
+            provider: entry.provider,
+            displayName: entry.displayName,
+            settingsNs: entry.settingsNs,
+            settingsPath: [...entry.settingsPath],
+            available: false,
+          })
+        }
+        const { configured, effective, failure } = web.searchSelection()
+        const selection: WebSelectionView = {
+          ...configured === undefined ? {} : { configured },
+          ...effective === undefined ? {} : { effective },
+          ...failure === undefined ? {} : { failure },
+        }
+        return Promise.resolve(ok(request, { providers, selection }))
       },
     },
 

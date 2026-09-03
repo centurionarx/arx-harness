@@ -75,7 +75,8 @@
     "@arx-ai/arx-session-reference": "workspace:^",
     "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-typert-registry": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-web": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-agent": "workspace:^",
@@ -95,6 +96,7 @@
     "@arx-ai/arx-session-reference": "workspace:^",
     "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-typert-registry": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-web": "workspace:^"
   }
 }

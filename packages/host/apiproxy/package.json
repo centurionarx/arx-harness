@@ -73,7 +73,8 @@
     "@arx-ai/arx-workspace": "workspace:^",
     "@arx-ai/schemastery": "workspace:^",
     "fflate": "^0.8.2",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@arx-ai/arx-web": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/cordis": "workspace:^",

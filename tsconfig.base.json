@@ -74,6 +74,7 @@
       "@arx-ai/arx-goal/types": ["./packages/goal/goal/src/types.ts"],
       "@arx-ai/arx-goal/client": ["./packages/goal/goal/src/client.ts"],
       "@arx-ai/arx-llm/types": ["./packages/llm/llm/src/types.ts"],
+      "@arx-ai/arx-web/types": ["./packages/web/web/src/types.ts"],
       "@arx-ai/arx-llm/brand": ["./packages/llm/llm/src/brand.ts"],
       "@arx-ai/arx-llm-retry/types": ["./packages/llm/llm-retry/src/types.ts"],
       "@arx-ai/arx-workflow/types": ["./packages/workflow/workflow/src/types.ts"],
