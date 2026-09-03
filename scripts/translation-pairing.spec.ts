@@ -31,6 +31,7 @@ import {
   translationStructureDiff,
   translationStructureSignature,
 } from './translation-pairing.ts'
+import { hasLanguageSwitcher } from './translation-links.ts'
 
 const fixturePairSource = (): boolean => true
 
@@ -205,6 +206,16 @@ describe('translation pairing switchers', () => {
     expect(requiresSourceLanguageSwitcher('docs/cordis-api/inherited.md')).toBe(false)
     expect(requiresSourceLanguageSwitcher('docs/architecture.md')).toBe(true)
     expect(requiresSourceLanguageSwitcher('packages/core/session/README.md')).toBe(true)
+  })
+
+  it('reads the switcher from the first paragraph after the H1 that carries it, never past the next heading', () => {
+    // An Agent Note keeps `Status:` on line 3, so its switcher sits on line 5.
+    const note = '# Agent Note: paired\n\nStatus: implemented\n\nEnglish | [Português](paired.pt-BR.md)\n\n## Problem\n\nBody.\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(note), note, 'paired.pt-BR.md')).toBe(true)
+    const rendered = '# Title\n\nEnglish | [Português](paired.pt-BR.md)\n\n## Problem\n\nBody.\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(rendered), rendered, 'paired.pt-BR.md')).toBe(true)
+    const buried = '# Title\n\n## Problem\n\nEnglish | [Português](paired.pt-BR.md)\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(buried), buried, 'paired.pt-BR.md')).toBe(false)
   })
 
   it('accepts only the canonical public URL for an absolute switcher', () => {

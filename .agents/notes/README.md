@@ -73,6 +73,8 @@ followed by a blank line. The `Status:` value is one of three forms, and must ag
 
 The status carries no dates and no parentheticals: the filename holds the first-proposed date, git holds everything else, and an "accepted in amended form" note is body content (state the amendment where the decision is stated). The rejection reason is the one status with content, because a rejected Agent Note's verdict is the fact readers come for.
 
+A paired Agent Note carries its language switcher on line 5, the first line after the blank that follows `Status:` — `English | [Português](<file>.pt-BR.md)` in the English file, `[English](<file>.md) | Português` in the Portuguese one. The pairing gate accepts the first switcher paragraph after the H1 rather than only the line beneath it, so this placement satisfies both gates; the position [docs/i18n/README.md](../../docs/i18n/README.md) states for rendered documents, immediately after the H1, would displace `Status:` from line 3.
+
 ### The body skeleton
 
 Every Agent Note opens its body with `## Problem` — the motivation, written to stand without the solution. What follows depends on the lifecycle; recurring sections use these canonical names and nothing else, while genuinely bespoke technical sections (package topology, wire contracts, schemas) remain free-form between the required ones.
