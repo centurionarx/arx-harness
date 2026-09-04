@@ -376,11 +376,31 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     })
     const home = mkdtempSync(join(tmpdir(), 'arx-built-headless-'))
     try {
+      // The bundle ships no model route and no default selection, so the run
+      // names both in the settings document the harness home already owns:
+      // one pi-ai profile pointed at the mock, and the selection headless
+      // refuses to guess.
+      writeFileSync(join(home, 'settings.yaml'), [
+        'llm-pi-ai:',
+        '  providers:',
+        '    mock-provider:',
+        '      displayName: Mock',
+        '      apiKeyEnv: DEEPSEEK_API_KEY',
+        '      api: openai-completions',
+        `      baseURL: ${server.baseURL}`,
+        '      defaultContextWindow: 128000',
+        '      defaultMaxTokens: 4096',
+        '      models:',
+        '        - id: mock-model',
+        'agent-default-model:',
+        '  provider: mock-provider',
+        '  model: mock-model',
+        '',
+      ].join('\n'))
       const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
         ARX_HOME: home,
         ARX_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: apiKey,
-        DEEPSEEK_BASE_URL: server.baseURL,
       })
       expect(result.code, result.stderr).toBe(0)
       expect(result.stdout).toBe('published headless profile reached the mock')

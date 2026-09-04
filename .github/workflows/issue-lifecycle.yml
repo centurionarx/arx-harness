@@ -50,15 +50,18 @@ jobs:
           persist-credentials: false
       - name: Create project token
         id: app-token
-        if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested' }}
+        if: ${{ vars.ARX_ISSUE_APP_CLIENT_ID != '' && (github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested') }}
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
           client-id: ${{ vars.ARX_ISSUE_APP_CLIENT_ID }}
           private-key: ${{ secrets.ARX_ISSUE_APP_PRIVATE_KEY }}
-          owner: arx-harness
+          owner: centurionarx
           repositories: arx-harness
+      # No app configured means no project automation in this deployment; the
+      # job reports green rather than failing every pull request on a missing
+      # credential it cannot mint.
       - name: Handle repository event
-        if: ${{ github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested' }}
+        if: ${{ vars.ARX_ISSUE_APP_CLIENT_ID != '' && (github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested') }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: node .github/issue-management/policy.mjs lifecycle

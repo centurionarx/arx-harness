@@ -15,17 +15,6 @@ export const en = {
   'confirm.enable': 'Enable Full access',
 } satisfies Record<string, string>
 
-export const accessZh = {
-  'confirm.title': '确认启用 Full access？',
-  'confirm.description': '启用 Full access 后，agent 将减少确认步骤，并且可以直接执行更多操作，包括敏感操作、文件修改或外部命令。仅建议在你信任当前任务时使用。',
-  'confirm.acknowledge': '我已了解风险，并愿意继续',
-  'confirm.cancel': '取消',
-  'confirm.enable': '启用 Full access',
-} satisfies Record<string, string>
-
-/** Current-session popup-gate key union. */
-export type PermissionAccessKey = keyof typeof accessZh
-
 /** English dictionary for the current-session popup gate. */
 export const accessEn = {
   'confirm.title': 'Enable Full access?',
@@ -33,4 +22,7 @@ export const accessEn = {
   'confirm.acknowledge': 'I understand the risks and want to continue',
   'confirm.cancel': 'Cancel',
   'confirm.enable': 'Enable Full access',
-} satisfies Record<PermissionAccessKey, string>
+} satisfies Record<string, string>
+
+/** Current-session popup-gate key union. */
+export type PermissionAccessKey = keyof typeof accessEn
