@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-claude-agent-sdk-process",
   "description": "Harness-owned process tree for the CLI the official Claude Agent SDK spawns: environment overlay, spawn-spec translation, and the SDK-facing process projection",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "publishConfig": {
     "access": "public"
   },
