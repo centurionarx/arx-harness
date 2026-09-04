@@ -31,7 +31,29 @@ These are the mistakes made while shipping the last seven commits; each cost a t
 - **Workflows die at the session limit.** Two workflows were killed by "You've hit your session limit" mid-run today; both resumed from `resumeFromRunId` with completed agents cached. Keep batches small, checkpoint by committing per layer, and expect to resume. Ultracode is off: the Workflow tool needs the user to say "use um workflow" (or turn ultracode on) before any multi-agent run.
 - **`pnpm run lint` sits at 11 errors and `pnpm run test` at 16 failures (4 files) on this branch.** Both are the baseline; measure against them, not against zero.
 
+### Effort checkpoints
+
+The plan is executed by a model whose reasoning effort the user sets per session, and the phases do not want the same level: two of them change contracts that a thousand files then inherit, while others are mechanical. At each checkpoint below the executor **stops before running the phase's first command** and ends its turn with this line, in the language the user writes in — for this user, Portuguese:
+
+`PARADA <n> — ajuste o esforço do modelo para <level> e responda "continuar".`
+
+It runs nothing from that phase until the reply arrives. A checkpoint reached with the effort already at the named level still stops: the stop is also where the user reads the previous phase's proof before paying for the next. Checkpoints govern the executor's own session; agents inside a workflow take the `effort` option their script gives them, and the table names those levels too.
+
+| Checkpoint | Before | Set effort to | Why this level |
+|---|---|---|---|
+| 0 | Phase 0 | `medium` | The release script and the PR are mechanical; CI does the judging. |
+| 1 | Phase 1 | `high` | Converting 24 tests and reading 24 golden diffs is judgment work: a wrong conversion becomes the new truth the moment it is re-recorded. |
+| 2 | Phase 2a and 2c | `max` | Two contract changes — what the pairing gate calls the active corpus, and how a generator emits a second language. A wrong answer here propagates to every document translated afterwards. |
+| 3 | Phase 2b, 2d, 2e, 2f | `high` | Scripts with specs, a re-sync, and the batch shape; correctness matters, the design is settled. |
+| 4 | Phase 3 (wave 1) | `high` | Sixteen files translated interactively — the first real test of the terminology table and the style samples, read closely. |
+| 5 | Phases 4 to 7 (waves 2 to 5) | `high` for the session; in workflow scripts, `effort: 'high'` for translators and verifiers and `'medium'` for link-flip and regeneration agents | Fidelity of meaning is the one thing no gate checks; the mechanical agents need none of it. |
+| 6 | Phase 8 | `medium` | Lint, knip, one clone; small and local. |
+
+Between checkpoints the level stays where the last one set it. A phase that is skipped or reordered keeps its own checkpoint.
+
 ### Phase 0 — ship the branch
+
+Effort: `medium` — checkpoint 0.
 
 1. `pnpm run release:arx patch` (1.0.8 to 1.0.9; it rewrites every manifest and commits; the lockfile follows).
 2. `git push`, then `gh pr create --base master --head rebrand/arx` with one `kind/*` label, every material `area/*` label, and the native issue type, per the [label taxonomy](../../implemented/process/2026-08-08-unified-github-label-taxonomy.md). PRs #13 and #14 from this branch merged the same way.
@@ -40,6 +62,8 @@ These are the mistakes made while shipping the last seven commits; each cost a t
 Proof: the PR's checks. This phase can run before or after Phase 1; it should not wait for the corpus.
 
 ### Phase 1 — the web e2e lane speaks English
+
+Effort: `high` — checkpoint 1.
 
 Scope: `apps/web/tests/*.ts` (24 files staging the retired locale), `apps/web/tests/support.ts` (owns `ZH_BROWSER_LOCALE`), the 24 goldens with Chinese under `apps/web/tests/snapshots/`, and the three files pointing at retired ids. The VM has Playwright's Chromium (`~/.cache/ms-playwright/chromium-1228`), so the lane runs locally.
 
@@ -54,6 +78,8 @@ Scope: `apps/web/tests/*.ts` (24 files staging the retired locale), `apps/web/te
 Commit as one change with an Agent Note under `implemented/testing/`; the note's Problem section is paragraph three of this note's Problem.
 
 ### Phase 2 — the machinery the waves need
+
+Effort: `max` for 2a and 2c (checkpoint 2), then `high` for 2b, 2d, 2e, and 2f (checkpoint 3). Do 2a and 2c first, stop, then the rest.
 
 Do this before translating anything beyond a leaf, and record it as a process Agent Note.
 
@@ -73,11 +99,15 @@ Proof for the phase: `pnpm run doc-sync` green with `included` set to the four p
 
 ### Phase 3 — wave 1, the documentation site
 
+Effort: `high` — checkpoint 4. No workflow: sixteen files are interactive work.
+
 The site's sources are the `source:` rows of `website/docs.ts` — 16 distinct files today (10,420 words), none of them generated: `docs/user/index.md`, the four `docs/user/guide/` pages, the nine `docs/user/develop/` pages, `docs/cordis-primer.md`, and `docs/cookbook/adding-a-conversation-node.md`. Read the list from the file rather than from here, and set `included` to exactly those files plus their `docs/i18n/*` neighbors. Under the active-corpus rule their links into `packages/` and `.agents/notes/` legitimately keep the `.md` path, so the wave is link-closed by construction.
 
 Proof: `pnpm run doc-sync` green including `documentation build` and `documentation site checks`; `scripts/project-doc-site.spec.ts` green (its five red cases are exactly the missing site counterparts); `pnpm run website:build` green.
 
 ### Phase 4 — wave 2, the rest of `docs/`
+
+Effort: `high` — checkpoint 5 covers Phases 4 to 7; translators and verifiers run at `effort: 'high'`, link-flip and regeneration agents at `'medium'`.
 
 The remaining 86 files (170,466 words) plus `docs/cordis-api/` (generated). Widen `included` to `docs/**`, run the link flip, translate in batches; the generated documents come through the Phase 2c emission.
 
@@ -102,6 +132,8 @@ Proof: `doc-sync` green; `verify-agent-note-format` green across the pairs; `--l
 Proof: `--list` reports 0 missing, 0 out of sync; `doc-sync` green; the pre-commit `--cached` check and the corpus check now agree.
 
 ### Phase 8 — debt that predates this work
+
+Effort: `medium` — checkpoint 6.
 
 Independent, small, and worth one commit each: the knip findings (delete or reference `scripts/gen-translation-brief.ts` and `scripts/verify-translation-prompt.ts`, drop the two unused devDependencies, remove the five unused exports and three types); the hooks clone (extract or mark with a reason); the `accessZh` JSDoc; the five lint errors the single-element locale union causes (`packages/client/locale/src/client/index.ts`), which want the comparisons rewritten rather than the union widened.
 
