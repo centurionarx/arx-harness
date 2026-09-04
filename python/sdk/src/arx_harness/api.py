@@ -70,6 +70,9 @@ class ArxHarness:
             env["DEEPSEEK_BASE_URL"] = self.config.base_url
         if self.config.api_key is not None:
             env["DEEPSEEK_API_KEY"] = self.config.api_key
+        # The runtime route serves only the models it lists, and only this side
+        # knows which one the caller asked for.
+        env["ARX_MODEL"] = self.config.model
 
         self._client = HarnessClient(
             HarnessConfig(

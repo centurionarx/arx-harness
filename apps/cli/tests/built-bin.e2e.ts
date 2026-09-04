@@ -188,7 +188,23 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
     dependencies: {},
     arx: { profile: { bundles: ['@arx-ai/arx-base'] } },
   }, undefined, 2))
+  // The base bundle mounts the adapter dormant, so the route this probe
+  // streams from exists only once a profile declares it. Both halves stay
+  // environment-fed on purpose: the endpoint proves the launching
+  // environment reaches the adapter, and the credential reference proves the
+  // key comes from the managed store rather than the process env.
   writeFileSync(join(profileDir, 'cordis.patch.yml'), [
+    '- id: llm-pi-ai',
+    '  config:',
+    '    providers:',
+    '      deepseek-official:',
+    '        displayName: DeepSeek',
+    '        apiKeyEnv: DEEPSEEK_API_KEY',
+    '        api: openai-completions',
+    "        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'",
+    '        models:',
+    '          - id: deepseek-v4-flash',
+    '',
     '- insert:',
     '    - id: environment-probe',
     `      name: ${pathToFileURL(pluginFile).href}`,

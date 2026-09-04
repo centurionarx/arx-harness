@@ -13,9 +13,14 @@
     workspaceContext:
       maxBytes: 65536
 
-# Model access: the pi-ai adapter takes a `providers` dict keyed by route. The
-# credential resolves through the credential seam and, with no provider mounted
-# here, from the launching environment, so this file names no secret.
+# Model access. The SDK names its provider, model, endpoint, and credential
+# per session, so this route follows the launching environment rather than
+# pinning any of them: `DEEPSEEK_BASE_URL` and `DEEPSEEK_API_KEY` come from the
+# SDK's own env, and `ARX_MODEL` carries the model the caller asked for. The
+# adapter serves only models its route lists, so a caller pointing at their own
+# gateway would otherwise get UNKNOWN_MODEL for a name this file could not
+# know. The shipped ids stay listed beside it, so a default session works with
+# no environment at all.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'
   config:
@@ -26,19 +31,11 @@
         displayName: DeepSeek
         apiKeyEnv: DEEPSEEK_API_KEY
         api: openai-completions
-        baseURL: https://api.deepseek.com
+        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
         reasoning: high
-        models:
-          - id: deepseek-v4-pro
-            reasoningEfforts:
-              off:
-              high: high
-          - id: deepseek-v4-flash
-            reasoningEfforts:
-              off:
-              high: high
+        models: !!js Array.from(new Set([process.env.ARX_MODEL, 'deepseek-v4-pro', 'deepseek-v4-flash'].filter(id => typeof id === 'string' && id.length > 0))).map(id => ({ id }))
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions
