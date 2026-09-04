@@ -3057,7 +3057,7 @@ export interface WebRuntimeConfig {
 }
 ```
 
-Source: [`packages/web/web/src/index.ts:72`](../packages/web/web/src/index.ts)
+Source: [`packages/web/web/src/index.ts:74`](../packages/web/web/src/index.ts)
 
 <a id="arx-aiarx-web-app"></a>
 
@@ -3140,7 +3140,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/web/web-search-exa/src/index.ts:41`](../packages/web/web-search-exa/src/index.ts)
+Source: [`packages/web/web-search-exa/src/index.ts:39`](../packages/web/web-search-exa/src/index.ts)
 
 <a id="arx-aiarx-web-search-perplexity"></a>
 
@@ -3170,7 +3170,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/web/web-search-perplexity/src/index.ts:40`](../packages/web/web-search-perplexity/src/index.ts)
+Source: [`packages/web/web-search-perplexity/src/index.ts:38`](../packages/web/web-search-perplexity/src/index.ts)
 
 <a id="arx-aiarx-workflow-worker-thread"></a>
 

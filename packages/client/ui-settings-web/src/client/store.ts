@@ -14,6 +14,7 @@ import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 
 /** The seam's own settings namespace; its `searchProvider` field is the selection. */
+export const WEB_SETTINGS_NS = 'web'
 
 /**
  * Text of a thrown value.
@@ -23,7 +24,6 @@ import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client
 export function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
-export const WEB_SETTINGS_NS = 'web'
 
 /** One provider row the page renders. */
 export interface ProviderRow {
