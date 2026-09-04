@@ -27,6 +27,59 @@ function acceptWrites<T>(host: StubSettingsScope<T>): void {
   })
 }
 
+describe('CardForm write-only controls', () => {
+  /** A card carrying one secret control beside an ordinary section field. */
+  function form() {
+    const written: string[] = []
+    const host = stubSettingsScope<Record<string, unknown>>()
+    const subject = new CardForm(host.scope, [textField('baseURL')], [{
+      field: 'apiKey',
+      write: (text: string) => {
+        written.push(text)
+        return Promise.resolve(true)
+      },
+    }])
+    host.publish({
+      status: 'ready',
+      writable: true,
+      value: { baseURL: 'https://search.test/v1' },
+      base: { baseURL: 'https://search.test/v1' },
+      user: {},
+    })
+    return { host, subject, written }
+  }
+
+  /** `save` is fire-and-forget on the actions face; settle its writes. */
+  async function flush(subject: CardForm<Record<string, unknown>>): Promise<void> {
+    subject.actions().save()
+    await vi.waitFor(() => { expect(subject.shell().saving).toBe(false) })
+  }
+
+  it('renders a secret as its draft alone: never overridden, never invalid', () => {
+    const { subject } = form()
+    // The section never carries the value, so there is no stored state to
+    // compare a draft against — the control reports only what was typed.
+    expect(subject.field('apiKey')).toEqual({ text: '', overridden: false, invalid: false })
+    subject.actions().edit('apiKey', 'sk-live')
+    expect(subject.field('apiKey')).toEqual({ text: 'sk-live', overridden: false, invalid: false })
+  })
+
+  it('writes a staged secret outside the section, and skips a blank draft', async () => {
+    const { host, subject, written } = form()
+    subject.actions().edit('apiKey', '  ')
+    await flush(subject)
+    // A blank draft keeps whatever the Host already stores rather than
+    // clearing it, so nothing is written and the section is untouched.
+    expect(written).toEqual([])
+    expect(host.set).not.toHaveBeenCalledWith('apiKey', expect.anything())
+
+    subject.actions().edit('apiKey', '  sk-live  ')
+    await flush(subject)
+    expect(written).toEqual(['sk-live'])
+    expect(host.set).not.toHaveBeenCalledWith('apiKey', expect.anything())
+  })
+})
+
 describe('CardForm', () => {
   function form() {
     const host = stubSettingsScope<Record<string, unknown>>()
