@@ -115,17 +115,23 @@ Proof: `doc-sync` green; `--list` shows no missing counterpart under `docs/`.
 
 ### Phase 5 — wave 3, package READMEs
 
+Effort: `high` — no checkpoint of its own; checkpoint 5 covers this wave.
+
 About 275 files (about 228,000 words), grouped by package group so each batch shares vocabulary (`packages/client/*` alone is 43 files and 33,593 words). Widen `included` to `packages/**/README.md`, flip links, translate. `verify-package-readme-model-experience` and the type-equiv gate read the English side only, so nothing there changes.
 
 Proof: `doc-sync` green; `--list` shows no missing counterpart under `packages/`.
 
 ### Phase 6 — wave 4, Agent Notes
 
+Effort: `high` — no checkpoint of its own; checkpoint 5 covers this wave.
+
 603 implemented and 11 rejected notes (659,904 words). Widen `included` to `.agents/notes/implemented/**` and `.agents/notes/rejected/**`, flip links, then translate leaves first — 174 notes link to nothing else in the corpus — and the rest in link order, so no batch ever waits on a later one. Every Portuguese note carries its switcher on line 5. This wave also lands the `parâmetro` correction in `.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.pt-BR.md` and `docs/i18n/README.pt-BR.md` (nine and four occurrences of the mistranslation; the terminology gate will name them).
 
 Proof: `doc-sync` green; `verify-agent-note-format` green across the pairs; `--list` shows no missing counterpart.
 
 ### Phase 7 — wave 5, the long tail
+
+Effort: `high` — no checkpoint of its own; checkpoint 5 covers this wave.
 
 `README.md`'s siblings at the root (`BRAND_GUIDELINES.md`, `CONTRIBUTING.md`), `apps/` (3), `examples/` (7), `python/` (4), `native/` (5), `packages/README.md`, `.agents/notes/README.md`. Set `included` to everything in scope; from here the manifest field can be removed and the rule returns to "everything must merge bilingual".
 
