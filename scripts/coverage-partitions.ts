@@ -68,14 +68,19 @@ export function parseCoveragePartitionCount(raw: string | undefined): number | u
   return parsed
 }
 
-/** Resolve the paired Vitest timeout arguments used by coverage partitions. */
+/**
+ * Resolve the Vitest timeout arguments used by coverage partitions. One budget
+ * governs a case, its polling, and its hooks alike: a contended lane slows
+ * setup and teardown by the same factor it slows the case body, so a raised
+ * case budget beside a default hook budget still fails on the hook.
+ */
 export function coverageTestTimeoutArgs(raw: string | undefined): string[] {
   if (raw === undefined || raw === '') return []
   const parsed = Number.parseInt(raw, 10)
   if (!Number.isSafeInteger(parsed) || parsed < 1 || String(parsed) !== raw) {
     throw new Error(`${COVERAGE_TEST_TIMEOUT_ENV} must be a positive integer, got ${JSON.stringify(raw)}.`)
   }
-  return [`--testTimeout=${raw}`, `--expect.poll.timeout=${raw}`]
+  return [`--testTimeout=${raw}`, `--expect.poll.timeout=${raw}`, `--hookTimeout=${raw}`]
 }
 
 /** Remove pnpm's package-script separator before forwarding Vitest arguments. */

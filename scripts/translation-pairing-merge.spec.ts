@@ -261,7 +261,10 @@ function expectMergedPair(fixture: Fixture): void {
   )
 }
 
-describe('translation pairing merge composition', { timeout: 15_000 }, () => {
+// Matches ARX_COVERAGE_TEST_TIMEOUT_MS in .github/workflows/ci.yml: a describe
+// value overrides the lane's --testTimeout, so a smaller one caps these cases
+// below what the contended coverage lane already grants them.
+describe('translation pairing merge composition', { timeout: 30_000 }, () => {
   it('rejects a pairing-record path outside the repository', () => {
     const fixture = createFixture(false)
 

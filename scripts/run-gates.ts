@@ -579,9 +579,10 @@ function lintGate(options: { needs?: string[] } = {}): Gate {
 // small share. A budget of 1 gives each gate 1 worker; lanes that need a strict
 // total of one (the serial reference jobs) also set ARX_GATE_CONCURRENCY=1,
 // which keeps the gates from overlapping at all.
-// ARX_COVERAGE_TEST_TIMEOUT_MS raises Vitest's per-test and expect.poll
+// ARX_COVERAGE_TEST_TIMEOUT_MS raises Vitest's per-test, expect.poll, and hook
 // defaults together for instrumented lanes whose scheduling overhead exceeds
-// those defaults. Explicit fixture timeouts remain authoritative.
+// those defaults. Explicit fixture timeouts remain authoritative, so a suite
+// naming a smaller one lowers what the lane grants it.
 function coverageWorkerArgs(): { instrumented: string[]; exempt: string[] } {
   const [flag] = positiveIntArg('ARX_COVERAGE_MAX_WORKERS', '--maxWorkers')
   if (flag === undefined) return { instrumented: [], exempt: [] }
