@@ -5,6 +5,7 @@ import { Context } from '@arx-ai/cordis'
 import AgentRegistry, { Inbox } from '@arx-ai/arx-agent'
 import type { Agent, AgentHandle, CreateAgentOptions } from '@arx-ai/arx-agent'
 import AgentDefaultModelConfig from '@arx-ai/arx-agent-default-model'
+import type { Config as DefaultModelConfig } from '@arx-ai/arx-agent-default-model'
 import { createAssistantMessage } from '@arx-ai/arx-llm'
 import SessionStore from '@arx-ai/arx-session'
 import type { Session, UserMessage } from '@arx-ai/arx-session'
@@ -47,15 +48,18 @@ function appendTurn(
   })
 }
 
-/** Mount the real registries around a small scripted Agent factory. */
-async function bench(script: Script): Promise<{
+/** Mount the real registries around a small scripted Agent factory, over the given composed default model. */
+async function bench(
+  script: Script,
+  defaultModel: DefaultModelConfig = { provider: 'test-provider', model: 'test-model' },
+): Promise<{
   ctx: Context
   run(): Promise<{ code: number; out: string; err: string; order: string[] }>
 }> {
   const ctx = new Context()
   await ctx.plugin(SessionStore)
   await ctx.plugin(AgentRegistry)
-  await ctx.plugin(AgentDefaultModelConfig, { provider: 'test-provider', model: 'test-model' })
+  await ctx.plugin(AgentDefaultModelConfig, defaultModel)
   ctx.agents.setFactory({
     async createAgent(ownerCtx: Context, options: CreateAgentOptions): Promise<AgentHandle> {
       const session = ctx.sessions.create(options.sessionId, {
@@ -175,6 +179,18 @@ describe('headless runner', () => {
   it('exits 1 when the owned interval contains no turn', async () => {
     const test = await bench({ afterPrompt: () => {} })
     expect(await test.run()).toMatchObject({ code: 1, out: '\n', err: '' })
+    await test.ctx.fiber.dispose()
+  })
+
+  it('fails loud without creating an Agent when the deployment ships no default model', async () => {
+    const test = await bench({ afterPrompt: () => {} }, {})
+    expect(await test.run()).toEqual({
+      code: 1,
+      out: '',
+      err: 'arx: headless: no default model is configured; set agent-default-model provider and model\n',
+      order: ['exit'],
+    })
+    expect(test.ctx.agents.list()).toEqual([])
     await test.ctx.fiber.dispose()
   })
 
