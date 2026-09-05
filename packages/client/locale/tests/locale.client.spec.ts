@@ -131,22 +131,37 @@ describe('LocaleRuntime', () => {
     expect(svc.getSnapshot().revision).toBe(before + 1)
   })
 
-  it('setLocale writes through the scope and republishes nothing for the already active pick', () => {
+  it('setLocale writes on every pick and announces only the selection that moves', () => {
     const host = stubSettingsScope<LocaleSettings>()
     const { svc, events } = make(host)
-    // The one shipped locale is always the active one, so every pick is a
-    // re-selection: it publishes nothing (no subscriber churn) but still
-    // writes, because the active value may be a provisional browser-derived
-    // resolution nothing has stored, and picking it is an explicit choice that
-    // must outlive this browser.
+    // The one shipped locale is always the one on screen, so the pick changes
+    // no language — it changes what decides the language, from the provisional
+    // browser resolution to an explicit choice, and that is announced once.
     svc.setLocale('en')
     expect(svc.getLocale().active).toBe('en')
     expect(host.set).toHaveBeenCalledWith('preference', 'en')
-    expect(events).toHaveLength(0)
+    expect(events).toHaveLength(1)
+    // Re-picking the standing selection writes again — the durable value may
+    // still be missing for another browser sharing the same ARX home — and
+    // announces nothing, because nothing about the selection moved.
     svc.setLocale('en')
-    expect(events).toHaveLength(0)
+    expect(events).toHaveLength(1)
     expect(host.set).toHaveBeenCalledTimes(2)
     expect(host.set).toHaveBeenLastCalledWith('preference', 'en')
+  })
+
+  it('a moved selection bumps the LocaleFace revision; a repeated one leaves outlets alone', () => {
+    const { svc } = make()
+    const seen: number[] = []
+    svc.subscribe(() => { seen.push(svc.getSnapshot().revision) })
+    const before = svc.getSnapshot().revision
+    svc.setLocale('en')
+    expect(svc.getSnapshot().revision).toBe(before + 1)
+    expect(seen).toEqual([before + 1])
+    // The selection now stands: picking it again re-renders no outlet.
+    svc.setLocale('en')
+    expect(svc.getSnapshot().revision).toBe(before + 1)
+    expect(seen).toHaveLength(1)
   })
 
   it('persists an explicit pick of the provisional locale, so a shared ARX home agrees', () => {
@@ -167,9 +182,9 @@ describe('LocaleRuntime', () => {
     const { svc, events } = make()
     svc.setLocale('en')
     expect(svc.getLocale().active).toBe('en')
-    // Nothing durable to write and nothing to change: the absent scope is not
-    // an error, and no subscriber is disturbed.
-    expect(events).toHaveLength(0)
+    // The selection is announced in-process; the absent scope is not an error
+    // and no write is attempted.
+    expect(events).toHaveLength(1)
   })
 
   it('throws on unknown locale ids', () => {
@@ -186,21 +201,27 @@ describe('LocaleRuntime', () => {
     host.publish({ status: 'ready', value: { preference: 'en' }, revision: 1, writable: true })
     expect(svc.getLocale().active).toBe('en')
     // Adoption is a read: the accepted section is already what the Host holds,
-    // so nothing is echoed back and no outlet is republished.
+    // so nothing is echoed back — but the stored answer replacing the
+    // provisional resolution is announced once.
     expect(host.set).not.toHaveBeenCalled()
+    expect(events).toHaveLength(1)
+    // A later settings revision carrying the same selection is not a move: no
+    // listener hears it again.
     host.publish({ value: { preference: 'en' }, revision: 2 })
-    expect(events).toHaveLength(0)
+    expect(events).toHaveLength(1)
   })
 
   it('an absent Host preference returns to the browser-derived locale', () => {
     const host = stubSettingsScope<LocaleSettings>()
-    const { svc } = make(host)
+    const { svc, events } = make(host)
     host.publish({ status: 'ready', value: { preference: 'en' }, revision: 1, writable: true })
     expect(svc.getLocale().active).toBe('en')
     // A section carrying no selection delegates to the browser-derived value
-    // rather than clearing the active locale.
+    // rather than clearing the active locale; here that value is the one
+    // already standing, so the clear announces nothing.
     host.publish({ value: {}, revision: 2 })
     expect(svc.getLocale().active).toBe('en')
+    expect(events).toHaveLength(1)
   })
 
   it('adopts a section already standing at construction and releases its subscription on dispose', async () => {

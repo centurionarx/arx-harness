@@ -73,10 +73,12 @@ declare module '@arx-ai/cordis' {
   }
   interface Events {
     /**
-     * The active locale switched. Dictionary registrations do NOT emit this
-     * event (listeners may re-register slots in response, and boot registers
-     * one namespace per package); continuous render refresh rides the
-     * LocaleFace revision instead.
+     * The locale selection moved: an explicit pick or an adopted Host answer
+     * replaced what decided the active locale (the provisional browser
+     * resolution, or an earlier selection). Dictionary registrations do NOT
+     * emit this event (listeners may re-register slots in response, and boot
+     * registers one namespace per package); continuous render refresh rides
+     * the LocaleFace revision instead.
      * @param snapshot - Current immutable locale snapshot.
      * @mode emit
      */
@@ -145,6 +147,8 @@ export class LocaleRuntime {
   private readonly host: SettingsScope<LocaleSettings> | undefined
   /** Browser-derived locale standing wherever no explicit Host selection does. */
   private readonly provisional: LocaleId
+  /** Locale a pick or a Host answer selected; absent while the provisional resolution stands. */
+  private selection: LocaleId | undefined
 
   /**
    * @param ctx - owning context (change events are emitted on it; the scope
@@ -195,19 +199,19 @@ export class LocaleRuntime {
   /**
    * Switch the active locale — the only user preference write entry.
    *
-   * The durable write happens even when the id already matches the active
-   * locale, because the active value may be a provisional browser-derived or
-   * fallback resolution that nothing has stored yet. Picking the language
-   * already on screen is still an explicit choice, and it must survive a
-   * different browser sharing the same ARX home. Only the render notification
-   * is conditional: republishing an unchanged locale would churn every
-   * subscriber for nothing.
+   * The durable write happens on every pick, even one naming the language
+   * already on screen, because that language may stand on a provisional
+   * browser-derived resolution nothing has stored yet. Picking it is still an
+   * explicit choice, and it must survive a different browser sharing the same
+   * ARX home. The render notification rides {@link select}, so a pick
+   * repeating the standing selection writes again without churning a single
+   * subscriber.
    * @param id - a registered locale id; unknown ids throw.
    */
   setLocale(id: string): void {
     const match = this.snapshot.locales.find(l => l.id === id)
     if (match === undefined) throw new Error(`locale "${id}" is not registered`)
-    if (this.snapshot.active !== match.id) this.publish(match.id, true)
+    this.select(match.id)
     void this.host?.set(LOCALE_PREFERENCE_FIELD, match.id)
   }
 
@@ -219,8 +223,20 @@ export class LocaleRuntime {
   private adopt(host: SettingsScope<LocaleSettings>): void {
     const section = host.getSnapshot().value
     if (section === undefined) return
-    const target = section.preference ?? this.provisional
-    if (this.snapshot.active === target) return
+    this.select(section.preference ?? this.provisional)
+  }
+
+  /**
+   * Stand on a selection, publishing only when it moves. The provisional
+   * browser resolution is not a selection, so the first pick or Host answer
+   * publishes even when it names the language already on screen: what decides
+   * the active locale changed. A repeat — the same pick again, or a settings
+   * revision carrying the standing selection — leaves every subscriber alone.
+   * @param target - the selected locale id.
+   */
+  private select(target: LocaleId): void {
+    if (this.selection === target) return
+    this.selection = target
     this.publish(target, true)
   }
 
@@ -320,18 +336,17 @@ export class LocaleRuntime {
 
   /**
    * Advance the snapshot revision and notify LocaleFace subscribers (render
-   * refresh). Only an active-locale switch additionally emits
-   * `locale/change` — dictionary registrations stay off the event so
-   * registration-heavy boot cannot storm event listeners (which may
-   * re-register slots in response).
+   * refresh). Only a moved selection additionally emits `locale/change` —
+   * dictionary registrations stay off the event so registration-heavy boot
+   * cannot storm event listeners (which may re-register slots in response).
    */
-  private publish(active: LocaleId, localeChanged: boolean): void {
+  private publish(active: LocaleId, selectionMoved: boolean): void {
     this.snapshot = Object.freeze({
       active,
       locales: this.snapshot.locales,
       revision: this.snapshot.revision + 1,
     })
-    if (localeChanged) this.ctx.emit('locale/change', this.snapshot)
+    if (selectionMoved) this.ctx.emit('locale/change', this.snapshot)
     for (const fn of [...this.listeners]) {
       try {
         fn()

@@ -128,7 +128,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: 'setLocale(id: string): void',
-        description: 'Switch the active locale — the only user preference write entry.\n\nThe durable write happens even when the id already matches the active locale, because the active value may be a provisional browser-derived or fallback resolution that nothing has stored yet. Picking the language already on screen is still an explicit choice, and it must survive a different browser sharing the same ARX home. Only the render notification is conditional: republishing an unchanged locale would churn every subscriber for nothing.',
+        description: 'Switch the active locale — the only user preference write entry.\n\nThe durable write happens on every pick, even one naming the language already on screen, because that language may stand on a provisional browser-derived resolution nothing has stored yet. Picking it is still an explicit choice, and it must survive a different browser sharing the same ARX home. The render notification rides select, so a pick repeating the standing selection writes again without churning a single subscriber.',
         parameters: [{ name: 'id', description: 'a registered locale id; unknown ids throw.' }],
       },
       {
@@ -381,8 +381,8 @@ export const EVENT_API: readonly EventApiEntry[] = [
     name: 'locale/change',
     mode: 'emit',
     signature: '\'locale/change\'(snapshot: LocaleSnapshot): void',
-    summary: 'The active locale switched.',
-    description: 'The active locale switched. Dictionary registrations do NOT emit this event (listeners may re-register slots in response, and boot registers one namespace per package); continuous render refresh rides the LocaleFace revision instead.',
+    summary: 'The locale selection moved: an explicit pick or an adopted Host answer replaced what decided the active locale (the provisional browser resolution, or an earlier selection).',
+    description: 'The locale selection moved: an explicit pick or an adopted Host answer replaced what decided the active locale (the provisional browser resolution, or an earlier selection). Dictionary registrations do NOT emit this event (listeners may re-register slots in response, and boot registers one namespace per package); continuous render refresh rides the LocaleFace revision instead.',
     parameters: [{ name: 'snapshot', description: 'Current immutable locale snapshot.' }],
   },
   {
