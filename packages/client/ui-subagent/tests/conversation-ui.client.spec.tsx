@@ -257,6 +257,34 @@ describe('SubagentHeaderLineage', () => {
     await vi.advanceTimersByTimeAsync(120)
   })
 
+  it('re-anchors the open catalog under its trigger when the viewport resizes', () => {
+    render(<SubagentHeaderLineage {...props(catalog())} />)
+    const trigger = screen.getByRole('button', { name: /2 subagents/ })
+    hoverCatalog(trigger)
+    const menu = screen.getByRole('tree')
+    expect([menu.style.top, menu.style.left]).toEqual(['5px', '16px'])
+
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(new DOMRect(900, 20, 100, 20))
+    fireEvent.resize(window)
+
+    // A trigger reflowed past the right edge keeps the 336px menu one 16px margin inside it.
+    expect([menu.style.top, menu.style.left]).toEqual(['45px', '672px'])
+  })
+
+  it('follows its trigger out of view when a scrolling ancestor moves it', () => {
+    const view = render(<SubagentHeaderLineage {...props(catalog())} />)
+    const trigger = screen.getByRole('button', { name: /2 subagents/ })
+    hoverCatalog(trigger)
+    const menu = screen.getByRole('tree')
+    expect(menu.style.top).toBe('5px')
+
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, -60, 100, 20))
+    // Scroll events do not bubble, so only a capturing listener sees an ancestor's.
+    fireEvent.scroll(view.container)
+
+    expect(menu.style.top).toBe('-35px')
+  })
+
   it('cancels a pending hover when the trigger becomes hidden', async () => {
     vi.useFakeTimers()
     const view = render(<SubagentHeaderLineage {...props(catalog())} />)

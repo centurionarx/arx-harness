@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import type { GeneralSectionComponentProps } from '../src/client/GeneralSection.tsx'
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
@@ -190,5 +190,39 @@ describe('SettingsDocumentAction', () => {
     expect(writeText).toHaveBeenCalledWith('/home/arx/.arx/settings.yaml')
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy()
     expect(openDocument).not.toHaveBeenCalled()
+  })
+
+  it('leaves the label un-copied and keeps the path readable when the clipboard refuses the write', async () => {
+    const writeText = vi.fn(() => Promise.reject(new Error('clipboard write denied')))
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    const controller = derivedDocumentStore({
+      settings: {
+        describe: vi.fn(() => Promise.resolve({
+          rpcId: 'document-action-headless' as never,
+          result: {
+            ok: true as const,
+            value: {
+              writable: true, hasDocument: true, canOpen: false,
+              documentPath: '/home/arx/.arx/settings.yaml', namespaces: [],
+            },
+          },
+        })),
+        openDocument: vi.fn(),
+      },
+    })
+    render(<SettingsDocumentAction
+      {...kit}
+      t={t}
+      controller={controller}
+      useSnapshot={bindSnapshotSelector(controller.store)}
+    />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy path' }))
+    expect(writeText).toHaveBeenCalledWith('/home/arx/.arx/settings.yaml')
+    // Settle the refused write: the rejection reaches the component, not the test runner.
+    await act(async () => { await Promise.resolve() })
+    expect(screen.getByRole('button', { name: 'Copy path' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Copied' })).toBeNull()
+    expect(screen.getByText('/home/arx/.arx/settings.yaml').getAttribute('title'))
+      .toBe('/home/arx/.arx/settings.yaml')
   })
 })
