@@ -448,7 +448,10 @@ describe('Issue lifecycle workflow', () => {
     expect(lifecyclePullRequest.types).not.toContain('ready_for_review')
     expect(lifecyclePullRequest.types).toContain('review_requested')
     expect(lifecycleReview.types).toEqual(['submitted'])
-    const gated = "${{ github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested' }}"
+    // A deployment without the issue app leaves ARX_ISSUE_APP_CLIENT_ID unset,
+    // and the job then reports success with nothing to do instead of failing
+    // on a token it cannot mint.
+    const gated = "${{ vars.ARX_ISSUE_APP_CLIENT_ID != '' && (github.event_name != 'pull_request_review' || github.event.review.state == 'changes_requested') }}"
     const steps = lifecycleJob.steps.filter(isRecord)
     const tokenStep = steps.find(s => s.name === 'Create project token')
     const handleStep = steps.find(s => s.name === 'Handle repository event')

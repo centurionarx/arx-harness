@@ -108,7 +108,7 @@ jobs:
           if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
             echo "::error::DEEPSEEK_API_KEY is empty. The e2e suite would self-skip and"
             echo "::error::report a false green. This deployment sets ARX_REAL_API_E2E=true, so"
-  echo "::error::configure the repo secret DEEPSEEK_API_KEY_EXTERNAL, or unset the variable."
+            echo "::error::configure the repo secret DEEPSEEK_API_KEY_EXTERNAL, or unset the variable."
             exit 1
           fi
           echo "DEEPSEEK_API_KEY present."
