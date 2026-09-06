@@ -69,7 +69,7 @@ describe('candidateBashPaths', () => {
     // A directory named bash.exe is never a spawnable candidate and a missing
     // tree reports nothing; with every probe failing, resolution throws.
     expect(candidateBashPaths(env)).toContain(join(root, 'dir-shell', 'bash.exe'))
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/no Git Bash executable found/)
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/no Git Bash executable found/)
   })
 
   it('searches only the well-known locations when the environment carries no PATH', () => {
@@ -114,7 +114,7 @@ describe('resolveBashPath', () => {
 
   it('refuses loudly naming the search and the config escape when no Git Bash exists', () => {
     const env: NodeJS.ProcessEnv = { PATH: 'C:\\Windows\\System32' }
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/no Git Bash executable found/)
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/bashPath/)
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/no Git Bash executable found/)
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/bashPath/)
   })
 })

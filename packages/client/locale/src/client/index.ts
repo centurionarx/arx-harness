@@ -252,7 +252,7 @@ export class LocaleRuntime {
    * @param dicts - complete dictionaries keyed by locale id.
    * @returns disposer removing every locale registered by this call (idempotent).
    */
-  register<N extends keyof LocaleNamespaceMap & string>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
+  register<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
   /**
    * Single-locale untyped form for namespaces outside the merge table
    * (dynamic composition, tests).
@@ -302,7 +302,7 @@ export class LocaleRuntime {
    * @param ns - a namespace merged into LocaleNamespaceMap.
    * @returns the typed translate function (reads the active locale at call time).
    */
-  bind<N extends keyof LocaleNamespaceMap & string>(ns: N): TranslateNS<N>
+  bind<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N): TranslateNS<N>
   /**
    * Untyped form for namespaces outside the merge table (dynamic
    * composition, tests).
@@ -382,6 +382,7 @@ function detectBrowserLocale(): LocaleId | undefined {
    * The DOM lib types `languages` as always present; embedders and older
    * WebViews ship a Navigator without it, and spreading undefined would
    * throw at boot. */
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- the DOM lib's type is not the embedders' runtime
   for (const tag of [...(navigator.languages ?? []), navigator.language]) {
     const primary = tag.toLowerCase().split('-')[0]
     const match = LOCALES.find(locale => locale.id === primary)

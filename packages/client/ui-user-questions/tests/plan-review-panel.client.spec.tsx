@@ -208,6 +208,7 @@ describe('PlanReviewPanel', () => {
   it('reports a non-Error transport failure as its stringified value', async () => {
     // A non-Error rejection is the case under test: a carrier can reject with
     // anything, and the panel must still show the user something.
+    // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- the non-Error rejection is the case under test
     const { carrier } = wait({ questions: questions() }, vi.fn(() => Promise.reject('socket gone')))
     render(<QuestionComposer matched={carrier} interactions={[carrier]} {...kit} />)
 
