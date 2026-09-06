@@ -216,6 +216,46 @@ describe('LocalPtySession readiness and output', () => {
     expect(operation.cancel()).toBe(false)
   })
 
+  it('answers every cursor position request the shell issues', async () => {
+    vi.useFakeTimers()
+    const terminal = new FakeTerminal()
+    const session = makeSession(terminal, new FakeInspector(), config())
+    await initialize(session, terminal)
+
+    terminal.emitData('\x1b[6n\x1b[6nPS> ')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(terminal.writes).toEqual(['\x1b[1;1R\x1b[1;1R'])
+    expect(session.status()).toEqual({ kind: 'running' })
+  })
+
+  it('treats a failed cursor position reply as a transport failure', async () => {
+    vi.useFakeTimers()
+    const terminal = new FakeTerminal()
+    const session = makeSession(terminal, new FakeInspector(), config())
+    await initialize(session, terminal)
+
+    terminal.throwWrite = true
+    terminal.emitData('\x1b[6n')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(session.status()).toEqual({ kind: 'exited', exitCode: null, signal: null })
+  })
+
+  it('lets a cursor position reply fail quietly once the session is closing', async () => {
+    vi.useFakeTimers()
+    const terminal = new FakeTerminal()
+    const session = makeSession(terminal, new FakeInspector(), config())
+    await initialize(session, terminal)
+
+    const writeGate = Promise.withResolvers<undefined>()
+    terminal.write = async () => { await writeGate.promise }
+    terminal.emitData('\x1b[6n')
+    await vi.advanceTimersByTimeAsync(0)
+    const closing = session.close('test complete')
+    writeGate.reject(new Error('write failed'))
+    await expect(closing).resolves.toBeUndefined()
+    expect(session.status()).toEqual({ kind: 'exited', exitCode: null, signal: 'SIGTERM' })
+  })
+
   it('does not reuse a pre-write stdin wait as post-write readiness', async () => {
     vi.useFakeTimers()
     const terminal = new FakeTerminal()

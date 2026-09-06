@@ -33,6 +33,13 @@ describe('TerminalSanitizer', () => {
     expect(sanitizer.flush()).toBe('\n')
   })
 
+  it('counts cursor position requests, split or whole, and no other status report', () => {
+    const sanitizer = new TerminalSanitizer(64)
+    expect(sanitizer.push('\x1b[6nPS /tmp> \x1b[')).toEqual({ text: 'PS /tmp> ', prompt: false, cursorReports: 1 })
+    expect(sanitizer.push('6n\x1b[6n')).toEqual({ text: '', prompt: false, cursorReports: 2 })
+    expect(sanitizer.push('\x1b[5n\x1b[?6nplain')).toEqual({ text: 'plain', prompt: false })
+  })
+
   it('reports printable prompt text that follows a marker in a later chunk', () => {
     const sanitizer = new TerminalSanitizer(64)
     expect(sanitizer.push('\x1b]133;D;0\x07')).toEqual({ text: '', prompt: true, promptTail: '' })

@@ -10,7 +10,7 @@ import type { ConfinedArgv, SandboxPolicy } from '@arx-ai/arx-sandbox'
 import SandboxPolicyService, { setSandboxMode } from '@arx-ai/arx-sandbox-policy'
 import TerminalSessionService, { TerminalBackendCleanupError, TerminalSessionId } from '@arx-ai/arx-terminal'
 import type { TerminalSendRequest, TerminalWaitReason } from '@arx-ai/arx-terminal'
-import { BashTerminalBackend, PWSH_PROMPT_SETUP } from '@arx-ai/arx-terminal-bash'
+import { BashTerminalBackend, PWSH_PROMPT_SETUP, PWSH_READLINE_SETUP } from '@arx-ai/arx-terminal-bash'
 import { ENCODING_PREAMBLE } from '@arx-ai/arx-pwsh-local'
 import * as ptyLocal from '@arx-ai/arx-terminal-bash'
 import type { ResolvedConfig } from '@arx-ai/arx-terminal-bash/src/config.ts'
@@ -370,7 +370,7 @@ describe('BashTerminalBackend startup rollback', () => {
       () => session,
     )
     expect(await backend.spawn(spec(agent(ctx)))).toBe(session)
-    expect(sent).toMatchObject({ text: ENCODING_PREAMBLE + PWSH_PROMPT_SETUP, submit: true })
+    expect(sent).toMatchObject({ text: ENCODING_PREAMBLE + PWSH_READLINE_SETUP + PWSH_PROMPT_SETUP, submit: true })
     expect(session.motd).toBe('setup-echo arx> ')
     expect(spawned?.env).toMatchObject({
       TERM: 'dumb', NO_COLOR: '1', ARX_SHELL: '1', ARX_SESSION_ID: 'agent', ARX_PTY_SESSION_ID: 'pty-1',

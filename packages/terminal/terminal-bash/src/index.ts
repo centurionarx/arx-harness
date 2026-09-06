@@ -89,6 +89,26 @@ function childEnvironment(spec: TerminalBackendSpawnSpec, dialect: ShellDialect)
 export const PWSH_PROMPT_SETUP =
   "function prompt { [Console]::Write([char]27 + ']133;D;' + [int]$LASTEXITCODE + [char]7); '" + CONTROLLED_PROMPT + "' }"
 
+/**
+ * PSReadLine settings the bootstrap applies before any command: inline
+ * prediction renders text from earlier sessions' history into the echo, and
+ * saved history would write the model's commands into the user's own
+ * history file. Guarded so a host without the module runs the same line.
+ */
+export const PWSH_READLINE_SETUP =
+  'if (Get-Module PSReadLine) { Set-PSReadLineOption -PredictionSource None -HistorySaveStyle SaveNothing }; '
+
+/**
+ * Whether rendered text ends at the controlled prompt. The bootstrap echoes
+ * its own prompt function, whose source contains the prompt text, so only a
+ * prompt at the end of the rendered output proves the shell is reading.
+ * @param rendered - viewport or retained scrollback text.
+ * @returns true when the trailing printable text is the controlled prompt.
+ */
+function promptAtEnd(rendered: string): boolean {
+  return rendered.trimEnd().endsWith(CONTROLLED_PROMPT.trimEnd())
+}
+
 function spawnArgv(ctx: Context, config: ResolvedConfig, policy: SandboxExecutionPolicy): string[] {
   const argv = [config.shellPath, ...config.shellArgs]
   if (policy.mode === 'danger-full-access') return argv
@@ -121,13 +141,15 @@ async function startupSession(
     // UTF-8, and an un-pinned console writes its host code page for
     // non-ASCII output. The banner-to-prompt gap can outlast the silence
     // bound, so the wait loops over follow-up sends until the controlled
-    // prompt is actually visible (in the viewport or the retained scrollback
-    // when it landed between sends), bounded by the send deadline.
+    // prompt ends the rendered output (the viewport, or the retained
+    // scrollback when it landed between sends), bounded by the send
+    // deadline. The echoed setup line also contains the prompt text, which
+    // is why presence alone is not readiness.
     let viewport = ''
     for (;;) {
       const first = viewport.length === 0
       const operation = session.startSend({
-        text: first ? ENCODING_PREAMBLE + PWSH_PROMPT_SETUP : '',
+        text: first ? ENCODING_PREAMBLE + PWSH_READLINE_SETUP + PWSH_PROMPT_SETUP : '',
         submit: first,
         ...signal !== undefined ? { signal } : {},
       })
@@ -136,7 +158,7 @@ async function startupSession(
       if (result.waitReason === 'timeout') throw new Error('PTY shell did not reach readiness before startup timeout')
       viewport = result.viewport
       const scrollback = session.read({ offset: 0, count: 20 }).text
-      if (viewport.includes(CONTROLLED_PROMPT) || scrollback.includes(CONTROLLED_PROMPT)) break
+      if (promptAtEnd(viewport) || promptAtEnd(scrollback)) break
     }
     session.motd = viewport
   }

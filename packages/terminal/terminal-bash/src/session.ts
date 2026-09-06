@@ -21,7 +21,7 @@ import type {
   TerminalWaitReason,
 } from '@arx-ai/arx-terminal'
 import type { ResolvedConfig } from './config.ts'
-import { CONTROLLED_PROMPT, TerminalSanitizer } from './sanitize.ts'
+import { CONTROLLED_PROMPT, CURSOR_POSITION_REPLY, TerminalSanitizer } from './sanitize.ts'
 
 function utf8Tail(text: string, maxBytes: number): { text: string; truncated: boolean } {
   if (Buffer.byteLength(text) <= maxBytes) return { text, truncated: false }
@@ -379,6 +379,7 @@ export class LocalPtySession implements TerminalBackendSession {
 
   private onData(data: string): void {
     const sanitized = this.sanitizer.push(data)
+    if (sanitized.cursorReports !== undefined && !this.closing) this.answerCursorReports(sanitized.cursorReports)
     this.appendOutput(sanitized.text)
     if (sanitized.prompt) {
       // TODO(pty-delayed-signal-prompt): With a reproducer, define a marker-generation boundary
@@ -403,6 +404,16 @@ export class LocalPtySession implements TerminalBackendSession {
     if (this.transportFailure !== undefined) return
     this.statusValue = { kind: 'exited', exitCode: outcome.exitCode, signal: outcome.signal }
     this.settleActive('session_exit')
+  }
+
+  /**
+   * Answer the shell's cursor position requests so a host that blocks on the
+   * report keeps reading input; the reply rides beside any active send write.
+   */
+  private answerCursorReports(count: number): void {
+    void this.terminal.write(CURSOR_POSITION_REPLY.repeat(count)).catch((error: unknown) => {
+      if (!this.closing) this.onTransportFailure(error)
+    })
   }
 
   private onTransportFailure(error: unknown): void {
