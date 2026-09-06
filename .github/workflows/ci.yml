@@ -106,6 +106,9 @@ jobs:
       # exempt-heavy gate two workers on both hosted and failover runners.
       ARX_COVERAGE_MAX_WORKERS: '6'
       ARX_COVERAGE_PARTITIONS: '4'
+      # Instrumented process fixtures (a real pwsh per case) exceed Vitest's
+      # 5-second default under the partitioned lane's load, as on Windows.
+      ARX_COVERAGE_TEST_TIMEOUT_MS: '30000'
       ARX_GATE_CONCURRENCY: '3'
     steps:
       - uses: actions/checkout@v6

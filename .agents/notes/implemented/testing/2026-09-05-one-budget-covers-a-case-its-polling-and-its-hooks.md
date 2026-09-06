@@ -6,7 +6,7 @@ Status: implemented
 
 `test:coverage-exempt-heavy` failed in CI at 502 seconds while the same suites pass locally in 93. Nothing in them is wrong: the lane runs them at `--maxWorkers=2` on a shared runner, roughly five times slower than an idle host, and two ceilings did not move with it.
 
-`ARX_COVERAGE_TEST_TIMEOUT_MS` is the lane's answer to that slowdown — CI sets it to 30 000 — but `coverageTestTimeoutArgs` spent it on `--testTimeout` and `--expect.poll.timeout` only. No Vitest configuration raises `hookTimeout`, so every `beforeEach` and `afterEach` in the lane kept Vitest's 10-second default however much the lane granted a case. `scripts/install-lefthook.spec.ts` builds git worktrees and installs hooks in exactly those hooks, so its setup was capped at a third of what its cases had.
+`ARX_COVERAGE_TEST_TIMEOUT_MS` is the lane's answer to that slowdown — CI sets it to 30 000 on the Windows lane, and since this change on the Linux coverage lane too, whose real-pwsh executor cases timed out at Vitest's 5-second default under the same load — but `coverageTestTimeoutArgs` spent it on `--testTimeout` and `--expect.poll.timeout` only. No Vitest configuration raises `hookTimeout`, so every `beforeEach` and `afterEach` in the lane kept Vitest's 10-second default however much the lane granted a case. `scripts/install-lefthook.spec.ts` builds git worktrees and installs hooks in exactly those hooks, so its setup was capped at a third of what its cases had.
 
 The second ceiling was a suite lowering its own grant. A `describe` timeout overrides the lane's `--testTimeout` rather than deferring to it, and `scripts/translation-pairing-merge.spec.ts` named 15 000 — half of what the lane gave it, on cases that compose real git blobs.
 
