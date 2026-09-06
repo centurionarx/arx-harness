@@ -98,3 +98,28 @@ export function mergeHookOutputs(outputs: HookOutput[]): MergedHookOutcome {
     systemMessages,
   }
 }
+
+/** The denial a bridge returns from its pre-tool extension point. */
+export interface PreToolDenial {
+  kind: 'deny'
+  reason: string
+}
+
+/**
+ * Map a merged PreToolUse outcome onto the veto both bridges apply: a halting
+ * hook cancels the agent and denies the call, a denying hook denies it, and
+ * anything else lets the bridge continue with its own dialect-specific
+ * handling (Claude Code honors `ask`; Codex does not).
+ * @param merged - the folded outcome of every matched PreToolUse hook.
+ * @param halt - cancels the owning agent with the halting hook's reason.
+ * @returns the denial to return, or `undefined` when the call may proceed.
+ */
+export function preToolDenial(merged: MergedHookOutcome, halt: (reason: string) => void): PreToolDenial | undefined {
+  if (merged.stop) {
+    const reason = merged.stopReason ?? 'halted by PreToolUse hook'
+    halt(reason)
+    return { kind: 'deny', reason: merged.reason ?? reason }
+  }
+  if (merged.decision === 'deny') return { kind: 'deny', reason: merged.reason ?? 'blocked by PreToolUse hook' }
+  return undefined
+}

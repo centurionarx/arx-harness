@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeHookOutputs } from '@arx-ai/arx-hook-protocol'
+import { mergeHookOutputs, preToolDenial } from '@arx-ai/arx-hook-protocol'
 import type { HookOutput } from '@arx-ai/arx-hook-protocol'
 
 function out(over: Partial<HookOutput> = {}): HookOutput {
@@ -96,5 +96,36 @@ describe('mergeHookOutputs — reasons, stop, context, systemMessages accumulate
     ])
     expect(m.additionalContext).toEqual(['ctx-A', 'ctx-B'])
     expect(m.systemMessages).toEqual(['warn-A', 'warn-B'])
+  })
+})
+
+describe('preToolDenial — the veto both bridges apply', () => {
+  it('a halting hook cancels the agent with its stop reason and denies with the hooks\' reason', () => {
+    const halts: string[] = []
+    const merged = mergeHookOutputs([out({ continue: false, stopReason: 'budget spent', decision: 'deny', reason: 'no more tools' })])
+    expect(preToolDenial(merged, reason => halts.push(reason))).toEqual({ kind: 'deny', reason: 'no more tools' })
+    expect(halts).toEqual(['budget spent'])
+  })
+
+  it('a halting hook without reasons falls back to the halt wording for both', () => {
+    const halts: string[] = []
+    expect(preToolDenial(mergeHookOutputs([out({ continue: false })]), reason => halts.push(reason)))
+      .toEqual({ kind: 'deny', reason: 'halted by PreToolUse hook' })
+    expect(halts).toEqual(['halted by PreToolUse hook'])
+  })
+
+  it('a denying hook denies without cancelling, with or without a reason', () => {
+    const halts: string[] = []
+    expect(preToolDenial(mergeHookOutputs([out({ decision: 'deny', reason: 'nope' })]), reason => halts.push(reason)))
+      .toEqual({ kind: 'deny', reason: 'nope' })
+    expect(preToolDenial(mergeHookOutputs([out({ decision: 'block' })]), reason => halts.push(reason)))
+      .toEqual({ kind: 'deny', reason: 'blocked by PreToolUse hook' })
+    expect(halts).toEqual([])
+  })
+
+  it('ask, allow, and silence leave the decision to the bridge', () => {
+    for (const output of [out({ decision: 'ask' }), out({ decision: 'allow' }), out()]) {
+      expect(preToolDenial(mergeHookOutputs([output]), () => { throw new Error('must not halt') })).toBeUndefined()
+    }
   })
 })
