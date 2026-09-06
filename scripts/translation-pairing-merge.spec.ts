@@ -7,6 +7,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
+  readdirSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
@@ -49,12 +50,12 @@ function mergeTranslationPairingRecords(
     ancestorRecord,
     currentRecord,
     otherRecord,
-    () => true,
+    { isTranslationPairSource: () => true, isExcluded: () => false },
   )
 }
 
 function resolveTranslationPairingConflicts(root: string): string[] {
-  return resolveTranslationPairingConflictsWithScope(root, () => true)
+  return resolveTranslationPairingConflictsWithScope(root, { isTranslationPairSource: () => true, isExcluded: () => false })
 }
 
 afterEach(() => {
@@ -78,14 +79,24 @@ function shellQuote(value: string): string {
   return `"${value.replace(/["\\$`]/g, '\\$&')}"`
 }
 
-function installFixtureRuntime(root: string): void {
+function installFixtureRuntime(fixture: Fixture): void {
+  const { root } = fixture
   const linkType = process.platform === 'win32' ? 'junction' : 'dir'
   symlinkSync(
     join(workspaceRoot, 'node_modules'),
     join(root, 'node_modules'),
     linkType,
   )
-  symlinkSync(join(workspaceRoot, 'scripts'), join(root, 'scripts'), linkType)
+  // The driver reads the pairing manifest from the fixture's worktree, so the
+  // fixture links the repository's scripts one entry at a time and writes a
+  // manifest of its own: the repository's active corpus names none of the
+  // fixture's pairs, and a whole-directory link would hand it over.
+  mkdirSync(join(root, 'scripts'))
+  for (const entry of readdirSync(join(workspaceRoot, 'scripts'), { withFileTypes: true })) {
+    if (entry.name === 'translation-pairing.manifest.json') continue
+    symlinkSync(join(workspaceRoot, 'scripts', entry.name), join(root, 'scripts', entry.name), entry.isDirectory() ? linkType : 'file')
+  }
+  write(root, 'scripts/translation-pairing.manifest.json', '{\n  "excluded": []\n}\n')
 }
 
 function startMergeWithFakeNode(
@@ -286,7 +297,7 @@ describe('translation pairing merge composition', { timeout: 30_000 }, () => {
       '',
       '',
       '',
-      () => false,
+      { isTranslationPairSource: () => false, isExcluded: () => true },
     )).toThrow('docs/guide.i18n.yaml is excluded from the active bilingual documentation corpus')
   })
 
@@ -481,7 +492,7 @@ describe('translation pairing merge composition', { timeout: 30_000 }, () => {
   it('runs as Git\'s custom driver and commits a clean composed record', () => {
     const fixture = createFixture()
     createDivergedPair(fixture)
-    installFixtureRuntime(fixture.root)
+    installFixtureRuntime(fixture)
     git(fixture, [
       'config',
       'merge.arx-translation-pairing.driver',
@@ -515,7 +526,7 @@ describe('translation pairing merge composition', { timeout: 30_000 }, () => {
     git(fixture, ['add', '.'])
     git(fixture, ['commit', '-m', 'other guide and target'])
     git(fixture, ['switch', 'current'])
-    installFixtureRuntime(fixture.root)
+    installFixtureRuntime(fixture)
     git(fixture, [
       'config',
       'merge.arx-translation-pairing.driver',
@@ -603,7 +614,7 @@ describe('translation pairing merge composition', { timeout: 30_000 }, () => {
   it('leaves a staged merge when the pre-merge-commit hook rejects it', () => {
     const fixture = createFixture()
     createDivergedPair(fixture)
-    installFixtureRuntime(fixture.root)
+    installFixtureRuntime(fixture)
     git(fixture, [
       'config',
       'merge.arx-translation-pairing.driver',

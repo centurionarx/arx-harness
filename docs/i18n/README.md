@@ -25,13 +25,13 @@ This repo's documentation is read by people and agents both inside and outside t
 
 `pnpm run verify-translation-pairing` (part of `doc-sync`, which contributors run locally for documentation changes and CI runs exhaustively) enforces the contract mechanically:
 
-1. Every document in scope has a complete pair. README discovery is case-insensitive on the basename, so `missions/readme.md` is in scope alongside the other documentation roots.
+1. Every document in the active corpus has a complete pair. README discovery is case-insensitive on the basename, so `missions/readme.md` is in scope alongside the other documentation roots; a document in scope but outside the active corpus owes nothing until the corpus grows.
 2. Every pair artifact that exists at all is complete and consistent: all three files present, each side's current blob hash equals the recorded one (editing either side without re-confirming the pair goes red), the Portuguese side and every authored English source carry their language switchers (listed generated English sources are exempt), every ordinary relative document link uses its source side's target locale, and the structural signatures match in order — heading depths, verbatim code blocks (info string and content), table row and column counts, list kinds, ordered-list starts, item counts, and semantic link targets with exact query/fragment suffixes apart from the switcher.
 3. Files listed as `excluded` have no `.pt-BR.md` and no `.i18n.yaml` at all. Frozen Agent Notes under `.agents/notes/archived/` are outside this evolving gate; their dedicated verifier requires and seals the complete existing triplet instead.
 
 Source-oriented code gates consume an exact `.pt-BR.md` fence sequence as a derivative of its unsuffixed sibling instead of compiling or manifesting the same code twice. The sequence must match in length, order, fence kind, and byte-exact body; otherwise both copies remain independently checked and the pairing gate reports the structural mismatch.
 
-`pnpm run verify-translation-pairing --list` prints the current pairing state of every document in scope — missing, out-of-sync, or ok. It never fails; `missing` and `out-of-sync` rows identify violations that the normal check rejects.
+`pnpm run verify-translation-pairing --list` prints the current pairing state of every document in scope — missing, out-of-sync, ok, or outside the active corpus. It never fails; `missing` and `out-of-sync` rows identify violations that the normal check rejects.
 
 `pnpm run verify-translation-pairing <pair...>` checks just the named pairs — any of a pair's three files (or its bare stem) names it — so an update loop verifies its own pair in seconds instead of re-scanning the corpus. The no-argument corpus-wide form is what `doc-sync` and CI run; a scoped green never substitutes for it at PR level.
 
@@ -53,7 +53,7 @@ Generated English references and graphs participate in pairing when a reviewed P
 - [translation-prompt.md](translation-prompt.md) — the automated pipeline's prompt template; its body is machine-consumed verbatim, so a paired translation would change pipeline behavior.
 - `.agents/notes/archived/` — frozen historical triplets. [`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) validates their completeness and content seals; translation maintenance must never rewrite them.
 
-**Universal requirement**: every current or future document in scope must merge as a complete bilingual pair. [scripts/translation-pairing.manifest.json](../../scripts/translation-pairing.manifest.json) contains only explicit exclusions; there is no per-file rollout list, date cutoff, or README-specific policy class.
+**Active corpus**: the `included` globs in [scripts/translation-pairing.manifest.json](../../scripts/translation-pairing.manifest.json) name the in-scope documents whose pairs are required now; absent, every in-scope document is active. Every current or future document in the active corpus must merge as a complete bilingual pair, and the corpus grows by extending `included` in the PR that lands the pair — there is no date cutoff or README-specific policy class. A pair that exists outside the active corpus is still checked whole, and its Portuguese side links to documents outside the corpus by their authored `.md` path. The website projects the Portuguese side at its root locale exactly for the active corpus and the English source elsewhere. `excluded` lists the documents that never pair.
 
 ## Division of labor
 

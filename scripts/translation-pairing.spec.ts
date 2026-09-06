@@ -180,6 +180,28 @@ describe('translation pairing manifest', () => {
     expect(translationPairSourcePredicate(manifest)('packages/example/guide.md')).toBe(false)
   })
 
+  it('narrows the active corpus to the included globs and leaves exclusions in force', () => {
+    const manifest = parseTranslationPairingManifest(JSON.stringify({
+      included: ['README.md', 'docs/i18n/*.md', '.agents/notes/implemented/process/2026-07-02-*.md'],
+      excluded: ['docs/i18n/terminology.md'],
+    }))
+    const active = translationPairSourcePredicate(manifest)
+    expect(active('README.md')).toBe(true)
+    expect(active('docs/i18n/README.md')).toBe(true)
+    expect(active('.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md')).toBe(true)
+    expect(active('docs/i18n/terminology.md')).toBe(false)
+    expect(active('docs/development.md')).toBe(false)
+    expect(active('packages/README.md')).toBe(false)
+    expect(active('vendor/README.md')).toBe(false)
+  })
+
+  it('rejects a non-string active corpus list', () => {
+    expect(() => parseTranslationPairingManifest(JSON.stringify({
+      excluded: [],
+      included: 'README.md',
+    }))).toThrow('included must be an array of strings')
+  })
+
   it.each([
     ['required', ['packages/README.md']],
     ['requiredClasses', ['readme']],

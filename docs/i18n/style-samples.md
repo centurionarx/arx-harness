@@ -16,7 +16,7 @@ Regra de dependência: os plugins de extensão dependem de interfaces, nunca de 
 
 > This document covers **behavior**; type definitions live in [subsystems/](../subsystems/core.md), the per-event/service reference lives in the generated regions of [subsystems/](../subsystems/core.md), and package contracts in the package READMEs state each package's required configuration and behavior ([map](../../packages/README.md)).
 
-Este documento trata do **comportamento**; as definições de tipo ficam em [subsystems/](../subsystems/core.pt-BR.md), a referência por evento e por serviço fica nas regiões geradas de [subsystems/](../subsystems/core.pt-BR.md), e os contratos de pacote nos READMEs de cada pacote declaram a configuração e o comportamento que aquele pacote exige ([mapa](../../packages/README.pt-BR.md)).
+Este documento trata do **comportamento**; as definições de tipo ficam em [subsystems/](../subsystems/core.md), a referência por evento e por serviço fica nas regiões geradas de [subsystems/](../subsystems/core.md), e os contratos de pacote nos READMEs de cada pacote declaram a configuração e o comportamento que aquele pacote exige ([mapa](../../packages/README.md)).
 
 ## ② Regras de padrões defensivos
 

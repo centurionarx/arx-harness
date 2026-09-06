@@ -10,6 +10,7 @@ import { gfm } from 'micromark-extension-gfm'
 import type { Nodes } from 'mdast'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { docsPages, landingLink, routeLink, sectionSpec, type DocsPage } from '../website/docs.ts'
+import { parseTranslationPairingManifest, translationPairSourcePredicate } from './translation-pairing.ts'
 import {
   addProjectionFrontmatter, emitRawMarkdownPages, llmsTxt, projectedPageContent, publishableImage,
   rawMarkdownFiles, rawMarkdownPageContent, rawMarkdownRoute, resolveRepositoryRef, rewriteMarkdown,
@@ -292,27 +293,31 @@ describe('docsPages locale routes', () => {
     }
   })
 
-  it('publishes every route in both locales and uses every available Chinese counterpart', () => {
+  it('publishes every route in both locales and projects Portuguese exactly for the active corpus', () => {
+    const isActivePairSource = translationPairSourcePredicate(parseTranslationPairingManifest(
+      readFileSync(resolve(repositoryRoot, 'scripts/translation-pairing.manifest.json'), 'utf8'),
+    ))
     const byRoute = new Map(docsPages.map(page => [page.route, page]))
+    let portuguese = 0
     for (const page of docsPages.filter(page => page.locale === 'root')) {
       const counterpart = byRoute.get(`en/${page.route}`)
       expect(counterpart, page.route).toBeDefined()
       expect(counterpart?.locale).toBe('en')
-      if (page.contentLocale === 'pt-BR') {
-        expect(page.source).toMatch(/\.pt-br\.md$/)
+      expect(counterpart?.contentLocale).toBe('en-US')
+      const englishSource = page.source.replace(/\.pt-BR\.md$/, '.md')
+      expect(counterpart?.source).toBe(englishSource)
+      if (isActivePairSource(englishSource)) {
+        portuguese += 1
+        expect(page.source, page.route).toBe(englishSource.replace(/\.md$/, '.pt-BR.md'))
         expect(page.contentLocale).toBe('pt-BR')
-        expect(counterpart?.source).toBe(page.source.replace(/\.pt-br\.md$/, '.md'))
-        expect(counterpart?.contentLocale).toBe('en-US')
       } else {
-        expect(counterpart?.source).toBe(page.source)
-        expect(counterpart?.contentLocale).toBe(page.contentLocale)
-        const chineseSource = page.source.replace(/\.md$/, '.pt-BR.md')
-        expect(
-          existsSync(resolve(repositoryRoot, chineseSource)),
-          `${page.route} has a Chinese counterpart but projects English`,
-        ).toBe(false)
+        // Outside the active corpus the root route shows the English source
+        // even when a Portuguese file exists: the pair is not owed yet.
+        expect(page.source, page.route).toBe(englishSource)
+        expect(page.contentLocale).toBe('en-US')
       }
     }
+    expect(portuguese).toBe(docsPages.filter(page => page.locale === 'root' && isActivePairSource(page.source.replace(/\.pt-BR\.md$/, '.md'))).length)
   })
 
   it('projects the audited tutorial entry links from explicit locale index pages', () => {
@@ -329,14 +334,14 @@ describe('docsPages locale routes', () => {
 
     for (const [englishSource, englishTarget] of entries) {
       for (const locale of ['en', 'root'] as const) {
-        const source = locale === 'root' ? englishSource.replace(/\.md$/, '.pt-BR.md') : englishSource
-        const target = locale === 'root' ? englishTarget.replace(/\.md$/, '.pt-BR.md') : englishTarget
-        const page = docsPages.find(candidate => candidate.locale === locale && candidate.source === source)
-        expect(page, `${locale}:${source}`).toBeDefined()
-        expect(readFileSync(resolve(repositoryRoot, source), 'utf8')).toContain(`](${target})`)
-        expect(rewriteMarkdown(`[Entry](${target})\n`, {
+        // The tutorial pages are outside the active corpus, so both locale
+        // routes project the English source and its authored English links.
+        const page = docsPages.find(candidate => candidate.locale === locale && candidate.source === englishSource)
+        expect(page, `${locale}:${englishSource}`).toBeDefined()
+        expect(readFileSync(resolve(repositoryRoot, englishSource), 'utf8')).toContain(`](${englishTarget})`)
+        expect(rewriteMarkdown(`[Entry](${englishTarget})\n`, {
           locale,
-          sourcePath: source,
+          sourcePath: englishSource,
           route: page!.route,
           pages: docsPages,
           repoRoot: repositoryRoot,
@@ -352,7 +357,12 @@ describe('docsPages locale routes', () => {
       .filter(page => !page.endsWith('.pt-BR.md') && page !== 'README.md')
       .sort()
     expect(pages.length).toBeGreaterThan(0)
-    for (const readme of ['README.md', 'README.pt-BR.md']) {
+    // The Portuguese side is owed only while the folder README is in the active corpus.
+    const isActivePairSource = translationPairSourcePredicate(parseTranslationPairingManifest(
+      readFileSync(resolve(repositoryRoot, 'scripts/translation-pairing.manifest.json'), 'utf8'),
+    ))
+    const readmes = isActivePairSource('docs/subsystems/README.md') ? ['README.md', 'README.pt-BR.md'] : ['README.md']
+    for (const readme of readmes) {
       const rows = readFileSync(join(repositoryRoot, 'docs/subsystems', readme), 'utf8')
       const missing = pages.filter((page) => {
         const target = readme.endsWith('.pt-BR.md') ? page.replace(/\.md$/, '.pt-BR.md') : page
@@ -362,24 +372,26 @@ describe('docsPages locale routes', () => {
     }
   })
 
-  it('places the shared todo fragment alias on the translated todo section', () => {
-    const catalog = readFileSync(resolve(repositoryRoot, 'docs/tool-catalog.pt-BR.md'), 'utf8')
+  it('places the shared todo fragment alias on the todo section the root route serves', () => {
+    const page = docsPages.find(candidate => candidate.locale === 'root' && candidate.route === 'reference/tool-catalog.md')
+    expect(page).toBeDefined()
+    const catalog = readFileSync(resolve(repositoryRoot, page!.source), 'utf8')
     expect(catalog.match(/<a id="arx-aiarx-tool-todo"><\/a>/g)).toHaveLength(1)
     expect(catalog).toContain(
       '<a id="arx-aiarx-tool-todo"></a>\n\n## `@arx-ai/arx-tool-todo`',
     )
   })
 
-  it('projects every published subsystem page in Chinese', () => {
+  it('publishes every subsystem page at the root locale, on the English fallback until its pair is active', () => {
     const rootPages = docsPages.filter(page => (
       page.locale === 'root' && page.route.startsWith('reference/subsystems/')
     ))
     const translated = rootPages.filter(page => page.contentLocale === 'pt-BR')
     const fallbacks = rootPages.filter(page => page.contentLocale === 'en-US')
 
-    expect(translated).toHaveLength(43)
+    expect(rootPages).toHaveLength(43)
     expect(translated.every(page => page.source.endsWith('.pt-BR.md'))).toBe(true)
-    expect(fallbacks).toEqual([])
+    expect(fallbacks.every(page => page.source.endsWith('.md') && !page.source.endsWith('.pt-BR.md'))).toBe(true)
   })
 
   it('publishes the Cordis core API under matching locale structures', () => {
@@ -387,8 +399,9 @@ describe('docsPages locale routes', () => {
     for (const file of files) {
       const root = docsPages.find(page => page.route === `reference/cordis-api/${file}`)
       const english = docsPages.find(page => page.route === `en/reference/cordis-api/${file}`)
-      expect(root?.source).toBe(`docs/cordis-api/${file.replace(/\.md$/, '.pt-BR.md')}`)
-      expect(root?.contentLocale).toBe('pt-BR')
+      // Outside the active corpus the root route falls back to the English source.
+      expect(root?.source).toBe(`docs/cordis-api/${file}`)
+      expect(root?.contentLocale).toBe('en-US')
       expect(root?.section).toBe('Cordis API')
       expect(english?.source).toBe(`docs/cordis-api/${file}`)
       expect(english?.contentLocale).toBe('en-US')
@@ -406,9 +419,9 @@ describe('docsPages locale routes', () => {
   it('includes persistence event headings in both locale outlines', () => {
     const pages = docsPages.filter(page => page.route.endsWith('reference/persistence-catalog.md'))
     expect(pages).toHaveLength(2)
-    expect(pages.map(page => page.source).sort()).toEqual([
+    expect(pages.map(page => page.source)).toEqual([
       'docs/persistence-catalog.md',
-      'docs/persistence-catalog.pt-BR.md',
+      'docs/persistence-catalog.md',
     ])
     expect(pages.map(page => page.outline)).toEqual(['deep', 'deep'])
   })
@@ -429,8 +442,11 @@ describe('docsPages locale routes', () => {
       'reference/cordis-api/service.md',
     ]
     const pages = routes.map(route => docsPages.find(page => page.route === route))
-    expect(pages.every(page => page?.contentLocale === 'pt-BR')).toBe(true)
-    expect(pages.every(page => page?.source.endsWith('.pt-BR.md'))).toBe(true)
+    // None of these generated references is in the active corpus yet, so each
+    // root route projects the English source; a reviewed counterpart enters
+    // by naming the source in the manifest's `included` list.
+    expect(pages.every(page => page?.contentLocale === 'en-US')).toBe(true)
+    expect(pages.every(page => page?.source.endsWith('.md') && !page.source.endsWith('.pt-BR.md'))).toBe(true)
   })
 })
 

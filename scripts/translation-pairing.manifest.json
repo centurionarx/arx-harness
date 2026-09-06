@@ -1,4 +1,10 @@
 {
+  "included": [
+    "README.md",
+    "docs/i18n/README.md",
+    "docs/i18n/translation-rules.md",
+    ".agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md"
+  ],
   "excluded": [
     ".agents/notes/AGENTS.md",
     ".agents/notes/implemented/AGENTS.md",

@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { basename } from 'node:path'
+import { basename, matchesGlob } from 'node:path'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { gfmFromMarkdown } from 'mdast-util-gfm'
 import { gfm } from 'micromark-extension-gfm'
@@ -84,6 +84,12 @@ export function blobHash(content: Buffer): string {
 export interface TranslationPairingManifest {
   /** Source documents exempt from pairing because they are generated, instructional, or bilingual by construction. */
   excluded: string[]
+  /**
+   * Globs naming the active bilingual corpus: the in-scope documents whose
+   * pairs are required now and whose paired paths links follow. Absent, every
+   * in-scope document is active.
+   */
+  included?: string[]
 }
 
 const README_ARTIFACT = /(?:^|\/)readme(?:\.md|\.pt-BR\.md|\.i18n\.yaml)$/i
@@ -150,15 +156,15 @@ export function isTranslationScopeFile(file: string): boolean {
     || file.startsWith('python/'))
 }
 
-/** Read the manifest exclusion list or fail before enforcement starts. */
-function excludedField(record: Record<string, unknown>): string[] {
-  const value = record.excluded
+/** Read one manifest path list or fail before enforcement starts. */
+function pathListField(record: Record<string, unknown>, field: 'excluded' | 'included'): string[] {
+  const value = record[field]
   if (!Array.isArray(value)) {
-    throw new Error('translation-pairing.manifest.json: excluded must be an array of strings')
+    throw new Error(`translation-pairing.manifest.json: ${field} must be an array of strings`)
   }
   const entries: unknown[] = value
   if (!entries.every((entry): entry is string => typeof entry === 'string')) {
-    throw new Error('translation-pairing.manifest.json: excluded must be an array of strings')
+    throw new Error(`translation-pairing.manifest.json: ${field} must be an array of strings`)
   }
   return entries
 }
@@ -170,11 +176,14 @@ export function parseTranslationPairingManifest(content: string): TranslationPai
     throw new Error('translation-pairing.manifest.json: expected an object')
   }
   const record = value as Record<string, unknown>
-  const unsupported = Object.keys(record).filter(field => field !== 'excluded')
+  const unsupported = Object.keys(record).filter(field => field !== 'excluded' && field !== 'included')
   if (unsupported.length > 0) {
     throw new Error(`translation-pairing.manifest.json: unsupported field(s): ${unsupported.join(', ')}; every in-scope document is required`)
   }
-  return { excluded: excludedField(record) }
+  return {
+    excluded: pathListField(record, 'excluded'),
+    ...record.included === undefined ? {} : { included: pathListField(record, 'included') },
+  }
 }
 
 /** Whether a manifest entry excludes one exact file or a directory subtree. */
@@ -185,12 +194,20 @@ export function isTranslationPairingManifestExcluded(
   return manifest.excluded.some(entry => (entry.endsWith('/') ? file.startsWith(entry) : file === entry))
 }
 
-/** Build the active bilingual-source predicate shared by every link consumer. */
+/**
+ * Build the active bilingual-source predicate shared by every link consumer:
+ * in scope, not excluded, and — when the manifest names an active corpus —
+ * matched by one of its globs.
+ * @param manifest - the parsed pairing manifest.
+ * @returns whether one repository-relative English path is an active pair source.
+ */
 export function translationPairSourcePredicate(
   manifest: TranslationPairingManifest,
 ): (sourcePath: string) => boolean {
+  const { included } = manifest
   return sourcePath => isTranslationScopeFile(sourcePath)
     && !isTranslationPairingManifestExcluded(sourcePath, manifest)
+    && (included === undefined || included.some(glob => matchesGlob(sourcePath, glob)))
 }
 
 /**

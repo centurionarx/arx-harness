@@ -18,6 +18,7 @@ import {
   parseTranslationMarkdown,
   parseTranslationPairingManifest,
   requiresSourceLanguageSwitcher,
+  isTranslationPairingManifestExcluded,
   translationPairSourcePredicate,
   translationStructureDiff,
   translationStructureSignature,
@@ -263,7 +264,7 @@ export function mergeTranslationPairingRecords(
   ancestorRecord: string,
   currentRecord: string,
   otherRecord: string,
-  isTranslationPairSource: (sourcePath: string) => boolean,
+  corpus: TranslationPairingCorpus,
 ): TranslationPairingMergeResult {
   const normalizedMeta = normalizeMetaPath(root, metaPath)
   if (!isTranslationScopeFile(normalizedMeta)) {
@@ -278,7 +279,9 @@ export function mergeTranslationPairingRecords(
     ?? counterpartSuffixFromRecord(otherRecord, sourcePath)
     ?? '.pt-BR.md'
   const paths = translationPairPaths(sourcePath, suffix)
-  if (!isTranslationPairSource(paths.source)) {
+  // A pair outside the active corpus still merges whole; only an excluded
+  // source has no record to compose.
+  if (corpus.isExcluded(paths.source)) {
     throw new Error(`${normalizedMeta} is excluded from the active bilingual documentation corpus`)
   }
   assertDefaultTextMerge(root, paths)
@@ -287,7 +290,7 @@ export function mergeTranslationPairingRecords(
   const other = loadRecordOwners(root, 'other', otherRecord, paths)
   const sourceContent = mergeBlobTriplet(root, paths.source, ancestor.source, current.source, other.source)
   const counterpartContent = mergeBlobTriplet(root, paths.counterpart, ancestor.counterpart, current.counterpart, other.counterpart)
-  assertMergedPairStructure(root, paths, sourceContent, counterpartContent, isTranslationPairSource)
+  assertMergedPairStructure(root, paths, sourceContent, counterpartContent, corpus.isTranslationPairSource)
   const sourceHash = storeGitBlob(root, sourceContent)
   const counterpartHash = storeGitBlob(root, counterpartContent)
   return {
@@ -300,14 +303,29 @@ export function mergeTranslationPairingRecords(
   }
 }
 
-/** Read the repository manifest and return its active bilingual-source predicate. */
-export function repositoryTranslationPairSource(root: string): (sourcePath: string) => boolean {
+/** The two answers a merge takes from the pairing manifest: which sources pair now, and which never pair. */
+export interface TranslationPairingCorpus {
+  /** Whether an English source is in the active corpus, which decides the paired-link locale. */
+  isTranslationPairSource: (sourcePath: string) => boolean
+  /** Whether an English source is excluded from pairing altogether. */
+  isExcluded: (sourcePath: string) => boolean
+}
+
+/**
+ * Read the repository manifest and return the corpus a merge consults.
+ * @param root - repository root holding `scripts/translation-pairing.manifest.json`.
+ * @returns the active-source and exclusion predicates the manifest defines.
+ */
+export function repositoryTranslationPairingCorpus(root: string): TranslationPairingCorpus {
   const path = 'scripts/translation-pairing.manifest.json'
   const content = readGitIndexBlob(root, path)?.content ?? readFileSync(join(root, path))
   const manifest = parseTranslationPairingManifest(
     content.toString('utf8'),
   )
-  return translationPairSourcePredicate(manifest)
+  return {
+    isTranslationPairSource: translationPairSourcePredicate(manifest),
+    isExcluded: sourcePath => isTranslationPairingManifestExcluded(sourcePath, manifest),
+  }
 }
 
 function unmergedSidecars(root: string): Map<string, UnmergedStages> {
@@ -365,7 +383,7 @@ function assertUneditedSidecar(
  */
 export function resolveTranslationPairingConflicts(
   root: string,
-  isTranslationPairSource: (sourcePath: string) => boolean,
+  corpus: TranslationPairingCorpus,
 ): string[] {
   const resolutions: { path: string; record: string }[] = []
   const failures: { path: string; reason: string }[] = []
@@ -384,7 +402,7 @@ export function resolveTranslationPairingConflicts(
         ancestorRecord,
         currentRecord,
         otherRecord,
-        isTranslationPairSource,
+        corpus,
       )
       if (readGitIndexBlob(root, result.counterpart)?.objectId !== result.counterpartHash) {
         throw new Error(`${result.counterpart} staged merge does not match the pairing driver's clean merge`)
