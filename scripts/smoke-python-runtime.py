@@ -82,7 +82,31 @@ MINIMAL_SNAPSHOT_FILENAMES = ("model-visible.json",)
 # expected output cannot carry: the same composition emits it on macOS and not on Linux
 # (arx-harness#2488), and the file must replay on both. Everything else is compared.
 RUNTIME_CONTEXT_PREFIX = "Current runtime context"
-CUSTOM_CORDIS = """\
+# A composition that names its own rows inherits no model route, so each one
+# below declares the mock this smoke serves. The endpoint follows the launching
+# environment the SDK builds; the model is listed non-reasoning because these
+# routes request no effort and pi-ai rejects any effort a model does not list.
+# The two `default*` values repeat the shipped SDK route so a composition here
+# sends the same window and output cap a packaged run does: the window reaches
+# the expected output through `request/context`, the cap only the request.
+LLM_ROUTE = """\
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      deepseek-official:
+        displayName: DeepSeek
+        apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
+        models:
+          - id: smoke-model
+            reasoningEfforts: false
+"""
+
+CUSTOM_CORDIS = LLM_ROUTE + """\
 - id: sdk-jsonrpc-server
   name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
@@ -122,7 +146,7 @@ CUSTOM_CORDIS = """\
 - id: cordis-tool
   name: '@arx-ai/arx-tool-cordis'
 """
-FS_SEARCH_CORDIS = """\
+FS_SEARCH_CORDIS = LLM_ROUTE + """\
 - id: sdk-jsonrpc-server
   name: '@arx-ai/arx-sdk-jsonrpc-server'
 - id: agent-core
@@ -223,12 +247,34 @@ for line in sys.stdin:
 """
 
 
-def mcp_cordis(server_script: Path) -> str:
-    """Build an external config that mounts the packaged MCP client."""
+def mcp_cordis(server_script: Path, base_url: str) -> str:
+    """Build an external config that mounts the packaged MCP client.
+
+    This composition names its own rows and so inherits no model route; it
+    declares the mock directly, taking the endpoint the caller serves rather
+    than the launching environment the YAML compositions read.
+    """
     return json.dumps([
         {
             "id": "sdk-jsonrpc-server",
             "name": "@arx-ai/arx-sdk-jsonrpc-server",
+        },
+        {
+            "id": "llm",
+            "name": "@arx-ai/arx-llm-pi-ai",
+            "config": {
+                "providers": {
+                    "deepseek-official": {
+                        "displayName": "DeepSeek",
+                        "apiKeyEnv": "DEEPSEEK_API_KEY",
+                        "api": "openai-completions",
+                        "baseURL": base_url,
+                        "defaultContextWindow": 1000000,
+                        "defaultMaxTokens": 256000,
+                        "models": [{"id": "smoke-model", "reasoningEfforts": False}],
+                    },
+                },
+            },
         },
         {
             "id": "agent-core",
@@ -637,6 +683,46 @@ def message_text(content: object) -> str:
     return ""
 
 
+def describe_run(result: RunResult) -> str:
+    """Name what a bare final response hides when a turn fails.
+
+    An errored turn settles with empty text, so an assertion quoting only that
+    field reports nothing at all and the next reader has to reproduce the run
+    to learn anything. The finish reason and the failures the turn's events
+    carry are what say why.
+    """
+    parts = [f"final_response={result.final_response!r}", f"finish_reason={result.finish_reason!r}"]
+    for event in result.events:
+        data = event.get("data") if isinstance(event, dict) else None
+        reason = data.get("reason") if isinstance(data, dict) else None
+        error = reason.get("error") if isinstance(reason, dict) else None
+        if isinstance(error, dict):
+            parts.append(f"{event.get('type')}: {json.dumps(error, ensure_ascii=False)}")
+    return " | ".join(parts)
+
+
+MINIMAL_SHIPPED_ENDPOINT = "        baseURL: https://api.deepseek.com\n"
+
+
+def minimal_cordis_at(base_url: str, destination: Path) -> Path:
+    """Write the shipped minimal composition with its endpoint aimed at the mock.
+
+    `verify-config-source-ownership` keeps the shipped example's endpoint a
+    literal, so a keyless run cannot reach the mock through the environment and
+    the smoke redirects the one line instead. Substituting rather than
+    restating keeps the scenario driving the checked-in composition: a shipped
+    route that changes shape fails the count below instead of silently leaving
+    this smoke on a copy of the old one.
+    """
+    source = MINIMAL_CORDIS.read_text()
+    if source.count(MINIMAL_SHIPPED_ENDPOINT) != 1:
+        raise AssertionError(
+            f"{MINIMAL_CORDIS} no longer declares exactly one {MINIMAL_SHIPPED_ENDPOINT.strip()!r}",
+        )
+    destination.write_text(source.replace(MINIMAL_SHIPPED_ENDPOINT, f"        baseURL: {base_url}\n"))
+    return destination
+
+
 def advertised_tool_names(body: dict[str, object]) -> set[str]:
     """Return the model-facing tool names advertised on one request."""
     tools = body.get("tools")
@@ -733,7 +819,7 @@ def smoke_sdk_default(base_url: str) -> None:
             request_timeout_seconds=60,
         ) as harness:
             result = harness.run("reply with the smoke text", session_id="default-smoke")
-        assert result.final_response == EXPECTED_TEXT, result.final_response
+        assert result.final_response == EXPECTED_TEXT, describe_run(result)
         assert_zstd_session_log(sessions)
 
 
@@ -759,9 +845,9 @@ def smoke_sdk_custom(base_url: str, executable: Path) -> None:
             text_result = harness.run("reply with the smoke text", session_id="custom-smoke")
             code_result = harness.run(CODE_PROMPT, session_id="custom-smoke")
             workflow_result = harness.run(WORKFLOW_PROMPT, session_id="custom-smoke")
-        assert text_result.final_response == EXPECTED_TEXT, text_result.final_response
-        assert code_result.final_response == CODE_WORKER_TEXT, code_result.final_response
-        assert workflow_result.final_response == WORKFLOW_WORKER_TEXT, workflow_result.final_response
+        assert text_result.final_response == EXPECTED_TEXT, describe_run(text_result)
+        assert code_result.final_response == CODE_WORKER_TEXT, describe_run(code_result)
+        assert workflow_result.final_response == WORKFLOW_WORKER_TEXT, describe_run(workflow_result)
         assert_session_log(sessions, root, EXPECTED_TEXT, CODE_WORKER_TEXT, WORKFLOW_WORKER_TEXT)
 
 
@@ -776,12 +862,13 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
         editor_path = root / "created.txt"
         prompt = f"{MINIMAL_PROMPT}\n{MINIMAL_EDITOR_PATH_PREFIX}{editor_path}"
         sessions = root / "sessions"
+        cordis = minimal_cordis_at(base_url, root / "minimal.cordis.yml")
         with ArxHarness(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
             session_root=str(sessions),
-            cordis=str(MINIMAL_CORDIS),
+            cordis=str(cordis),
             runtime_bin=str(executable),
             api_key="sk-keyless-smoke",
             base_url=base_url,
@@ -825,7 +912,7 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
         ) as harness:
             result = harness.run(FS_SEARCH_PROMPT, session_id="fs-search-smoke")
 
-        assert result.final_response == FS_SEARCH_TEXT, result.final_response
+        assert result.final_response == FS_SEARCH_TEXT, describe_run(result)
         assert_session_log(sessions, root, FS_SEARCH_TEXT, FS_SEARCH_MARKER, "needle.txt")
 
 
@@ -839,7 +926,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         server_script = root / "mcp_server.py"
         server_script.write_text(MCP_SERVER_SCRIPT)
         cordis = root / "cordis.yml"
-        cordis.write_text(mcp_cordis(server_script))
+        cordis.write_text(mcp_cordis(server_script, base_url))
         discovery_log = server_script.with_suffix(".log")
         with ArxHarness(
             provider="deepseek-official",
@@ -854,7 +941,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         ) as harness:
             result = harness.run(MCP_PROMPT, session_id="mcp-smoke")
 
-        assert result.final_response == MCP_TEXT, result.final_response
+        assert result.final_response == MCP_TEXT, describe_run(result)
         assert discovery_log.read_text().splitlines() == [
             "initialize",
             "notifications/initialized",
@@ -886,7 +973,7 @@ def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) 
         ) as harness:
             result = harness.run(SNAPSHOT_PROMPT, session_id=SNAPSHOT_SESSION_ID)
 
-        assert result.final_response == SNAPSHOT_FINAL_TEXT, result.final_response
+        assert result.final_response == SNAPSHOT_FINAL_TEXT, describe_run(result)
         methods = [notification.method for notification in result.notifications]
         if methods.count("subagent.started") != 2 or methods.count("subagent.finished") != 2:
             raise AssertionError(f"advanced snapshot emitted unexpected subagent lifecycle: {methods}")

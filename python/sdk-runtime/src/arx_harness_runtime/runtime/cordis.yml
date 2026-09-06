@@ -34,8 +34,34 @@
         baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
         defaultContextWindow: 1000000
         defaultMaxTokens: 256000
-        reasoning: high
-        models: !!js Array.from(new Set([process.env.ARX_MODEL, 'deepseek-v4-pro', 'deepseek-v4-flash'].filter(id => typeof id === 'string' && id.length > 0))).map(id => ({ id }))
+        # Reasoning and the model list answer the same question and must move
+        # together: pi-ai rejects a requested effort a model does not list, so
+        # asking for `high` from a model served as non-reasoning fails the turn
+        # with UNSUPPORTED_REASONING_EFFORT before the request leaves the
+        # process. The shipped ids declare the dispatch `high` needs. A
+        # caller's own id cannot — no listing endpoint reports a model's
+        # reasoning protocol, and the installed catalog by definition does not
+        # carry a private gateway's id — so serving one drops the route to
+        # `off` and lists it as non-reasoning. Declaring `high` on its behalf
+        # would only move the failure to the caller's server.
+        reasoning: !!js >-
+          (() => {
+            const named = process.env.ARX_MODEL
+            const foreign = typeof named === 'string' && named.length > 0
+              && !['deepseek-v4-pro', 'deepseek-v4-flash'].includes(named)
+            return foreign ? 'off' : 'high'
+          })()
+        models: !!js >-
+          (() => {
+            const shipped = [
+              { id: 'deepseek-v4-pro', reasoningEfforts: { off: null, high: 'high' } },
+              { id: 'deepseek-v4-flash', reasoningEfforts: { off: null, high: 'high' } },
+            ]
+            const named = process.env.ARX_MODEL
+            if (typeof named !== 'string' || named.length === 0) return shipped
+            if (shipped.some(model => model.id === named)) return shipped
+            return [...shipped, { id: named, reasoningEfforts: false }]
+          })()
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions
