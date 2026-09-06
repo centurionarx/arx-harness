@@ -51,24 +51,6 @@ export function translationPairPaths(
 }
 
 /**
- * Derive one pair from its consistency-record path.
- *
- * @param meta - Repository-relative `foo.i18n.yaml` path.
- * @param counterpartSuffix - Counterpart suffix; defaults to the Simplified
- *   Chinese corpus. The record's own keys are authoritative for validation.
- * @returns The complete three-path pair.
- */
-export function translationPairPathsFromMeta(
-  meta: string,
-  counterpartSuffix: CounterpartSuffix = '.pt-BR.md',
-): TranslationPairPaths {
-  if (!meta.endsWith('.i18n.yaml')) {
-    throw new Error(`expected a bilingual consistency-record path, received ${JSON.stringify(meta)}`)
-  }
-  return translationPairPaths(meta.replace(/\.i18n\.yaml$/, '.md'), counterpartSuffix)
-}
-
-/**
  * Read the counterpart suffix a consistency record confirms, from the one key
  * that is not the English source's basename. Merges need this because the
  * sidecar path alone does not identify the counterpart language.
