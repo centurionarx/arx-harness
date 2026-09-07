@@ -180,7 +180,13 @@ jobs:
       ARX_NODE_COMPAT_SKIP_TYPECHECK: '1'
       ARX_OXLINT_THREADS: '8'
       ARX_PUBLINT_CONCURRENCY: '8'
-      ARX_WEB_SNAPSHOT_WORKERS: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '6' || '4' }}
+      # Half the cores, not one per core: a browser scenario is a Chromium
+      # process tree, a harness server and the agent subprocesses its replay
+      # drives, so four of them leave nothing for the wall-clock windows the
+      # scenarios assert against — a live workflow run collapses its panel
+      # seconds after starting, and a paced stream ends whether or not the
+      # browser kept up. Those windows are what four workers were losing.
+      ARX_WEB_SNAPSHOT_WORKERS: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '6' || '2' }}
       ARX_SNAPSHOT_MAX_CONCURRENCY: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '12' || '8' }}
     steps:
       - uses: actions/checkout@v6
