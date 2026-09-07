@@ -154,6 +154,9 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
     })
     await page.setViewportSize({ width: 1280, height: 800 })
 
+    // The narrow-layout block above scrolled and resized the panel; bring the
+    // member back under the pointer before clicking it.
+    await member.scrollIntoViewIfNeeded()
     await member.click()
     await page.getByText(CHILD_PROMPT, { exact: true }).waitFor({ timeout: 15_000 })
 

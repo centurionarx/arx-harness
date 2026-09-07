@@ -26,7 +26,13 @@ Worker counts were only half of that sizing error; the aggregate's own schedule 
 
 `smoke-real.e2e.ts`'s transport-retry case was the same literal problem one level down. `vitest.web.config.ts` grants 180 seconds and the case named 30, a sixth of it, while the two scenarios beside it — which spawn the same bin against the same kind of mock provider — name 150. It now names nothing and takes what the lane gives.
 
-Three browser scenarios then failed on something a budget cannot buy: they race the product rather than wait on it. `steering.e2e.ts`'s empty-draft flush lands three sends inside call 0's stream window, and each send is a Playwright round trip whose cost is the host's; the fix is the replay pace, which widens that window linearly and now applies to that one scenario at 250 ms rather than the file's shared 50. `queue-actions.e2e.ts` read the dock's bounding box in the frame a viewport change was still reflowing, landing a pixel or two off the inset token; it polls the inset instead. `chat-scroll-contract.e2e.ts` gave five more streamed chunks a 10-second poll where the release beside it already waits 30.
+Six browser scenarios then failed on something a budget cannot buy: they race the product rather than wait on it, and only ran to completion at all once the lane stopped aborting on its serial files.
+
+Two race a replay stream, and the lever for both is its pace. `steering.e2e.ts`'s empty-draft flush lands three sends inside call 0's stream window, and each send is a Playwright round trip whose cost is the host's; that scenario paces at 250 ms rather than the file's shared 50. `chat-scroll-contract.e2e.ts`'s reader anchor samples the chunk count after two wheel walks and a held history request, then waits for the stream to grow past it — at the file's shared 24 ms those 120 chunks are spent in under three seconds, so on a hosted runner the count was already final and no budget could move it; that scenario paces at 200 ms.
+
+Two measure a layout mid-transition. `queue-actions.e2e.ts` read the dock's box in the frame a viewport change was still reflowing; both of its measurement sites poll now, and the three context panels are read in one `page.evaluate` rather than one locator at a time, because a spread computed across separate reads compares two different layouts.
+
+Two sample a surface that has not settled. `question-composer.e2e.ts` captured its golden while the transcript still offered "Back to bottom", and now waits for that affordance to go. `workflow-run.e2e.ts` clicked a member the narrow-layout block above had scrolled away, and scrolls it back first.
 
 ## Alternatives considered
 

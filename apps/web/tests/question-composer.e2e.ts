@@ -223,6 +223,12 @@ describe('web e2e: resident question composer round trip', () => {
     await expect.poll(() => page.locator('textarea').first().isEnabled(), { timeout: 10_000 }).toBe(true)
     // Golden of the answered transcript: the ask_user_question round trip
     // rendered as history (question tool row + DONE), composer takeover gone.
+    // The transcript follows itself back to the bottom after the answer, and
+    // the affordance that says it has not is what the golden must not catch.
+    await expect.poll(
+      () => page.getByRole('button', { name: 'Back to bottom' }).count(),
+      { timeout: 15_000 },
+    ).toBe(0)
     const snapshot = await captureStableAria(page, '[class*="centerCol"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(ANSWERED_EXPECTED, snapshot, MODE)
     expect(tripwire.pageErrors).toEqual([])

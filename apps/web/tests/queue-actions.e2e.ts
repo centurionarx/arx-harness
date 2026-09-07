@@ -239,19 +239,40 @@ describe('web e2e: queue row actions', () => {
     )
     await compareOrRefreshGolden(LAYOUT_EXPECTED, layoutSnapshot, MODE)
 
+    interface PanelGeometry { todo: DOMRect; goal: DOMRect; queue: DOMRect }
+    /**
+     * The three context panels measured in one frame. Read one at a time they
+     * are a moving target — the panels re-column on a viewport change and the
+     * dock animates in — so a spread computed across separate reads compares
+     * two different layouts.
+     * @returns the three rects, or undefined while any panel is absent.
+     */
+    const contextPanelGeometry = async (): Promise<PanelGeometry | undefined> =>
+      page.evaluate(() => {
+        const rect = (selector: string): DOMRect | undefined =>
+          document.querySelector(selector)?.getBoundingClientRect()
+        const todo = rect('[data-testid="todo-panel"]')
+        const goal = rect('[data-goal-bar] > div')
+        const queue = rect('[data-queue-dock] > div')
+        if (todo === undefined || goal === undefined || queue === undefined) return undefined
+        return { todo, goal, queue }
+      })
+    const panelSpread = (geometry: PanelGeometry | undefined): number | undefined =>
+      geometry === undefined
+        ? undefined
+        : Math.max(
+          Math.abs(geometry.todo.x - geometry.goal.x),
+          Math.abs(geometry.todo.x - geometry.queue.x),
+          Math.abs(geometry.todo.width - geometry.goal.width),
+          Math.abs(geometry.todo.width - geometry.queue.width),
+        )
     const expectAlignedContextPanels = async () => {
-      const queuePanelBox = await page.locator('[data-queue-dock] > div').boundingBox()
-      const todoBox = await page.locator('[data-testid="todo-panel"]').boundingBox()
-      const goalBox = await page.locator('[data-goal-bar] > div').boundingBox()
-      expect(queuePanelBox).not.toBeNull()
-      expect(todoBox).not.toBeNull()
-      expect(goalBox).not.toBeNull()
-      expect(todoBox!.y).toBeLessThan(goalBox!.y)
-      expect(goalBox!.y).toBeLessThan(queuePanelBox!.y)
-      expect(todoBox!.x).toBeCloseTo(goalBox!.x, 1)
-      expect(todoBox!.x).toBeCloseTo(queuePanelBox!.x, 1)
-      expect(todoBox!.width).toBeCloseTo(goalBox!.width, 1)
-      expect(todoBox!.width).toBeCloseTo(queuePanelBox!.width, 1)
+      await expect.poll(async () => panelSpread(await contextPanelGeometry()), { timeout: 10_000 })
+        .toBeLessThan(0.05)
+      const geometry = await contextPanelGeometry()
+      expect(geometry).toBeDefined()
+      expect(geometry!.todo.y).toBeLessThan(geometry!.goal.y)
+      expect(geometry!.goal.y).toBeLessThan(geometry!.queue.y)
     }
     await expectAlignedContextPanels()
     await page.setViewportSize({ width: 640, height: 1000 })
