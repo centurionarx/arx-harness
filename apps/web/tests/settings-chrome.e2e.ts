@@ -63,12 +63,30 @@ describe('web e2e: settings modal and General preferences', () => {
     await dialog.getByRole('button', { name: 'Workspace Write' }).waitFor({ timeout: 10_000 })
     await expect.poll(() => dialog.getByText('Language', { exact: true }).count(), { timeout: 5_000 }).toBe(1)
     await expect.poll(() => dialog.getByText('Appearance', { exact: true }).count(), { timeout: 5_000 }).toBe(1)
-    // This lane pins the Host to no native opener, so the section names the
-    // file to open by hand. The scenario below covers the opener itself.
-    await dialog.getByRole('button', { name: 'Copy path' }).waitFor({ timeout: 10_000 })
-    expect(await dialog.getByRole('button', { name: 'Open configuration file' }).count()).toBe(0)
-    await dialog.getByText(join(scaffold.harnessHome, 'settings.yaml'), { exact: true })
-      .waitFor({ timeout: 10_000 })
+    const openDocument = dialog.getByRole('button', { name: 'Open configuration file' })
+    await openDocument.waitFor({ timeout: 10_000 })
+    let openRequests = 0
+    await page.route('**/api/settings.openDocument', async (route) => {
+      const envelope = route.request().postDataJSON() as {
+        rpcId: string
+        payload: Record<string, never>
+      }
+      expect(envelope.payload).toEqual({})
+      openRequests += 1
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          type: 'server-response',
+          rpcId: envelope.rpcId,
+          result: { ok: true, value: { opened: true } },
+        }),
+      })
+    })
+    await openDocument.click()
+    await expect.poll(() => openRequests, { timeout: 5_000 }).toBe(1)
+    await expect.poll(() => openDocument.isEnabled(), { timeout: 5_000 }).toBe(true)
+    await page.unroute('**/api/settings.openDocument')
     // Golden of the freshly opened dialog (General active).
     const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(DIALOG_EXPECTED, snapshot, MODE)
@@ -424,49 +442,29 @@ describe('web e2e: settings modal and General preferences', () => {
     expect(tripwire.pageErrors).toEqual([])
   }, 90_000)
 
-  it('hands the document to the desktop where the host has an opener', async () => {
-    // The other branch of the same control: a Host that reports a native
-    // opener offers the button, and clicking it reaches `settings.openDocument`
-    // rather than rendering a path to copy.
-    const desktop = await launchWebScaffold({ nativeOpen: true })
-    const desktopPage = await newEnglishPage(browser)
-    const desktopTripwire = watchConsole(desktopPage)
-    onTestFailed(() => saveFailureShot(desktopPage, 'web-e2e-settings-native-opener'))
+  it('shows the document path instead of an opener the host cannot offer', async () => {
+    // The other branch of the same control: a Host that reports no native
+    // opener names the file to open by hand rather than offering a button that
+    // would spawn a desktop command into nothing.
+    const pathless = await launchWebScaffold({ nativeOpen: false })
+    const pathlessPage = await newEnglishPage(browser)
+    const pathlessTripwire = watchConsole(pathlessPage)
+    onTestFailed(() => saveFailureShot(pathlessPage, 'web-e2e-settings-pathless-opener'))
     try {
-      await desktopPage.goto(desktop.baseUrl, { waitUntil: 'load' })
-      await desktopPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-      await desktopPage.getByRole('button', { name: 'Settings', exact: true }).click()
-      const dialog = desktopPage.getByRole('dialog', { name: 'Settings' })
+      await pathlessPage.goto(pathless.baseUrl, { waitUntil: 'load' })
+      await pathlessPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+      await pathlessPage.getByRole('button', { name: 'Settings', exact: true }).click()
+      const dialog = pathlessPage.getByRole('dialog', { name: 'Settings' })
       await dialog.waitFor({ timeout: 10_000 })
-      const openDocument = dialog.getByRole('button', { name: 'Open configuration file' })
-      await openDocument.waitFor({ timeout: 10_000 })
-      expect(await dialog.getByRole('button', { name: 'Copy path' }).count()).toBe(0)
-      let openRequests = 0
-      await desktopPage.route('**/api/settings.openDocument', async (route) => {
-        const envelope = route.request().postDataJSON() as {
-          rpcId: string
-          payload: Record<string, never>
-        }
-        expect(envelope.payload).toEqual({})
-        openRequests += 1
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            type: 'server-response',
-            rpcId: envelope.rpcId,
-            result: { ok: true, value: { opened: true } },
-          }),
-        })
-      })
-      await openDocument.click()
-      await expect.poll(() => openRequests, { timeout: 5_000 }).toBe(1)
-      await expect.poll(() => openDocument.isEnabled(), { timeout: 5_000 }).toBe(true)
-      expect(desktopTripwire.pageErrors).toEqual([])
-      expect(desktopTripwire.warnings).toEqual([])
+      await dialog.getByRole('button', { name: 'Copy path' }).waitFor({ timeout: 10_000 })
+      expect(await dialog.getByRole('button', { name: 'Open configuration file' }).count()).toBe(0)
+      await dialog.getByText(join(pathless.harnessHome, 'settings.yaml'), { exact: true })
+        .waitFor({ timeout: 10_000 })
+      expect(pathlessTripwire.pageErrors).toEqual([])
+      expect(pathlessTripwire.warnings).toEqual([])
     } finally {
-      await desktopPage.close()
-      await desktop.close()
+      await pathlessPage.close()
+      await pathless.close()
     }
   }, 90_000)
 

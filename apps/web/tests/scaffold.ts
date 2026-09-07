@@ -293,11 +293,12 @@ export interface LaunchOptions {
   harnessHome?: string
   /**
    * Whether the Host reports a native desktop opener. Left to platform
-   * detection this answers true on a developer's macOS desktop and false in a
-   * headless lane, so every surface offering "open this path" would render one
-   * way in a recorded golden and the other on replay. Pinned false by default —
-   * the headless answer the lane has always produced; a scenario covering the
-   * opener asks for true.
+   * detection this answers whatever the recording host happens to be: true on a
+   * macOS desktop and on a hosted Linux runner, which exports `DISPLAY`, and
+   * false in a bare container, which does not. Every surface offering "open
+   * this path" would then render one way in a recorded golden and the other on
+   * replay. Pinned true by default — the answer both CI and a developer desktop
+   * give; a scenario covering the pathless surface asks for false.
    */
   nativeOpen?: boolean
 }
@@ -479,7 +480,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       : [{ id: 'connection', config: { trustedHosts: [options.remoteAuthority] } }],
     // Platform detection would answer differently per host; the lane pins it
     // so the surfaces that offer "open this path" render one way everywhere.
-    { id: 'api-gateway', config: { nativeOpen: options.nativeOpen ?? false } },
+    { id: 'api-gateway', config: { nativeOpen: options.nativeOpen ?? true } },
     { id: 'settings', config: { arxHome: harnessHome } },
     { id: 'credentials', config: { arxHome: harnessHome } },
     // The shipped directory-picker row is the -auto chooser, which resolves

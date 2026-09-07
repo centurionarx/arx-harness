@@ -58,6 +58,10 @@ describe('web e2e: agent-preset authoring is a host-side copy', () => {
   beforeAll(async () => {
     userRoot = await realpath(await mkdtemp(join(tmpdir(), 'arx-web-e2e-presets-')))
     scaffold = await launchWebScaffold({
+      // Where the copy landed is what this scenario proves, and the section
+      // names that path only on a Host with no native opener; with one, the
+      // same control opens a folder and reveals nothing to assert.
+      nativeOpen: false,
       extraOverlayPath: OVERLAY,
       agentPresets: {
         roots: [

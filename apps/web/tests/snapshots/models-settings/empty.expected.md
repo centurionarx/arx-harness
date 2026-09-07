@@ -16,8 +16,7 @@
     - button "Agent presets":
       - img
       - text: Agent presets
-  - text: {{cwd}}/.arx-home/settings.yaml
-  - button "Copy path"
+  - button "Open configuration file"
   - button "Close":
     - img
     - text: Close

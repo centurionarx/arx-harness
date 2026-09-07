@@ -413,13 +413,15 @@ function ciConsumerGates(): Gate[] {
   const builtTree = ['build']
   const validatedBuild = ['built-package-invariants']
   // Two gates here wait on wall clock rather than on CPU they can share: the
-  // browser gate's HMR scenario waits a fixed budget for `dev:web` to reach
-  // readiness, and the built-bin smoke boots the published bin four times
-  // inside one case. Neither can absorb a runner already saturated by lint and
-  // the snapshot pool, which are pure CPU burn and finish on their own
-  // schedule, so both start only once those two have settled. On a runner with
-  // cores to spare the aggregate's concurrency limit is what keeps them apart
-  // anyway; this ordering is what makes the hosted four-core lane honest.
+  // browser gate drives eighty browser scenarios whose polls and readiness
+  // waits are fixed budgets, and the built-bin smoke boots the published bin
+  // four times inside one case. Neither can absorb a runner already saturated
+  // by lint and the snapshot pool, which are pure CPU burn and finish on their
+  // own schedule, so both start only once those two have settled — and the
+  // built-bin smoke waits for the browser gate too, leaving the browser pool
+  // the runner to itself. On a runner with cores to spare the aggregate's
+  // concurrency limit is what keeps them apart anyway; this ordering is what
+  // makes the hosted four-core lane honest.
   const afterCpuHeavy = ['lint-and-duplication', 'snapshot']
   return [
     ciBuildGate(),
@@ -443,7 +445,7 @@ function ciConsumerGates(): Gate[] {
       label: 'node-next types',
       needs: validatedBuild,
     }),
-    { ...builtBinSmokeGate(validatedBuild), after: afterCpuHeavy },
+    { ...builtBinSmokeGate(validatedBuild), after: [...afterCpuHeavy, 'web-snapshot'] },
   ]
 }
 

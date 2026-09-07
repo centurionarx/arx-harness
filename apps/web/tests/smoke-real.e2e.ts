@@ -399,7 +399,10 @@ describe('arx web keyless CLI smoke', () => {
       await new Promise<void>(resolveClose => provider.close(() => { resolveClose() }))
       rmSync(workspace, { recursive: true, force: true })
     }
-  }, 30_000)
+    // No literal here: this case spawns the bin and drives a stream through a
+    // forced transport failure, exactly like the two around it, and a value
+    // written on the case overrides the lane's own testTimeout downward.
+  })
 
   it('ARX_TOOLS_MODE=code collapses the provider wire tools to run_code with the SDK prompt section', async () => {
     requireDist()
