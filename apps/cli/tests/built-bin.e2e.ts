@@ -381,7 +381,10 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
-  }, 30_000)
+    // Four sequential boots of the published bin, where every sibling case in
+    // this file boots once inside the same 30 seconds. A hosted runner spends
+    // five to seven seconds per boot, so the budget follows the count.
+  }, 120_000)
 
   it('runs the headless profile through its app-owned task positional', async () => {
     const apiKey = 'built-arx-headless-key'

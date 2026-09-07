@@ -412,6 +412,15 @@ function ciArtifactGates(): Gate[] {
 function ciConsumerGates(): Gate[] {
   const builtTree = ['build']
   const validatedBuild = ['built-package-invariants']
+  // Two gates here wait on wall clock rather than on CPU they can share: the
+  // browser gate's HMR scenario waits a fixed budget for `dev:web` to reach
+  // readiness, and the built-bin smoke boots the published bin four times
+  // inside one case. Neither can absorb a runner already saturated by lint and
+  // the snapshot pool, which are pure CPU burn and finish on their own
+  // schedule, so both start only once those two have settled. On a runner with
+  // cores to spare the aggregate's concurrency limit is what keeps them apart
+  // anyway; this ordering is what makes the hosted four-core lane honest.
+  const afterCpuHeavy = ['lint-and-duplication', 'snapshot']
   return [
     ciBuildGate(),
     pnpmScript('node-compat', 'check:node-compat', {
@@ -425,7 +434,7 @@ function ciConsumerGates(): Gate[] {
       needs: validatedBuild,
     }),
     snapshotGate(validatedBuild),
-    webSnapshotGate(validatedBuild),
+    { ...webSnapshotGate(validatedBuild), after: afterCpuHeavy },
     pnpmScript('doc-typecheck', 'doc-typecheck:contracts-ready', {
       needs: validatedBuild,
       env: { ARX_DOC_TYPECHECK_USE_BUILD_OUTPUT: '1' },
@@ -434,7 +443,7 @@ function ciConsumerGates(): Gate[] {
       label: 'node-next types',
       needs: validatedBuild,
     }),
-    builtBinSmokeGate(validatedBuild),
+    { ...builtBinSmokeGate(validatedBuild), after: afterCpuHeavy },
   ]
 }
 
