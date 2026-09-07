@@ -32,7 +32,9 @@ Two race a replay stream, and the lever for both is its pace. `steering.e2e.ts`'
 
 Two measure a layout mid-transition. `queue-actions.e2e.ts` read the dock's box in the frame a viewport change was still reflowing; both of its measurement sites poll now, and the three context panels are read in one `page.evaluate` rather than one locator at a time, because a spread computed across separate reads compares two different layouts.
 
-Two sample a surface that has not settled. `question-composer.e2e.ts` captured its golden while the transcript still offered "Back to bottom", and now waits for that affordance to go. `workflow-run.e2e.ts` clicked a member the narrow-layout block above had scrolled away, and scrolls it back first.
+One samples a surface that has not settled: `question-composer.e2e.ts` captured its golden while the transcript still offered "Back to bottom", and now waits for that affordance to go.
+
+One races a window that closes. `workflow-run.e2e.ts` measures the member's link styles, and [the panel](../../../../packages/client/ui-workflow-run/src/client/WorkflowRunPanel.tsx) renders a member as a link only while its child session runs — about 1.4 seconds at the file's 50 ms pace. Four round-trips sat inside that window: a focus, a light-colour read, a theme swap, and the measurement. CI lost it between the focus, which resolved, and the measurement, which read the plain row a settled member becomes and reported a missing underline. All four now run as one synchronous `page.evaluate` the run cannot settle inside, and it asserts the member is still navigable before the link-only facts, so a window lost anyway names itself. The scroll this scenario was first given is gone: the member was never scrolled away, it had stopped being a button.
 
 ## Alternatives considered
 
@@ -48,3 +50,5 @@ A contended lane now grants its whole budget to the whole test, and a suite that
 Locally this proves only that the flags are accepted and the suites pass with them — 240 tests in 93 seconds, unchanged. Whether the lane's own failure is gone is answered by CI, because the contention that caused it cannot be reproduced on an idle host.
 
 `--hookTimeout` now reaches both coverage gates, so a genuinely hanging hook in an instrumented lane takes 30 seconds to report instead of 10.
+
+`workflow-run.e2e.ts` still spends a closing window on a golden capture and a disclosure round before it measures, and [`paceMs`](../../../../packages/test-support/llm-replay/src/index.ts) cannot widen that window: it is a per-chunk realism knob whose contract says correctness must never depend on it, and raising it past 50 ms starves the parent stream the scenario waits on first. The navigability assertion is what reports the window if a runner ever outruns it again.

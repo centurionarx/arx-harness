@@ -103,11 +103,14 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
     await runDisclosure.press('Space')
     expect(await disclosures.count()).toBe(2)
     expect(await phaseDisclosure.getAttribute('aria-expanded')).toBe('true')
-    await member.focus()
-
-    const lightColor = await member.locator('[data-member-label]').evaluate(element => getComputedStyle(element).color)
+    // Every style fact below belongs to the member's link, and the member is a
+    // link only while its child session runs — around 1.4 s. Splitting the focus,
+    // the light colour, the theme swap and the measurement across round-trips
+    // spends that window on transport, so they run as one synchronous pass that
+    // the run cannot settle inside. The viewport moves first because
+    // `@media (max-width: 560px)` decides the list padding this block measures.
     await page.setViewportSize({ width: 560, height: 800 })
-    await page.evaluate(() => { document.body.setAttribute('data-ds-dark-theme', '') })
+
     const darkNarrow = await page.locator('[data-workflow-run]').evaluate((element) => {
       const panel = element as HTMLElement
       panel.style.width = '356px'
@@ -124,9 +127,19 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
       const phaseTitleRight = phaseTitle?.getBoundingClientRect().right ?? 0
       const phaseStatusLeft = phaseStatus?.getBoundingClientRect().left ?? 0
       if (phaseTitle !== null) phaseTitle.textContent = originalPhaseTitle
+      // A settled member keeps its focus as an `aria-disabled` button, or drops
+      // to a plain row; either way it is no longer the link these styles name.
+      const memberButton = label?.closest('button') ?? null
+      // The outline belongs to `:focus-visible`, and the disclosure keypress
+      // above leaves the keyboard modality this programmatic focus inherits.
+      memberButton?.focus()
+      const lightColor = label === null ? '' : getComputedStyle(label).color
+      document.body.setAttribute('data-ds-dark-theme', '')
       return {
+        navigable: memberButton !== null && memberButton.getAttribute('aria-disabled') === null,
         clientWidth: element.clientWidth,
         scrollWidth: element.scrollWidth,
+        lightColor,
         color: label === null ? '' : getComputedStyle(label).color,
         decoration: label === null ? '' : getComputedStyle(label).textDecorationLine,
         focusWidth: labelWrap === null ? '' : getComputedStyle(labelWrap).outlineWidth,
@@ -138,9 +151,12 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
         phaseStatusLeft,
       }
     })
+    // Name a lost window for what it is: without this the link-only facts below
+    // report a missing underline and an absent outline instead.
+    expect(darkNarrow.navigable, 'the child settled before the member styles were read').toBe(true)
     expect(darkNarrow.clientWidth).toBe(356)
     expect(darkNarrow.scrollWidth).toBeLessThanOrEqual(darkNarrow.clientWidth)
-    expect(darkNarrow.color).not.toBe(lightColor)
+    expect(darkNarrow.color).not.toBe(darkNarrow.lightColor)
     expect(darkNarrow.decoration).toContain('underline')
     expect(Number.parseFloat(darkNarrow.focusWidth)).toBeGreaterThanOrEqual(2)
     expect(darkNarrow.statusWidth).toBe(64)
@@ -154,9 +170,6 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
     })
     await page.setViewportSize({ width: 1280, height: 800 })
 
-    // The narrow-layout block above scrolled and resized the panel; bring the
-    // member back under the pointer before clicking it.
-    await member.scrollIntoViewIfNeeded()
     await member.click()
     await page.getByText(CHILD_PROMPT, { exact: true }).waitFor({ timeout: 15_000 })
 
