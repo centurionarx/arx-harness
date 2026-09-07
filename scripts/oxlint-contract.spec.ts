@@ -45,7 +45,11 @@ async function writeContractConfig(suffix: string): Promise<string> {
   return path
 }
 
-describe('Oxlint executable contract', () => {
+// Matches ARX_COVERAGE_TEST_TIMEOUT_MS in .github/workflows/ci.yml, as the
+// describe value overrides the lane's --testTimeout. Each probe class spawns
+// its own oxlint run, so the project-discovery case outran 20 seconds on a
+// contended runner while the same work takes a fraction of that on an idle one.
+describe('Oxlint executable contract', { timeout: 30_000 }, () => {
   it('discovers the owning TypeScript project for every file class', async () => {
     const suffix = randomUUID()
     const configPath = await writeContractConfig(suffix)
@@ -105,7 +109,7 @@ probePromise()
         rm(configPath, { force: true }),
       ])
     }
-  }, 20_000)
+  })
 
   it('runs JavaScript compatibility and nursery rules', async () => {
     const suffix = randomUUID()
@@ -152,7 +156,7 @@ export const longProbe = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 +
         rm(configPath, { force: true }),
       ])
     }
-  }, 20_000)
+  })
 
   it('keeps the complete stylistic contract in Oxlint', async () => {
     const oxlintPath = join(repositoryRoot, '.oxlintrc.json')
@@ -252,7 +256,7 @@ export const longProbe = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 +
         rm(configPath, { force: true }),
       ])
     }
-  }, 20_000)
+  })
 
   it('accepts an ignored-only staged selection', () => {
     const result = runOxlint([
