@@ -104,7 +104,11 @@ jobs:
     env:
       # Partitioning replaces the instrumented share; this budget gives the
       # exempt-heavy gate two workers on both hosted and failover runners.
-      ARX_COVERAGE_MAX_WORKERS: '6'
+      # One worker per core on the standard hosted runner: coverage
+      # instrumentation makes an oversubscribed worker slower than the budgets
+      # its process fixtures assume, and the instrumented and exempt gates run
+      # at the same time out of this one total.
+      ARX_COVERAGE_MAX_WORKERS: '4'
       ARX_COVERAGE_PARTITIONS: '4'
       # Instrumented process fixtures (a real pwsh per case) exceed Vitest's
       # 5-second default under the partitioned lane's load, as on Windows.
@@ -167,13 +171,17 @@ jobs:
           || 'ubuntu-24.04' }}
     name: node 24 / snapshots and artifacts
     env:
-      ARX_GATE_CONCURRENCY: '8'
+      # Every count here follows the runner. The standard hosted box has four
+      # cores, and each snapshot scenario is its own agent subprocess: at 32 the
+      # replayed sessions starved each other until a child's second turn missed
+      # the harness's persistence wait and `dev:web` missed its readiness bound.
+      # The failover pool is a shared 64-core VM and keeps the larger counts.
+      ARX_GATE_CONCURRENCY: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '8' || '4' }}
       ARX_NODE_COMPAT_SKIP_TYPECHECK: '1'
       ARX_OXLINT_THREADS: '8'
       ARX_PUBLINT_CONCURRENCY: '8'
-      ARX_WEB_SNAPSHOT_WORKERS: '6'
-      # Failover halves snapshot concurrency for the shared 64-core VM.
-      ARX_SNAPSHOT_MAX_CONCURRENCY: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '12' || '32' }}
+      ARX_WEB_SNAPSHOT_WORKERS: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '6' || '4' }}
+      ARX_SNAPSHOT_MAX_CONCURRENCY: ${{ vars.ARX_CI_FAILOVER_LINUX == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '12' || '8' }}
     steps:
       - uses: actions/checkout@v6
         with:

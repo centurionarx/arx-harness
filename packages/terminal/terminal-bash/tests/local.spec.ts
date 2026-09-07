@@ -296,7 +296,10 @@ describe.skipIf(!hasPwsh)('terminal-bash pwsh real shell', () => {
         text: '$env:KEEP = "ok"; Set-Location /',
         submit: true,
       })
-      expect((await first.done).waitReason).toBe('stdin_read')
+      // Either readiness tier proves the shell took the send: a loaded runner
+      // can miss the foreground handoff inside the 300 ms silence bound, and
+      // this case is about bootstrap, persistence, and the secret scrub.
+      expectReadyForNextSend((await first.done).waitReason)
       const second = ctx.terminals.startSend(agent, created.sessionId, {
         text: 'Write-Output "keep=$env:KEEP secret=$env:ARX_TEST_SECRET"',
         submit: true,

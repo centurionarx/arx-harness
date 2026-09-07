@@ -54,7 +54,15 @@ async function setup(config: ConstructorParameters<typeof PwshLocalExecutor>[1] 
  * `expected`; returns the accumulation (reads never re-deliver, so the caller
  * gets everything produced up to the match).
  */
-async function readUntil(proc: ShellProcess, expected: string, timeoutMs = 5_000): Promise<string> {
+/**
+ * The lane's per-test budget, when it raised one. Starting a real pwsh under
+ * coverage instrumentation on a contended runner outruns this poll's own
+ * default, and a helper deadline is not something `--testTimeout` can reach.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const READ_TIMEOUT_MS = Number.isSafeInteger(LANE_TIMEOUT_MS) && LANE_TIMEOUT_MS > 5_000 ? LANE_TIMEOUT_MS : 5_000
+
+async function readUntil(proc: ShellProcess, expected: string, timeoutMs = READ_TIMEOUT_MS): Promise<string> {
   const deadline = Date.now() + timeoutMs
   let all = ''
   while (Date.now() < deadline) {
