@@ -24,6 +24,19 @@ afterEach(async () => {
   await closeMockServers()
 })
 
+/**
+ * Deadline for observing the server-side close after the adapter's watchdog
+ * fires. The observation crosses a socket and a mock HTTP server, which under
+ * coverage instrumentation on a contended runner outran a one-second literal,
+ * and a helper deadline is not something `--testTimeout` can reach. Half the
+ * lane's case budget, so a rejection still reports its own message rather than
+ * being cut short by the case timing out around it.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const RESPONSE_CLOSE_TIMEOUT_MS = Number.isSafeInteger(LANE_TIMEOUT_MS) && LANE_TIMEOUT_MS > 2_000
+  ? Math.floor(LANE_TIMEOUT_MS / 2)
+  : 1_000
+
 const IMAGE_REF: ImageAttachmentRef = {
   attachmentId: AttachmentId(`sha256:${'a'.repeat(64)}`),
   mediaType: 'image/png',
@@ -401,7 +414,7 @@ describe('PiAiAdapter provider routing', () => {
     await Promise.race([
       server.responseClosed,
       new Promise<never>((_resolve, reject) => {
-        setTimeout(() => { reject(new Error('SDK request did not close after idle timeout')) }, 1_000)
+        setTimeout(() => { reject(new Error('SDK request did not close after idle timeout')) }, RESPONSE_CLOSE_TIMEOUT_MS)
       }),
     ])
 
