@@ -30,6 +30,11 @@ const MODE = webSnapshotMode()
 // shorter than Playwright's round trips; 50 ms supplies test-only headroom,
 // while larger values lengthen all three replay scenarios linearly.
 const REPLAY_PACE_MS = 50
+// The empty-draft flush is the one scenario that must land THREE sends inside
+// call 0's window, and each is a Playwright round trip whose cost is the host's,
+// not the fixture's: a hosted runner spends several times what an idle one does.
+// The pace widens that window linearly, and it lengthens only this scenario.
+const STEER_ALL_PACE_MS = 250
 
 const PROMPT = 'Use the ask_user_question tool to ask me exactly one question with id "checkpoint", question "Ready to continue?", header "Checkpoint", and options labeled "Yes" and "No". After I answer, reply with one short sentence acknowledging my answer and stop.'
 const STEER = 'Interjection: include the word BANANA in your final reply.'
@@ -304,7 +309,7 @@ describe('web e2e: empty-draft Cmd+Enter steers the whole queue', () => {
     scaffold = await launchWebScaffold({
       replayFixture: STEER_ALL_FIXTURE,
       replayOverride: STEER_ALL_OVERRIDE,
-      paceMs: REPLAY_PACE_MS,
+      paceMs: STEER_ALL_PACE_MS,
     })
     scaffold.ctx.on('session/event', (_session, event) => { sessionEvents.push(event) })
     browser = await chromium.launch()
@@ -327,8 +332,9 @@ describe('web e2e: empty-draft Cmd+Enter steers the whole queue', () => {
     await input.waitFor({ timeout: 10_000 })
     const settled = scaffold.whenTurnSettled(30_000)
 
-    // Call 0 streams a question-tool call; the fills must land inside the
-    // first replay window, before the question composer replaces the textarea.
+    // Call 0 streams a question-tool call; the fills must land before the
+    // question composer replaces the textarea, which is why this scenario paces
+    // its replay wider than the two above.
     await input.fill(PROMPT)
     await input.press('Enter')
     await input.fill(STEER_ONE)

@@ -112,23 +112,34 @@ describe('web e2e: queue row actions', () => {
     ).toBe(2)
 
     await page.setViewportSize({ width: 640, height: 1000 })
-    const queueBox = await page.locator('[data-queue-dock]').boundingBox()
-    const composerBox = await page.locator('[data-composer-card]').boundingBox()
-    expect(queueBox).not.toBeNull()
-    expect(composerBox).not.toBeNull()
-    expect(queueBox!.x).toBeGreaterThanOrEqual(composerBox!.x)
-    expect(queueBox!.x + queueBox!.width)
-      .toBeLessThanOrEqual(composerBox!.x + composerBox!.width)
-    const queueLeftInset = queueBox!.x - composerBox!.x
-    const queueRightInset = composerBox!.x + composerBox!.width - queueBox!.x - queueBox!.width
     const composerMetrics = await page.locator('[data-composer-card]').evaluate((element) => {
       const style = getComputedStyle(element)
       return {
         dockInset: Number.parseFloat(style.getPropertyValue('--arx-composer-dock-inset')),
       }
     })
-    expect(queueLeftInset).toBeCloseTo(composerMetrics.dockInset, 1)
-    expect(queueRightInset).toBeCloseTo(composerMetrics.dockInset, 1)
+    /**
+     * The dock's inset on both sides. The narrow viewport re-insets it, so a
+     * box read in the frame the viewport changed in catches the reflow partway
+     * and lands a pixel or two off the token.
+     * @returns left and right inset, or undefined while either box is absent.
+     */
+    const dockInsets = async (): Promise<{ left: number; right: number } | undefined> => {
+      const queueBox = await page.locator('[data-queue-dock]').boundingBox()
+      const composerBox = await page.locator('[data-composer-card]').boundingBox()
+      if (queueBox === null || composerBox === null) return undefined
+      return {
+        left: queueBox.x - composerBox.x,
+        right: composerBox.x + composerBox.width - queueBox.x - queueBox.width,
+      }
+    }
+    await expect.poll(async () => (await dockInsets())?.left, { timeout: 10_000 })
+      .toBeCloseTo(composerMetrics.dockInset, 1)
+    const insets = await dockInsets()
+    expect(insets).toBeDefined()
+    expect(insets!.right).toBeCloseTo(composerMetrics.dockInset, 1)
+    expect(insets!.left).toBeGreaterThanOrEqual(0)
+    expect(insets!.right).toBeGreaterThanOrEqual(0)
     await page.setViewportSize({ width: 1680, height: 1000 })
 
     const editRow = page.getByText(EDIT, { exact: true }).locator('..')

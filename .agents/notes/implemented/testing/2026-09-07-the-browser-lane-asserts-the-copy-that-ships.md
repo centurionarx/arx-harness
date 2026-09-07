@@ -12,7 +12,7 @@ The conversion exposed four defects the Chinese locators had been hiding, becaus
 
 `declared-reasoning.overlay.yml` pins the default model to the route the scenario declares, and the scaffold's own replay seed sits after the extra overlay in the patch list, so it silently replaced that pin. The effort pane describes the current model, and the current model was never the one the scenario came to test.
 
-A Host with no native desktop opener renders the settings document's path and a copy button where a desktop Host renders "Open configuration file". Platform detection answers true on a developer's macOS desktop and false in the headless lane, so the settings goldens documented whichever host recorded them.
+A Host with no native desktop opener renders the settings document's path and a copy button where a Host with one renders "Open configuration file", and `ProducedFiles` drops its "Show in folder" action the same way. Platform detection answers that question from the recording host: true on a macOS desktop and on a hosted Linux runner, which exports `DISPLAY`, and false in a bare container, which does not.
 
 The four shipped `preset.yml` files under [`apps/cli/config/agent-presets`](../../../../apps/cli/config/agent-presets) still published Chinese display copy. The Web client overrides it for built-in presets through `presetDisplayText`, so the page reads English while the file a user duplicates carries Chinese into their own preset directory.
 
@@ -26,7 +26,7 @@ Content whose subject is CJK stays: `markdown-cjk-strong.e2e.ts`, the wide-table
 
 `plugin-config.e2e.ts` counts the two cards the composition contributes and names the file that covers the third surface. That file, `web-search-settings.e2e.ts`, is new: it pins the shipped page — both providers dormant, no key field, and the seam reporting `WEB_PROVIDER_UNAVAILABLE` — then drives a deployment that names the credential references through the key write, the ambiguity two usable providers produce, the pin, and the removal. The shipped scenario's golden records a real gap: the bundle mounts both providers with no config, so neither settings section carries an `apiKeyEnv` and the page has no reference to write a key under.
 
-`launchWebScaffold` gained `nativeOpen`, pinned false — the headless answer the lane has always produced — and patched onto the `api-gateway` row. `settings-chrome.e2e.ts` asserts the path-and-copy branch there and covers the opener in a scenario that asks for true, so both halves are pinned and neither depends on the recording host.
+`launchWebScaffold` gained `nativeOpen`, pinned true — the answer both CI and a developer desktop give — and patched onto the `api-gateway` row. `settings-chrome.e2e.ts` drives the opener on the shared page and covers the path-and-copy branch in a scenario that asks for false, so both halves are pinned and neither depends on the recording host. Agent-preset authoring asks for false as well: where a duplicated preset landed is what it proves, and the section names that path only where no opener exists.
 
 The scaffold skips its replay-route seed when the scenario's own overlay pins `agent-default-model`. A scenario that names a default came to test that route.
 
@@ -40,13 +40,14 @@ The scaffold skips its replay-route seed when the scenario's own overlay pins `a
 - **Keep the goldens Chinese and translate only the locators.** The goldens capture the rendered surface; they cannot spell copy the client no longer registers.
 - **Leave `preset.yml` Chinese because the Web client overrides it.** The override covers built-ins only. A duplicated preset is user trust, gets no override, and would show its Chinese source copy in the picker.
 - **Let `nativeOpen` follow platform detection and assert whichever branch appears.** A golden cannot record both, and a scenario that accepts either stops testing the control.
+- **Pin `nativeOpen` false, matching a bare container.** The container is the outlier: a hosted Linux runner exports `DISPLAY` and a macOS desktop needs no detection, so false would remove an affordance that works on every host this lane runs on — which is exactly what it did to `ProducedFiles` before the value was corrected.
 - **Delete the settings-language scenario now that one locale ships.** The row still writes a preference the Host owns across a reload and a distinct port; only the switch between two locales is gone, and that half is what the scenario now omits.
 
 ## Consequences
 
 The browser lane is now a check on the copy the client registers. Adding a dictionary key that a scenario asserts and forgetting to register it fails the lane instead of passing on a locale nothing serves; renaming one fails it in the golden. The cost is that a copy change now touches the scenario and the golden together, which was already true of every non-locale string in the lane.
 
-The two `nativeOpen` scenarios pin both branches of the same control, so neither the settings goldens nor `ProducedFiles` depends on whether the recording host has a desktop. A scenario that wants the other branch asks for it; a scenario that adds a surface offering "open this path" gets the headless answer unless it says otherwise.
+The two `nativeOpen` scenarios pin both branches of the same control, so neither the settings goldens nor `ProducedFiles` depends on whether the recording host has a desktop. A scenario that wants the other branch asks for it; a scenario that adds a surface offering "open this path" gets the desktop answer unless it says otherwise.
 
 `web-search-settings.e2e.ts` records a shipped gap rather than fixing it: the Web bundle mounts both search providers with no `apiKeyEnv`, so the settings page it ships cannot accept a key and the section's own intro promises one. Wiring the references on those rows is a composition change with its own consequences for a deployment that resolves keys another way, so it is left to a change that can weigh them; the golden makes the current answer visible until then.
 

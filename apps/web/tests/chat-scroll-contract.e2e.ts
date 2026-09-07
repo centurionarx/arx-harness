@@ -508,9 +508,11 @@ describe('web e2e: long Chat scroll contract', () => {
         await wheelTranscript(world.page, 420)
         const readerAnchor = await visibleFlowAnchor(world.page)
         const chunksAfterAnchor = world.events.filter(event => event.type === 'assistant/chunk').length
+        // Five more chunks off a live stream, which a hosted runner feeds at a
+        // fraction of an idle host's rate; the release below already waits 30.
         await expect.poll(
           () => world.events.filter(event => event.type === 'assistant/chunk').length,
-          { timeout: 10_000 },
+          { timeout: 30_000 },
         ).toBeGreaterThan(chunksAfterAnchor + 5)
 
         releaseHistory()
