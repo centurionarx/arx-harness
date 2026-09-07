@@ -432,7 +432,13 @@ jobs:
     name: windows node 24 / native complete
     timeout-minutes: 120
     env:
-      ARX_COVERAGE_MAX_WORKERS: '6'
+      # One worker per core on the standard hosted runner, as on the Linux
+      # coverage lane: `windows-2025` has four, the instrumented and exempt
+      # gates run at the same time out of this one total, and the multi-worktree
+      # Lefthook cases wait on a peer installer's lock — a starved peer spends
+      # their budget without the installer behaving differently. The self-hosted
+      # pool is larger and keeps the higher count.
+      ARX_COVERAGE_MAX_WORKERS: ${{ vars.ARX_CI_FAILOVER_WINDOWS == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '6' || '4' }}
       ARX_COVERAGE_PARTITIONS: '8'
       # Instrumented process and polling fixtures can exceed Vitest's defaults
       # under the complete lane's concurrent gate load.
