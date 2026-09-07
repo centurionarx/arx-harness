@@ -69,12 +69,15 @@ describe('web e2e: startup auto-selection', () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-first-workspace-stable-tree'))
     await page.locator(`${ROOT_PHASE}[data-phase="hero"]`).waitFor({ timeout: 15_000 })
     const headline = page.getByText('Into the Unknown', { exact: true })
-    const fishHitbox = headline.locator('xpath=preceding-sibling::span[1]')
-    const fish = fishHitbox.locator('svg')
-    expect(await fish.evaluate(node => getComputedStyle(node).color))
-      .toBe(await headline.evaluate(node => getComputedStyle(node).color))
-    await fishHitbox.hover()
-    expect(await fish.evaluate(node => getComputedStyle(node).animationName)).not.toBe('none')
+    // The brand mark leads the headline and carries its own colors — it is
+    // raster artwork behind a hitbox, not a vector taking the headline's ink —
+    // so what the assembled page proves here is that the hitbox reaches it and
+    // hover still runs the focus animation on it.
+    const markHitbox = headline.locator('xpath=preceding-sibling::span[1]')
+    const mark = markHitbox.locator('span')
+    expect(await mark.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('data:image/png')
+    await markHitbox.hover()
+    expect(await mark.evaluate(node => getComputedStyle(node).animationName)).not.toBe('none')
     await page.evaluate(() => {
       const refs = {
         root: document.querySelector('div[data-phase="hero"]'),
