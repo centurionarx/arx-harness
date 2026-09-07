@@ -7,13 +7,17 @@
     - button "Models":
       - img
       - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
     - button "Plugins":
       - img
       - text: Plugins
     - button "Agent presets":
       - img
       - text: Agent presets
-  - button "Open configuration file"
+  - text: {{cwd}}/.arx-home/settings.yaml
+  - button "Copy path"
   - button "Close":
     - img
     - text: Close

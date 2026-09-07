@@ -1,0 +1,11 @@
+# The shipped Web bundle mounts both search providers with no config, so their
+# settings sections carry no `apiKeyEnv` and the page has no reference to write a
+# key under. A deployment that names the references is what makes the page's key
+# form reachable; this overlay is that deployment.
+- id: web-search-exa
+  config:
+    apiKeyEnv: EXA_API_KEY
+
+- id: web-search-perplexity
+  config:
+    apiKeyEnv: PERPLEXITY_API_KEY
