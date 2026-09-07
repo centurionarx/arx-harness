@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-root",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -100,6 +100,9 @@
     "verify-client-packages": "tsx scripts/verify-client-packages.ts",
     "verify-vendored-links": "tsx scripts/verify-vendored-links.ts",
     "verify-cordis-config": "tsx scripts/verify-cordis-config.ts",
+    "verify-translation-pairing": "tsx scripts/verify-translation-pairing.ts",
+    "verify-translation-prompt": "tsx scripts/verify-translation-prompt.ts",
+    "gen-translation-brief": "tsx scripts/gen-translation-brief.ts",
     "rescope-vendor": "tsx scripts/rescope-vendor.ts",
     "rescope-vendor:check": "tsx scripts/rescope-vendor.ts --check",
     "verify-client-domain-graph": "tsx scripts/verify-client-domain-graph.ts",
@@ -145,6 +148,7 @@
   },
   "devDependencies": {
     "@agentclientprotocol/sdk": "0.25.1",
+    "@arx-ai/arx": "workspace:^",
     "@arx-ai/arx-tool-session-query": "workspace:^",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@testing-library/dom": "^10.4.1",

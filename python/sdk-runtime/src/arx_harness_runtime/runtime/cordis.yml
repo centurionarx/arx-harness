@@ -13,12 +13,55 @@
     workspaceContext:
       maxBytes: 65536
 
-# Stock DeepSeek adapters. The adapter resolves DEEPSEEK_API_KEY through the
-# credential seam and, with no provider mounted here, from the launching
-# environment; DEEPSEEK_BASE_URL follows the same environment ladder. Neither
-# is inlined, so this file names no secret and no route.
-- id: llm-deepseek
-  name: '@arx-ai/arx-llm-deepseek'
+# Model access. The SDK names its provider, model, endpoint, and credential
+# per session, so this route follows the launching environment rather than
+# pinning any of them: `DEEPSEEK_BASE_URL` and `DEEPSEEK_API_KEY` come from the
+# SDK's own env, and `ARX_MODEL` carries the model the caller asked for. The
+# adapter serves only models its route lists, so a caller pointing at their own
+# gateway would otherwise get UNKNOWN_MODEL for a name this file could not
+# know. The shipped ids stay listed beside it, so a default session works with
+# no environment at all.
+- id: llm
+  name: '@arx-ai/arx-llm-pi-ai'
+  config:
+    providers:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
+        apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
+        # Reasoning and the model list answer the same question and must move
+        # together: pi-ai rejects a requested effort a model does not list, so
+        # asking for `high` from a model served as non-reasoning fails the turn
+        # with UNSUPPORTED_REASONING_EFFORT before the request leaves the
+        # process. The shipped ids declare the dispatch `high` needs. A
+        # caller's own id cannot — no listing endpoint reports a model's
+        # reasoning protocol, and the installed catalog by definition does not
+        # carry a private gateway's id — so serving one drops the route to
+        # `off` and lists it as non-reasoning. Declaring `high` on its behalf
+        # would only move the failure to the caller's server.
+        reasoning: !!js >-
+          (() => {
+            const named = process.env.ARX_MODEL
+            const foreign = typeof named === 'string' && named.length > 0
+              && !['deepseek-v4-pro', 'deepseek-v4-flash'].includes(named)
+            return foreign ? 'off' : 'high'
+          })()
+        models: !!js >-
+          (() => {
+            const shipped = [
+              { id: 'deepseek-v4-pro', reasoningEfforts: { off: null, high: 'high' } },
+              { id: 'deepseek-v4-flash', reasoningEfforts: { off: null, high: 'high' } },
+            ]
+            const named = process.env.ARX_MODEL
+            if (typeof named !== 'string' || named.length === 0) return shipped
+            if (shipped.some(model => model.id === named)) return shipped
+            return [...shipped, { id: named, reasoningEfforts: false }]
+          })()
 
 # JSONL persistence; $ARX_SESSION_ROOT wins over ./.sessions in the process cwd.
 - id: sessions

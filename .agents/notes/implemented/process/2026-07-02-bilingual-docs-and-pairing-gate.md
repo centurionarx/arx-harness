@@ -2,6 +2,8 @@
 
 Status: implemented
 
+English | [Português](2026-07-02-bilingual-docs-and-pairing-gate.pt-BR.md)
+
 ## Problem
 
 This repo's documentation corpus is read by people and agents inside and outside the company, in English and Brazilian Portuguese. Maintaining a second language by hand, with no mechanism, is how translations rot: one side moves on, the other silently lies, and no gate notices. The repo's standing answer to invariants of this kind is to encode them as a mechanical check (see [quality gates](2026-06-11-quality-gates.md) and doc-sync enforcement), so the bilingual policy ships with one.
@@ -38,5 +40,5 @@ Paired sibling files with locale suffixes are the dominant Chinese big-tech conv
 - Every pair adds a third file to the tree. The record is machine-written (`--write`), so the cost is directory noise, not maintenance effort; in exchange, "who confirmed these consistent, and when" is answerable from git blame on the yaml.
 - When the two sides disagree, no mechanical rule picks a winner — the PR review does. That is the price of equal authority, accepted deliberately: the alternative (a canonical language) forbids Portuguese-first authoring.
 - Generated English documents remain derived from source and freshness-gated by their owning generators. A generated page with a reviewed Portuguese counterpart participates in the three-file pairing workflow, with one structural exception: the generated English source has no language switcher because adding one would make the generator stale, while the Portuguese counterpart links back to it. Generated pages without a reviewed counterpart remain explicit exclusions and use an English website projection.
-- The exclusions-only manifest makes every current and future in-scope document mandatory through the same path. There is no explicit requirement, cutoff, or class entry that can fall outside discovery while appearing enforced.
+- The exclusions-only manifest makes every current and future in-scope document mandatory through the same path. There is no explicit requirement, cutoff, or class entry that can fall outside discovery while appearing enforced. Since the corpus switched languages, [`included` names the active corpus](2026-09-06-the-active-corpus-is-named.md) as a filter over that same discovery; the exclusion path is unchanged.
 - The recorded hashes double as the update tool: [gen-translation-brief](2026-07-26-briefed-minimal-translation-updates.md) recovers either side's last-confirmed text from them and assembles the minimal-update briefing, so re-translation of whole files is never forced by the mechanism.

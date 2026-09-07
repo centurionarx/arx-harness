@@ -90,6 +90,8 @@ interface ScrollWorldOptions {
   readonly failureShot: string
   readonly replay?: ReplayOverrideDoc
   readonly seeds: readonly { fixture: ChatScrollFixture; id: string }[]
+  /** Milliseconds between streamed chunks; defaults to {@link STREAM_PACE_MS}. */
+  readonly paceMs?: number
 }
 
 function textStream(first: string, done: string, deltaCount: number): StreamChunk[] {
@@ -154,7 +156,7 @@ async function launchScrollWorld(options: ScrollWorldOptions): Promise<ScrollWor
       scaffold = await launchWebScaffold({
         replayFixture: join(replayDir, 'override-only.jsonl'),
         replayOverride,
-        paceMs: STREAM_PACE_MS,
+        paceMs: options.paceMs ?? STREAM_PACE_MS,
         replayContextWindow: REPLAY_CONTEXT_WINDOW,
       })
     } else {
@@ -469,6 +471,12 @@ describe('web e2e: long Chat scroll contract', () => {
       failureShot: 'web-e2e-chat-scroll-history-stream',
       replay: [replayEntry(textStream(LIVE_TEXT_FIRST, LIVE_TEXT_DONE, 120))],
       seeds: [{ fixture: HISTORY_FIXTURE, id: HISTORY_SESSION_ID }],
+      // The scenario samples the chunk count AFTER two wheel walks and a held
+      // history request, then waits for the stream to grow past it. At the
+      // file's shared pace those 120 chunks are spent in under three seconds,
+      // which a hosted runner outlasts — the count is then final and no wait
+      // can move it. This pace keeps the stream running through the setup.
+      paceMs: 200,
     }, async (world) => {
       await openSeed(
         world.page,
@@ -510,7 +518,7 @@ describe('web e2e: long Chat scroll contract', () => {
         const chunksAfterAnchor = world.events.filter(event => event.type === 'assistant/chunk').length
         await expect.poll(
           () => world.events.filter(event => event.type === 'assistant/chunk').length,
-          { timeout: 10_000 },
+          { timeout: 30_000 },
         ).toBeGreaterThan(chunksAfterAnchor + 5)
 
         releaseHistory()

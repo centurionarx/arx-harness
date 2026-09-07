@@ -19,7 +19,7 @@ import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import * as claudeCode from '../src/index.ts'
 
 const execFileAsync = promisify(execFile)
-const OFFICIAL_DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
+const OFFICIAL_BASE_URL = 'https://api.deepseek.com'
 const sdkRoot = dirname(fileURLToPath(
   import.meta.resolve('@anthropic-ai/claude-agent-sdk'),
 ))
@@ -46,11 +46,11 @@ afterEach(async () => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
 })
 
-function deepSeekBaseUrl(): string {
-  const configured = (process.env.DEEPSEEK_BASE_URL ?? OFFICIAL_DEEPSEEK_BASE_URL)
+function modelBaseUrl(): string {
+  const configured = (process.env.DEEPSEEK_BASE_URL ?? OFFICIAL_BASE_URL)
     .replace(/\/+$/, '')
-  if (configured !== OFFICIAL_DEEPSEEK_BASE_URL) {
-    throw new Error('Claude Code DeepSeek e2e requires the official DeepSeek base URL')
+  if (configured !== OFFICIAL_BASE_URL) {
+    throw new Error('Claude Code model e2e requires the official base URL')
   }
   return configured
 }
@@ -64,12 +64,12 @@ async function expectQuiescent(handles: readonly SubprocessHandle[]): Promise<vo
 }
 
 describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
-  'Claude Code provider with real DeepSeek API',
+  'Claude Code provider against the real model API',
   () => {
     it('returns one unique nonce through the production provider and real SDK/CLI', async () => {
       const apiKey = process.env.DEEPSEEK_API_KEY
       if (apiKey === undefined) throw new Error('e2e ran without DEEPSEEK_API_KEY')
-      const root = mkdtempSync(join(tmpdir(), 'arx-claude-deepseek-e2e-'))
+      const root = mkdtempSync(join(tmpdir(), 'arx-claude-code-model-e2e-'))
       roots.push(root)
       const workspace = join(root, 'workspace')
       const claudeConfig = join(root, 'claude-config')
@@ -88,7 +88,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
 
       const env = {
         ANTHROPIC_AUTH_TOKEN: apiKey,
-        ANTHROPIC_BASE_URL: `${deepSeekBaseUrl()}/anthropic`,
+        ANTHROPIC_BASE_URL: `${modelBaseUrl()}/anthropic`,
         ANTHROPIC_MODEL: 'deepseek-v4-pro[1m]',
         ANTHROPIC_DEFAULT_OPUS_MODEL: 'deepseek-v4-pro[1m]',
         ANTHROPIC_DEFAULT_SONNET_MODEL: 'deepseek-v4-pro[1m]',
@@ -131,9 +131,9 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY)(
       })
       expect(version.stdout.trim()).toBe('2.1.220 (Claude Code)')
 
-      const nonce = `ARX_CLAUDE_DEEPSEEK_${randomUUID()}`
+      const nonce = `ARX_CLAUDE_CODE_E2E_${randomUUID()}`
       const parent = {
-        id: 'deepseek-e2e-parent',
+        id: 'model-e2e-parent',
         session: { header: { cwd: workspace } },
       } as unknown as Agent
       const run = await ctx.subagents.start('claude-code', {

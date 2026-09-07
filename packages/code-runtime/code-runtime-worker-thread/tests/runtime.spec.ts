@@ -170,7 +170,17 @@ describe('WorkerThreadCodeRuntime — programs and bindings (real workers)', () 
   })
 })
 
-describe('WorkerThreadCodeRuntime — budgets and containment (real workers)', () => {
+/**
+ * The lane's per-test budget when it raised one. These cases move 64 MiB
+ * payloads through a real worker under coverage instrumentation, and an
+ * explicit `it` timeout overrides `--testTimeout` rather than deferring to it.
+ * The floor is what the boundary case measured on a shared runner, not what it
+ * costs on an idle host, where it settles in under a second.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const MEMORY_CASE_TIMEOUT_MS = Math.max(Number.isSafeInteger(LANE_TIMEOUT_MS) ? LANE_TIMEOUT_MS : 0, 180_000)
+
+describe('WorkerThreadCodeRuntime — budgets and containment (real workers)', { timeout: MEMORY_CASE_TIMEOUT_MS }, () => {
   it('ends a hot loop at the compute budget — including behind a pending decoy dispatch', async () => {
     const { runtime } = await setup({ computeMs: 300, maxWallMs: 30_000 })
     const result = await runtime.run({
@@ -389,14 +399,14 @@ describe('WorkerThreadCodeRuntime — budgets and containment (real workers)', (
     expect(result.error).toBeUndefined()
     expect(result.logs).toEqual([])
     expect(result.value).toHaveLength(67_108_860)
-  }, 60_000)
+  }, MEMORY_CASE_TIMEOUT_MS)
 
   it('fails one byte over the default 64 MiB combined boundary', async () => {
     const { runtime } = await setup()
     const result = await runtime.run({ program: 'return "x".repeat(67_108_861)', bindings: [] })
     expect(result.value).toBeUndefined()
     expect(result.error).toEqual({ kind: 'output-limit', message: 'outer output exceeded 67108864 bytes' })
-  }, 60_000)
+  }, MEMORY_CASE_TIMEOUT_MS)
 
   it('accounts pipe writes that bypass the patched write slot in the same outer ledger', async () => {
     const { runtime } = await setup({ maxOutputBytes: 80 })

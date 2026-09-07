@@ -7,6 +7,9 @@
     - button "Models":
       - img
       - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
     - button "Plugins":
       - img
       - text: Plugins

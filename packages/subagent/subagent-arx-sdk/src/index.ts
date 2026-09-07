@@ -1,6 +1,6 @@
 /**
- * Out-of-process SDK subagent backend. Each child is a complete DeepSeek
- * Harness runtime in its own process — own `cordis.yml`-decided composition,
+ * Out-of-process SDK subagent backend. Each child is a complete harness
+ * runtime in its own process — own `cordis.yml`-decided composition,
  * session, model route, and tools — driven over stdio JSON-RPC through the
  * TypeScript SDK client, so it shares no Cordis context and advertises no
  * parent-enforced start capabilities; the ONE thing it reads off

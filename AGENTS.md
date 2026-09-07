@@ -10,7 +10,7 @@ packages/    @arx-ai/arx-<pkg> workspaces at packages/<group>/<pkg>/
   core/        product API spine: session, system-prompt, tools, agent, agent-loop
   api/         Remote BFF assembly and Typert RPC gateway
   typert/      type graph generator, loader, and runtime registry
-  llm/         LLM capability: Service Definition/Consumer + DeepSeek providers
+  llm/         LLM capability: Service Definition/Consumer + model-route providers
   e2b/         E2B POC: sandbox + FS/subprocess adapters
   shell/        bash capability: Service Definition + local/pwsh providers + shell Consumers
   subprocess/  subprocess capability + local process-tree provider
@@ -94,7 +94,7 @@ Real-API tests and demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, 
 
 ## Conventions
 
-- **Naming**: the organization is Centurionarx; the product is arx / arx Harness. `DeepSeek` appears only in model-access configuration ([brand naming](.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)).
+- **Naming**: the organization is Centurionarx; the product is arx / arx Harness. The model vendor's name appears only in model-access configuration ([brand naming](.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)).
 
 - Every npm package is `@arx-ai/arx-<name>`; vendored packages are rescoped ([mapping](docs/rescope.md)) and `private: true`. `@arx-ai/cordis` is a peerDependency (+ dev) of every harness package.
 - ESM everywhere (`"type": "module"`). Use package names across packages and `.ts` in local relative imports. Config subprocesses run built `lib/` under plain Node; source regressions use their declared launcher ([testing policy](docs/testing.md#test-subprocess-launch-modes)). The `arx` CLI source launch runs through tsx's ESM-only hook (`node --import tsx/esm`); modules it reaches must stay ESM (no CJS-only exports) — Node's native TypeScript modes are unavailable across the engines range ([source-launch contract](.agents/notes/implemented/architecture/2026-07-29-arx-source-launch-tsx-esm.md)). Raw/Web `cordis.yml` bare plugins must appear in their resolver manifest's `dependencies`; `verify-cordis-config` enforces it.

@@ -1,5 +1,5 @@
 # Session-title snapshot composition: the optional first-prompt provider uses
-# the ordinary DeepSeek route while the ACP app and every other capability stay
+# the app's ordinary model route while the ACP app and every other capability stay
 # identical to the base example.
 - id: base
   name: '@arx-ai/cordis-plugin-include'

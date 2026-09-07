@@ -1,5 +1,7 @@
 # arx Harness Brand Asset Usage Guidelines
 
+English | [Português](BRAND_GUIDELINES.pt-BR.md)
+
 To maintain the long\-term healthy development of the arx Harness ecosystem, avoid user confusion, and facilitate the retrieval and identification of related resources, we have established these specifications and hope that everyone will adhere to them:
 
 - In your project's descriptive text, you may use "arx Harness" to truthfully and accurately describe your project's relationship with arx Harness, for example, "built on arx Harness" or "compatible with arx Harness\." Such descriptions comply with license requirements and help users understand your project's positioning\.

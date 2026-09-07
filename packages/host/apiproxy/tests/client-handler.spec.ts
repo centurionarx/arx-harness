@@ -28,6 +28,7 @@ function scriptedApi(overrides: {
   settings?: Partial<ApiProxy['settings']>
   credentials?: Partial<ApiProxy['credentials']>
   llm?: Partial<ApiProxy['llm']>
+  web?: Partial<ApiProxy['web']>
   respond?: ApiProxy['respond']
 } = {}): ApiProxy {
   async function *empty<F>(): AsyncGenerator<RpcRequest<F>> { /* no frames */ }
@@ -128,6 +129,10 @@ function scriptedApi(overrides: {
       models: r => ok(r, { groups: [], failures: [] }),
       discoverModels: err,
       ...overrides.llm,
+    },
+    web: {
+      providers: r => ok(r, { providers: [], selection: {} }),
+      ...overrides.web,
     },
     events: { mux: () => empty<MuxFrame>(), host: () => empty<HostFrame>(), ...overrides.events },
     respond: overrides.respond ?? (() => Promise.resolve({ accepted: false as const, reason: 'not-pending' as const })),
@@ -717,7 +722,7 @@ describe('envelope tap', () => {
 })
 
 describe('config unary surface', () => {
-  it('round-trips every settings/credentials/llm method with its own payload and value shape', async () => {
+  it('round-trips every settings/credentials/llm/web method with its own payload and value shape', async () => {
     const seen: { method: string; payload: unknown }[] = []
     const record = recorderInto(seen)
     const view = {
@@ -737,6 +742,7 @@ describe('config unary surface', () => {
       active: false,
     }
     const group = { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-v4-flash', name: 'Flash' }] }
+    const webRow = { provider: 'exa', displayName: 'Exa', settingsNs: 'web-search-exa', settingsPath: [], available: true }
     const api = scriptedApi({
       settings: {
         describe: record('settings.describe', r => ok(r, { writable: true, hasDocument: false, namespaces: [view] })),
@@ -754,6 +760,9 @@ describe('config unary surface', () => {
         providers: record('llm.providers', r => ok(r, { providers: [providerRow] })),
         models: record('llm.models', r => ok(r, { groups: [group], failures: [] })),
         discoverModels: record('llm.discoverModels', r => ok(r, { models: [{ id: 'acme-large', contextWindow: 65536 }] })),
+      },
+      web: {
+        providers: record('web.providers', r => ok(r, { providers: [webRow], selection: { effective: 'exa' } })),
       },
     })
     const c = client(api)
@@ -786,11 +795,14 @@ describe('config unary surface', () => {
       apiKey: 'probe-key',
     })
     expect(discovered.result).toEqual({ ok: true, value: { models: [{ id: 'acme-large', contextWindow: 65536 }] } })
+    const searchProviders = await c.web.providers({})
+    expect(searchProviders.result).toEqual({ ok: true, value: { providers: [webRow], selection: { effective: 'exa' } } })
 
     expect(seen.map(call => call.method)).toEqual([
       'settings.describe', 'settings.openDocument', 'settings.update', 'settings.replace', 'settings.mutate',
       'credentials.describe', 'credentials.set', 'credentials.unset',
       'llm.providers', 'llm.models', 'llm.discoverModels',
+      'web.providers',
     ])
     expect(seen[2]?.payload).toEqual({ ns: 'llm-deepseek', patch: { baseURL: 'https://next' } })
     expect(seen[4]?.payload)

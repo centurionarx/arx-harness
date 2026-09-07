@@ -104,7 +104,7 @@ describe('gate graph validation', () => {
 
     expect(ids.slice(0, 10)).toEqual([
       'doc-typecheck', 'docs-site-build', 'doc-graphs', 'markdown-links', 'type-equivalence',
-      'cordis-catalog', 'mermaid', 'scoped-events', 'translation-pairing', 'markdown-wrap',
+      'cordis-catalog', 'mermaid', 'scoped-events', 'markdown-wrap', 'client-catalog',
     ])
   })
 
@@ -157,7 +157,7 @@ describe('gate graph validation', () => {
     }
   })
 
-  it('applies one configured test and polling timeout to both coverage gates', () => {
+  it('applies one configured test, polling, and hook timeout to both coverage gates', () => {
     const gates = withEnv('ARX_COVERAGE_TEST_TIMEOUT_MS', '15000', () =>
       withPnpmEntrypoint(() => gatesForMode('ci-windows-complete')))
 
@@ -165,6 +165,7 @@ describe('gate graph validation', () => {
       expect(gates.find(subject => subject.id === id)?.args).toEqual(expect.arrayContaining([
         '--testTimeout=15000',
         '--expect.poll.timeout=15000',
+        '--hookTimeout=15000',
       ]))
     }
   })

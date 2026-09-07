@@ -45,10 +45,11 @@ function mount(
   version?: string,
   mutateImpl: () => Promise<unknown> = () =>
     Promise.resolve(response(welcomeView({ [WELCOME_NOTICE_ACK_FIELD]: WELCOME_NOTICE_VERSION }, 1))),
+  attachAppRoot = true,
 ) {
   const appRoot = document.createElement('div')
   appRoot.id = 'root'
-  document.body.append(appRoot)
+  if (attachAppRoot) document.body.append(appRoot)
   const mutate = vi.fn(mutateImpl)
   const api = {
     settings: {
@@ -111,6 +112,15 @@ describe('WelcomeNotice', () => {
     fireEvent.click(document.querySelector('[class*="mask"]')!)
     expect(h.complete).not.toHaveBeenCalled()
     expect(screen.getByRole('dialog')).toBeTruthy()
+  })
+
+  it('renders on a host page that has no application root to make inert', async () => {
+    const h = mount(undefined, undefined, false)
+    await screen.findByRole('dialog')
+    // Nothing to mark inert; the modal still blocks on its own chrome, and the
+    // detached element is left exactly as it was found.
+    expect(document.getElementById('root')).toBeNull()
+    expect(h.appRoot.inert).toBeUndefined()
   })
 
   it('completes only after the acknowledgement write commits', async () => {

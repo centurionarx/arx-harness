@@ -20,6 +20,9 @@
 - button "Settings":
   - img
   - text: Settings
+- button "Exit":
+  - img
+  - text: Exit
 - text: Into the Unknown Preview
 - button "Choose workspace":
   - img

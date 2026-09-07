@@ -1,0 +1,38 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - region "Web search":
+    - heading "Web search" [level=2]
+    - paragraph: Choose which provider answers web searches and store its API key.
+    - text: Search provider
+    - combobox "Search provider":
+      - option "Automatic — the one usable provider" [selected]
+      - option "Exa"
+      - option "Perplexity"
+    - status: No provider has a usable key; searches fail until one does.
+    - list:
+      - listitem:
+        - text: Exa
+        - img "Not usable"
+      - listitem:
+        - text: Perplexity
+        - img "Not usable"

@@ -28,6 +28,7 @@ export type {} from '@arx-ai/arx-commands/types'
 export type {} from '@arx-ai/arx-cordis-host-runner/types'
 export type {} from '@arx-ai/arx-credentials/types'
 export type {} from '@arx-ai/arx-llm/types'
+export type {} from '@arx-ai/arx-web/types'
 export type {} from '@arx-ai/arx-agent-presets/types'
 export type {} from '@arx-ai/arx-settings/types'
 
@@ -44,7 +45,7 @@ export type {
   RpcRequest, RpcResponse, RpcResult, SessionId, SessionModels, SessionSearchItem,
   SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillEntry, StreamChunk,
   SubagentAddress, SubagentCatalog, JobView, ToolCallView, ToolEventView, ToolResultView,
-  WorkspaceId, WorkspaceView,
+  WebApi, WebProviderView, WebSelectionFailureView, WebSelectionView, WorkspaceId, WorkspaceView,
 } from '@arx-ai/arx-client-connection/client'
 export type {} from '@arx-ai/arx-api-gateway/client'
 export type {} from '@arx-ai/arx-cordis-host-runner/remote'

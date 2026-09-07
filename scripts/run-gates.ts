@@ -412,6 +412,17 @@ function ciArtifactGates(): Gate[] {
 function ciConsumerGates(): Gate[] {
   const builtTree = ['build']
   const validatedBuild = ['built-package-invariants']
+  // Two gates here wait on wall clock rather than on CPU they can share: the
+  // browser gate drives eighty browser scenarios whose polls and readiness
+  // waits are fixed budgets, and the built-bin smoke boots the published bin
+  // four times inside one case. Neither can absorb a runner already saturated
+  // by lint and the snapshot pool, which are pure CPU burn and finish on their
+  // own schedule, so both start only once those two have settled — and the
+  // built-bin smoke waits for the browser gate too, leaving the browser pool
+  // the runner to itself. On a runner with cores to spare the aggregate's
+  // concurrency limit is what keeps them apart anyway; this ordering is what
+  // makes the hosted four-core lane honest.
+  const afterCpuHeavy = ['lint-and-duplication', 'snapshot']
   return [
     ciBuildGate(),
     pnpmScript('node-compat', 'check:node-compat', {
@@ -425,7 +436,7 @@ function ciConsumerGates(): Gate[] {
       needs: validatedBuild,
     }),
     snapshotGate(validatedBuild),
-    webSnapshotGate(validatedBuild),
+    { ...webSnapshotGate(validatedBuild), after: afterCpuHeavy },
     pnpmScript('doc-typecheck', 'doc-typecheck:contracts-ready', {
       needs: validatedBuild,
       env: { ARX_DOC_TYPECHECK_USE_BUILD_OUTPUT: '1' },
@@ -434,7 +445,7 @@ function ciConsumerGates(): Gate[] {
       label: 'node-next types',
       needs: validatedBuild,
     }),
-    builtBinSmokeGate(validatedBuild),
+    { ...builtBinSmokeGate(validatedBuild), after: [...afterCpuHeavy, 'web-snapshot'] },
   ]
 }
 
@@ -579,9 +590,10 @@ function lintGate(options: { needs?: string[] } = {}): Gate {
 // small share. A budget of 1 gives each gate 1 worker; lanes that need a strict
 // total of one (the serial reference jobs) also set ARX_GATE_CONCURRENCY=1,
 // which keeps the gates from overlapping at all.
-// ARX_COVERAGE_TEST_TIMEOUT_MS raises Vitest's per-test and expect.poll
+// ARX_COVERAGE_TEST_TIMEOUT_MS raises Vitest's per-test, expect.poll, and hook
 // defaults together for instrumented lanes whose scheduling overhead exceeds
-// those defaults. Explicit fixture timeouts remain authoritative.
+// those defaults. Explicit fixture timeouts remain authoritative, so a suite
+// naming a smaller one lowers what the lane grants it.
 function coverageWorkerArgs(): { instrumented: string[]; exempt: string[] } {
   const [flag] = positiveIntArg('ARX_COVERAGE_MAX_WORKERS', '--maxWorkers')
   if (flag === undefined) return { instrumented: [], exempt: [] }
@@ -717,6 +729,8 @@ function docSyncLeafGates(options: {
     pnpmScript('package-paths', 'verify-package-paths', { label: 'package paths' }),
     pnpmScript('windows-parity', 'verify:windows-parity', { label: 'Windows parity' }),
     pnpmScript('config-source-ownership', 'verify-config-source-ownership', { label: 'config source ownership' }),
+    pnpmScript('translation-prompt', 'verify-translation-prompt', { label: 'translation prompt' }),
+    pnpmScript('translation-pairing', 'verify-translation-pairing', { label: 'translation pairing' }),
     pnpmScript('package-readme-model-experience', 'verify-package-readme-model-experience', { label: 'package README model experience' }),
     pnpmScript('agent-note-classification', 'verify-agent-note-classification', { label: 'agent note classification' }),
     pnpmScript('agent-note-format', 'verify-agent-note-format', { label: 'agent note format' }),

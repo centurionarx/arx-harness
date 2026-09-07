@@ -2,21 +2,22 @@
  * `@arx-ai/arx-web-search-exa`: registers an Exa-backed `WebSearchProvider`
  * with `ctx.web`. A function/namespace plugin (NOT a default-export service):
  * a search provider does not own the `ctx.web` key — it registers INTO the
- * seam's provider registry, exactly as `@arx-ai/arx-llm-deepseek`
+ * seam's provider registry, exactly as `@arx-ai/arx-llm-pi-ai`
  * registers an adapter into `ctx.llm`. The key is owned by `@arx-ai/arx-web`.
  *
  * @module @arx-ai/arx-web-search-exa
  */
 
 import type { Context } from '@arx-ai/cordis'
-import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import { installSettingsSection, settingsNamespace } from '@arx-ai/arx-settings'
 import z from '@arx-ai/schemastery'
-import type {} from '@arx-ai/arx-web'
+import { providerKeySource } from '@arx-ai/arx-web'
 import {
-  ExaSearchProvider,
   EXA_DEFAULT_BASE_URL,
   EXA_DEFAULT_HIGHLIGHTS_PER_RESULT,
   EXA_DEFAULT_SEARCH_TYPE,
+  EXA_PROVIDER_ID,
+  ExaSearchProvider,
 } from './provider.ts'
 
 export {
@@ -36,8 +37,14 @@ export const inject = ['web']
 
 /** Plugin config (all optional — `apply` fills env-var and constant defaults). */
 export interface Config {
-  /** Exa API key. Falls back to `$EXA_API_KEY`. Empty → provider unavailable. */
+  /** Exa API key inlined in the composition; set, it wins over every other source. */
   apiKey?: string
+  /**
+   * Credential reference the key resolves through when `apiKey` is not
+   * inlined: the managed credential store first, then the launch environment.
+   * Defaults to `EXA_API_KEY`; an empty result makes the provider unavailable.
+   */
+  apiKeyEnv?: string
   /** Endpoint base; `/search` is appended. Defaults to the public API. */
   baseURL?: string
   /** Retrieval mode sent as Exa's `type`. Defaults to `auto`. */
@@ -50,21 +57,54 @@ export interface Config {
 
 export const Config: z<Config> = z.object({
   apiKey: z.string(),
+  apiKeyEnv: z.string(),
   baseURL: z.string(),
   searchType: z.union(['auto', 'keyword', 'neural'] as const),
   numResults: z.number().step(1).min(1),
   highlightsPerResult: z.number().step(1).min(1),
 })
 
-/** Register the Exa search provider with `ctx.web`. */
+/** Settings namespace whose section is this plugin's own `Config`. */
+const NS = settingsNamespace('web-search-exa')
+
+/** Credential reference the key resolves through when the section names none. */
+const DEFAULT_API_KEY_ENV = 'EXA_API_KEY'
+
+/**
+ * Register the Exa search provider with `ctx.web`, declare it configurable
+ * through the `web-search-exa` settings section, and keep its key current.
+ * The provider reads its options at every search, so a committed settings
+ * change is in force at the next call without re-registering.
+ * @param ctx - the plugin context.
+ * @param config - the composition entry, which becomes the section's `base` layer.
+ */
 export function apply(ctx: Context, config: Config): void {
-  ctx.web.registerSearchProvider(new ExaSearchProvider({
-    // Every environment layer may name this key: the product trusts the
-    // project it is launched in, and the managed store is not involved here.
-    apiKey: config.apiKey ?? launchEnvironmentOf(ctx).get('EXA_API_KEY')?.value ?? '',
-    baseURL: config.baseURL ?? EXA_DEFAULT_BASE_URL,
-    searchType: config.searchType ?? EXA_DEFAULT_SEARCH_TYPE,
-    highlightsPerResult: config.highlightsPerResult ?? EXA_DEFAULT_HIGHLIGHTS_PER_RESULT,
-    ...config.numResults !== undefined ? { numResults: config.numResults } : {},
+  let source: () => Config = () => config
+  const key = providerKeySource(ctx, {
+    plugin: 'web-search-exa',
+    inline: () => source().apiKey,
+    ref: () => source().apiKeyEnv ?? DEFAULT_API_KEY_ENV,
+  })
+
+  ctx.web.registerSearchProvider(new ExaSearchProvider(() => {
+    const current = source()
+    return {
+      apiKey: key.current(),
+      baseURL: current.baseURL ?? EXA_DEFAULT_BASE_URL,
+      searchType: current.searchType ?? EXA_DEFAULT_SEARCH_TYPE,
+      highlightsPerResult: current.highlightsPerResult ?? EXA_DEFAULT_HIGHLIGHTS_PER_RESULT,
+      ...current.numResults !== undefined ? { numResults: current.numResults } : {},
+    }
   }))
+  ctx.web.registerConfigurableSearchProviders([
+    { provider: EXA_PROVIDER_ID, displayName: 'Exa', settingsNs: NS, settingsPath: [] },
+  ])
+  installSettingsSection(ctx, NS, Config, config, {
+    setSource: (current) => {
+      source = current
+    },
+    // The provider reads its options at each call; only the cached store
+    // value can be stale after a commit, so the key source re-reads it.
+    onChange: () => { key.refresh() },
+  })
 }

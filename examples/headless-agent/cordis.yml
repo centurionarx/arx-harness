@@ -15,11 +15,9 @@
 - id: credentials
   name: '@arx-ai/arx-credentials-local'
 
-# The DeepSeek adapter. Swap to '@arx-ai/arx-llm-pi-ai' for the pi-ai-backed
-# twin (a `providers` dict keyed by route; `reasoning: high` replaces
-# thinking/reasoningEffort). Shipped default: full thinking at max effort on
-# every request. Exact-model resolution materializes request defaults before
-# the request header is logged.
+# Model access: the pi-ai adapter takes a `providers` dict keyed by route.
+# Shipped default: full thinking at max effort on every request. Exact-model
+# resolution materializes request defaults before the request header is logged.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'
   config:

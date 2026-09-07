@@ -211,6 +211,8 @@ function runInstaller(
   })
 }
 
+// Matches ARX_COVERAGE_TEST_TIMEOUT_MS in .github/workflows/ci.yml, as the
+// describe value overrides the lane's --testTimeout.
 describe('worktree-local Lefthook installer', { timeout: 30_000 }, () => {
   for (const [label, extraEnv] of [
     ['CI', { CI: 'true' }],

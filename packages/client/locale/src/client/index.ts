@@ -73,10 +73,12 @@ declare module '@arx-ai/cordis' {
   }
   interface Events {
     /**
-     * The active locale switched. Dictionary registrations do NOT emit this
-     * event (listeners may re-register slots in response, and boot registers
-     * one namespace per package); continuous render refresh rides the
-     * LocaleFace revision instead.
+     * The locale selection moved: an explicit pick or an adopted Host answer
+     * replaced what decided the active locale (the provisional browser
+     * resolution, or an earlier selection). Dictionary registrations do NOT
+     * emit this event (listeners may re-register slots in response, and boot
+     * registers one namespace per package); continuous render refresh rides
+     * the LocaleFace revision instead.
      * @param snapshot - Current immutable locale snapshot.
      * @mode emit
      */
@@ -87,11 +89,9 @@ declare module '@arx-ai/cordis' {
 /**
  * English is both the locale the UI opens in when the browser names no shipped
  * language (and for non-browser runs), and the dictionary consulted after the
- * active locale misses a key. One constant serves both because the shipped
- * `zh`/`en` dictionaries carry identical key sets, so neither direction can
- * leave a key unresolved; the residual case points at English rather than
- * zh because a browser naming neither shipped language is the reader least
- * likely to read Chinese.
+ * active locale misses a key. One constant serves both, and while English is
+ * the only shipped locale the second role never resolves anything the first
+ * did not already supply.
  */
 export const FALLBACK_LOCALE: LocaleId = 'en'
 
@@ -111,8 +111,8 @@ const LOCALES: readonly LocaleDefinition[] = Object.freeze([
  * vocabulary (primary subtag); the document attribute wants a BCP 47 tag,
  * which assistive technology and browser features (pronunciation rules,
  * translation offers, font fallback, spell check) read to pick their own
- * behavior. `zh` alone leaves the script ambiguous, so the shipped Chinese
- * copy names the variant it actually is.
+ * behavior. A locale whose script or region is ambiguous names the variant it
+ * actually is; `en` needs no such qualification.
  */
 const DOCUMENT_LANGUAGE: Record<LocaleId, string> = { en: 'en' }
 
@@ -147,6 +147,8 @@ export class LocaleRuntime {
   private readonly host: SettingsScope<LocaleSettings> | undefined
   /** Browser-derived locale standing wherever no explicit Host selection does. */
   private readonly provisional: LocaleId
+  /** Locale a pick or a Host answer selected; absent while the provisional resolution stands. */
+  private selection: LocaleId | undefined
 
   /**
    * @param ctx - owning context (change events are emitted on it; the scope
@@ -197,19 +199,19 @@ export class LocaleRuntime {
   /**
    * Switch the active locale — the only user preference write entry.
    *
-   * The durable write happens even when the id already matches the active
-   * locale, because the active value may be a provisional browser-derived or
-   * fallback resolution that nothing has stored yet. Picking the language
-   * already on screen is still an explicit choice, and it must survive a
-   * different browser sharing the same ARX home. Only the render notification
-   * is conditional: republishing an unchanged locale would churn every
-   * subscriber for nothing.
+   * The durable write happens on every pick, even one naming the language
+   * already on screen, because that language may stand on a provisional
+   * browser-derived resolution nothing has stored yet. Picking it is still an
+   * explicit choice, and it must survive a different browser sharing the same
+   * ARX home. The render notification rides {@link select}, so a pick
+   * repeating the standing selection writes again without churning a single
+   * subscriber.
    * @param id - a registered locale id; unknown ids throw.
    */
   setLocale(id: string): void {
     const match = this.snapshot.locales.find(l => l.id === id)
     if (match === undefined) throw new Error(`locale "${id}" is not registered`)
-    if (this.snapshot.active !== match.id) this.publish(match.id, true)
+    this.select(match.id)
     void this.host?.set(LOCALE_PREFERENCE_FIELD, match.id)
   }
 
@@ -221,8 +223,20 @@ export class LocaleRuntime {
   private adopt(host: SettingsScope<LocaleSettings>): void {
     const section = host.getSnapshot().value
     if (section === undefined) return
-    const target = section.preference ?? this.provisional
-    if (this.snapshot.active === target) return
+    this.select(section.preference ?? this.provisional)
+  }
+
+  /**
+   * Stand on a selection, publishing only when it moves. The provisional
+   * browser resolution is not a selection, so the first pick or Host answer
+   * publishes even when it names the language already on screen: what decides
+   * the active locale changed. A repeat — the same pick again, or a settings
+   * revision carrying the standing selection — leaves every subscriber alone.
+   * @param target - the selected locale id.
+   */
+  private select(target: LocaleId): void {
+    if (this.selection === target) return
+    this.selection = target
     this.publish(target, true)
   }
 
@@ -238,7 +252,7 @@ export class LocaleRuntime {
    * @param dicts - complete dictionaries keyed by locale id.
    * @returns disposer removing every locale registered by this call (idempotent).
    */
-  register<N extends keyof LocaleNamespaceMap & string>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
+  register<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
   /**
    * Single-locale untyped form for namespaces outside the merge table
    * (dynamic composition, tests).
@@ -288,7 +302,7 @@ export class LocaleRuntime {
    * @param ns - a namespace merged into LocaleNamespaceMap.
    * @returns the typed translate function (reads the active locale at call time).
    */
-  bind<N extends keyof LocaleNamespaceMap & string>(ns: N): TranslateNS<N>
+  bind<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N): TranslateNS<N>
   /**
    * Untyped form for namespaces outside the merge table (dynamic
    * composition, tests).
@@ -322,18 +336,17 @@ export class LocaleRuntime {
 
   /**
    * Advance the snapshot revision and notify LocaleFace subscribers (render
-   * refresh). Only an active-locale switch additionally emits
-   * `locale/change` — dictionary registrations stay off the event so
-   * registration-heavy boot cannot storm event listeners (which may
-   * re-register slots in response).
+   * refresh). Only a moved selection additionally emits `locale/change` —
+   * dictionary registrations stay off the event so registration-heavy boot
+   * cannot storm event listeners (which may re-register slots in response).
    */
-  private publish(active: LocaleId, localeChanged: boolean): void {
+  private publish(active: LocaleId, selectionMoved: boolean): void {
     this.snapshot = Object.freeze({
       active,
       locales: this.snapshot.locales,
       revision: this.snapshot.revision + 1,
     })
-    if (localeChanged) this.ctx.emit('locale/change', this.snapshot)
+    if (selectionMoved) this.ctx.emit('locale/change', this.snapshot)
     for (const fn of [...this.listeners]) {
       try {
         fn()
@@ -356,8 +369,8 @@ function resolveInitialLocale(): LocaleId {
 
 /**
  * The first shipped locale the browser asks for, matched on the primary
- * subtag so every regional variant lands on its language (`zh-Hans-CN` -> zh,
- * `en-GB` -> en). `window` is the browser test, not `navigator`: Node exposes
+ * subtag so every regional variant lands on its language (`en-GB` -> en).
+ * `window` is the browser test, not `navigator`: Node exposes
  * a global `navigator` reporting the machine's own language, which would
  * otherwise decide the locale for non-browser runs (node e2e booting the
  * client tree). `navigator.language` trails the ordered `languages` list and
@@ -369,6 +382,7 @@ function detectBrowserLocale(): LocaleId | undefined {
    * The DOM lib types `languages` as always present; embedders and older
    * WebViews ship a Navigator without it, and spreading undefined would
    * throw at boot. */
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- the DOM lib's type is not the embedders' runtime
   for (const tag of [...(navigator.languages ?? []), navigator.language]) {
     const primary = tag.toLowerCase().split('-')[0]
     const match = LOCALES.find(locale => locale.id === primary)

@@ -5,8 +5,8 @@
 // layer stack the profile boot composes), patched the
 // snapshot way — so a real chromium exercises the real HTTP uplink/WebSocket
 // downlink, api-gateway, agent loop, tools, and persistence. Modes ride $ARX_SNAPSHOT:
-// replay (default, keyless: normally disables the llm-deepseek row and
-// inserts arx-llm-replay in providers mode), record (real adapter + key,
+// replay (default, keyless: inserts arx-llm-replay in providers mode),
+// record (real adapter + key,
 // harvests fixtures from live session memory), refresh (keyless replay that
 // rewrites goldens). A first-run option keeps the real adapter mounted while
 // masking its credential, without making a model call.
@@ -18,8 +18,8 @@
 // disabled (recorded fixtures must not embed this repo's AGENTS.md);
 // session-title-llm disabled (its fire-and-forget title call would race the
 // loop for the session's replay cursor); webserver pinned to port 0 with the
-// built dist; ordinary keyless modes disable llm-deepseek and fill the open
-// llm seam post-boot with installLlmReplay on the settled root ctx
+// built dist; ordinary keyless modes fill the open llm seam post-boot with
+// installLlmReplay on the settled root ctx
 // (the plugin-row path discards the ReplayHandle; the direct install keeps
 // assertConsumed for the teardown fixture-consumption check).
 import { existsSync, readFileSync } from 'node:fs'
@@ -79,10 +79,10 @@ const WELCOME_NOTICE_SETTINGS_NAMESPACE = 'ui-onboarding'
 const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
 const WELCOME_NOTICE_VERSION = '2026-08-13.1'
 export const WELCOME_NOTICE_COPY = {
-  zh: {
-    title: '内测声明',
-    body: 'arx Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 arx Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。\n\n我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 ARX 插件生态。',
-    continueLabel: '继续',
+  en: {
+    title: 'Internal Testing Notice',
+    body: "arx Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. arx Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the ARX plugin ecosystem.",
+    continueLabel: 'Continue',
   },
 } as const
 
@@ -109,8 +109,8 @@ const INSTALL_ANCHOR = join(REPO_ROOT, 'apps/cli/package.json')
 const SHIPPED_PRESET_DIR = join(REPO_ROOT, 'apps/cli/config/agent-presets')
 
 // Replay publishes the provider catalog the gateway routes to (providers
-// mode, never catch-all: with llm-deepseek disabled no adapter exists, so a
-// catch-all would leave resolveModelInfo unroutable and compaction-basic's
+// mode, never catch-all: the mounted pi-ai adapter has no configured provider
+// here, so a catch-all would leave resolveModelInfo unroutable and compaction-basic's
 // post-step pressure check would warn every step). The published
 // contextWindow keeps that pressure path provably inert for small fixtures.
 const REPLAY_PROVIDER_ID = 'deepseek-official'
@@ -205,8 +205,8 @@ export interface LaunchOptions {
    * Replay fixture (session.jsonl) served by the inserted arx-llm-replay row
    * in replay/refresh modes; ignored in record mode (the real adapter
    * answers). Omit for scenarios issuing no model calls — a stray stream then
-   * fails loud with NO_ADAPTER (llm-deepseek is disabled and no replay row
-   * mounts). With {@link replayProvidersOnly}, the fixture must record no
+   * fails loud with NO_ADAPTER (no replay row mounts and the pi-ai adapter
+   * has no configured provider). With {@link replayProvidersOnly}, the fixture must record no
    * model calls (its header alone mounts the catalog).
    */
   replayFixture?: string
@@ -255,24 +255,13 @@ export interface LaunchOptions {
    */
   cordisTools?: boolean
   /**
-   * Keep the shipped DeepSeek adapter mounted while masking the process
+   * Keep the shipped model adapter mounted while masking the process
    * environment's DEEPSEEK_API_KEY for this scaffold lifetime. This is the
    * keyless first-run configuration lane; the default disables the adapter.
    */
-  deepSeekMissingCredential?: boolean
+  missingModelCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
-  /**
-   * Patch the shipped DeepSeek search row to a deterministic endpoint and
-   * credential reference. Browser search scenarios keep the real provider and
-   * credentials seam while avoiding external search traffic and ambient keys.
-   */
-  deepSeekSearch?: {
-    /** Anthropic-compatible base URL; the provider appends `/messages`. */
-    baseURL: string
-    /** Credential reference resolved by the shipped search provider. */
-    apiKeyEnv: string
-  }
   /**
    * Replace the roster the scaffold mounts by default (the shipped directory
    * at `system` trust, default `standard`). Supply this only to change WHICH
@@ -302,6 +291,16 @@ export interface LaunchOptions {
   remoteAuthority?: string
   /** Reuse an existing harness home so a second Host can verify user settings across origins. */
   harnessHome?: string
+  /**
+   * Whether the Host reports a native desktop opener. Left to platform
+   * detection this answers whatever the recording host happens to be: true on a
+   * macOS desktop and on a hosted Linux runner, which exports `DISPLAY`, and
+   * false in a bare container, which does not. Every surface offering "open
+   * this path" would then render one way in a recorded golden and the other on
+   * replay. Pinned true by default — the answer both CI and a developer desktop
+   * give; a scenario covering the pathless surface asks for false.
+   */
+  nativeOpen?: boolean
 }
 
 /** Dispose the booted tree and remove both owned temp roots, reporting every independent cleanup failure. */
@@ -329,19 +328,19 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       throw new Error('web e2e record mode needs DEEPSEEK_API_KEY (env or repo-root .env)')
     }
   }
-  if (mode === 'record' && options.deepSeekMissingCredential === true) {
-    throw new Error('deepSeekMissingCredential is a keyless replay/refresh option')
+  if (mode === 'record' && options.missingModelCredential === true) {
+    throw new Error('missingModelCredential is a keyless replay/refresh option')
   }
-  const maskDeepSeekCredential = mode !== 'record' && options.deepSeekMissingCredential === true
-  const originalDeepSeekCredential = process.env.DEEPSEEK_API_KEY
+  const maskModelCredential = mode !== 'record' && options.missingModelCredential === true
+  const originalModelCredential = process.env.DEEPSEEK_API_KEY
   let credentialEnvironmentRestored = false
   const restoreCredentialEnvironment = (): void => {
-    if (credentialEnvironmentRestored || !maskDeepSeekCredential) return
+    if (credentialEnvironmentRestored || !maskModelCredential) return
     credentialEnvironmentRestored = true
-    if (originalDeepSeekCredential === undefined) {
+    if (originalModelCredential === undefined) {
       Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
     } else {
-      process.env.DEEPSEEK_API_KEY = originalDeepSeekCredential
+      process.env.DEEPSEEK_API_KEY = originalModelCredential
     }
   }
   const workspaceCwd = await realpath(await mkdtemp(join(tmpdir(), 'arx-web-e2e-ws-')))
@@ -387,7 +386,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (failures.length > 1) throw new AggregateError(failures, 'web scaffold temp-root setup failed')
     throw error
   }
-  if (maskDeepSeekCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
+  if (maskModelCredential) Reflect.deleteProperty(process.env, 'DEEPSEEK_API_KEY')
 
   // The include patch set — the same layer stack the profile boot composes
   // (bundle patches in arx.profile.bundles order), applied over the SAME empty root (a
@@ -399,6 +398,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ? []
     : loadOverlayPatches('web e2e scaffold', options.extraOverlayPath)
   const composedRows = composeEntries([basePatches, surfacePatches, extraOverlayPatches])
+  const overlayPinsDefaultModel = extraOverlayPatches.some(patch => patch.id === 'agent-default-model')
   const webRuntimeConfig = composedRows.find(row => row.id === 'web-runtime')?.config as {
     surfaceContext?: boolean
   } | undefined
@@ -478,6 +478,9 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ...options.remoteAuthority === undefined
       ? []
       : [{ id: 'connection', config: { trustedHosts: [options.remoteAuthority] } }],
+    // Platform detection would answer differently per host; the lane pins it
+    // so the surfaces that offer "open this path" render one way everywhere.
+    { id: 'api-gateway', config: { nativeOpen: options.nativeOpen ?? true } },
     { id: 'settings', config: { arxHome: harnessHome } },
     { id: 'credentials', config: { arxHome: harnessHome } },
     // The shipped directory-picker row is the -auto chooser, which resolves
@@ -504,23 +507,14 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         { id: 'tool-cordis', name: '@arx-ai/arx-tool-cordis' },
       ] }]
       : [],
-    ...options.deepSeekSearch === undefined
-      ? []
-      : [{
-        id: 'web-search-deepseek',
-        config: {
-          apiKeyEnv: options.deepSeekSearch.apiKeyEnv,
-          baseURL: options.deepSeekSearch.baseURL,
-        },
-      }],
-    ...mode === 'record' || options.deepSeekMissingCredential === true
-      ? []
-      : [{ id: 'llm-deepseek', disabled: true }],
     // The shipped bundle pins no default model: a deployment picks its own, and
     // a session without a selection cannot start a turn. This composition IS
     // that deployment, so it seeds the one route replay publishes; otherwise a
-    // scenario would have to drive the model picker before every prompt.
-    ...mode === 'record' || options.deepSeekMissingCredential === true
+    // scenario would have to drive the model picker before every prompt. A
+    // scenario whose overlay pins its own default came to test that route, and
+    // this seed sits after the overlay in the patch list, so it would silently
+    // replace it.
+    ...mode === 'record' || options.missingModelCredential === true || overlayPinsDefaultModel
       ? []
       : [{ id: 'agent-default-model', config: { provider: REPLAY_PROVIDER_ID, model: REPLAY_MODEL_ID } }],
   ]
@@ -582,9 +576,8 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     }
     port = boundPort
 
-    // Fill the open llm seam on the settled root ctx. Ordinary keyless modes
-    // disable llm-deepseek; the first-run lane keeps it mounted but has no
-    // replay fixture and never streams. The direct install, unlike the plugin
+    // Fill the open llm seam on the settled root ctx. The first-run lane has
+    // no replay fixture and never streams. The direct install, unlike the plugin
     // row, returns the ReplayHandle for the teardown consumption check.
     if (options.replayProvidersOnly) {
       if (options.replayFixture === undefined) {
@@ -627,7 +620,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
         ...(options.replayChildFixtures === undefined ? {} : { childFiles: options.replayChildFixtures }),
         ...(options.paceMs === undefined ? {} : { paceMs: options.paceMs }),
       })
-    } else if (mode !== 'record' && options.deepSeekMissingCredential !== true) {
+    } else if (mode !== 'record' && options.missingModelCredential !== true) {
       // No fixture and no shipped adapter would leave the tree with ZERO
       // provider routes — a state no product composition has, and one the
       // composer refuses to type into. Register the same routes
@@ -920,10 +913,6 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
       duration => duration.startsWith('~') ? duration : '{{duration}}',
     )
     .replace(/\b\d[\d,]*(?:\.\d+)? ms\b/g, '{{duration}}')
-    .replace(
-      /约\d+(?:年(?:\d+个月)?|个月(?:\d+天)?)|\d+(?:天(?:\d+小时(?:\d+分\d+秒)?)?|小时\d+分\d+秒|分\d+秒|(?:\.\d+)?秒)/g,
-      duration => duration.startsWith('约') ? duration : '{{duration}}',
-    )
     .replace(/\d+(?:\.\d+)?(?= tok\/s(?!\w))/g, '{{throughput}}')
     // Seeded compaction prices realized file paths, whose length differs
     // between local worktrees and CI scratch directories.
@@ -931,8 +920,6 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
     // Session summaries and Message IconActions clocks cross calendar
     // boundaries; collapse every shape so goldens stay stable across them.
     .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, '{{timestamp}}')
-    .replace(/\d{4}年\d{1,2}月\d{1,2}日 \d{2}:\d{2}/g, '{{clock}}')
-    .replace(/\d{1,2}月\d{1,2}日 \d{2}:\d{2}/g, '{{clock}}')
     .replace(/(?<!\d)\d{1,2}:\d{2}:\d{2}(?:\.\d+)?(?:\s*[AP]M)?(?!\d)/gi, '{{clock}}')
     .replace(/(?<!\d)\d{2}:\d{2}(?!\d)/g, '{{clock}}')
 }

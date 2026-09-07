@@ -12,11 +12,11 @@ import * as Spawn from '../src/index.ts'
 import * as ToolSubagent from '@arx-ai/arx-tool-subagent'
 
 /**
- * Shared harness for the spawn-backend e2e: the full real stack (DeepSeek
- * adapter + real bash tool + the subagent tool bound to the spawn backend), so
- * a real parent agent can delegate to a real in-process child that does real
- * work (writes a file). Lives outside the *.e2e.ts pattern so importing it never
- * re-registers another file's tests.
+ * Shared harness for the spawn-backend e2e: the full real stack (the
+ * configured model adapter + real bash tool + the subagent tool bound to the
+ * spawn backend), so a real parent agent can delegate to a real in-process
+ * child that does real work (writes a file). Lives outside the *.e2e.ts
+ * pattern so importing it never re-registers another file's tests.
  */
 export async function spawnHarness(workdir: string): Promise<Context> {
   const ctx = new Context()

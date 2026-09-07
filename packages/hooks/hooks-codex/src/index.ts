@@ -29,6 +29,7 @@ import {
   DEFAULT_STDERR_SUMMARY_MAX_CHARS,
   matchesMatcher,
   mergeHookOutputs,
+  preToolDenial,
   runHook,
   type HookOutput,
   type MatcherGroup,
@@ -232,11 +233,8 @@ export function apply(ctx: Context, config: Config): void {
     const turn = lastTurn(exec.agent)
     const merged = await runPoint('PreToolUse', exec.name, preToolPayload(ctx, exec, model), { ...exec.agent ? { agent: exec.agent } : {}, turn, signal: exec.signal })
     /* jscpd:ignore-end */
-    if (merged.stop) {
-      exec.agent?.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by PreToolUse hook' })
-      return { kind: 'deny', reason: merged.reason ?? merged.stopReason ?? 'halted by PreToolUse hook' }
-    }
-    if (merged.decision === 'deny') return { kind: 'deny', reason: merged.reason ?? 'blocked by PreToolUse hook' }
+    const denial = preToolDenial(merged, reason => exec.agent?.cancel({ kind: 'hook', reason }))
+    if (denial !== undefined) return denial
     return next()
   })
 

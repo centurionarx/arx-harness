@@ -6,7 +6,7 @@ This guide assumes you started the Web UI through the [root README](../../../REA
 
 No provider ships configured: a fresh install serves no model until you add one, and which one is your choice.
 
-Open **Settings → Models** and choose **Add provider**, select a provider such as Anthropic, OpenAI, or DeepSeek, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
+Open **Settings → Models** and choose **Add provider**, select a provider such as Anthropic or OpenAI, enter its API key, and save. The installed catalog supplies the endpoint, protocol, and model list.
 
 Keys are write-only. The page receives a redacted descriptor after saving, never the literal secret. The key is stored in `$ARX_HOME/.credentials.yaml`, while settings retain only its credential reference.
 

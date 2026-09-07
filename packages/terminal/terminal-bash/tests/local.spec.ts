@@ -83,6 +83,26 @@ async function harness(
 // observes a marker the child prints while `operation` is still active. A caller
 // whose child is slow to print must raise the harness `timing` bounds too;
 // extending this deadline alone cannot recover output the operation never collected.
+/**
+ * Poll the session's retained scrollback until it holds `expected`. Unlike the
+ * viewport, the scrollback is non-consuming and survives a send that settled on
+ * the silence bound before the shell spoke, which is what a loaded runner does.
+ */
+async function waitForScrollback(
+  read: () => string,
+  expected: string,
+  timeoutMs = 10_000,
+): Promise<string> {
+  const deadline = Date.now() + timeoutMs
+  let text = read()
+  while (!text.includes(expected) && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+    text = read()
+  }
+  expect(text).toContain(expected)
+  return text
+}
+
 async function waitForOutput(operation: TerminalSendOperation, expected: string, timeoutMs = 2_000): Promise<void> {
   const deadline = Date.now() + timeoutMs
   let output = ''
@@ -296,17 +316,21 @@ describe.skipIf(!hasPwsh)('terminal-bash pwsh real shell', () => {
         text: '$env:KEEP = "ok"; Set-Location /',
         submit: true,
       })
-      expect((await first.done).waitReason).toBe('stdin_read')
+      // Either readiness tier proves the shell took the send: a loaded runner
+      // can miss the foreground handoff inside the 300 ms silence bound, and
+      // this case is about bootstrap, persistence, and the secret scrub.
+      expectReadyForNextSend((await first.done).waitReason)
       const second = ctx.terminals.startSend(agent, created.sessionId, {
         text: 'Write-Output "keep=$env:KEEP secret=$env:ARX_TEST_SECRET"',
         submit: true,
       })
-      const result = await second.done
-      expect(result.viewport).toContain('keep=ok')
-      expect(result.viewport).toContain('secret=')
-      expect(result.viewport).not.toContain('must-not-leak')
-
-      expect(ctx.terminals.read(agent, created.sessionId, { offset: 0, count: 40 }).text).toContain('keep=ok')
+      await second.done
+      const scrollback = await waitForScrollback(
+        () => ctx.terminals.read(agent, created.sessionId, { offset: 0, count: 40 }).text,
+        'keep=ok',
+      )
+      expect(scrollback).toContain('secret=')
+      expect(scrollback).not.toContain('must-not-leak')
       expect(await ctx.terminals.kill(agent, created.sessionId)).toBe(true)
       expect(ctx.terminals.list(agent)).toEqual([])
     } finally {

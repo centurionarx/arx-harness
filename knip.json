@@ -18,6 +18,7 @@
     "python/sdk-runtime"
   ],
   "ignoreDependencies": [
+    "@arx-ai/arx",
     "@yarnpkg/cli-dist",
     "lightningcss"
   ],
@@ -376,16 +377,6 @@
         "tests/**/*.ts"
       ]
     },
-    "packages/llm/llm-deepseek": {
-      "entry": [
-        "tests/**/*.spec.ts",
-        "tests/**/*.e2e.ts"
-      ],
-      "project": [
-        "src/**/*.ts",
-        "tests/**/*.ts"
-      ]
-    },
     "packages/llm/llm-pi-ai": {
       "entry": [
         "tests/**/*.spec.ts",
@@ -457,16 +448,6 @@
       ]
     },
     "packages/workflow/workflow-worker-thread": {
-      "entry": [
-        "tests/**/*.spec.ts",
-        "tests/**/*.e2e.ts"
-      ],
-      "project": [
-        "src/**/*.ts",
-        "tests/**/*.ts"
-      ]
-    },
-    "packages/web/web-search-deepseek": {
       "entry": [
         "tests/**/*.spec.ts",
         "tests/**/*.e2e.ts"

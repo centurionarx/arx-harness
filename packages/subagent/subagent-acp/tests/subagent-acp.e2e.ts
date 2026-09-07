@@ -16,7 +16,7 @@ import * as acp from '../src/index.ts'
  * spawn coverage and self-skips without `DEEPSEEK_API_KEY`.
  */
 
-// The real acp-agent example: its bin + cordis.yml (the live DeepSeek config).
+// The real acp-agent example: its bin + cordis.yml (the live model config).
 const binScript = fileURLToPath(new URL('../../../examples/acp-demo/src/bin.ts', import.meta.url))
 const exampleConfig = fileURLToPath(new URL('../../../../examples/acp-agent/cordis.yml', import.meta.url))
 const repoTsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))

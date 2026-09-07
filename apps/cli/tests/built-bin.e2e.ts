@@ -188,7 +188,23 @@ function createEnvironmentProbeProfile(home: string, project: string): void {
     dependencies: {},
     arx: { profile: { bundles: ['@arx-ai/arx-base'] } },
   }, undefined, 2))
+  // The base bundle mounts the adapter dormant, so the route this probe
+  // streams from exists only once a profile declares it. Both halves stay
+  // environment-fed on purpose: the endpoint proves the launching
+  // environment reaches the adapter, and the credential reference proves the
+  // key comes from the managed store rather than the process env.
   writeFileSync(join(profileDir, 'cordis.patch.yml'), [
+    '- id: llm-pi-ai',
+    '  config:',
+    '    providers:',
+    '      deepseek-official:',
+    '        displayName: DeepSeek',
+    '        apiKeyEnv: DEEPSEEK_API_KEY',
+    '        api: openai-completions',
+    "        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'",
+    '        models:',
+    '          - id: deepseek-v4-flash',
+    '',
     '- insert:',
     '    - id: environment-probe',
     `      name: ${pathToFileURL(pluginFile).href}`,
@@ -365,7 +381,10 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     } finally {
       rmSync(home, { recursive: true, force: true })
     }
-  }, 30_000)
+    // Four sequential boots of the published bin, where every sibling case in
+    // this file boots once inside the same 30 seconds. A hosted runner spends
+    // five to seven seconds per boot, so the budget follows the count.
+  }, 120_000)
 
   it('runs the headless profile through its app-owned task positional', async () => {
     const apiKey = 'built-arx-headless-key'
@@ -376,11 +395,31 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
     })
     const home = mkdtempSync(join(tmpdir(), 'arx-built-headless-'))
     try {
+      // The bundle ships no model route and no default selection, so the run
+      // names both in the settings document the harness home already owns:
+      // one pi-ai profile pointed at the mock, and the selection headless
+      // refuses to guess.
+      writeFileSync(join(home, 'settings.yaml'), [
+        'llm-pi-ai:',
+        '  providers:',
+        '    mock-provider:',
+        '      displayName: Mock',
+        '      apiKeyEnv: DEEPSEEK_API_KEY',
+        '      api: openai-completions',
+        `      baseURL: ${server.baseURL}`,
+        '      defaultContextWindow: 128000',
+        '      defaultMaxTokens: 4096',
+        '      models:',
+        '        - id: mock-model',
+        'agent-default-model:',
+        '  provider: mock-provider',
+        '  model: mock-model',
+        '',
+      ].join('\n'))
       const result = await runBuiltBin(['--profile', 'headless', 'answer', 'from', 'the', 'published', 'entry'], {
         ARX_HOME: home,
         ARX_TELEMETRY_DISABLED: '1',
         DEEPSEEK_API_KEY: apiKey,
-        DEEPSEEK_BASE_URL: server.baseURL,
       })
       expect(result.code, result.stderr).toBe(0)
       expect(result.stdout).toBe('published headless profile reached the mock')

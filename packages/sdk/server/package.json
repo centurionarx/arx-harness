@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-sdk-jsonrpc-server",
   "description": "Stdio JSON-RPC server plugin for out-of-process arx Harness SDK clients",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "publishConfig": {
     "access": "public"
   },

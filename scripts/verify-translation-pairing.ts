@@ -212,11 +212,16 @@ if (writeMode) {
 }
 
 const errors: string[] = []
-const state = new Map<string, 'ok' | 'out-of-sync' | 'missing'>()
+const state = new Map<string, 'ok' | 'out-of-sync' | 'missing' | 'outside'>()
 
-// 1. Every discovered, non-excluded source merges bilingual.
+// 1. Every discovered source in the active corpus merges bilingual; a source
+// outside it is listed as such and owes nothing until the corpus grows.
 for (const source of sources) {
   if (isExcluded(source)) continue
+  if (!isTranslationPairSource(source)) {
+    if (resolveCounterpartSuffix(source) === undefined) state.set(source, 'outside')
+    continue
+  }
   const suffix = resolveCounterpartSuffix(source)
   if (suffix === undefined) {
     errors.push(`${source}: in-scope documentation must merge bilingual (docs/i18n/README.md); add the counterpart (.pt-BR.md) and record the pair`)
@@ -369,20 +374,20 @@ for (const source of [...pairAnchors].sort()) {
   if (!state.has(source)) state.set(source, 'ok')
 }
 
-// Complete the state map for --list: any in-scope, non-excluded document with no pair is missing.
+// Complete the state map for --list: any active, non-excluded document with no pair is missing.
 for (const source of sources) {
   if (!isExcluded(source) && !state.has(source)) state.set(source, 'missing')
 }
 
 if (listMode) {
-  const order = { 'out-of-sync': 0, missing: 1, ok: 2 } as const
+  const order = { 'out-of-sync': 0, missing: 1, ok: 2, outside: 3 } as const
   const rows = [...state.entries()].sort((a, b) => order[a[1]] - order[b[1]] || a[0].localeCompare(b[0]))
   for (const [file, status] of rows) {
     console.log(`${status.padEnd(11)} ${file}${status === 'missing' ? '  (required)' : ''}`)
   }
-  const counts = { 'ok': 0, 'out-of-sync': 0, 'missing': 0 }
+  const counts = { 'ok': 0, 'out-of-sync': 0, 'missing': 0, 'outside': 0 }
   for (const status of state.values()) counts[status]++
-  console.log(`verify-translation-pairing: ${counts.ok} ok, ${counts['out-of-sync']} out-of-sync, ${counts.missing} missing (of ${state.size} in scope)`)
+  console.log(`verify-translation-pairing: ${counts.ok} ok, ${counts['out-of-sync']} out-of-sync, ${counts.missing} missing, ${counts.outside} outside the active corpus (of ${state.size} in scope)`)
   process.exit(0)
 }
 

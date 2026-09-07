@@ -30,7 +30,8 @@ A standing-policy change appends an owner-rendered superseding runtime-context s
 
 ## Known Limitations and Deferred Work
 
-- Line-oriented output is normalized; full-screen alternate-buffer interaction is unsupported.
+- Line-oriented output is normalized; full-screen alternate-buffer interaction is unsupported. The one terminal query the session answers is the cursor position request (`ESC [ 6 n`), with a nominal row and column, because the pwsh host and PSReadLine block on it before every prompt; nothing else the shell asks of a terminal is answered.
+- The pwsh bootstrap turns off PSReadLine's inline prediction and history saving, so the echo carries no text from earlier sessions and the model's commands do not enter the user's history file; PSReadLine still renders submitted input back into the stream, progressively, so the echo's length varies with delivery timing.
 - Exact stdin-wait detection depends on the mounted subprocess provider; providers that cannot prove it use prompt-marker and silence/timeout readiness. Windows is such a provider: the shell pid is the pseudo foreground group and there is no exact stdin-wait tier, so a marker-less child settles on the silence bound.
 - The pwsh bootstrap writes through `[Console]::` (the UTF-8 encoding pin and the prompt function), which the Windows ACL sandbox's read-only mode (ConstrainedLanguage) may deny. The shell can still settle through the controlled printable prompt and silence tier, but marker readiness is unavailable and non-ASCII output may follow the host code page.
 - Cleanup guarantees are those of `SubprocessTerminalHandle`; provider-specific gaps belong to that implementation's contract rather than this PTY consumer.

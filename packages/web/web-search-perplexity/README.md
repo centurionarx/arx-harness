@@ -2,13 +2,14 @@
 
 A [Perplexity](https://perplexity.ai)-backed `WebSearchProvider` for the harness [web capability seam](../web/README.md) (`ctx.web`). It calls Perplexity's OpenAI-compatible `POST /chat/completions` endpoint and maps the generated answer plus citations into the seam's normalized `WebSearchResult`.
 
-This is an **implementation** package: it registers a provider into `ctx.web`, it does not own the key and it does not register a model-facing tool. Like `@arx-ai/arx-llm-deepseek`, it is a function/namespace plugin (`inject: ['web']`). The OpenAI-compatible wire shape is a provider-private detail — it does **not** make this provider depend on `ctx.llm`.
+This is an **implementation** package: it registers a provider into `ctx.web`, it does not own the key and it does not register a model-facing tool. Like `@arx-ai/arx-llm-pi-ai`, it is a function/namespace plugin (`inject: ['web']`). The OpenAI-compatible wire shape is a provider-private detail — it does **not** make this provider depend on `ctx.llm`.
 
 ## Config
 
 | Key | Default | Meaning |
 |---|---|---|
-| `apiKey` | `$PERPLEXITY_API_KEY` | Perplexity API key. Empty/absent makes the provider unavailable. |
+| `apiKey` | (unset) | Perplexity API key inlined in the composition. Set, it wins over every other source; unset, the key resolves through `apiKeyEnv`. |
+| `apiKeyEnv` | `PERPLEXITY_API_KEY` | Credential reference the key resolves through: the managed credential store first, then every launch-environment layer. An empty result makes the provider unavailable. |
 | `baseURL` | `https://api.perplexity.ai` | Endpoint base; `/chat/completions` is appended. An unparseable value makes the provider unavailable. |
 | `model` | `sonar` | Search model name. |
 | `maxTokens` | `1024` | Upper bound on generated answer tokens (`max_tokens`). Must be a positive integer. |
@@ -20,6 +21,8 @@ This is an **implementation** package: it registers a provider into `ctx.web`, i
   config:
     apiKey: !!js process.env.PERPLEXITY_API_KEY
 ```
+
+The same keys are the runtime-editable `web-search-perplexity` settings section: a settings document overrides any of them, and the provider reads its options at every search, so a committed change is in force at the next call without re-registering. The key never rides the section — a configuration surface writes it through the credentials domain under `apiKeyEnv`, and the provider re-reads the managed store when that reference changes. The plugin also declares the provider in `ctx.web`'s configurable directory (`provider: perplexity`, this namespace, an empty path), which is how a configuration surface finds where its profile lives.
 
 ## Mapping
 

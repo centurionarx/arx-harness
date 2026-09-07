@@ -29,8 +29,6 @@ export interface EditorFooterProps {
   submitLabel: keyof typeof en
   /** Commit label while a commit is in flight. */
   submitBusyLabel: keyof typeof en
-  /** Dismiss label; defaults to the settings editor copy. */
-  cancelLabel?: keyof typeof en
   /** Dismiss the card without committing. */
   onCancel: () => void
   /** Run the card's commit. */
@@ -52,7 +50,7 @@ export function EditorFooter(props: EditorFooterProps): ReactNode {
         disabled={props.busy}
         onClick={props.onCancel}
       >
-        {t(props.cancelLabel ?? 'cancel')}
+        {t('cancel')}
       </button>
       <button
         type="button"

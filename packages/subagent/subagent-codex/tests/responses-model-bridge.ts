@@ -6,11 +6,11 @@ import type {
 } from 'node:http'
 import { completeResponsesEvents } from './responses-fixture.ts'
 
-const OFFICIAL_DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
+const OFFICIAL_BASE_URL = 'https://api.deepseek.com'
 const MAX_REQUEST_BYTES = 1_048_576
 
-/** One running test-only Responses-to-DeepSeek bridge. */
-export interface DeepSeekResponsesBridge {
+/** One running test-only Responses-to-chat-completions bridge. */
+export interface ResponsesModelBridge {
   readonly baseUrl: string
   readonly completedRequests: number
   close(): Promise<void>
@@ -23,7 +23,7 @@ function readRequest(request: IncomingMessage): Promise<string> {
     request.on('data', (chunk: string) => {
       body += chunk
       if (Buffer.byteLength(body) > MAX_REQUEST_BYTES) {
-        request.destroy(new Error('DeepSeek bridge request exceeded its byte limit'))
+        request.destroy(new Error('Responses bridge request exceeded its byte limit'))
       }
     })
     request.on('end', () => { resolve(body) })
@@ -53,20 +53,20 @@ function taskText(body: Record<string, unknown>): string {
   return typeof body.instructions === 'string' ? body.instructions : ''
 }
 
-function deepSeekBaseUrl(): string {
-  const configured = (process.env.DEEPSEEK_BASE_URL ?? OFFICIAL_DEEPSEEK_BASE_URL)
+function modelBaseUrl(): string {
+  const configured = (process.env.DEEPSEEK_BASE_URL ?? OFFICIAL_BASE_URL)
     .replace(/\/+$/, '')
-  if (configured !== OFFICIAL_DEEPSEEK_BASE_URL) {
-    throw new Error('Codex DeepSeek e2e requires the official DeepSeek base URL')
+  if (configured !== OFFICIAL_BASE_URL) {
+    throw new Error('Codex model e2e requires the official base URL')
   }
   return configured
 }
 
-async function completeWithDeepSeek(
+async function completeWithModel(
   authorization: string,
   task: string,
 ): Promise<string> {
-  const response = await fetch(`${deepSeekBaseUrl()}/chat/completions`, {
+  const response = await fetch(`${modelBaseUrl()}/chat/completions`, {
     method: 'POST',
     headers: {
       authorization,
@@ -88,14 +88,14 @@ async function completeWithDeepSeek(
   })
   if (!response.ok) {
     void response.body?.cancel()
-    throw new Error(`DeepSeek bridge upstream returned HTTP ${response.status}`)
+    throw new Error(`Responses bridge upstream returned HTTP ${response.status}`)
   }
   const payload = await response.json() as {
     choices?: Array<{ message?: { content?: unknown } }>
   }
   const content = payload.choices?.[0]?.message?.content
   if (typeof content !== 'string' || content.trim().length === 0) {
-    throw new Error('DeepSeek bridge upstream returned no text')
+    throw new Error('Responses bridge upstream returned no text')
   }
   return content
 }
@@ -115,9 +115,9 @@ function closeServer(server: Server): Promise<void> {
  * @param nonce - unique answer the incoming Responses task must request.
  * @returns loopback endpoint, completion count, and close operation.
  */
-export async function startDeepSeekResponsesBridge(
+export async function startResponsesModelBridge(
   nonce: string,
-): Promise<DeepSeekResponsesBridge> {
+): Promise<ResponsesModelBridge> {
   let seenRequests = 0
   let completedRequests = 0
   const openResponses = new Set<ServerResponse>()
@@ -142,20 +142,20 @@ export async function startDeepSeekResponsesBridge(
         || !authorization.startsWith('Bearer ')
         || authorization.length === 'Bearer '.length
       ) {
-        throw new Error('Codex DeepSeek bridge received no bearer credential')
+        throw new Error('Codex responses bridge received no bearer credential')
       }
       const body = JSON.parse(await readRequest(request)) as Record<string, unknown>
       const task = taskText(body)
       if (!task.includes(nonce)) {
-        throw new Error('Codex DeepSeek bridge request omitted the expected nonce')
+        throw new Error('Codex responses bridge request omitted the expected nonce')
       }
-      const text = await completeWithDeepSeek(authorization, task)
+      const text = await completeWithModel(authorization, task)
       completedRequests += 1
       response.writeHead(200, {
         'content-type': 'text/event-stream',
         'cache-control': 'no-cache',
         connection: 'keep-alive',
-        'x-request-id': 'req_deepseek_e2e',
+        'x-request-id': 'req_bridge_e2e',
       })
       for (const event of completeResponsesEvents(text)) {
         response.write(`data: ${JSON.stringify(event)}\n\n`)
@@ -165,7 +165,7 @@ export async function startDeepSeekResponsesBridge(
       if (!response.headersSent) {
         response.writeHead(502, { 'content-type': 'application/json' })
       }
-      response.end(JSON.stringify({ error: { message: 'DeepSeek bridge request failed' } }))
+      response.end(JSON.stringify({ error: { message: 'Responses bridge request failed' } }))
     })
   })
   await new Promise<void>((resolve, reject) => {
@@ -177,7 +177,7 @@ export async function startDeepSeekResponsesBridge(
   })
   const address = server.address()
   if (address === null || typeof address === 'string') {
-    throw new Error('DeepSeek bridge did not acquire a TCP port')
+    throw new Error('Responses bridge did not acquire a TCP port')
   }
   return {
     baseUrl: `http://127.0.0.1:${address.port}/v1`,

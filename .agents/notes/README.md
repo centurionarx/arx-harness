@@ -1,7 +1,5 @@
 # Agent Notes
 
-English | [Português](README.pt-BR.md)
-
 One kind of design doc lives here. An **Agent Note** records a decision or proposal that affects this codebase — the *why* and *what we gave up*, the parts code and docs can't carry. This file defines where Agent Notes live, when to write one, and [the in-file format](#the-file-format).
 
 ## Layout and naming
@@ -72,6 +70,8 @@ followed by a blank line. The `Status:` value is one of three forms, and must ag
 - `Status: rejected — <why, in one line>`
 
 The status carries no dates and no parentheticals: the filename holds the first-proposed date, git holds everything else, and an "accepted in amended form" note is body content (state the amendment where the decision is stated). The rejection reason is the one status with content, because a rejected Agent Note's verdict is the fact readers come for.
+
+A paired Agent Note carries its language switcher on line 5, the first line after the blank that follows `Status:` — `English | [Português](<file>.pt-BR.md)` in the English file, `[English](<file>.md) | Português` in the Portuguese one. The pairing gate accepts the first switcher paragraph after the H1 rather than only the line beneath it, so this placement satisfies both gates; the position [docs/i18n/README.md](../../docs/i18n/README.md) states for rendered documents, immediately after the H1, would displace `Status:` from line 3.
 
 ### The body skeleton
 

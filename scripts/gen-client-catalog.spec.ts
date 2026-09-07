@@ -196,8 +196,17 @@ describe('the per-slot report budget', () => {
   })
 })
 
+/**
+ * The lane's per-test budget against a floor the real walk fits in: this case
+ * reads every client package in the workspace under coverage instrumentation,
+ * and an explicit `it` timeout overrides `--testTimeout` rather than deferring
+ * to it.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const WORKSPACE_WALK_TIMEOUT_MS = Math.max(Number.isSafeInteger(LANE_TIMEOUT_MS) ? LANE_TIMEOUT_MS : 0, 90_000)
+
 describe('the real workspace surface', () => {
-  it('collects every declared slot with a teachable contract', { timeout: 30_000 }, () => {
+  it('collects every declared slot with a teachable contract', { timeout: WORKSPACE_WALK_TIMEOUT_MS }, () => {
     const entries = collectSlotEntries(process.cwd())
     expect(entries.length).toBeGreaterThan(30)
     for (const entry of entries) {

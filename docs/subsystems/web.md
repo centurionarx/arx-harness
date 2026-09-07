@@ -35,8 +35,7 @@ interface WebSearchRequest {
 ```ts type-equiv
 /**
  * Normalized search outcome. `content` is optional provider-generated answer
- * text or summary (Exa and DeepSeek return none; Perplexity returns a
- * generated answer).
+ * text or summary (Exa returns none; Perplexity returns a generated answer).
  * `sources[]` is the portable citation shape. `truncated` is set by the seam
  * when it cut `sources[]` down to `maxResults`.
  */
@@ -122,13 +121,15 @@ A provider's `available(): boolean` is a cheap LOCAL check (credential presence,
 
 Selection never depends on registration, config, or HMR order: a capability has an explicit provider id (config `searchProvider`/`fetchProvider`, or the matching env var feeding the same field), or auto-selects when exactly one usable provider is registered; multiple usable providers with no configured id is `WEB_PROVIDER_AMBIGUOUS`, not first-wins.
 
+The `web` settings section carries the same `searchProvider`/`fetchProvider` fields at runtime, resolved ahead of the environment and the composition entry, so a committed selection is in force at the next call. `searchSelection()` answers the rules without executing — the pinned id, the provider they name, or the failure code a call would throw — and `web/providers-updated` fires at every search-registry commit. A search provider a settings section configures declares itself through `registerConfigurableSearchProviders()`, naming the namespace and path where its profile lives; a provider mounted without one stays selectable and shows no configuration address. Fetch publishes none of this.
+
 ## Errors
 
 `WebError extends HarnessError` ([core.md](core.md) error taxonomy) with a `code: string` (open, like every other seam's error — `LlmError`, `SubagentError`), not a closed union: a provider may raise its own codes without editing `arx-web`, and consumers must tolerate an unknown code. The codes split by owner. Seam-neutral codes are raised by the shared `WebRuntime` contract: `WEB_PROVIDER_UNAVAILABLE`, `WEB_PROVIDER_CONFIGURED_MISSING`, `WEB_PROVIDER_CONFIGURED_UNAVAILABLE`, `WEB_PROVIDER_AMBIGUOUS`, `WEB_DUPLICATE_PROVIDER` (a registration-time programming error, the analogue of `LlmRuntime`'s `DUPLICATE_ADAPTER`), `WEB_ABORTED`, and `WEB_PROVIDER_ERROR` (the catch-all for a provider's own failure surfaced through the seam, including network/transport failure — DNS, connection refused, TLS). Fetch-transport codes are owned by the `arx-web-fetch-http` implementation and a different fetch backend need not raise them: `WEB_INVALID_URL`, `WEB_BLOCKED_URL`, `WEB_REDIRECT_BLOCKED`, `WEB_FETCH_TOO_LARGE`, `WEB_FETCH_TIMEOUT`, `WEB_UNSUPPORTED_CONTENT_TYPE`.
 
 ## The service
 
-`WebRuntime` registers search and fetch providers, rejects duplicate ids with `WEB_DUPLICATE_PROVIDER`, and resolves providers at execution time with structured selection errors. The local fetch backend accepts only HTTP(S), rejects credentials, caps redirects, bytes, characters, and time, revalidates every same-origin redirect hop, and decodes the body; the tool owns presentation. The local backend does not block private-network targets; do not enable `web_fetch` where it can reach sensitive internal ones.
+`WebRuntime` registers search and fetch providers, rejects duplicate ids with `WEB_DUPLICATE_PROVIDER`, and resolves providers at execution time with structured selection errors. Beside the search registry it keeps the configurable-provider directory and reports the search selection and every topology change to configuration surfaces. The local fetch backend accepts only HTTP(S), rejects credentials, caps redirects, bytes, characters, and time, revalidates every same-origin redirect hop, and decodes the body; the tool owns presentation. The local backend does not block private-network targets; do not enable `web_fetch` where it can reach sensitive internal ones.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -192,7 +193,63 @@ async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearch
  * @returns the retrieval outcome; non-2xx responses resolve descriptively.
  */
 async fetch(request: WebFetchRequest, signal?: AbortSignal): Promise<WebFetchResult>
+
+/**
+ * The search selection as the next `search()` would resolve it, without
+ * running one: the pinned id, the provider the rules name, and otherwise
+ * the failure code a call would throw.
+ * @returns the current selection, detached.
+ */
+searchSelection(): WebProviderSelection
+
+/**
+ * Describe every registered search provider with its usability answer.
+ * @returns detached entries in registration order.
+ */
+listSearchProviders(): WebRegisteredSearchProvider[]
+
+/**
+ * List every declared configurable search provider.
+ * @returns detached directory entries in declaration order.
+ */
+listConfigurableSearchProviders(): WebConfigurableProvider[]
+
+/**
+ * Declare search providers a plugin makes configurable through a settings
+ * section. Registration is all-or-nothing: an empty list, invalid entry, or
+ * a provider already declared by any registration throws `WebError` without
+ * registering the rest. Disposed with the fiber.
+ * @param entries - every configurable search provider this plugin owns.
+ * @returns a handle that withdraws all of them, and can atomically replace them.
+ */
+registerConfigurableSearchProviders(entries: readonly WebConfigurableProvider[]): WebDirectoryRegistrationHandle
 ```
 
 Source: [`packages/web/web/src/index.ts`](../../packages/web/web/src/index.ts)
+
+<a id="web-events"></a>
+
+### `web/*` events
+
+<a id="webproviders-updated--emit"></a>
+
+#### `web/providers-updated` — emit
+
+The search-provider topology changed: a search provider registered or unregistered, or the configurable directory gained, lost, or replaced entries. This payload-free registry notification fires at each commit point, registration disposal included; consumers re-read `listSearchProviders()`, `listConfigurableSearchProviders()`, or `searchSelection()` for the new state. Observer failures are contained and cannot veto the registry mutation.
+
+```ts cordis-catalog
+/**
+ * The search-provider topology changed: a search provider registered or
+ * unregistered, or the configurable directory gained, lost, or replaced
+ * entries. This payload-free registry notification fires at each commit
+ * point, registration disposal included; consumers re-read
+ * `listSearchProviders()`, `listConfigurableSearchProviders()`, or
+ * `searchSelection()` for the new state. Observer failures are contained
+ * and cannot veto the registry mutation.
+ * @mode emit
+ */
+'web/providers-updated'(): void
+```
+
+Source: [`packages/web/web/src/types.ts`](../../packages/web/web/src/types.ts)
 <!-- END GENERATED cordis-surface -->

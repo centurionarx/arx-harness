@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web",
   "description": "Abstract web access capability seam (ctx.web) for the arx Harness — search/fetch provider registry, registration-order-independent selection, request/result vocabulary, and the WebError taxonomy",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "publishConfig": {
     "access": "public"
   },
@@ -22,19 +22,27 @@
       "types": "./lib/types/invariant.d.ts",
       "default": "./lib/invariant.js"
     },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
     "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
   "files": [
     "lib/index.js",
     "lib/invariant.js",
+    "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^"
   },
   "dependencies": {
     "@arx-ai/schemastery": "workspace:^"
@@ -42,6 +50,9 @@
   "devDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-launch-environment": "workspace:^"
   }
 }

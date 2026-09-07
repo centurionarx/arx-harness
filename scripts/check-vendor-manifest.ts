@@ -45,7 +45,7 @@ function stagedPaths(): string[] {
   if (result.status !== 0) {
     throw new Error(`vendor manifest guard: git diff --cached --name-only failed with exit code ${result.status}.`)
   }
-  return (result.stdout ?? '').split('\n').filter(line => line.length > 0)
+  return result.stdout.split('\n').filter(line => line.length > 0)
 }
 
 /** Classify the staged set and exit 1 when vendored source moves without its manifest. */

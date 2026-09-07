@@ -14,7 +14,7 @@ import WorkerThreadWorkflowEngine from '../src/index.ts'
 
 /**
  * With-key e2e: a REAL script in a REAL worker thread
- * drives REAL spawn children against the live DeepSeek API — one plain child
+ * drives REAL spawn children against the live model API — one plain child
  * and one schema'd child through the real structured-output runtime — and
  * the run's value, events, and child sessions are asserted from the outside
  * (never the script's self-report alone). Key-gated (self-skips without

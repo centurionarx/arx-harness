@@ -6,8 +6,8 @@
   config:
     maxTokensAsSuccess: !!js "process.env.ARX_MAX_TOKENS_AS_SUCCESS === undefined ? true : JSON.parse(process.env.ARX_MAX_TOKENS_AS_SUCCESS)"
 
-# The DeepSeek adapter. Shipped default: full thinking at max effort on every
-# request; exact-model resolution materializes request defaults before logging.
+# Shipped default: full thinking at max effort on every request; exact-model
+# resolution materializes request defaults before logging.
 # The model arrives per session over JSON-RPC, so it is not pinned here.
 - id: llm
   name: '@arx-ai/arx-llm-pi-ai'

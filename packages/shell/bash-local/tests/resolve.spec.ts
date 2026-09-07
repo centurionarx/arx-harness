@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -61,16 +61,20 @@ describe('candidateBashPaths', () => {
 
   it('probes emptiness of every candidate shape through the real filesystem', () => {
     const root = mkdtempSync(join(tmpdir(), 'arx-bash-resolve-'))
-    mkdirSync(join(root, 'file-shell'), { recursive: true })
-    mkdirSync(join(root, 'file-shell', 'bash.exe'), { recursive: true })
-    mkdirSync(join(root, 'missing-shell'), { recursive: true })
+    mkdirSync(join(root, 'dir-shell', 'bash.exe'), { recursive: true })
     const env: NodeJS.ProcessEnv = {
-      ProgramFiles: join(root, 'file-shell'),
-      PATH: join(root, 'missing-shell'),
+      ProgramFiles: join(root, 'missing-shell'),
+      PATH: join(root, 'dir-shell'),
     }
     // A directory named bash.exe is never a spawnable candidate and a missing
     // tree reports nothing; with every probe failing, resolution throws.
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/no Git Bash executable found/)
+    expect(candidateBashPaths(env)).toContain(join(root, 'dir-shell', 'bash.exe'))
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/no Git Bash executable found/)
+  })
+
+  it('searches only the well-known locations when the environment carries no PATH', () => {
+    const env: NodeJS.ProcessEnv = { ProgramFiles: 'C:\\PF', 'ProgramFiles(x86)': 'C:\\PF (x86)' }
+    expect(candidateBashPaths(env)).toEqual(expected(env))
   })
 })
 
@@ -97,9 +101,20 @@ describe('resolveBashPath', () => {
     expect(result).toBe(join(root, 'Git', 'bin', 'bash.exe'))
   })
 
+  it('accepts a link-shaped PATH candidate whose target cannot be stat-ed', () => {
+    // Store app execution aliases stat as EACCES but lstat as a link; a
+    // dangling symlink reproduces that split on every platform.
+    const root = mkdtempSync(join(tmpdir(), 'arx-bash-resolve-link-'))
+    const store = join(root, 'store')
+    mkdirSync(store, { recursive: true })
+    const link = join(store, 'bash.exe')
+    symlinkSync(join(root, 'no-such-target.exe'), link)
+    expect(resolveBashPath(undefined, { ProgramFiles: join(root, 'missing'), PATH: store }, 'win32')).toBe(link)
+  })
+
   it('refuses loudly naming the search and the config escape when no Git Bash exists', () => {
     const env: NodeJS.ProcessEnv = { PATH: 'C:\\Windows\\System32' }
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/no Git Bash executable found/)
-    expect(() => resolveBashPath(undefined, env, 'win32')).toThrowError(/bashPath/)
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/no Git Bash executable found/)
+    expect(() => resolveBashPath(undefined, env, 'win32')).toThrow(/bashPath/)
   })
 })

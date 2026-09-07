@@ -1,0 +1,190 @@
+/* Web search settings section, in the settings-panel design language the
+ * Models section already uses: 14/22 body, 12/18 caption, 32px fields, and
+ * `border-l2` hairlines. Every color resolves through a `--arx-alias-*` token. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+  color: var(--arx-alias-label-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.intro,
+.caption {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--arx-alias-label-tertiary);
+}
+
+.caption {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.notice {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--arx-alias-state-warn-label);
+}
+
+.savedNotice {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--arx-alias-state-success-primary);
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--arx-alias-state-error-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--arx-alias-label-secondary);
+}
+
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--arx-alias-border-l2);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  background: var(--arx-alias-bg-layer-1);
+  color: var(--arx-alias-label-primary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--arx-alias-brand-primary);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Enum pickers hold a handful of short options; a field-width dropdown reads
+   as a text field the user is expected to fill. */
+select.input {
+  max-width: 320px;
+  cursor: pointer;
+}
+
+.rows {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--arx-alias-border-l2);
+  border-radius: 12px;
+  background: var(--arx-alias-bg-layer-1);
+}
+
+.rowIdentity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowName {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+.dot {
+  box-sizing: border-box;
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dotOn {
+  background: var(--arx-alias-state-success-primary);
+}
+
+.dotOff {
+  background: var(--arx-alias-state-error-primary);
+}
+
+.dotIdle {
+  background: var(--arx-alias-label-dimmed);
+}
+
+.keyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.button {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--arx-alias-brand-primary);
+  border-radius: 14px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  background: var(--arx-alias-brand-primary);
+  color: var(--arx-alias-label-on-brand);
+  cursor: pointer;
+}
+
+.buttonQuiet {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--arx-alias-border-l2);
+  border-radius: 14px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  background: transparent;
+  color: var(--arx-alias-label-secondary);
+  cursor: pointer;
+}
+
+.button:disabled,
+.buttonQuiet:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

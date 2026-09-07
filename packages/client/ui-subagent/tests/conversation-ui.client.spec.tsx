@@ -89,6 +89,17 @@ function summary(id: SessionId, updatedAt: number): SessionSummary {
   }
 }
 
+/**
+ * Advance the fake clock and let React finish the render a timer callback
+ * schedules. A bare `advanceTimersByTimeAsync` yields one microtask, which is
+ * not the scheduler tick React needs under instrumentation, so a DOM assertion
+ * that follows one can read the pre-update tree.
+ * @param ms - milliseconds to advance.
+ */
+async function advanceRendered(ms: number): Promise<void> {
+  await act(async () => { await vi.advanceTimersByTimeAsync(ms) })
+}
+
 function hoverCatalog(trigger: HTMLElement): void {
   const root = trigger.parentElement
   if (root === null) throw new Error('catalog trigger has no root')
@@ -235,26 +246,54 @@ describe('SubagentHeaderLineage', () => {
     expect(screen.queryByRole('tree')).toBeNull()
 
     fireEvent.mouseEnter(trigger.parentElement!)
-    await vi.advanceTimersByTimeAsync(149)
+    await advanceRendered(149)
     expect(screen.queryByRole('tree')).toBeNull()
-    await vi.advanceTimersByTimeAsync(1)
+    await advanceRendered(1)
     const tree = screen.getByRole('tree')
     fireEvent.resize(window)
     fireEvent.mouseLeave(trigger.parentElement!)
     fireEvent.mouseEnter(tree)
-    await vi.advanceTimersByTimeAsync(120)
+    await advanceRendered(120)
     expect(screen.getByRole('tree')).toBeTruthy()
 
     fireEvent.mouseLeave(tree)
-    await vi.advanceTimersByTimeAsync(119)
+    await advanceRendered(119)
     expect(screen.getByRole('tree')).toBeTruthy()
-    await vi.advanceTimersByTimeAsync(1)
+    await advanceRendered(1)
     expect(screen.queryByRole('tree')).toBeNull()
 
     hoverCatalog(trigger)
     fireEvent.mouseLeave(trigger.parentElement!)
     view.unmount()
-    await vi.advanceTimersByTimeAsync(120)
+    await advanceRendered(120)
+  })
+
+  it('re-anchors the open catalog under its trigger when the viewport resizes', () => {
+    render(<SubagentHeaderLineage {...props(catalog())} />)
+    const trigger = screen.getByRole('button', { name: /2 subagents/ })
+    hoverCatalog(trigger)
+    const menu = screen.getByRole('tree')
+    expect([menu.style.top, menu.style.left]).toEqual(['5px', '16px'])
+
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(new DOMRect(900, 20, 100, 20))
+    fireEvent.resize(window)
+
+    // A trigger reflowed past the right edge keeps the 336px menu one 16px margin inside it.
+    expect([menu.style.top, menu.style.left]).toEqual(['45px', '672px'])
+  })
+
+  it('follows its trigger out of view when a scrolling ancestor moves it', () => {
+    const view = render(<SubagentHeaderLineage {...props(catalog())} />)
+    const trigger = screen.getByRole('button', { name: /2 subagents/ })
+    hoverCatalog(trigger)
+    const menu = screen.getByRole('tree')
+    expect(menu.style.top).toBe('5px')
+
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, -60, 100, 20))
+    // Scroll events do not bubble, so only a capturing listener sees an ancestor's.
+    fireEvent.scroll(view.container)
+
+    expect(menu.style.top).toBe('-35px')
   })
 
   it('cancels a pending hover when the trigger becomes hidden', async () => {
@@ -263,11 +302,11 @@ describe('SubagentHeaderLineage', () => {
     const trigger = screen.getByRole('button', { name: /2 subagents/ })
 
     fireEvent.mouseEnter(trigger.parentElement!)
-    await vi.advanceTimersByTimeAsync(149)
+    await advanceRendered(149)
     view.rerender(<SubagentHeaderLineage {...props(catalog({ entries: [] }))} />)
     expect(screen.queryByRole('button')).toBeNull()
 
-    await vi.advanceTimersByTimeAsync(1)
+    await advanceRendered(1)
     fireEvent.resize(window)
     expect(screen.queryByRole('tree')).toBeNull()
   })
@@ -400,7 +439,7 @@ describe('SubagentHeaderLineage', () => {
     expect(screen.getByText('~2y 3mo')).toBeTruthy()
     expect(screen.getByText('~1y')).toBeTruthy()
 
-    await vi.advanceTimersByTimeAsync(1_000)
+    await advanceRendered(1_000)
     expect(screen.getByRole('treeitem', { name: /running.*4\.6K tok · 1m 11s/ })).toBeTruthy()
     expect(screen.getByRole('treeitem', { name: /finished.*123 tok · 1h 02m 03s/ })).toBeTruthy()
     expect(screen.getByRole('treeitem', { name: /interrupted.*123M tok · 6s/ })).toBeTruthy()

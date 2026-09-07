@@ -11,6 +11,7 @@ import type {} from '@arx-ai/arx-commands/types'
 import type {} from '@arx-ai/arx-cordis-host-runner/types'
 import type {} from '@arx-ai/arx-credentials/types'
 import type {} from '@arx-ai/arx-llm/types'
+import type {} from '@arx-ai/arx-web/types'
 import type {} from '@arx-ai/arx-agent-presets/types'
 import type {} from '@arx-ai/arx-settings/types'
 

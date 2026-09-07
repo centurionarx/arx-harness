@@ -41,6 +41,10 @@ export function SettingsDocumentAction({ controller, useSnapshot, t }: SettingsD
 
   if (!state.canOpen) {
     const copy = () => {
+      // Swallows only a refused clipboard write (denied permission, non-secure
+      // context) — the success handler just sets state. The label stays at the
+      // un-copied string and the path remains on screen to select by hand.
+      // oxlint-disable-next-line typescript/no-unnecessary-condition -- a non-secure context has no clipboard, whatever the DOM lib says
       void navigator.clipboard?.writeText(state.documentPath).then(() => { setCopied(true) }).catch(() => {})
     }
     return (

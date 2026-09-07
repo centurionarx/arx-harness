@@ -22,7 +22,7 @@ with ArxHarness() as harness:
 
 `ArxHarness` keeps its lazily started runtime subprocess for reuse across calls. Use it as a context manager, as above, or call `close()` explicitly when finished.
 
-By default, the SDK launches the bundled single-file `arx-jsonrpc-agent` executable from the `arx-harness-runtime-bin` package and injects that package's default configuration (the stdio JSON-RPC server, agent core, preloaded DeepSeek adapter, JSONL session persistence with an explicitly composed semantic checkpoint policy, local bash) via `ARX_CORDIS_CONFIG`. To run a plugin composition of your own, keep the `@arx-ai/arx-sdk-jsonrpc-server` entry in the config and pass the Cordis config path.
+By default, the SDK launches the bundled single-file `arx-jsonrpc-agent` executable from the `arx-harness-runtime-bin` package and injects that package's default configuration (the stdio JSON-RPC server, agent core, preloaded model adapter, JSONL session persistence with an explicitly composed semantic checkpoint policy, local bash) via `ARX_CORDIS_CONFIG`. To run a plugin composition of your own, keep the `@arx-ai/arx-sdk-jsonrpc-server` entry in the config and pass the Cordis config path.
 
 ```py
 from arx_harness import ArxHarness
@@ -36,7 +36,7 @@ with ArxHarness(
     result = harness.run("Make the requested code change.")
 ```
 
-`provider` selects a provider route registered by the chosen Cordis composition; `model` is the model id resolved by that adapter. `max_tokens` is an optional positive per-request output-token cap for the root agent and its in-process descendants; omission leaves the provider default in control. Compaction summaries keep the separate limit configured by their compaction plugin. The bundled default composition registers `deepseek-official`. A custom composition can mount `llm-pi-ai`, configure provider-specific credentials/endpoints there, and select any provider/model present in pi-ai's installed catalog.
+`provider` selects a provider route registered by the chosen Cordis composition; `model` is the model id resolved by that adapter. `max_tokens` is an optional positive per-request output-token cap for the root agent and its in-process descendants; omission leaves the provider default in control. Compaction summaries keep the separate limit configured by their compaction plugin. The bundled default composition registers `deepseek-official`, and its route follows this SDK's own environment: the endpoint from `DEEPSEEK_BASE_URL`, the credential from `DEEPSEEK_API_KEY`, and the model from whichever id you pass, so a private gateway serving its own model names works without a custom composition. A custom composition can mount `llm-pi-ai`, configure provider-specific credentials/endpoints there, and select any provider/model present in pi-ai's installed catalog.
 
 The [Python SDK tutorial](https://github.com/centurionarx/arx-harness/blob/master/docs/user/guide/python-sdk.md) provides an ordered installation and first-run path without the Web UI. The [`jsonrpc-agent` example](https://github.com/centurionarx/arx-harness/blob/master/examples/jsonrpc-agent/README.md) owns the complete standalone Cordis file used there.
 

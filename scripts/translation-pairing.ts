@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { basename } from 'node:path'
+import { basename, matchesGlob } from 'node:path'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { gfmFromMarkdown } from 'mdast-util-gfm'
 import { gfm } from 'micromark-extension-gfm'
@@ -80,53 +80,16 @@ export function blobHash(content: Buffer): string {
   return hash.digest('hex')
 }
 
-const PAIR_META_LINE = /^([^:#]+\.md): ([0-9a-f]{40})$/
-
-/**
- * Parse a `foo.i18n.yaml` consistency record into basename → recorded blob
- * hash, or undefined when any non-comment line deviates from the exact
- * `<basename>.md: <40-hex>` format or repeats a key. Consumers must
- * additionally require exactly the two expected basenames — a renamed key is
- * a malformed record, never a silently-missing entry.
- * @param content - Sidecar file text.
- * @returns The recorded map, or undefined for a malformed record.
- */
-export function parsePairMeta(content: string): Map<string, string> | undefined {
-  const out = new Map<string, string>()
-  for (const line of content.split('\n')) {
-    if (line === '' || line.startsWith('#')) continue
-    const match = PAIR_META_LINE.exec(line)
-    if (!match?.[1] || !match[2]) return undefined
-    if (out.has(match[1])) return undefined
-    out.set(match[1], match[2])
-  }
-  return out
-}
-
-/**
- * Render a `foo.i18n.yaml` consistency record.
- * @param source - Repo-relative English path.
- * @param sourceHash - Blob hash of the English side.
- * @param pt - Repo-relative Portuguese path.
- * @param ptHash - Blob hash of the Portuguese side.
- * @returns The exact sidecar file content.
- */
-export function renderPairMeta(source: string, sourceHash: string, pt: string, ptHash: string): string {
-  return [
-    '# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each',
-    '# side as of the last confirmed-consistent state. Both languages carry equal authority;',
-    '# after editing either side, bring the other along and re-record with:',
-    `#   pnpm run verify-translation-pairing --write ${source}`,
-    `${basename(source)}: ${sourceHash}`,
-    `${basename(pt)}: ${ptHash}`,
-    '',
-  ].join('\n')
-}
-
 /** Validated fields of `scripts/translation-pairing.manifest.json`. */
 export interface TranslationPairingManifest {
   /** Source documents exempt from pairing because they are generated, instructional, or bilingual by construction. */
   excluded: string[]
+  /**
+   * Globs naming the active bilingual corpus: the in-scope documents whose
+   * pairs are required now and whose paired paths links follow. Absent, every
+   * in-scope document is active.
+   */
+  included?: string[]
 }
 
 const README_ARTIFACT = /(?:^|\/)readme(?:\.md|\.pt-BR\.md|\.i18n\.yaml)$/i
@@ -193,15 +156,15 @@ export function isTranslationScopeFile(file: string): boolean {
     || file.startsWith('python/'))
 }
 
-/** Read the manifest exclusion list or fail before enforcement starts. */
-function excludedField(record: Record<string, unknown>): string[] {
-  const value = record.excluded
+/** Read one manifest path list or fail before enforcement starts. */
+function pathListField(record: Record<string, unknown>, field: 'excluded' | 'included'): string[] {
+  const value = record[field]
   if (!Array.isArray(value)) {
-    throw new Error('translation-pairing.manifest.json: excluded must be an array of strings')
+    throw new Error(`translation-pairing.manifest.json: ${field} must be an array of strings`)
   }
   const entries: unknown[] = value
   if (!entries.every((entry): entry is string => typeof entry === 'string')) {
-    throw new Error('translation-pairing.manifest.json: excluded must be an array of strings')
+    throw new Error(`translation-pairing.manifest.json: ${field} must be an array of strings`)
   }
   return entries
 }
@@ -213,11 +176,14 @@ export function parseTranslationPairingManifest(content: string): TranslationPai
     throw new Error('translation-pairing.manifest.json: expected an object')
   }
   const record = value as Record<string, unknown>
-  const unsupported = Object.keys(record).filter(field => field !== 'excluded')
+  const unsupported = Object.keys(record).filter(field => field !== 'excluded' && field !== 'included')
   if (unsupported.length > 0) {
     throw new Error(`translation-pairing.manifest.json: unsupported field(s): ${unsupported.join(', ')}; every in-scope document is required`)
   }
-  return { excluded: excludedField(record) }
+  return {
+    excluded: pathListField(record, 'excluded'),
+    ...record.included === undefined ? {} : { included: pathListField(record, 'included') },
+  }
 }
 
 /** Whether a manifest entry excludes one exact file or a directory subtree. */
@@ -228,12 +194,20 @@ export function isTranslationPairingManifestExcluded(
   return manifest.excluded.some(entry => (entry.endsWith('/') ? file.startsWith(entry) : file === entry))
 }
 
-/** Build the active bilingual-source predicate shared by every link consumer. */
+/**
+ * Build the active bilingual-source predicate shared by every link consumer:
+ * in scope, not excluded, and — when the manifest names an active corpus —
+ * matched by one of its globs.
+ * @param manifest - the parsed pairing manifest.
+ * @returns whether one repository-relative English path is an active pair source.
+ */
 export function translationPairSourcePredicate(
   manifest: TranslationPairingManifest,
 ): (sourcePath: string) => boolean {
+  const { included } = manifest
   return sourcePath => isTranslationScopeFile(sourcePath)
     && !isTranslationPairingManifestExcluded(sourcePath, manifest)
+    && (included === undefined || included.some(glob => matchesGlob(sourcePath, glob)))
 }
 
 /**

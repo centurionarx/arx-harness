@@ -153,6 +153,13 @@ const notReady = UI_PLUGIN_DIRS.filter((dir) => {
 })
 if (notReady.length > 0) console.warn(`[smoke-real] skipped — client bundles not ready: ${notReady.join(', ')}`)
 
+/**
+ * Declares the mock provider's route and the default model. The shipped
+ * bundles pin neither, so a scenario that prompts over the RPC face has to
+ * supply what a deployment would; the file's header carries the reasoning.
+ */
+const PROVIDER_OVERLAY = fileURLToPath(new URL('./keyless-provider.overlay.yml', import.meta.url))
+
 describe('arx web keyless CLI smoke', () => {
   it('listens on 127.0.0.1 by default', async () => {
     requireDist()
@@ -226,7 +233,8 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', PROVIDER_OVERLAY, '--no-open', '--port', '0'],
       {
         cwd: workspace,
         env: {
@@ -260,7 +268,9 @@ describe('arx web keyless CLI smoke', () => {
       }
       const workspaceMessage = captured.messages?.find(message =>
         message.role === 'user' && message.content?.includes('web-workspace-context-probe'))
-      const systemMessage = captured.messages?.find(message => message.role === 'system')
+      // The shipped adapter carries the system prompt in OpenAI's `developer`
+      // role, which is what a deployment's own gateway receives.
+      const systemMessage = captured.messages?.find(message => message.role === 'developer')
       const expectedWebSection = readFileSync(WEB_SURFACE_PROMPT, 'utf8').trimEnd()
         .replace('{{webUrl}}', baseUrl)
       expect(systemMessage?.content).toContain(expectedWebSection)
@@ -306,8 +316,11 @@ describe('arx web keyless CLI smoke', () => {
       request.setEncoding('utf8')
       request.on('data', (chunk: string) => { body += chunk })
       request.on('end', () => {
-        const parsed = JSON.parse(body) as { max_tokens?: number; messages?: unknown[] }
-        const titleRequest = parsed.max_tokens === 64
+        // The title request is the one capped at 64 output tokens; the shipped
+        // adapter spells that cap `max_completion_tokens`, and a request this
+        // does not recognize would be counted as a retry of the main one.
+        const parsed = JSON.parse(body) as { max_completion_tokens?: number; messages?: unknown[] }
+        const titleRequest = parsed.max_completion_tokens === 64
         const mainRequest = !titleRequest && body.includes(promptMarker)
         response.writeHead(200, { 'content-type': 'text/event-stream' })
         if (!mainRequest) {
@@ -339,7 +352,8 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', PROVIDER_OVERLAY, '--no-open', '--port', '0'],
       {
         cwd: workspace,
         env: {
@@ -385,7 +399,10 @@ describe('arx web keyless CLI smoke', () => {
       await new Promise<void>(resolveClose => provider.close(() => { resolveClose() }))
       rmSync(workspace, { recursive: true, force: true })
     }
-  }, 30_000)
+    // No literal here: this case spawns the bin and drives a stream through a
+    // forced transport failure, exactly like the two around it, and a value
+    // written on the case overrides the lane's own testTimeout downward.
+  })
 
   it('ARX_TOOLS_MODE=code collapses the provider wire tools to run_code with the SDK prompt section', async () => {
     requireDist()
@@ -421,7 +438,8 @@ describe('arx web keyless CLI smoke', () => {
     const tsxLoader = pathToFileURL(createRequire(join(REPO_ROOT, 'package.json')).resolve('tsx')).href
     const child = spawn(
       process.execPath,
-      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web', '--no-open', '--port', '0'],
+      ['--import', tsxLoader, join(REPO_ROOT, 'apps/cli/src/bin.ts'), 'web',
+        '--patch', PROVIDER_OVERLAY, '--no-open', '--port', '0'],
       {
         cwd: workspace,
         env: {
@@ -451,7 +469,7 @@ describe('arx web keyless CLI smoke', () => {
         }),
       ])
       expect(captured.tools?.map(tool => tool.function?.name)).toEqual(['run_code'])
-      const system = captured.messages?.find(message => message.role === 'system')
+      const system = captured.messages?.find(message => message.role === 'developer')
       expect(system?.content).toContain('## Writing code for run_code')
       expect(system?.content).toContain('declare const tools')
     } finally {
@@ -535,7 +553,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
   it('empty-state first send completes a real model round', async () => {
     onTestFailed(() => saveFailureShot(page, 'w5-first-round'))
     // This scenario spawns its own server against a fresh $ARX_HOME with the
-    // DeepSeek credential inherited from the environment, so no onboarding
+    // model credential inherited from the environment, so no onboarding
     // step mounts and the page is immediately interactive.
     // Fresh world: connect a Workspace so the composer starts live.
     await connectFreshWorkspace(page, sessionsDir)
@@ -592,7 +610,7 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
   it('bash differential rendering: tool row click leaves the default details column closed', async () => {
     onTestFailed(() => saveFailureShot(page, 'w5-tool-details'))
     const input = page.locator('textarea').first()
-    await input.fill('请用 bash 工具运行命令 echo w5marker 然后告诉我结果')
+    await input.fill('Use the bash tool to run the command `echo w5marker` and tell me the result')
     await input.press('Enter')
     // Wait for the tool ROW, not response text (the reply echoes any marker).
     // Bash renders through the third-party sample registration. Match that

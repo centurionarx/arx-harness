@@ -2,6 +2,8 @@
 
 Status: implemented
 
+English | [Português](2026-08-31-translation-language-brazilian-portuguese.pt-BR.md)
+
 ## Problem
 
 Every document in pairing scope was maintained in English and Simplified Chinese. The project's readership is Portuguese-speaking, and no Chinese-first contribution had landed; every pair cost a full translation pass into a language with no readers. The pairing machinery — terminology, prompt template, gates, merge driver — was built around a second language the project no longer serves.

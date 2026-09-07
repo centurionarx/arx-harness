@@ -2,6 +2,8 @@
 
 Status: implemented
 
+English | [Português](2026-08-31-centurionarx-brand-naming.pt-BR.md)
+
 ## Problem
 
 The product was rebranded to arx, but the previous owner's name still appeared across roughly 750 files carrying three different senses: the organization behind the product, the LLM provider the harness ships against, and the credentials that reach that provider. Nothing distinguished these senses, so product surfaces — the website, UI strings, agent personas, documentation — still presented the harness as DeepSeek's, while a blanket find-and-replace would have broken the very configuration that reaches the model.

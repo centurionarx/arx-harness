@@ -84,7 +84,7 @@ describe('arx badge assembled snapshot', () => {
       ## Assets
 
       - Local PNG: [\`arx-badge.png\`](arx-badge.png), 726×120 source image; render at 121×20
-      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white\`
+      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square\`
       - Project URL: \`https://github.com/centurionarx/arx-harness\`
 
       ## Markdown
@@ -92,13 +92,13 @@ describe('arx badge assembled snapshot', () => {
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)
+      [![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)](https://github.com/centurionarx/arx-harness)
       \`\`\`
 
       If attribution should not be linked, use:
 
       \`\`\`markdown
-      ![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)
+      ![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)
       \`\`\`
 
       ## Usage rules
@@ -123,7 +123,7 @@ describe('arx badge assembled snapshot', () => {
       ## Assets
 
       - Local PNG: [\`arx-badge.png\`](arx-badge.png), 726×120 source image; render at 121×20
-      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white\`
+      - Shields.io image URL: \`https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square\`
       - Project URL: \`https://github.com/centurionarx/arx-harness\`
 
       ## Markdown
@@ -131,13 +131,13 @@ describe('arx badge assembled snapshot', () => {
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/centurionarx/arx-harness)
+      [![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)](https://github.com/centurionarx/arx-harness)
       \`\`\`
 
       If attribution should not be linked, use:
 
       \`\`\`markdown
-      ![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)
+      ![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)
       \`\`\`
 
       ## Usage rules

@@ -1,0 +1,43 @@
+# Loader overlay for the real-host smokes that spawn `arx web` against a mock
+# provider (`arx web --patch`). The shipped bundles mount `llm-pi-ai` dormant
+# and pin no default model, because a shipped provider decides for a deployment
+# what only that deployment knows. These scenarios ARE that deployment: they
+# stand up an OpenAI-compatible endpoint on an ephemeral port and hand the
+# process its address and key through the environment, exactly as a launcher
+# would, so the route follows that environment rather than pinning it.
+#
+# `apps/web/tests/` is not shipped configuration, so `!!js` here reads the
+# scenario's own launch environment rather than a deployment's; the shipped
+# compositions that must not do this are the ones
+# `verify-config-source-ownership` gates.
+- id: llm-pi-ai
+  config:
+    providers:
+      # pi-ai ships no `deepseek-official` catalog route, so this profile
+      # declares the whole provider instead of narrowing an inherited one.
+      deepseek-official:
+        displayName: DeepSeek
+        apiKeyEnv: DEEPSEEK_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com'
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 256000
+        # pi-ai refuses a requested effort a model does not list, so the model
+        # roster and the reasoning declaration move together.
+        reasoning: high
+        models:
+          - id: deepseek-v4-pro
+            reasoningEfforts:
+              off: null
+              high: high
+          - id: deepseek-v4-flash
+            reasoningEfforts:
+              off: null
+              high: high
+
+# A session cannot start a turn without a selection, and no page drives the
+# picker in these scenarios: they prompt over the RPC face directly.
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash

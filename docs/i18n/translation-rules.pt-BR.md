@@ -2,17 +2,17 @@
 
 [English](translation-rules.md) | Português
 
-Como traduzir entre os dois lados de um par de documentação neste repositório. Os dois idiomas têm autoridade igual ([README.md](README.pt-BR.md)): uma mudança é escrita em qualquer um dos idiomas, e esse lado é a fonte daquela atualização — estas regras regem a produção ou atualização do parâmetro. Elas valem para humanos e agentes igualmente. O trabalho de agente rotineiro traduz o conteúdo alterado diretamente em uma passada guiada pela terminologia; o fluxo estendido [.agents/skills/arx-translate-docs](../../.agents/skills/arx-translate-docs/SKILL.md) só roda quando o usuário o invoca explicitamente. Os níveis de regra seguem o uso do RFC 2119: **MUST / MUST NOT** bloqueiam na gate ou na revisão; **SHOULD** pede uma razão declarada para desviar; **MAY** é a critério.
+Como traduzir entre os dois lados de um par de documentação neste repositório. Os dois idiomas têm autoridade igual ([README.md](README.pt-BR.md)): uma mudança é escrita em qualquer um dos idiomas, e esse lado é a fonte daquela atualização — estas regras regem a produção ou atualização do counterpart. Elas valem para humanos e agentes igualmente. O trabalho de agente rotineiro traduz o conteúdo alterado diretamente em uma passada guiada pela terminologia; o fluxo estendido [.agents/skills/arx-translate-docs](../../.agents/skills/arx-translate-docs/SKILL.md) só roda quando o usuário o invoca explicitamente. Os níveis de regra seguem o uso do RFC 2119: **MUST / MUST NOT** bloqueiam na gate ou na revisão; **SHOULD** pede uma razão declarada para desviar; **MAY** é a critério.
 
 ## Fidelidade
 
-- O parâmetro *MUST* dizer o que o lado autoral diz — sem comportamento, pré-requisitos, avisos, claims de versão ou exemplos adicionados, e nenhum deles removido. Se o par divergir em substância, nenhum idioma vence por padrão: corrija o lado errado e leve o outro junto na mesma mudança.
-- O parâmetro *SHOULD* ler como redação técnica natural no próprio idioma, não glossa palavra a palavra. Traduza o significado, reestruture frases onde a gramática alvo pedir e mantenha o registro do autor — o que é conciso permanece conciso.
+- O counterpart *MUST* dizer o que o lado autoral diz — sem comportamento, pré-requisitos, avisos, claims de versão ou exemplos adicionados, e nenhum deles removido. Se o par divergir em substância, nenhum idioma vence por padrão: corrija o lado errado e leve o outro junto na mesma mudança.
+- O counterpart *SHOULD* ler como redação técnica natural no próprio idioma, não glossa palavra a palavra. Traduza o significado, reestruture frases onde a gramática alvo pedir e mantenha o registro do autor — o que é conciso permanece conciso.
 - Não traduza o intraduzível: se uma frase resiste a uma renderização natural porque depende de um idiom do idioma de origem, traduza a ideia, não o idiom.
 
 ## Voz
 
-- O registro é calibrado por [style-samples.md](style-samples.md) — pares de ouro aprovados por humanos, um por gênero de documento. O parâmetro *MUST* corresponder ao lado no idioma alvo da amostra mais próxima; onde a voz dela e uma regra de voz de prosa divergirem, a amostra vence. Alvos em português usam português técnico brasileiro natural; alvos em inglês usam prosa de desenvolvedor profissional e concisa.
+- O registro é calibrado por [style-samples.md](style-samples.md) — pares de ouro aprovados por humanos, um por gênero de documento. O counterpart *MUST* corresponder ao lado no idioma alvo da amostra mais próxima; onde a voz dela e uma regra de voz de prosa divergirem, a amostra vence. Alvos em português usam português técnico brasileiro natural; alvos em inglês usam prosa de desenvolvedor profissional e concisa.
 - Escreva como um autor técnico nativo reafirmando o conteúdo, não como um tradutor transpondo frases, preservando cada oração da fonte: nada adicionado, nada removido — fluência nunca justifica perder uma oração.
 - Dê às frases um ator explícito quando o idioma alvo de outro modo o obscurecesse; em português, troque passivas vagas ou sujeitos abstratos pelo ator real (o sistema, a gate, a revisão).
 - Prefira idioms consagrados do idioma alvo a calcos (falso positivo/falso negativo para false positive/negative); localize metáforas em vez de transplantá-las e desdobre cadeias de substantivos quando o idioma alvo exigir.
@@ -28,7 +28,7 @@ A gate de pareamento verifica profundidades de cabeçalho, code fences, contagen
 - tabelas (mesmas colunas, mesma ordem de linhas; células de cabeçalho traduzidas segundo a terminologia);
 - code fences — byte-idênticos, inclusive comentários; a assinatura de pareamento compara as info strings e os conteúdos deles, e blocos ` ```ts ` compilam sob `doc-typecheck`;
 - spans de código inline (comandos, flags, config keys, caminhos de arquivos, nomes de eventos, nomes de API, números de versão) — verbatim, nunca traduzidos ou reformatados;
-- links e âncoras: todo link relativo de documento *MUST* manter o mesmo destino semântico e o sufixo exato de query/fragmento. Quando o destino pertence ao corpus bilíngue ativo, o lado inglês usa seu caminho `.md` e o lado português usa seu caminho `.pt-BR.md`; um parâmetro ausente nesse corpus é um erro, enquanto destinos fora dele mantêm o caminho original. URLs externas, imagens e fragmentos puramente internos ficam inalterados. O switcher de idioma continua sendo a exceção explícita entre locales, e um README renderizado fora do GitHub *MAY* usar a URL canônica do repositório público para seu parâmetro exato, como documentado no [README.md](README.pt-BR.md). O TEXTO de link é traduzido.
+- links e âncoras: todo link relativo de documento *MUST* manter o mesmo destino semântico e o sufixo exato de query/fragmento. Quando o destino pertence ao corpus bilíngue ativo, o lado inglês usa seu caminho `.md` e o lado português usa seu caminho `.pt-BR.md`; um counterpart ausente nesse corpus é um erro, enquanto destinos fora dele mantêm o caminho original. URLs externas, imagens e fragmentos puramente internos ficam inalterados. O seletor de idioma continua sendo a exceção explícita entre locales, e um README renderizado fora do GitHub *MAY* usar a URL canônica do repositório público para seu counterpart exato, como documentado no [README.md](README.pt-BR.md). O TEXTO de link é traduzido.
 
 As convenções de Markdown do repositório se aplicam aos arquivos `.pt-BR.md` sem mudanças: uma linha física por parágrafo (`verify-md-wrap`), links relativos resolvíveis (`verify-md-links`), exatamente um newline final.
 
@@ -54,7 +54,7 @@ Estas regras regem o lado em português; o lado em inglês segue as convenções
 ## Padrão de qualidade
 
 - Um par está pronto quando um engenheiro bilíngue lendo qualquer um dos arquivos sozinho obtém tudo o que o leitor do outro obtém — mesmos fatos, mesmas ressalvas, mesmo tom — e nada extra.
-- Rode `pnpm run verify-translation-pairing` e o restante do `doc-sync` para registros, switchers, profundidades de cabeçalho, code blocks, contagens de linhas e colunas de tabelas, tipos de lista, inícios de listas ordenadas, contagem de itens, links e regras de Markdown do repositório. A revisão humana é dona da ordem de listas e tabelas, numeração não canônica, código inline, ênfase, significado, terminologia e tom.
+- Rode `pnpm run verify-translation-pairing` e o restante do `doc-sync` para registros, seletores de idioma, profundidades de cabeçalho, code blocks, contagens de linhas e colunas de tabelas, tipos de lista, inícios de listas ordenadas, contagem de itens, links e regras de Markdown do repositório. A revisão humana é dona da ordem de listas e tabelas, numeração não canônica, código inline, ênfase, significado, terminologia e tom.
 
 ## Referências
 

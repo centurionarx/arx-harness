@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-search-perplexity",
   "description": "Perplexity-backed search provider for the arx Harness web capability seam (ctx.web)",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "publishConfig": {
     "access": "public"
   },
@@ -32,18 +32,20 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@arx-ai/arx-launch-environment": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   },
   "dependencies": {
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@arx-ai/arx-launch-environment": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^"
   }
 }

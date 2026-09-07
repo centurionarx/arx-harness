@@ -184,6 +184,7 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
   'tools': 'tools.md',
   'webserver': 'web-server.md',
   'workflow': 'workflow.md',
+  'web': 'web.md',
 }
 
 /**
@@ -490,6 +491,10 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
   WebFetchResult: 'web.md',
   WebSearchProvider: 'web.md',
   WebSearchRequest: 'web.md',
+  WebConfigurableProvider: 'web.md',
+  WebDirectoryRegistrationHandle: 'web.md',
+  WebProviderSelection: 'web.md',
+  WebRegisteredSearchProvider: 'web.md',
   WebSearchResult: 'web.md',
   WorkflowRun: 'workflow.md',
   PresetOption: 'permission-presets.md',

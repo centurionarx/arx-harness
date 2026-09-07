@@ -1,5 +1,5 @@
-/* Visual baseline: deepsuite `@deepseek/md` markdown.css, adapted to CSS
-   Modules. Cite pills, header anchors, and thinking-small variants are
+/* Visual baseline: the deepsuite markdown stylesheet, adapted
+   to CSS Modules. Cite pills, header anchors, and thinking-small variants are
    intentionally absent (no matching DOM). Token names match that sheet. */
 
 .markdown {
@@ -56,7 +56,7 @@
 }
 
 .markdown a {
-  /* deepsuite markdown.css uses brand-text (blue in newDesign); this sheet
+  /* The deepsuite sheet uses brand-text (blue in newDesign); this sheet
      keeps design-platform brand-text as near-black, so links use the blue
      business-primary alias instead. */
   color: var(--arx-alias-state-business-primary);
@@ -216,7 +216,8 @@
 /* Tables under four columns, and any table inside a blockquote, fill the
    column instead: cells wrap down to their minimum readable width, and the
    wrapper's scroll only remains for the below-floor case (deepsuite chat
-   parity: `.wrapper:not(:has(th:nth-child(4), td:nth-child(4)))`). */
+   parity:
+   `.wrapper:not(:has(th:nth-child(4), td:nth-child(4)))`). */
 .tableFill table {
   width: 100%;
   max-width: none;

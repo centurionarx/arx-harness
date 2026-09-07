@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/i18n/translation-rules.md
 translation-rules.md: 2e8102f39f180711ae1d5a51085a748e424a3fe1
-translation-rules.pt-BR.md: a4c5480ee7361963ea32a4a9b014b90344c0479e
+translation-rules.pt-BR.md: 2936237d8c8fdf20a66dc5b367d6be1df584fb5c

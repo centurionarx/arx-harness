@@ -12,7 +12,7 @@ import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 
 /**
  * With-key proof that log-derived requests translate into real provider cache hits: a
- * multi-step tool turn (plus a follow-up turn) against the live DeepSeek API must report
+ * multi-step tool turn (plus a follow-up turn) against the live provider API must report
  * `cacheReadTokens > 0` on every request after the first — the adapter maps the provider's
  * `prompt_cache_hit_tokens`, and the per-step usage recorded on `assistant/message` events is
  * the production observable for cache behavior (the reconstructability Agent Note's measurement

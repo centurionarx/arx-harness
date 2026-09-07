@@ -112,23 +112,34 @@ describe('web e2e: queue row actions', () => {
     ).toBe(2)
 
     await page.setViewportSize({ width: 640, height: 1000 })
-    const queueBox = await page.locator('[data-queue-dock]').boundingBox()
-    const composerBox = await page.locator('[data-composer-card]').boundingBox()
-    expect(queueBox).not.toBeNull()
-    expect(composerBox).not.toBeNull()
-    expect(queueBox!.x).toBeGreaterThanOrEqual(composerBox!.x)
-    expect(queueBox!.x + queueBox!.width)
-      .toBeLessThanOrEqual(composerBox!.x + composerBox!.width)
-    const queueLeftInset = queueBox!.x - composerBox!.x
-    const queueRightInset = composerBox!.x + composerBox!.width - queueBox!.x - queueBox!.width
     const composerMetrics = await page.locator('[data-composer-card]').evaluate((element) => {
       const style = getComputedStyle(element)
       return {
         dockInset: Number.parseFloat(style.getPropertyValue('--arx-composer-dock-inset')),
       }
     })
-    expect(queueLeftInset).toBeCloseTo(composerMetrics.dockInset, 1)
-    expect(queueRightInset).toBeCloseTo(composerMetrics.dockInset, 1)
+    /**
+     * The dock's inset on both sides. The narrow viewport re-insets it, so a
+     * box read in the frame the viewport changed in catches the reflow partway
+     * and lands a pixel or two off the token.
+     * @returns left and right inset, or undefined while either box is absent.
+     */
+    const dockInsets = async (): Promise<{ left: number; right: number } | undefined> => {
+      const queueBox = await page.locator('[data-queue-dock]').boundingBox()
+      const composerBox = await page.locator('[data-composer-card]').boundingBox()
+      if (queueBox === null || composerBox === null) return undefined
+      return {
+        left: queueBox.x - composerBox.x,
+        right: composerBox.x + composerBox.width - queueBox.x - queueBox.width,
+      }
+    }
+    await expect.poll(async () => (await dockInsets())?.left, { timeout: 10_000 })
+      .toBeCloseTo(composerMetrics.dockInset, 1)
+    const insets = await dockInsets()
+    expect(insets).toBeDefined()
+    expect(insets!.right).toBeCloseTo(composerMetrics.dockInset, 1)
+    expect(insets!.left).toBeGreaterThanOrEqual(0)
+    expect(insets!.right).toBeGreaterThanOrEqual(0)
     await page.setViewportSize({ width: 1680, height: 1000 })
 
     const editRow = page.getByText(EDIT, { exact: true }).locator('..')
@@ -228,19 +239,40 @@ describe('web e2e: queue row actions', () => {
     )
     await compareOrRefreshGolden(LAYOUT_EXPECTED, layoutSnapshot, MODE)
 
+    interface PanelGeometry { todo: DOMRect; goal: DOMRect; queue: DOMRect }
+    /**
+     * The three context panels measured in one frame. Read one at a time they
+     * are a moving target — the panels re-column on a viewport change and the
+     * dock animates in — so a spread computed across separate reads compares
+     * two different layouts.
+     * @returns the three rects, or undefined while any panel is absent.
+     */
+    const contextPanelGeometry = async (): Promise<PanelGeometry | undefined> =>
+      page.evaluate(() => {
+        const rect = (selector: string): DOMRect | undefined =>
+          document.querySelector(selector)?.getBoundingClientRect()
+        const todo = rect('[data-testid="todo-panel"]')
+        const goal = rect('[data-goal-bar] > div')
+        const queue = rect('[data-queue-dock] > div')
+        if (todo === undefined || goal === undefined || queue === undefined) return undefined
+        return { todo, goal, queue }
+      })
+    const panelSpread = (geometry: PanelGeometry | undefined): number | undefined =>
+      geometry === undefined
+        ? undefined
+        : Math.max(
+          Math.abs(geometry.todo.x - geometry.goal.x),
+          Math.abs(geometry.todo.x - geometry.queue.x),
+          Math.abs(geometry.todo.width - geometry.goal.width),
+          Math.abs(geometry.todo.width - geometry.queue.width),
+        )
     const expectAlignedContextPanels = async () => {
-      const queuePanelBox = await page.locator('[data-queue-dock] > div').boundingBox()
-      const todoBox = await page.locator('[data-testid="todo-panel"]').boundingBox()
-      const goalBox = await page.locator('[data-goal-bar] > div').boundingBox()
-      expect(queuePanelBox).not.toBeNull()
-      expect(todoBox).not.toBeNull()
-      expect(goalBox).not.toBeNull()
-      expect(todoBox!.y).toBeLessThan(goalBox!.y)
-      expect(goalBox!.y).toBeLessThan(queuePanelBox!.y)
-      expect(todoBox!.x).toBeCloseTo(goalBox!.x, 1)
-      expect(todoBox!.x).toBeCloseTo(queuePanelBox!.x, 1)
-      expect(todoBox!.width).toBeCloseTo(goalBox!.width, 1)
-      expect(todoBox!.width).toBeCloseTo(queuePanelBox!.width, 1)
+      await expect.poll(async () => panelSpread(await contextPanelGeometry()), { timeout: 10_000 })
+        .toBeLessThan(0.05)
+      const geometry = await contextPanelGeometry()
+      expect(geometry).toBeDefined()
+      expect(geometry!.todo.y).toBeLessThan(geometry!.goal.y)
+      expect(geometry!.goal.y).toBeLessThan(geometry!.queue.y)
     }
     await expectAlignedContextPanels()
     await page.setViewportSize({ width: 640, height: 1000 })

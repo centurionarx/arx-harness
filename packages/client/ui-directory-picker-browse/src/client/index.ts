@@ -20,42 +20,30 @@ const LOCALE_NS = 'directory-browser'
 export const inject = ['slots', 'workspaces', 'locale']
 
 /**
- * Client plugin body: register the dialog's dictionaries and the browse flow
+ * Client plugin body: register the dialog's dictionary and the browse flow
  * into both directory-flow holes through `slots.inject()` because the
  * ui-workspace entries may activate later or replace their declarations.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => {
-    // The two dictionaries land as a unit: if the second registration hits a
-    // rival owner of the namespace, the first rolls back before the throw —
-    // a failed activation must not squat the namespace's other locale.
-    const disposers: (() => void)[] = []
-    const dictionaries: [locale: string, dict: Record<string, string>][] = [
-      ['en', {
-        'browser.title': 'Select Workspace Directory',
-        'browser.home': 'Home',
-        'browser.newFolder': 'New folder',
-        'browser.folderName': 'Folder name',
-        'browser.createIn': 'New folder in "{name}"',
-        'browser.untitledFolder': 'Untitled folder',
-        'browser.create': 'Create',
-        'browser.cancel': 'Cancel',
-        'browser.open': 'Open',
-        'browser.editPath': 'Edit path',
-        'browser.loading': 'Loading…',
-        'browser.truncated': 'Too many folders to list; only the beginning is shown.',
-        'browser.showHidden': 'Show hidden files',
-      }],
-    ]
-    try {
-      for (const [locale, dict] of dictionaries) disposers.push(ctx.locale.register(LOCALE_NS, locale, dict))
-    } catch (error) {
-      for (const dispose of disposers.reverse()) dispose()
-      throw error
-    }
-    return () => { for (const dispose of disposers) dispose() }
-  }, 'directory-picker-browse: dialog dictionaries')
+  // A rival owner of the namespace makes `register` throw having stored
+  // nothing, so a failed activation squats no locale and this effect has no
+  // partial registration of its own to unwind.
+  ctx.effect(() => ctx.locale.register(LOCALE_NS, 'en', {
+    'browser.title': 'Select Workspace Directory',
+    'browser.home': 'Home',
+    'browser.newFolder': 'New folder',
+    'browser.folderName': 'Folder name',
+    'browser.createIn': 'New folder in "{name}"',
+    'browser.untitledFolder': 'Untitled folder',
+    'browser.create': 'Create',
+    'browser.cancel': 'Cancel',
+    'browser.open': 'Open',
+    'browser.editPath': 'Edit path',
+    'browser.loading': 'Loading…',
+    'browser.truncated': 'Too many folders to list; only the beginning is shown.',
+    'browser.showHidden': 'Show hidden files',
+  }), 'directory-picker-browse: dialog dictionary')
 
   const injected = (): BrowseFlowInjected => ({
     listDirectory: (path, signal) => ctx.workspaces.listDirectory(path, signal),

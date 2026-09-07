@@ -8,12 +8,25 @@ export const PROMPT_MARKER_PREFIX = '133;D;'
 /** Exact printable prompt emitted after the private marker. */
 export const CONTROLLED_PROMPT = 'arx> '
 
+/** CSI Device Status Report requesting the cursor position (`ESC [ 6 n`). */
+const CURSOR_POSITION_REQUEST = '6n'
+
+/**
+ * The cursor position report the session answers each `ESC [ 6 n` with.
+ * Row and column are nominal: nothing here models a screen, and a shell that
+ * asks only needs an answer to keep reading input. PowerShell's host and
+ * PSReadLine ask before every prompt and block until one arrives.
+ */
+export const CURSOR_POSITION_REPLY = '\x1b[1;1R'
+
 /** One sanitized chunk plus whether it contained the owned prompt marker. */
 export interface SanitizedChunk {
   text: string
   prompt: boolean
   /** Printable text after the latest owned marker in this chunk. */
   promptTail?: string
+  /** Cursor position requests the shell issued in this chunk; absent when none. */
+  cursorReports?: number
 }
 
 /**
@@ -41,6 +54,7 @@ export class TerminalSanitizer {
     let prompt = false
     let includePromptTail = this.trackingPromptTail
     let promptTail = ''
+    let cursorReports = 0
     let index = 0
     const appendText = (value: string): void => {
       text += value
@@ -92,6 +106,7 @@ export class TerminalSanitizer {
           index = escape
           break
         }
+        if (this.pending.slice(escape + 2, end + 1) === CURSOR_POSITION_REQUEST) cursorReports += 1
         index = end + 1
         continue
       }
@@ -104,6 +119,7 @@ export class TerminalSanitizer {
       text: this.normalizeText(text),
       prompt,
       ...includePromptTail ? { promptTail } : {},
+      ...cursorReports > 0 ? { cursorReports } : {},
     }
   }
 

@@ -77,8 +77,9 @@ describe('llm/adapters-updated', () => {
   })
 
   it('replaces a route set in one event, never publishing an empty registry between the two', async () => {
-    // The retry-policy swap in llm-deepseek: disposing and re-registering
-    // would let an observer see the provider disappear and come back.
+    // An adapter that swaps its retry policy re-declares the same routes:
+    // disposing and re-registering them would let an observer see the
+    // provider disappear and come back.
     const ctx = await setup()
     const observed: string[][] = []
     const registration = ctx.llm.registerAdapter(['a'], new NoopAdapter())

@@ -31,6 +31,7 @@ import {
   translationStructureDiff,
   translationStructureSignature,
 } from './translation-pairing.ts'
+import { hasLanguageSwitcher } from './translation-links.ts'
 
 const fixturePairSource = (): boolean => true
 
@@ -179,6 +180,28 @@ describe('translation pairing manifest', () => {
     expect(translationPairSourcePredicate(manifest)('packages/example/guide.md')).toBe(false)
   })
 
+  it('narrows the active corpus to the included globs and leaves exclusions in force', () => {
+    const manifest = parseTranslationPairingManifest(JSON.stringify({
+      included: ['README.md', 'docs/i18n/*.md', '.agents/notes/implemented/process/2026-07-02-*.md'],
+      excluded: ['docs/i18n/terminology.md'],
+    }))
+    const active = translationPairSourcePredicate(manifest)
+    expect(active('README.md')).toBe(true)
+    expect(active('docs/i18n/README.md')).toBe(true)
+    expect(active('.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md')).toBe(true)
+    expect(active('docs/i18n/terminology.md')).toBe(false)
+    expect(active('docs/development.md')).toBe(false)
+    expect(active('packages/README.md')).toBe(false)
+    expect(active('vendor/README.md')).toBe(false)
+  })
+
+  it('rejects a non-string active corpus list', () => {
+    expect(() => parseTranslationPairingManifest(JSON.stringify({
+      excluded: [],
+      included: 'README.md',
+    }))).toThrow('included must be an array of strings')
+  })
+
   it.each([
     ['required', ['packages/README.md']],
     ['requiredClasses', ['readme']],
@@ -205,6 +228,16 @@ describe('translation pairing switchers', () => {
     expect(requiresSourceLanguageSwitcher('docs/cordis-api/inherited.md')).toBe(false)
     expect(requiresSourceLanguageSwitcher('docs/architecture.md')).toBe(true)
     expect(requiresSourceLanguageSwitcher('packages/core/session/README.md')).toBe(true)
+  })
+
+  it('reads the switcher from the first paragraph after the H1 that carries it, never past the next heading', () => {
+    // An Agent Note keeps `Status:` on line 3, so its switcher sits on line 5.
+    const note = '# Agent Note: paired\n\nStatus: implemented\n\nEnglish | [Português](paired.pt-BR.md)\n\n## Problem\n\nBody.\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(note), note, 'paired.pt-BR.md')).toBe(true)
+    const rendered = '# Title\n\nEnglish | [Português](paired.pt-BR.md)\n\n## Problem\n\nBody.\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(rendered), rendered, 'paired.pt-BR.md')).toBe(true)
+    const buried = '# Title\n\n## Problem\n\nEnglish | [Português](paired.pt-BR.md)\n'
+    expect(hasLanguageSwitcher(parseTranslationMarkdown(buried), buried, 'paired.pt-BR.md')).toBe(false)
   })
 
   it('accepts only the canonical public URL for an absolute switcher', () => {

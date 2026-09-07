@@ -318,6 +318,25 @@ describe('degenerateTail', () => {
       calls: [{ name: 'anything_here', arguments: '{}' }],
     })
   })
+
+  it('keeps prose that ends in a bracket opening no record', () => {
+    const text = 'The failing case is row [42]'
+    expect(degenerateTail(text, served)).toEqual({ text, calls: [] })
+  })
+
+  it('keeps a record that states no arguments', () => {
+    const text = '[requested bash]'
+    expect(degenerateTail(text, served)).toEqual({ text, calls: [] })
+  })
+
+  it('keeps a record whose arguments are JSON but not an object', () => {
+    const number = '[requested run_code with 7]'
+    expect(degenerateTail(number, served)).toEqual({ text: number, calls: [] })
+    const string = '[requested run_code with "go(1)"]'
+    expect(degenerateTail(string, served)).toEqual({ text: string, calls: [] })
+    const nothing = '[requested run_code with null]'
+    expect(degenerateTail(nothing, served)).toEqual({ text: nothing, calls: [] })
+  })
 })
 
 describe('prompt rendering', () => {

@@ -7,6 +7,9 @@
  * source instead of copying Markdown.
  */
 
+import { readFileSync } from 'node:fs'
+import { parseTranslationPairingManifest, translationPairSourcePredicate } from '../scripts/translation-pairing.ts'
+
 /** Locale key used by the VitePress site. */
 export type DocsLocale = 'root' | 'en'
 
@@ -88,17 +91,30 @@ function mirroredPages(pages: MirroredPage[]): DocsPage[] {
   }))
 }
 
+/** Whether an English source belongs to the active bilingual corpus the pairing manifest names. */
+const isActivePairSource = translationPairSourcePredicate(parseTranslationPairingManifest(
+  readFileSync(new URL('../scripts/translation-pairing.manifest.json', import.meta.url), 'utf8'),
+))
+
+/**
+ * Both locale routes for a sibling pair. Inside the active corpus the root
+ * locale projects the Portuguese side; outside it the counterpart is not yet
+ * owed, so the root route projects the English source and says so through
+ * `contentLocale`. The Portuguese path stays an alias either way, so a link
+ * to it resolves to the same route once the translation lands.
+ */
 function pairedPages(pages: PairedPage[]): DocsPage[] {
   return mirroredPages(pages.map((page) => {
-    const chineseSource = page.source.replace(/\.md$/, '.pt-BR.md')
+    const portugueseSource = page.source.replace(/\.md$/, '.pt-BR.md')
+    const active = isActivePairSource(page.source)
     const sharedAliases = page.sourceAliases ?? []
     return {
       ...page,
-      source: { root: chineseSource, en: page.source },
-      contentLocale: { root: 'pt-BR', en: 'en-US' },
+      source: { root: active ? portugueseSource : page.source, en: page.source },
+      contentLocale: { root: active ? 'pt-BR' : 'en-US', en: 'en-US' },
       sourceAliases: {
-        root: [...sharedAliases, page.source],
-        en: [...sharedAliases, chineseSource],
+        root: [...sharedAliases, active ? page.source : portugueseSource],
+        en: [...sharedAliases, portugueseSource],
       },
     }
   }))

@@ -3057,6 +3057,17 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         models: fixtureModelGroups().flatMap(group => group.models.map(model => ({ id: model.id, name: model.name }))),
       }),
     },
+    web: {
+      // Two shipped search providers, one usable, so a surface reading this
+      // fixture meets both dots and an unambiguous selection.
+      providers: request => ok(request, {
+        providers: [
+          { provider: 'exa', displayName: 'Exa', settingsNs: 'web-search-exa', settingsPath: [], available: true },
+          { provider: 'perplexity', displayName: 'Perplexity', settingsNs: 'web-search-perplexity', settingsPath: [], available: false },
+        ],
+        selection: { effective: 'exa' },
+      }),
+    },
     respond(message: ClientResponse): Promise<RpcReceipt> {
       // Same routing discipline as the host: rpcId first, then the payload's
       // audit correlation; a settled or unknown id is not-pending.
@@ -3229,6 +3240,7 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'llm.providers': return this.api.llm.providers(request)
       case 'llm.models': return this.api.llm.models(request)
       case 'llm.discoverModels': return this.api.llm.discoverModels(request, signal)
+      case 'web.providers': return this.api.web.providers(request)
     }
   }
 
