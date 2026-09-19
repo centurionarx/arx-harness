@@ -86,10 +86,9 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
 
   beforeAll(async () => {
     scaffold = await launchWebScaffold({})
-    // The workspace-aware flow runs sessions in <workspaceCwd>/workspace;
-    // the read targets must live in that session cwd (pre-creation is safe
-    // because the picker adopts an existing directory by path).
-    const sessionCwd = join(scaffold.workspaceCwd, 'workspace')
+    // Cold replay seeds use the scaffold root as their session cwd; live
+    // recording creates the composer's default workspace subdirectory.
+    const sessionCwd = MODE === 'record' ? join(scaffold.workspaceCwd, 'workspace') : scaffold.workspaceCwd
     await mkdir(sessionCwd, { recursive: true })
     await writeFile(join(sessionCwd, 'nav-a.md'), '# alpha nav\n')
     await writeFile(join(sessionCwd, 'nav-b.md'), '# beta nav\n')
@@ -397,7 +396,7 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
     await expect.poll(() => page.locator('tr[data-timeline-focus]').count(), { timeout: 10_000 }).toBe(0)
   }, 60_000)
 
-  it.skipIf(MODE === 'record')('bash and file-path rows leave the default details column closed', async () => {
+  it.skipIf(MODE === 'record')('bash rows stay inline while file paths open previews with explicit native opening', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-navigation-details'))
     await ensureSeedOpen(page)
     const bashRow = page.locator('[data-sample="bash"]').first()
@@ -412,7 +411,7 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
     // details either — the expanded terminal card is read in place.
     await page.locator('[data-sample="bash"] ~ div [data-terminal] [class*="_copyButton_"]').first().click()
     await expect.poll(() => frame.getAttribute('data-details-collapsed'), { timeout: 5_000 }).toBe('true')
-    // Read summaries are host-open file links; they also must not open details.
+    // Read summaries open current-file previews; native opening remains explicit.
     const fileLink = page.locator('[data-variant="read"] button').first()
     await fileLink.waitFor({ timeout: 10_000 })
     const openPath = vi.spyOn(scaffold.ctx.apiProxy.host, 'openPath')
@@ -422,7 +421,14 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
       }))
     try {
       await fileLink.click()
-      await expect.poll(() => frame.getAttribute('data-details-collapsed'), { timeout: 5_000 }).toBe('true')
+      await expect.poll(() => frame.getAttribute('data-details-collapsed'), { timeout: 5_000 }).toBeNull()
+      await page.getByRole('heading', { name: 'alpha nav', exact: true }).waitFor()
+      expect(openPath).not.toHaveBeenCalled()
+      await page.getByRole('button', { name: 'Open in system application', exact: true }).click()
+      await expect.poll(() => openPath.mock.calls.length).toBe(1)
+      expect(openPath.mock.calls[0]![0].payload).toEqual({ path: join(scaffold.workspaceCwd, 'nav-a.md') })
+      await page.getByRole('button', { name: 'Close details', exact: true }).click()
+      await expect.poll(() => frame.getAttribute('data-details-collapsed')).toBe('true')
     } finally {
       openPath.mockRestore()
     }
