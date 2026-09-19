@@ -245,7 +245,11 @@ it('hands the preview path and native opener to Details content, with a clear un
     useStore: bindSnapshotSelector(chat),
     actions: chat.actions,
     renderSlot: renderToolDetailsProbe(),
-    renderSlotChain: (_slot, owner) => { content = owner; return <div>document preview</div> },
+    renderSlotChain: (slot, owner) => {
+      expect(slot).toBe('details.content')
+      content = owner as unknown as DetailsContentOwnerProps
+      return <div>document preview</div>
+    },
     openNativeFile,
     closeDetails,
     t,
