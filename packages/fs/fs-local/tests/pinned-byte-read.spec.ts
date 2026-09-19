@@ -36,3 +36,12 @@ it('reads exact byte bounds and observes cancellation before opening', async () 
   const controller = new AbortController()
   await expect(readWholeBytes(target, controller.signal, 64, { inspectReadBytesAfterStat: () => { controller.abort() } })).rejects.toMatchObject({ code: 'FS_ABORTED' })
 })
+
+it('rejects a different regular file installed under the same canonical path after open', async () => {
+  const { inside, outside } = await fixture()
+  const target = await resolveLocalTarget(inside, 'report.txt')
+  await expect(readWholeBytes(target, undefined, 64, { inspectReadBytesAfterStat: async () => {
+    await rename(join(inside, 'report.txt'), join(inside, 'opened-original.txt'))
+    await rename(join(outside, 'report.txt'), join(inside, 'report.txt'))
+  } })).rejects.toMatchObject({ code: 'FS_STALE_VERSION' })
+})
