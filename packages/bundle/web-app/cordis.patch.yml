@@ -85,12 +85,6 @@
     - id: projects
       name: '@arx-ai/arx-project'
 
-    - id: tool-project
-      name: '@arx-ai/arx-tool-project'
-
-    - id: tool-present
-      name: '@arx-ai/arx-tool-present'
-
     - id: ui-projects
       name: '@arx-ai/arx-client-ui-projects'
 

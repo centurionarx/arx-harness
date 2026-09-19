@@ -10,7 +10,7 @@ import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import Storage from '@arx-ai/arx-storage'
 import * as StorageJson from '@arx-ai/arx-storage-json'
 import * as StorageDomain from '@arx-ai/arx-storage-domain'
-import { WorkspaceId } from '@arx-ai/arx-workspace'
+import { realpathNormalize, WorkspaceId } from '@arx-ai/arx-workspace'
 import type { Workspace, WorkspaceRegistry } from '@arx-ai/arx-workspace'
 import type SubagentService from '@arx-ai/arx-subagent'
 import Projects from '@arx-ai/arx-project'
@@ -33,7 +33,7 @@ it('executes a prompt evaluation through a real project runner child and finaliz
   const sessionIds = [parentId]
   const headers: SessionHeader[] = [{ version: 0, id: parentId, createdAt: 1, cwd: root }]
   const workspace: Workspace = {
-    id: workspaceId, path: root, title: 'Evaluation', createdAt: '2026-09-12T00:00:00Z', updatedAt: '2026-09-12T00:00:00Z',
+    id: workspaceId, path: await realpathNormalize(root), title: 'Evaluation', createdAt: '2026-09-12T00:00:00Z', updatedAt: '2026-09-12T00:00:00Z',
     sessionIds, setTitle: async () => {}, attachSession: async () => {}, insertSessionBefore: async () => {},
     detachSession: async () => {}, status: async () => 'ok',
   }

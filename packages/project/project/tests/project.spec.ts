@@ -9,7 +9,7 @@ import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import Storage from '@arx-ai/arx-storage'
 import * as StorageDomain from '@arx-ai/arx-storage-domain'
 import * as StorageJson from '@arx-ai/arx-storage-json'
-import { WorkspaceId } from '@arx-ai/arx-workspace'
+import { realpathNormalize, WorkspaceId } from '@arx-ai/arx-workspace'
 import type { Workspace, WorkspaceRegistry } from '@arx-ai/arx-workspace'
 import ProjectService, {
   ProjectConflictError,
@@ -50,7 +50,7 @@ async function harness(options: HarnessOptions) {
   const headers = [...(options.headers ?? [])]
   const workspace: Workspace = {
     id: workspaceId,
-    path: options.workspacePath,
+    path: await realpathNormalize(options.workspacePath),
     title: 'Project test',
     createdAt: '2026-09-12T00:00:00.000Z',
     updatedAt: '2026-09-12T00:00:00.000Z',
@@ -104,6 +104,68 @@ const workflow: SaveWorkflowRequest = {
   ],
 }
 
+it.each([999, 1000, 1001])('settles a claimed step at %i ms against the durable deadline', async (elapsed) => {
+  const paths = await roots()
+  const f = await harness({ ...paths, maxActiveRuns: 1 })
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(10_000)
+  let project = await f.ctx.projects.create({ workspaceId: f.workspaceId, name: 'Settlement deadline' })
+  project = await f.ctx.projects.saveWorkflow(project.id, project.version, {
+    name: 'One step', steps: [workflow.steps[0]!],
+  })
+  const start = { workflowId: project.workflows[0]!.id, workflowRevision: 1, input: null, maxDurationMs: 1000, maxSteps: 1 }
+  project = await f.ctx.projects.startWorkflowRun(project.id, project.version, start)
+  const runId = project.runs[0]!.id
+  const claim = await f.ctx.projects.claimWorkflowStep(project.id, project.version, runId)
+  const settlement = { runId, stepId: claim.step!.stepId, state: 'completed' as const, result: { delivered: true } }
+  vi.setSystemTime(10_000 + elapsed)
+  await expect(f.ctx.projects.settleWorkflowStep(project.id, project.version, settlement)).rejects.toBeInstanceOf(ProjectConflictError)
+  expect(await f.ctx.projects.get(project.id)).toEqual(claim.project)
+  project = await f.ctx.projects.settleWorkflowStep(project.id, claim.project.version, settlement)
+  const expired = elapsed >= 1000
+  const settled = project.runs[0]!
+  expect(settled).toMatchObject({
+    state: expired ? 'failed' : 'completed', finishedAt: new Date(10_000 + elapsed).toISOString(), launchedSteps: 1,
+    steps: [{ state: 'completed', attempt: 1, result: { delivered: true } }],
+  })
+  expect(settled.error).toBe(expired ? 'workflow run deadline elapsed' : undefined)
+  await f.ctx.fiber.dispose()
+  const reloaded = await harness({ ...paths, maxActiveRuns: 1 })
+  expect(await reloaded.ctx.projects.get(project.id)).toEqual(project)
+  if (expired) {
+    project = await reloaded.ctx.projects.resumeWorkflowRun(project.id, project.version, { runId, maxDurationMs: 1000 })
+    const resumed = await reloaded.ctx.projects.claimWorkflowStep(project.id, project.version, runId)
+    expect(resumed.step).toBeUndefined()
+    project = resumed.project
+    expect(project.runs[0]).toMatchObject({ state: 'completed', launchedSteps: 1, maxSteps: 1 })
+  }
+  project = await reloaded.ctx.projects.startWorkflowRun(project.id, project.version, start)
+  expect(project.runs[1]?.state).toBe('pending')
+  await expect(reloaded.ctx.projects.settleWorkflowStep(project.id, project.version, settlement)).rejects.toThrow('already completed')
+})
+it('retains a late completed step across an explicit budget increase without launching its dependency early', async () => {
+  const paths = await roots()
+  const f = await harness(paths)
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(20_000)
+  let project = await f.ctx.projects.create({ workspaceId: f.workspaceId, name: 'Resume late settlement' })
+  project = await f.ctx.projects.saveWorkflow(project.id, project.version, workflow)
+  project = await f.ctx.projects.startWorkflowRun(project.id, project.version, {
+    workflowId: project.workflows[0]!.id, workflowRevision: 1, input: null, maxDurationMs: 1000,
+  })
+  const runId = project.runs[0]!.id
+  const claim = await f.ctx.projects.claimWorkflowStep(project.id, project.version, runId)
+  vi.setSystemTime(21_000)
+  project = await f.ctx.projects.settleWorkflowStep(project.id, claim.project.version, {
+    runId, stepId: claim.step!.stepId, state: 'completed', result: 'built',
+  })
+  expect(project.runs[0]).toMatchObject({ state: 'failed', steps: [{ state: 'completed' }, { state: 'pending' }] })
+  await expect(f.ctx.projects.claimWorkflowStep(project.id, project.version, runId)).rejects.toThrow('already failed')
+  project = await f.ctx.projects.resumeWorkflowRun(project.id, project.version, { runId, maxDurationMs: 1000 })
+  const next = await f.ctx.projects.claimWorkflowStep(project.id, project.version, runId)
+  expect(next.step).toMatchObject({ stepId: 'verify', attempt: 1, input: { dependencies: { build: 'built' } } })
+  expect(next.project.runs[0]).toMatchObject({ launchedSteps: 2, steps: [{ stepId: 'build', state: 'completed', attempt: 1 }, { stepId: 'verify', state: 'running', attempt: 1 }] })
+})
 describe('project aggregate over the JSON storage backend', () => {
   it('commits one concurrent CAS mutation and rejects invalid task writes without publication', async () => {
     const paths = await roots()

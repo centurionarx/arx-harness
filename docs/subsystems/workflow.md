@@ -315,7 +315,8 @@ Project aggregate authority and `projects/*` Remote namespace. Every write uses 
 @Remote async claimWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, runId: ProjectWorkflowRunIdBrand, ): Promise<ClaimWorkflowStepResult>
 
 /**
- * Settle one claimed step; a failure or final completion releases the run reservation.
+ * Settle one claimed step and retain its reported outcome. A settlement at or after the run deadline fails the run;
+ * a reported failure keeps its own error. Terminal runs release their reservation.
  * @param projectId - Stable project identifier.
  * @param expectedVersion - Required aggregate CAS version.
  * @param request - Terminal state and result or error for the running step.

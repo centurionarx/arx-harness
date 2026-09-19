@@ -8,7 +8,7 @@ import * as StorageDomain from '@arx-ai/arx-storage-domain'
 import * as StorageJson from '@arx-ai/arx-storage-json'
 import ProjectService from '@arx-ai/arx-project'
 import { SessionId } from '@arx-ai/arx-session'
-import { WorkspaceId } from '@arx-ai/arx-workspace'
+import { realpathNormalize, WorkspaceId } from '@arx-ai/arx-workspace'
 import type { WorkspaceRegistry } from '@arx-ai/arx-workspace'
 import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import type { PlanItemId } from '@arx-ai/arx-project'
@@ -22,8 +22,9 @@ async function root() { const value = await mkdtemp(join(tmpdir(), 'arx-independ
 it('review: terminal task updates cannot replace provenance with an unknown session', async () => {
   const directory = await root(); const ctx = new Context(); contexts.push(ctx)
   await ctx.plugin(Storage); await ctx.plugin(StorageJson, { root: directory }); await ctx.plugin(StorageDomain, { backend: 'json' })
+  const workspacePath = await realpathNormalize(directory)
   const workspaceId = WorkspaceId('review-workspace'); const sessionId = SessionId('known-session')
-  ctx.provide('workspaceRegistry', { get: () => ({ id: workspaceId, path: directory, sessionIds: [sessionId], status: async () => 'ok' }) } as unknown as WorkspaceRegistry)
+  ctx.provide('workspaceRegistry', { get: () => ({ id: workspaceId, path: workspacePath, sessionIds: [sessionId], status: async () => 'ok' }) } as unknown as WorkspaceRegistry)
   ctx.provide('sessionPersistence', { list: async () => [{ id: sessionId, version: 0, createdAt: 0, cwd: directory }] } as unknown as SessionPersistence)
   await ctx.plugin(ProjectService, {})
   let project = await ctx.projects.create({ workspaceId, name: 'review' })
@@ -39,8 +40,9 @@ it('review: terminal task updates cannot replace provenance with an unknown sess
 it('review: resuming a budget-failed run cannot exceed the host active reservation ceiling', async () => {
   const directory = await root(); const ctx = new Context(); contexts.push(ctx)
   await ctx.plugin(Storage); await ctx.plugin(StorageJson, { root: directory }); await ctx.plugin(StorageDomain, { backend: 'json' })
+  const workspacePath = await realpathNormalize(directory)
   const workspaceId = WorkspaceId('review-budget-workspace')
-  ctx.provide('workspaceRegistry', { get: () => ({ id: workspaceId, path: directory, sessionIds: [], status: async () => 'ok' }) } as unknown as WorkspaceRegistry)
+  ctx.provide('workspaceRegistry', { get: () => ({ id: workspaceId, path: workspacePath, sessionIds: [], status: async () => 'ok' }) } as unknown as WorkspaceRegistry)
   ctx.provide('sessionPersistence', { list: async () => [] } as unknown as SessionPersistence)
   await ctx.plugin(ProjectService, { maxActiveRuns: 1 })
   let project = await ctx.projects.create({ workspaceId, name: 'budget review' })

@@ -47,6 +47,11 @@ describe('minimal agent preset', () => {
   })
 
   it('sends the exact RL prompt and schemas, then executes the persistent shell and editor', async () => {
+    expect(scaffold.ctx.tools.schemas(agentHandle.agent).map(tool => tool.name).sort())
+      .toEqual([process.platform === 'win32' ? 'pwsh' : 'bash', 'str_replace_editor'])
+    expect(scaffold.ctx.tools.get('project', agentHandle.agent)).toBeUndefined()
+    expect(scaffold.ctx.tools.get('present', agentHandle.agent)).toBeUndefined()
+
     agentHandle.agent.followup(createUserMessage({
       content: [{ type: 'text', text: PROMPT }],
       source: { kind: 'user' },

@@ -813,3 +813,46 @@ it('requires saving the displayed draft before approving its revision', async ()
   fireEvent.change(screen.getAllByLabelText(en.items)[0]!, { target: { value: 'Different work' } })
   expect(approve.disabled).toBe(true)
 })
+
+it.each(['release.target', 'release-target', '_target', 'target2'])('accepts persisted prompt variable %s', (name) => {
+  const change = vi.fn()
+  render(<PromptVariables initial={{ [name]: { type: 'string', required: true } }} disabled={false} change={change} />)
+  expect(screen.getByLabelText<HTMLInputElement>('Variable name').checkValidity()).toBe(true)
+  fireEvent.change(screen.getByLabelText('Variable type'), { target: { value: 'number' } })
+  expect(change).toHaveBeenLastCalledWith({ [name]: { type: 'number', required: true } })
+})
+
+it.each(['9target', 'target value', 'target/value', 'target|value'])('rejects invalid prompt variable %s', (name) => {
+  render(<PromptVariables initial={{ [name]: { type: 'string', required: true } }} disabled={false} change={vi.fn()} />)
+  expect(screen.getByLabelText<HTMLInputElement>('Variable name').checkValidity()).toBe(false)
+})
+
+
+it.each(['completed', 'pending', 'failed', 'uncertain'] as const)('resumes a deadline-stopped run at its launch ceiling only with completed steps (%s)', (state) => {
+  const props = board()
+  const run: ProjectRecord['runs'][number] = {
+    id: 'deadline-ceiling' as ProjectRecord['runs'][number]['id'],
+    workflowId: 'wf' as ProjectRecord['runs'][number]['workflowId'], workflowRevision: 1,
+    state: 'failed', input: null, launchedSteps: 1, maxSteps: 1,
+    startedAt: record.createdAt, deadlineAt: record.createdAt, error: 'workflow run deadline elapsed',
+    steps: [{ stepId: 'done' as ProjectRecord['runs'][number]['steps'][number]['stepId'], state, attempt: 1, result: 'retained' }],
+  }
+  const project = { ...record, budget: { ...record.budget, maxStepsPerRun: 1 }, runs: [run] }
+  render(<ProjectControls {...props} project={project} busy={false} mutate={async (operation) => { await operation() }} />)
+  const allowance = screen.getByLabelText<HTMLInputElement>('New total step allowance')
+  const resume = screen.getByRole<HTMLButtonElement>('button', { name: 'Resume pending steps' })
+  expect(allowance.checkValidity()).toBe(state === 'completed')
+  expect(resume.disabled).toBe(state !== 'completed')
+  fireEvent.click(resume)
+  if (state === 'completed') {
+    expect(props.resumeRun).toHaveBeenCalledWith(project.id, project.version, {
+      runId: run.id, maxSteps: 1, maxDurationMs: project.budget.maxRunDurationMs,
+    })
+    fireEvent.change(allowance, { target: { value: '2' } })
+    expect(resume.disabled).toBe(true)
+    fireEvent.change(allowance, { target: { value: '0' } })
+    expect(resume.disabled).toBe(true)
+  } else {
+    expect(props.resumeRun).not.toHaveBeenCalled()
+  }
+})

@@ -6,6 +6,10 @@ The arx browser-surface bundle. [`cordis.patch.yml`](cordis.patch.yml) rides ove
 
 Web uses the shared bounded normal default of five eligible retries after the initial request. The `deepseek-official` route and settings-added pi-ai routes use that default when they omit `retryPolicy`; explicit provider policies still win. Web adds no retry-specific composition override, so the same omission behavior applies to non-Web profiles.
 
+## Preset tool ownership
+
+The `present` and `project` tools belong to the shipped `standard`, `code`, and `cordis` preset scopes. The host owns the durable project domain; the project tool row is disabled when that domain is absent. The `minimal` preset retains its two-tool catalog.
+
 ## Model Experience
 
 ### Harness-source and Web-surface context

@@ -1275,7 +1275,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: '@Remote async settleWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, request: SettleWorkflowStepRequest, ): Promise<ProjectRecord>',
-        description: 'Settle one claimed step; a failure or final completion releases the run reservation.',
+        description: 'Settle one claimed step and retain its reported outcome. A settlement at or after the run deadline fails the run; a reported failure keeps its own error. Terminal runs release their reservation.',
         parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Terminal state and result or error for the running step.' }],
         returns: 'The committed aggregate snapshot.',
       },

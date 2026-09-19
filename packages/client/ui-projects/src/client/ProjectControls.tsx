@@ -83,9 +83,11 @@ function RunControl({
   const [acknowledged, setAcknowledged] = useState(false)
   const [maxSteps, setMaxSteps] = useState(Math.max(run.maxSteps, project.budget.maxStepsPerRun))
   const [seconds, setSeconds] = useState(project.budget.maxRunDurationMs / 1000)
+  const completedDeadlineRun = run.error === 'workflow run deadline elapsed' && run.steps.every(step => step.state === 'completed')
+  const minimumSteps = Math.max(run.maxSteps, run.launchedSteps + (completedDeadlineRun ? 0 : 1))
   const canResume =
     Number.isSafeInteger(maxSteps) &&
-    maxSteps > run.launchedSteps &&
+    maxSteps >= minimumSteps &&
     maxSteps <= project.budget.maxStepsPerRun &&
     Number.isSafeInteger(seconds * 1000) &&
     seconds > 0 &&
@@ -148,7 +150,7 @@ function RunControl({
             New total step allowance
             <input
               type="number"
-              min={run.launchedSteps + 1}
+              min={minimumSteps}
               required
               value={maxSteps}
               onChange={(event) => {

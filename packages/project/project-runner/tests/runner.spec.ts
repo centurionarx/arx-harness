@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -9,7 +9,7 @@ import type { SessionEvent, SessionHeader } from '@arx-ai/arx-session'
 import Storage from '@arx-ai/arx-storage'
 import * as StorageJson from '@arx-ai/arx-storage-json'
 import * as StorageDomain from '@arx-ai/arx-storage-domain'
-import { WorkspaceId } from '@arx-ai/arx-workspace'
+import { realpathNormalize, WorkspaceId } from '@arx-ai/arx-workspace'
 import type { Workspace, WorkspaceRegistry } from '@arx-ai/arx-workspace'
 import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import type SubagentService from '@arx-ai/arx-subagent'
@@ -35,7 +35,7 @@ async function harness(existing?: string) {
   const sessionIds = [parentId]
   const workspace: Workspace = {
     id: workspaceId,
-    path: root,
+    path: await realpathNormalize(root),
     title: 'Saved',
     createdAt: '2026-09-12T00:00:00Z',
     updatedAt: '2026-09-12T00:00:00Z',
@@ -152,6 +152,21 @@ async function harness(existing?: string) {
     },
   }
 }
+
+it('runs attached sessions through a directory alias using canonical workspace identity', async () => {
+  const container = await mkdtemp(join(tmpdir(), 'arx-project-alias-'))
+  roots.push(container)
+  const target = join(container, 'workspace')
+  const alias = join(container, 'workspace-alias')
+  await mkdir(target)
+  await symlink(target, alias, process.platform === 'win32' ? 'junction' : 'dir')
+  expect(await realpathNormalize(alias)).not.toBe(alias)
+  const h = await harness(alias)
+  const ids = await h.prepare()
+  const result = await h.ctx.projectRunner.execute(h.parent, ids.projectId, ids.runId, new AbortController().signal)
+  expect(result.run.state).toBe('completed')
+  expect(h.start).toHaveBeenCalledTimes(2)
+})
 
 it('resumes only pending steps after budget stop, persisted restart and explicit budget increase', async () => {
   const first = await harness()

@@ -31,7 +31,7 @@ export function PromptVariables({
             Variable name
             <input
               required
-              pattern="[A-Za-z_][A-Za-z0-9_]*"
+              pattern="[A-Za-z_][A-Za-z0-9_.\-]*"
               value={row.name}
               ref={(input) => {
                 input?.setCustomValidity(

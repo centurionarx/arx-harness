@@ -42,6 +42,8 @@
     "@arx-ai/arx-headless": "workspace:^",
     "@arx-ai/arx-mcp-client": "workspace:^",
     "@arx-ai/arx-home-paths": "workspace:^",
+    "@arx-ai/arx-tool-present": "workspace:^",
+    "@arx-ai/arx-tool-project": "workspace:^",
     "@arx-ai/arx-persona": "workspace:^",
     "@arx-ai/arx-plan-mode": "workspace:^",
     "@arx-ai/arx-terminal": "workspace:^",

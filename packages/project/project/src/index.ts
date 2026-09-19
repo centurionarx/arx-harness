@@ -1092,7 +1092,8 @@ export class ProjectService extends TypertRemoteService {
       if (run.steps.some(step => step.state === 'running')) {
         throw new ProjectValidationError('workflow run already has a running step')
       }
-      if (deadlineExpired || run.launchedSteps >= run.maxSteps) {
+      const completed = run.steps.every(step => step.state === 'completed')
+      if (deadlineExpired || (!completed && run.launchedSteps >= run.maxSteps)) {
         const reason = deadlineExpired ? 'workflow run deadline elapsed' : 'workflow run step budget exhausted'
         const runs = [...current.runs]
         runs[runIndex] = { ...run, state: 'failed', error: reason, finishedAt: now }
@@ -1106,7 +1107,7 @@ export class ProjectService extends TypertRemoteService {
           && step.dependsOn.every(dependency => byStep.get(dependency)?.state === 'completed')
       })
       if (ready === undefined) {
-        if (run.steps.every(step => step.state === 'completed')) {
+        if (completed) {
           const runs = [...current.runs]
           runs[runIndex] = { ...run, state: 'completed', finishedAt: now }
           return { ...current, runs }
@@ -1145,7 +1146,8 @@ export class ProjectService extends TypertRemoteService {
   }
 
   /**
- * Settle one claimed step; a failure or final completion releases the run reservation.
+ * Settle one claimed step and retain its reported outcome. A settlement at or after the run deadline fails the run;
+ * a reported failure keeps its own error. Terminal runs release their reservation.
  * @param projectId - Stable project identifier.
  * @param expectedVersion - Required aggregate CAS version.
  * @param request - Terminal state and result or error for the running step.
@@ -1180,13 +1182,15 @@ export class ProjectService extends TypertRemoteService {
         ? { ...step, state: 'completed', result: clone(request.result as JsonValue), finishedAt: now }
         : { ...step, state: 'failed', error: (request.error as string).trim(), finishedAt: now }
       const completed = steps.every(candidate => candidate.state === 'completed')
-      const state = request.state === 'failed' ? 'failed' : completed ? 'completed' : 'running'
+      const error = request.state === 'failed' ? (request.error as string).trim()
+        : Date.parse(now) >= Date.parse(run.deadlineAt) ? 'workflow run deadline elapsed' : undefined
+      const state = error !== undefined ? 'failed' : completed ? 'completed' : 'running'
       const runs = [...current.runs]
       runs[runIndex] = {
         ...run,
         steps,
         state,
-        ...state === 'failed' ? { error: (request.error as string).trim(), finishedAt: now }
+        ...error !== undefined ? { error, finishedAt: now }
           : state === 'completed' ? { finishedAt: now } : {},
       }
       return { ...current, runs }
