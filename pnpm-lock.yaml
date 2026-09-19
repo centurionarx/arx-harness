@@ -9619,6 +9619,9 @@ importers:
       '@arx-ai/arx-plan-mode':
         specifier: workspace:^
         version: link:../../packages/plan/plan-mode
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../packages/project/project
       '@arx-ai/arx-pwsh-local':
         specifier: workspace:^
         version: link:../../packages/shell/pwsh-local
@@ -9694,6 +9697,12 @@ importers:
       '@arx-ai/arx-spill':
         specifier: workspace:^
         version: link:../../packages/spill/spill
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage-domain
       '@arx-ai/arx-subagent':
         specifier: workspace:^
         version: link:../../packages/subagent/subagent
@@ -9757,6 +9766,12 @@ importers:
       '@arx-ai/arx-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../../packages/fs/tool-present
+      '@arx-ai/arx-tool-project':
+        specifier: workspace:^
+        version: link:../../packages/project/tool-project
       '@arx-ai/arx-tool-pwsh':
         specifier: workspace:^
         version: link:../../packages/shell/tool-pwsh
@@ -9817,6 +9832,9 @@ importers:
       '@arx-ai/arx-workflow-worker-thread':
         specifier: workspace:^
         version: link:../../packages/workflow/workflow-worker-thread
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../packages/workspace/workspace
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../vendor/cordis
