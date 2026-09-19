@@ -451,13 +451,32 @@ describe('SessionPersistenceSqlite schema ownership', () => {
         : undefined
     })
 
-    const db = await openDatabase(BusyOnceDatabase, path, 'wal', 100)
-    expect(attempts).toBe(2)
-    expect(db.prepare(sql('journal-mode-wal')).get()).toEqual({ journal_mode: 'wal' })
-    expect(db.prepare(sql('select-trusted-schema')).get()).toEqual({ trusted_schema: 0 })
-    expect(db.prepare(sql('select-mmap-size')).get()).toEqual({ mmap_size: 0 })
-    expect(db.prepare(sql('select-synchronous')).get()).toEqual({ synchronous: 2 })
-    db.close()
+    vi.useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout', 'clearTimeout'] })
+    vi.mocked(delay).mockImplementation((milliseconds, value) => new Promise((resolve) => {
+      setTimeout(resolve, milliseconds, value)
+    }))
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => Date.now())
+    let db: DatabaseSync | undefined
+    try {
+      const opening = openDatabase(BusyOnceDatabase, path, 'wal', 100)
+      expect(attempts).toBe(1)
+      expect(vi.getTimerCount()).toBe(1)
+      await vi.advanceTimersByTimeAsync(9)
+      expect(attempts).toBe(1)
+      await vi.advanceTimersByTimeAsync(1)
+      db = await opening
+      expect(attempts).toBe(2)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(db.prepare(sql('journal-mode-wal')).get()).toEqual({ journal_mode: 'wal' })
+      expect(db.prepare(sql('select-trusted-schema')).get()).toEqual({ trusted_schema: 0 })
+      expect(db.prepare(sql('select-mmap-size')).get()).toEqual({ mmap_size: 0 })
+      expect(db.prepare(sql('select-synchronous')).get()).toEqual({ synchronous: 2 })
+    } finally {
+      db?.close()
+      vi.mocked(delay).mockReset()
+      clock.mockRestore()
+      vi.useRealTimers()
+    }
   })
 
   it('does not retry journal failures outside the available busy budget', async () => {
