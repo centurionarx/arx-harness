@@ -343,17 +343,25 @@ describe('conversation slot inject API', () => {
 })
 
 describe('details inject API', () => {
-  it('details injects the one layout callback; selection rides the shared store instead', async () => {
+  it('details opens native files relative to the session and clears its shared preview on close', async () => {
     const b = await bench()
-    const entry = b.entryOf('details')
-    const injected = (entry.inject as unknown as () => DetailsInjected)()
-    expect(Object.keys(injected)).toEqual(['closeDetails'])
-    injected.closeDetails()
-    expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
-    // The shared handle: details resolves the SAME instance conversation writes.
-    const conv = b.runtime.storeOf('conversation.session', ROOT)
-    const details = b.runtime.storeOf('details', ROOT)
-    expect(details).toBe(conv)
-    await b.runtime.dispose()
+    try {
+      const entry = b.entryOf('details')
+      const conv = b.runtime.storeOf('conversation.session', ROOT)
+      const details = b.runtime.storeOf('details', ROOT) as ChatInstance
+      expect(details).toBe(conv)
+      const injected = (entry.inject as unknown as (sessionId: SessionId, actions: ChatActions) => DetailsInjected)(
+        ROOT, details.actions)
+      expect(Object.keys(injected)).toEqual(['openNativeFile', 'closeDetails'])
+      details.actions.setPreview({ path: 'src/a.ts' })
+      await injected.openNativeFile!('src/a.ts')
+      expect(b.runtime.workspaces.calls).toContainEqual({ method: 'openPath', args: ['/proj/src/a.ts'] })
+      expect(details.store.getSnapshot().preview).toEqual({ path: 'src/a.ts' })
+      injected.closeDetails()
+      expect(details.store.getSnapshot().preview).toBeNull()
+      expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
+    } finally {
+      await b.runtime.dispose()
+    }
   })
 })
