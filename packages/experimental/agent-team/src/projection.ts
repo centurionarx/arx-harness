@@ -3,10 +3,10 @@
 import { z } from 'zod'
 import { SessionId } from '@arx-ai/arx-session'
 import type { ProjectionDefinition } from '@arx-ai/arx-session-projection'
-import { applyTeamEvent, emptyTeamFoldState } from './fold.ts'
+import { applyTeamEvent, emptyTeamFoldState, teamMemberSnapshotSchema } from './fold.ts'
 import { TeamId, TeamTaskId } from './types.ts'
 import type { TeamFoldState } from './fold.ts'
-import type { TeamMemberSnapshot, TeamProjectionView, TeamTaskSnapshot } from './types.ts'
+import type { TeamProjectionView, TeamTaskSnapshot } from './types.ts'
 
 interface AgentTeamProjectionState extends TeamProjectionView {
   readonly nextTaskNumber: number
@@ -15,15 +15,6 @@ interface AgentTeamProjectionState extends TeamProjectionView {
 const sessionId = z.string().min(1).transform(SessionId)
 const teamId = z.string().min(1).transform(TeamId)
 const taskId = z.string().min(1).transform(TeamTaskId)
-const member = z.object({
-  id: sessionId,
-  name: z.string(),
-  description: z.string(),
-  provider: z.string(),
-  context: z.enum(['fresh', 'fork']),
-  phase: z.enum(['provisioning', 'active', 'failed']),
-  error: z.string().optional(),
-}).strict() as z.ZodType<TeamMemberSnapshot>
 const task = z.object({
   id: taskId,
   revision: z.number().int().positive(),
@@ -37,7 +28,7 @@ const task = z.object({
 const viewObjectSchema = z.object({
   teamId,
   leadId: sessionId,
-  members: z.array(member),
+  members: z.array(teamMemberSnapshotSchema),
   tasks: z.array(task),
 }).strict()
 const viewSchema = viewObjectSchema as z.ZodType<TeamProjectionView>
