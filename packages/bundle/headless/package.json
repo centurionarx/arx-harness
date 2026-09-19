@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-headless",
   "description": "The arx one-shot bundle: a direct core Agent/Session runner over arx-base with no Host, HTTP, or browser layer",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publishConfig": {
     "access": "public"
   },
