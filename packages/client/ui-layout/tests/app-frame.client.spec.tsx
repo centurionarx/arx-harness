@@ -226,6 +226,39 @@ describe('AppFrame', () => {
     expect(tracks(frame)[0]).toBe(350)
   })
 
+  it('exposes both open boundaries as keyboard-focusable value separators', () => {
+    const { frame, instance, getByRole, getAllByRole } = mountFrame()
+    const sidebar = getByRole('separator', { name: '调整侧边栏宽度' })
+    expect(sidebar.tabIndex).toBe(0)
+    expect(sidebar.getAttribute('aria-orientation')).toBe('vertical')
+    expect(sidebar.getAttribute('aria-valuemin')).toBe('264')
+    expect(sidebar.getAttribute('aria-valuemax')).toBe('420')
+    expect(sidebar.getAttribute('aria-valuenow')).toBe('280')
+
+    act(() => { instance.actions.openDetails() })
+    expect(getAllByRole('separator')).toHaveLength(2)
+    const details = getByRole('separator', { name: '调整详情栏宽度' })
+    expect(details.tabIndex).toBe(0)
+    expect(details.getAttribute('aria-valuemin')).toBe('300')
+    expect(details.getAttribute('aria-valuemax')).toBe('520')
+    expect(details.getAttribute('aria-valuenow')).toBe('360')
+    expect(frame.querySelectorAll('[class*="handle"]')).toHaveLength(2)
+  })
+
+  it('resizes each panel in the separator movement direction with Arrow keys', () => {
+    const { frame, instance, getByRole } = mountFrame()
+    const sidebar = getByRole('separator', { name: '调整侧边栏宽度' })
+    act(() => { sidebar.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })) })
+    expect(tracks(frame)[0]).toBe(296)
+    expect(sidebar.getAttribute('aria-valuenow')).toBe('296')
+
+    act(() => { instance.actions.openDetails() })
+    const details = getByRole('separator', { name: '调整详情栏宽度' })
+    act(() => { details.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })) })
+    expect(tracks(frame)[1]).toBe(376)
+    expect(details.getAttribute('aria-valuenow')).toBe('376')
+  })
+
   it('details drag widens leftward (negative dx grows the panel)', () => {
     const { frame, instance } = mountFrame()
     act(() => { instance.actions.openDetails() })
@@ -345,6 +378,8 @@ describe('AppFrame — guard branches', () => {
   it('two moves inside one frame coalesce through the pending rAF', () => {
     const { frame, instance } = mountFrame()
     const handle = frame.querySelectorAll('[class*="handle"]')[0]!
+    let writes = 0
+    const unsubscribe = instance.subscribe(() => { writes++ })
     act(() => { handle.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, clientX: 280, bubbles: true })) })
     act(() => {
       // Two moves before the frame flushes: the second must ride the pending
@@ -353,7 +388,9 @@ describe('AppFrame — guard branches', () => {
       handle.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 340, bubbles: true }))
       vi.advanceTimersByTime(20)
     })
+    expect(writes).toBe(1)
     act(() => { handle.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 340, bubbles: true })) })
+    unsubscribe()
     expect(instance.getSnapshot().sidebar).toBe(340)
   })
 
@@ -367,6 +404,53 @@ describe('AppFrame — guard branches', () => {
       handle.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 360, bubbles: true }))
     })
     expect(instance.getSnapshot().sidebar).toBe(360)
+  })
+
+  it('commits pointerup.clientX when no final pointermove was delivered', () => {
+    const { frame, instance } = mountFrame()
+    const handle = frame.querySelectorAll('[class*="handle"]')[0]!
+    act(() => {
+      handle.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, clientX: 280, bubbles: true }))
+      handle.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 360, bubbles: true }))
+    })
+    expect(instance.getSnapshot().sidebar).toBe(360)
+  })
+
+  it('cancels a pending drag frame and restores transitions after pointer cancellation', () => {
+    const { frame, instance } = mountFrame()
+    const handle = frame.querySelectorAll('[class*="handle"]')[0]!
+    let writes = 0
+    const unsubscribe = instance.subscribe(() => { writes++ })
+    act(() => {
+      handle.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, clientX: 280, bubbles: true }))
+      handle.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 360, bubbles: true }))
+    })
+    expect(frame.hasAttribute('data-dragging')).toBe(true)
+    expect(vi.getTimerCount()).toBe(1)
+
+    act(() => {
+      handle.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1, bubbles: true }))
+      vi.advanceTimersByTime(20)
+    })
+    unsubscribe()
+    expect(instance.getSnapshot().sidebar).toBe(280)
+    expect(frame.hasAttribute('data-dragging')).toBe(false)
+    expect(handle.hasAttribute('data-dragging')).toBe(false)
+    expect(vi.getTimerCount()).toBe(0)
+    expect(writes).toBe(0)
+  })
+
+  it('ignores secondary-button pointer gestures', () => {
+    const { frame, instance } = mountFrame()
+    const handle = frame.querySelectorAll('[class*="handle"]')[0]!
+    act(() => {
+      handle.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 2, button: 2, clientX: 280, bubbles: true }))
+      handle.dispatchEvent(new PointerEvent('pointermove', { pointerId: 2, clientX: 360, bubbles: true }))
+      handle.dispatchEvent(new PointerEvent('pointerup', { pointerId: 2, clientX: 360, bubbles: true }))
+      vi.advanceTimersByTime(20)
+    })
+    expect(instance.getSnapshot().sidebar).toBe(280)
+    expect(frame.hasAttribute('data-dragging')).toBe(false)
   })
 
   it('zero-width resize reports are ignored (display:none window)', () => {

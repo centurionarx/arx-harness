@@ -46,6 +46,9 @@ import * as ToolBashPersistent from '@arx-ai/arx-tool-bash-persistent'
 import * as ToolPwshPersistent from '@arx-ai/arx-tool-pwsh-persistent'
 import CordisHostRunner from '@arx-ai/arx-cordis-host-runner'
 import * as ToolCordis from '@arx-ai/arx-tool-cordis'
+import * as ToolPresent from '@arx-ai/arx-tool-present'
+import * as ToolProject from '@arx-ai/arx-tool-project'
+import type ProjectService from '@arx-ai/arx-project'
 import * as ToolFs from '@arx-ai/arx-tool-fs'
 import * as ToolFsSearch from '@arx-ai/arx-tool-fs-search'
 import * as ToolStrReplaceEditor from '@arx-ai/arx-tool-str-replace-editor'
@@ -186,6 +189,22 @@ export interface ToolPackage {
  * guard proves it is exhaustive against the on-disk glob.
  */
 const TOOL_PACKAGES: ToolPackage[] = [
+  {
+    pkg: '@arx-ai/arx-tool-present', dir: 'tool-present', source: 'packages/fs/tool-present/src/index.ts',
+    requires: ['ctx.tools', 'ctx.fs', 'live Agent session'], writes: ['tool/call', 'tool/result', 'deliverables/presented'],
+    async mount(ctx) { await ctx.plugin(LocalFileSystem); await ctx.plugin(ToolPresent) },
+    note: 'Validates existing regular files through the configured agent filesystem. Metadata is bounded; the ordinary accepted result observer records explicit deliverables.',
+  },
+  {
+    pkg: '@arx-ai/arx-tool-project', dir: 'tool-project', source: 'packages/project/tool-project/src/index.ts',
+    requires: ['ctx.tools', 'ctx.projects', 'ctx.systemPrompt'], writes: ['tool/call', 'tool/result', 'atomic project aggregate'],
+    async mount(ctx) {
+      // Schema harvest never executes project operations or opens a storage backend.
+      ctx.provide('projects', {} as ProjectService)
+      await ctx.plugin(ToolProject)
+    },
+    note: 'Mutations require the last-read aggregate version. Plan approval and budget increases are trusted operator operations. Optional skillGit and projectRunner services enable pinned snapshots and saved step execution.',
+  },
   {
     pkg: '@arx-ai/arx-tool-ask-user',
     dir: 'tool-ask-user',

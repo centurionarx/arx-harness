@@ -1,6 +1,7 @@
 import { defineProperty, isNullable } from '@arx-ai/cosmokit'
 import type { Dict } from '@arx-ai/cosmokit'
 import { Context } from './context.ts'
+import { unloadingFibers } from './unloading.ts'
 import { getTraceable, symbols, withProps } from './utils.ts'
 import { Fiber, FiberState } from './fiber.ts'
 
@@ -305,27 +306,29 @@ export class ReflectService {
   }
 
   /**
-   * Re-evaluate every fiber that requires one of the given services.
+   * Re-evaluate active consumers and include unloading consumers for disposal joins.
    *
    * @param names — the service names that changed.
    * @param filter — restricts notification to matching isolation scopes.
-   * @returns the fibers whose dependency state was refreshed.
+   * @returns matching consumer fibers, including those whose teardown is still running.
    */
   notify(names: string[], filter = (ctx: Context, name: string) => ctx[symbols.isolate][name] === this.ctx[symbols.isolate][name]) {
     const fibers: Fiber[] = []
-    for (const runtime of this.ctx.registry.values()) {
-      for (const fiber of runtime.fibers) {
-        let hasUpdate = false
-        for (const name of names) {
-          if (!(name in fiber.inject)) continue
-          if (!filter(fiber.ctx, name)) continue
-          hasUpdate = true
-          fiber._checkImpl(name)
-        }
-        if (!hasUpdate) continue
-        fiber._refresh()
-        fibers.push(fiber)
+    const candidates = new Set([
+      ...[...this.ctx.registry.values()].flatMap(runtime => [...runtime.fibers]),
+      ...unloadingFibers.get(this.ctx.root) ?? [],
+    ])
+    for (const fiber of candidates) {
+      let hasUpdate = false
+      for (const name of names) {
+        if (!(name in fiber.inject)) continue
+        if (!filter(fiber.ctx, name)) continue
+        hasUpdate = true
+        if (fiber.uid !== null) fiber._checkImpl(name)
       }
+      if (!hasUpdate) continue
+      if (fiber.uid !== null) fiber._refresh()
+      fibers.push(fiber)
     }
     for (const name of names) {
       const self: Context = Object.create(this.ctx)

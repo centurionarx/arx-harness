@@ -1,0 +1,24 @@
+.trigger { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; border: 0; border-radius: 8px; background: transparent; color: var(--arx-alias-label-primary); cursor: pointer; font: inherit; }
+.trigger:hover { background: var(--arx-alias-bg-layer-2); }
+.board { display: grid; gap: 20px; min-width: 0; color: var(--arx-alias-label-primary); }
+.row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.board label { display: flex; flex: 1; flex-direction: column; gap: 5px; font-size: 13px; }
+.board input, .board select, .board textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 8px; border-radius: 6px; border: 1px solid var(--arx-alias-border-l2); background: var(--arx-alias-bg-layer-1); color: inherit; font: inherit; }
+.board textarea { min-height: 90px; resize: vertical; }
+.board button { padding: 8px 12px; border: 1px solid var(--arx-alias-border-l2); border-radius: 6px; background: var(--arx-alias-bg-layer-2); color: inherit; cursor: pointer; }
+.board button:disabled { opacity: 0.5; cursor: default; }
+.board form, .detail { display: grid; gap: 12px; }
+.board .row { display: flex; }
+.board .row > label { min-width: min(180px, 100%); }
+.detail section { border-top: 1px solid var(--arx-alias-border-l2); padding-top: 12px; }
+.detail h3, .detail h4 { margin: 0 0 10px; }
+.detail pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail article { margin-block: 12px; }
+
+.dialog { width: min(900px, 100%); max-height: calc(100dvh - 48px); }
+.content { overflow: auto; min-height: 0; --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2); --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2); }
+.board fieldset { min-width: 0; display: grid; gap: 8px; border: 1px solid var(--arx-alias-border-l2); border-radius: 8px; }
+
+.board input[type="checkbox"] { width: auto; align-self: start; }
+.detail table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.detail th, .detail td { padding: 8px; text-align: left; border-bottom: 1px solid var(--arx-alias-border-l2); overflow-wrap: anywhere; }

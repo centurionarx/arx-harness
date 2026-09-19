@@ -52,7 +52,7 @@ describe('PluginInventoryGateway', () => {
     })
     await ctx.loader.create({ name: 'cordis:active', group: true })
 
-    const snapshot = inventory.list()
+    const snapshot = await inventory.list()
     expect(snapshot.entries).toHaveLength(3)
     expect(snapshot.entries).toEqual(expect.arrayContaining([
       {
@@ -76,7 +76,7 @@ describe('PluginInventoryGateway', () => {
     ]))
 
     await ctx.loader.update(activeId, { disabled: true })
-    expect(inventory.list().entries.find(entry => entry.entryId === activeId)).toEqual({
+    expect((await inventory.list()).entries.find(entry => entry.entryId === activeId)).toEqual({
       entryId: activeId,
       moduleName: 'cordis:active',
       enabled: false,
@@ -84,6 +84,26 @@ describe('PluginInventoryGateway', () => {
     })
 
     await ctx.loader.remove(pendingId)
-    expect(inventory.list().entries.some(entry => entry.entryId === pendingId)).toBe(false)
+    expect((await inventory.list()).entries.some(entry => entry.entryId === pendingId)).toBe(false)
+  })
+
+  it('adds safe preset rows only when the optional roster is composed', async () => {
+    const { ctx, inventory } = await harness()
+    ctx.provide('agentPresets', {
+      compositionInventory: async () => [{
+        id: 'standard', trust: 'system', name: 'Standard', isDefault: true,
+        rows: [{
+          entryId: 'tools', moduleName: '@arx-ai/arx-tools', enabled: true,
+          fiberState: 2,
+        }, { entryId: null, moduleName: 'optional', enabled: 'conditional' }],
+      }],
+    } as never)
+
+    await expect(inventory.list()).resolves.toMatchObject({
+      agentPresets: [{
+        id: 'standard', isDefault: true,
+        rows: [{ moduleName: '@arx-ai/arx-tools', enabled: true, fiberPhase: 'active' }, { moduleName: 'optional', fiberPhase: null }],
+      }],
+    })
   })
 })

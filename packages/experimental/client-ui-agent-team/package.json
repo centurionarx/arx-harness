@@ -1,0 +1,28 @@
+{
+  "name": "@arx-ai/arx-experimental-client-ui-agent-team",
+  "description": "Read-only Agent Team roster, task dependency graph, and teammate navigation",
+  "version": "1.0.10",
+  "private": true,
+  "repository": { "type": "git", "url": "git+https://github.com/centurionarx/arx-harness.git", "directory": "packages/experimental/client-ui-agent-team" },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./lib/types/index.d.ts", "default": "./lib/index.js" },
+    "./invariant": { "types": "./lib/types/invariant.d.ts", "default": "./lib/invariant.js" },
+    "./client": { "types": "./lib/types/client/index.d.ts", "default": "./lib/client.js" },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "arx": { "client": { "inject": ["@arx-ai/arx-client-locale", "@arx-ai/arx-client-runtime", "@arx-ai/arx-client-ui-conversation", "@arx-ai/arx-client-ui-primitives", "@arx-ai/arx-experimental-agent-team"], "platform": "web" } },
+  "scripts": { "bundle": "tsdown", "watch": "tsdown --watch" },
+  "license": "MIT",
+  "dependencies": { "react": "^18.2.0" },
+  "peerDependencies": {
+    "@arx-ai/arx-client-locale": "workspace:^", "@arx-ai/arx-client-runtime": "workspace:^", "@arx-ai/arx-client-ui-conversation": "workspace:^", "@arx-ai/arx-experimental-agent-team": "workspace:^", "@arx-ai/arx-invariants": "workspace:^", "@arx-ai/arx-session": "workspace:^", "@arx-ai/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@arx-ai/arx-client-locale": "workspace:^", "@arx-ai/arx-client-runtime": "workspace:^", "@arx-ai/arx-client-test-runtime": "workspace:^", "@arx-ai/arx-client-ui-conversation": "workspace:^", "@arx-ai/arx-client-ui-primitives": "workspace:^", "@arx-ai/arx-client-ui-slots": "workspace:^", "@arx-ai/arx-experimental-agent-team": "workspace:^", "@arx-ai/arx-invariants": "workspace:^", "@arx-ai/arx-session": "workspace:^", "@arx-ai/cordis": "workspace:^", "@testing-library/react": "^16.1.0", "@types/react": "~18.3.1", "react-dom": "^18.2.0"
+  },
+  "files": ["lib/index.js", "lib/invariant.js", "lib/client.js", "lib/types/**/*.d.ts"]
+}

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-directory-picker-native",
   "description": "Native-OS-chooser backend of the directory-picker seam for the arx Harness web GUI host",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publishConfig": {
     "access": "public"
   },

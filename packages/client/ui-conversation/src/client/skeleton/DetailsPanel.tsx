@@ -63,7 +63,10 @@ function rawResultText(block: ToolCallBlock): string {
   return parts.join('\n')
 }
 
-export function DetailsPanel({ useSession, useSessions, sessionId, useStore, renderSlot, closeDetails, t }: DetailsPanelProps) {
+export function DetailsPanel({
+  useSession, useSessions, sessionId, useStore, renderSlot, renderSlotChain, closeDetails, openNativeFile, t,
+}: DetailsPanelProps) {
+  const preview = useStore(s => s.preview ?? null)
   const selection = useStore(s => s.selection)
   // Session workspace root: an omitted or relative terminal cwd resolves
   // against it, which the pure presenter cannot see.
@@ -79,7 +82,7 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
     <div className={css.root}>
       <div className={css.header}>
         <div className={css.title}>
-          {selection === null ? t('details.title') : material?.name ?? selection.toolName ?? t('details.title')}
+          {preview?.path ?? (selection === null ? t('details.title') : material?.name ?? selection.toolName ?? t('details.title'))}
         </div>
         <button
           type="button" className={css.close} aria-label={t('details.close')}
@@ -91,7 +94,10 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
         </button>
       </div>
       <div className={css.body}>
-        {selection === null || callId === undefined
+        {renderSlotChain('details.content', {
+          preview,
+          openNativeFile: openNativeFile ?? (() => Promise.reject(new Error('Native file opening is unavailable'))),
+        }, { fallback: (selection === null || callId === undefined
           ? <div className={css.empty}>{t('details.empty')}</div>
           : material === null
             ? <div className={css.empty}>{t('details.notInWindow')}</div>
@@ -122,7 +128,7 @@ export function DetailsPanel({ useSession, useSessions, sessionId, useStore, ren
                   </Fragment>
                 </section>
               </>
-            )}
+            )) })}
       </div>
     </div>
   )

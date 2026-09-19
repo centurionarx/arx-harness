@@ -6,6 +6,7 @@ import { chmod, mkdir, mkdtemp, rm, stat, symlink, writeFile } from 'node:fs/pro
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { performance } from 'node:perf_hooks'
+import { setTimeout as delay } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
 import Loader from '@arx-ai/cordis-plugin-loader'
@@ -37,6 +38,11 @@ import {
 import { SqliteStore } from '../src/store.ts'
 import { sql } from '../src/sql.ts'
 import { testSql } from './test-sql.ts'
+
+vi.mock('node:timers/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:timers/promises')>()
+  return { ...actual, setTimeout: vi.fn(actual.setTimeout) }
+})
 
 const dirs: string[] = []
 afterEach(async () => {
@@ -445,13 +451,32 @@ describe('SessionPersistenceSqlite schema ownership', () => {
         : undefined
     })
 
-    const db = await openDatabase(BusyOnceDatabase, path, 'wal', 100)
-    expect(attempts).toBe(2)
-    expect(db.prepare(sql('journal-mode-wal')).get()).toEqual({ journal_mode: 'wal' })
-    expect(db.prepare(sql('select-trusted-schema')).get()).toEqual({ trusted_schema: 0 })
-    expect(db.prepare(sql('select-mmap-size')).get()).toEqual({ mmap_size: 0 })
-    expect(db.prepare(sql('select-synchronous')).get()).toEqual({ synchronous: 2 })
-    db.close()
+    vi.useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout', 'clearTimeout'] })
+    vi.mocked(delay).mockImplementation((milliseconds, value) => new Promise((resolve) => {
+      setTimeout(resolve, milliseconds, value)
+    }))
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => Date.now())
+    let db: DatabaseSync | undefined
+    try {
+      const opening = openDatabase(BusyOnceDatabase, path, 'wal', 100)
+      expect(attempts).toBe(1)
+      expect(vi.getTimerCount()).toBe(1)
+      await vi.advanceTimersByTimeAsync(9)
+      expect(attempts).toBe(1)
+      await vi.advanceTimersByTimeAsync(1)
+      db = await opening
+      expect(attempts).toBe(2)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(db.prepare(sql('journal-mode-wal')).get()).toEqual({ journal_mode: 'wal' })
+      expect(db.prepare(sql('select-trusted-schema')).get()).toEqual({ trusted_schema: 0 })
+      expect(db.prepare(sql('select-mmap-size')).get()).toEqual({ mmap_size: 0 })
+      expect(db.prepare(sql('select-synchronous')).get()).toEqual({ synchronous: 2 })
+    } finally {
+      db?.close()
+      vi.mocked(delay).mockReset()
+      clock.mockRestore()
+      vi.useRealTimers()
+    }
   })
 
   it('does not retry journal failures outside the available busy budget', async () => {
@@ -498,19 +523,42 @@ describe('SessionPersistenceSqlite schema ownership', () => {
   })
 
   it('paces repeated busy journal-mode attempts', async () => {
+    const path = await freshDbPath('arx-sqlite-journal-paced-')
     let attempts = 0
     const BusyDatabase = databaseWithJournalFailure(() => {
       attempts += 1
       return Object.assign(new Error('database is locked'), { errcode: 5 })
     })
-    await expect(openDatabase(
-      BusyDatabase,
-      await freshDbPath('arx-sqlite-journal-paced-'),
-      'wal',
-      50,
-    )).rejects.toThrow('database is locked')
-    expect(attempts).toBeGreaterThan(1)
-    expect(attempts).toBeLessThanOrEqual(6)
+    vi.useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout', 'clearTimeout'] })
+    // Route the imported Promise timer through the controlled global timer for this test.
+    vi.mocked(delay).mockImplementation((milliseconds, value) => new Promise((resolve) => {
+      setTimeout(resolve, milliseconds, value)
+    }))
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => Date.now())
+    try {
+      let settled = false
+      const opening = openDatabase(BusyDatabase, path, 'wal', 50)
+      const failed = expect(opening).rejects.toThrow('database is locked')
+      void opening.then(() => { settled = true }, () => { settled = true })
+      expect(attempts).toBe(1)
+      expect(vi.getTimerCount()).toBe(1)
+      await vi.advanceTimersByTimeAsync(9)
+      expect(attempts).toBe(1)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(attempts).toBe(2)
+      await vi.advanceTimersByTimeAsync(39)
+      expect(attempts).toBe(5)
+      expect(settled).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      await failed
+      expect(settled).toBe(true)
+      expect(attempts).toBe(5)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.mocked(delay).mockReset()
+      clock.mockRestore()
+      vi.useRealTimers()
+    }
   })
 
   it('rejects unversioned, incompatible, and foreign-application databases', async () => {

@@ -286,6 +286,7 @@ describe('DetailsPanel Output section (read)', () => {
     })
     return render(
       <DetailsPanel
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}
         SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetails(t, description)}
         sessionId={SID}

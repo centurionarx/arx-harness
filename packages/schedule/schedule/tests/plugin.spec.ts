@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Context, Service } from '@arx-ai/cordis'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
 import Loader from '@arx-ai/cordis-plugin-loader'
 import { agentEvents } from '@arx-ai/arx-agent'
 import AgentLoop from '@arx-ai/arx-agent-loop'
@@ -102,4 +103,34 @@ describe('Schedule plugin composition', () => {
     await plugin.dispose()
     await ctx.fiber.dispose()
   })
+})
+it('publishes committed reminder changes when the projection registry arrives and removes the view on disposal', async () => {
+  const ctx = await harness()
+  try {
+    const plugin = await ctx.plugin(toolSchedule)
+    await ctx.plugin(SessionProjectionRegistry)
+    const root = await ctx.agents.create({ sessionId: SessionId('schedule-projected') })
+    const changes: unknown[] = []
+    ctx.sessionProjections.onChanged((session, key, value) => {
+      if (session === root.agent.session && key === 'schedule') changes.push(value)
+    })
+    for (const prompt of ['first reminder', 'second reminder']) {
+      const result = await ctx.agents.withInitiator(root.agent, () => ctx.tools.execute({
+        signal: new AbortController().signal, callId: CallId(prompt), name: 'schedule_create',
+        arguments: { prompt, after_seconds: 3_600 }, agent: root.agent,
+      }))
+      expect(result.isError).toBe(false)
+    }
+    const snapshot = ctx.sessionProjections.snapshot(root.agent.session)
+    expect(snapshot.values.schedule?.map(record => record.prompt)).toEqual(['first reminder', 'second reminder'])
+    expect(changes).toHaveLength(2)
+    expect(changes[1]).toEqual(snapshot.values.schedule)
+    root.agent.session.append('turn/start', { turn: 1 })
+    expect(changes).toHaveLength(2)
+    await plugin.dispose()
+    expect(ctx.sessionProjections.snapshot(root.agent.session).values.schedule).toBeUndefined()
+    expect(root.agent.session.events.filter(event => event.type === 'schedule/change')).toHaveLength(2)
+  } finally {
+    await ctx.fiber.dispose()
+  }
 })

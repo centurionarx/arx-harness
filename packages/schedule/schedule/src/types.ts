@@ -219,3 +219,10 @@ declare module '@arx-ai/arx-session/types' {
     'schedule/change': ScheduleChange
   }
 }
+
+declare module '@arx-ai/arx-session-projection/types' {
+  interface SessionProjectionMap {
+    /** Active reminders owned by this Session after its inherited fork prefix. */
+    schedule: readonly ScheduleRecord[]
+  }
+}

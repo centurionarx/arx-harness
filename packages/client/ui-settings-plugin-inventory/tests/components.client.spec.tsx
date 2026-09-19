@@ -33,6 +33,35 @@ const SNAPSHOT = {
 } as unknown as Snapshot
 
 describe('PluginInventorySettingsTab', () => {
+  it('switches to config-free preset rows and reports preset health', async () => {
+    const snapshot = {
+      entries: SNAPSHOT.entries,
+      agentPresets: [
+        {
+          id: 'standard', trust: 'system', name: 'Standard', isDefault: true,
+          rows: [
+            { entryId: 'tools', moduleName: '@arx-ai/arx-tools', enabled: true, fiberPhase: 'active' },
+            { entryId: null, moduleName: '@fixture/conditional', enabled: 'conditional', condition: 'process.env.FEATURE', fiberPhase: null },
+          ],
+        },
+        { id: 'broken', trust: 'user', isDefault: false, broken: 'private filesystem detail', rows: [] },
+      ],
+    } as unknown as Snapshot
+    render(<PluginInventorySettingsTab {...props(async () => snapshot)} />)
+    const scope = await screen.findByRole('combobox', { name: en.scope })
+
+    fireEvent.change(scope, { target: { value: 'standard' } })
+    expect(screen.getByRole('heading', { name: 'Standard' })).toBeTruthy()
+    expect(screen.getByText(text => text.includes(en.defaultPreset))).toBeTruthy()
+    expect(screen.getByText(en.conditionalTag)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: `tools, ${en.active}, ${en.enabledTag}` }))
+    expect(document.querySelector('[data-loader-entry]')?.textContent).toBe('tools')
+
+    fireEvent.change(scope, { target: { value: 'broken' } })
+    expect(screen.getByRole('alert').textContent).toBe(en.brokenPreset)
+    expect(screen.queryByText('private filesystem detail')).toBeNull()
+  })
+
   it('renders runtime status only for enabled plugins', async () => {
     const deferred = Promise.withResolvers<Snapshot>()
     const list = vi.fn(() => deferred.promise)
@@ -124,4 +153,21 @@ describe('PluginInventorySettingsTab', () => {
     pendingFailure.unmount()
     await act(async () => { deferredFailure.reject(new Error('late failure')) })
   })
+})
+
+it('renders conditional preset details and resets a removed preset selection on refresh', async () => {
+  const snapshot = {
+    entries: SNAPSHOT.entries,
+    agentPresets: [{ id: 'conditional', trust: 'user', isDefault: false, rows: [{ entryId: null, moduleName: 'optional', enabled: 'conditional', condition: 'false', fiberPhase: null }] }],
+  } as unknown as Snapshot
+  const view = render(<PluginInventorySettingsTab {...props(async () => snapshot)} />)
+  fireEvent.change(await screen.findByRole('combobox'), { target: { value: 'conditional' } })
+  fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'missing' } })
+  expect(screen.getByText(en.emptySearch)).toBeTruthy()
+  fireEvent.change(screen.getByRole('searchbox'), { target: { value: '' } })
+  fireEvent.click(screen.getByRole('button', { name: `optional, ${en.conditionalTag}` }))
+  expect(screen.getByText('false')).toBeTruthy()
+  expect(document.querySelector('[data-loader-entry]')).toBeNull()
+  view.rerender(<PluginInventorySettingsTab {...props(async () => SNAPSHOT)} />)
+  await waitFor(() => { expect(screen.getByRole('heading', { name: en.catalog })).toBeTruthy() })
 })

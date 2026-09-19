@@ -463,6 +463,7 @@ describe('DetailsPanel Output section', () => {
     })
     return render(
       <DetailsPanel
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}
         SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetails(t)}
         sessionId={SID}
@@ -642,6 +643,7 @@ describe('DetailsPanel Output section', () => {
     const snap = snapshot()
     const view = render(
       <DetailsPanel
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}
         SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetails(t)}
         sessionId={SID}

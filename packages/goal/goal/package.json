@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-goal",
   "description": "Event-sourced same-session goal state and lifecycle service for the arx Harness",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publishConfig": {
     "access": "public"
   },

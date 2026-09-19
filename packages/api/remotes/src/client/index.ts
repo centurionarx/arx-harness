@@ -1,3 +1,11 @@
+export type {} from '@arx-ai/arx-project/remote'
+export type {} from '@arx-ai/arx-file-preview/remote'
+export type {} from '@arx-ai/arx-session-turn-outline/remote'
+import turnOutlinesRemote from '@arx-ai/arx-session-turn-outline/remote'
+import filePreviewsRemote from '@arx-ai/arx-file-preview/remote'
+export type { FilePreview } from '@arx-ai/arx-file-preview/types'
+import projectsRemote from '@arx-ai/arx-project/remote'
+export type { FinalizePromptEvaluationRequest, ProjectWorkflowRun, ProjectBudget, ResumeWorkflowRunRequest, ReconcileWorkflowRunRequest, PromptVariableDefinition, CreateProjectRequest, ProjectId, ProjectRecord, ProjectSummary, SavePlanRequest, SavePromptRequest } from '@arx-ai/arx-project/types'
 /** Platform-neutral assembly of generated Host Remote contributions. */
 
 import type { Context } from '@arx-ai/cordis'
@@ -116,7 +124,7 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   try {
     for (const contribution of [
       commandsRemote, goalsRemote, dynamicRemote, fileReferencesRemote,
-      pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote,
+      pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote, projectsRemote, turnOutlinesRemote, filePreviewsRemote,
     ]) {
       disposers.push(await ctx.remote.$mount(contribution))
     }

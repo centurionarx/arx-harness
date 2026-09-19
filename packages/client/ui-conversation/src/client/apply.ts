@@ -11,6 +11,7 @@ import type {} from '@arx-ai/arx-client-ui-layout/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@arx-ai/arx-client-locale/client'
 import type { ViewTab } from './contract/views.ts'
+import { revealTurnNode } from './reveal-turn.ts'
 import type {
   ApprovalWait, ChatNodeTurnDataInjected, ChatScrollPosition, ChatViewInjected, ComposerBarInjected,
   ComposerChainProps, ConversationInjected, ConversationSessionHeaderInjected, ConversationSessionInjected,
@@ -243,9 +244,24 @@ export function apply(ctx: Context): void {
       'conversation.view': { kind: 'list', scope: 'session' },
     },
     store: chatStore,
-    inject: (sessionId: SessionId, _actions: BoundActions<typeof chatStore>): ConversationSessionInjected => {
+    inject: (sessionId: SessionId, actions: BoundActions<typeof chatStore>): ConversationSessionInjected => {
       const conversation = concreteConversation(ctx)
+      let revealGeneration = 0
       return {
+        revealTurn: async (startSeq) => {
+          const generation = ++revealGeneration
+          const session = sessions.binding(sessionId)?.session
+          if (session === undefined) return false
+          const isCurrent = (): boolean => generation === revealGeneration
+            && sessions.list.getSnapshot().current === sessionId
+            && sessions.binding(sessionId)?.session === session
+          const nodeKey = await revealTurnNode(session, startSeq, isCurrent)
+          if (nodeKey === null || !isCurrent()) return false
+          actions.setReveal({ nodeKey })
+          actions.setView('chat')
+          return true
+        },
+        cancelRevealTurn: () => { revealGeneration += 1 },
         views,
         releaseSessionImages: (id) => { conversation.releaseSessionImages(id) },
         bindDraftMirror: write => inputHub.shell(sessionId).bindMirror(write),
@@ -393,11 +409,17 @@ export function apply(ctx: Context): void {
       const scoped = scopedConversation(sessions, sessionId)
       return {
         openDetails: (target) => {
+          actions.setPreview(null)
           actions.select(target)
           layout.openDetails()
         },
         fileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner),
         openFile: (path) => {
+          if (ctx.get('chatFilePreview')?.supports(path)) {
+            actions.setPreview({ path })
+            layout.openDetails()
+            return Promise.resolve()
+          }
           const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
           return workspaces.openPath(resolveWorkspacePath(cwd, path))
         },
@@ -448,10 +470,12 @@ export function apply(ctx: Context): void {
     locale: NS,
     children: {
       'conversation.details.tool': { kind: 'single', scope: 'session' },
+      'details.content': { kind: 'chain', scope: 'session' },
     },
     store: chatStore,
-    inject: (): DetailsInjected => ({
-      closeDetails: () => { layout.closeDetails() },
+    inject: (sessionId: SessionId, actions: BoundActions<typeof chatStore>): DetailsInjected => ({
+      openNativeFile: path => workspaces.openPath(resolveWorkspacePath(sessions.list.getSnapshot().byId[sessionId]?.cwd, path)),
+      closeDetails: () => { actions.setPreview(null); layout.closeDetails() },
     }),
   }, DetailsPanel)
 

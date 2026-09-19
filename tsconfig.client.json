@@ -38,6 +38,11 @@
     "packages/client/*/tests/**/*.host.spec.ts"
   ],
   "references": [
+    { "path": "./packages/client/ui-file-preview" },
+    { "path": "./packages/experimental/client-ui-agent-team" },
+    { "path": "./packages/client/ui-schedule" },
+    { "path": "./packages/client/ui-turn-outline" },
+    { "path": "./packages/client/ui-projects" },
     // Shared leaf: web e2e boots the real host webserver (fixture + real-host
     // smoke policy). webserver has zero workspace deps and no cordis merge,
     // so it cannot drag host-side Context augmentation into this program.

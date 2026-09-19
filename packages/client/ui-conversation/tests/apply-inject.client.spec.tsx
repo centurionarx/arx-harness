@@ -25,6 +25,7 @@ import type {
   ConversationSessionInjected, DetailsInjected,
 } from '@arx-ai/arx-client-ui-conversation/client'
 import type { createChatStore } from '../src/client/stores.ts'
+import { chatSnapshotFixture } from './chat-snapshot-fixture.client.ts'
 
 const ROOT = 'root-1' as SessionId
 
@@ -343,17 +344,116 @@ describe('conversation slot inject API', () => {
 })
 
 describe('details inject API', () => {
-  it('details injects the one layout callback; selection rides the shared store instead', async () => {
+  it('details opens native files relative to the session and clears its shared preview on close', async () => {
     const b = await bench()
-    const entry = b.entryOf('details')
-    const injected = (entry.inject as unknown as () => DetailsInjected)()
-    expect(Object.keys(injected)).toEqual(['closeDetails'])
-    injected.closeDetails()
-    expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
-    // The shared handle: details resolves the SAME instance conversation writes.
-    const conv = b.runtime.storeOf('conversation.session', ROOT)
-    const details = b.runtime.storeOf('details', ROOT)
-    expect(details).toBe(conv)
-    await b.runtime.dispose()
+    try {
+      const entry = b.entryOf('details')
+      const conv = b.runtime.storeOf('conversation.session', ROOT)
+      const details = b.runtime.storeOf('details', ROOT) as ChatInstance
+      expect(details).toBe(conv)
+      const injected = (entry.inject as unknown as (sessionId: SessionId, actions: ChatActions) => DetailsInjected)(
+        ROOT, details.actions)
+      expect(Object.keys(injected)).toEqual(['openNativeFile', 'closeDetails'])
+      details.actions.setPreview({ path: 'src/a.ts' })
+      await injected.openNativeFile!('src/a.ts')
+      expect(b.runtime.workspaces.calls).toContainEqual({ method: 'openPath', args: ['/proj/src/a.ts'] })
+      expect(details.store.getSnapshot().preview).toEqual({ path: 'src/a.ts' })
+      injected.closeDetails()
+      expect(details.store.getSnapshot().preview).toBeNull()
+      expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
+    } finally {
+      await b.runtime.dispose()
+    }
+  })
+})
+
+/** A completed turn with a visible assistant row and an exact durable start address. */
+function revealChat(startSeq: number) {
+  const turn = startSeq + 1
+  return chatSnapshotFixture({
+    nodes: [{ kind: 'assistant', seq: startSeq + 2, time: 1, turn, step: 1, blocks: [{ kind: 'text', text: 'visible result' }] }],
+    turnTimings: new Map([[turn, { startTime: 1, endTime: 2 }]]),
+    turnEnds: new Map([[turn, startSeq + 1]]),
+  })
+}
+
+describe('cross-view reveal ownership and optional preview', () => {
+  it('reveals the exact loaded turn and selects Chat, declining an absent binding', async () => {
+    const b = await bench()
+    try {
+      await b.runtime.sessions.updateSnapshot(ROOT, (draft) => {
+        draft.chat = revealChat(100)
+        draft.openState = 'open'
+        draft.hasMore = false
+      })
+      const { instance, injected } = b.conversationApi(ROOT)
+      instance.actions.setView('outline')
+      expect(await injected.revealTurn!(100)).toBe(true)
+      expect(instance.store.getSnapshot()).toMatchObject({ view: 'chat', reveal: { nodeKey: 'fixture:assistant:102' } })
+      await b.runtime.sessions.remove(ROOT)
+      expect(await injected.revealTurn!(100)).toBe(false)
+    } finally { await b.runtime.dispose() }
+  })
+
+  it.each(['cancelled', 'switched', 'replaced', 'superseded'] as const)(
+    'a pending older-page reveal cannot navigate after its ownership is %s', async (reason) => {
+      const b = await bench()
+      try {
+        await b.runtime.sessions.updateSnapshot(ROOT, (draft) => {
+          draft.chat = revealChat(100)
+          draft.openState = 'open'
+          draft.hasMore = true
+        })
+        const { instance, injected } = b.conversationApi(ROOT)
+        instance.actions.setView('outline')
+        let finishPage: () => void = () => {}
+        const page = new Promise<void>((resolve) => { finishPage = resolve })
+        b.sessionFake.loadOlder.mockReturnValueOnce(page)
+        const pending = injected.revealTurn!(0)
+        expect(b.sessionFake.loadOlder).toHaveBeenCalledOnce()
+        if (reason === 'cancelled') injected.cancelRevealTurn!()
+        if (reason === 'switched') await b.runtime.sessions.setCurrent(undefined)
+        if (reason === 'replaced') {
+          await b.runtime.sessions.remove(ROOT)
+          await b.runtime.sessions.add({ id: ROOT })
+        }
+        if (reason === 'superseded') expect(await injected.revealTurn!(100)).toBe(true)
+        if (reason !== 'replaced') await b.runtime.sessions.updateSnapshot(ROOT, (draft) => { draft.chat = revealChat(0) })
+        finishPage()
+        expect(await pending).toBe(false)
+        expect(instance.store.getSnapshot().view).toBe(reason === 'superseded' ? 'chat' : 'outline')
+        expect(instance.store.getSnapshot().reveal).toEqual(reason === 'superseded' ? { nodeKey: 'fixture:assistant:102' } : undefined)
+      } finally { await b.runtime.dispose() }
+    },
+  )
+
+  it('checks cancellation again after locating an already-loaded row', async () => {
+    const b = await bench()
+    try {
+      await b.runtime.sessions.updateSnapshot(ROOT, (draft) => { draft.chat = revealChat(0); draft.openState = 'open' })
+      const { instance, injected } = b.conversationApi(ROOT)
+      const pending = injected.revealTurn!(0)
+      injected.cancelRevealTurn!()
+      expect(await pending).toBe(false)
+      expect(instance.store.getSnapshot().reveal).toBeUndefined()
+    } finally { await b.runtime.dispose() }
+  })
+
+  it('previews supported documents, falls back to the native opener, and clears previews when inspecting a call', async () => {
+    const b = await bench()
+    try {
+      const supports = vi.fn((path: string) => path.endsWith('.md'))
+      b.runtime.provide('chatFilePreview', { supports })
+      const { instance, injected } = b.chatViewApi(ROOT)
+      await injected.openFile('report.md')
+      expect(instance.store.getSnapshot().preview).toEqual({ path: 'report.md' })
+      expect(b.layoutFake.openDetails).toHaveBeenCalledOnce()
+      expect(b.runtime.workspaces.calls.filter(call => call.method === 'openPath')).toHaveLength(0)
+      await injected.openFile('archive.zip')
+      expect(b.runtime.workspaces.calls).toContainEqual({ method: 'openPath', args: ['/proj/archive.zip'] })
+      expect(supports.mock.calls).toEqual([['report.md'], ['archive.zip']])
+      injected.openDetails({ turnSeq: 2, callId: 'c1' })
+      expect(instance.store.getSnapshot()).toMatchObject({ preview: null, selection: { turnSeq: 2, callId: 'c1' } })
+    } finally { await b.runtime.dispose() }
   })
 })

@@ -29,7 +29,7 @@ interface ProjectionDefinition<
    * State for the empty log.
    * @returns the initial state.
    */
-  init(): NoInfer<S>
+  init(header: SessionHeader, inheritedEventCount: number): NoInfer<S>
   /**
    * Pure transition: previous state + one committed event → next state. A
    * unit uninterested in an event MUST return the same state reference — an
@@ -272,14 +272,38 @@ viewCheckpoint(checkpoint: ProjectionCheckpoint): Partial<SessionProjectionMap>
  * @param checkpoint - persisted rows for one session (possibly stale or empty).
  * @param events - the stored events with `seq >= baseSeq`, in seq order.
  * @param baseSeq - the seq `events` starts at (its first event's seq when non-empty).
+ * @param header - durable Session header supplied to definitions that initialize from identity.
+ * @param inheritedEventCount - copied parent-event prefix length used by fork-aware definitions.
  * @returns the snapshot cut at the supplied log end (`asOfSeq` is the last
  *   supplied event's seq, `baseSeq - 1` for an empty tail) plus the
  *   refreshed checkpoint rows at that cut, ready for a durable write-back.
  */
-restore( checkpoint: ProjectionCheckpoint, events: readonly SessionEvent[], baseSeq: number, ): { snapshot: ProjectionSnapshot; checkpoint: ProjectionCheckpoint }
+restore( checkpoint: ProjectionCheckpoint, events: readonly SessionEvent[], baseSeq: number, header: SessionHeader, inheritedEventCount: number, ): { snapshot: ProjectionSnapshot; checkpoint: ProjectionCheckpoint }
 ```
 
-Types: [Session](session.md) · [SessionEvent](session.md)
+Types: [Session](session.md) · [SessionEvent](session.md) · [SessionHeader](persistence.md)
 
 Source: [`packages/session/session-projection/src/index.ts`](../../packages/session/session-projection/src/index.ts)
+
+<a id="ctxturnoutlines--turnoutlineservice"></a>
+
+### `ctx.turnOutlines` — `TurnOutlineService`
+
+Read-only paging service; the gateway supplies the accessible session owner.
+
+```ts cordis-catalog
+/**
+ * Search complete history and return one bounded page without changing model input.
+ * @param agent - session owner supplied by the authenticated gateway.
+ * @param before - exclusive start sequence or null for the newest page.
+ * @param query - at most 200 characters matched against turn number and preview.
+ * @param signal - gateway cancellation signal.
+ * @returns a page of at most 100 turns plus an older-page cursor.
+ */
+@Remote page(agent: Agent, before: number | null, query: string, signal: AbortSignal): TurnOutlinePage
+```
+
+Types: [Agent](core.md)
+
+Source: [`packages/session/session-turn-outline/src/service.ts`](../../packages/session/session-turn-outline/src/service.ts)
 <!-- END GENERATED cordis-surface -->

@@ -16,6 +16,8 @@ The package owns the strict version-1 `schedule/change` create, delete, and disp
 
 Replay rejects unknown versions, extra fields, reused ids, mismatched one-shot or Every dispatch shapes, and delete or dispatch transitions against inactive records. Normal Sessions fold the complete log. A fork folds only `session.events.slice(session.header.seedLength ?? 0)`, so it does not inherit its parent's reminders. The package's `./invariant` companion applies the same policy to existing logs and candidate events.
 
+When `@arx-ai/arx-session-projection` is composed, Schedule registers an optional `schedule` wire projection containing the current active records. Projection initialization receives the real Session header and inherited-event boundary, so a cold fork and a restored checkpoint both exclude the parent prefix. The read-only [`arx-client-ui-schedule`](../../client/ui-schedule/README.md) catalog consumes this projection; Schedule remains usable without that browser package.
+
 ## Absolute-time input
 
 The `at` selector is either a strict `YYYY-MM-DDTHH:mm:ss[.S|.SS|.SSS](Z|±HH:MM)` string or `{ date: "YYYY-MM-DD", time: "HH:mm:ss[.S|.SS|.SSS]", time_zone: string }`. The string identifies an instant through `Z` or its numeric offset. The local form always requires explicit `UTC` or a valid IANA Area/Location zone. Missing `time_zone`, offset-free strings, extra keys, normalized calendar dates, invalid offsets, and non-future targets are rejected.

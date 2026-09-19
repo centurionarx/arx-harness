@@ -49,6 +49,8 @@ Dependencies must name current non-deleted tasks and form a complete DAG with no
 
 The separate `./invariant` companion replays each candidate Team event against its committed Session prefix. Replay validates every current-version Team payload before it enters folded state, then rejects invalid member transitions, reused names, out-of-range numeric task ids, discontinuous task revisions, invalid task dependencies, duplicate queue/ack records, and acknowledgements with the wrong target before append. Session event `seq` and `time` own ordering and timing instead of duplicated snapshot timestamps.
 
+When `@arx-ai/arx-session-projection` is composed, the Team service registers an optional `agentTeam` wire projection with the lead id, durable roster, and non-deleted task DAG. The private [`arx-experimental-client-ui-agent-team`](../client-ui-agent-team/README.md) overlay consumes it for read-only roster, dependency, and Session navigation. The Team backend remains fully usable when either optional package is absent.
+
 ## Model Experience
 
 ### Peer messages

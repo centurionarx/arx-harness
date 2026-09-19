@@ -407,6 +407,11 @@
         "tests/**/*.ts"
       ]
     },
+    "packages/fs/file-preview": {
+      "ignoreDependencies": [
+        "zod"
+      ]
+    },
     "packages/context/file-reference": {
       "ignoreDependencies": [
         "zod"

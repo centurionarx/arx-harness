@@ -15,6 +15,8 @@ This table connects model-visible tool names to the plugin package and service s
 
 | Tool package | Model-visible names | Requires | Writes / affects | Shipped aliases | Deployment note |
 | --- | --- | --- | --- | --- | --- |
+| `@arx-ai/arx-tool-present` | `present` | `ctx.tools`, `ctx.fs`, `live Agent session` | `tool/call`, `tool/result`, `deliverables/presented` | - | Validates existing regular files through the configured agent filesystem. Metadata is bounded; the ordinary accepted result observer records explicit deliverables. |
+| `@arx-ai/arx-tool-project` | `project` | `ctx.tools`, `ctx.projects`, `ctx.systemPrompt` | `tool/call`, `tool/result`, `atomic project aggregate` | - | Mutations require the last-read aggregate version. Plan approval and budget increases are trusted operator operations. Optional skillGit and projectRunner services enable pinned snapshots and saved step execution. |
 | `@arx-ai/arx-tool-ask-user` | `ask_user_question` | `ctx.tools`, `ctx.userQuestions` | `tool/call`, `tool/result after a UI/provider answers the question` | - | ask_user_question pauses the tool call until the active UI provider returns a human answer. |
 | `@arx-ai/arx-tools` | `run_code` | `ctx.tools`, `ctx.codeRuntime (execution time)`, `ctx.systemPrompt` | `tool/call`, `one tool/code-dispatch-start + tool/code-dispatch pair per bridged sub-call`, `tool/result` | - | Owned by the tool registry as a reserved transport outside filterable capability layers under `mode: code` / `mode: both` (see the Code Mode Agent Note). Under `code` it is the registry's only wire contribution; the other visible capabilities are declared in a generated SDK section in the loaded runtime's language, and a program calls them through bindings scheduled under the native concurrency contract (submission-ordered starts and policy; concurrency-safe bodies overlap up to `maxParallelSubCalls`) that re-enter the complete guarded tool pipeline and link each nested execution to this outer result. |
 | `@arx-ai/arx-plan-mode` | `exit_plan_mode` | `ctx.tools`, `ctx.systemPrompt`, `ctx.userQuestions (execution time, opportunistic)` | `tool/call`, `plan/mode inactive on an approved review`, `tool/result` | - | exit_plan_mode stays in the model-facing schema while planning is inactive so transitions add no tool-catalog churn on top of the plan-policy change. Its execute path rejects calls outside plan mode; in plan mode it presents the plan over the user-questions seam (approve / keep planning with feedback), and approval logs plan mode inactive at the step boundary. |
@@ -41,6 +43,109 @@ This table connects model-visible tool names to the plugin package and service s
 | `@arx-ai/arx-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
 | `@arx-ai/arx-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@arx-ai/arx-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
+
+<a id="arx-aiarx-tool-present"></a>
+
+## `@arx-ai/arx-tool-present`
+
+### `present`
+
+Declare existing files as deliverables for the user, including files created through shell commands or code execution. Call after creating the requested outputs and before your final response. Files must already exist as regular files. The user opens the current source files; their contents are not copied or preserved.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Existing regular file. Relative paths use the current working directory."
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief explanation of the file for the user."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  },
+  "required": [
+    "files"
+  ]
+}
+```
+
+Source: [`packages/fs/tool-present/src/index.ts`](../packages/fs/tool-present/src/index.ts)
+
+Validates existing regular files through the configured agent filesystem. Metadata is bounded; the ordinary accepted result observer records explicit deliverables.
+
+<a id="arx-aiarx-tool-project"></a>
+
+## `@arx-ai/arx-tool-project`
+
+### `project`
+
+Manage durable projects linked to registered workspaces. Read before mutating and copy the exact project version into expected_version; concurrent writes reject stale versions. Plans are immutable revisions with stable item ids, explicit acceptance criteria, and dependencies. Approval is granted only through a trusted operator surface for one exact revision; this model tool cannot approve plans. update_task starts only approved-plan tasks and requires a workspace-owned session plus an exact saved prompt revision; verified also requires evidence.
+
+Prompts retain purpose, tags, examples, and small deterministic evaluation cases across immutable revisions. start_prompt_evaluation creates an ordinary bounded driver run over real child sessions; execute it, then finalize_prompt_evaluation records substring/JSON acceptance, latency, and only known token usage. Truncated output remains explicitly inconclusive. snapshot_skills reads exact files from a 40-hex Git commit through the optional skill-git service and returns logged provenance. save_prompt snapshots the template, variable schema, and each selected skill's repository, commit, path, and full content. render_prompt returns the effective rendered prompt together with those skill snapshots in this tool result, making the actual model-visible material reconstructable from the session log.
+
+Workflows are immutable revisions of explicitly named dependency steps. start_workflow reserves a bounded driver run pinned to the current exact approved plan and the actual calling agent; it never accepts a caller-supplied parent session. execute_workflow asks the optional project runner to drive that run through owned child agents. claim_workflow_step persists one deterministic ready-step claim, attempt, and inputs before returning it; the claim action does not launch a session or continue automatically. After executing that step, call settle_workflow_step, then claim again. A restart changes running work to uncertain; reconcile_workflow must explicitly retry or fail it.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "Project operation to perform.",
+      "enum": [
+        "list",
+        "get",
+        "create",
+        "save_plan",
+        "update_task",
+        "save_prompt",
+        "render_prompt",
+        "start_prompt_evaluation",
+        "finalize_prompt_evaluation",
+        "snapshot_skills",
+        "save_workflow",
+        "start_workflow",
+        "execute_workflow",
+        "claim_workflow_step",
+        "settle_workflow_step",
+        "reconcile_workflow"
+      ]
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project id for every action except list and create."
+    },
+    "expected_version": {
+      "type": "number",
+      "description": "Exact project version for every mutating action except create."
+    },
+    "input": {
+      "description": "Action-specific JSON object. Field names use snake_case as documented in the tool description."
+    }
+  },
+  "required": [
+    "action"
+  ]
+}
+```
+
+Source: [`packages/project/tool-project/src/index.ts`](../packages/project/tool-project/src/index.ts)
+
+Mutations require the last-read aggregate version. Plan approval and budget increases are trusted operator operations. Optional skillGit and projectRunner services enable pinned snapshots and saved step execution.
 
 <a id="arx-aiarx-tool-ask-user"></a>
 

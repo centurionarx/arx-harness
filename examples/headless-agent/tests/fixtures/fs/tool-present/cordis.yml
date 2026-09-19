@@ -1,0 +1,32 @@
+# Minimal application for presenting a file produced outside filesystem tools.
+- name: '@arx-ai/arx-llm'
+- name: '@arx-ai/arx-session'
+- name: '@arx-ai/arx-system-prompt'
+- name: '@arx-ai/arx-tools'
+- name: '@arx-ai/arx-agent'
+- name: '@arx-ai/arx-fs-local'
+  config:
+    cwd: !!js process.cwd()
+- name: '@arx-ai/arx-tool-present'
+  config:
+    maxFiles: 2
+    maxMetadataBytes: 1024
+- name: '@arx-ai/arx-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+    compression: none
+- name: '@arx-ai/arx-llm-replay'
+  config:
+    providers:
+      - id: present-fixture
+        name: Present fixture
+        models:
+          - id: test
+            contextWindow: 128000
+- name: '@arx-ai/arx-agent-loop'
+  config:
+    agents:
+      - id: main
+        provider: present-fixture
+        model: test
+        cwd: !!js process.cwd()

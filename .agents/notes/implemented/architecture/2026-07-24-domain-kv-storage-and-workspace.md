@@ -53,7 +53,7 @@ The error vocabulary is `StorageError` with a code discriminant: `backend-not-fo
 
 ### `arx-storage-json`
 
-Config is `root` only (required, no default, schemastery); apply registers backend `json` inside `ctx.effect()`, and the disposer unregisters the name before `backend.close()`.
+Config is `root` only (required, no default, schemastery); apply registers backend `json` inside one generator effect. That effect yields backend cleanup before its injectable service disposer, so reverse disposal withdraws the service and awaits dependent consumers before unregistering the backend and calling `backend.close()`. The domain provider uses the same ordering: withdraw `storageDomain` and await consumers, close remaining domains, then unmount the hub projection. Distinct effects cannot establish this order because Cordis unloads them concurrently. Focused regressions hold consumers in teardown and assert their final domain and JSON-unit writes persist before either provider becomes unavailable.
 
 - Layout `<root>/<unitName>.json`, one file per unit; directory 0o700, files 0o600.
 - File format (version stamp in the header; the file is always the current net state, `JSON.stringify(…, null, 2)` human-readable — that legibility is this backend's reason to exist):

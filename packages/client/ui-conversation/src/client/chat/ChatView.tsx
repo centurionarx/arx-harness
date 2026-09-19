@@ -157,7 +157,7 @@ function TurnStatus({ startTime, t }: {
  */
 export function ChatView({
   useSession, useSessions, useStore, renderSlot, sessionId, openFile, loadOlder, loadImage, inspectCall, chatScroll, forkAt,
-  fileMentions, t,
+  fileMentions, actions, t,
 }: ChatViewSlotProps) {
   const order = useSession(s => s.chat.order)
   const nodeStore = useSession(s => s.chat.nodes)
@@ -170,6 +170,7 @@ export function ChatView({
   const openError = useSession(s => s.openError)
   const hasMore = useSession(s => s.hasMore)
   const loadingOlder = useSession(s => s.loadingOlder)
+  const reveal = useStore(s => s.reveal ?? null)
   const selectedCallId = useStore(s => s.selection?.callId)
   const [fileOpenError, setFileOpenError] = useState<{ path: string; message: string } | null>(null)
   const [fileOpenBusy, setFileOpenBusy] = useState(false)
@@ -255,6 +256,24 @@ export function ChatView({
     /* v8 ignore next -- ref-null guard: React attaches the ref before layout effects run. */
     if (local === null) return
     const el = scrollerOf(local)
+    if (openState === 'open' && reveal !== null) {
+      const row = anchorElement(local, reveal.nodeKey)
+      actions.setReveal(null)
+      if (row !== null) {
+        anchorRef.current = null
+        el.scrollTop += flowTop(row, el)
+        observedTopRef.current = el.scrollTop
+        atBottomRef.current = false
+        setAtBottom(false)
+        chatScroll.save({ anchorKey: reveal.nodeKey, anchorTop: flowTop(row, el), scrollTop: el.scrollTop })
+        openedRef.current = true
+        firstSeqRef.current = firstSeq
+        lastKeyRef.current = lastKey
+        lastSteeringIdRef.current = lastSteeringId
+        followSigRef.current = followSig
+        return
+      }
+    }
     // Open completed: jump to the bottom once — unless a scroll position
     // survives from a previous mount (view-tab switch away and back), which
     // is restored instead of snapping the reader back to the floor.

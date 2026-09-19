@@ -132,7 +132,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'id', description: 'a registered locale id; unknown ids throw.' }],
       },
       {
-        signature: 'register<N extends keyof LocaleNamespaceMap & string>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void',
+        signature: 'register<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void',
         description: 'Register a declared namespace\'s dictionaries, all locales in one call — the typed form: each dictionary is checked against the namespace\'s LocaleNamespaceMap key union (a missing or extra key is a compile error), and every shipped locale is required (bilingual balance enforced at registration). Duplicate (ns, locale) throws (single occupant; a namespace\'s texts have one owner). Registration bumps the revision so mounted outlets pick up late-arriving dictionaries.',
         parameters: [{ name: 'ns', description: 'a namespace merged into LocaleNamespaceMap.' }, { name: 'dicts', description: 'complete dictionaries keyed by locale id.' }],
         returns: 'disposer removing every locale registered by this call (idempotent).',
@@ -144,7 +144,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'disposer (idempotent).',
       },
       {
-        signature: 'bind<N extends keyof LocaleNamespaceMap & string>(ns: N): TranslateNS<N>',
+        signature: 'bind<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N): TranslateNS<N>',
         description: 'Bind a declared namespace to a translate function typed to its dictionary key union (plus the shared common vocabulary) — the same key domain the framework-injected `t` seat carries. The returned reference is stable per namespace (repeat binds return the same function), so it can ride inject surfaces without breaking memoization.',
         parameters: [{ name: 'ns', description: 'a namespace merged into LocaleNamespaceMap.' }],
         returns: 'the typed translate function (reads the active locale at call time).',

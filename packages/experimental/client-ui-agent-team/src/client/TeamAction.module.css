@@ -1,0 +1,13 @@
+.root { position: relative; }
+.trigger { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 3px 4px; border: 0; border-radius: 6px; background: transparent; color: var(--arx-alias-label-tertiary); font-size: 12px; cursor: pointer; }
+.trigger:hover, .trigger:focus-visible { color: var(--arx-alias-label-secondary); }
+.chevronOpen { transform: rotate(180deg); }
+.panel { position: absolute; top: calc(100% + 5px); right: 0; z-index: 100; box-sizing: border-box; display: grid; gap: 12px; width: 380px; max-width: calc(100vw - 32px); max-height: min(520px, calc(100vh - 140px)); padding: 12px; overflow: auto; border: 1px solid var(--arx-alias-border-l2); border-radius: 12px; background: var(--arx-specific-menu); --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2); --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2); box-shadow: var(--arx-shadow-lv3); }
+.panel h3 { margin: 0 0 6px; color: var(--arx-alias-label-secondary); font-size: 12px; font-weight: 600; }
+.members, .tasks { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.members button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; width: 100%; min-height: 34px; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--arx-alias-label-primary); text-align: left; cursor: pointer; }
+.members button:hover:not(:disabled), .members button:focus-visible { background: var(--arx-alias-fill-l2); }
+.members button:disabled { cursor: default; opacity: .65; }
+.members span, .tasks span, .tasks small { color: var(--arx-alias-label-tertiary); font-size: 11px; }
+.tasks li { display: grid; gap: 3px; padding: 8px; border-radius: 8px; background: var(--arx-alias-fill-l1); }
+.tasks li > div { display: flex; justify-content: space-between; gap: 8px; }

@@ -30,12 +30,14 @@ function renderSettled(
   text: string,
   codeLabels: MarkdownCodeLabels | undefined,
   fileMentions: MarkdownFileMentions | undefined,
+  remoteImages: boolean,
 ): ReactNode[] {
   const root = parseGfmWithMath(text)
   const targets = createReferenceTargets()
   collectReferenceTargets(root.children, targets)
   const context: MarkdownRenderContext = {
     streaming: false,
+    remoteImages,
     codeLabels,
     fileMentions,
     targets,
@@ -68,7 +70,7 @@ class StreamingRenderer {
   private lastRendered: ReactNode[] = []
 
   /** @param codeLabels - Fence copy labels baked into cached elements; the owner replaces the renderer when they change. */
-  constructor(private readonly codeLabels: MarkdownCodeLabels | undefined) {}
+  constructor(private readonly codeLabels: MarkdownCodeLabels | undefined, private readonly remoteImages: boolean) {}
 
   /**
    * Render the current accumulated text. Idempotent per text value, so React
@@ -100,6 +102,7 @@ class StreamingRenderer {
     if (newlyFrozen.length > 0) {
       const frozenContext: MarkdownRenderContext = {
         streaming: true,
+        remoteImages: this.remoteImages,
         codeLabels: this.codeLabels,
         fileMentions: undefined,
         targets: frameTargets,
@@ -118,6 +121,7 @@ class StreamingRenderer {
     }
     const tailContext: MarkdownRenderContext = {
       streaming: true,
+      remoteImages: this.remoteImages,
       codeLabels: this.codeLabels,
       fileMentions: undefined,
       targets: frameTargets,
@@ -148,29 +152,34 @@ class StreamingRenderer {
  * links inline-code tokens its resolver recognizes as real files; this is
  * the single streaming gate — it applies to settled renders only, because a
  * streaming message's vocabulary is not final and frozen cached elements
- * must not bake in handlers that could go stale.
+ * must not bake in handlers that could go stale. `remoteImages` defaults to true;
+ * setting it false renders image alternative text without network requests.
  * @returns A GFM document with TeX math rendered through KaTeX; raw HTML,
  * relative links, and unsafe protocols are disabled, while absolute HTTP(S)
- * images render directly.
+ * images render directly unless `remoteImages` is false.
  */
-export const MarkdownText = memo(function MarkdownText({ text, streaming = false, codeLabels, fileMentions }: {
+export const MarkdownText = memo(function MarkdownText({ text, streaming = false, codeLabels, fileMentions, remoteImages = true }: {
   text: string
+  /** False prevents automatic remote-image requests in document previews. */
+  remoteImages?: boolean
   streaming?: boolean
   codeLabels?: MarkdownCodeLabels | undefined
   fileMentions?: MarkdownFileMentions | undefined
 }) {
   const streamRef = useRef<StreamingRenderer | null>(null)
+  const streamImagesRef = useRef(remoteImages)
   const streamLabelsRef = useRef<MarkdownCodeLabels | undefined>(codeLabels)
   const children = useMemo(() => {
     if (!streaming) {
       streamRef.current = null
-      return renderSettled(text, codeLabels, fileMentions)
+      return renderSettled(text, codeLabels, fileMentions, remoteImages)
     }
-    if (streamRef.current === null || streamLabelsRef.current !== codeLabels) {
-      streamRef.current = new StreamingRenderer(codeLabels)
+    if (streamRef.current === null || streamLabelsRef.current !== codeLabels || streamImagesRef.current !== remoteImages) {
+      streamRef.current = new StreamingRenderer(codeLabels, remoteImages)
       streamLabelsRef.current = codeLabels
+      streamImagesRef.current = remoteImages
     }
     return streamRef.current.render(text)
-  }, [text, streaming, codeLabels, fileMentions])
+  }, [text, streaming, codeLabels, fileMentions, remoteImages])
   return <div className={css.markdown}>{children}</div>
 })

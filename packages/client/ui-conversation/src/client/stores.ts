@@ -7,6 +7,8 @@ import type { CallId, ChatStoreState, SelectionTarget } from './contract/views.t
 
 /** Declared action shape used to give the exported factory a stable return type. */
 type ChatActions = {
+  setPreview: (draft: ChatStoreState, target: { path: string } | null) => void
+  setReveal: (draft: ChatStoreState, target: { nodeKey: string } | null) => void
   select: (draft: ChatStoreState, target: SelectionTarget | null) => void
   setDraft: (draft: ChatStoreState, text: string) => void
   setView: (draft: ChatStoreState, view: string) => void
@@ -25,6 +27,8 @@ export function createChatStore(): EngineStoreHandle<ChatStoreState, ChatActions
     init: (): ChatStoreState => ({ selection: null, draft: '', view: null, inspect: null }),
     persist: 'arx.conversation.chat',
     actions: {
+      setPreview: (d, target: { path: string } | null) => { d.preview = target },
+      setReveal: (d, target: { nodeKey: string } | null) => { d.reveal = target },
       select: (d, target: SelectionTarget | null) => { d.selection = target },
       setDraft: (d, text: string) => { d.draft = text },
       setView: (d, view: string) => { d.view = view },

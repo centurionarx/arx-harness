@@ -95,6 +95,9 @@ function runTurn(sessionId: string): void {
     return
   }
   event(sessionId, 'turn/start', { turn: 0 })
+  if (env.FAKE_PRESENT !== undefined) {
+    event(sessionId, 'deliverables/presented', { turn: 0, callId: 'present-sdk', files: [{ path: 'report.txt', description: 'SDK delivery' }] })
+  }
   event(sessionId, 'assistant/chunk', { turn: 0, step: 0, chunk: { type: 'text-delta', index: 0, text } })
   if (env.FAKE_MALFORMED_MESSAGE !== undefined) {
     event(sessionId, 'assistant/message', {

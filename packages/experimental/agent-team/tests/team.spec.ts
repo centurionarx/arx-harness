@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@arx-ai/cordis'
+import SessionProjectionRegistry from '@arx-ai/arx-session-projection'
 import type { Agent } from '@arx-ai/arx-agent'
 import AgentLoop from '@arx-ai/arx-agent-loop'
 import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
@@ -1689,4 +1690,29 @@ describe('Team mailbox and waiting', () => {
       phase: 'failed', error: 'settled elsewhere',
     })
   })
+})
+it('publishes durable team task changes through late projection registration and unregisters on disposal', async () => {
+  const { ctx, lead, teamFiber } = await setup([])
+  try {
+    const task = await ctx.agentTeams.createTask(lead, { subject: 'Before projection', description: 'Already persisted' })
+    await ctx.plugin(SessionProjectionRegistry)
+    expect(ctx.sessionProjections.snapshot(lead.session).values.agentTeam?.tasks).toEqual(durable(lead).tasks)
+    const changes: unknown[] = []
+    ctx.sessionProjections.onChanged((session, key, value) => {
+      if (session === lead.session && key === 'agentTeam') changes.push(value)
+    })
+    const updated = await ctx.agentTeams.updateTask(lead, {
+      taskId: task.id, expectedRevision: task.revision, action: 'edit', subject: 'After projection',
+    })
+    expect(changes).toHaveLength(1)
+    expect(changes[0]).toMatchObject({ tasks: [{ id: updated.id, revision: updated.revision, subject: 'After projection' }] })
+    expect(ctx.sessionProjections.snapshot(lead.session).values.agentTeam?.tasks).toEqual(durable(lead).tasks)
+    lead.session.append('turn/start', { turn: 1 })
+    expect(changes).toHaveLength(1)
+    await teamFiber.dispose()
+    expect(ctx.sessionProjections.snapshot(lead.session).values.agentTeam).toBeUndefined()
+    expect(durable(lead).tasks).toMatchObject([{ id: updated.id, revision: updated.revision, subject: 'After projection' }])
+  } finally {
+    await ctx.fiber.dispose()
+  }
 })

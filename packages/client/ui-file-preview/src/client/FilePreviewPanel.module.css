@@ -1,0 +1,7 @@
+.preview { min-width: 0; color: var(--arx-alias-label-primary); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.toolbar button { padding: 6px 10px; color: inherit; background: var(--arx-alias-bg-layer-2); border: 1px solid var(--arx-alias-border-l1); border-radius: 6px; cursor: pointer; }
+.caption { color: var(--arx-alias-label-secondary); font-size: 12px; overflow-wrap: anywhere; }
+.code { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.frame { width: 100%; height: 65vh; border: 1px solid var(--arx-alias-border-l1); background: var(--arx-alias-bg-layer-1); }
+.image { display: block; max-width: 100%; height: auto; }

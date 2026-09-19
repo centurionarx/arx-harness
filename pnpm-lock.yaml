@@ -255,6 +255,12 @@ importers:
       '@arx-ai/arx-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../../packages/fs/tool-present
+      '@arx-ai/arx-tool-project':
+        specifier: workspace:^
+        version: link:../../packages/project/tool-project
       '@arx-ai/arx-tool-pwsh':
         specifier: workspace:^
         version: link:../../packages/shell/tool-pwsh
@@ -445,6 +451,9 @@ importers:
       '@arx-ai/arx-bash-sandbox':
         specifier: workspace:*
         version: link:../packages/shell/bash-sandbox
+      '@arx-ai/arx-client-ui-schedule':
+        specifier: workspace:^
+        version: link:../packages/client/ui-schedule
       '@arx-ai/arx-code-runtime-worker-thread':
         specifier: workspace:*
         version: link:../packages/code-runtime/code-runtime-worker-thread
@@ -476,10 +485,13 @@ importers:
         specifier: workspace:*
         version: link:../packages/e2b/e2b
       '@arx-ai/arx-experimental-agent-team':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../packages/experimental/agent-team
+      '@arx-ai/arx-experimental-client-ui-agent-team':
+        specifier: workspace:^
+        version: link:../packages/experimental/client-ui-agent-team
       '@arx-ai/arx-experimental-tool-agent-team':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../packages/experimental/tool-agent-team
       '@arx-ai/arx-fs-e2b':
         specifier: workspace:*
@@ -538,6 +550,9 @@ importers:
       '@arx-ai/arx-plan-mode':
         specifier: workspace:*
         version: link:../packages/plan/plan-mode
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../packages/project/project
       '@arx-ai/arx-pwsh-local':
         specifier: workspace:*
         version: link:../packages/shell/pwsh-local
@@ -610,6 +625,15 @@ importers:
       '@arx-ai/arx-spill-policy':
         specifier: workspace:*
         version: link:../packages/spill/spill-policy
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../packages/storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../packages/storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../packages/storage/storage-json
       '@arx-ai/arx-subagent':
         specifier: workspace:*
         version: link:../packages/subagent/subagent
@@ -682,6 +706,12 @@ importers:
       '@arx-ai/arx-tool-lsp':
         specifier: workspace:*
         version: link:../packages/lsp/tool-lsp
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../packages/fs/tool-present
+      '@arx-ai/arx-tool-project':
+        specifier: workspace:^
+        version: link:../packages/project/tool-project
       '@arx-ai/arx-tool-pwsh':
         specifier: workspace:*
         version: link:../packages/shell/tool-pwsh
@@ -736,9 +766,18 @@ importers:
       '@arx-ai/arx-web-fetch-http':
         specifier: workspace:*
         version: link:../packages/web/web-fetch-http
+      '@arx-ai/arx-webhook':
+        specifier: workspace:^
+        version: link:../packages/webhook/webhook
+      '@arx-ai/arx-webhook-github':
+        specifier: workspace:^
+        version: link:../packages/webhook/webhook-github
       '@arx-ai/arx-workflow-worker-thread':
         specifier: workspace:*
         version: link:../packages/workflow/workflow-worker-thread
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../packages/workspace/workspace
       '@arx-ai/cordis-plugin-hmr':
         specifier: workspace:*
         version: link:../vendor/hmr
@@ -869,6 +908,9 @@ importers:
       '@arx-ai/arx-credentials':
         specifier: workspace:^
         version: link:../../credentials/credentials
+      '@arx-ai/arx-file-preview':
+        specifier: workspace:^
+        version: link:../../fs/file-preview
       '@arx-ai/arx-file-reference':
         specifier: workspace:^
         version: link:../../context/file-reference
@@ -887,6 +929,9 @@ importers:
       '@arx-ai/arx-message-feedback':
         specifier: workspace:^
         version: link:../../feedback/message-feedback
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../project/project
       '@arx-ai/arx-session':
         specifier: workspace:^
         version: link:../../core/session
@@ -896,6 +941,9 @@ importers:
       '@arx-ai/arx-session-reference':
         specifier: workspace:^
         version: link:../../context/session-reference
+      '@arx-ai/arx-session-turn-outline':
+        specifier: workspace:^
+        version: link:../../session/session-turn-outline
       '@arx-ai/arx-settings':
         specifier: workspace:^
         version: link:../../settings/settings
@@ -1332,6 +1380,9 @@ importers:
       '@arx-ai/arx-client-ui-exit':
         specifier: workspace:^
         version: link:../../client/ui-exit
+      '@arx-ai/arx-client-ui-file-preview':
+        specifier: workspace:^
+        version: link:../../client/ui-file-preview
       '@arx-ai/arx-client-ui-goal':
         specifier: workspace:^
         version: link:../../client/ui-goal
@@ -1356,12 +1407,18 @@ importers:
       '@arx-ai/arx-client-ui-plan':
         specifier: workspace:^
         version: link:../../client/ui-plan
+      '@arx-ai/arx-client-ui-projects':
+        specifier: workspace:^
+        version: link:../../client/ui-projects
       '@arx-ai/arx-client-ui-reference':
         specifier: workspace:^
         version: link:../../client/ui-reference
       '@arx-ai/arx-client-ui-renderer':
         specifier: workspace:^
         version: link:../../client/ui-renderer
+      '@arx-ai/arx-client-ui-schedule':
+        specifier: workspace:^
+        version: link:../../client/ui-schedule
       '@arx-ai/arx-client-ui-settings':
         specifier: workspace:^
         version: link:../../client/ui-settings
@@ -1398,6 +1455,9 @@ importers:
       '@arx-ai/arx-client-ui-trajectory':
         specifier: workspace:^
         version: link:../../client/ui-trajectory
+      '@arx-ai/arx-client-ui-turn-outline':
+        specifier: workspace:^
+        version: link:../../client/ui-turn-outline
       '@arx-ai/arx-client-ui-user-questions':
         specifier: workspace:^
         version: link:../../client/ui-user-questions
@@ -1419,6 +1479,9 @@ importers:
       '@arx-ai/arx-cordis-host-runner':
         specifier: workspace:^
         version: link:../../extensions/cordis-host-runner
+      '@arx-ai/arx-file-preview':
+        specifier: workspace:^
+        version: link:../../fs/file-preview
       '@arx-ai/arx-file-reference':
         specifier: workspace:^
         version: link:../../context/file-reference
@@ -1452,6 +1515,12 @@ importers:
       '@arx-ai/arx-message-feedback':
         specifier: workspace:^
         version: link:../../feedback/message-feedback
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../project/project
+      '@arx-ai/arx-project-runner':
+        specifier: workspace:^
+        version: link:../../project/project-runner
       '@arx-ai/arx-session-log-export':
         specifier: workspace:^
         version: link:../../session-query/session-log-export
@@ -1464,6 +1533,12 @@ importers:
       '@arx-ai/arx-session-stats':
         specifier: workspace:^
         version: link:../../session/session-stats
+      '@arx-ai/arx-session-turn-outline':
+        specifier: workspace:^
+        version: link:../../session/session-turn-outline
+      '@arx-ai/arx-skill-git':
+        specifier: workspace:^
+        version: link:../../skill/skill-git
       '@arx-ai/arx-storage':
         specifier: workspace:^
         version: link:../../storage/storage
@@ -1476,6 +1551,12 @@ importers:
       '@arx-ai/arx-subprocess':
         specifier: workspace:^
         version: link:../../subprocess/subprocess
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../../fs/tool-present
+      '@arx-ai/arx-tool-project':
+        specifier: workspace:^
+        version: link:../../project/tool-project
       '@arx-ai/arx-web-frontend':
         specifier: workspace:^
         version: link:../../../apps/web
@@ -1994,6 +2075,9 @@ importers:
       '@arx-ai/arx-system-prompt':
         specifier: workspace:^
         version: link:../../core/system-prompt
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../../fs/tool-present
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -2103,6 +2187,54 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+
+  packages/client/ui-file-preview:
+    devDependencies:
+      '@arx-ai/arx-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@arx-ai/arx-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../ui-conversation
+      '@arx-ai/arx-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-file-preview':
+        specifier: workspace:^
+        version: link:../../fs/file-preview
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      pdfjs-dist:
+        specifier: 6.3.289
+        version: 6.3.289
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -2527,6 +2659,45 @@ importers:
         specifier: ~18.3.0
         version: 18.3.7(@types/react@18.3.31)
 
+  packages/client/ui-projects:
+    devDependencies:
+      '@arx-ai/arx-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-sidebar':
+        specifier: workspace:^
+        version: link:../ui-sidebar
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+
   packages/client/ui-reference:
     devDependencies:
       '@arx-ai/arx-api-remotes':
@@ -2578,6 +2749,48 @@ importers:
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+
+  packages/client/ui-schedule:
+    devDependencies:
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@arx-ai/arx-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../ui-conversation
+      '@arx-ai/arx-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-schedule':
+        specifier: workspace:^
+        version: link:../../schedule/schedule
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -3140,6 +3353,48 @@ importers:
       '@types/react-dom':
         specifier: ~18.3.0
         version: 18.3.7(@types/react@18.3.31)
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+
+  packages/client/ui-turn-outline:
+    devDependencies:
+      '@arx-ai/arx-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@arx-ai/arx-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../ui-conversation
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-session-turn-outline':
+        specifier: workspace:^
+        version: link:../../session/session-turn-outline
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -4234,6 +4489,9 @@ importers:
       '@arx-ai/arx-session-persistence-sqlite':
         specifier: workspace:^
         version: link:../../session/session-persistence-sqlite
+      '@arx-ai/arx-session-projection':
+        specifier: workspace:^
+        version: link:../../session/session-projection
       '@arx-ai/arx-subagent':
         specifier: workspace:^
         version: link:../../subagent/subagent
@@ -4246,6 +4504,52 @@ importers:
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+
+  packages/experimental/client-ui-agent-team:
+    dependencies:
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+    devDependencies:
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../../client/locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../../client/runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@arx-ai/arx-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../../client/ui-conversation
+      '@arx-ai/arx-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../../client/ui-primitives
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../../client/ui-slots
+      '@arx-ai/arx-experimental-agent-team':
+        specifier: workspace:^
+        version: link:../agent-team
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@testing-library/react':
+        specifier: ^16.1.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
 
   packages/experimental/tool-agent-team:
     dependencies:
@@ -4532,6 +4836,49 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/loader
 
+  packages/fs/file-preview:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-agent-loop':
+        specifier: workspace:^
+        version: link:../../core/agent-loop
+      '@arx-ai/arx-agent-loop-testkit':
+        specifier: workspace:^
+        version: link:../../test-support/agent-loop-testkit
+      '@arx-ai/arx-fs':
+        specifier: workspace:^
+        version: link:../fs
+      '@arx-ai/arx-fs-local':
+        specifier: workspace:^
+        version: link:../fs-local
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-include':
+        specifier: workspace:^
+        version: link:../../../vendor/include
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+
   packages/fs/fs:
     devDependencies:
       '@arx-ai/arx-brand':
@@ -4714,6 +5061,52 @@ importers:
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+
+  packages/fs/tool-present:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-agent-loop':
+        specifier: workspace:^
+        version: link:../../core/agent-loop
+      '@arx-ai/arx-agent-loop-testkit':
+        specifier: workspace:^
+        version: link:../../test-support/agent-loop-testkit
+      '@arx-ai/arx-fs':
+        specifier: workspace:^
+        version: link:../fs
+      '@arx-ai/arx-fs-local':
+        specifier: workspace:^
+        version: link:../fs-local
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+      '@arx-ai/arx-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-include':
+        specifier: workspace:^
+        version: link:../../../vendor/include
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
 
   packages/fs/tool-str-replace-editor:
     dependencies:
@@ -5283,6 +5676,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@arx-ai/arx-agent-presets':
+        specifier: workspace:^
+        version: link:../../preset/agent-presets
       '@arx-ai/arx-brand':
         specifier: workspace:^
         version: link:../../util/brand
@@ -6000,6 +6396,141 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
+  packages/project/project:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@arx-ai/arx-brand':
+        specifier: workspace:^
+        version: link:../../util/brand
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-persistence':
+        specifier: workspace:^
+        version: link:../../session/session-persistence
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
+      '@arx-ai/arx-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+
+  packages/project/project-runner:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../project
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-persistence':
+        specifier: workspace:^
+        version: link:../../session/session-persistence
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
+      '@arx-ai/arx-subagent':
+        specifier: workspace:^
+        version: link:../../subagent/subagent
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+
+  packages/project/tool-project:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../project
+      '@arx-ai/arx-project-runner':
+        specifier: workspace:^
+        version: link:../project-runner
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-persistence':
+        specifier: workspace:^
+        version: link:../../session/session-persistence
+      '@arx-ai/arx-skill-git':
+        specifier: workspace:^
+        version: link:../../skill/skill-git
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
+      '@arx-ai/arx-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+      '@arx-ai/arx-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-include':
+        specifier: workspace:^
+        version: link:../../../vendor/include
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+
   packages/runtime-diagnostics/invariants:
     dependencies:
       '@arx-ai/schemastery':
@@ -6098,6 +6629,10 @@ importers:
         version: link:../../../vendor/cordis
 
   packages/schedule/schedule:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@arx-ai/arx-agent':
         specifier: workspace:^
@@ -6126,6 +6661,9 @@ importers:
       '@arx-ai/arx-session-persistence-jsonl':
         specifier: workspace:^
         version: link:../../session/session-persistence-jsonl
+      '@arx-ai/arx-session-projection':
+        specifier: workspace:^
+        version: link:../../session/session-projection
       '@arx-ai/arx-system-prompt':
         specifier: workspace:^
         version: link:../../core/system-prompt
@@ -6734,6 +7272,40 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
+  packages/session/session-turn-outline:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-projection':
+        specifier: workspace:^
+        version: link:../session-projection
+      '@arx-ai/arx-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-include':
+        specifier: workspace:^
+        version: link:../../../vendor/include
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+
   packages/settings/settings:
     dependencies:
       '@arx-ai/schemastery':
@@ -7227,6 +7799,25 @@ importers:
       '@arx-ai/arx-skill':
         specifier: workspace:^
         version: link:../skill
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+
+  packages/skill/skill-git:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-skill':
+        specifier: workspace:^
+        version: link:../skill
+      '@arx-ai/arx-skill-filesystem':
+        specifier: workspace:^
+        version: link:../skill-filesystem
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
@@ -8573,6 +9164,134 @@ importers:
         specifier: workspace:^
         version: link:../../../vendor/cordis
 
+  packages/webhook/webhook:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-agent-default-model':
+        specifier: workspace:^
+        version: link:../../core/agent-default-model
+      '@arx-ai/arx-agent-presets':
+        specifier: workspace:^
+        version: link:../../preset/agent-presets
+      '@arx-ai/arx-brand':
+        specifier: workspace:^
+        version: link:../../util/brand
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-permission-presets':
+        specifier: workspace:^
+        version: link:../../interaction/permission-presets
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../project/project
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-title':
+        specifier: workspace:^
+        version: link:../../session/session-title
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+
+  packages/webhook/webhook-github:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@arx-ai/arx-agent-default-model':
+        specifier: workspace:^
+        version: link:../../core/agent-default-model
+      '@arx-ai/arx-agent-loop':
+        specifier: workspace:^
+        version: link:../../core/agent-loop
+      '@arx-ai/arx-agent-loop-testkit':
+        specifier: workspace:^
+        version: link:../../test-support/agent-loop-testkit
+      '@arx-ai/arx-agent-presets':
+        specifier: workspace:^
+        version: link:../../preset/agent-presets
+      '@arx-ai/arx-credentials':
+        specifier: workspace:^
+        version: link:../../credentials/credentials
+      '@arx-ai/arx-credentials-local':
+        specifier: workspace:^
+        version: link:../../credentials/credentials-local
+      '@arx-ai/arx-host-webserver':
+        specifier: workspace:^
+        version: link:../../host/webserver
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-permission-presets':
+        specifier: workspace:^
+        version: link:../../interaction/permission-presets
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../project/project
+      '@arx-ai/arx-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@arx-ai/arx-session-persistence-jsonl':
+        specifier: workspace:^
+        version: link:../../session/session-persistence-jsonl
+      '@arx-ai/arx-session-title':
+        specifier: workspace:^
+        version: link:../../session/session-title
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../storage/storage-domain
+      '@arx-ai/arx-storage-json':
+        specifier: workspace:^
+        version: link:../../storage/storage-json
+      '@arx-ai/arx-webhook':
+        specifier: workspace:^
+        version: link:../webhook
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+
   packages/workflow/tool-ralph:
     dependencies:
       '@arx-ai/schemastery':
@@ -8900,6 +9619,9 @@ importers:
       '@arx-ai/arx-plan-mode':
         specifier: workspace:^
         version: link:../../packages/plan/plan-mode
+      '@arx-ai/arx-project':
+        specifier: workspace:^
+        version: link:../../packages/project/project
       '@arx-ai/arx-pwsh-local':
         specifier: workspace:^
         version: link:../../packages/shell/pwsh-local
@@ -8975,6 +9697,12 @@ importers:
       '@arx-ai/arx-spill':
         specifier: workspace:^
         version: link:../../packages/spill/spill
+      '@arx-ai/arx-storage':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage
+      '@arx-ai/arx-storage-domain':
+        specifier: workspace:^
+        version: link:../../packages/storage/storage-domain
       '@arx-ai/arx-subagent':
         specifier: workspace:^
         version: link:../../packages/subagent/subagent
@@ -9038,6 +9766,12 @@ importers:
       '@arx-ai/arx-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
+      '@arx-ai/arx-tool-present':
+        specifier: workspace:^
+        version: link:../../packages/fs/tool-present
+      '@arx-ai/arx-tool-project':
+        specifier: workspace:^
+        version: link:../../packages/project/tool-project
       '@arx-ai/arx-tool-pwsh':
         specifier: workspace:^
         version: link:../../packages/shell/tool-pwsh
@@ -9098,6 +9832,9 @@ importers:
       '@arx-ai/arx-workflow-worker-thread':
         specifier: workspace:^
         version: link:../../packages/workflow/workflow-worker-thread
+      '@arx-ai/arx-workspace':
+        specifier: workspace:^
+        version: link:../../packages/workspace/workspace
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../vendor/cordis
@@ -10601,6 +11338,81 @@ packages:
   '@modelcontextprotocol/server-filesystem@2026.7.10':
     resolution: {integrity: sha512-Mmjg4anFBD5OzbPnGJOA0jPPN8645ERhQk38HQLpSenx1ox9bfdPkmAzUnNjeQtqQGFLtKe13J20RtLBmUKMZA==}
     hasBin: true
+
+  '@napi-rs/canvas-android-arm64@1.0.9':
+    resolution: {integrity: sha512-4LGXk2/0HVzE29K8SzML5WubgCp++B1FH3qgl35XmSZE+lLdr6P9VRQEnZ0MCLZMTSuJP41yyhtoiVNEuvrTIA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@napi-rs/canvas-darwin-arm64@1.0.9':
+    resolution: {integrity: sha512-YNdfLBzY0W/Pep9fo2L6RmoNlNksnn05LRnX66W63R3ij58S25QOTcjdtEt2v8+PnCESzqZsYzUo+QPeIR44NA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@napi-rs/canvas-darwin-x64@1.0.9':
+    resolution: {integrity: sha512-ceZQSknTEcy3dOXoekv59LTCkXjvnLsq+VW5PeNNDHEPQbRS5Ervkm1EaDa7WLAjiYWMLuSQTRTHao1dEX4prg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.9':
+    resolution: {integrity: sha512-XhfI0Wwv4llhd6nnWDtY3kQKjq0r+y1i91PlJlJI24ag2U9WrnwbG1qS3+fDLEyouwEVFchiKkTEHozK+5iUNA==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@napi-rs/canvas-linux-arm64-gnu@1.0.9':
+    resolution: {integrity: sha512-012oiYtKaE7i9oxc8q7nraT7kDOpLcaCmFLzVe9Ty34RHDdoDzbWLrVh827CNxYh/EADX1eSikA3ymLjo/nNuw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@napi-rs/canvas-linux-arm64-musl@1.0.9':
+    resolution: {integrity: sha512-Ls5UWYFFn63casTZEczbeyEg3vRDRkv9lscuGwfchtY5yLLQhgOB8SN4YGxmfJ5vTaBwZ2YUxBS3NtmjJmFXdA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@napi-rs/canvas-linux-riscv64-gnu@1.0.9':
+    resolution: {integrity: sha512-hLKEGxV7ZiRHqndePTokgDMdBlo/rDfzg7P4p4QIv9pUhuYobnu3R2NIFLCRghG0nwfo+s2sw+c1xZFeCmEAsw==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [glibc]
+
+  '@napi-rs/canvas-linux-x64-gnu@1.0.9':
+    resolution: {integrity: sha512-6kaz3w0QMy77PDWk6rJ1ksIihdad3qzEyX2o2oGT8GwCaypfT5mhjr8buOO5hstyLxcWXDScuz56RsINLtBPIQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@napi-rs/canvas-linux-x64-musl@1.0.9':
+    resolution: {integrity: sha512-xrGvmS3v55hmZ86ls/kBLVNMUTYio3f6Ik0DireemG994VfPAwiA3ZXA0Uf1bByctkB3NQ1Sfb+H5bkdUnnzfQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@napi-rs/canvas-win32-arm64-msvc@1.0.9':
+    resolution: {integrity: sha512-yjmVS3ArZeRVCP7jqbPq4rpZa/BhTeI7ELE2XqJg3snICQBDevLZyArxswHkiTnT34KRic33/4fLirrHI+SY8A==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@napi-rs/canvas-win32-x64-msvc@1.0.9':
+    resolution: {integrity: sha512-QlSYQdMQslB81nlABo9wNfQ6npFhE7/O+saCZdqVGueGanyRk4jCogD5EwQenfP3kIq9e+mm6GreQBjX5MrA8g==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@napi-rs/canvas@1.0.9':
+    resolution: {integrity: sha512-QviPdJImDi/jMAvBfqaw+19BndMd/sizXVW3NnpMd3VJGz++QXkOHcP9kWR/smHG0hNjHeyuHFyrx/5lD0oNcQ==}
+    engines: {node: '>= 10'}
 
   '@napi-rs/wasm-runtime@1.1.5':
     resolution: {integrity: sha512-AWPoBRJ9tsnVhor4sjO7rkni+7p+2IAEFj6cx06UgP10jkQHqay/36uRV/bFkgrh18D9vb4cr8Q0Pthskgzy+Q==}
@@ -13846,6 +14658,10 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
+  pdfjs-dist@6.3.289:
+    resolution: {integrity: sha512-ZHjSVpDa3D6izMq8/04lvkhkATUmL9px6ChPaXc1k6nU2Mrhlg1/7F0bdUqCwUjw3NsPTfPZsMDUU6ZIcRaeQw==}
+    engines: {node: '>=22.13.0 || >=24'}
+
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
 
@@ -16042,6 +16858,54 @@ snapshots:
       - '@cfworker/json-schema'
       - supports-color
       - zod
+
+  '@napi-rs/canvas-android-arm64@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-darwin-arm64@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-darwin-x64@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm64-gnu@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-arm64-musl@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-riscv64-gnu@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-x64-gnu@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-linux-x64-musl@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-win32-arm64-msvc@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas-win32-x64-msvc@1.0.9':
+    optional: true
+
+  '@napi-rs/canvas@1.0.9':
+    optionalDependencies:
+      '@napi-rs/canvas-android-arm64': 1.0.9
+      '@napi-rs/canvas-darwin-arm64': 1.0.9
+      '@napi-rs/canvas-darwin-x64': 1.0.9
+      '@napi-rs/canvas-linux-arm-gnueabihf': 1.0.9
+      '@napi-rs/canvas-linux-arm64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-arm64-musl': 1.0.9
+      '@napi-rs/canvas-linux-riscv64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-x64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-x64-musl': 1.0.9
+      '@napi-rs/canvas-win32-arm64-msvc': 1.0.9
+      '@napi-rs/canvas-win32-x64-msvc': 1.0.9
+    optional: true
 
   '@napi-rs/wasm-runtime@1.1.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
@@ -19347,6 +20211,10 @@ snapshots:
   path-to-regexp@8.4.2: {}
 
   pathe@2.0.3: {}
+
+  pdfjs-dist@6.3.289:
+    optionalDependencies:
+      '@napi-rs/canvas': 1.0.9
 
   perfect-debounce@1.0.0: {}
 

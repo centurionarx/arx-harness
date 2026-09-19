@@ -1,0 +1,8 @@
+# Opt-in Agent Teams interface over the shipped Web profile.
+- insert:
+    - id: agent-team
+      name: '@arx-ai/arx-experimental-agent-team'
+    - id: tool-agent-team
+      name: '@arx-ai/arx-experimental-tool-agent-team'
+    - id: ui-agent-team
+      name: '@arx-ai/arx-experimental-client-ui-agent-team'

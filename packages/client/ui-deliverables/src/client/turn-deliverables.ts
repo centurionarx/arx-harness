@@ -1,12 +1,13 @@
 /**
  * Turn-scoped produced-file Definition and readers. Client-only and
- * model-free: the vocabulary is the mutation tools' own follow-along
- * `locations`, never the closing prose.
+ * model-free: successful mutation locations and explicit delivery events
+ * contribute file references; closing prose does not create them.
  */
 import type {
   ConversationNodeDefinition, ToolResultNode,
 } from '@arx-ai/arx-client-runtime/client'
 import { isAppendSurfaceEvent } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-tool-present/types'
 import type { MarkdownFileMentions } from '@arx-ai/arx-client-ui-primitives'
 import type { TurnTailOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
 
@@ -22,7 +23,7 @@ export interface DeliverablesTurnData {
 
 declare module '@arx-ai/arx-client-runtime/client' {
   interface ConversationTurnDataMap {
-    /** Successful mutation paths accumulated in this Turn. */
+    /** Successful mutation and explicitly presented paths accumulated in this Turn. */
     deliverables: DeliverablesTurnData
   }
 }
@@ -59,7 +60,9 @@ function producedPaths(view: ToolResultNode['callView']): readonly string[] {
  * `str_replace_editor`'s insert presents) — so a new mutation tool joins by
  * declaring what it does. Reads contribute nothing (looking at a file does not
  * produce it), and neither do deletes (there is nothing left to open) or
- * failed calls. Paths keep first-seen order and appear once, so a file written
+ * failed calls. Explicit deliverables/presented events contribute validated
+ * existing files, including shell-created outputs. Paths keep first-seen
+ * order and appear once, so a file written
  * and then edited in the same turn is one entry.
  *
  * The Conversation Location index owns turn membership before this function
@@ -94,11 +97,12 @@ export function selectProducedFiles(owner: TurnTailOwnerProps): readonly string[
   return paths.length === 0 ? null : paths
 }
 
-/** Turn-local successful mutation accumulator; it publishes no view Node. */
+/** Turn-local mutation and delivery accumulator; it publishes no view Node. */
 export const deliverablesDefinition: ConversationNodeDefinition<DeliverablesState> = {
   kind: 'deliverables',
   match: (event) => {
     if (event.type === 'turn/start') return { id: String(event.data.turn), role: 'start' }
+    if (event.type === 'deliverables/presented') return { id: String(event.data.turn), role: 'update' }
     if (event.type === 'tool/call') return { id: String(event.data.turn), role: 'update' }
     if (event.type === 'tool/result' && isAppendSurfaceEvent(event)) {
       return { id: String(event.data.turn), role: 'update' }
@@ -117,6 +121,10 @@ export const deliverablesDefinition: ConversationNodeDefinition<DeliverablesStat
         match.view?.for === 'call' ? match.view.view : null,
       )
       return { ...context.state, calls }
+    }
+    if (match.event.type === 'deliverables/presented') {
+      const additions = match.event.data.files.map(file => ({ seq: match.event.seq, path: file.path }))
+      return { ...context.state, produced: [...context.state.produced, ...additions] }
     }
     if (match.event.type !== 'tool/result') return context.state
     const result = match.event.data.message.content[0]

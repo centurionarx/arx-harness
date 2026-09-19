@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import {
   createSnapshotStore, EMPTY_CHAT_SNAPSHOT, EMPTY_CONVERSATION_VIEWS,
@@ -16,6 +16,7 @@ import { createChatStore } from '../src/client/stores.ts'
 import { AssistantMarkdown, type AssistantMarkdownProps } from '../src/client/chat/AssistantMarkdown.tsx'
 import { StatsLine } from '../src/client/chat/StatsLine.tsx'
 import { DetailsPanel } from '../src/client/skeleton/DetailsPanel.tsx'
+import type { DetailsContentOwnerProps } from '../src/client/contract/slots.ts'
 import { en } from '../src/client/locales.ts'
 import { chatSnapshotFixture } from './chat-snapshot-fixture.client.ts'
 
@@ -125,6 +126,7 @@ describe('render branch tails', () => {
     })
     const view = render(
       <DetailsPanel
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}
         SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetailsProbe()}
         sessionId={SID}
@@ -182,7 +184,7 @@ describe('render branch tails', () => {
     const owners: DetailsToolOwnerProps[] = []
     const view = render(
       <DetailsPanel
-        SessionProvider={SessionProviderStub}
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}        SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetailsProbe(owners)}
         sessionId={SID}
         useSession={bindSnapshotSelector({ getSnapshot: () => snap, subscribe: () => () => {} })}
@@ -214,4 +216,53 @@ describe('render branch tails', () => {
       content: [{ type: 'text', text: longText }],
     })
   })
+})
+
+
+it('hands the preview path and native opener to Details content, with a clear unsupported-host fallback', async () => {
+  localStorage.clear()
+  const chat = createChatStore().create()
+  chat.actions.setPreview({ path: 'reports/analysis.md' })
+  const snapshot = createSnapshotStore(snapshotBase())
+  const sessions = createSnapshotStore<SessionListState>({
+    ids: [], byId: {}, current: undefined, phase: 'ready', subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+  })
+  const workspaces = createSnapshotStore<WorkspaceListState>({
+    items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null, baselinesReady: true, recentWorkspaceId: undefined,
+  })
+  const openNativeFile = vi.fn(async (_path: string) => {})
+  const closeDetails = vi.fn()
+  let content: DetailsContentOwnerProps | undefined
+  const props: DetailsSlotProps = {
+    sessionId: SID,
+    SessionProvider: SessionProviderStub,
+    useSession: bindSnapshotSelector(snapshot),
+    useSessions: bindSnapshotSelector(sessions),
+    useWorkspaces: bindSnapshotSelector(workspaces),
+    useProjection: () => undefined,
+    useInput: () => { throw new Error('unused') },
+    inputActions: { setDraft: () => {}, addImages: () => true, removeImage: () => {}, pruneImages: () => {}, submit: () => {} },
+    useStore: bindSnapshotSelector(chat),
+    actions: chat.actions,
+    renderSlot: renderToolDetailsProbe(),
+    renderSlotChain: (slot, owner) => {
+      expect(slot).toBe('details.content')
+      content = owner as unknown as DetailsContentOwnerProps
+      return <div>document preview</div>
+    },
+    openNativeFile,
+    closeDetails,
+    t,
+  }
+  const view = render(<DetailsPanel {...props} />)
+  expect(view.getByText('reports/analysis.md')).toBeTruthy()
+  expect(view.getByText('document preview')).toBeTruthy()
+  expect(content?.preview).toEqual({ path: 'reports/analysis.md' })
+  await content!.openNativeFile('reports/analysis.md')
+  expect(openNativeFile).toHaveBeenCalledWith('reports/analysis.md')
+  fireEvent.click(view.getByRole('button', { name: 'Close details' }))
+  expect(closeDetails).toHaveBeenCalledOnce()
+  view.rerender(<DetailsPanel {...props} openNativeFile={undefined} />)
+  await expect(content!.openNativeFile('reports/analysis.md')).rejects.toThrow('Native file opening is unavailable')
+  expect(openNativeFile).toHaveBeenCalledOnce()
 })

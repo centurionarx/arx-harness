@@ -81,6 +81,12 @@ describe('client bundle purity gate', () => {
     expect(resolveId('@arx-ai/arx-brand')).toBeNull()
   })
 
+  it('inlines the exact pure file-preview client contract without admitting its host service', () => {
+    expect(resolveId('@arx-ai/arx-file-preview/client')).toBeNull()
+    expect(() => resolveId('@arx-ai/arx-file-preview')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-file-preview/client/nested')).toThrow(/purity/)
+  })
+
   it('lets exact generated Remote contributions inline without admitting their package implementation', () => {
     expect(resolveId('@arx-ai/arx-goal/remote')).toBeNull()
     expect(() => resolveId('@arx-ai/arx-goal')).toThrow(/purity/)

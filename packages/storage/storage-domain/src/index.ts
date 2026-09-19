@@ -205,16 +205,16 @@ export function apply(ctx: Context, config: Config): Promise<void> {
 
   const fiber = ctx.inject(backendServices, (domainCtx) => {
     const facility = new DomainFacility(domainCtx, config)
-    domainCtx.effect(() => {
+    domainCtx.effect(function* () {
       const unmount = domainCtx.storage.mount('domain', facility)
-      return async () => {
+      yield async () => {
         // Close leftovers before unmounting: draining writes still emit
         // domain/changed, whose invariant resolves the facility through the hub.
         await facility.closeAll()
         unmount()
       }
+      yield domainCtx.provide('storageDomain', facility)
     })
-    domainCtx.provide('storageDomain', facility)
   })
   return Promise.resolve(fiber).then(() => {})
 }

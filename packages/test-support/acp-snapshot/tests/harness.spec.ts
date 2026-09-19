@@ -779,6 +779,23 @@ describe('runScenario', () => {
     }
   })
 
+  it.each([1, 2])('waitForTurnEnd requires durable turn 2 even when turn %i already closed', { timeout: 20_000 }, async (turn) => {
+    const { fixtureFile } = await scenario({
+      prompt: 'hang-until-cancel', persistLogsOnCancel: true,
+      logs: [{ file: 'project/main/session.jsonl', lines: [
+        { type: 'session', version: 0, id: '{{SID}}', createdAt: 1, delegationDepth: 0 },
+        { type: 'turn/start', seq: 0, time: 1, data: { turn } },
+        { type: 'turn/end', seq: 1, time: 2, data: { turn, reason: { kind: 'completed' } } },
+      ] }],
+    })
+    const result = runScenario(
+      { steps: [...boot, { op: 'promptAndCancel', text: 'hang' }, { op: 'waitForTurnEnd', minimumTurn: 2, timeoutMs: 200 }] },
+      { agent: AGENT, mode: 'replay', fixtureFile },
+    )
+    if (turn === 1) await expect(result).rejects.toThrow(/did not persist turn\/end within 200ms/)
+    else expect((await result).sessionLogs[0]?.content).toContain('"turn":2')
+  })
+
   it('waitForTurnEnd times out for a missing log and an open logged turn', { timeout: 20_000 }, async () => {
     const missing = await scenario({})
     await expect(runScenario(

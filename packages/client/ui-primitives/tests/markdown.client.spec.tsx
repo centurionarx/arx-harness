@@ -516,3 +516,16 @@ describe('JsonBlock', () => {
     expect(body).toContain('截断')
   })
 })
+
+
+it('can suppress direct and reference remote images in settled and streaming documents', () => {
+  const text = '![inline](https://example.com/one.png)\n\n![ref][image]\n\n[image]: https://example.com/two.png'
+  const view = render(<MarkdownText text={text} remoteImages={false} />)
+  expect(view.container.querySelectorAll('img')).toHaveLength(0)
+  view.rerender(<MarkdownText text={text} remoteImages={false} streaming />)
+  expect(view.container.querySelectorAll('img')).toHaveLength(0)
+  view.rerender(<MarkdownText text={text} remoteImages streaming />)
+  expect(view.container.querySelector('img')).not.toBeNull()
+  view.rerender(<MarkdownText text={text} remoteImages={false} streaming />)
+  expect(view.container.querySelectorAll('img')).toHaveLength(0)
+})

@@ -195,6 +195,23 @@ flowchart LR
   svc_lsp["ctx.lsp<br/>Language-server navigation seam"]
   pkg_lsp_local["lsp-local"]
   pkg_tool_lsp["tool-lsp"]
+  pkg_file_preview["file-preview"]
+  svc_filePreviews["ctx.filePreviews<br/>Session-authorized bounded file preview"]
+  pkg_ui_file_preview["ui-file-preview"]
+  pkg_project["project"]
+  svc_projects["ctx.projects<br/>Durable project orchestration aggregate"]
+  pkg_tool_project["tool-project"]
+  pkg_project_runner["project-runner"]
+  pkg_webhook["webhook"]
+  pkg_ui_projects["ui-projects"]
+  svc_projectRunner["ctx.projectRunner<br/>Saved project step driver"]
+  pkg_skill_git["skill-git"]
+  svc_skillGit["ctx.skillGit<br/>Revision-pinned Git skill materialization"]
+  pkg_session_turn_outline["session-turn-outline"]
+  svc_turnOutlines["ctx.turnOutlines<br/>Whole-session turn outline paging"]
+  pkg_ui_turn_outline["ui-turn-outline"]
+  svc_webhookRuntime["ctx.webhookRuntime<br/>Authenticated webhook admission ledger"]
+  pkg_webhook_github["webhook-github"]
   svc_apiProxy["ctx.apiProxy<br/>Host API dispatch"]
   pkg_cordis_host_runner["cordis-host-runner"]
   svc_dynamicCordisRunner["ctx.dynamicCordisRunner<br/>Dynamic Cordis package host runner"]
@@ -227,6 +244,7 @@ flowchart LR
   pkg_directory_picker_browse --> svc_directoryPicker
   pkg_directory_picker_native --> svc_directoryPicker
   pkg_e2b --> svc_e2b
+  pkg_file_preview --> svc_filePreviews
   pkg_file_reference --> svc_fileReferences
   pkg_file_reference_local --> svc_fileReferences
   pkg_fs --> svc_fs
@@ -246,6 +264,8 @@ flowchart LR
   pkg_modules --> svc_clientModules
   pkg_permission_presets --> svc_permissionPresets
   pkg_plan_mode --> svc_planMode
+  pkg_project --> svc_projects
+  pkg_project_runner --> svc_projectRunner
   pkg_pwsh_local --> svc_shell
   pkg_sandbox --> svc_sandbox
   pkg_sandbox_local --> svc_sandbox
@@ -264,6 +284,7 @@ flowchart LR
   pkg_session_title --> svc_sessionTitle
   pkg_session_title_all_prompts_llm --> svc_sessionTitle
   pkg_session_title_first_prompt_llm --> svc_sessionTitle
+  pkg_session_turn_outline --> svc_turnOutlines
   pkg_settings --> svc_settings
   pkg_settings_file --> svc_settings
   pkg_shell --> svc_shell
@@ -271,6 +292,7 @@ flowchart LR
   pkg_skill --> svc_skills
   pkg_skill_badge --> svc_skills
   pkg_skill_filesystem --> svc_skills
+  pkg_skill_git --> svc_skillGit
   pkg_spill --> svc_spillStore
   pkg_spill_local --> svc_spillStore
   pkg_storage --> svc_storage
@@ -298,6 +320,7 @@ flowchart LR
   pkg_web_fetch_http --> svc_web
   pkg_web_search_exa --> svc_web
   pkg_web_search_perplexity --> svc_web
+  pkg_webhook --> svc_webhookRuntime
   pkg_webserver --> svc_webServer
   pkg_workflow --> svc_workflowEngine
   pkg_workflow_worker_thread --> svc_workflowEngine
@@ -325,6 +348,7 @@ flowchart LR
   svc_dynamicCordisRunner --> pkg_tool_cordis
   svc_e2b --> pkg_fs_e2b
   svc_e2b --> pkg_subprocess_e2b
+  svc_filePreviews --> pkg_ui_file_preview
   svc_fs --> pkg_tool_fs
   svc_invariants --> pkg_agent
   svc_invariants --> pkg_agent_loop
@@ -337,6 +361,11 @@ flowchart LR
   svc_llm --> pkg_agent_loop
   svc_llm --> pkg_compaction_basic
   svc_lsp --> pkg_tool_lsp
+  svc_projectRunner --> pkg_tool_project
+  svc_projects --> pkg_project_runner
+  svc_projects --> pkg_tool_project
+  svc_projects --> pkg_ui_projects
+  svc_projects --> pkg_webhook
   svc_sandbox --> pkg_bash_sandbox
   svc_sandbox --> pkg_terminal_bash
   svc_sandboxPolicy --> pkg_bash_sandbox
@@ -371,6 +400,7 @@ flowchart LR
   svc_shell --> pkg_tool_pwsh
   svc_shellEnv --> pkg_tool_bash
   svc_shellEnv --> pkg_tool_pwsh
+  svc_skillGit --> pkg_tool_project
   svc_skills --> pkg_tool_skill
   svc_spillStore --> pkg_spill_policy
   svc_storage --> pkg_storage_domain
@@ -404,6 +434,7 @@ flowchart LR
   svc_tools --> pkg_tool_terminal
   svc_tools --> pkg_tool_todo
   svc_tools --> pkg_tool_web
+  svc_turnOutlines --> pkg_ui_turn_outline
   svc_typert --> pkg_api_gateway
   svc_typert --> pkg_typert_loader
   svc_userQuestions --> pkg_tool_ask_user
@@ -411,6 +442,7 @@ flowchart LR
   svc_webServer --> pkg_connection
   svc_webServer --> pkg_hmr
   svc_webServer --> pkg_modules
+  svc_webhookRuntime --> pkg_webhook_github
   svc_workflowEngine --> pkg_tool_ralph
   svc_workflowEngine --> pkg_tool_workflow
   svc_workspaceRegistry --> pkg_apiproxy
@@ -475,6 +507,12 @@ flowchart LR
 | `ctx.clientModules` | `core` | `modules` | - | `hmr` | - | Composes the __ARX_BOOT__ entry graph from an incremental arx.client scan, serves plugin bundles, and notifies rebuilt/graph-changed subscribers. |
 | `ctx.workflowEngine` | `seam` | [`workflow`](../packages/workflow/workflow) | [`workflow-worker-thread`](../packages/workflow/workflow-worker-thread) | [`tool-workflow`](../packages/workflow/tool-workflow), [`tool-ralph`](../packages/workflow/tool-ralph) | - | One engine per context, as in bash, with no named-provider registry; the general workflow and fixed Ralph consumers start runs whose agent() calls fan out through ctx.subagents. |
 | `ctx.lsp` | `seam` | [`lsp`](../packages/lsp/lsp) | `lsp-local` | [`tool-lsp`](../packages/lsp/tool-lsp) | - | Provider registration and selection plus normalized query execution over exactly four operations; the seam offers no protocol escape hatch, so a backend translates into the normalized request and result. |
+| `ctx.filePreviews` | `core` | [`file-preview`](../packages/fs/file-preview) | - | `ui-file-preview` | - | Resolves each request through the live Agent filesystem and cwd, confines the canonical path, enforces provider byte limits, and returns JSON-safe text or base64 through the authenticated Remote surface. |
+| `ctx.projects` | `core` | [`project`](../packages/project/project) | - | [`tool-project`](../packages/project/tool-project), [`project-runner`](../packages/project/project-runner), [`webhook`](../packages/webhook/webhook), `ui-projects` | - | Owns workspace-linked projects, immutable plan and prompt revisions, exact approval, task evidence, bounded workflow ledgers, and compare-and-set publication in one storage-domain aggregate. |
+| `ctx.projectRunner` | `core` | [`project-runner`](../packages/project/project-runner) | - | [`tool-project`](../packages/project/tool-project) | - | Claims one committed dependency-ready step at a time, launches it through the existing subagent seam, attaches the child Session, and settles measured bounded output without retrying uncertain external effects. |
+| `ctx.skillGit` | `bundle` | [`skill-git`](../packages/skill/skill-git) | - | [`tool-project`](../packages/project/tool-project) | - | Materializes explicitly selected skill directories at one exact commit, verifies the bounded content manifest on every cache hit, and composes the resulting roots through the filesystem skill provider. |
+| `ctx.turnOutlines` | `core` | [`session-turn-outline`](../packages/session/session-turn-outline) | - | `ui-turn-outline` | - | Pages the immutable turn-outline projection by stable turn address so the browser can navigate the whole durable Session independently of loaded conversation history. |
+| `ctx.webhookRuntime` | `core` | [`webhook`](../packages/webhook/webhook) | - | [`webhook-github`](../packages/webhook/webhook-github) | - | Registers typed rules, durably deduplicates authenticated deliveries before queue publication, bounds active work, and preserves uncertain launches for explicit reconciliation. |
 | `ctx.apiProxy` | `core` | `apiproxy` | - | `connection` | - | The transport-agnostic host gateway face: it dispatches browser API calls, and each open host stream subscribes to the events it forwards rather than being pushed to through a broadcast verb. |
 | `ctx.dynamicCordisRunner` | `core` | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | - | [`tool-cordis`](../packages/extensions/tool-cordis) | - | Owns the in-memory definition registry, the vm sandbox for host halves, and the request-run round trip; browser pages reach the same service over the wire through its remote namespace. |
 | `ctx.cordisInspect` | `core` | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | - | [`tool-cordis`](../packages/extensions/tool-cordis) | - | Registers host inspect providers, mirrors the client provider manifest, and routes client queries through the dynamic Cordis transport. |

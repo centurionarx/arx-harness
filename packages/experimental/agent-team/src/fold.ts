@@ -64,7 +64,8 @@ const contentBlockSchema: z.ZodType<ContentBlock> = z.lazy(() => z.union([
   ),
 ])) as z.ZodType<ContentBlock>
 
-const teamMemberSnapshotSchema = z.object({
+/** Strict member record shared by durable replay and client projection decoding. */
+export const teamMemberSnapshotSchema = z.object({
   id: sessionIdSchema,
   name: z.string(),
   description: z.string(),

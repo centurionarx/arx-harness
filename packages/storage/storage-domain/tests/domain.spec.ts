@@ -356,3 +356,45 @@ describe('close and lifecycle', () => {
     await expect(table.delete('a')).resolves.toBe(true)
   })
 })
+
+
+it('keeps domains mounted until injected consumers finish their final writes', async () => {
+  const ctx = new Context()
+  const pool = new MemoryMediaPool()
+  const backend = new MemoryStorageBackend(pool)
+  const release = Promise.withResolvers<undefined>()
+  const draining = Promise.withResolvers<undefined>()
+  try {
+    await ctx.plugin(Storage)
+    ctx.storage.backend.register('memory', backend)
+    ctx.provide(storageBackendServiceKey('memory'), backend)
+    const provider = await ctx.plugin(await import('../src/index.ts'), { backend: 'memory' })
+    await ctx.plugin({
+      inject: ['storageDomain'],
+      async apply(consumer: Context) {
+        const domain = await consumer.storageDomain.open(bareSpec)
+        consumer.effect(() => async () => {
+          draining.resolve(undefined)
+          await release.promise
+          await domain.table('rows').put('final', { label: 'drained', count: 1 })
+          await domain.close()
+        })
+      },
+    })
+    const unloading = provider.dispose()
+    await draining.promise
+    try {
+      await new Promise<void>(resolve => setImmediate(resolve))
+      expect(ctx.storage.domain.get('bare')).toBeDefined()
+    } finally {
+      release.resolve(undefined)
+      await unloading
+    }
+    expect(pool.media.get('bare')!.tables.get('rows')!.get('final')).toEqual({ label: 'drained', count: 1 })
+    expect(() => ctx.storage.form('domain')).toThrow(/not mounted/)
+  } finally {
+    release.resolve(undefined)
+    await ctx.fiber.dispose()
+    await backend.close()
+  }
+})

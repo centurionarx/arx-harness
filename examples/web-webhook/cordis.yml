@@ -1,0 +1,26 @@
+# Opt-in authenticated GitHub ingress over the Web profile. The route is absent
+# unless this patch is explicitly composed.
+- insert:
+    - id: webhook-runtime
+      name: '@arx-ai/arx-webhook'
+      config:
+        maxActiveWorkers: 2
+        maxQueuedDeliveries: 8
+
+    - id: webhook-github
+      name: '@arx-ai/arx-webhook-github'
+      config:
+        source: github-primary
+        ruleId: github-project-issues
+        path: /hooks/github
+        secretEnv: GITHUB_WEBHOOK_SECRET
+        maxBodyBytes: 262144
+        repositories:
+          - !!js process.env.ARX_WEBHOOK_REPOSITORY
+        events:
+          - issues
+        projectId: !!js process.env.ARX_WEBHOOK_PROJECT_ID
+        workspaceId: !!js process.env.ARX_WEBHOOK_WORKSPACE_ID
+        agentPreset: standard
+        permissionPreset: workspace-write
+        instruction: Review the authenticated issue event, inspect the bound project, and propose a bounded change.

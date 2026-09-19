@@ -63,6 +63,15 @@
 - id: tool-fs
   name: '@arx-ai/arx-tool-fs'
 
+# Delivery belongs to this preset's tool scope. Project orchestration is
+# available only when the host explicitly supplies the durable project domain.
+- id: tool-present
+  name: '@arx-ai/arx-tool-present'
+
+- id: tool-project
+  name: '@arx-ai/arx-tool-project'
+  disabled: !!js ctx.get('projects') === undefined
+
 - id: tool-fs-search
   name: '@arx-ai/arx-tool-fs-search'
   config:

@@ -2,6 +2,8 @@
 
 Domain data form for the arx Harness storage hub: exposes the injectable `ctx.storageDomain` service and the matching `ctx.storage.domain` projection after every configured backend is registered. A domain is declared once with `defineDomain` (zod record schemas, `z.infer`-derived types), opened through `DomainFacility.open`, and served from authoritative in-memory state — reads are synchronous, writes serialize on one per-domain chain, reach durability on the routed backend first, then update memory and emit `domain/changed`. The opening consumer owns the handle's lifecycle and releases it with `Domain.close()` (idempotent; typically its own `ctx.effect` disposer); domains still open when the plugin unmounts are closed by the facility.
 
+The service withdrawal and facility cleanup share one ordered effect. Unload first withdraws `storageDomain` and waits for its dependent consumers to finish their owned domain work, then closes leftover domains and unmounts the hub projection. Final consumer writes can still publish `domain/changed` while the facility is mounted.
+
 Design rationale, open semantics, and the storage/domain layer split live in the [Agent Note](../../../.agents/notes/implemented/architecture/2026-07-24-domain-kv-storage-and-workspace.md).
 
 ## Configuration
