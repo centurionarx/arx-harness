@@ -70,6 +70,30 @@
     - id: session-log-download
       name: '@arx-ai/arx-session-log-export'
 
+    - id: project-runner
+      name: '@arx-ai/arx-project-runner'
+
+    - id: skill-git
+      name: '@arx-ai/arx-skill-git'
+
+    - id: file-preview
+      name: '@arx-ai/arx-file-preview'
+
+    - id: ui-file-preview
+      name: '@arx-ai/arx-client-ui-file-preview'
+
+    - id: projects
+      name: '@arx-ai/arx-project'
+
+    - id: tool-project
+      name: '@arx-ai/arx-tool-project'
+
+    - id: tool-present
+      name: '@arx-ai/arx-tool-present'
+
+    - id: ui-projects
+      name: '@arx-ai/arx-client-ui-projects'
+
     - id: workspace
       name: '@arx-ai/arx-workspace'
 
@@ -87,6 +111,12 @@
 
     # Whole-log turn/step counts for the chat stats strip (the sessionStats
     # projection key); the projection registry itself is a base-layer row.
+    - id: session-turn-outline
+      name: '@arx-ai/arx-session-turn-outline'
+
+    - id: ui-turn-outline
+      name: '@arx-ai/arx-client-ui-turn-outline'
+
     - id: session-stats
       name: '@arx-ai/arx-session-stats'
 

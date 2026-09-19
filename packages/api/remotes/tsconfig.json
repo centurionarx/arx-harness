@@ -6,6 +6,15 @@
     },
     {
       "path": "./tsconfig.client.json"
+    },
+    {
+      "path": "../../project/project"
+    },
+    {
+      "path": "../../fs/file-preview"
+    },
+    {
+      "path": "../../session/session-turn-outline"
     }
   ]
 }

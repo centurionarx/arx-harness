@@ -28,8 +28,8 @@
     "@arx-ai/arx-cordis-host-runner": "workspace:*",
     "@arx-ai/arx-credentials-local": "workspace:*",
     "@arx-ai/arx-e2b": "workspace:*",
-    "@arx-ai/arx-experimental-agent-team": "workspace:*",
-    "@arx-ai/arx-experimental-tool-agent-team": "workspace:*",
+    "@arx-ai/arx-experimental-agent-team": "workspace:^",
+    "@arx-ai/arx-experimental-tool-agent-team": "workspace:^",
     "@arx-ai/arx-fs-e2b": "workspace:*",
     "@arx-ai/arx-fs-local": "workspace:*",
     "@arx-ai/arx-fs-observation-policy": "workspace:*",
@@ -115,6 +115,17 @@
     "@arx-ai/arx-user-questions": "workspace:*",
     "@arx-ai/arx-web": "workspace:*",
     "@arx-ai/arx-web-fetch-http": "workspace:*",
-    "@arx-ai/arx-workflow-worker-thread": "workspace:*"
+    "@arx-ai/arx-workflow-worker-thread": "workspace:*",
+    "@arx-ai/arx-tool-present": "workspace:^",
+    "@arx-ai/arx-project": "workspace:^",
+    "@arx-ai/arx-tool-project": "workspace:^",
+    "@arx-ai/arx-client-ui-schedule": "workspace:^",
+    "@arx-ai/arx-experimental-client-ui-agent-team": "workspace:^",
+    "@arx-ai/arx-webhook": "workspace:^",
+    "@arx-ai/arx-webhook-github": "workspace:^",
+    "@arx-ai/arx-storage": "workspace:^",
+    "@arx-ai/arx-storage-json": "workspace:^",
+    "@arx-ai/arx-storage-domain": "workspace:^",
+    "@arx-ai/arx-workspace": "workspace:^"
   }
 }

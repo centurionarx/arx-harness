@@ -116,7 +116,18 @@
     "@arx-ai/schemastery": "workspace:^",
     "commander": "^15.0.0",
     "open": "^11.0.0",
-    "@arx-ai/arx-client-ui-settings-web": "workspace:^"
+    "@arx-ai/arx-client-ui-settings-web": "workspace:^",
+    "@arx-ai/arx-project": "workspace:^",
+    "@arx-ai/arx-tool-project": "workspace:^",
+    "@arx-ai/arx-tool-present": "workspace:^",
+    "@arx-ai/arx-client-ui-projects": "workspace:^",
+    "@arx-ai/arx-session-turn-outline": "workspace:^",
+    "@arx-ai/arx-client-ui-turn-outline": "workspace:^",
+    "@arx-ai/arx-client-ui-schedule": "workspace:^",
+    "@arx-ai/arx-project-runner": "workspace:^",
+    "@arx-ai/arx-skill-git": "workspace:^",
+    "@arx-ai/arx-file-preview": "workspace:^",
+    "@arx-ai/arx-client-ui-file-preview": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/cordis-plugin-loader": "workspace:^",

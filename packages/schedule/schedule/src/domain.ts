@@ -579,11 +579,31 @@ export function foldScheduleEvents(
   if (!Number.isSafeInteger(seedLength) || seedLength < 0 || seedLength > events.length) {
     throw new ScheduleLogError('schedule seedLength must be within the supplied event log')
   }
-  const active = new Map<ScheduleIdType, ScheduleRecord>()
-  const seen = new Set<ScheduleIdType>()
-  for (const event of events.slice(seedLength)) {
-    if (event.type !== 'schedule/change') continue
-    const change = decodeScheduleChange(event.data)
+  const changes = events.slice(seedLength)
+    .filter(event => event.type === 'schedule/change')
+    .map(event => decodeScheduleChange(event.data))
+  return applyScheduleChanges({ active: [], seenIds: [] }, changes)
+}
+
+/**
+ * Apply decoded Schedule changes to an existing fold.
+ *
+ * This is the single strict transition path shared by complete log replay and
+ * the incremental Session projection. Inputs and outputs are detached arrays;
+ * the mutable maps remain local to the call.
+ * @param folded - prior active records and all ids used by this Session.
+ * @param changes - decoded changes in durable order.
+ * @returns the next immutable fold.
+ */
+export function applyScheduleChanges(
+  folded: FoldedSchedules,
+  changes: readonly ScheduleChange[],
+): FoldedSchedules {
+  const active = new Map<ScheduleIdType, ScheduleRecord>(
+    folded.active.map(record => [record.id, record]),
+  )
+  const seen = new Set<ScheduleIdType>(folded.seenIds)
+  for (const change of changes) {
     switch (change.operation) {
       case 'create':
         if (seen.has(change.schedule.id)) {

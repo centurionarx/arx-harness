@@ -2,11 +2,13 @@
 
 import type { Context, FiberState } from '@arx-ai/cordis'
 import type {} from '@arx-ai/cordis-plugin-loader'
+import type {} from '@arx-ai/arx-agent-presets'
 import { TypertRemoteService, Remote } from '@arx-ai/arx-typert-protocol'
 // Typert-generated ./typert and ./remote artifacts import Zod at runtime.
 import type {} from 'zod'
 import type {
   PluginEntryId,
+  AgentPresetPluginGroup,
   PluginFiberPhase,
   PluginInventoryEntry,
   PluginInventorySnapshot,
@@ -54,7 +56,7 @@ export class PluginInventoryGateway extends TypertRemoteService {
    * @returns Current non-group Loader entries in Loader order.
    */
   @Remote('list')
-  list(): PluginInventorySnapshot {
+  async list(): Promise<PluginInventorySnapshot> {
     const entries: PluginInventoryEntry[] = []
     for (const entry of this.ctx.loader.entries()) {
       if (entry.options.group) continue
@@ -65,7 +67,18 @@ export class PluginInventoryGateway extends TypertRemoteService {
         fiberPhase: entry.fiber === undefined ? null : FIBER_PHASE[entry.fiber.state],
       })
     }
-    return { entries }
+    const presets = this.ctx.get('agentPresets')
+    if (presets === undefined) return { entries }
+    const agentPresets: AgentPresetPluginGroup[] = (await presets.compositionInventory()).map(
+      composition => ({
+        ...composition,
+        rows: composition.rows.map(({ fiberState, ...row }) => ({
+          ...row,
+          fiberPhase: fiberState === undefined ? null : FIBER_PHASE[fiberState],
+        })),
+      }),
+    )
+    return { entries, agentPresets }
   }
 }
 

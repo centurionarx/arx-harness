@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "lib/types" },
+  "include": ["src"],
+  "references": [
+    { "path": "../../../vendor/cosmokit" },
+    { "path": "../../../vendor/schemastery" },
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../core/session" },
+    { "path": "../../core/tools" },
+    { "path": "../../core/system-prompt" },
+    { "path": "../../workspace/workspace" },
+    { "path": "../../skill/skill-git" },
+    { "path": "../project-runner" },
+    { "path": "../project" },
+    { "path": "../../runtime-diagnostics/invariants" }
+  ]
+}

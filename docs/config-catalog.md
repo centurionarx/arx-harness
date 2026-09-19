@@ -623,7 +623,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/experimental/agent-team/src/types.ts:125`](../packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:133`](../packages/experimental/agent-team/src/types.ts)
 
 <a id="arx-aiarx-experimental-tool-agent-team"></a>
 
@@ -642,6 +642,22 @@ export interface Config {
 ```
 
 Source: [`packages/experimental/tool-agent-team/src/index.ts:17`](../packages/experimental/tool-agent-team/src/index.ts)
+
+<a id="arx-aiarx-file-preview"></a>
+
+## `@arx-ai/arx-file-preview`
+
+Requires: `agents`
+
+```ts config-catalog
+/** Deployment bound on bytes read before a preview is encoded. */
+export interface Config {
+  /** Maximum content bytes per preview; defaults to 2 MiB and cannot exceed 16 MiB. */
+  maxBytes?: number
+}
+```
+
+Source: [`packages/fs/file-preview/src/index.ts:12`](../packages/fs/file-preview/src/index.ts)
 
 <a id="arx-aiarx-file-reference-local"></a>
 
@@ -1534,6 +1550,44 @@ export interface PlanModeConfig {
 
 Source: [`packages/plan/plan-mode/src/index.ts:70`](../packages/plan/plan-mode/src/index.ts)
 
+<a id="arx-aiarx-project"></a>
+
+## `@arx-ai/arx-project`
+
+Requires: `storageDomain` · `workspaceRegistry` · `sessionPersistence`
+
+```ts config-catalog
+/** Runtime limits for persisted workflow reservations. */
+export interface Config {
+  /** Maximum pending, running, or uncertain workflow runs across all projects. */
+  maxActiveRuns?: number
+  /** Maximum named-step launches reserved by one run. */
+  maxStepsPerRun?: number
+  /** Maximum elapsed time accepted for one run. */
+  maxRunDurationMs?: number
+}
+```
+
+Source: [`packages/project/project/src/index.ts:135`](../packages/project/project/src/index.ts)
+
+<a id="arx-aiarx-project-runner"></a>
+
+## `@arx-ai/arx-project-runner`
+
+Requires: `projects` · `subagents`
+
+```ts config-catalog
+/** Deployment controls for the saved-step driver. */
+export interface Config {
+  /** Registered subagent provider used for durable local child sessions. */
+  readonly provider?: string
+  /** Maximum delegated depth allowed to each saved workflow child. */
+  readonly maxDepth?: number
+}
+```
+
+Source: [`packages/project/project-runner/src/index.ts:19`](../packages/project/project-runner/src/index.ts)
+
 <a id="arx-aiarx-pwsh-local"></a>
 
 ## `@arx-ai/arx-pwsh-local`
@@ -2042,6 +2096,48 @@ export interface Config {
 ```
 
 Source: [`packages/skill/skill-filesystem/src/index.ts:49`](../packages/skill/skill-filesystem/src/index.ts)
+
+<a id="arx-aiarx-skill-git"></a>
+
+## `@arx-ai/arx-skill-git`
+
+Requires: `skills`
+
+```ts config-catalog
+/** Git skill provider configuration. */
+export interface Config {
+  /** Unique provider label shown in the skill catalog. */
+  readonly providerName?: string
+  /** Host directory for verified mirrors and immutable materializations. */
+  readonly cacheDir?: string
+  /** Maximum regular files accepted in one selected source. */
+  readonly maxFiles?: number
+  /** Maximum combined blob bytes accepted in one selected source. */
+  readonly maxBytes?: number
+  /** Workspace-specific pinned skill source selections. */
+  readonly projects?: GitSkillProjectConfig[]
+}
+
+/** Git skill sources visible only for one workspace cwd. */
+export interface GitSkillProjectConfig {
+  /** Canonical workspace directory that receives these skills. */
+  readonly cwd: string
+  /** Revision-pinned repositories explicitly selected for the workspace. */
+  readonly sources: GitSkillSourceConfig[]
+}
+
+/** One exact repository revision and selected discovery roots. */
+export interface GitSkillSourceConfig {
+  /** Absolute local repository or supported github.com Git URL. */
+  readonly repository: string
+  /** Exact 40-hex commit materialized for discovery and snapshots. */
+  readonly commit: string
+  /** Repository-relative directories selected for skill discovery. */
+  readonly selectedDirs: string[]
+}
+```
+
+Source: [`packages/skill/skill-git/src/index.ts:56`](../packages/skill/skill-git/src/index.ts)
 
 <a id="arx-aiarx-spill-local"></a>
 
@@ -2670,6 +2766,40 @@ export interface Config {
 
 Source: [`packages/lsp/tool-lsp/src/index.ts:58`](../packages/lsp/tool-lsp/src/index.ts)
 
+<a id="arx-aiarx-tool-present"></a>
+
+## `@arx-ai/arx-tool-present`
+
+Requires: `tools` · `fs`
+
+```ts config-catalog
+/** Per-call bounds on retained file references, not source file contents. */
+export interface Config {
+  /** Maximum number of submitted files, including repeated paths. */
+  maxFiles: number
+  /** Inclusive UTF-8 byte cap for the complete deliverables/presented payload. */
+  maxMetadataBytes: number
+}
+```
+
+Source: [`packages/fs/tool-present/src/index.ts:22`](../packages/fs/tool-present/src/index.ts)
+
+<a id="arx-aiarx-tool-project"></a>
+
+## `@arx-ai/arx-tool-project`
+
+Requires: `projects` · `tools` · `systemPrompt`
+
+```ts config-catalog
+/** Model-facing tool name configuration. */
+export interface Config {
+  /** Registered tool name; default `project`. */
+  toolName?: string
+}
+```
+
+Source: [`packages/project/tool-project/src/index.ts:43`](../packages/project/tool-project/src/index.ts)
+
 <a id="arx-aiarx-tool-pwsh"></a>
 
 ## `@arx-ai/arx-tool-pwsh`
@@ -3172,6 +3302,71 @@ export interface Config {
 
 Source: [`packages/web/web-search-perplexity/src/index.ts:38`](../packages/web/web-search-perplexity/src/index.ts)
 
+<a id="arx-aiarx-webhook"></a>
+
+## `@arx-ai/arx-webhook`
+
+Requires: `storageDomain` · `agents` · `sessions` · `agentDefaultModel` · `agentPresets` · `permissionPresets` · `projects` · `sessionTitle` · `workspaceRegistry`
+
+```ts config-catalog
+/** Runtime worker and in-memory queue ceilings. */
+export interface Config {
+  /** Maximum number of webhook delivery callbacks that may execute concurrently in this process. */
+  readonly maxActiveWorkers: number
+  /** Maximum number of durably reserved deliveries that may wait in the process-local queue. */
+  readonly maxQueuedDeliveries: number
+}
+```
+
+Source: [`packages/webhook/webhook/src/index.ts:30`](../packages/webhook/webhook/src/index.ts)
+
+<a id="arx-aiarx-webhook-github"></a>
+
+## `@arx-ai/arx-webhook-github`
+
+Requires: `credentials` · `webServer` · `webhookRuntime`
+
+```ts config-catalog
+/** Required GitHub route, allowlist, and Agent binding. */
+export interface Config {
+  /** Stable adapter namespace included in durable delivery identity and webhook message provenance. */
+  readonly source: string
+  /** Stable rule identity combined with source and GitHub delivery id for durable deduplication. */
+  readonly ruleId: string
+  /** Exact HTTP pathname on which this optional adapter accepts GitHub POST requests. */
+  readonly path: string
+  /** Environment credential reference whose value is the GitHub webhook shared secret. */
+  readonly secretEnv: string
+  /** Inclusive byte ceiling applied to the raw request body before signature verification and JSON parsing. */
+  readonly maxBodyBytes: number
+  /** Exact GitHub owner/name repository allowlist accepted after authentication. */
+  readonly repositories: string[]
+  /** Exact X-GitHub-Event name allowlist accepted after authentication. */
+  readonly events: string[]
+  /** Existing durable project that will own Sessions created for accepted deliveries. */
+  readonly projectId: string
+  /** Exact Workspace within projectId used as the new Session cwd and ownership boundary. */
+  readonly workspaceId: string
+  /** Existing Agent preset mounted before publishing each webhook-created Agent. */
+  readonly agentPreset: string
+  /** Existing permission preset recorded on each webhook-created Session. */
+  readonly permissionPreset: string
+  /** Trusted deployment instruction presented separately from the untrusted GitHub payload. */
+  readonly instruction: string
+  /** Optional model route for webhook-created Agents; omission uses the configured default selection. */
+  readonly model?: {
+    /** Registered model provider name selected for the new Agent. */
+    readonly provider: string
+    /** Provider-specific model identifier selected for the new Agent. */
+    readonly model: string
+    /** Optional positive output-token ceiling applied to the new Agent. */
+    readonly maxTokens?: number
+  }
+}
+```
+
+Source: [`packages/webhook/webhook-github/src/index.ts:18`](../packages/webhook/webhook-github/src/index.ts)
+
 <a id="arx-aiarx-workflow-worker-thread"></a>
 
 ## `@arx-ai/arx-workflow-worker-thread`
@@ -3223,6 +3418,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-directory-picker-browse` ([`packages/client/ui-directory-picker-browse/src/index.ts`](../packages/client/ui-directory-picker-browse/src/index.ts))
 - `@arx-ai/arx-client-ui-directory-picker-native` ([`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts))
 - `@arx-ai/arx-client-ui-exit` ([`packages/client/ui-exit/src/index.ts`](../packages/client/ui-exit/src/index.ts))
+- `@arx-ai/arx-client-ui-file-preview` ([`packages/client/ui-file-preview/src/index.ts`](../packages/client/ui-file-preview/src/index.ts))
 - `@arx-ai/arx-client-ui-goal` ([`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts))
 - `@arx-ai/arx-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
 - `@arx-ai/arx-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
@@ -3231,8 +3427,10 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
 - `@arx-ai/arx-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))
 - `@arx-ai/arx-client-ui-plan` ([`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts))
+- `@arx-ai/arx-client-ui-projects` ([`packages/client/ui-projects/src/index.ts`](../packages/client/ui-projects/src/index.ts))
 - `@arx-ai/arx-client-ui-reference` ([`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts))
 - `@arx-ai/arx-client-ui-renderer` ([`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts))
+- `@arx-ai/arx-client-ui-schedule` ([`packages/client/ui-schedule/src/index.ts`](../packages/client/ui-schedule/src/index.ts))
 - `@arx-ai/arx-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
 - `@arx-ai/arx-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))
 - `@arx-ai/arx-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
@@ -3245,6 +3443,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-theme` ([`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts))
 - `@arx-ai/arx-client-ui-tool` ([`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts))
 - `@arx-ai/arx-client-ui-trajectory` ([`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts))
+- `@arx-ai/arx-client-ui-turn-outline` ([`packages/client/ui-turn-outline/src/index.ts`](../packages/client/ui-turn-outline/src/index.ts))
 - `@arx-ai/arx-client-ui-user-questions` ([`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts))
 - `@arx-ai/arx-client-ui-workflow-run` ([`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts))
 - `@arx-ai/arx-client-ui-workspace` ([`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts))
@@ -3253,6 +3452,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-command-goal` — requires `commands` · `goals` ([`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts))
 - `@arx-ai/arx-commands` ([`packages/interaction/commands/src/index.ts`](../packages/interaction/commands/src/index.ts))
 - `@arx-ai/arx-cordis-client-runner` ([`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts))
+- `@arx-ai/arx-experimental-client-ui-agent-team` ([`packages/experimental/client-ui-agent-team/src/index.ts`](../packages/experimental/client-ui-agent-team/src/index.ts))
 - `@arx-ai/arx-fs-e2b` — requires `e2b` ([`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts))
 - `@arx-ai/arx-fs-observation-policy` ([`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts))
 - `@arx-ai/arx-goal-round-driver` — requires `agents` · `goals` · `sessions` ([`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts))
@@ -3267,6 +3467,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-session-log-export` — requires `commands` ([`packages/session-query/session-log-export/src/index.ts`](../packages/session-query/session-log-export/src/index.ts))
 - `@arx-ai/arx-session-projection` ([`packages/session/session-projection/src/index.ts`](../packages/session/session-projection/src/index.ts))
 - `@arx-ai/arx-session-stats` — requires `sessionProjections` ([`packages/session/session-stats/src/index.ts`](../packages/session/session-stats/src/index.ts))
+- `@arx-ai/arx-session-turn-outline` — requires `sessionProjections` ([`packages/session/session-turn-outline/src/index.ts`](../packages/session/session-turn-outline/src/index.ts))
 - `@arx-ai/arx-skill-badge` — requires `skills` ([`packages/skill/skill-badge/src/index.ts`](../packages/skill/skill-badge/src/index.ts))
 - `@arx-ai/arx-storage` ([`packages/storage/storage/src/index.ts`](../packages/storage/storage/src/index.ts))
 - `@arx-ai/arx-subagent` ([`packages/subagent/subagent/src/index.ts`](../packages/subagent/subagent/src/index.ts))

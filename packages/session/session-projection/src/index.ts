@@ -19,7 +19,7 @@
 
 import { Context, Service } from '@arx-ai/cordis'
 import type { ZodType } from 'zod'
-import type { Session, SessionEvent } from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader } from '@arx-ai/arx-session'
 
 declare module '@arx-ai/cordis' {
   interface Context {
@@ -51,7 +51,7 @@ export interface ProjectionDefinition<
    * State for the empty log.
    * @returns the initial state.
    */
-  init(): NoInfer<S>
+  init(header: SessionHeader, inheritedEventCount: number): NoInfer<S>
   /**
    * Pure transition: previous state + one committed event → next state. A
    * unit uninterested in an event MUST return the same state reference — an
@@ -129,7 +129,7 @@ export type ProjectionCheckpoint = Record<string, ProjectionCheckpointRow>
 interface ErasedDefinition {
   key: string
   stateSchema: { parse(value: unknown): unknown }
-  init(): unknown
+  init(header: SessionHeader, inheritedEventCount: number): unknown
   apply(state: unknown, event: SessionEvent): unknown
   wire: { viewSchema: { parse(value: unknown): unknown }; view(state: unknown): unknown } | undefined
   stateVersion: number
@@ -230,7 +230,7 @@ export class SessionProjectionRegistry extends Service {
     const erased: ErasedDefinition = {
       key: definition.key,
       stateSchema: definition.stateSchema,
-      init: () => definition.init(),
+      init: (header, inheritedEventCount) => definition.init(header, inheritedEventCount),
       apply: (state, event) => definition.apply(state as S, event),
       wire: wire === undefined
         ? undefined
@@ -413,6 +413,8 @@ export class SessionProjectionRegistry extends Service {
    * @param checkpoint - persisted rows for one session (possibly stale or empty).
    * @param events - the stored events with `seq >= baseSeq`, in seq order.
    * @param baseSeq - the seq `events` starts at (its first event's seq when non-empty).
+   * @param header - durable Session header supplied to definitions that initialize from identity.
+   * @param inheritedEventCount - copied parent-event prefix length used by fork-aware definitions.
    * @returns the snapshot cut at the supplied log end (`asOfSeq` is the last
    *   supplied event's seq, `baseSeq - 1` for an empty tail) plus the
    *   refreshed checkpoint rows at that cut, ready for a durable write-back.
@@ -421,6 +423,8 @@ export class SessionProjectionRegistry extends Service {
     checkpoint: ProjectionCheckpoint,
     events: readonly SessionEvent[],
     baseSeq: number,
+    header: SessionHeader,
+    inheritedEventCount: number,
   ):
   { snapshot: ProjectionSnapshot; checkpoint: ProjectionCheckpoint } {
     const endSeq = events.at(-1)?.seq ?? baseSeq - 1
@@ -439,7 +443,7 @@ export class SessionProjectionRegistry extends Service {
           + 'its checkpoint row is missing, version-mismatched, or beyond the supplied log end; re-read from seq 0',
         )
       }
-      let state = usable ? def.stateSchema.parse(row.val) : def.init()
+      let state = usable ? def.stateSchema.parse(row.val) : def.init(header, inheritedEventCount)
       const from = usable ? row.seq : baseSeq - 1
       for (const event of events) {
         if (event.seq > from) state = def.apply(state, event)
@@ -454,8 +458,13 @@ export class SessionProjectionRegistry extends Service {
   }
 
   /** Fold one unit from init over `events`, producing a cell watermarked at the last folded event. */
-  private buildCell(def: ErasedDefinition, events: readonly SessionEvent[]): UnitCell {
-    let state = def.init()
+  private buildCell(
+    def: ErasedDefinition,
+    header: SessionHeader,
+    inheritedEventCount: number,
+    events: readonly SessionEvent[],
+  ): UnitCell {
+    let state = def.init(header, inheritedEventCount)
     for (const event of events) state = def.apply(state, event)
     return { state, observedSeq: (events.at(-1)?.seq ?? -1) }
   }
@@ -464,7 +473,12 @@ export class SessionProjectionRegistry extends Service {
   private cellFor(registration: Registration, session: Session): UnitCell {
     let cell = registration.cells.get(session)
     if (cell === undefined) {
-      cell = this.buildCell(registration.def, session.events)
+      cell = this.buildCell(
+        registration.def,
+        session.header,
+        session.header.seedLength ?? 0,
+        session.events,
+      )
       registration.cells.set(session, cell)
     }
     return cell
@@ -477,7 +491,12 @@ export class SessionProjectionRegistry extends Service {
       if (cell === undefined) {
         // Late build mid-stream: fold history before this event (seq = log
         // index, so the prefix slice is exact), then take the normal gate.
-        cell = this.buildCell(registration.def, session.events.slice(0, event.seq))
+        cell = this.buildCell(
+          registration.def,
+          session.header,
+          session.header.seedLength ?? 0,
+          session.events.slice(0, event.seq),
+        )
         registration.cells.set(session, cell)
       }
       const next = registration.def.apply(cell.state, event)

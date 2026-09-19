@@ -142,6 +142,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the presets, first-root-wins per id.',
       },
       {
+        signature: 'async compositionInventory(): Promise<AgentPresetComposition[]>',
+        description: 'Read each preset\'s flattened plugin rows without exposing configuration values.',
+        parameters: [],
+        returns: 'safe per-preset composition summaries in discovery order.',
+      },
+      {
         signature: 'async resolve(id?: string): Promise<AgentPreset>',
         description: 'Resolve one preset by id.\n\nA broken preset resolves — deleting one, reading one, and reporting one all need the row — and the mounting paths refuse it AFTER resolution through resolveMountable.',
         parameters: [{ name: 'id', description: 'the preset id, or `undefined` for {@link defaultId}.' }],
@@ -715,6 +721,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'filePreviews',
+    summary: 'Read-only host service; it adds no tool or model-visible event.',
+    description: 'Read-only host service; it adds no tool or model-visible event.',
+    methods: [
+      {
+        signature: '@Remote async read(agent: Agent, path: string, signal: AbortSignal): Promise<FilePreview>',
+        description: 'Read an allowlisted regular file inside the live Agent\'s cwd through that Agent\'s filesystem. Rejects unknown/disposed owners, escaping paths, symlinks, absent files, unsupported types, invalid text, oversized files and cancellation. Reads are bounded by the filesystem provider before buffering; no public URL, persistent copy, session event, or model context is created.',
+        parameters: [{ name: 'agent', description: 'live session owner supplied by the authenticated gateway.' }, { name: 'path', description: 'supported filename resolved inside the session workspace.' }, { name: 'signal', description: 'gateway-owned cancellation for the read.' }],
+        returns: 'current file bytes encoded as bounded UTF-8 text or base64.',
+      },
+    ],
+  },
+  {
     key: 'fileReferences',
     summary: 'Host capability for cancellable file-reference discovery.',
     description: 'Host capability for cancellable file-reference discovery.',
@@ -1135,6 +1154,140 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'projectRunner',
+    summary: 'Holder-owned sequential driver; restart rehydrates committed step state.',
+    description: 'Holder-owned sequential driver; restart rehydrates committed step state.',
+    methods: [
+      {
+        signature: 'async execute(parent: Agent, projectId: ProjectId, runId: ProjectWorkflowRunId, signal: AbortSignal): Promise<ProjectRunExecution>',
+        description: 'Continue pending steps of a run from its original parent session. Confirmed steps are skipped; uncertain effects require explicit operator reconciliation.',
+        parameters: [{ name: 'parent', description: 'original session owner bound when the run was created.' }, { name: 'projectId', description: 'durable project aggregate identity.' }, { name: 'runId', description: 'saved workflow run to continue.' }, { name: 'signal', description: 'caller cancellation propagated to every owned child.' }],
+        returns: 'the latest committed run and aggregate version.',
+      },
+    ],
+  },
+  {
+    key: 'projects',
+    summary: 'Project aggregate authority and `projects/*` Remote namespace.',
+    description: 'Project aggregate authority and `projects/*` Remote namespace. Every write uses storage-domain\'s per-domain chain and compare-and-set occurs inside the queued transform, before backend durability and publication.',
+    methods: [
+      {
+        signature: '@Remote async list(): Promise<readonly ProjectSummary[]>',
+        description: 'Return compact project snapshots in creation order.',
+        parameters: [],
+        returns: 'Fresh project summaries after service initialization.',
+      },
+      {
+        signature: '@Remote async get(projectId: ProjectIdBrand): Promise<ProjectRecord | undefined>',
+        description: 'Return one fresh aggregate snapshot, or undefined for an unknown id.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }],
+        returns: 'A detached aggregate snapshot when the project exists.',
+      },
+      {
+        signature: '@Remote async create(request: CreateProjectRequest): Promise<ProjectRecord>',
+        description: 'Create a project only for a registered workspace whose directory exists now.',
+        parameters: [{ name: 'request', description: 'Workspace, name, and optional description.' }],
+        returns: 'The committed initial aggregate.',
+      },
+      {
+        signature: '@Remote async savePlan( projectId: ProjectIdBrand, expectedVersion: number, request: SavePlanRequest, ): Promise<ProjectRecord>',
+        description: 'Append one validated immutable plan revision and its pending task rows.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Complete immutable plan revision input.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async approvePlan( projectId: ProjectIdBrand, expectedVersion: number, planRevision: number, ): Promise<ProjectRecord>',
+        description: 'Bind approval to one exact immutable plan revision.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'planRevision', description: 'Exact immutable plan revision approved by the operator.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async updateTask( projectId: ProjectIdBrand, expectedVersion: number, request: UpdateProjectTaskRequest, ): Promise<ProjectRecord>',
+        description: 'Replace one approved-plan task state. Starting work requires a known workspace-owned session and an existing exact prompt revision; verified state additionally requires non-empty evidence.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Requested task state, evidence, and execution attribution.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async savePrompt( projectId: ProjectIdBrand, expectedVersion: number, request: SavePromptRequest, ): Promise<ProjectRecord>',
+        description: 'Append one immutable prompt revision after snapshotting skill content hashes.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Prompt content, metadata, cases, and selected source skills.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async renderPrompt( projectId: ProjectIdBrand, promptId: ProjectPromptIdBrand, revision: number, variables: Readonly<Record<string, JsonValue>>, ): Promise<EffectivePromptSnapshot>',
+        description: 'Render one exact prompt revision for return through a logged tool result.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'promptId', description: 'Stable reusable prompt identifier.' }, { name: 'revision', description: 'Exact immutable prompt revision.' }, { name: 'variables', description: 'Declared values substituted without code execution.' }],
+        returns: 'Effective text and exact selected skill snapshots.',
+      },
+      {
+        signature: '@Remote async saveWorkflow( projectId: ProjectIdBrand, expectedVersion: number, request: SaveWorkflowRequest, ): Promise<ProjectRecord>',
+        description: 'Append one immutable workflow revision with a validated dependency DAG.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Complete named workflow step definition.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async configureBudget( projectId: ProjectIdBrand, expectedVersion: number, request: ConfigureProjectBudgetRequest, ): Promise<ProjectRecord>',
+        description: 'Set project workflow ceilings within the host safety ceilings.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Per-project active, step, and duration ceilings.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async startWorkflowRun(projectId: ProjectIdBrand, expectedVersion: number, request: StartWorkflowRunRequest): Promise<ProjectRecord>',
+        description: 'Reserve one bounded workflow run without launching any external task.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Exact workflow revision, inputs, provenance, and limits.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async startPromptEvaluation( projectId: ProjectIdBrand, expectedVersion: number, request: StartPromptEvaluationRequest, ): Promise<ProjectRecord>',
+        description: 'Atomically create an ordinary driver workflow for exact prompt evaluation cases.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Exact prompt, approved plan, parent session, and duration.' }],
+        returns: 'The committed aggregate containing the evaluation and driver run.',
+      },
+      {
+        signature: '@Remote async finalizePromptEvaluation( projectId: ProjectIdBrand, expectedVersion: number, request: FinalizePromptEvaluationRequest, ): Promise<ProjectRecord>',
+        description: 'Persist deterministic checks from the bounded output of a terminal driver run.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Evaluation ledger identifier to finalize once.' }],
+        returns: 'The committed aggregate containing comparable case results.',
+      },
+      {
+        signature: '@Remote async attachWorkflowStepSession( projectId: ProjectIdBrand, expectedVersion: number, request: AttachWorkflowStepSessionRequest, ): Promise<ProjectRecord>',
+        description: 'Attach an accepted child session to its already-committed running claim.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Run, step, and workspace-owned child session identifiers.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async interruptWorkflowRun( projectId: ProjectIdBrand, expectedVersion: number, request: InterruptWorkflowRunRequest, ): Promise<ProjectRecord>',
+        description: 'Conservatively interrupt an active run and retain its reservation.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Run identifier and recorded interruption reason.' }],
+        returns: 'The committed uncertain aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async resumeWorkflowRun(projectId: ProjectIdBrand, expectedVersion: number, request: ResumeWorkflowRunRequest): Promise<ProjectRecord>',
+        description: 'Trusted operator increase for a run stopped by its persisted budget.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Run identifier and strictly increased applicable budget.' }],
+        returns: 'The committed pending aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async claimWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, runId: ProjectWorkflowRunIdBrand, ): Promise<ClaimWorkflowStepResult>',
+        description: 'Claim at most one dependency-ready step in definition order. The claim, attempt number, inputs, and budget consumption commit before publication; callers must launch the external work after this method resolves.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'runId', description: 'Reserved workflow run to advance deterministically.' }],
+        returns: 'The committed aggregate and optional newly claimed step.',
+      },
+      {
+        signature: '@Remote async settleWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, request: SettleWorkflowStepRequest, ): Promise<ProjectRecord>',
+        description: 'Settle one claimed step; a failure or final completion releases the run reservation.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Terminal state and result or error for the running step.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+      {
+        signature: '@Remote async reconcileWorkflowRun( projectId: ProjectIdBrand, expectedVersion: number, request: ReconcileWorkflowRunRequest, ): Promise<ProjectRecord>',
+        description: 'Resolve restart uncertainty without silently retrying the interrupted step.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Explicit retry or terminal failure decision.' }],
+        returns: 'The committed aggregate snapshot.',
+      },
+    ],
+  },
+  {
     key: 'sandbox',
     summary: 'Abstract process-sandbox service.',
     description: 'Abstract process-sandbox service. confine must return enforcing argv or fail closed at wrap or runner-execution time; silent unconfined passthrough is forbidden. Functional probes arbitrate multi-runner chains and may be skipped for a sole candidate, whose own refusal remains the fail-closed end.',
@@ -1326,9 +1479,9 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'whole values per key with a usable row; empty when none.',
       },
       {
-        signature: 'restore( checkpoint: ProjectionCheckpoint, events: readonly SessionEvent[], baseSeq: number, ): { snapshot: ProjectionSnapshot; checkpoint: ProjectionCheckpoint }',
+        signature: 'restore( checkpoint: ProjectionCheckpoint, events: readonly SessionEvent[], baseSeq: number, header: SessionHeader, inheritedEventCount: number, ): { snapshot: ProjectionSnapshot; checkpoint: ProjectionCheckpoint }',
         description: 'Cold read: fold every persisted unit over a stored log suffix, seeding each from its checkpoint row when usable — the one read recipe (cached state + forward tail replay + `view`) applied without a live `Session`. Call with the events returned by a persistence `readFrom(id, restoreFloor(checkpoint))` and that same floor as `baseSeq`; the floor\'s one-below anchor makes the supplied end honest, so a shrunk log is detected here. A row is usable iff its `ver` matches the live unit\'s `stateVersion`, it does not predate `baseSeq` (`seq >= baseSeq - 1`), and it does not claim events past the supplied end (`seq <= endSeq`); an unusable row is discarded and its key refolds from `init` — which is only sound over the full log, so a discarded row with `baseSeq > 0` throws (the caller re-reads from seq 0, e.g. after a crash-repair truncation shrank the log below a row\'s watermark).',
-        parameters: [{ name: 'checkpoint', description: 'persisted rows for one session (possibly stale or empty).' }, { name: 'events', description: 'the stored events with `seq >= baseSeq`, in seq order.' }, { name: 'baseSeq', description: 'the seq `events` starts at (its first event\'s seq when non-empty).' }],
+        parameters: [{ name: 'checkpoint', description: 'persisted rows for one session (possibly stale or empty).' }, { name: 'events', description: 'the stored events with `seq >= baseSeq`, in seq order.' }, { name: 'baseSeq', description: 'the seq `events` starts at (its first event\'s seq when non-empty).' }, { name: 'header', description: 'durable Session header supplied to definitions that initialize from identity.' }, { name: 'inheritedEventCount', description: 'copied parent-event prefix length used by fork-aware definitions.' }],
         returns: 'the snapshot cut at the supplied log end (`asOfSeq` is the last supplied event\'s seq, `baseSeq - 1` for an empty tail) plus the refreshed checkpoint rows at that cut, ready for a durable write-back.',
       },
     ],
@@ -1670,6 +1823,35 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Enumerate plugin-contributed variables without executing their resolvers.',
         parameters: [],
         returns: 'declarations sorted by environment variable name.',
+      },
+    ],
+  },
+  {
+    key: 'skillGit',
+    summary: 'Materializes and verifies exact Git revisions while tracking child lifetime.',
+    description: 'Materializes and verifies exact Git revisions while tracking child lifetime.',
+    methods: [
+      {
+        signature: 'readonly config: ResolvedConfig',
+        description: 'Validated absolute cache paths and bounded source configuration.',
+        parameters: [],
+      },
+      {
+        signature: 'async snapshot(request: GitSkillSnapshotRequest, signal?: AbortSignal): Promise<readonly GitSkillSnapshot[]>',
+        description: 'Return exact regular files with repository, commit, path, content, and digest.',
+        parameters: [{ name: 'request', description: 'Exact repository, 40-hex commit, and selected file paths.' }, { name: 'signal', description: 'Optional cancellation for this caller only.' }],
+        returns: 'Verified immutable source snapshots.',
+      },
+      {
+        signature: 'materializeDirectories(source: GitSkillSourceConfig, signal?: AbortSignal): Promise<MaterializedSource>',
+        description: 'Materialize selected discovery directories for the provider.',
+        parameters: [{ name: 'source', description: 'Exact repository revision and selected directories.' }, { name: 'signal', description: 'Optional cancellation for this caller only.' }],
+        returns: 'Verified cache root and regular-file manifest.',
+      },
+      {
+        signature: 'dispose(): Promise<void>',
+        description: 'Abort active children and settle every tracked operation.',
+        parameters: [],
       },
     ],
   },
@@ -2136,6 +2318,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'turnOutlines',
+    summary: 'Read-only paging service; the gateway supplies the accessible session owner.',
+    description: 'Read-only paging service; the gateway supplies the accessible session owner.',
+    methods: [
+      {
+        signature: '@Remote page(agent: Agent, before: number | null, query: string, signal: AbortSignal): TurnOutlinePage',
+        description: 'Search complete history and return one bounded page without changing model input.',
+        parameters: [{ name: 'agent', description: 'session owner supplied by the authenticated gateway.' }, { name: 'before', description: 'exclusive start sequence or null for the newest page.' }, { name: 'query', description: 'at most 200 characters matched against turn number and preview.' }, { name: 'signal', description: 'gateway cancellation signal.' }],
+        returns: 'a page of at most 100 turns plus an older-page cursor.',
+      },
+    ],
+  },
+  {
     key: 'typert',
     summary: 'Registry of generated schemas, package reflection, invocations, and Remote dependency providers.',
     description: 'Registry of generated schemas, package reflection, invocations, and Remote dependency providers.',
@@ -2271,6 +2466,36 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Declare search providers a plugin makes configurable through a settings section. Registration is all-or-nothing: an empty list, invalid entry, or a provider already declared by any registration throws `WebError` without registering the rest. Disposed with the fiber.',
         parameters: [{ name: 'entries', description: 'every configurable search provider this plugin owns.' }],
         returns: 'a handle that withdraws all of them, and can atomically replace them.',
+      },
+    ],
+  },
+  {
+    key: 'webhookRuntime',
+    summary: 'Provider-neutral durable admission, deduplication, and bounded worker service.',
+    description: 'Provider-neutral durable admission, deduplication, and bounded worker service.',
+    methods: [
+      {
+        signature: 'register<K extends string>(rule: WebhookRule<K>): () => Promise<void>',
+        description: 'Register one exact provider-source rule.',
+        parameters: [{ name: 'rule', description: 'trusted callback and unique rule id.' }],
+        returns: 'an awaitable disposer that aborts and drains pending reservations, queued work, and active work.',
+      },
+      {
+        signature: 'accept<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<WebhookAdmission>',
+        description: 'Durably reserve and enqueue one verified delivery.',
+        parameters: [{ name: 'delivery', description: 'authenticated, parsed provider data.' }],
+        returns: 'the admission outcome after required ledger writes; a rule unloaded during reservation yields no-rule.',
+      },
+      {
+        signature: 'records(): readonly WebhookLedgerRecord[]',
+        description: 'Read detached durable ledger rows for operator inspection.',
+        parameters: [],
+        returns: 'detached durable ledger rows in storage order.',
+      },
+      {
+        signature: 'async reconcile( source: WebhookSourceId, deliveryId: WebhookDeliveryId, ruleId: WebhookRuleId, resolution: \'completed\' | \'release\', ): Promise<void>',
+        description: 'Resolve one uncertain delivery after an operator verifies its external outcome.',
+        parameters: [{ name: 'source', description: 'adapter instance.' }, { name: 'deliveryId', description: 'provider delivery id.' }, { name: 'ruleId', description: 'rule reservation.' }, { name: 'resolution', description: 'completed prevents replay; release permits a later signed redelivery.' }],
       },
     ],
   },
@@ -2646,6 +2871,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; their messages already obey the immutable creation contract.' }],
   },
   {
+    name: 'projects/changed',
+    mode: 'emit',
+    signature: '\'projects/changed\'(project: ProjectRecord): void',
+    summary: 'Announces a project snapshot after the aggregate committed.',
+    description: 'Announces a project snapshot after the aggregate committed.',
+    parameters: [{ name: 'project', description: 'Fresh durable snapshot.' }],
+  },
+  {
     name: 'session-telemetry/record',
     mode: 'waterfall',
     signature: '\'session-telemetry/record\'(record: SessionTelemetryRecord, next: () => SessionTelemetryRecord): SessionTelemetryRecord',
@@ -2902,6 +3135,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface AgentPreset {\n    readonly id: string;\n    readonly trust: PresetTrust;\n    readonly path: string;\n    readonly name?: string;\n    readonly description?: string;\n    readonly order?: number;\n    readonly broken?: string;\n}',
   },
   {
+    name: 'AgentPresetComposition',
+    declaration: 'export interface AgentPresetComposition {\n    readonly id: string;\n    readonly trust: PresetTrust;\n    readonly name?: string;\n    readonly isDefault: boolean;\n    readonly broken?: string;\n    readonly rows: readonly AgentPresetCompositionRow[];\n}',
+  },
+  {
+    name: 'AgentPresetCompositionRow',
+    declaration: 'export interface AgentPresetCompositionRow {\n    readonly entryId: string | null;\n    readonly moduleName: string;\n    readonly enabled: CompositionRowEnablement;\n    readonly condition?: string;\n    readonly fiberState?: FiberState;\n}',
+  },
+  {
     name: 'AgentSetup',
     declaration: 'export type AgentSetup = (agentCtx: Context) => AgentSetupCommit | Promise<AgentSetupCommit | void> | void;',
   },
@@ -2990,6 +3231,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type AttachmentId = Branded<\'AttachmentId\'>;',
   },
   {
+    name: 'AttachWorkflowStepSessionRequest',
+    declaration: 'export interface AttachWorkflowStepSessionRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly stepId: ProjectWorkflowStepId;\n    readonly sessionId: SessionId;\n}',
+  },
+  {
     name: 'AuthorizationEntry',
     declaration: 'export interface AuthorizationEntry {\n    key: CredentialKey;\n    label: string;\n    methods: readonly AuthorizationMethod[];\n    inFlight: boolean;\n}',
   },
@@ -3060,6 +3305,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CancelOptions',
     declaration: 'export interface CancelOptions {\n    keepInbox?: boolean | undefined;\n}',
+  },
+  {
+    name: 'ClaimWorkflowStepResult',
+    declaration: 'export interface ClaimWorkflowStepResult {\n    readonly project: ProjectRecord;\n    readonly step?: ProjectWorkflowStepRun;\n}',
   },
   {
     name: 'ClientResponse',
@@ -3144,6 +3393,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CompactionTrigger',
     declaration: 'export type CompactionTrigger = \'pressure\' | \'context-overflow\';',
+  },
+  {
+    name: 'CompositionRowEnablement',
+    declaration: 'export type CompositionRowEnablement = boolean | \'conditional\';',
+  },
+  {
+    name: 'ConfigureProjectBudgetRequest',
+    declaration: 'export type ConfigureProjectBudgetRequest = ProjectBudget;',
   },
   {
     name: 'ConfinedArgv',
@@ -3236,6 +3493,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CreateGoalResult',
     declaration: 'export interface CreateGoalResult {\n    readonly ref: GoalRef;\n}',
+  },
+  {
+    name: 'CreateProjectRequest',
+    declaration: 'export interface CreateProjectRequest {\n    readonly workspaceId: WorkspaceId;\n    readonly name: string;\n    readonly description?: string;\n}',
   },
   {
     name: 'CreateSessionOptions',
@@ -3366,12 +3627,20 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface EditGoalRequest {\n    readonly objective?: string;\n    readonly maxGoalRounds?: number;\n}',
   },
   {
+    name: 'EffectivePromptSnapshot',
+    declaration: 'export interface EffectivePromptSnapshot {\n    readonly promptId: ProjectPromptId;\n    readonly promptRevision: number;\n    readonly renderedPrompt: string;\n    readonly variables: Readonly<Record<string, JsonValue>>;\n    readonly sourceSkills: readonly PromptSkillSnapshot[];\n}',
+  },
+  {
     name: 'EncodedImageAttachment',
     declaration: 'export interface EncodedImageAttachment {\n    mediaType: ImageMediaType;\n    data: string;\n    name?: string;\n}',
   },
   {
     name: 'EpochHeader',
     declaration: 'export interface EpochHeader {\n    config: LlmCallConfig;\n    adapterDefaults?: LlmCallConfigAdapterDefaults;\n    system?: string;\n    tools?: ToolSchema[];\n}',
+  },
+  {
+    name: 'FiberState',
+    declaration: 'export type FiberState = FiberStateEnum;',
   },
   {
     name: 'FileDiff',
@@ -3382,8 +3651,16 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface FileLocation {\n    path: string;\n    line?: number;\n}',
   },
   {
+    name: 'FilePreview',
+    declaration: 'export interface FilePreview {\n    readonly path: string;\n    readonly kind: \'markdown\' | \'code\' | \'html\' | \'image\' | \'pdf\';\n    readonly mediaType: string;\n    readonly encoding: \'utf8\' | \'base64\';\n    readonly content: string;\n    readonly bytes: number;\n}',
+  },
+  {
     name: 'FileReferenceCandidate',
     declaration: 'export interface FileReferenceCandidate {\n    path: string;\n    kind: \'file\' | \'directory\';\n}',
+  },
+  {
+    name: 'FinalizePromptEvaluationRequest',
+    declaration: 'export interface FinalizePromptEvaluationRequest {\n    readonly evaluationId: ProjectPromptEvaluationId;\n}',
   },
   {
     name: 'FinishReason',
@@ -3448,6 +3725,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'GenericResultView',
     declaration: 'export interface GenericResultView {\n    card: \'generic\';\n    title?: string;\n    content?: ContentBlock[];\n}',
+  },
+  {
+    name: 'GitSkillSnapshot',
+    declaration: 'export interface GitSkillSnapshot {\n    readonly repository: string;\n    readonly commit: string;\n    readonly path: string;\n    readonly content: string;\n    readonly contentHash: string;\n}',
+  },
+  {
+    name: 'GitSkillSnapshotRequest',
+    declaration: 'export interface GitSkillSnapshotRequest {\n    readonly repository: string;\n    readonly commit: string;\n    readonly paths: readonly string[];\n}',
+  },
+  {
+    name: 'GitSkillSourceConfig',
+    declaration: 'export interface GitSkillSourceConfig {\n    readonly repository: string;\n    readonly commit: string;\n    readonly selectedDirs: string[];\n}',
   },
   {
     name: 'GoalActivation',
@@ -3524,6 +3813,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'IndexInjectionPlacement',
     declaration: 'export type IndexInjectionPlacement = \'head\' | \'body\';',
+  },
+  {
+    name: 'InterruptWorkflowRunRequest',
+    declaration: 'export interface InterruptWorkflowRunRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly reason: string;\n}',
   },
   {
     name: 'InvariantFailure',
@@ -3846,6 +4139,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface PermissionSelect {\n    options: PresetOption[];\n    currentValue: string;\n}',
   },
   {
+    name: 'PlanItemId',
+    declaration: 'export type PlanItemId = Branded<\'PlanItemId\'>;',
+  },
+  {
     name: 'PostToolDecision',
     declaration: 'export type PostToolDecision = {\n    kind: \'accept\';\n    content?: ContentBlock[];\n    value?: never;\n    additionalContexts?: UserMessage[];\n} | {\n    kind: \'accept\';\n    value: JsonValue;\n    content?: never;\n    additionalContexts?: UserMessage[];\n} | {\n    kind: \'block\';\n    feedback: ContentBlock[];\n    additionalContexts?: UserMessage[];\n};',
   },
@@ -3886,6 +4183,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type PreToolDecision = {\n    kind: \'allow\';\n} | {\n    kind: \'deny\';\n    reason: string;\n} | {\n    kind: \'ask\';\n    reason?: string;\n};',
   },
   {
+    name: 'ProjectBudget',
+    declaration: 'export interface ProjectBudget {\n    readonly maxActiveRuns: number;\n    readonly maxStepsPerRun: number;\n    readonly maxRunDurationMs: number;\n}',
+  },
+  {
+    name: 'ProjectId',
+    declaration: 'export type ProjectId = Branded<\'ProjectId\'>;',
+  },
+  {
     name: 'ProjectionChangeListener',
     declaration: 'export type ProjectionChangeListener = (session: Session, key: Extract<keyof SessionProjectionMap, string>, value: unknown, seq: number) => void;',
   },
@@ -3899,11 +4204,139 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ProjectionDefinition',
-    declaration: 'export interface ProjectionDefinition<K extends keyof SessionProjectionStateMap, S extends SessionProjectionStateMap[K] = SessionProjectionStateMap[K]> {\n    key: K;\n    stateSchema: ZodType<S>;\n    init(): NoInfer<S>;\n    apply(state: NoInfer<S>, event: SessionEvent): NoInfer<S>;\n    wire?: K extends keyof SessionProjectionMap ? {\n        viewSchema: ZodType<SessionProjectionMap[K]>;\n        view(state: NoInfer<S>): SessionProjectionMap[K];\n    } : never;\n    stateVersion: number;\n}',
+    declaration: 'export interface ProjectionDefinition<K extends keyof SessionProjectionStateMap, S extends SessionProjectionStateMap[K] = SessionProjectionStateMap[K]> {\n    key: K;\n    stateSchema: ZodType<S>;\n    init(header: SessionHeader, inheritedEventCount: number): NoInfer<S>;\n    apply(state: NoInfer<S>, event: SessionEvent): NoInfer<S>;\n    wire?: K extends keyof SessionProjectionMap ? {\n        viewSchema: ZodType<SessionProjectionMap[K]>;\n        view(state: NoInfer<S>): SessionProjectionMap[K];\n    } : never;\n    stateVersion: number;\n}',
   },
   {
     name: 'ProjectionSnapshot',
     declaration: 'export interface ProjectionSnapshot {\n    asOfSeq: number;\n    values: Partial<SessionProjectionMap>;\n}',
+  },
+  {
+    name: 'ProjectPlanApproval',
+    declaration: 'export interface ProjectPlanApproval {\n    readonly revision: number;\n    readonly approvedAt: string;\n}',
+  },
+  {
+    name: 'ProjectPlanItem',
+    declaration: 'export interface ProjectPlanItem {\n    readonly id: PlanItemId;\n    readonly title: string;\n    readonly description?: string;\n    readonly acceptanceCriteria: readonly string[];\n    readonly dependsOn: readonly PlanItemId[];\n}',
+  },
+  {
+    name: 'ProjectPlanRevision',
+    declaration: 'export interface ProjectPlanRevision {\n    readonly revision: number;\n    readonly summary: string;\n    readonly items: readonly ProjectPlanItem[];\n    readonly createdAt: string;\n}',
+  },
+  {
+    name: 'ProjectPrompt',
+    declaration: 'export interface ProjectPrompt {\n    readonly id: ProjectPromptId;\n    readonly name: string;\n    readonly revisions: readonly ProjectPromptRevision[];\n}',
+  },
+  {
+    name: 'ProjectPromptEvaluation',
+    declaration: 'export interface ProjectPromptEvaluation {\n    readonly id: ProjectPromptEvaluationId;\n    readonly promptId: ProjectPromptId;\n    readonly promptRevision: number;\n    readonly workflowId: ProjectWorkflowId;\n    readonly workflowRevision: number;\n    readonly runId: ProjectWorkflowRunId;\n    readonly caseSteps: readonly {\n        readonly caseId: ProjectPromptEvaluationCaseId;\n        readonly stepId: ProjectWorkflowStepId;\n    }[];\n    readonly createdAt: string;\n    readonly result?: ProjectPromptEvaluationResult;\n}',
+  },
+  {
+    name: 'ProjectPromptEvaluationCase',
+    declaration: 'export interface ProjectPromptEvaluationCase {\n    readonly id: ProjectPromptEvaluationCaseId;\n    readonly name: string;\n    readonly variables: Readonly<Record<string, JsonValue>>;\n    readonly checks: ProjectPromptEvaluationChecks;\n}',
+  },
+  {
+    name: 'ProjectPromptEvaluationCaseId',
+    declaration: 'export type ProjectPromptEvaluationCaseId = Branded<\'ProjectPromptEvaluationCaseId\'>;',
+  },
+  {
+    name: 'ProjectPromptEvaluationCaseResult',
+    declaration: 'export interface ProjectPromptEvaluationCaseResult {\n    readonly caseId: ProjectPromptEvaluationCaseId;\n    readonly stepId: ProjectWorkflowStepId;\n    readonly accepted: boolean | null;\n    readonly expectedSubstringMatches: readonly (boolean | null)[];\n    readonly validJson: boolean | null;\n    readonly latencyMs: number | null;\n    readonly tokens: number | null;\n    readonly outputTruncated: boolean;\n    readonly error?: string;\n}',
+  },
+  {
+    name: 'ProjectPromptEvaluationChecks',
+    declaration: 'export interface ProjectPromptEvaluationChecks {\n    readonly expectedSubstrings?: readonly string[];\n    readonly validJson?: boolean;\n}',
+  },
+  {
+    name: 'ProjectPromptEvaluationId',
+    declaration: 'export type ProjectPromptEvaluationId = Branded<\'ProjectPromptEvaluationId\'>;',
+  },
+  {
+    name: 'ProjectPromptEvaluationResult',
+    declaration: 'export interface ProjectPromptEvaluationResult {\n    readonly accepted: boolean | null;\n    readonly runState: \'completed\' | \'failed\';\n    readonly cases: readonly ProjectPromptEvaluationCaseResult[];\n    readonly finalizedAt: string;\n}',
+  },
+  {
+    name: 'ProjectPromptExample',
+    declaration: 'export interface ProjectPromptExample {\n    readonly id: ProjectPromptExampleId;\n    readonly variables: Readonly<Record<string, JsonValue>>;\n    readonly expectedOutput: string;\n}',
+  },
+  {
+    name: 'ProjectPromptExampleId',
+    declaration: 'export type ProjectPromptExampleId = Branded<\'ProjectPromptExampleId\'>;',
+  },
+  {
+    name: 'ProjectPromptId',
+    declaration: 'export type ProjectPromptId = Branded<\'ProjectPromptId\'>;',
+  },
+  {
+    name: 'ProjectPromptRef',
+    declaration: 'export interface ProjectPromptRef {\n    readonly promptId: ProjectPromptId;\n    readonly revision: number;\n}',
+  },
+  {
+    name: 'ProjectPromptRevision',
+    declaration: 'export interface ProjectPromptRevision {\n    readonly revision: number;\n    readonly purpose: string;\n    readonly tags: readonly string[];\n    readonly examples: readonly ProjectPromptExample[];\n    readonly evaluationCases: readonly ProjectPromptEvaluationCase[];\n    readonly template: string;\n    readonly variablesSchema: Readonly<Record<string, PromptVariableDefinition>>;\n    readonly sourceSkills: readonly PromptSkillSnapshot[];\n    readonly createdAt: string;\n}',
+  },
+  {
+    name: 'ProjectRecord',
+    declaration: 'export interface ProjectRecord {\n    readonly id: ProjectId;\n    readonly version: number;\n    readonly workspaceId: WorkspaceId;\n    readonly name: string;\n    readonly description?: string;\n    readonly plans: readonly ProjectPlanRevision[];\n    readonly approvedPlan?: ProjectPlanApproval;\n    readonly tasks: readonly ProjectTask[];\n    readonly prompts: readonly ProjectPrompt[];\n    readonly evaluations: readonly ProjectPromptEvaluation[];\n    readonly workflows: readonly ProjectWorkflow[];\n    readonly budget: ProjectBudget;\n    readonly runs: readonly ProjectWorkflowRun[];\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}',
+  },
+  {
+    name: 'ProjectRunExecution',
+    declaration: 'export interface ProjectRunExecution {\n    readonly projectId: ProjectId;\n    readonly version: number;\n    readonly run: ProjectWorkflowRun;\n}',
+  },
+  {
+    name: 'ProjectSummary',
+    declaration: 'export interface ProjectSummary {\n    readonly id: ProjectId;\n    readonly version: number;\n    readonly workspaceId: WorkspaceId;\n    readonly name: string;\n    readonly approvedPlanRevision?: number;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}',
+  },
+  {
+    name: 'ProjectTask',
+    declaration: 'export interface ProjectTask {\n    readonly planRevision: number;\n    readonly itemId: PlanItemId;\n    readonly state: ProjectTaskState;\n    readonly execution?: ProjectTaskExecution;\n    readonly evidence: readonly string[];\n    readonly result?: JsonValue;\n    readonly updatedAt: string;\n}',
+  },
+  {
+    name: 'ProjectTaskExecution',
+    declaration: 'export interface ProjectTaskExecution {\n    readonly sessionId: SessionId;\n    readonly prompt: ProjectPromptRef;\n}',
+  },
+  {
+    name: 'ProjectTaskState',
+    declaration: 'export type ProjectTaskState = \'pending\' | \'running\' | \'verified\' | \'failed\' | \'uncertain\';',
+  },
+  {
+    name: 'ProjectWorkflow',
+    declaration: 'export interface ProjectWorkflow {\n    readonly id: ProjectWorkflowId;\n    readonly name: string;\n    readonly revisions: readonly ProjectWorkflowRevision[];\n}',
+  },
+  {
+    name: 'ProjectWorkflowId',
+    declaration: 'export type ProjectWorkflowId = Branded<\'ProjectWorkflowId\'>;',
+  },
+  {
+    name: 'ProjectWorkflowRevision',
+    declaration: 'export interface ProjectWorkflowRevision {\n    readonly revision: number;\n    readonly steps: readonly ProjectWorkflowStep[];\n    readonly createdAt: string;\n}',
+  },
+  {
+    name: 'ProjectWorkflowRun',
+    declaration: 'export interface ProjectWorkflowRun {\n    readonly planRevision?: number;\n    readonly parentSessionId?: SessionId;\n    readonly id: ProjectWorkflowRunId;\n    readonly workflowId: ProjectWorkflowId;\n    readonly workflowRevision: number;\n    readonly state: ProjectWorkflowRunState;\n    readonly input: JsonValue;\n    readonly steps: readonly ProjectWorkflowStepRun[];\n    readonly launchedSteps: number;\n    readonly maxSteps: number;\n    readonly startedAt: string;\n    readonly deadlineAt: string;\n    readonly finishedAt?: string;\n    readonly error?: string;\n}',
+  },
+  {
+    name: 'ProjectWorkflowRunId',
+    declaration: 'export type ProjectWorkflowRunId = Branded<\'ProjectWorkflowRunId\'>;',
+  },
+  {
+    name: 'ProjectWorkflowRunState',
+    declaration: 'export type ProjectWorkflowRunState = \'pending\' | \'running\' | \'completed\' | \'failed\' | \'uncertain\';',
+  },
+  {
+    name: 'ProjectWorkflowStep',
+    declaration: 'export interface ProjectWorkflowStep {\n    readonly id: ProjectWorkflowStepId;\n    readonly name: string;\n    readonly description?: string;\n    readonly dependsOn: readonly ProjectWorkflowStepId[];\n    readonly prompt?: ProjectPromptRef;\n    readonly variables?: Readonly<Record<string, JsonValue>>;\n}',
+  },
+  {
+    name: 'ProjectWorkflowStepId',
+    declaration: 'export type ProjectWorkflowStepId = Branded<\'ProjectWorkflowStepId\'>;',
+  },
+  {
+    name: 'ProjectWorkflowStepRun',
+    declaration: 'export interface ProjectWorkflowStepRun {\n    readonly stepId: ProjectWorkflowStepId;\n    readonly state: ProjectWorkflowStepState;\n    readonly sessionId?: SessionId;\n    readonly attempt: number;\n    readonly input?: JsonValue;\n    readonly result?: JsonValue;\n    readonly error?: string;\n    readonly startedAt?: string;\n    readonly finishedAt?: string;\n}',
+  },
+  {
+    name: 'ProjectWorkflowStepState',
+    declaration: 'export type ProjectWorkflowStepState = \'pending\' | \'running\' | \'completed\' | \'failed\' | \'uncertain\';',
   },
   {
     name: 'PromptAssembly',
@@ -3916,6 +4349,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'PromptSection',
     declaration: 'export interface PromptSection {\n    readonly name: string;\n    readonly order: number;\n    readonly text: string | ((context: AssembleContext) => string);\n    readonly complete?: boolean;\n}',
+  },
+  {
+    name: 'PromptSkillSnapshot',
+    declaration: 'export interface PromptSkillSnapshot {\n    readonly repository: string;\n    readonly commit: string;\n    readonly path: string;\n    readonly content: string;\n    readonly contentHash: string;\n}',
+  },
+  {
+    name: 'PromptSkillSource',
+    declaration: 'export interface PromptSkillSource {\n    readonly repository: string;\n    readonly commit: string;\n    readonly path: string;\n    readonly content: string;\n}',
+  },
+  {
+    name: 'PromptVariableDefinition',
+    declaration: 'export interface PromptVariableDefinition {\n    readonly type: PromptVariableType;\n    readonly required: boolean;\n    readonly description?: string;\n}',
+  },
+  {
+    name: 'PromptVariableType',
+    declaration: 'export type PromptVariableType = \'string\' | \'number\' | \'boolean\' | \'json\';',
   },
   {
     name: 'ProviderRequestId',
@@ -3944,6 +4393,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ReasoningEffortId',
     declaration: 'export type ReasoningEffortId = Branded<\'ReasoningEffortId\'>;',
+  },
+  {
+    name: 'ReconcileWorkflowRunRequest',
+    declaration: 'export interface ReconcileWorkflowRunRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly state: \'pending\' | \'failed\';\n    readonly error?: string;\n}',
   },
   {
     name: 'RedactedSecret',
@@ -4006,6 +4459,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ResumeAgentOptions {\n    readonly resumeSessionId: SessionId;\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
   },
   {
+    name: 'ResumeWorkflowRunRequest',
+    declaration: 'export interface ResumeWorkflowRunRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly maxSteps?: number;\n    readonly maxDurationMs?: number;\n}',
+  },
+  {
     name: 'RpcError',
     declaration: 'export type RpcError = {\n    [C in RpcErrorCode]: {\n        code: C;\n        message: string;\n        details: RpcErrorDetailsMap[C];\n    };\n}[RpcErrorCode];',
   },
@@ -4058,8 +4515,20 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface SaveImageAttachment {\n    data: Uint8Array;\n    mediaType: ImageMediaType;\n    name?: string;\n}',
   },
   {
+    name: 'SavePlanRequest',
+    declaration: 'export interface SavePlanRequest {\n    readonly summary: string;\n    readonly items: readonly ProjectPlanItem[];\n}',
+  },
+  {
+    name: 'SavePromptRequest',
+    declaration: 'export interface SavePromptRequest {\n    readonly promptId?: ProjectPromptId;\n    readonly name: string;\n    readonly purpose?: string;\n    readonly tags?: readonly string[];\n    readonly examples?: readonly ProjectPromptExample[];\n    readonly evaluationCases?: readonly ProjectPromptEvaluationCase[];\n    readonly template: string;\n    readonly variablesSchema: Readonly<Record<string, PromptVariableDefinition>>;\n    readonly sourceSkills: readonly PromptSkillSource[];\n}',
+  },
+  {
     name: 'SaveTextSpill',
     declaration: 'export interface SaveTextSpill {\n    owner: SpillOwner;\n    source: SpillSource;\n    suggestedName: string;\n    content: string;\n}',
+  },
+  {
+    name: 'SaveWorkflowRequest',
+    declaration: 'export interface SaveWorkflowRequest {\n    readonly workflowId?: ProjectWorkflowId;\n    readonly name: string;\n    readonly steps: readonly ProjectWorkflowStep[];\n}',
   },
   {
     name: 'ScheduledToolDispatch',
@@ -4378,6 +4847,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type SettingsUpdateSource = \'update\' | \'provider\';',
   },
   {
+    name: 'SettleWorkflowStepRequest',
+    declaration: 'export interface SettleWorkflowStepRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly stepId: ProjectWorkflowStepId;\n    readonly state: \'completed\' | \'failed\';\n    readonly result?: JsonValue;\n    readonly error?: string;\n}',
+  },
+  {
     name: 'ShellExecRequest',
     declaration: 'export interface ShellExecRequest {\n    command: string;\n    workdir?: string | undefined;\n    timeoutMs?: number | undefined;\n    stdoutMaxBytes?: number | undefined;\n    signal?: AbortSignal | undefined;\n    stdin?: string | undefined;\n    env?: Record<string, string> | undefined;\n    arxEnv?: ArxEnvironment | undefined;\n    sandboxPolicy?: SandboxExecutionPolicy | undefined;\n}',
   },
@@ -4480,6 +4953,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SpillSource',
     declaration: 'export interface SpillSource {\n    toolName: string;\n    callId: CallId;\n    label: string;\n}',
+  },
+  {
+    name: 'StartPromptEvaluationRequest',
+    declaration: 'export interface StartPromptEvaluationRequest {\n    readonly promptId: ProjectPromptId;\n    readonly promptRevision: number;\n    readonly planRevision: number;\n    readonly parentSessionId: SessionId;\n    readonly maxDurationMs?: number;\n}',
+  },
+  {
+    name: 'StartWorkflowRunRequest',
+    declaration: 'export interface StartWorkflowRunRequest {\n    readonly workflowId: ProjectWorkflowId;\n    readonly workflowRevision: number;\n    readonly input: JsonValue;\n    readonly maxSteps?: number;\n    readonly maxDurationMs?: number;\n    readonly planRevision?: number;\n    readonly parentSessionId?: SessionId;\n}',
   },
   {
     name: 'StorageBackend',
@@ -4906,6 +5387,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface TurnEndReasonMap {\n    completed: {\n        kind: \'completed\';\n    };\n    aborted: {\n        kind: \'aborted\';\n        reason: TurnEndCancelCause;\n    };\n    blocked: {\n        kind: \'blocked\';\n    };\n    error: {\n        kind: \'error\';\n        error: LlmFailure;\n    };\n    \'max-tokens\': {\n        kind: \'max-tokens\';\n    };\n    interrupted: {\n        kind: \'interrupted\';\n    };\n}',
   },
   {
+    name: 'TurnOutlineEntry',
+    declaration: 'export interface TurnOutlineEntry {\n    readonly turn: number;\n    readonly startSeq: number;\n    readonly endSeq?: number | undefined;\n    readonly preview: string;\n    readonly status: string;\n}',
+  },
+  {
+    name: 'TurnOutlinePage',
+    declaration: 'export interface TurnOutlinePage {\n    readonly turns: readonly TurnOutlineEntry[];\n    readonly total: number;\n    readonly hasMore: boolean;\n    readonly nextBefore?: number | undefined;\n}',
+  },
+  {
     name: 'TypertCodec',
     declaration: 'export type TypertCodec = {\n    readonly mode: \'strict\';\n    readonly typeSymbol: string;\n    readonly schema: TypertSchema;\n} | {\n    readonly mode: \'src-json\';\n};',
   },
@@ -4966,6 +5455,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface TypertTypeModel {\n    readonly name: string;\n    readonly declaration: string;\n}',
   },
   {
+    name: 'UpdateProjectTaskRequest',
+    declaration: 'export interface UpdateProjectTaskRequest {\n    readonly planRevision: number;\n    readonly itemId: PlanItemId;\n    readonly state: ProjectTaskState;\n    readonly execution?: ProjectTaskExecution;\n    readonly evidence?: readonly string[];\n    readonly result?: JsonValue;\n}',
+  },
+  {
     name: 'UpdateTeamTaskRequest',
     declaration: 'export interface UpdateTeamTaskRequest {\n    readonly taskId: TeamTaskId;\n    readonly expectedRevision: number;\n    readonly action: TeamTaskAction;\n    readonly subject?: string;\n    readonly description?: string;\n    readonly blockedBy?: readonly TeamTaskId[];\n    readonly writeScopes?: readonly string[];\n    readonly owner?: string;\n}',
   },
@@ -4976,6 +5469,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'UserQuestionProvider',
     declaration: 'export interface UserQuestionProvider {\n    ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>;\n}',
+  },
+  {
+    name: 'VerifiedWebhookDelivery',
+    declaration: 'export interface VerifiedWebhookDelivery<K extends string = string> {\n    readonly kind: K;\n    readonly source: WebhookSourceId;\n    readonly deliveryId: WebhookDeliveryId;\n    readonly event: WebhookEventOf<K>;\n    readonly receivedAt: number;\n}',
   },
   {
     name: 'WebBootEntry',
@@ -5012,6 +5509,50 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WebFetchResultView',
     declaration: 'export interface WebFetchResultView {\n    card: \'web\';\n    kind: \'fetch\';\n    title?: string;\n    url: string;\n    statusCode: number;\n    truncated: boolean;\n}',
+  },
+  {
+    name: 'WebhookAdmission',
+    declaration: 'export type WebhookAdmission = \'accepted\' | \'duplicate\' | \'overflow\' | \'no-rule\';',
+  },
+  {
+    name: 'WebhookDeliveryId',
+    declaration: 'export type WebhookDeliveryId = Branded<\'WebhookDeliveryId\'>;',
+  },
+  {
+    name: 'WebhookEventMap',
+    declaration: 'export interface WebhookEventMap {\n}',
+  },
+  {
+    name: 'WebhookEventOf',
+    declaration: 'export type WebhookEventOf<K extends string> = K extends keyof WebhookEventMap ? WebhookEventMap[K] : JsonValue;',
+  },
+  {
+    name: 'WebhookLedgerKey',
+    declaration: 'export type WebhookLedgerKey = Branded<\'WebhookLedgerKey\'>;',
+  },
+  {
+    name: 'WebhookLedgerRecord',
+    declaration: 'export interface WebhookLedgerRecord {\n    readonly key: WebhookLedgerKey;\n    readonly source: WebhookSourceId;\n    readonly deliveryId: WebhookDeliveryId;\n    readonly ruleId: WebhookRuleId;\n    readonly kind: string;\n    readonly projectId?: ProjectId;\n    readonly status: \'processing\' | \'completed\' | \'uncertain\';\n    readonly receivedAt: number;\n    readonly updatedAt: number;\n    readonly sessionId?: SessionId;\n}',
+  },
+  {
+    name: 'WebhookModelSelection',
+    declaration: 'export interface WebhookModelSelection {\n    readonly provider: string;\n    readonly model: string;\n    readonly maxTokens?: number;\n}',
+  },
+  {
+    name: 'WebhookRule',
+    declaration: 'export interface WebhookRule<K extends string = string> {\n    readonly id: WebhookRuleId;\n    readonly kind: K;\n    readonly source: WebhookSourceId;\n    run(delivery: Readonly<VerifiedWebhookDelivery<K>>, signal: AbortSignal): WebhookSessionRequest | null | Promise<WebhookSessionRequest | null>;\n}',
+  },
+  {
+    name: 'WebhookRuleId',
+    declaration: 'export type WebhookRuleId = Branded<\'WebhookRuleId\'>;',
+  },
+  {
+    name: 'WebhookSessionRequest',
+    declaration: 'export interface WebhookSessionRequest {\n    readonly projectId: ProjectId;\n    readonly workspaceId: WorkspaceId;\n    readonly title: string;\n    readonly prompt: string;\n    readonly agentPreset: string;\n    readonly permissionPreset: string;\n    readonly model?: WebhookModelSelection;\n}',
+  },
+  {
+    name: 'WebhookSourceId',
+    declaration: 'export type WebhookSourceId = Branded<\'WebhookSourceId\'>;',
   },
   {
     name: 'WebProviderSelection',

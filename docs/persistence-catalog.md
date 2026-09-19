@@ -393,6 +393,22 @@ Types: [ContentBlock](subsystems/core.md) · [TokenUsage](subsystems/llm-streami
 
 Source: [`packages/compaction/compaction/src/types.ts:33`](../packages/compaction/compaction/src/types.ts)
 
+### `deliverables/*`
+
+<a id="deliverablespresented--log-only"></a>
+
+#### `deliverables/presented` — log-only
+
+```ts persistence-catalog
+/**
+ * Existing file references declared by a successful present call.
+ * @param data - owning turn, tool call, and validated current-file references.
+ */
+'deliverables/presented': PresentedFilesEvent
+```
+
+Source: [`packages/fs/tool-present/src/types.ts:31`](../packages/fs/tool-present/src/types.ts)
+
 ### `feedback/*`
 
 <a id="feedbackrecord--log-only"></a>
@@ -723,7 +739,7 @@ Source: [`packages/subagent/subagent/src/descriptor.ts:37`](../packages/subagent
 
 Types: [TeamId](subsystems/agent-team.md) · [TeamMemberSnapshot](subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:206`](../packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:214`](../packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagedelivered--log-only"></a>
 
@@ -741,7 +757,7 @@ Source: [`packages/experimental/agent-team/src/types.ts:206`](../packages/experi
 
 Types: [TeamId](subsystems/agent-team.md) · [TeamMessageId](subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:212`](../packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:220`](../packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagequeued--log-only"></a>
 
@@ -754,7 +770,7 @@ Source: [`packages/experimental/agent-team/src/types.ts:212`](../packages/experi
 
 Types: [TeamId](subsystems/agent-team.md) · [TeamMessageSnapshot](subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:210`](../packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:218`](../packages/experimental/agent-team/src/types.ts)
 
 <a id="teamtask--log-only"></a>
 
@@ -767,7 +783,7 @@ Source: [`packages/experimental/agent-team/src/types.ts:210`](../packages/experi
 
 Types: [TeamId](subsystems/agent-team.md) · [TeamTaskSnapshot](subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:208`](../packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:216`](../packages/experimental/agent-team/src/types.ts)
 
 ### `todo/*`
 

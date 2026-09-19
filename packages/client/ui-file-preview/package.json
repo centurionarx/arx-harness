@@ -1,0 +1,80 @@
+{
+  "name": "@arx-ai/arx-client-ui-file-preview",
+  "description": "Safe current-file document previews alongside the conversation",
+  "version": "1.0.9",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
+    "directory": "packages/client/ui-file-preview"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "arx": {
+    "client": {
+      "inject": [
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-locale",
+        "@arx-ai/arx-client-ui-conversation",
+        "@arx-ai/arx-api-remotes"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-file-preview": "workspace:^"
+  },
+  "devDependencies": {
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-ui-conversation": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-file-preview": "workspace:^",
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "pdfjs-dist": "6.3.289"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

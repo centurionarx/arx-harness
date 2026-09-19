@@ -103,12 +103,12 @@ function validateDescriptor(descriptor: KvUnitDescriptor): void {
  */
 export function apply(ctx: Context, config: Config) {
   const backend = new JsonStorageBackend(config.root)
-  ctx.effect(() => {
+  ctx.effect(function* () {
     const unregister = ctx.storage.backend.register('json', backend)
-    return async () => {
+    yield async () => {
       unregister()
       await backend.close()
     }
+    yield ctx.provide(storageBackendServiceKey('json'), backend)
   })
-  ctx.provide(storageBackendServiceKey('json'), backend)
 }

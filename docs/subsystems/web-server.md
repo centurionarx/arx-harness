@@ -52,6 +52,47 @@ A request whose handling throws (a malformed %-escape hitting `decodeURIComponen
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxwebhookruntime--webhookruntime"></a>
+
+### `ctx.webhookRuntime` — `WebhookRuntime`
+
+Provider-neutral durable admission, deduplication, and bounded worker service.
+
+```ts cordis-catalog
+/**
+ * Register one exact provider-source rule.
+ * @param rule - trusted callback and unique rule id.
+ * @returns an awaitable disposer that aborts and drains pending reservations, queued work, and active work.
+ */
+register<K extends string>(rule: WebhookRule<K>): () => Promise<void>
+
+/**
+ * Durably reserve and enqueue one verified delivery.
+ * @param delivery - authenticated, parsed provider data.
+ * @returns the admission outcome after required ledger writes; a rule unloaded during reservation yields no-rule.
+ */
+accept<K extends string>(delivery: VerifiedWebhookDelivery<K>): Promise<WebhookAdmission>
+
+/**
+ * Read detached durable ledger rows for operator inspection.
+ * @returns detached durable ledger rows in storage order.
+ */
+records(): readonly WebhookLedgerRecord[]
+
+/**
+ * Resolve one uncertain delivery after an operator verifies its external outcome.
+ * @param source - adapter instance.
+ * @param deliveryId - provider delivery id.
+ * @param ruleId - rule reservation.
+ * @param resolution - completed prevents replay; release permits a later signed redelivery.
+ */
+async reconcile( source: WebhookSourceId, deliveryId: WebhookDeliveryId, ruleId: WebhookRuleId, resolution: 'completed' | 'release', ): Promise<void>
+```
+
+Types: [VerifiedWebhookDelivery](../../packages/webhook/webhook/README.md) · [WebhookAdmission](../../packages/webhook/webhook/README.md) · [WebhookDeliveryId](../../packages/webhook/webhook/README.md) · [WebhookLedgerRecord](../../packages/webhook/webhook/README.md) · [WebhookRule](../../packages/webhook/webhook/README.md) · [WebhookRuleId](../../packages/webhook/webhook/README.md) · [WebhookSourceId](../../packages/webhook/webhook/README.md)
+
+Source: [`packages/webhook/webhook/src/index.ts`](../../packages/webhook/webhook/src/index.ts)
+
 <a id="ctxwebserver--webserver"></a>
 
 ### `ctx.webServer` — `WebServer`

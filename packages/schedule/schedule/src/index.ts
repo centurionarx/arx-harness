@@ -6,7 +6,9 @@
 import type { Context } from '@arx-ai/cordis'
 import type { Agent } from '@arx-ai/arx-agent'
 import type {} from '@arx-ai/arx-session-persistence'
+import type {} from '@arx-ai/arx-session-projection'
 import { ScheduleRuntime } from './runtime.ts'
+import { scheduleProjectionDefinition } from './projection.ts'
 import { registerScheduleTools } from './tools.ts'
 
 export type * from './types.ts'
@@ -16,6 +18,7 @@ export {
   ScheduleId,
   ScheduleInputError,
   ScheduleLogError,
+  applyScheduleChanges,
   allocateScheduleId,
   createAfterScheduleRecord,
   createAtScheduleRecord,
@@ -28,6 +31,7 @@ export {
   scheduleView,
 } from './domain.ts'
 export { registerScheduleTools } from './tools.ts'
+export { scheduleProjectionDefinition } from './projection.ts'
 
 /** Cordis function-plugin name. */
 export const name = 'schedule'
@@ -38,6 +42,10 @@ type OwnerCleanup = () => void | Promise<void>
 
 /** Install Schedule only for root agents published after this plugin loads. */
 export function apply(ctx: Context): void {
+  ctx.inject(['sessionProjections'], (projectionCtx) => {
+    projectionCtx.sessionProjections.register(scheduleProjectionDefinition)
+  })
+
   const runtimes = new Map<Agent, OwnerCleanup>()
   let stopping = false
 

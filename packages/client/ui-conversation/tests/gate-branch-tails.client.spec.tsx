@@ -125,6 +125,7 @@ describe('render branch tails', () => {
     })
     const view = render(
       <DetailsPanel
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}
         SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetailsProbe()}
         sessionId={SID}
@@ -182,7 +183,7 @@ describe('render branch tails', () => {
     const owners: DetailsToolOwnerProps[] = []
     const view = render(
       <DetailsPanel
-        SessionProvider={SessionProviderStub}
+        renderSlotChain={(_slot, _owner, options) => options?.fallback}        SessionProvider={SessionProviderStub}
         renderSlot={renderToolDetailsProbe(owners)}
         sessionId={SID}
         useSession={bindSnapshotSelector({ getSnapshot: () => snap, subscribe: () => () => {} })}

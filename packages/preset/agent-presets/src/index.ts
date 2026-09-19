@@ -23,6 +23,7 @@
 
 import { stat } from 'node:fs/promises'
 import { Context, Service } from '@arx-ai/cordis'
+import { evaluate } from '@arx-ai/cordis-plugin-loader'
 import z from '@arx-ai/schemastery'
 import { bindScopeParent, createScope, scopeOf, type Scope, type ScopeKey, type ScopeParentBinding } from '@arx-ai/arx-scope'
 // Type-only: resolves the `agent/created` lifecycle event this service watches.
@@ -32,6 +33,10 @@ import { arxHomePath } from '@arx-ai/arx-home-paths'
 import { discoverPresets, USER_PRESET_DIR } from './discovery.ts'
 import { copyComposition, deleteComposition, readComposition } from './authoring.ts'
 import { mountPreset, serviceForAgent, standingMountFor } from './mount.ts'
+import { livePresetMounts } from './mount.ts'
+import {
+  fileComposition, mountedCompositionRows, type AgentPresetComposition,
+} from './composition-inventory.ts'
 import { PresetExistsError } from './authoring.ts'
 import { PresetMountError, UnknownPresetError, type AgentPreset, type Config, type PresetRoot } from './preset.ts'
 import type {} from './types.ts'
@@ -65,6 +70,9 @@ export {
 export { resolveSessionPreset, type PresetBearingSession } from './session.ts'
 export { PresetMountError, UnknownPresetError } from './preset.ts'
 export type { AgentPreset, Config, PresetRoot, PresetTrust } from './preset.ts'
+export type {
+  AgentPresetComposition, AgentPresetCompositionRow, CompositionRowEnablement,
+} from './composition-inventory.ts'
 
 declare module '@arx-ai/cordis' {
   interface Context {
@@ -198,6 +206,39 @@ export class AgentPresets extends Service {
    */
   async list(): Promise<AgentPreset[]> {
     return await discoverPresets(this.resolvedRoots)
+  }
+
+  /**
+   * Read each preset's flattened plugin rows without exposing configuration values.
+   * @returns safe per-preset composition summaries in discovery order.
+   */
+  async compositionInventory(): Promise<AgentPresetComposition[]> {
+    const defaultId = this.defaultId
+    const evaluateExpression = (expression: string): unknown => evaluate(this.ctx.loader.ctx, expression)
+    const rootFiber = this.ctx.root.fiber
+    const found: AgentPresetComposition[] = []
+    for (const preset of await this.list()) {
+      const identity = {
+        id: preset.id,
+        trust: preset.trust,
+        ...preset.name === undefined ? {} : { name: preset.name },
+        isDefault: preset.id === defaultId,
+      }
+      const mount = livePresetMounts(rootFiber).findLast(candidate => candidate.presetId === preset.id)
+      if (mount !== undefined) {
+        found.push({ ...identity, rows: mountedCompositionRows(mount.tree) })
+        continue
+      }
+      if (preset.broken !== undefined) {
+        found.push({ ...identity, broken: preset.broken, rows: [] })
+        continue
+      }
+      const read = await fileComposition(preset.path, evaluateExpression)
+      found.push('broken' in read
+        ? { ...identity, broken: read.broken, rows: [] }
+        : { ...identity, rows: read.rows })
+    }
+    return found
   }
 
   /**

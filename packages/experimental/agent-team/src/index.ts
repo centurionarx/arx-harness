@@ -4,6 +4,7 @@ import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import type { Agent } from '@arx-ai/arx-agent'
 import type {} from '@arx-ai/arx-session-persistence'
+import type {} from '@arx-ai/arx-session-projection'
 import { TeamActivity } from './activity.ts'
 import { errorMessage, TeamError } from './error.ts'
 import { TeamJournal } from './journal.ts'
@@ -12,6 +13,7 @@ import { TeamMailbox } from './mailbox.ts'
 import { TeamRoster } from './roster.ts'
 import type { TeamMembership } from './roster.ts'
 import { TeamTaskBoard } from './task-board.ts'
+import { agentTeamProjectionDefinition } from './projection.ts'
 import { TeamId, TeamTaskId } from './types.ts'
 import type {
   Config,
@@ -31,6 +33,7 @@ export type { TeamMembership } from './roster.ts'
 export { TeamId, TeamMessageId, TeamTaskId } from './types.ts'
 export { TeamError } from './error.ts'
 export { foldTeam } from './fold.ts'
+export { agentTeamProjectionDefinition } from './projection.ts'
 
 declare module '@arx-ai/cordis' {
   interface Context {
@@ -76,6 +79,9 @@ export class TeamService extends Service {
 
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'agentTeams')
+    ctx.inject(['sessionProjections'], (projectionCtx) => {
+      projectionCtx.sessionProjections.register(agentTeamProjectionDefinition)
+    })
     this.config = {
       maxMembers: positiveLimit('maxMembers', config.maxMembers ?? DEFAULT_MAX_MEMBERS),
       maxTasks: positiveLimit('maxTasks', config.maxTasks ?? DEFAULT_MAX_TASKS),

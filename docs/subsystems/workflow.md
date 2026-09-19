@@ -133,6 +133,210 @@ The top-level `arx-tool-workflow` consumer projects display facts into its calli
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxprojectrunner--projectrunner"></a>
+
+### `ctx.projectRunner` — `ProjectRunner`
+
+Holder-owned sequential driver; restart rehydrates committed step state.
+
+```ts cordis-catalog
+/**
+ * Continue pending steps of a run from its original parent session. Confirmed
+ * steps are skipped; uncertain effects require explicit operator reconciliation.
+ * @param parent - original session owner bound when the run was created.
+ * @param projectId - durable project aggregate identity.
+ * @param runId - saved workflow run to continue.
+ * @param signal - caller cancellation propagated to every owned child.
+ * @returns the latest committed run and aggregate version.
+ */
+async execute(parent: Agent, projectId: ProjectId, runId: ProjectWorkflowRunId, signal: AbortSignal): Promise<ProjectRunExecution>
+```
+
+Types: [Agent](core.md) · [ProjectId](../../packages/project/project/README.md) · [ProjectRunExecution](../../packages/project/project-runner/README.md) · [ProjectWorkflowRunId](../../packages/project/project/README.md)
+
+Source: [`packages/project/project-runner/src/index.ts`](../../packages/project/project-runner/src/index.ts)
+
+<a id="ctxprojects--projectservice"></a>
+
+### `ctx.projects` — `ProjectService`
+
+Project aggregate authority and `projects/*` Remote namespace. Every write uses storage-domain's per-domain chain and compare-and-set occurs inside the queued transform, before backend durability and publication.
+
+```ts cordis-catalog
+/**
+ * Return compact project snapshots in creation order.
+ * @returns Fresh project summaries after service initialization.
+ */
+@Remote async list(): Promise<readonly ProjectSummary[]>
+
+/**
+ * Return one fresh aggregate snapshot, or undefined for an unknown id.
+ * @param projectId - Stable project identifier.
+ * @returns A detached aggregate snapshot when the project exists.
+ */
+@Remote async get(projectId: ProjectIdBrand): Promise<ProjectRecord | undefined>
+
+/**
+ * Create a project only for a registered workspace whose directory exists now.
+ * @param request - Workspace, name, and optional description.
+ * @returns The committed initial aggregate.
+ */
+@Remote async create(request: CreateProjectRequest): Promise<ProjectRecord>
+
+/**
+ * Append one validated immutable plan revision and its pending task rows.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Complete immutable plan revision input.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async savePlan( projectId: ProjectIdBrand, expectedVersion: number, request: SavePlanRequest, ): Promise<ProjectRecord>
+
+/**
+ * Bind approval to one exact immutable plan revision.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param planRevision - Exact immutable plan revision approved by the operator.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async approvePlan( projectId: ProjectIdBrand, expectedVersion: number, planRevision: number, ): Promise<ProjectRecord>
+
+/**
+ * Replace one approved-plan task state. Starting work requires a known
+ * workspace-owned session and an existing exact prompt revision; verified
+ * state additionally requires non-empty evidence.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Requested task state, evidence, and execution attribution.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async updateTask( projectId: ProjectIdBrand, expectedVersion: number, request: UpdateProjectTaskRequest, ): Promise<ProjectRecord>
+
+/**
+ * Append one immutable prompt revision after snapshotting skill content hashes.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Prompt content, metadata, cases, and selected source skills.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async savePrompt( projectId: ProjectIdBrand, expectedVersion: number, request: SavePromptRequest, ): Promise<ProjectRecord>
+
+/**
+ * Render one exact prompt revision for return through a logged tool result.
+ * @param projectId - Stable project identifier.
+ * @param promptId - Stable reusable prompt identifier.
+ * @param revision - Exact immutable prompt revision.
+ * @param variables - Declared values substituted without code execution.
+ * @returns Effective text and exact selected skill snapshots.
+ */
+@Remote async renderPrompt( projectId: ProjectIdBrand, promptId: ProjectPromptIdBrand, revision: number, variables: Readonly<Record<string, JsonValue>>, ): Promise<EffectivePromptSnapshot>
+
+/**
+ * Append one immutable workflow revision with a validated dependency DAG.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Complete named workflow step definition.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async saveWorkflow( projectId: ProjectIdBrand, expectedVersion: number, request: SaveWorkflowRequest, ): Promise<ProjectRecord>
+
+/**
+ * Set project workflow ceilings within the host safety ceilings.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Per-project active, step, and duration ceilings.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async configureBudget( projectId: ProjectIdBrand, expectedVersion: number, request: ConfigureProjectBudgetRequest, ): Promise<ProjectRecord>
+
+/**
+ * Reserve one bounded workflow run without launching any external task.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Exact workflow revision, inputs, provenance, and limits.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async startWorkflowRun(projectId: ProjectIdBrand, expectedVersion: number, request: StartWorkflowRunRequest): Promise<ProjectRecord>
+
+/**
+ * Atomically create an ordinary driver workflow for exact prompt evaluation cases.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Exact prompt, approved plan, parent session, and duration.
+ * @returns The committed aggregate containing the evaluation and driver run.
+ */
+@Remote async startPromptEvaluation( projectId: ProjectIdBrand, expectedVersion: number, request: StartPromptEvaluationRequest, ): Promise<ProjectRecord>
+
+/**
+ * Persist deterministic checks from the bounded output of a terminal driver run.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Evaluation ledger identifier to finalize once.
+ * @returns The committed aggregate containing comparable case results.
+ */
+@Remote async finalizePromptEvaluation( projectId: ProjectIdBrand, expectedVersion: number, request: FinalizePromptEvaluationRequest, ): Promise<ProjectRecord>
+
+/**
+ * Attach an accepted child session to its already-committed running claim.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Run, step, and workspace-owned child session identifiers.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async attachWorkflowStepSession( projectId: ProjectIdBrand, expectedVersion: number, request: AttachWorkflowStepSessionRequest, ): Promise<ProjectRecord>
+
+/**
+ * Conservatively interrupt an active run and retain its reservation.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Run identifier and recorded interruption reason.
+ * @returns The committed uncertain aggregate snapshot.
+ */
+@Remote async interruptWorkflowRun( projectId: ProjectIdBrand, expectedVersion: number, request: InterruptWorkflowRunRequest, ): Promise<ProjectRecord>
+
+/**
+ * Trusted operator increase for a run stopped by its persisted budget.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Run identifier and strictly increased applicable budget.
+ * @returns The committed pending aggregate snapshot.
+ */
+@Remote async resumeWorkflowRun(projectId: ProjectIdBrand, expectedVersion: number, request: ResumeWorkflowRunRequest): Promise<ProjectRecord>
+
+/**
+ * Claim at most one dependency-ready step in definition order. The claim,
+ * attempt number, inputs, and budget consumption commit before publication;
+ * callers must launch the external work after this method resolves.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param runId - Reserved workflow run to advance deterministically.
+ * @returns The committed aggregate and optional newly claimed step.
+ */
+@Remote async claimWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, runId: ProjectWorkflowRunIdBrand, ): Promise<ClaimWorkflowStepResult>
+
+/**
+ * Settle one claimed step; a failure or final completion releases the run reservation.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Terminal state and result or error for the running step.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async settleWorkflowStep( projectId: ProjectIdBrand, expectedVersion: number, request: SettleWorkflowStepRequest, ): Promise<ProjectRecord>
+
+/**
+ * Resolve restart uncertainty without silently retrying the interrupted step.
+ * @param projectId - Stable project identifier.
+ * @param expectedVersion - Required aggregate CAS version.
+ * @param request - Explicit retry or terminal failure decision.
+ * @returns The committed aggregate snapshot.
+ */
+@Remote async reconcileWorkflowRun( projectId: ProjectIdBrand, expectedVersion: number, request: ReconcileWorkflowRunRequest, ): Promise<ProjectRecord>
+```
+
+Types: [AttachWorkflowStepSessionRequest](../../packages/project/project/README.md) · [ClaimWorkflowStepResult](../../packages/project/project/README.md) · [ConfigureProjectBudgetRequest](../../packages/project/project/README.md) · [CreateProjectRequest](../../packages/project/project/README.md) · [EffectivePromptSnapshot](../../packages/project/project/README.md) · [FinalizePromptEvaluationRequest](../../packages/project/project/README.md) · [InterruptWorkflowRunRequest](../../packages/project/project/README.md) · [ProjectIdBrand](../../packages/project/project/README.md) · [ProjectPromptIdBrand](../../packages/project/project/README.md) · [ProjectRecord](../../packages/project/project/README.md) · [ProjectSummary](../../packages/project/project/README.md) · [ProjectWorkflowRunIdBrand](../../packages/project/project/README.md) · [ReconcileWorkflowRunRequest](../../packages/project/project/README.md) · [ResumeWorkflowRunRequest](../../packages/project/project/README.md) · [SavePlanRequest](../../packages/project/project/README.md) · [SavePromptRequest](../../packages/project/project/README.md) · [SaveWorkflowRequest](../../packages/project/project/README.md) · [SettleWorkflowStepRequest](../../packages/project/project/README.md) · [StartPromptEvaluationRequest](../../packages/project/project/README.md) · [StartWorkflowRunRequest](../../packages/project/project/README.md) · [UpdateProjectTaskRequest](../../packages/project/project/README.md)
+
+Source: [`packages/project/project/src/index.ts`](../../packages/project/project/src/index.ts)
+
 <a id="ctxworkflowengine--workflowengine-abstract-seam"></a>
 
 ### `ctx.workflowEngine` — `WorkflowEngine` (abstract seam)
@@ -150,6 +354,29 @@ abstract start(request: WorkflowStartRequest): WorkflowRun
 ```
 
 Source: [`packages/workflow/workflow/src/index.ts`](../../packages/workflow/workflow/src/index.ts)
+
+<a id="projects-events"></a>
+
+### `projects/*` events
+
+<a id="projectschanged--emit"></a>
+
+#### `projects/changed` — emit
+
+Announces a project snapshot after the aggregate committed.
+
+```ts cordis-catalog
+/**
+ * Announces a project snapshot after the aggregate committed.
+ * @param project Fresh durable snapshot.
+ * @mode emit
+ */
+'projects/changed'(project: ProjectRecord): void
+```
+
+Types: [ProjectRecord](../../packages/project/project/README.md)
+
+Source: [`packages/project/project/src/index.ts`](../../packages/project/project/src/index.ts)
 
 <a id="workflow-events"></a>
 

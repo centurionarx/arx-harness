@@ -52,7 +52,8 @@
     "@arx-ai/arx-client-ui-conversation": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-system-prompt": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-tool-present": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-client-connection": "workspace:^",
@@ -66,7 +67,8 @@
     "@types/react": "~18.3.1",
     "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
-    "@arx-ai/arx-client-ui-primitives": "workspace:^"
+    "@arx-ai/arx-client-ui-primitives": "workspace:^",
+    "@arx-ai/arx-tool-present": "workspace:^"
   },
   "files": [
     "lib/index.js",

@@ -59,6 +59,8 @@ export type RenderMessageImages = (owner: Omit<MessageImagesOwnerProps, 'loadIma
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface SlotMap {
+    /** Optional detail body takeover for a selected document; tool details remain the fallback. */
+    'details.content': { kind: 'chain'; scope: 'session'; owner: DetailsContentOwnerProps }
     /**
      * The entire body of one session: taking this seat means rendering that
      * session's conversation yourself. The occupant also owns the per-session
@@ -343,6 +345,10 @@ export interface InputZone {
  * toolview hole).
  */
 export interface ConvViewOwnerProps {
+  /** Load up to 20 older pages and reveal an exact turn/start address in Chat; false on unavailable history or cancellation. */
+  revealTurn?: ((startSeq: number) => Promise<boolean>) | undefined
+  /** Cancel this view's pending reveal; an already dispatched history page may still finish. */
+  cancelRevealTurn?: (() => void) | undefined
   /** One-shot inspect request from another view (chat's Inspect button); null when idle. */
   inspect?: { callId: CallId } | null
   /** Acknowledge the inspect request once applied (clears the store field). */
@@ -370,6 +376,8 @@ declare module '@arx-ai/cordis' {
   interface Context {
     /** Prose file-mention provider (ui-deliverables); reach via ctx.get — optional. */
     chatFileMentions: ChatFileMentions
+    /** Optional preview contribution; absent means the existing native file opener. */
+    chatFilePreview: { supports(path: string): boolean }
   }
 }
 
@@ -486,6 +494,10 @@ export interface ConversationInjected {
 
 /** Business callbacks injected into the strict Session body seat. */
 export interface ConversationSessionInjected {
+  /** Owner implementation of the optional cross-view navigation callbacks. */
+  revealTurn?: ConvViewOwnerProps['revealTurn']
+  /** Invalidates pending navigation when its originating view unmounts. */
+  cancelRevealTurn?: ConvViewOwnerProps['cancelRevealTurn']
   /** Views projected from the `conversation.view` slot ledger. */
   views: {
     list: () => readonly ViewTab[]
@@ -801,13 +813,24 @@ export type MessageImagesProps = PropsRuntime<'conversation.message.images'> & P
  * Injected share of the details slot: the panel is otherwise a pure reader of
  * the shared chat store, but its close button is a layout orchestration call.
  */
+/** Owner values for optional Details content contributions. */
+export interface DetailsContentOwnerProps {
+  /** Current path intent, or null while inspecting tool execution. */
+  preview: { path: string } | null
+  /** Explicit native opening; bypasses the optional in-app preview. */
+  openNativeFile: (path: string) => Promise<void>
+}
+
+/** Owner callbacks for closing Details and explicitly opening a current file natively. */
 export interface DetailsInjected {
+  /** Explicit native file opener for optional document previews. */
+  openNativeFile?: ((path: string) => Promise<void>) | undefined
   /** Close the details panel (layout geometry stays with ctx.layout). */
   closeDetails: () => void
 }
 
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */
-export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool'>
+export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool' | 'details.content'>
   & PropsStore<ChatStore> & DetailsInjected & PropsLocale<'conversation'>
 
 /** Owner share common to the hero / New-Session Workspace pickers. */

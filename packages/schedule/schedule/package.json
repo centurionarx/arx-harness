@@ -31,6 +31,9 @@
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
   "peerDependencies": {
     "@arx-ai/arx-agent": "workspace:^",
     "@arx-ai/arx-brand": "workspace:^",
@@ -38,6 +41,7 @@
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-tools": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   },
@@ -52,6 +56,7 @@
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-persistence": "workspace:^",
     "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-system-prompt": "workspace:^",
     "@arx-ai/arx-tools": "workspace:^",
     "@arx-ai/cordis": "workspace:^"

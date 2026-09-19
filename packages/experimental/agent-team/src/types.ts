@@ -96,6 +96,14 @@ export interface TeamTaskView {
   readonly writeScopeWarnings: string[]
 }
 
+/** Client-visible durable Team roster and task graph. */
+export interface TeamProjectionView {
+  readonly teamId: TeamId
+  readonly leadId: SessionId
+  readonly members: readonly TeamMemberSnapshot[]
+  readonly tasks: readonly TeamTaskSnapshot[]
+}
+
 /** One peer message retained until its target Session records it. */
 export interface TeamMessageSnapshot {
   readonly id: TeamMessageId
@@ -215,5 +223,12 @@ declare module '@arx-ai/arx-session/types' {
       messageId: TeamMessageId
       targetId: SessionId
     }
+  }
+}
+
+declare module '@arx-ai/arx-session-projection/types' {
+  interface SessionProjectionMap {
+    /** Durable Team membership and task graph visible to Team sessions. */
+    agentTeam: TeamProjectionView
   }
 }

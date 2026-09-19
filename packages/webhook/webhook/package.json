@@ -1,0 +1,27 @@
+{
+  "name": "@arx-ai/arx-webhook",
+  "description": "Durable bounded webhook rule runtime with explicit uncertain-delivery reconciliation",
+  "version": "1.0.9",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./lib/types/index.d.ts", "default": "./lib/index.js" },
+    "./types": { "types": "./lib/types/types.d.ts", "default": "./lib/types/types.js" },
+    "./invariant": { "types": "./lib/types/invariant.d.ts", "default": "./lib/invariant.js" },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "scripts": { "bundle": "tsdown", "watch": "tsdown --watch" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/centurionarx/arx-harness.git", "directory": "packages/webhook/webhook" },
+  "publishConfig": { "access": "public" },
+  "dependencies": { "@arx-ai/schemastery": "workspace:^", "zod": "^4.4.3" },
+  "peerDependencies": {
+    "@arx-ai/arx-agent": "workspace:^", "@arx-ai/arx-agent-default-model": "workspace:^", "@arx-ai/arx-agent-presets": "workspace:^", "@arx-ai/arx-brand": "workspace:^", "@arx-ai/arx-invariants": "workspace:^", "@arx-ai/arx-llm": "workspace:^", "@arx-ai/arx-permission-presets": "workspace:^", "@arx-ai/arx-project": "workspace:^", "@arx-ai/arx-session": "workspace:^", "@arx-ai/arx-session-title": "workspace:^", "@arx-ai/arx-storage-domain": "workspace:^", "@arx-ai/arx-workspace": "workspace:^", "@arx-ai/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@arx-ai/arx-agent": "workspace:^", "@arx-ai/arx-agent-default-model": "workspace:^", "@arx-ai/arx-agent-presets": "workspace:^", "@arx-ai/arx-brand": "workspace:^", "@arx-ai/arx-invariants": "workspace:^", "@arx-ai/arx-llm": "workspace:^", "@arx-ai/arx-permission-presets": "workspace:^", "@arx-ai/arx-project": "workspace:^", "@arx-ai/arx-session": "workspace:^", "@arx-ai/arx-session-title": "workspace:^", "@arx-ai/arx-storage": "workspace:^", "@arx-ai/arx-storage-domain": "workspace:^", "@arx-ai/arx-storage-json": "workspace:^", "@arx-ai/arx-workspace": "workspace:^", "@arx-ai/cordis": "workspace:^"
+  },
+  "files": ["lib/index.js", "lib/invariant.js", "lib/types/**/*.js", "lib/types/**/*.d.ts"]
+}

@@ -40,6 +40,7 @@
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-persistence": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   },
@@ -54,6 +55,7 @@
     "@arx-ai/arx-session-persistence": "workspace:^",
     "@arx-ai/arx-session-persistence-jsonl": "workspace:^",
     "@arx-ai/arx-session-persistence-sqlite": "workspace:^",
+    "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-subagent": "workspace:^",
     "@arx-ai/arx-subagent-fork-in-process": "workspace:^",
     "@arx-ai/arx-subagent-spawn-in-process": "workspace:^",

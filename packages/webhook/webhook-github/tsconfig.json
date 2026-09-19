@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "lib/types" },
+  "include": ["src"],
+  "references": [
+    { "path": "../../../vendor/cosmokit" }, { "path": "../../../vendor/schemastery" }, { "path": "../../../vendor/cordis" },
+    { "path": "../../credentials/credentials" }, { "path": "../../host/webserver" }, { "path": "../../project/project" }, { "path": "../../core/session" },
+    { "path": "../webhook" }, { "path": "../../workspace/workspace" }, { "path": "../../runtime-diagnostics/invariants" }
+  ]
+}

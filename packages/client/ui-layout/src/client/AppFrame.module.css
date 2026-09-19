@@ -69,6 +69,11 @@
   transition: none;
 }
 
+.handle:focus-visible {
+  outline: 2px solid var(--arx-alias-label-tertiary);
+  outline-offset: -2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .handle {
     transition: none;
@@ -97,11 +102,13 @@
 
 .detailsCol:hover ~ .handle[data-side='details']::after,
 .handle[data-side='details']:hover::after,
+.handle[data-side='details']:focus-visible::after,
 .handle[data-side='details'][data-dragging='true']::after {
   opacity: 1;
 }
 
 .handle[data-side='details']:hover::after,
+.handle[data-side='details']:focus-visible::after,
 .handle[data-side='details'][data-dragging='true']::after {
   background: var(--arx-alias-button-floating-hover);
   border-color: var(--arx-alias-border-l3);

@@ -1,6 +1,7 @@
 import { defineProperty, isNullable } from '@arx-ai/cosmokit'
 import type { Awaitable, Dict } from '@arx-ai/cosmokit'
 import { Context } from './context.ts'
+import { unloadingFibers } from './unloading.ts'
 import type { Plugin } from './registry.ts'
 import { buildOuterStack, composeError, DisposableList, getTraceable, isConstructor, isObject, symbols } from './utils.ts'
 import type { Impl } from './reflect.ts'
@@ -265,33 +266,42 @@ export class Fiber {
       this.dispose = parent.fiber.effect(() => {
         const remove = runtime.fibers.push(this)
         return async () => {
-          this.uid = null
-          emitPluginDisposed(this.context, this)
-          if (this.ctx.registry.has(runtime.callback)) {
-            remove()
-            if (!runtime.fibers.length) {
-              this.ctx.registry.delete(runtime.callback)
+          const root = this.ctx.root
+          const unloading = unloadingFibers.get(root) ?? new Set<Fiber>()
+          unloadingFibers.set(root, unloading)
+          unloading.add(this)
+          try {
+            this.uid = null
+            emitPluginDisposed(this.context, this)
+            if (this.ctx.registry.has(runtime.callback)) {
+              remove()
+              if (!runtime.fibers.length) {
+                this.ctx.registry.delete(runtime.callback)
+              }
             }
-          }
-          this._setEpoch(INACTIVE)
-          // A PENDING fiber can already own effects registered by an
-          // internal/plugin observer. Its epoch is still INACTIVE, so
-          // _setEpoch() has no transition to drive; explicitly unload that
-          // pre-activation work before reporting disposal complete.
-          if (!this.inertia) {
-            this._updateState(() => {
-              this.inertia = this._unload()
-              return FiberState.UNLOADING
-            })
-          }
-          // `this.inertia` itself should never reject — both `_reload` and
-          // `_unload` swallow their own work errors via `ctx.logger.error`.
-          // If it *does* reject, the only remaining cause is the logger
-          // itself failing, which we can't recover from in this exact spot
-          // (calling the logger again is what just failed). Let the
-          // rejection propagate; process-level crash is the honest outcome.
-          while (this.inertia) {
-            await this.inertia
+            this._setEpoch(INACTIVE)
+            // A PENDING fiber can already own effects registered by an
+            // internal/plugin observer. Its epoch is still INACTIVE, so
+            // _setEpoch() has no transition to drive; explicitly unload that
+            // pre-activation work before reporting disposal complete.
+            if (!this.inertia) {
+              this._updateState(() => {
+                this.inertia = this._unload()
+                return FiberState.UNLOADING
+              })
+            }
+            // `this.inertia` itself should never reject — both `_reload` and
+            // `_unload` swallow their own work errors via `ctx.logger.error`.
+            // If it *does* reject, the only remaining cause is the logger
+            // itself failing, which we can't recover from in this exact spot
+            // (calling the logger again is what just failed). Let the
+            // rejection propagate; process-level crash is the honest outcome.
+            while (this.inertia) {
+              await this.inertia
+            }
+          } finally {
+            unloading.delete(this)
+            if (!unloading.size) unloadingFibers.delete(root)
           }
         }
       }, 'ctx.plugin()')

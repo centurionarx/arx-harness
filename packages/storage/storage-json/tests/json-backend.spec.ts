@@ -226,3 +226,41 @@ describe('json backend specifics', () => {
     await closing
   })
 })
+
+
+it('keeps the backend registered until injected consumers finish their final writes', async () => {
+  const root = await freshRoot()
+  const ctx = new Context()
+  const release = Promise.withResolvers<undefined>()
+  const draining = Promise.withResolvers<undefined>()
+  try {
+    await ctx.plugin(Storage)
+    const provider = await ctx.plugin({ apply, Config, inject: ['storage'] }, { root })
+    await ctx.plugin({
+      inject: ['storage', storageBackendServiceKey('json')],
+      async apply(consumer: Context) {
+        const unit = await consumer.storage.backend.get('json').kv!.open({ name: 'final', version: 1, tables: ['rows'], hasGlobal: false })
+        consumer.effect(() => async () => {
+          draining.resolve(undefined)
+          await release.promise
+          await unit.putRecord('rows', 'done', { drained: true })
+          await unit.close()
+        })
+      },
+    })
+    const unloading = provider.dispose()
+    await draining.promise
+    try {
+      await new Promise<void>(resolve => setImmediate(resolve))
+      expect(ctx.storage.backend.get('json')).toBeDefined()
+    } finally {
+      release.resolve(undefined)
+      await unloading
+    }
+    expect(JSON.parse(await readFile(join(root, 'final.json'), 'utf8'))).toMatchObject({ tables: { rows: { done: { drained: true } } } })
+    expect(() => ctx.storage.backend.get('json')).toThrow(/not registered/)
+  } finally {
+    release.resolve(undefined)
+    await ctx.fiber.dispose()
+  }
+})

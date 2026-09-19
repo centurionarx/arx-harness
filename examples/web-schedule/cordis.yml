@@ -7,3 +7,6 @@
 
     - id: schedule
       name: '@arx-ai/arx-schedule'
+
+    - id: ui-schedule
+      name: '@arx-ai/arx-client-ui-schedule'

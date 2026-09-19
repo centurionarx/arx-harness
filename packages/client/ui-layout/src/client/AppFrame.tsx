@@ -13,7 +13,15 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { PropsRenderSlots, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
-import { computeColumns, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT } from './columns.ts'
+import {
+  computeColumns,
+  DETAILS_MAX,
+  DETAILS_MIN,
+  SIDEBAR_AUTO_COLLAPSE,
+  SIDEBAR_DEFAULT,
+  SIDEBAR_MAX,
+  SIDEBAR_MIN,
+} from './columns.ts'
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'
 
@@ -33,28 +41,45 @@ function DetailsColumn(props: { children?: ReactNode }) {
   return <div className={css.detailsCol}>{props.children}</div>
 }
 
+/** Keyboard resize distance in CSS pixels, shared with the trajectory details separator. */
+const KEYBOARD_RESIZE_STEP = 16
+
 /**
- * One drag handle: pointer capture, rAF-throttled dx reports against the drag-start origin.
+ * One resize handle: pointer capture, rAF-throttled dx reports against the drag-start origin,
+ * and arrow-key movement along the same horizontal axis.
  * `side` keys the hover-reveal CSS to the owning column.
  */
-function DragHandle(props: { side: 'sidebar' | 'details'; left: number; onStart: () => void; onDrag: (dx: number) => void; onEnd: () => void }) {
+function DragHandle(props: {
+  side: 'sidebar' | 'details'
+  label: string
+  left: number
+  value: number
+  min: number
+  max: number
+  onStart: () => void
+  onDrag: (dx: number) => void
+  onEnd: () => void
+}) {
   const [dragging, setDragging] = useState(false)
   const origin = useRef(0)
   const latest = useRef(0)
   const frame = useRef<number | null>(null)
+  const activePointer = useRef<number | null>(null)
   const callbacks = useRef({ onStart: props.onStart, onDrag: props.onDrag, onEnd: props.onEnd })
   callbacks.current = { onStart: props.onStart, onDrag: props.onDrag, onEnd: props.onEnd }
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || activePointer.current !== null) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
+    activePointer.current = e.pointerId
     origin.current = e.clientX
     latest.current = e.clientX
     callbacks.current.onStart()
     setDragging(true)
   }, [])
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    if (activePointer.current !== e.pointerId || !e.currentTarget.hasPointerCapture(e.pointerId)) return
     latest.current = e.clientX
     frame.current ??= requestAnimationFrame(() => {
       frame.current = null
@@ -62,23 +87,63 @@ function DragHandle(props: { side: 'sidebar' | 'details'; left: number; onStart:
     })
   }, [])
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
-    e.currentTarget.releasePointerCapture(e.pointerId)
+    if (activePointer.current !== e.pointerId) return
+    activePointer.current = null
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
     if (frame.current !== null) { cancelAnimationFrame(frame.current); frame.current = null }
+    latest.current = e.clientX
     callbacks.current.onDrag(latest.current - origin.current)
     setDragging(false)
     callbacks.current.onEnd()
+  }, [])
+  const onPointerCancel = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointer.current !== e.pointerId) return
+    activePointer.current = null
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
+    if (frame.current !== null) { cancelAnimationFrame(frame.current); frame.current = null }
+    setDragging(false)
+    callbacks.current.onEnd()
+  }, [])
+  const onLostPointerCapture = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointer.current !== e.pointerId) return
+    activePointer.current = null
+    if (frame.current !== null) { cancelAnimationFrame(frame.current); frame.current = null }
+    setDragging(false)
+    callbacks.current.onEnd()
+  }, [])
+  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const dx = e.key === 'ArrowLeft' ? -KEYBOARD_RESIZE_STEP : KEYBOARD_RESIZE_STEP
+    callbacks.current.onStart()
+    callbacks.current.onDrag(dx)
+    callbacks.current.onEnd()
+  }, [])
+
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current)
+    if (activePointer.current !== null) callbacks.current.onEnd()
   }, [])
 
   return (
     <div
       className={css.handle}
       style={{ left: props.left }}
+      role="separator"
+      aria-label={props.label}
+      aria-orientation="vertical"
+      aria-valuemin={props.min}
+      aria-valuemax={props.max}
+      aria-valuenow={props.value}
+      tabIndex={0}
       data-side={props.side}
       data-dragging={dragging || undefined}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      onLostPointerCapture={onLostPointerCapture}
+      onKeyDown={onKeyDown}
     />
   )
 }
@@ -194,8 +259,32 @@ export function AppFrame({
         {renderSlot('shell.overlay', {})}
       </div>
       {/* The collapsed rail is fixed-width: no resize handle while closed. */}
-      {!sidebarCollapsed && <DragHandle side="sidebar" left={cols.sidebar} onStart={onSidebarStart} onDrag={onSidebarDrag} onEnd={onDragEnd} />}
-      {cols.details > 0 && <DragHandle side="details" left={viewport - cols.details} onStart={onDetailsStart} onDrag={onDetailsDrag} onEnd={onDragEnd} />}
+      {!sidebarCollapsed && (
+        <DragHandle
+          side="sidebar"
+          label="调整侧边栏宽度"
+          left={cols.sidebar}
+          value={cols.sidebar}
+          min={SIDEBAR_MIN}
+          max={SIDEBAR_MAX}
+          onStart={onSidebarStart}
+          onDrag={onSidebarDrag}
+          onEnd={onDragEnd}
+        />
+      )}
+      {cols.details > 0 && (
+        <DragHandle
+          side="details"
+          label="调整详情栏宽度"
+          left={viewport - cols.details}
+          value={cols.details}
+          min={DETAILS_MIN}
+          max={DETAILS_MAX}
+          onStart={onDetailsStart}
+          onDrag={onDetailsDrag}
+          onEnd={onDragEnd}
+        />
+      )}
     </div>
   )
 }

@@ -285,3 +285,51 @@ describe('Cordis child publication ownership', () => {
     expect(child.state).toBe(FiberState.DISPOSED)
   })
 })
+
+describe('Cordis service dependency teardown', () => {
+  it.each(['ancestor', 'simultaneous'] as const)('awaits undiscoverable consumers during %s disposal without restarting them', async (mode) => {
+    const ctx = new Context()
+    const release = Promise.withResolvers<undefined>()
+    const draining = Promise.withResolvers<undefined>()
+    const events: string[] = []
+    let activations = 0
+    const provider = await ctx.plugin({
+      apply(inner: Context) {
+        inner.effect(function* () {
+          yield () => { events.push('closed') }
+          yield inner.provide('teardownDependency', {})
+        })
+      },
+    })
+    const consumerPlugin = {
+      inject: ['teardownDependency'],
+      apply(inner: Context) {
+        activations += 1
+        inner.effect(() => async () => {
+          draining.resolve(undefined)
+          await release.promise
+          events.push('written')
+        })
+      },
+    }
+    const consumer = await ctx.plugin(consumerPlugin)
+    const unloading = mode === 'ancestor'
+      ? ctx.fiber.dispose()
+      : Promise.all([consumer.dispose(), provider.dispose()])
+    try {
+      await draining.promise
+      expect(ctx.registry.has(consumerPlugin)).toBe(false)
+      expect(consumer.uid).toBeNull()
+      expect(ctx.reflect.notify(['teardownDependency'])).toContain(consumer)
+      expect(consumer.state).toBe(FiberState.UNLOADING)
+    } finally {
+      release.resolve(undefined)
+      await unloading
+      await ctx.fiber.dispose()
+    }
+    expect(events).toEqual(['written', 'closed'])
+    expect(activations).toBe(1)
+    expect(consumer.state).toBe(FiberState.DISPOSED)
+    expect(ctx.reflect.notify(['teardownDependency'])).not.toContain(consumer)
+  })
+})

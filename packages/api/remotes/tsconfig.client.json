@@ -22,7 +22,6 @@
     },
     {
       "path": "../../credentials/credentials"
-
     },
     {
       "path": "../../context/file-reference"
@@ -59,6 +58,15 @@
     },
     {
       "path": "../../typert/protocol"
+    },
+    {
+      "path": "../../project/project"
+    },
+    {
+      "path": "../../fs/file-preview"
+    },
+    {
+      "path": "../../session/session-turn-outline"
     }
   ]
 }

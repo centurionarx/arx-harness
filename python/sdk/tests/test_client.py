@@ -735,6 +735,12 @@ time.sleep(60)
             request_timeout_seconds=0.1,
         )
     ) as client:
+        # Start the response-timeout clock only after the fixture has booted.
+        # Process startup under CI load can exceed the deliberately short timeout.
+        ready_by = time.monotonic() + 5
+        while "bridge is still starting" not in client._stderr_lines and time.monotonic() < ready_by:
+            time.sleep(0.01)
+        assert "bridge is still starting" in client._stderr_lines
         start = time.monotonic()
         try:
             client.initialize(provider="deepseek-official", cwd="/workspace", model="dsagent")
@@ -947,7 +953,7 @@ for line in sys.stdin:
     (module_dir / "__init__.py").write_text(
         f"""
 def resolve_bundled_launch_args(mode=None):
-    return ({str(runtime)!r},)
+    return ({sys.executable!r}, {str(runtime)!r})
 
 
 def bundled_default_config_path():
@@ -999,3 +1005,44 @@ def test_client_reports_missing_bundled_runtime_dependency(monkeypatch: pytest.M
 
     with pytest.raises(FileNotFoundError, match="Install arx-harness-runtime-bin"):
         HarnessClient().start()
+
+
+def test_delivery_event_is_preserved_by_public_sdk(tmp_path: Path) -> None:
+    script = tmp_path / "delivery_runtime.py"
+    delivery = {
+        "type": "deliverables/presented", "seq": 2, "time": 0,
+        "data": {"turn": 1, "callId": "present-sdk", "files": [{"path": "report.txt", "description": "SDK delivery"}]},
+    }
+    script.write_text(
+        """
+import json
+import sys
+for line in sys.stdin:
+    msg = json.loads(line)
+    method = msg.get("method")
+    if method == "initialize":
+        print(json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": {"serverInfo": {"name": "fake-runtime"}}}), flush=True)
+    elif method == "session/prompt":
+        session = msg["params"]["sessionId"]
+        events = [
+            {"type": "agent/inbox/spliced", "data": {"inserted": [{"id": "message-1"}]}},
+            DELIVERY,
+            {"type": "assistant/message", "data": {"message": {"content": [{"type": "text", "text": "Report ready"}]}}},
+            {"type": "turn/end", "data": {"turn": 1, "reason": {"kind": "completed"}}},
+        ]
+        for event in events:
+            print(json.dumps({"jsonrpc": "2.0", "method": "session.event", "params": {"sessionId": session, "event": event}}), flush=True)
+        print(json.dumps({"jsonrpc": "2.0", "method": "session.status", "params": {"sessionId": session, "status": "idle"}}), flush=True)
+        print(json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": {"messageId": "message-1"}}), flush=True)
+    elif method == "shutdown":
+        print(json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": {}}), flush=True)
+        break
+""".replace("DELIVERY", repr(delivery))
+    )
+    observed: list[Notification] = []
+    with ArxHarness(cwd=str(tmp_path), launch_args_override=(sys.executable, str(script))) as harness:
+        result = harness.run("Deliver report.txt", session_id="main", on_notification=observed.append)
+    assert [event for event in result.events if event["type"] == "deliverables/presented"] == [delivery]
+    assert any(notification.payload.get("event") == delivery for notification in observed)
+    assert result.final_response == "Report ready"
+    assert result.finish_reason == "completed"

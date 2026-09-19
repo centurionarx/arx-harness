@@ -57,6 +57,8 @@ const harnessBase = new WeakMap<object, string>()
 class PresetTree extends Include {
   constructor(ctx: Context, config: Include.Config) {
     super(ctx, config)
+    const owner = this.ctx.fiber.entry
+    if (owner?.subtree === this) delete owner.subtree
     mounted.set(config, { tree: this, fiber: ctx.fiber })
   }
 
@@ -117,6 +119,8 @@ export interface PresetMount {
   readonly presetId: string
   /** The mounted subtree's fiber. */
   readonly fiber: Fiber
+  /** Loader entry tree whose active rows form this composition. */
+  readonly tree: EntryTree
   /** The standing scope key agents are parented to (undefined only in torn-down records). */
   readonly key: ScopeKey | undefined
 }
@@ -148,11 +152,13 @@ function pruneDisposedMounts(): void {
 /**
  * Every preset composition still installed, pruning fibers disposed since the
  * last read.
+ * @param within - optional Fiber subtree used to restrict returned mounts.
  * @returns the live mounts.
  */
-export function livePresetMounts(): PresetMount[] {
+export function livePresetMounts(within?: Fiber): PresetMount[] {
   pruneDisposedMounts()
-  return [...mounts]
+  const all = [...mounts]
+  return within === undefined ? all : all.filter(mount => withinFiber(mount.fiber, within))
 }
 
 /**
@@ -365,7 +371,7 @@ export async function mountPreset(agentCtx: Context, preset: AgentPreset): Promi
         + 'a preset service must sit behind an `isolate` realm or move to the host composition',
       )
     }
-    mounts.add({ presetId: preset.id, fiber, key: scopeOf(agentCtx) })
+    mounts.add({ presetId: preset.id, fiber, tree, key: scopeOf(agentCtx) })
   } catch (error) {
     try {
       await handle.dispose()

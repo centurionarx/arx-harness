@@ -6,7 +6,7 @@
  */
 
 import type { Branded } from '@arx-ai/arx-brand'
-import type { SessionId } from '@arx-ai/arx-session'
+import type { SessionId } from '@arx-ai/arx-session/types'
 
 /**
  * Identifies one workspace record. A generated uuid, never the path: path

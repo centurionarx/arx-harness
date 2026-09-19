@@ -120,6 +120,8 @@ export interface MarkdownFileMentions {
  * numbering accumulated in document order while references render.
  */
 export interface MarkdownRenderContext {
+  /** False renders image alt text without fetching remote media; default preserves normal chat behavior. */
+  readonly remoteImages?: boolean | undefined
   /** Streaming arm: fences render plain and TeX stays literal. */
   readonly streaming: boolean
   /** Localized fence copy-button labels. */
@@ -285,7 +287,7 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
     case 'linkReference':
       return renderLinkReference(node, key, context)
     case 'image':
-      return renderImage(node.url, node.alt ?? '', key)
+      return renderImage(node.url, node.alt ?? '', key, context.remoteImages)
     case 'imageReference':
       return renderImageReference(node, key, context)
     case 'footnoteReference':
@@ -489,8 +491,8 @@ function inlineCodeHttpUrl(value: string): string | undefined {
   }
 }
 
-function renderImage(url: string, alt: string, key: Key): ReactNode {
-  const imageSrc = remoteImageUrl(sanitizeUrl(normalizeUri(url)))
+function renderImage(url: string, alt: string, key: Key, remoteImages = true): ReactNode {
+  const imageSrc = remoteImages ? remoteImageUrl(sanitizeUrl(normalizeUri(url))) : undefined
   if (imageSrc === undefined) {
     return <span key={key} className={css.imageAlt}>{alt}</span>
   }
@@ -537,7 +539,7 @@ function renderImageReference(
 ): ReactNode {
   const definition = context.targets.definitions.get(node.identifier.toUpperCase())
   if (definition === undefined) return `![${node.alt ?? ''}${referenceSuffix(node)}`
-  return renderImage(definition.url, node.alt ?? '', key)
+  return renderImage(definition.url, node.alt ?? '', key, context.remoteImages)
 }
 
 function renderFootnoteReference(

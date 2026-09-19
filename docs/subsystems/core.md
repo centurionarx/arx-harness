@@ -393,6 +393,12 @@ Discovery is unmemoized: `list()` and `resolve()` re-read the roots on every cal
 async list(): Promise<AgentPreset[]>
 
 /**
+ * Read each preset's flattened plugin rows without exposing configuration values.
+ * @returns safe per-preset composition summaries in discovery order.
+ */
+async compositionInventory(): Promise<AgentPresetComposition[]>
+
+/**
  * Resolve one preset by id.
  *
  * A broken preset resolves — deleting one, reading one, and reporting one

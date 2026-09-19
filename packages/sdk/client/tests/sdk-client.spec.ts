@@ -525,3 +525,16 @@ describe('pure helpers', () => {
     ])).toBe('ab')
   })
 })
+
+it('preserves the required delivery event in the public SDK result and notification observer', async () => {
+  const harness = harnessWith({ FAKE_PRESENT: '1', FAKE_TEXT: 'Report ready' })
+  const seen: HarnessNotification[] = []
+  const result = await harness.run('Deliver report.txt', { onNotification: (notification) => { seen.push(notification) } })
+  const delivery = result.events.find(event => event.type === 'deliverables/presented')
+  expect(delivery).toEqual({
+    type: 'deliverables/presented', seq: 2, time: 0,
+    data: { turn: 0, callId: 'present-sdk', files: [{ path: 'report.txt', description: 'SDK delivery' }] },
+  })
+  expect(seen).toContainEqual({ method: 'session.event', params: { sessionId: result.sessionId, event: delivery } })
+  expect(result.finalResponse).toBe('Report ready')
+})

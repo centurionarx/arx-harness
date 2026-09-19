@@ -1459,3 +1459,33 @@ describe('ChatView', () => {
     expect(failedView.container.querySelector('[data-state="error"]')).not.toBeNull()
   })
 })
+
+
+it('reveals the requested stable row, clears the target, and retains the position across view remounts', () => {
+  const host = document.createElement('div')
+  host.setAttribute('data-conversation-scroll', '')
+  Object.defineProperties(host, {
+    scrollHeight: { value: 2000, configurable: true },
+    clientHeight: { value: 500, configurable: true },
+    scrollTop: { value: 0, writable: true, configurable: true },
+  })
+  document.body.appendChild(host)
+  const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    const top = this.dataset.chatAnchorKey === 'fixture:user:1' ? 240 - host.scrollTop : 0
+    return { top, bottom: top + 40 } as DOMRect
+  })
+  try {
+    const h = makeHarness({ nodes: [user(1, 'target'), assistant(2, 'response')] })
+    const cleared = vi.spyOn(h.props.actions, 'setReveal')
+    h.props.actions.setReveal({ nodeKey: 'fixture:user:1' })
+    const view = render(<h.ChatView {...h.props} />, { container: host })
+    expect(host.scrollTop).toBe(240)
+    expect(cleared).toHaveBeenLastCalledWith(null)
+    expect(h.chatScroll.read()?.anchorKey).toBe('fixture:user:1')
+    expect(screen.getByLabelText('Back to bottom')).toBeTruthy()
+    view.rerender(<div />)
+    host.scrollTop = 0
+    view.rerender(<h.ChatView {...h.props} />)
+    expect(host.scrollTop).toBe(240)
+  } finally { rect.mockRestore(); host.remove() }
+})

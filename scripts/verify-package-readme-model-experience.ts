@@ -42,6 +42,15 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {
  * blocks. A package moves on or off this list with its context behavior.
  */
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
+  'packages/experimental/client-ui-agent-team': { kind: 'none', reason: 'The browser displays the existing team and task projection without model input.' },
+  'packages/client/ui-schedule': { kind: 'none', reason: 'The browser displays the existing reminder catalog without adding model context.' },
+  'packages/client/ui-turn-outline': { kind: 'none', reason: 'The browser outline navigates recorded turns without changing messages.' },
+  'packages/session/session-turn-outline': { kind: 'none', reason: 'The projection derives navigation metadata without changing session messages.' },
+  'packages/fs/file-preview': { kind: 'none', reason: 'The authenticated read service returns bounded preview data only to its client.' },
+  'packages/client/ui-file-preview': { kind: 'none', reason: 'The browser renders current files without adding model input.' },
+  'packages/client/ui-projects': { kind: 'none', reason: 'The browser edits operator-owned project state and registers no model input.' },
+  'packages/skill/skill-git': { kind: 'indirect', reason: 'The Git provider delegates catalog and body rendering to the skill service and project tool.' },
+  'packages/project/project': { kind: 'indirect', reason: 'The aggregate delegates model input to the project tool and saved-step driver.' },
   'packages/attachment/attachment': { kind: 'indirect', reason: 'The storage seam delegates model request rendering to provider adapters.' },
   'packages/attachment/attachment-local': { kind: 'indirect', reason: 'The local backend delegates model request rendering to provider adapters.' },
   'packages/shell/shell': { kind: 'indirect', reason: 'The service interface delegates all model rendering to arx-tool-bash.' },

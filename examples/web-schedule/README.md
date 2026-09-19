@@ -1,6 +1,6 @@
 # Session-local Schedule
 
-This overlay opts one `arx web` process into Schedule reminders without changing the shipped default Web composition:
+This overlay opts one `arx web` process into Schedule reminders and its read-only conversation-header catalog without changing the shipped default Web composition:
 
 ```sh
 arx web --patch examples/web-schedule/cordis.yml

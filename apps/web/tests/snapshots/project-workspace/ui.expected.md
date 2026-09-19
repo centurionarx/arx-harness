@@ -1,0 +1,72 @@
+- dialog "Projects":
+  - heading "Projects" [level=2]
+  - button "Close":
+    - img
+  - text: Choose a project
+  - combobox "Choose a project":
+    - option "Choose a project"
+    - option "Release review" [selected]
+  - button "Refresh"
+  - text: Project name
+  - textbox "Project name"
+  - text: Workspace
+  - combobox "Workspace":
+    - option "Workspace" [selected]
+    - option "workspace"
+  - button "Create project" [disabled]
+  - heading "Release review" [level=3]
+  - heading "Plan" [level=4]
+  - paragraph: "Approved revision: 1"
+  - text: Plan summary
+  - textbox "Plan summary": Follow-up with unchanged task identity
+  - group "1. Validate the implementation":
+    - text: 1. Validate the implementation Task title
+    - textbox "Task title": Validate the implementation
+    - text: Acceptance criteria (one per line)
+    - textbox "Acceptance criteria (one per line)": Regression checks pass
+    - text: Depends on
+    - listbox "Depends on"
+    - button "Remove task"
+  - button "Add task"
+  - button "Save new plan revision"
+  - button "Approve this revision 2"
+  - group: Plan history (2)
+  - heading "Prompt library" [level=4]
+  - combobox "Prompt library":
+    - option "New prompt" [selected]
+    - option "Review evidence"
+  - text: Prompt name
+  - textbox "Prompt name"
+  - text: Purpose
+  - textbox "Purpose"
+  - text: Tags (comma separated)
+  - textbox "Tags (comma separated)"
+  - text: Prompt content
+  - textbox "Prompt content"
+  - group "Prompt variables":
+    - text: Prompt variables
+    - button "Add variable"
+  - button "Save prompt revision" [disabled]
+  - heading "Execution evidence" [level=4]
+  - article:
+    - strong: Validate the implementation
+    - paragraph: Revision 1 · pending
+    - list
+  - article:
+    - strong: Validate the implementation
+    - paragraph: Revision 2 · pending
+    - list
+  - heading "Prompt evaluations" [level=4]
+  - paragraph: Run the same saved cases from your project conversation to compare prompt revisions. Missing usage and incomplete output remain unknown.
+  - paragraph: No evaluations recorded.
+  - heading "Execution limits" [level=4]
+  - text: Concurrent runs
+  - spinbutton "Concurrent runs": "8"
+  - text: Steps per run
+  - spinbutton "Steps per run": "100"
+  - text: Duration per run (seconds)
+  - spinbutton "Duration per run (seconds)": "3600"
+  - paragraph: Changes apply to new runs. Host safety limits also apply. Measured token usage appears in each step result; missing usage remains unknown.
+  - button "Save execution limits"
+  - heading "Workflow runs" [level=4]
+  - paragraph: No workflow runs recorded.

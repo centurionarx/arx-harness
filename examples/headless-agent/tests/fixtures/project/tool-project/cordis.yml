@@ -1,0 +1,35 @@
+# Minimal application for the model-facing durable project catalog.
+- name: '@arx-ai/arx-llm'
+- name: '@arx-ai/arx-session'
+- name: '@arx-ai/arx-system-prompt'
+- name: '@arx-ai/arx-tools'
+- name: '@arx-ai/arx-agent'
+- name: '@arx-ai/arx-storage'
+- name: '@arx-ai/arx-storage-json'
+  config:
+    root: './.storages'
+- name: '@arx-ai/arx-storage-domain'
+  config:
+    backend: json
+- name: '@arx-ai/arx-workspace'
+- name: '@arx-ai/arx-project'
+- name: '@arx-ai/arx-tool-project'
+- name: '@arx-ai/arx-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+    compression: none
+- name: '@arx-ai/arx-llm-replay'
+  config:
+    providers:
+      - id: project-fixture
+        name: Project fixture
+        models:
+          - id: test
+            contextWindow: 128000
+- name: '@arx-ai/arx-agent-loop'
+  config:
+    agents:
+      - id: main
+        provider: project-fixture
+        model: test
+        cwd: !!js process.cwd()

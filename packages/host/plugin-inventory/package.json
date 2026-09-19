@@ -53,6 +53,7 @@
   },
   "peerDependencies": {
     "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
     "@arx-ai/arx-brand": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-typert-protocol": "workspace:^",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/arx-agent-presets": "workspace:^",
     "@arx-ai/arx-brand": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-typert-protocol": "workspace:^",

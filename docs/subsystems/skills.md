@@ -240,6 +240,37 @@ The model-facing `skill({ name })` tool validates the kebab-case name, finds the
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxskillgit--gitskillservice"></a>
+
+### `ctx.skillGit` — `GitSkillService`
+
+Materializes and verifies exact Git revisions while tracking child lifetime.
+
+```ts cordis-catalog
+/**
+ * Return exact regular files with repository, commit, path, content, and digest.
+ * @param request - Exact repository, 40-hex commit, and selected file paths.
+ * @param signal - Optional cancellation for this caller only.
+ * @returns Verified immutable source snapshots.
+ */
+async snapshot(request: GitSkillSnapshotRequest, signal?: AbortSignal): Promise<readonly GitSkillSnapshot[]>
+
+/**
+ * Materialize selected discovery directories for the provider.
+ * @param source - Exact repository revision and selected directories.
+ * @param signal - Optional cancellation for this caller only.
+ * @returns Verified cache root and regular-file manifest.
+ */
+materializeDirectories(source: GitSkillSourceConfig, signal?: AbortSignal): Promise<MaterializedSource>
+
+/** Abort active children and settle every tracked operation. */
+dispose(): Promise<void>
+```
+
+Types: [GitSkillSnapshot](../../packages/skill/skill-git/README.md) · [GitSkillSnapshotRequest](../../packages/skill/skill-git/README.md) · [GitSkillSourceConfig](../../packages/skill/skill-git/README.md) · [MaterializedSource](../../packages/skill/skill-git/README.md)
+
+Source: [`packages/skill/skill-git/src/index.ts`](../../packages/skill/skill-git/src/index.ts)
+
 <a id="ctxskills--skillregistry"></a>
 
 ### `ctx.skills` — `SkillRegistry`

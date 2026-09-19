@@ -6,7 +6,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
-import { createReadStream } from 'node:fs'
+import { constants, createReadStream } from 'node:fs'
 import { chmod, link, lstat, mkdir, open, readFile, realpath, readdir, rename, rm, stat } from 'node:fs/promises'
 import type { BigIntStats, Dirent, Stats } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -385,8 +385,9 @@ export async function readWholeText(target: LocalTarget, signal?: AbortSignal): 
 /**
  * Read a whole regular file as raw bytes with no decoding or binary rejection.
  * `maxBytes` bounds the complete content: the stat size short-circuits an
- * oversized file before any content I/O, and the stream reads at most one byte
- * beyond the cap so a file growing after stat cannot cause unbounded buffering.
+ * oversized file before any content I/O. The opened descriptor must match
+ * the still-canonical target identity; all bytes come from that descriptor.
+ * Reads stop at one byte beyond the cap, including concurrent file growth.
  * @param target - the resolved file to read.
  * @param signal - aborts the read (`FS_ABORTED`).
  * @param maxBytes - inclusive byte cap on the complete content (`FS_TOO_LARGE`).
@@ -399,31 +400,44 @@ export async function readWholeBytes(
   maxBytes: number,
   internals: FsIoInternals = {},
 ): Promise<Uint8Array> {
-  const info = await statRegularFile(target, 'read', signal)
-  if (info.size > maxBytes) {
-    throw new FsError(`cannot read "${target.displayPath}": ${info.size} bytes exceeds the ${maxBytes}-byte limit`, 'FS_TOO_LARGE')
-  }
-  await internals.inspectReadBytesAfterStat?.(target)
-  const stream = createReadStream(target.targetKey, {
-    end: maxBytes,
-    ...signal ? { signal } : {},
-  })
-  const chunks: Buffer[] = []
-  let bytes = 0
+  throwIfAborted(signal, 'read')
+  let handle: Awaited<ReturnType<typeof open>>
   try {
-    for await (const chunk of stream as AsyncIterable<Buffer>) {
-      bytes += chunk.length
-      if (bytes > maxBytes) {
-        throw new FsError(`cannot read "${target.displayPath}": content exceeds the ${maxBytes}-byte limit`, 'FS_TOO_LARGE')
-      }
-      chunks.push(chunk)
-    }
-  } catch (error: unknown) {
-    /* v8 ignore next 2 -- a mid-stream abort needs cancellation racing an active read; pre-abort is deterministic. */
-    if (isAbortError(error)) throw new FsError('read aborted', 'FS_ABORTED')
+    handle = await open(target.targetKey, constants.O_RDONLY | constants.O_NONBLOCK | constants.O_NOFOLLOW)
+  } catch (error) {
+    if (isENOENT(error)) throw new FsError('cannot read: not found', 'FS_NOT_FOUND')
+    if (error instanceof Error && 'code' in error && error.code === 'ELOOP') throw new FsError('cannot read: target identity changed', 'FS_STALE_VERSION')
+    if (error instanceof Error && 'code' in error && error.code === 'EISDIR') throw new FsError('cannot read: not a regular file', 'FS_NOT_REGULAR_FILE')
     throw error
   }
-  return Buffer.concat(chunks, bytes)
+  try {
+    const opened = await handle.stat({ bigint: true })
+    await internals.inspectReadBytesAfterStat?.(target)
+    throwIfAborted(signal, 'read')
+    const canonical = await resolveLocalTarget(dirname(target.displayPath), basename(target.displayPath))
+    if (canonical.targetKey !== target.targetKey) throw new FsError('cannot read: target identity changed', 'FS_STALE_VERSION')
+    const current = await stat(canonical.targetKey, { bigint: true })
+    if (current.dev !== opened.dev || current.ino !== opened.ino) {
+      throw new FsError('cannot read: opened file identity changed', 'FS_STALE_VERSION')
+    }
+    if (!opened.isFile()) throw new FsError('cannot read: not a regular file', 'FS_NOT_REGULAR_FILE')
+    if (opened.size > BigInt(maxBytes)) throw new FsError('cannot read: content exceeds byte limit', 'FS_TOO_LARGE')
+    const chunks: Buffer[] = []
+    let bytes = 0
+    while (true) {
+      throwIfAborted(signal, 'read')
+      const chunk = Buffer.allocUnsafe(Math.min(DIFF_BASIS_READ_CHUNK_BYTES, maxBytes + 1 - bytes))
+      const result = await handle.read(chunk, 0, chunk.length, null)
+      throwIfAborted(signal, 'read')
+      if (result.bytesRead === 0) break
+      bytes += result.bytesRead
+      if (bytes > maxBytes) throw new FsError('cannot read: content exceeds byte limit', 'FS_TOO_LARGE')
+      chunks.push(chunk.subarray(0, result.bytesRead))
+    }
+    return Buffer.concat(chunks, bytes)
+  } finally {
+    await handle.close()
+  }
 }
 
 /**

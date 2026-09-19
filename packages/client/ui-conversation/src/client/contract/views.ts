@@ -17,6 +17,10 @@ export interface ViewTab { id: string; label: string }
  * Unknown persisted view ids fall back to the stable Chat view.
  */
 export interface ChatStoreState {
+  /** Current-file preview intent; document bytes stay outside the viewing store. */
+  preview?: { path: string } | null
+  /** One-shot row reveal, cleared by Chat after applying; absent in older persisted snapshots. */
+  reveal?: { nodeKey: string } | null
   /** Details-linkage channel (conversation writes, details reads). */
   selection: SelectionTarget | null
   /** Composer draft (persisted; survives session switches and reloads). */
