@@ -1489,3 +1489,14 @@ it('reveals the requested stable row, clears the target, and retains the positio
     expect(host.scrollTop).toBe(240)
   } finally { rect.mockRestore(); host.remove() }
 })
+
+
+it('clears a stale reveal whose row is absent and preserves the normal initial scroll', () => {
+  const h = makeHarness({ nodes: [user(1, 'current window')] })
+  h.props.actions.setReveal({ nodeKey: 'no-longer-visible' })
+  const cleared = vi.spyOn(h.props.actions, 'setReveal')
+  const view = render(<h.ChatView {...h.props} />)
+  expect(view.getByText('current window')).toBeTruthy()
+  expect(cleared).toHaveBeenCalledWith(null)
+  expect(h.chatScroll.read()).toBeNull()
+})

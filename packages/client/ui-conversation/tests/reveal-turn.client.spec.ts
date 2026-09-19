@@ -48,3 +48,19 @@ it('rejects invalid addresses and cancellation before requesting history', async
   expect(await revealTurnNode({ getSnapshot: () => snapshot(100), loadOlder }, 0, () => false)).toBeNull()
   expect(loadOlder).not.toHaveBeenCalled()
 })
+
+
+it('pages across a sparse window without row anchors or turn starts and rejects removed sessions', async () => {
+  let current = snapshot(100)
+  current = {
+    ...current,
+    chat: { ...current.chat, order: [], nodes: { ...current.chat.nodes, get: () => undefined },
+      timeline: { ...current.chat.timeline, turns: new Map([[101, { ...current.chat.timeline.turns.get(101)!, start: undefined }]]) } },
+  }
+  const loadOlder = vi.fn(async () => { current = snapshot(0) })
+  expect(await revealTurnNode({ getSnapshot: () => current, loadOlder }, 0, () => true)).toBe('row')
+  expect(loadOlder).toHaveBeenCalledOnce()
+  current = { ...snapshot(0), removed: true }
+  expect(await revealTurnNode({ getSnapshot: () => current, loadOlder }, 0, () => true)).toBeNull()
+  expect(loadOlder).toHaveBeenCalledOnce()
+})
