@@ -156,6 +156,18 @@ describe('the settings section', () => {
     expect(ctx.llm.listConfigurableProviders()[0]?.displayName).toBe('My subscription')
   })
 
+  it('keeps the offered name when a section configures the route without naming it', async () => {
+    const dir = await home()
+    const ctx = await boot(dir)
+
+    await writeSection(ctx, dir, { 'claude-subscription': { models: ROUTE.models } })
+
+    // A page that adds the offered route without renaming it must not see the
+    // row it picked by name turn into the route id once saved.
+    expect(ctx.llm.listConfigurableProviders()[0]?.displayName).toBe('Claude (subscription)')
+    expect(ctx.llm.listProviders()[0]?.name).toBe('Claude (subscription)')
+  })
+
   it('marks a route the package does not offer as declared by configuration', async () => {
     const dir = await home()
     const ctx = await boot(dir)

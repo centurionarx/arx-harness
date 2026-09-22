@@ -6,6 +6,8 @@
 
 import z from '@arx-ai/schemastery'
 
+import { AGENT_CLI_PRESETS } from './presets.ts'
+
 /** One model this adapter serves on a route. */
 export interface AgentCliModel {
   /** Model id callers pass as `GenerateOptions.model`. */
@@ -126,6 +128,11 @@ export const DEFAULT_DISPOSE_GRACE_MS = 3_000
  * This is where the whole section's absence defaults too, beside every other
  * default it materializes: a composition entry that configures no route at all
  * resolves to no routes, which is the plugin's dormant posture.
+ *
+ * A profile that names no display name takes the one this package offers the
+ * route under, and only a route the package does not offer falls back to its
+ * id. Otherwise a surface that configures an offered route without renaming it
+ * would see the route change name the moment it was saved.
  * @param providers - the `providers` section as configuration stored it, or
  *   `undefined` when the configuration carries no section.
  * @returns one resolved route per configured provider, keyed by route id.
@@ -147,7 +154,9 @@ export function resolveRoutes(
     }
     routes.set(provider, {
       provider,
-      displayName: configured.displayName ?? provider,
+      displayName: configured.displayName
+        ?? AGENT_CLI_PRESETS.find(preset => preset.provider === provider)?.displayName
+        ?? provider,
       disposeGraceMs: configured.disposeGraceMs ?? DEFAULT_DISPOSE_GRACE_MS,
       models,
     })
