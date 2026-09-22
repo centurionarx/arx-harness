@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-agent-cli",
   "description": "LLM adapter that drives a subscription-authenticated vendor CLI as an ordinary model route",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "publishConfig": {
     "access": "public"
   },

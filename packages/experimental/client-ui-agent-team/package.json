@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-experimental-client-ui-agent-team",
   "description": "Read-only Agent Team roster, task dependency graph, and teammate navigation",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "repository": { "type": "git", "url": "git+https://github.com/centurionarx/arx-harness.git", "directory": "packages/experimental/client-ui-agent-team" },
   "type": "module",

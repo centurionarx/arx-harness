@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-subprocess",
   "description": "Subprocess seam (ctx.subprocess) for the arx Harness — managed process groups, bounded spill-backed output, and escalated kills behind one abstract service",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "publishConfig": {
     "access": "public"
   },

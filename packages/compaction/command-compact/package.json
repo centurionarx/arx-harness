@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-command-compact",
   "description": "Human-facing slash command for explicit session compaction",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "publishConfig": {
     "access": "public"
   },
