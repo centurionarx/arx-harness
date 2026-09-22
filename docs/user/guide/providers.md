@@ -128,6 +128,32 @@ Each switch belongs to the protocols that declare it, so a switch valid on one `
 
 Every switch, its accepted values, and the protocols that take it are listed under `PiAiCompatProfile` in the [generated `arx-llm-pi-ai` configuration reference](../../config-catalog.md#arx-aiarx-llm-pi-ai) — which is derived from the source, so it cannot fall behind what the adapter accepts.
 
+## Use a subscription CLI as a provider
+
+A vendor command-line tool already installed and signed in on this machine can serve as an ordinary model route. The harness keeps its own agent loop, tools, sandbox, and session log; only the transport to the model changes, and no API key is stored anywhere — the route uses the login the tool already holds.
+
+Check that the tool's own login is in place before configuring the route, using whatever command it provides. A route whose tool is absent or signed out fails at the first request, not at save.
+
+Read your subscription's terms first. Driving a subscription tool from another program may exceed what that subscription permits, and that judgement is yours to make: the harness neither checks nor asserts anything about it.
+
+Configure the route in `$ARX_HOME/settings.yaml`. It takes effect on the next request, without restarting the server:
+
+```yaml
+llm-agent-cli:
+  providers:
+    claude-subscription:
+      displayName: Claude (subscription)
+      models:
+        - id: claude-sonnet-4-5
+          contextWindow: 200000
+          maxTokens: 8192
+          acceptsImages: true
+```
+
+`contextWindow` is required, because automatic compaction resolves capacity from the route serving the request and the tool discloses none of its own. The route then appears in the model picker like any other.
+
+On **Settings → Models** this route is listed but not yet editable from the page: opening it says its fields live in `settings.yaml`, which is the file above. Everything the route needs is configurable there today.
+
 ## Select a model
 
 Configured providers appear in the model picker. Selecting a model also makes it the default for new sessions. A session that has already sent a request retains the model recorded in its own log.
@@ -144,7 +170,8 @@ If a saved default names a provider that was deleted, the composer displays **Se
 - **A compat switch is refused as having no value** — A key written with nothing after the colon. Give it a value, or remove the key to keep the installed catalog's.
 - **An image is refused before sending** — The model declares no image modality. Give a custom provider's model `input: [text, image]`; a text-only chat-completions route cannot be configured into accepting images.
 - **The provider rejects a request carrying an image** — The model declares images its endpoint does not actually serve. Remove `image` from whichever list granted it — the model's `input`, or the route's `defaultInput` — then start a new session: the attached image stays in the session log, so the same request repeats until the session moves off it.
+- **A subscription CLI route fails every request** — Its command-line tool is absent from this machine or signed out. The route carries no credential to check at save, so the first request is where it shows.
 
 ## Advanced configuration
 
-The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`arx-llm-pi-ai`](../../config-catalog.md#arx-aiarx-llm-pi-ai) is the provider section this page configures. The [`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) reference owns direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors.
+The generated [plugin configuration catalog](../../config-catalog.md) lists every supported field and default for every plugin; [`arx-llm-pi-ai`](../../config-catalog.md#arx-aiarx-llm-pi-ai) is the provider section this page configures. The [`arx-llm-pi-ai`](../../../packages/llm/llm-pi-ai/README.md) reference owns direct `settings.yaml` configuration, catalog resolution, reasoning controls, credentials, and adapter errors. The [`arx-llm-agent-cli`](../../../packages/llm/llm-agent-cli/README.md) reference owns the subscription-CLI route: its full field list, its reasoning controls, and what the vendor tool does and does not disclose.

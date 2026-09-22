@@ -122,14 +122,19 @@ export const DEFAULT_DISPOSE_GRACE_MS = 3_000
 /**
  * Resolve configured routes, materializing defaults once instead of at each
  * request.
- * @param providers - the `providers` section as configuration stored it.
+ *
+ * This is where the whole section's absence defaults too, beside every other
+ * default it materializes: a composition entry that configures no route at all
+ * resolves to no routes, which is the plugin's dormant posture.
+ * @param providers - the `providers` section as configuration stored it, or
+ *   `undefined` when the configuration carries no section.
  * @returns one resolved route per configured provider, keyed by route id.
  */
 export function resolveRoutes(
-  providers: Readonly<Record<string, AgentCliProfile>>,
+  providers: Readonly<Record<string, AgentCliProfile>> | undefined,
 ): ReadonlyMap<string, ResolvedRoute> {
   const routes = new Map<string, ResolvedRoute>()
-  for (const [provider, configured] of Object.entries(providers)) {
+  for (const [provider, configured] of Object.entries(providers ?? {})) {
     const models = new Map<string, AgentCliModel>()
     for (const entry of configured.models ?? []) {
       if (entry.defaultEffort !== undefined && !(entry.efforts ?? []).includes(entry.defaultEffort)) {

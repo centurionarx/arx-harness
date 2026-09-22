@@ -6002,6 +6002,12 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../llm
+      '@arx-ai/arx-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
+      '@arx-ai/arx-settings-file':
+        specifier: workspace:^
+        version: link:../../settings/settings-file
       '@arx-ai/arx-subprocess':
         specifier: workspace:^
         version: link:../../subprocess/subprocess

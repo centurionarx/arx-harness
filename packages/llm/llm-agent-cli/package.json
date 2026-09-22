@@ -34,6 +34,7 @@
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-subprocess": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   },
@@ -46,6 +47,8 @@
   "devDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-settings-file": "workspace:^",
     "@arx-ai/arx-subprocess": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   }

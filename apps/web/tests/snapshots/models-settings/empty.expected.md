@@ -25,6 +25,7 @@
   - list
   - text: Provider
   - combobox "Provider":
+    - option "Claude (subscription)"
     - option "amazon-bedrock"
     - option "ant-ling"
     - option "anthropic"
