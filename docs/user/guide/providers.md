@@ -136,13 +136,16 @@ Check that the tool's own login is in place before configuring the route, using 
 
 Read your subscription's terms first. Driving a subscription tool from another program may exceed what that subscription permits, and that judgement is yours to make: the harness neither checks nor asserts anything about it.
 
-Configure the route in `$ARX_HOME/settings.yaml`. It takes effect on the next request, without restarting the server:
+Open **Settings → Models**, choose **Add provider**, and select **Claude (subscription)**. The card asks for no key, endpoint, or protocol. Add at least one model with its **Context window** — the route cannot serve without one, because automatic compaction resolves capacity from the route serving the request and the tool discloses none of its own — tick **Accepts images** for a model that takes image input, and choose **Apply**. The route takes effect on the next request, without restarting the server, and its models appear in the model picker like any other.
+
+**Fetch available models** lists the models the tool's login can reach, by id. It starts the tool once to ask, so it needs the tool installed and signed in; each model you adopt from it still needs its context window.
+
+The page writes the `llm-agent-cli` section of `$ARX_HOME/settings.yaml`, which you can also edit directly:
 
 ```yaml
 llm-agent-cli:
   providers:
     claude-subscription:
-      displayName: Claude (subscription)
       models:
         - id: claude-sonnet-4-5
           contextWindow: 200000
@@ -150,9 +153,7 @@ llm-agent-cli:
           acceptsImages: true
 ```
 
-`contextWindow` is required, because automatic compaction resolves capacity from the route serving the request and the tool discloses none of its own. The route then appears in the model picker like any other.
-
-On **Settings → Models** this route is listed but not yet editable from the page: opening it says its fields live in `settings.yaml`, which is the file above. Everything the route needs is configurable there today.
+A model the route does not list is refused rather than sent, so list every model you intend to select.
 
 ## Select a model
 
