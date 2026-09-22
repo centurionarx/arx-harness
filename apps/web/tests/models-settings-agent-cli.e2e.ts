@@ -1,10 +1,13 @@
 // Web e2e scenario: the Models page configures the CLI-backed subscription
 // route through the shipped composition, where `llm-agent-cli` is mounted
 // dormant. The route is offered by name, added with one model and its context
-// window and no credential of any kind, and the model it lists reaches the
-// composer's model selector. Zero model calls, and no CLI is ever spawned:
+// window and no credential of any kind, and the model it lists is the one a
+// first-run user then picks in the composer — the lane seeds no default model,
+// as a fresh install has none, so the composer starts blocked and picking the
+// model is what unblocks it. Zero model calls, and no CLI is ever spawned:
 // nothing interrogates the CLI at mount or at save, and this scenario never
 // asks the route to discover models.
+import { mkdirSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -15,7 +18,7 @@ import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden, launchWebScaffold, watchConsole,
   webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
-import { connectFreshWorkspace, newEnglishPage, saveFailureShot } from './support.ts'
+import { newEnglishPage, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/models-settings-agent-cli', import.meta.url))
 const ADD_EXPECTED = join(SNAPSHOT_DIR, 'add.expected.md')
@@ -35,7 +38,9 @@ describe.skipIf(MODE === 'record')('web e2e: Models settings page configures the
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({})
+    // The first-run lane: no default model is seeded, which is what a fresh
+    // install has and what the composer's model menu must load without.
+    scaffold = await launchWebScaffold({ missingModelCredential: true })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
@@ -100,18 +105,42 @@ describe.skipIf(MODE === 'record')('web e2e: Models settings page configures the
     await compareOrRefreshGolden(CONFIGURED_EXPECTED, snapshot, MODE)
   }, 60_000)
 
-  it('lists the model in the composer model selector', async () => {
+  it('picks the model in the composer, which unblocks it and makes it the default', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-agent-cli-selector'))
     await page.getByRole('dialog', { name: 'Settings' }).getByRole('button', { name: 'Close' }).click()
-    // The composer's seats only exist once a workspace is connected.
-    await connectFreshWorkspace(page, scaffold.workspaceCwd)
-    const trigger = page.getByRole('button', { name: /^Select model/ })
+    // The composer's seats only exist once a workspace is connected. The shared
+    // helper waits for an enabled input, which this lane only reaches after a
+    // model is picked, so the pick is driven here and the seat is awaited.
+    mkdirSync(join(scaffold.workspaceCwd, 'workspace'), { recursive: true })
+    await page.getByRole('textbox', { name: 'Choose workspace' }).click()
+    const picker = page.getByRole('dialog', { name: 'Select Workspace Directory' })
+    await picker.waitFor({ timeout: 10_000 })
+    await picker.getByRole('button', { name: 'Edit path' }).click()
+    const pathInput = picker.getByRole('textbox', { name: 'Edit path' })
+    await pathInput.fill(join(scaffold.workspaceCwd, 'workspace'))
+    await pathInput.press('Enter')
+    await picker.getByRole('button', { name: 'Open', exact: true }).click()
+    // Nothing is selected yet: the trigger names no model, and the composer
+    // says why it is blocked rather than accepting a prompt it cannot send.
+    const trigger = page.getByRole('button', { name: 'Select model', exact: true })
     await trigger.waitFor({ timeout: 15_000 })
+    await page.locator('textarea:disabled[placeholder="This model is unavailable — select one to continue"]')
+      .waitFor({ timeout: 10_000 })
     await trigger.click()
     await page.getByRole('menuitem', { name: /Model/ }).click()
 
-    await page.getByRole('menuitemradio', { name: MODEL }).waitFor({ timeout: 10_000 })
-    await page.keyboard.press('Escape')
+    // The menu loads with no current selection — the Host's answer omits it.
+    await page.getByRole('menuitemradio', { name: MODEL, exact: true }).click()
+
+    await page.getByRole('button', { name: `Select model, current ${MODEL}`, exact: true })
+      .waitFor({ timeout: 10_000 })
+    await page.locator('textarea:enabled[placeholder="Describe what you want to build"]').waitFor({ timeout: 10_000 })
+    await expect.poll(
+      async () => readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8'),
+      { timeout: 10_000 },
+    ).toContain('agent-default-model:')
+    const document = await readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8')
+    expect(document).toContain(`provider: ${ROUTE}`)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
