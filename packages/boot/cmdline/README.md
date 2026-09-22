@@ -10,6 +10,8 @@ A launcher calls `provideCmdline(ctx, host)` before any tree entry mounts, which
 - `ctx.appExit` — a bounded process-exit request, wired to the launcher's shutdown controller.
 - `ctx.appVersion` — the launcher app's released version, as its own manifest declares it. The gateway reports it through `host.describe`, and the Web shell prints it under the sidebar wordmark, so no package below the launcher reads a manifest to learn what is running.
 
+- `ctx.homeMigration` — the pre-rename harness home this launcher copied forward, or the one an earlier launch recorded, in display forms only (`{ fromDisplay, toDisplay, at }`). The gateway reports it through `host.describe` so a client can tell the user where their settings came from without printing a path from their machine. Absent on every launch that copied nothing, which is every launch but the first after an upgrade.
+
 An embedding host with no command line provides an empty list; that is the honest answer, not a missing value. It still reports a version — whatever app it embeds has one.
 
 ## Ordinary providers and injected config

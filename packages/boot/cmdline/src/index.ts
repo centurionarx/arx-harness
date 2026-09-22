@@ -32,6 +32,22 @@ export interface CmdlineArgs {
   get(): readonly string[]
 }
 
+/**
+ * A copy of a previous harness home the launcher made before the tree mounted.
+ *
+ * Display forms only: a surface tells the user which home their data came from
+ * without naming an absolute path on their machine. Absent on every boot that
+ * copied nothing, which is every boot but the first after an upgrade.
+ */
+export interface HomeMigration {
+  /** Symbolic name of the home the data came from. */
+  fromDisplay: string
+  /** Symbolic name of the home it was copied into. */
+  toDisplay: string
+  /** When the copy was published, as an ISO-8601 instant. */
+  at: string
+}
+
 /** Request bounded process exit; the launcher wires it to its shutdown controller. */
 export interface AppExit {
   /**
@@ -49,6 +65,12 @@ declare module '@arx-ai/cordis' {
     appExit?: AppExit
     /** The launcher app's released version; provided by a launcher before the tree mounts. */
     appVersion?: string
+    /**
+     * The home copy this boot performed, or the one a previous boot recorded;
+     * provided by a launcher before the tree mounts, and absent when no home
+     * was ever migrated.
+     */
+    homeMigration?: HomeMigration
   }
 }
 
@@ -60,6 +82,8 @@ export interface CmdlineHost {
   exit: AppExit
   /** The launcher app's released version, as its own manifest declares it. */
   version: string
+  /** The home copy this launcher performed or found recorded, when there is one. */
+  homeMigration?: HomeMigration
 }
 
 /**
@@ -68,13 +92,17 @@ export interface CmdlineHost {
  * config: an embedding host with no command line provides an empty argument
  * list, and reports the version of whatever app it is embedding.
  * @param ctx - the host context the tree will mount under.
- * @param host - the invocation's arguments, its exit request, and its version.
+ * @param host - the invocation's arguments, its exit request, its version, and
+ *   any home copy it performed.
  */
 export function provideCmdline(ctx: Context, host: CmdlineHost): void {
   const snapshot: readonly string[] = Object.freeze([...host.args])
   ctx.provide('cmdlineArgs', { get: () => snapshot })
   ctx.provide('appExit', host.exit)
   ctx.provide('appVersion', host.version)
+  // Declared with the other launcher facts even when no copy happened: absence
+  // is this fact's ordinary value, not a slot the launcher forgot.
+  ctx.provide('homeMigration', host.homeMigration)
 }
 
 /** The process streams commander output is written to; production writes to the process. */

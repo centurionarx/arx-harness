@@ -19,11 +19,16 @@ import { ModelsSection } from './ModelsSection.tsx'
 import type { ModelsSectionInjected } from './ModelsSection.tsx'
 import { WelcomeNotice } from './WelcomeNotice.tsx'
 import type { WelcomeNoticeInjected } from './WelcomeNotice.tsx'
-import { decodeWelcomeSection, WelcomeNoticeStore } from './welcome-store.ts'
+import { HomeMigrationNotice } from './HomeMigrationNotice.tsx'
+import type { HomeMigrationNoticeInjected } from './HomeMigrationNotice.tsx'
+import { decodeNoticeSection, AcknowledgedNoticeStore } from './notice-store.ts'
 import { ModelsSettingsStore } from './store.ts'
 import { createSettingsSchemaOperations } from './schema-operations.ts'
 import { en, type ModelsKey } from './locales.ts'
-import { WELCOME_NOTICE_SETTINGS_NAMESPACE } from '../onboarding-copy.ts'
+import {
+  HOME_MIGRATION_ACK_FIELD,
+  WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
+} from '../onboarding-copy.ts'
 
 export type { ModelsSectionInjected, ModelsSectionProps } from './ModelsSection.tsx'
 export type { ModelsKey } from './locales.ts'
@@ -80,13 +85,38 @@ export function apply(ctx: ClientContext): void {
   })
   // The scope's own memory mode is what keeps a remote browser process-local,
   // so the store needs no isLoopback branch of its own.
-  const welcomeController = new WelcomeNoticeStore(ctx.settingsScope.bind({
-    namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE,
-    decode: decodeWelcomeSection,
-  }))
+  const welcomeController = new AcknowledgedNoticeStore({
+    scope: ctx.settingsScope.bind({
+      namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE,
+      decode: decodeNoticeSection,
+    }),
+    field: WELCOME_NOTICE_ACK_FIELD,
+    version: () => WELCOME_NOTICE_VERSION,
+    subject: 'welcome',
+  })
   const welcomeInjected = (): WelcomeNoticeInjected => ({
     controller: welcomeController,
     hooks: { welcome: welcomeController.store },
+    t,
+  })
+  // The Host reports one copy per installation, so the instant it happened is
+  // the version this notice acknowledges. It is read per comparison because
+  // the description arrives after this binding is made.
+  const homeMigrationController = new AcknowledgedNoticeStore({
+    scope: ctx.settingsScope.bind({
+      namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE,
+      decode: decodeNoticeSection,
+    }),
+    field: HOME_MIGRATION_ACK_FIELD,
+    version: () => connection.hostDescription.getSnapshot()?.homeMigration?.at ?? '',
+    subject: 'home migration',
+  })
+  const homeMigrationInjected = (): HomeMigrationNoticeInjected => ({
+    controller: homeMigrationController,
+    hooks: {
+      homeMigrationNotice: homeMigrationController.store,
+      hostDescription: connection.hostDescription,
+    },
     t,
   })
 
@@ -105,6 +135,7 @@ export function apply(ctx: ClientContext): void {
     ]
     return () => {
       welcomeController.dispose()
+      homeMigrationController.dispose()
       for (const dispose of disposers) dispose()
     }
   }, 'ui-settings-models: pushed invalidations')
@@ -122,4 +153,12 @@ export function apply(ctx: ClientContext): void {
     order: -100,
     inject: welcomeInjected,
   }, WelcomeNotice))
+  // After the welcome notice: a user meeting the product for the first time
+  // reads what it is before being told where their old settings went.
+  ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
+    name: 'settings.onboarding',
+    id: 'home-migration-notice',
+    order: -90,
+    inject: homeMigrationInjected,
+  }, HomeMigrationNotice))
 }

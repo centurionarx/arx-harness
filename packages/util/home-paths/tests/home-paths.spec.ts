@@ -5,12 +5,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_ARX_HOME_DISPLAY,
   ARX_HOME_DIR_NAME,
+  LEGACY_ARX_HOME,
   canonicalizeWatchPath,
   defaultArxHome,
   arxHomeDisplay,
   arxHomePath,
   expandHomePath,
+  legacyArxHomeDisplay,
   resolveArxHome,
+  resolveLegacyArxHome,
 } from '@arx-ai/arx-home-paths'
 
 afterEach(() => {
@@ -72,5 +75,25 @@ describe('arx path helpers', () => {
     } finally {
       await rm(root, { recursive: true, force: true })
     }
+  })
+})
+
+describe('the pre-rename harness home', () => {
+  it('names only the home this product wrote before it was arx', () => {
+    expect(LEGACY_ARX_HOME).toEqual({ env: 'CXH_HOME', dirName: '.cxh', display: '~/.cxh' })
+  })
+
+  it('defaults under the OS home and yields to its own override', () => {
+    expect(resolveLegacyArxHome({})).toBe(join(homedir(), '.cxh'))
+    expect(resolveLegacyArxHome({ CXH_HOME: '~/elsewhere' })).toBe(join(homedir(), 'elsewhere'))
+  })
+
+  it('treats a blank override as unset, as the current home does', () => {
+    expect(resolveLegacyArxHome({ CXH_HOME: '   ' })).toBe(join(homedir(), '.cxh'))
+  })
+
+  it('displays the default symbolically and any override by its variable', () => {
+    expect(legacyArxHomeDisplay(resolveLegacyArxHome({}))).toBe('~/.cxh')
+    expect(legacyArxHomeDisplay(resolve('/srv/old-home'))).toBe('$CXH_HOME')
   })
 })

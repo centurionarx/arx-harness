@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { InjectFace, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
 import { Button } from '@arx-ai/arx-client-ui-primitives'
-import type { WelcomeNoticeState, WelcomeNoticeStore } from './welcome-store.ts'
+import type { AcknowledgedNoticeState, AcknowledgedNoticeStore } from './notice-store.ts'
 import type { en } from './locales.ts'
 import { OnboardingModal } from './OnboardingModal.tsx'
 import css from './WelcomeNotice.module.css'
@@ -14,10 +14,10 @@ import css from './WelcomeNotice.module.css'
 export interface WelcomeNoticeInjected {
   hooks: {
     /** Durable or process-local acknowledgement state. */
-    welcome: SnapshotStore<WelcomeNoticeState>
+    welcome: SnapshotStore<AcknowledgedNoticeState>
   }
   /** Welcome acknowledgement controller. */
-  controller: WelcomeNoticeStore
+  controller: AcknowledgedNoticeStore
   /** Onboarding copy. */
   t: (key: keyof typeof en) => string
 }

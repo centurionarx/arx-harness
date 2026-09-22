@@ -10,10 +10,17 @@ const ONBOARDING_SETTINGS_NAMESPACE = 'ui-onboarding'
 interface OnboardingSettings {
   /** Last version acknowledged by the current product welcome step. */
   welcomeNoticeVersion?: string
+  /**
+   * Instant of the home copy the user has been told about. The Host reports
+   * one copy per installation, so its own timestamp is the version this
+   * notice compares.
+   */
+  homeMigrationNoticedAt?: string
 }
 
 const OnboardingSettingsSchema: z<OnboardingSettings> = z.object({
   welcomeNoticeVersion: z.string(),
+  homeMigrationNoticedAt: z.string(),
 })
 
 /** Register the durable GUI-onboarding section when a settings provider exists. */

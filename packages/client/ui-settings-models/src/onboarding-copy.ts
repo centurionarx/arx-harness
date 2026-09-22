@@ -18,3 +18,23 @@ export const WELCOME_NOTICE_COPY = {
     continueLabel: 'Continue',
   },
 } as const
+
+/** Field storing the last home-migration notice the user acknowledged. */
+export const HOME_MIGRATION_ACK_FIELD = 'homeMigrationNoticedAt'
+
+/**
+ * The home-migration notice in the supported GUI locale.
+ *
+ * `{from}` and `{to}` are replaced with the symbolic home names the Host
+ * reports, so the notice never prints an absolute path from the user's
+ * machine.
+ */
+export const HOME_MIGRATION_NOTICE_COPY = {
+  en: {
+    title: 'Your settings were copied',
+    body: 'This installation found configuration from an earlier version at {from} and copied it to {to}.'
+      + '\n\nYour models, credentials, profiles, and past sessions came across. {from} was left exactly as it was;'
+      + ' delete it once you are satisfied everything works.',
+    continueLabel: 'Continue',
+  },
+} as const

@@ -135,6 +135,7 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
   appExit: 'not a service: launcher-provided bounded process-exit callback — packages/boot/cmdline/README.md owns the launcher contract',
   cmdlineArgs: 'not a service: launcher-provided immutable app argument accessor — packages/boot/cmdline/README.md owns the launcher contract',
   appVersion: 'not a service: launcher-provided released version string — packages/boot/cmdline/README.md owns the launcher contract',
+  homeMigration: 'not a service: launcher-provided pre-rename home copy report (HomeMigration | undefined) — packages/boot/cmdline/README.md owns the launcher contract',
   configuredAgentIdentities: 'not a service: launcher-provided boot-context value (ConfiguredAgentIdentities | undefined) — packages/core/agent-loop/README.md owns this launcher contract',
   launcherSessionQueryPath: 'not a service: launcher-provided boot-context value (string | undefined) — packages/session-query/session-query-sqlite/README.md owns this launcher contract',
   arxHomePath: 'not a service: boot-provided root accessor function (typeof arxHomePath | undefined) for Loader !!js config expressions — packages/boot/app-boot/README.md owns the boot contract',

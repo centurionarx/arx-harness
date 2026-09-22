@@ -324,6 +324,14 @@ describe('host domain schemas', () => {
     expect(() => hostDescribeValueSchema.parse({
       version: '1', cwd: '/x', attachedSessions: 0, canOpenPath: true,
     })).toThrow()
+    expect(hostDescribeValueSchema.parse({
+      version: '1', cwd: '/x', attachedSessions: 0, home: '/h', canOpenPath: false,
+      homeMigration: { fromDisplay: '~/.cxh', toDisplay: '~/.arx', at: '2026-09-22T10:00:00.000Z' },
+    }).homeMigration?.fromDisplay).toBe('~/.cxh')
+    expect(() => hostDescribeValueSchema.parse({
+      version: '1', cwd: '/x', attachedSessions: 0, home: '/h', canOpenPath: false,
+      homeMigration: { fromDisplay: '~/.cxh', toDisplay: '~/.arx' },
+    })).toThrow()
   })
 
   it('validates the browse listing/creation payloads', () => {

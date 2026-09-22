@@ -1,6 +1,6 @@
 /** Copy dictionaries for the Models settings section. */
 
-import { WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
+import { HOME_MIGRATION_NOTICE_COPY, WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
 
 /** English strings (the key-set source of truth for this pair). */
 export const en = {
@@ -90,6 +90,9 @@ export const en = {
   welcomeBody: WELCOME_NOTICE_COPY.en.body,
   welcomeContinue: WELCOME_NOTICE_COPY.en.continueLabel,
   welcomeError: 'The acknowledgement could not be saved. Please try again.',
+  homeMigrationTitle: HOME_MIGRATION_NOTICE_COPY.en.title,
+  homeMigrationBody: HOME_MIGRATION_NOTICE_COPY.en.body,
+  homeMigrationContinue: HOME_MIGRATION_NOTICE_COPY.en.continueLabel,
 }
 
 /** The settings.models namespace key union. */
