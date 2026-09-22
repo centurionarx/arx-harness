@@ -184,6 +184,12 @@ declare module '@arx-ai/arx-client-ui-slots' {
      */
     'conversation.hero.brand.mark': { kind: 'single'; scope: 'root'; owner: HeroBrandMarkOwnerProps }
     /**
+     * Product name artwork beside the blank-session mark. Declared by this
+     * package's `conversation` entry; the shell supplies the unbranded
+     * placeholder text when no occupant fills it.
+     */
+    'conversation.hero.brand.name': { kind: 'single'; scope: 'root'; owner: HeroBrandNameOwnerProps }
+    /**
      * The agent-preset chip beside the workspace picker on the new-session
      * screen. Root scope: no session exists yet, so the choice is staged for
      * the next one rather than applied to a current one.
@@ -643,6 +649,14 @@ export interface HeroBrandMarkOwnerProps {
   className?: string | undefined
 }
 
+/** Presentation props supplied to the blank-session brand-name occupant. */
+export interface HeroBrandNameOwnerProps {
+  /** Requested artwork height in pixels; the width follows the artwork. */
+  size: number
+  /** Host CSS class placing the artwork in the headline row. */
+  className?: string | undefined
+}
+
 /**
  * Full conversation-slot component props: runtime & child-render (view ring
  * + composer chain/bar + input-region + hero picker slots) & store & injected
@@ -655,7 +669,7 @@ export type ConversationSlotProps =
     | 'conversation.input.overlay'
     | 'conversation.input.dock' | 'conversation.composer.dock'
     | 'conversation.input.left' | 'conversation.input.right'
-    | 'conversation.hero.brand.mark'
+    | 'conversation.hero.brand.mark' | 'conversation.hero.brand.name'
     | 'conversation.hero.workspace'
     | 'conversation.hero.agentPreset'
   >
