@@ -138,6 +138,9 @@ export function needsSetup(row: ProviderRow, anyUsable: boolean): boolean {
   return row.credential?.configured !== true
 }
 
+/** Provider names compared as a reader scans them: letters, not character codes. */
+const BY_NAME = new Intl.Collator(undefined, { sensitivity: 'base' })
+
 function targetOf(row: ProviderRow): EditorTarget {
   const managedRef = deriveKeyRef(row.entry.provider)
   const credentialRef = row.apiKeyEnv === managedRef
@@ -286,7 +289,12 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
   // already has a provider to talk to.
   const anyUsable = state.rows.some(providerUsable)
   const configured = state.rows.filter(row => row.configured)
-  const addable = state.rows.filter(row => !row.configured && row.entry.settingsNs !== '')
+  // By name, not by the directory's order: that order is whichever adapter
+  // registered first, and the add card preselects the first entry, so leaving
+  // it would let registration timing choose which provider a user is offered.
+  const addable = state.rows
+    .filter(row => !row.configured && row.entry.settingsNs !== '')
+    .sort((a, b) => BY_NAME.compare(a.entry.displayName, b.entry.displayName))
   const addTarget = adding ? editing : undefined
   const addNamespace = addTarget === undefined ? undefined : state.namespaces.get(addTarget.settingsNs)
   // Hand-declared routes live in the pi-ai namespace, which is also the only
