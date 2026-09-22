@@ -21,7 +21,7 @@
     - img
     - text: Close
   - heading "Models" [level=2]
-  - paragraph: Enter your API keys to use models from the following providers.
+  - paragraph: Configure the providers whose models you want to use.
   - status: Saved Claude (subscription) (claude-subscription).
   - list:
     - listitem:

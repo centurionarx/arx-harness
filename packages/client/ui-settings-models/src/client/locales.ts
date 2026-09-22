@@ -6,7 +6,7 @@ import { HOME_MIGRATION_NOTICE_COPY, WELCOME_NOTICE_COPY } from '../onboarding-c
 export const en = {
   nav: 'Models',
   title: 'Models',
-  intro: 'Enter your API keys to use models from the following providers.',
+  intro: 'Configure the providers whose models you want to use.',
   edit: 'Edit',
   editProvider: 'Edit {provider}',
   remove: 'Delete',
