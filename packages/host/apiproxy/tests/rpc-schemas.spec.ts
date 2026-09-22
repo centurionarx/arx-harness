@@ -225,6 +225,11 @@ describe('sessions domain schemas', () => {
       }],
       failures: [{ id: 'broken', name: 'Broken', message: 'offline' }],
     }).groups[0]?.models[0]?.id).toBe('deepseek-v4-flash')
+    // No selection is spelled as an absent `current`: a deployment with no
+    // default model answers every fresh session this way, and the browser
+    // must accept it or the model menu can never load.
+    expect(sessionModelsValueSchema.parse({ routable: false, groups: [], failures: [] }).current)
+      .toBeUndefined()
     expect(sessionSelectModelRequestSchema.parse({
       sessionId: 's1',
       provider: 'deepseek-official',
