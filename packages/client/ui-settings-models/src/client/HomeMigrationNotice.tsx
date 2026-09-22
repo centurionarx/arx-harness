@@ -1,15 +1,12 @@
 /** One-time notice that this installation copied a pre-rename harness home. */
 
-import { useCallback, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { InjectFace, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
-import { Button } from '@arx-ai/arx-client-ui-primitives'
+import { AcknowledgedNoticeModal, useAcknowledgedNotice } from './AcknowledgedNotice.tsx'
 import type { AcknowledgedNoticeState, AcknowledgedNoticeStore } from './notice-store.ts'
 import type { en } from './locales.ts'
-import { OnboardingModal } from './OnboardingModal.tsx'
-import css from './WelcomeNotice.module.css'
 
 /** Registration-side dependencies of {@link HomeMigrationNotice}. */
 export interface HomeMigrationNoticeInjected {
@@ -45,48 +42,23 @@ export function HomeMigrationNotice(props: HomeMigrationNoticeProps): ReactNode 
   // copy settles the question.
   const described = useHostDescription(description => description !== undefined)
   const migration = useHostDescription(description => description?.homeMigration)
-  const finished = useRef(false)
-  const finish = useCallback((): void => {
-    if (finished.current) return
-    finished.current = true
-    complete()
-  }, [complete])
+  const { pending, acknowledge } = useAcknowledgedNotice(
+    controller, state, complete, described && migration === undefined,
+  )
 
-  useEffect(() => {
-    if (state.status === 'idle') void controller.load()
-  }, [controller, state.status])
-
-  useEffect(() => {
-    if (state.acknowledged || (described && migration === undefined)) finish()
-  }, [described, finish, migration, state.acknowledged])
-
-  if (migration === undefined) return null
-  if (state.status === 'idle' || state.status === 'loading' || state.acknowledged) return null
-
-  const acknowledge = async (): Promise<void> => {
-    if (await controller.acknowledge()) finish()
-  }
-  const paragraphs = t('homeMigrationBody')
-    .replaceAll('{from}', migration.fromDisplay)
-    .replaceAll('{to}', migration.toDisplay)
-    .split('\n\n')
+  if (migration === undefined || !pending) return null
 
   return (
-    <OnboardingModal title={t('homeMigrationTitle')}>
-      <div className={css.copy}>
-        {paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-      </div>
-      {state.error === null ? null : <p className={css.error} role="alert">{t('welcomeError')}</p>}
-      <div className={css.actions}>
-        <Button
-          variant="primary"
-          className={css.primary}
-          disabled={state.status === 'saving'}
-          onClick={() => { void acknowledge() }}
-        >
-          {t('homeMigrationContinue')}
-        </Button>
-      </div>
-    </OnboardingModal>
+    <AcknowledgedNoticeModal
+      title={t('homeMigrationTitle')}
+      paragraphs={t('homeMigrationBody')
+        .replaceAll('{from}', migration.fromDisplay)
+        .replaceAll('{to}', migration.toDisplay)
+        .split('\n\n')}
+      error={state.error === null ? null : t('welcomeError')}
+      continueLabel={t('homeMigrationContinue')}
+      saving={state.status === 'saving'}
+      onContinue={() => { void acknowledge() }}
+    />
   )
 }
