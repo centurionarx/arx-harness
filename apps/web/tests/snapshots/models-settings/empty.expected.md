@@ -25,12 +25,12 @@
   - list
   - text: Provider
   - combobox "Provider":
-    - option "Claude (subscription)"
     - option "amazon-bedrock"
     - option "ant-ling"
     - option "anthropic"
     - option "azure-openai-responses"
     - option "cerebras"
+    - option "Claude (subscription)"
     - option "cloudflare-ai-gateway"
     - option "cloudflare-workers-ai"
     - option "deepseek"
