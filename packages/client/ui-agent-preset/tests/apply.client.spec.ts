@@ -237,7 +237,7 @@ describe('ui-agent-preset apply', () => {
     section.cancelCopy()
     section.beginCopy('standard')
     section.setCopyId('mine')
-    section.setCopyName('我的模式')
+    section.setCopyName('My mode')
     await section.confirmCopy()
     await section.view('standard')
     section.closeView()
@@ -390,7 +390,7 @@ describe('ui-agent-preset apply', () => {
     await section.load()
     section.beginCopy('standard')
     section.setCopyId('mine')
-    section.setCopyName('我的模式')
+    section.setCopyName('My mode')
     await section.confirmCopy()
 
     // Authoring copies a directory rather than writing a setting, so nothing
@@ -501,6 +501,129 @@ describe('ui-agent-preset apply', () => {
     // load already fetched, rather than issuing a second read per session.
     expect(label.hooks.agentPresets).toBe(row.hooks.agentPreset)
     expect(label.hooks.agentPresets.getSnapshot().options).toEqual([{ id: 'standard', trust: 'system' }])
+  })
+
+  it('switches a blank session in place from its header', async () => {
+    const { ctx, slots, calls } = await bench()
+    declareRoot(slots)
+    declareConversation(slots)
+    ctx.provide('conversation', {} as never)
+    const state = { current: 's1', byId: { s1: { id: 's1', blank: true, agentPreset: 'standard' } } }
+    ctx.provide('sessions', sessionsDouble(state) as never)
+    const workspaces = workspacesDouble()
+    ctx.provide('workspaces', workspaces as never)
+    await ctx.plugin({ inject: [...inject, 'conversation', 'sessions', 'workspaces'], apply }).await()
+    const label = (slots.entries('conversation.session.header.actions')[0]!
+      .inject as unknown as () => AgentPresetLabelInjected)()
+
+    label.choose('s1' as never, 'minimal')
+
+    // The chip's own select: the host recomposes the blank session, and its
+    // row follows, so the header names the new preset.
+    await vi.waitFor(() => { expect(state.byId.s1.agentPreset).toBe('minimal') })
+    expect(calls).toContain('select:minimal')
+    expect(workspaces.starts).toHaveLength(0)
+  })
+
+  it('opens a new session for a pick from a started one, and leaves the started one alone', async () => {
+    const { ctx, slots, calls } = await bench()
+    declareRoot(slots)
+    declareConversation(slots)
+    ctx.provide('conversation', {} as never)
+    const state: {
+      current?: string
+      byId: Record<string, { id: string; blank: boolean; agentPreset?: string }>
+    } = { current: 's1', byId: { s1: { id: 's1', blank: false, agentPreset: 'standard' } } }
+    const sessions = sessionsDouble(state)
+    ctx.provide('sessions', sessions as never)
+    const workspaces = workspacesDouble()
+    ctx.provide('workspaces', workspaces as never)
+    await ctx.plugin({ inject: [...inject, 'conversation', 'sessions', 'workspaces'], apply }).await()
+    const label = (slots.entries('conversation.session.header.actions')[0]!
+      .inject as unknown as () => AgentPresetLabelInjected)()
+    const seat = (slots.entries('conversation.hero.agentPreset')[0]!
+      .inject as unknown as () => AgentPresetSeatInjected)()
+
+    label.choose('s1' as never, 'minimal')
+
+    // Nothing asks the host to recompose the started session: the pick is
+    // staged, announced on the chip, and one new session starts.
+    expect(calls).not.toContain('select:minimal')
+    expect(workspaces.starts).toEqual([null])
+    expect(seat.hooks.agentPresetSeat.getSnapshot()).toMatchObject({ current: 'minimal', introduce: true })
+
+    // The new session joins the list while the started one is still current
+    // (the create arm of a workspace connect); that must not spend the stage.
+    state.byId['s2'] = { id: 's2', blank: true, agentPreset: 'standard' }
+    sessions.notify()
+    await Promise.resolve()
+    expect(calls).not.toContain('select:minimal')
+
+    state.current = 's2'
+    sessions.notify()
+
+    await vi.waitFor(() => { expect(state.byId['s2']!.agentPreset).toBe('minimal') })
+    expect(state.byId['s1']!.agentPreset).toBe('standard')
+  })
+
+  it('ignores the running preset and a session the list does not know', async () => {
+    const { ctx, slots, calls } = await bench()
+    declareRoot(slots)
+    declareConversation(slots)
+    ctx.provide('conversation', {} as never)
+    ctx.provide('sessions', sessionsDouble({
+      current: 's1',
+      byId: { s1: { id: 's1', blank: false, agentPreset: 'standard' } },
+    }) as never)
+    const workspaces = workspacesDouble()
+    ctx.provide('workspaces', workspaces as never)
+    await ctx.plugin({ inject: [...inject, 'conversation', 'sessions', 'workspaces'], apply }).await()
+    const label = (slots.entries('conversation.session.header.actions')[0]!
+      .inject as unknown as () => AgentPresetLabelInjected)()
+    const seat = (slots.entries('conversation.hero.agentPreset')[0]!
+      .inject as unknown as () => AgentPresetSeatInjected)()
+
+    label.choose('s1' as never, 'standard')
+    label.choose('gone' as never, 'minimal')
+
+    expect(calls.filter(call => call.startsWith('select:'))).toEqual([])
+    expect(workspaces.starts).toHaveLength(0)
+    expect(seat.hooks.agentPresetSeat.getSnapshot().introduce).toBe(false)
+  })
+
+  it('drops a header stage when the user opens another started session instead', async () => {
+    const { ctx, slots, calls } = await bench()
+    declareRoot(slots)
+    declareConversation(slots)
+    ctx.provide('conversation', {} as never)
+    const state: {
+      current?: string
+      byId: Record<string, { id: string; blank: boolean; agentPreset?: string }>
+    } = {
+      current: 's1',
+      byId: {
+        s1: { id: 's1', blank: false, agentPreset: 'standard' },
+        s3: { id: 's3', blank: false, agentPreset: 'standard' },
+      },
+    }
+    const sessions = sessionsDouble(state)
+    ctx.provide('sessions', sessions as never)
+    ctx.provide('workspaces', workspacesDouble() as never)
+    await ctx.plugin({ inject: [...inject, 'conversation', 'sessions', 'workspaces'], apply }).await()
+    const label = (slots.entries('conversation.session.header.actions')[0]!
+      .inject as unknown as () => AgentPresetLabelInjected)()
+
+    label.choose('s1' as never, 'minimal')
+    state.current = 's3'
+    sessions.notify()
+    // A later blank session is not the one the pick was for.
+    state.byId['s4'] = { id: 's4', blank: true, agentPreset: 'standard' }
+    state.current = 's4'
+    sessions.notify()
+
+    await Promise.resolve()
+    expect(calls).not.toContain('select:minimal')
+    expect(state.byId['s4'].agentPreset).toBe('standard')
   })
 
   it('stages the creator preset and starts a session from the section', async () => {

@@ -1,6 +1,6 @@
 # arx-client-ui-agent-preset
 
-The agent-preset surfaces: a General-settings row choosing which [preset](../../preset/agent-presets/README.md) new sessions are composed from, a chip on the new-session screen choosing the next session's, a read-only label in the session header, and a settings section that manages the roster — copy, delete, default, and the way into a preset's own files.
+The agent-preset surfaces: a General-settings row choosing which [preset](../../preset/agent-presets/README.md) new sessions are composed from, a chip on the new-session screen choosing the next session's, a switch in the session header, and a settings section that manages the roster — copy, delete, default, and the way into a preset's own files.
 
 ## Why it is a new-session preference
 
@@ -14,9 +14,11 @@ The chip opens on the deployment default and its pick is *staged* — the screen
 
 A session that has started is refused rather than queued: the host answers `agent-preset-locked`, and the stage is dropped instead of waiting for a session that will never accept it.
 
-## The session-header label
+## The session-header switch
 
-A third surface, beside the session title: the preset THIS session runs, as static chrome. A control there would promise a switch the host refuses outright. It reads the preset from the session's own summary and resolves the display name against the same roster the General row reads. Forwarded `agent-preset/selected` owner events fold committed blank-session switches into that shared summary in every tab; the initiating tab may already have applied the RPC echo, and the merge is idempotent.
+A third surface, beside the session title: a button naming the preset THIS session runs, which opens the roster with that preset marked. It reads the preset from the session's own summary and resolves names and descriptions against the same roster the General row reads; until that roster answers, the button shows the id and stays disabled. Forwarded `agent-preset/selected` owner events fold committed blank-session switches into that shared summary in every tab; the initiating tab may already have applied the RPC echo, and the merge is idempotent.
+
+A pick never asks the host to recompose a started session, which it refuses with `agent-preset-locked`. For a started session, every other row says "Starts a new session in this mode", and picking one stages that preset on the chip's controller with the introduce cue and starts a new session in the same workspace. The started session keeps its composition. The stage waits through the list changes that precede the new session, including its creation, and lands on the blank session the start opens; opening a different started session instead drops it. A blank session switches in place through the chip's `agentPreset.select`. Picking the running preset does nothing. The conversation header stays hidden while a session is blank, so in practice the in-place branch serves only the moment between the first send and the first turn's record.
 
 ## What it reads and writes
 
