@@ -10,7 +10,7 @@ import { createUserMessage } from '@arx-ai/arx-llm'
  * @module @arx-ai/arx-session-persistence/tests/coordinator-contract
  */
 
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { Context, type Fiber } from '@arx-ai/cordis'
 import { scopeTarget } from '@arx-ai/arx-scope'
 import SessionStore, { SESSION_FORMAT_VERSION, Session, SessionId } from '@arx-ai/arx-session'
@@ -260,13 +260,11 @@ export function runCoordinatorContract(name: string, makeFixture: () => Promise<
         await ctx.sessions.flush(session)
         await sessionFiber.dispose()
 
-        await vi.waitFor(async () => {
-          const loaded = await ctx.sessionPersistence.load(session.id)
-          expect(loaded.events.map(event => event.type)).toEqual(oneTurnLog().map(event => event.type))
-          expect(loaded.events.at(-1)).toMatchObject({
-            type: 'turn/end',
-            data: { reason: { kind: 'completed' } },
-          })
+        await expect.poll(async () => (await ctx.sessionPersistence.load(session.id)).events.map(event => event.type))
+          .toEqual(oneTurnLog().map(event => event.type))
+        expect((await ctx.sessionPersistence.load(session.id)).events.at(-1)).toMatchObject({
+          type: 'turn/end',
+          data: { reason: { kind: 'completed' } },
         })
       } finally {
         await sessionFiber.dispose()
@@ -1048,9 +1046,7 @@ export function runCoordinatorContract(name: string, makeFixture: () => Promise<
 
         // Disposal is an observe-only notification. Poll storage rather than
         // assuming the owning fiber awaits the coordinator's detached drain.
-        await vi.waitFor(async () => {
-          expect((await ctx.sessionPersistence.list()).map(meta => meta.id)).toContain(SessionId('buffered'))
-        })
+        await expect.poll(async () => (await ctx.sessionPersistence.list()).map(meta => meta.id)).toContain(SessionId('buffered'))
         expect((await ctx.sessionPersistence.load(SessionId('buffered'))).events.map(event => event.seq)).toEqual([0, 1])
 
         let reuse!: Session
@@ -1183,9 +1179,7 @@ export function runCoordinatorContract(name: string, makeFixture: () => Promise<
         expect(loaded.meta.createdAt).toBe(1000)
 
         await contFiber.dispose()
-        await vi.waitFor(async () => {
-          expect((await ctx.sessionPersistence.load(SessionId('claim'))).meta).toEqual(durableMeta)
-        })
+        await expect.poll(async () => (await ctx.sessionPersistence.load(SessionId('claim'))).meta).toEqual(durableMeta)
       } finally {
         await fiber.dispose()
         await fix.cleanup()

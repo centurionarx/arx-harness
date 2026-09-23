@@ -69,18 +69,57 @@ export function parseCoveragePartitionCount(raw: string | undefined): number | u
 }
 
 /**
- * Resolve the Vitest timeout arguments used by coverage partitions. One budget
- * governs a case, its polling, and its hooks alike: a contended lane slows
- * setup and teardown by the same factor it slows the case body, so a raised
- * case budget beside a default hook budget still fails on the hook.
+ * Parse a contended lane's Vitest budget.
+ * @param raw - the `ARX_COVERAGE_TEST_TIMEOUT_MS` value.
+ * @returns the budget in milliseconds, or undefined when the lane sets none.
+ * @throws Error when the value is not a positive integer.
  */
-export function coverageTestTimeoutArgs(raw: string | undefined): string[] {
-  if (raw === undefined || raw === '') return []
+export function parseCoverageTestTimeout(raw: string | undefined): number | undefined {
+  if (raw === undefined || raw === '') return undefined
   const parsed = Number.parseInt(raw, 10)
   if (!Number.isSafeInteger(parsed) || parsed < 1 || String(parsed) !== raw) {
     throw new Error(`${COVERAGE_TEST_TIMEOUT_ENV} must be a positive integer, got ${JSON.stringify(raw)}.`)
   }
-  return [`--testTimeout=${raw}`, `--expect.poll.timeout=${raw}`, `--hookTimeout=${raw}`]
+  return parsed
+}
+
+/**
+ * Resolve the Vitest timeout arguments used by coverage partitions. One budget
+ * governs a case, its polling, and its hooks alike: a contended lane slows
+ * setup and teardown by the same factor it slows the case body, so a raised
+ * case budget beside a default hook budget still fails on the hook. Inline
+ * Vitest projects take `--testTimeout` from the command line but ignore
+ * `--hookTimeout` and `--expect.poll.timeout`, so each project in
+ * `vitest.config.ts` also applies {@link coverageTestTimeoutOptions}.
+ * @param raw - the `ARX_COVERAGE_TEST_TIMEOUT_MS` value.
+ * @returns the three budget flags, or none when the lane sets no budget.
+ */
+export function coverageTestTimeoutArgs(raw: string | undefined): string[] {
+  if (parseCoverageTestTimeout(raw) === undefined) return []
+  return [`--testTimeout=${String(raw)}`, `--expect.poll.timeout=${String(raw)}`, `--hookTimeout=${String(raw)}`]
+}
+
+/** Per-project Vitest options that carry a contended lane's budget. */
+export interface CoverageTestTimeoutOptions {
+  /** Per-test budget. */
+  testTimeout?: number
+  /** Budget for each `beforeEach`, `afterEach`, `beforeAll`, and `afterAll`. */
+  hookTimeout?: number
+  /** Default budget for `expect.poll`. */
+  expect?: { poll: { timeout: number } }
+}
+
+/**
+ * Resolve the budget options each inline Vitest project applies. Without a
+ * lane budget the projects keep Vitest's defaults, so a local run still
+ * reports a hanging hook or poll after seconds rather than the lane's budget.
+ * @param raw - the `ARX_COVERAGE_TEST_TIMEOUT_MS` value.
+ * @returns per-test, hook, and poll budgets, or no options when the lane sets none.
+ */
+export function coverageTestTimeoutOptions(raw: string | undefined): CoverageTestTimeoutOptions {
+  const budget = parseCoverageTestTimeout(raw)
+  if (budget === undefined) return {}
+  return { testTimeout: budget, hookTimeout: budget, expect: { poll: { timeout: budget } } }
 }
 
 /** Remove pnpm's package-script separator before forwarding Vitest arguments. */

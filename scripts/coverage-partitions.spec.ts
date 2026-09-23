@@ -1,6 +1,7 @@
 import { access, mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   COVERAGE_PARTITION_MODE_ENV,
@@ -8,6 +9,7 @@ import {
   COVERAGE_TEST_TIMEOUT_ENV,
   CoveragePartitionCoordinator,
   coverageTestTimeoutArgs,
+  coverageTestTimeoutOptions,
   forwardedCoverageArgs,
   parseCoveragePartitionCount,
   type CoverageCommand,
@@ -15,6 +17,11 @@ import {
 } from './coverage-partitions.ts'
 
 const passed: CoverageCommandResult = { exitCode: 0, signalCode: null }
+
+/** The part of `vitest.config.ts` the lane-budget case reads. */
+interface VitestConfigProjects {
+  test?: { projects?: { test?: { name?: string } }[] }
+}
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -68,6 +75,42 @@ describe('coverage partition timeout', () => {
   it('rejects invalid timeout input', () => {
     expect(() => coverageTestTimeoutArgs('0'))
       .toThrow(`${COVERAGE_TEST_TIMEOUT_ENV} must be a positive integer`)
+    expect(() => coverageTestTimeoutOptions('30s'))
+      .toThrow(`${COVERAGE_TEST_TIMEOUT_ENV} must be a positive integer`)
+  })
+
+  it('gives each Vitest project the same budget for tests, hooks, and polls', () => {
+    expect(coverageTestTimeoutOptions('30000')).toEqual({
+      testTimeout: 30_000,
+      hookTimeout: 30_000,
+      expect: { poll: { timeout: 30_000 } },
+    })
+    expect(coverageTestTimeoutOptions(undefined)).toEqual({})
+    expect(coverageTestTimeoutOptions('')).toEqual({})
+  })
+
+  // Inline projects ignore `--hookTimeout` and `--expect.poll.timeout` on the
+  // command line, so the lane budget reaches hooks and polls only through
+  // each project's own options.
+  it('applies the lane budget to every project in the Vitest configuration', async () => {
+    vi.stubEnv(COVERAGE_TEST_TIMEOUT_ENV, '30000')
+    vi.resetModules()
+    try {
+      const configUrl = pathToFileURL(join(import.meta.dirname, '..', 'vitest.config.ts')).href
+      const { default: config } = await import(configUrl) as { default: VitestConfigProjects }
+      const projects = config.test?.projects ?? []
+      expect(projects.map(project => project.test?.name)).toEqual(['thread-safe', 'process-bound'])
+      for (const project of projects) {
+        expect(project.test).toMatchObject({
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
+          expect: { poll: { timeout: 30_000 } },
+        })
+      }
+    } finally {
+      vi.unstubAllEnvs()
+      vi.resetModules()
+    }
   })
 })
 
