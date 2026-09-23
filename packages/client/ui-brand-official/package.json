@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-brand-official",
   "description": "Official arx Harness brand occupants for the Web client's sidebar and conversation Hero slots",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "publishConfig": {
     "access": "public"
   },
