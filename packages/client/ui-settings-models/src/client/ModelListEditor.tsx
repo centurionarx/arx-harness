@@ -1,10 +1,12 @@
 /**
- * The model list of one pi-ai provider profile, plus the action that asks the
- * provider what it serves.
+ * The model list of one provider profile, in the entry format of the adapter
+ * that owns it, plus the action that asks the provider what it serves.
  *
- * The list is the profile's `models` array as the card holds it: an empty list
- * means "serve this route's built-in catalog", and any entry replaces that
- * catalog, so a row is only ever added deliberately. Fetching asks the endpoint
+ * The list is the profile's `models` array as the card holds it. On a pi-ai
+ * route an empty list means "serve this route's built-in catalog", and any
+ * entry replaces that catalog, so a row is only ever added deliberately; a
+ * CLI-backed route has no catalog of its own, so its list is what it serves
+ * and the card that owns it requires at least one row. Fetching asks the endpoint
  * **the form currently shows** — including a key typed but not yet saved — so
  * adding a provider is one pass instead of save-then-return; the reply is
  * candidates the user picks from, never configuration written behind them.
@@ -19,7 +21,7 @@ import type { ReactNode } from 'react'
 import type { DiscoveredModelView, IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { Button, Modal } from '@arx-ai/arx-client-ui-primitives'
 import { formatCapacity, parseCapacity } from './model-catalog.ts'
-import type { CatalogModelDraft } from './model-catalog.ts'
+import type { CatalogModelDraft, ModelEntryFormat } from './model-catalog.ts'
 import { messageOf } from './store.ts'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
@@ -63,6 +65,8 @@ export interface ProbeTarget {
 
 /** Props of {@link ModelListEditor}. */
 export interface ModelListEditorProps {
+  /** Which adapter's model entries the rows are, which decides what a row offers. */
+  format: ModelEntryFormat
   /** The rows as currently drafted. */
   models: readonly ModelDraft[]
   /** Whether the user layer currently owns the whole array; absent on a create. */
@@ -131,6 +135,32 @@ const CAPACITY_HINT: Readonly<Record<CapacityField, string>> = {
   maxTokens: '32K',
 }
 
+/** What one adapter's entries show beyond an id and a name. */
+interface EntryPresentation {
+  /**
+   * Capacities fold behind a per-row disclosure. They do where they are the
+   * exception; where one is required, hiding it would hide the field a
+   * refused apply points at.
+   */
+  foldCapacities: boolean
+  /** Placeholder per capacity field: the adapter's own fallback, or none when it has none. */
+  capacityHint: Readonly<Record<CapacityField, string>> | undefined
+  /** Whether a row carries the adapter's image-input flag as a checkbox. */
+  imagesToggle: boolean
+  /**
+   * Copy under an empty list, or none. A CLI-backed route refuses a model it
+   * does not list, so the pi-ai line — which says an unlisted id can still be
+   * sent — would be false there, and its card states the requirement instead.
+   */
+  emptyCopy: keyof typeof en | undefined
+}
+
+/** Each adapter's row presentation, exhaustive over the formats a card edits. */
+const PRESENTATION: Readonly<Record<ModelEntryFormat, EntryPresentation>> = {
+  'pi-ai': { foldCapacities: true, capacityHint: CAPACITY_HINT, imagesToggle: false, emptyCopy: 'modelsEmpty' },
+  'agent-cli': { foldCapacities: false, capacityHint: undefined, imagesToggle: true, emptyCopy: undefined },
+}
+
 /**
  * Spell a stored count for a field that may be unset. The spelling itself is
  * {@link formatCapacity}, so every surface reads and writes one K/M
@@ -159,6 +189,7 @@ function adopt(candidate: DiscoveredModelView): ModelDraft {
  */
 export function ModelListEditor(props: ModelListEditorProps): ReactNode {
   const { models, onChange, probe, api, t, disabled } = props
+  const presentation = PRESENTATION[props.format]
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<string | undefined>(undefined)
   const [candidates, setCandidates] = useState<readonly DiscoveredModelView[] | undefined>(undefined)
@@ -209,7 +240,7 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
     })
   }
 
-  const patch = (index: number, next: Record<string, string | number | undefined>): void => {
+  const patch = (index: number, next: Record<string, string | number | boolean | undefined>): void => {
     onChange(models.map((model, at) => {
       if (at !== index) return model
       // Rebuilt rather than spread over: an emptied optional field has to leave
@@ -341,7 +372,9 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
           {busy ? t('fetching') : t('fetchModels')}
         </button>
       </div>
-      {models.length === 0 ? <p className={styles['modelEmpty']}>{t('modelsEmpty')}</p> : null}
+      {models.length === 0 && presentation.emptyCopy !== undefined
+        ? <p className={styles['modelEmpty']}>{t(presentation.emptyCopy)}</p>
+        : null}
       {models.map((model, index) => (
         <div key={index} className={styles['modelEntry']}>
           <div className={styles['modelRow']}>
@@ -363,16 +396,20 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
               disabled={disabled}
               onChange={(event) => { patch(index, { name: event.target.value === '' ? undefined : event.target.value }) }}
             />
-            <button
-              type="button"
-              className={styles['iconButton']}
-              aria-label={`${t('modelAdvanced')} ${index + 1}`}
-              aria-expanded={expanded.has(index)}
-              title={t('modelAdvanced')}
-              onClick={() => { toggleExpanded(index) }}
-            >
-              <IconChevron open={expanded.has(index)} />
-            </button>
+            {presentation.foldCapacities
+              ? (
+                <button
+                  type="button"
+                  className={styles['iconButton']}
+                  aria-label={`${t('modelAdvanced')} ${index + 1}`}
+                  aria-expanded={expanded.has(index)}
+                  title={t('modelAdvanced')}
+                  onClick={() => { toggleExpanded(index) }}
+                >
+                  <IconChevron open={expanded.has(index)} />
+                </button>
+              )
+              : null}
             <button
               type="button"
               className={`${styles['iconButton']} ${styles['iconButtonDanger']}`}
@@ -399,7 +436,7 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
               <IconTrash />
             </button>
           </div>
-          {expanded.has(index)
+          {!presentation.foldCapacities || expanded.has(index)
             ? (
               <div className={styles['modelAdvanced']}>
                 <label className={styles['modelField']}>
@@ -409,7 +446,7 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
                     type="text"
                     inputMode="numeric"
                     value={capacityText(model, index, 'contextWindow')}
-                    placeholder={CAPACITY_HINT.contextWindow}
+                    placeholder={presentation.capacityHint?.contextWindow}
                     aria-label={`${t('modelContextWindow')} ${index + 1}`}
                     disabled={disabled}
                     onChange={(event) => { editCapacity(index, 'contextWindow', event.target.value) }}
@@ -422,12 +459,28 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
                     type="text"
                     inputMode="numeric"
                     value={capacityText(model, index, 'maxTokens')}
-                    placeholder={CAPACITY_HINT.maxTokens}
+                    placeholder={presentation.capacityHint?.maxTokens}
                     aria-label={`${t('modelMaxTokens')} ${index + 1}`}
                     disabled={disabled}
                     onChange={(event) => { editCapacity(index, 'maxTokens', event.target.value) }}
                   />
                 </label>
+                {presentation.imagesToggle
+                  ? (
+                    <label className={styles['modelToggle']}>
+                      <input
+                        type="checkbox"
+                        checked={model['acceptsImages'] === true}
+                        aria-label={`${t('modelAcceptsImages')} ${index + 1}`}
+                        disabled={disabled}
+                        // Unchecked removes the field rather than storing
+                        // false: absent is the adapter's own default.
+                        onChange={(event) => { patch(index, { acceptsImages: event.target.checked ? true : undefined }) }}
+                      />
+                      {t('modelAcceptsImages')}
+                    </label>
+                  )
+                  : null}
               </div>
             )
             : null}

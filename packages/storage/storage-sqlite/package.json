@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-storage-sqlite",
   "description": "SQLite storage backend (kv facet) for the arx Harness storage hub",
-  "version": "1.0.11",
+  "version": "1.0.15",
   "publishConfig": {
     "access": "public"
   },

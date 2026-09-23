@@ -10,7 +10,7 @@
 
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { loadLayeredEnv } from '@arx-ai/arx-app-boot'
+import { loadLayeredEnv, migrateLegacyHome } from '@arx-ai/arx-app-boot'
 import { parseArxArgs } from './args.ts'
 
 // Both the source tree (apps/cli/src) and the bundled bin (apps/cli/lib) sit
@@ -27,6 +27,14 @@ function readVersion(): string {
 const version = readVersion()
 const invocation = parseArxArgs(process.argv.slice(2), version)
 
+// Before anything reads the harness home — the layered `.env`, the home patch
+// layer, the profile directory — carry a pre-rename home across if this is the
+// first launch that finds the current one absent.
+const homeMigration = await migrateLegacyHome('arx', {
+  warn: line => void process.stderr.write(line),
+  appVersion: version,
+})
+
 switch (invocation.mode) {
   case 'profile': {
     const { runProfile } = await import('./profile-boot.ts')
@@ -36,6 +44,7 @@ switch (invocation.mode) {
       patchFiles: invocation.patches,
       args: invocation.args,
       version,
+      ...homeMigration === undefined ? {} : { homeMigration },
     })
     break
   }

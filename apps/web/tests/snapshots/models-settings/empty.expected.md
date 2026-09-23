@@ -21,7 +21,7 @@
     - img
     - text: Close
   - heading "Models" [level=2]
-  - paragraph: Enter your API keys to use models from the following providers.
+  - paragraph: Configure the providers whose models you want to use.
   - list
   - text: Provider
   - combobox "Provider":
@@ -30,6 +30,7 @@
     - option "anthropic"
     - option "azure-openai-responses"
     - option "cerebras"
+    - option "Claude (subscription)"
     - option "cloudflare-ai-gateway"
     - option "cloudflare-workers-ai"
     - option "deepseek"

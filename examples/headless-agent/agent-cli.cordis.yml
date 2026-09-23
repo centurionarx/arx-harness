@@ -7,8 +7,9 @@
 # is no credential entry below because this harness never handles one.
 
 # User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): a
-# `llm-agent-cli:` section there overrides the adapter entry below without a
-# restart.
+# `llm-agent-cli:` section there overlays the adapter entry below without a
+# restart. The entry is that section's base, so a route added from settings
+# joins the one pinned here rather than displacing it.
 - id: settings
   name: '@arx-ai/arx-settings-file'
 

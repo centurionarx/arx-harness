@@ -423,6 +423,13 @@ describe('resolveRoutes', () => {
     expect(routes.get('claude')?.models.get('sonnet')).toEqual({ id: 'sonnet', contextWindow: 200_000 })
   })
 
+  it('names an offered route by the name it is offered under when the profile names none', () => {
+    const routes = resolveRoutes({ 'claude-subscription': { models: [{ id: 'sonnet', contextWindow: 200_000 }] } })
+    // A page that adds the offered route without renaming it keeps the name the
+    // user picked it by, in the directory and in the model picker alike.
+    expect(routes.get('claude-subscription')?.displayName).toBe('Claude (subscription)')
+  })
+
   it('keeps what configuration stated', () => {
     const routes = resolveRoutes({ claude: { displayName: 'Claude', disposeGraceMs: 10 } })
     expect(routes.get('claude')).toMatchObject({ displayName: 'Claude', disposeGraceMs: 10 })

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-runtime",
   "description": "Client core services: SlotRegistry, SessionRuntime (scope tree + object layer)",
-  "version": "1.0.11",
+  "version": "1.0.15",
   "publishConfig": {
     "access": "public"
   },

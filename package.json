@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-root",
-  "version": "1.0.11",
+  "version": "1.0.15",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -121,6 +121,8 @@
     "gen-doc-graphs": "tsx scripts/gen-doc-graphs.ts",
     "verify-doc-graphs": "tsx scripts/gen-doc-graphs.ts --check",
     "gen-persistence-catalog": "tsx scripts/gen-persistence-catalog.ts",
+    "gen-upstream-triage": "tsx scripts/gen-upstream-triage.ts",
+    "check-upstream-import": "tsx scripts/check-upstream-import.ts",
     "verify-persistence-catalog": "tsx scripts/gen-persistence-catalog.ts --check",
     "gen-third-party-notices": "tsx scripts/gen-third-party-notices.ts",
     "verify-third-party-notices": "tsx scripts/gen-third-party-notices.ts --check",

@@ -16,6 +16,12 @@ Shared filesystem path helpers for arx Harness user data.
 
 `expandHomePath()` expands `~`, `~/...`, and Windows-style `~\...` prefixes against the operating-system home directory. It leaves non-tilde paths and `~user/...` untouched.
 
+## The pre-rename home
+
+`LEGACY_ARX_HOME` names the home this product wrote before it was called arx: `$CXH_HOME`, defaulting to `~/.cxh`. `resolveLegacyArxHome()` resolves it with the same precedence `resolveArxHome()` uses, and `legacyArxHomeDisplay()` names it symbolically the same way.
+
+Nothing resolves reads or writes there. The names exist so [`arx-app-boot`](../../boot/app-boot/README.md) can copy that directory forward once, and no other product's home belongs here: a directory written by a differently-composed harness holds settings namespaces this one does not own.
+
 ## Watch paths
 
 `canonicalizeWatchPath()` gives a native filesystem watcher one stable spelling of its target. It resolves the deepest existing ancestor through `fs.realpath()` and restores any missing suffix, so a file or directory may still be watched before it is created. In particular, Windows 8.3 aliases cannot be mixed with the long paths emitted by the native watcher backend.

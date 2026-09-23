@@ -9,6 +9,9 @@ Shared boot glue for the app bins ([`arx`](../../../apps/cli/README.md) and [`ar
 | `loadLayeredEnv(binName, cwd?, warn?)` | Build the product CLI's frozen inherited > project `.env` > user `.env` snapshot, reject bootstrap-only file variables, and materialize accepted file values without replacing inherited ones |
 | `installFailLoud(binName, proc?, release?)` | Turn an unhandled boot or later Loader rejection into one labelled stderr line + `exit(1)`; the optional `release` teardown is awaited between the two (bounded by `FAIL_LOUD_RELEASE_TIMEOUT_MS`) so a terminal-owning surface restores the terminal before exit; returns the uninstaller |
 | `FAIL_LOUD_RELEASE_TIMEOUT_MS` | How long `installFailLoud` waits for its `release` hook; a wedged disposer delays the fatal exit, never cancels it |
+| `migrateLegacyHome(binName, options)` | Copy the pre-rename harness home (`$CXH_HOME`, default `~/.cxh`) into the current one, once, on the launch that finds the current one absent; returns the report of that copy or of one an earlier launch made |
+| `readHomeMigrationMarker(home)` | Read the `.migrated-from.json` a migration left in a home; an absent or damaged marker reads as none |
+| `HOME_MIGRATION_MARKER` | Filename of that marker |
 | `assertEntriesLoaded(ctx, binName)` | Throw when a settled tree holds an enabled entry with no fiber, reporting every unresolved plugin name as a Cordis startup failure |
 | `assertEntriesActivated(ctx, binName)` | Include the `assertEntriesLoaded` check, then await every enabled entry after the Loader settles; throw with each failed plugin's original stack or each pending plugin's unresolved services |
 | `loadOptionalPatches(binName, file)` | Parse an optional patch-list file (a profile's `cordis.patch.yml`) — a top-level YAML array of include `PatchOptions` (id-targeted config overrides, `insert` lists, `!!js` allowed); absent file → `undefined`, an unreadable/unparsable/non-array file throws |
@@ -30,6 +33,16 @@ The Loader mounts entries concurrently, so a surface can already own the termina
 Bare plugin specifiers in a config (`@arx-ai/arx-*`, npm packages) resolve through the Cordis Loader's internal module loader. They resolve from the config directory by default; a closed runtime passes `bareModuleBaseUrl` to `boot` or `mountRootInclude` so its installed package tree remains authoritative even when the config lives inside another Node project. Relative specifiers always resolve against the config directory. Repository bins install Loader's optional `node-addon-require-builtin` peer; external callers must supply it or install plugins where plain Node import resolution can find them. The built `arx-app-boot` artifact embeds the statically mounted Include implementation while leaving Loader external, so the include tree and host bind to one Loader peer. The `pnpm arx` source path additionally maps manifest-declared workspace packages to their TypeScript source; its configuration gate requires every shipped raw/Web bare plugin to appear in the resolver manifest's `dependencies`.
 
 This package carries no loader hooks and no dev-mode surface. The [`arx` app](../../../apps/cli/README.md) owns its Node source-launch hook and consumes these helpers for the boot sequence; built consumers continue to use plain Node package resolution.
+
+## Carrying a pre-rename home forward
+
+The product renamed its home from `~/.cxh` to `~/.arx` without carrying the data across, so an upgrading user booted against an empty home while their settings, credentials, profile patch layers, and sessions were all still on disk. `migrateLegacyHome` copies that tree once, on the launch that finds the current home absent.
+
+It copies and never moves: the legacy directory is left exactly as it was, and deleting it is the user's to do. The copy is staged in a sibling directory and published with a single rename, so an interrupted or failed copy never leaves a half-populated `$ARX_HOME` that the next launch would mistake for a migrated one. The current home existing is the whole idempotence rule — a second launch, an interrupted first one, and a home the user made by hand all copy nothing.
+
+A legacy home that is present and cannot be copied throws, naming the escape (create the current home yourself, or point `ARX_HOME` elsewhere): booting into an empty home would hide data the user still has.
+
+The report is handed to the tree through [`ctx.homeMigration`](../cmdline/README.md) so a surface can tell the user what happened.
 
 ## Profiles
 

@@ -11,8 +11,8 @@ import { SettingsScopeController } from '@arx-ai/arx-client-ui-settings/src/clie
 const schemaService = new SettingsSchemaService(new Context())
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
 import type { WelcomeNoticeProps } from '../src/client/WelcomeNotice.tsx'
-import { decodeWelcomeSection, WelcomeNoticeStore } from '../src/client/welcome-store.ts'
-import type { WelcomeSection } from '../src/client/welcome-store.ts'
+import { decodeNoticeSection, AcknowledgedNoticeStore } from '../src/client/notice-store.ts'
+import type { NoticeSection } from '../src/client/notice-store.ts'
 import { en } from '../src/client/locales.ts'
 import {
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_COPY, WELCOME_NOTICE_SETTINGS_NAMESPACE,
@@ -62,14 +62,19 @@ function mount(
     },
   }
   const mirror = new SettingsDescribeMirror(api as never)
-  const scope = new SettingsScopeController<WelcomeSection>(
+  const scope = new SettingsScopeController<NoticeSection>(
     api as never,
-    { namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE, decode: decodeWelcomeSection },
+    { namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE, decode: decodeNoticeSection },
     mirror,
     'host',
     schemaService,
   )
-  const controller = new WelcomeNoticeStore(scope)
+  const controller = new AcknowledgedNoticeStore({
+    scope,
+    field: WELCOME_NOTICE_ACK_FIELD,
+    version: () => WELCOME_NOTICE_VERSION,
+    subject: 'welcome',
+  })
   void mirror.load()
   const complete = vi.fn()
   const unusedHook = (() => { throw new Error('unused standard hook') }) as never

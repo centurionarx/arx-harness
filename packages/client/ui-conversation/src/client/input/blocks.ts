@@ -6,7 +6,9 @@
  * bar reads its own session's store. A block carries the localized reason it
  * exists, because the plugin that raised it owns that copy; the composer only
  * knows how to render an inert textarea with a placeholder, exactly as it
- * already does for a session with no workspace.
+ * already does for a session with no workspace. A block may also carry the
+ * recovery its owner offers, which the composer runs from that textarea the
+ * way the no-workspace state opens the workspace picker.
  *
  * This is an affordance, not enforcement: the Host refuses a prompt it cannot
  * route regardless of what any client disables.
@@ -15,6 +17,14 @@
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { SessionId, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 
+/** A recovery the plugin that raised a block offers from the composer. */
+export interface ComposerBlockAction {
+  /** Localized accessible name of the composer while it acts as this trigger. */
+  readonly label: string
+  /** Run the recovery; the composer calls it on a click, Enter, or Space. */
+  readonly run: () => void
+}
+
 /** Why one session's composer is inert. */
 export interface ComposerBlock {
   /**
@@ -22,13 +32,22 @@ export interface ComposerBlock {
    * that raised the block.
    */
   readonly reason: string
+  /**
+   * The recovery for a block that choosing a model cannot clear. With one,
+   * the composer card becomes the action's trigger and every toolbar control
+   * stays locked, the model seat included; without one, the model seat stays
+   * live, because choosing a model is how the user clears the block.
+   */
+  readonly action?: ComposerBlockAction
 }
 
 /** The registry face other plugins reach through `ctx.conversation.blocks`. */
 export interface ComposerBlocks {
   /**
    * Raise or clear this session's block. Idempotent: setting a block equal to
-   * the current one, or clearing an absent one, notifies nobody.
+   * the current one, or clearing an absent one, notifies nobody. Blocks are
+   * equal when their reasons and action labels are, so a blocker may pass a
+   * fresh `run` closure on every publish.
    * @param sessionId - the session whose composer is affected.
    * @param block - the block to raise, or undefined to clear it.
    */
@@ -57,7 +76,7 @@ export class ComposerBlockRegistry implements ComposerBlocks {
   set(sessionId: SessionId, block: ComposerBlock | undefined): void {
     const store = this.storeFor(sessionId)
     const current = store.getSnapshot()
-    if (current?.reason === block?.reason) return
+    if (current?.reason === block?.reason && current?.action?.label === block?.action?.label) return
     store.set(block)
   }
 

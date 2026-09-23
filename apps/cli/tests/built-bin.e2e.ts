@@ -814,4 +814,51 @@ describe.skipIf(!existsSync(arxBin))('arx BUILT bin (node lib/bin.js, no tsx)', 
       expect(stderr).toContain('patch: entry "absent-row" not found')
     }, 30_000)
   })
+
+  describe('the pre-rename home', () => {
+    it('copies a legacy home forward once, and applies the patch layer it carried', async () => {
+      const root = mkdtempSync(join(tmpdir(), 'arx-legacy-home-'))
+      const legacy = join(root, '.cxh')
+      const home = join(root, '.arx')
+      // Seed the legacy home the way an upgrading user's actually looks: a
+      // profile whose patch layer is the only reason their agent has a model.
+      const init = await runBuiltBin(['--profile', 'web', '--dump-default-config'], { ARX_HOME: legacy })
+      expect(init.code).toBe(0)
+      writeFileSync(join(legacy, 'profiles', 'web', 'cordis.patch.yml'), [
+        '- id: agent-loop',
+        '  config:',
+        '    agents:',
+        '      - id: carried',
+        '        provider: carried-provider',
+        '        model: carried-model',
+        '',
+      ].join('\n'))
+      writeFileSync(join(legacy, 'settings.yaml'), 'ui-onboarding:\n  welcomeNoticeVersion: seeded\n')
+
+      const first = await runBuiltBin(['--profile', 'web', '--dump-config'], { ARX_HOME: home, CXH_HOME: legacy })
+
+      expect(first.code).toBe(0)
+      expect(first.stderr).toContain('copied your previous configuration')
+      expect(first.stderr).toContain('left untouched')
+      // The copied patch layer is live, which is the whole point of the copy.
+      expect(first.stdout).toContain('provider: carried-provider')
+      expect(readFileSync(join(home, 'settings.yaml'), 'utf8')).toContain('welcomeNoticeVersion: seeded')
+      const marker = JSON.parse(readFileSync(join(home, '.migrated-from.json'), 'utf8')) as {
+        fromDisplay: string
+        toDisplay: string
+      }
+      expect(marker).toMatchObject({ fromDisplay: '$CXH_HOME', toDisplay: '$ARX_HOME' })
+      // The legacy home is exactly as it was found.
+      expect(readFileSync(join(legacy, 'settings.yaml'), 'utf8')).toContain('welcomeNoticeVersion: seeded')
+      expect(existsSync(join(legacy, '.migrated-from.json'))).toBe(false)
+
+      writeFileSync(join(home, 'settings.yaml'), 'ui-onboarding:\n  welcomeNoticeVersion: edited\n')
+      const second = await runBuiltBin(['--profile', 'web', '--dump-config'], { ARX_HOME: home, CXH_HOME: legacy })
+
+      expect(second.code).toBe(0)
+      expect(second.stderr).not.toContain('copied your previous configuration')
+      expect(readFileSync(join(home, 'settings.yaml'), 'utf8')).toContain('welcomeNoticeVersion: edited')
+      rmSync(root, { recursive: true, force: true })
+    }, 60_000)
+  })
 })

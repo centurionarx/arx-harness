@@ -1,0 +1,5 @@
+- dialog "Your settings were copied":
+  - heading "Your settings were copied" [level=2]
+  - paragraph: This installation found configuration from an earlier version at ~/.cxh and copied it to ~/.arx.
+  - paragraph: Your models, credentials, profiles, and past sessions came across. ~/.cxh was left exactly as it was; delete it once you are satisfied everything works.
+  - button "Continue"

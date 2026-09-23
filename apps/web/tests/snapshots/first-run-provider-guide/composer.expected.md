@@ -1,0 +1,9 @@
+- textbox "Set up a model provider":
+  - /placeholder: Set up a model provider to start
+- button "Commands" [disabled]:
+  - img
+- 'button "Access mode, current: Workspace Write" [disabled]': Workspace Write
+- button "Select model" [disabled]:
+  - text: Select model
+  - img
+- button "Send message" [disabled]

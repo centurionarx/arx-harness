@@ -2,7 +2,7 @@
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type {} from '@arx-ai/arx-client-ui-sidebar/client'
-import { OfficialBrandMark, OfficialBrandName } from './Brand.tsx'
+import { OfficialBrandMark, OfficialBrandName, OfficialHeroBrandName } from './Brand.tsx'
 
 /** Required service: the UI slot registry. */
 export const inject = ['slots']
@@ -15,9 +15,11 @@ export function apply(ctx: ClientContext): void {
   if (process.env.ARX_CLIENT_BUILD_PROFILE !== 'official') return
   ctx.slots.inject('sidebar.brand.mark', () =>
     ctx.slots.inject('sidebar.brand.name', () =>
-      ctx.slots.inject('conversation.hero.brand.mark', function* () {
-        yield ctx.slots.register({ name: 'sidebar.brand.mark' }, OfficialBrandMark)
-        yield ctx.slots.register({ name: 'sidebar.brand.name' }, OfficialBrandName)
-        yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, OfficialBrandMark)
-      })))
+      ctx.slots.inject('conversation.hero.brand.mark', () =>
+        ctx.slots.inject('conversation.hero.brand.name', function* () {
+          yield ctx.slots.register({ name: 'sidebar.brand.mark' }, OfficialBrandMark)
+          yield ctx.slots.register({ name: 'sidebar.brand.name' }, OfficialBrandName)
+          yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, OfficialBrandMark)
+          yield ctx.slots.register({ name: 'conversation.hero.brand.name' }, OfficialHeroBrandName)
+        }))))
 }
