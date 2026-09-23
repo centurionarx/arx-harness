@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-subprocess-local",
   "description": "Local-subprocess implementation of the arx Harness subprocess seam",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-test-runtime",
   "description": "jsdom slot test runtime: real Cordis Context + SlotRegistry + UI renderer with test-owned session/workspace doubles for feature specs",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "publishConfig": {
     "access": "public"
   },
