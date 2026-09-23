@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-file-reference",
   "description": "File-reference discovery contract and shared @file grammar",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },

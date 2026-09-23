@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-pwsh-sandbox",
   "description": "Sandbox-consuming implementation of the arx Harness PowerShell executor seam (confines every command via ctx.sandbox, reports denial/enforcement result facts)",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },
