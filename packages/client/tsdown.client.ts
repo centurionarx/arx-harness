@@ -58,7 +58,7 @@ function styleInjectionModule(
  * Everything else under @arx-ai/* is either a module-table entry
  * (external) or a leak the purity gate rejects.
  */
-export const INLINE_SAFE = /^@arx-ai\/arx-(?:(?:host-apiproxy|file-reference|session|llm|tools|brand)(?:\/|$)|file-preview\/client$)/
+export const INLINE_SAFE = /^@arx-ai\/arx-(?:(?:host-apiproxy|file-reference|session|llm|tools|brand)(?:\/|$)|file-preview\/client$|host-open-in-app\/shared$)/
 
 /**
  * Vendored framework libraries: rescoped into @arx-ai, so the gate below

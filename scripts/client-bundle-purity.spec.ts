@@ -87,6 +87,12 @@ describe('client bundle purity gate', () => {
     expect(() => resolveId('@arx-ai/arx-file-preview/client/nested')).toThrow(/purity/)
   })
 
+  it('inlines the open-in-app shared wire contract without admitting its host plugin', () => {
+    expect(resolveId('@arx-ai/arx-host-open-in-app/shared')).toBeNull()
+    expect(() => resolveId('@arx-ai/arx-host-open-in-app')).toThrow(/purity/)
+    expect(() => resolveId('@arx-ai/arx-host-open-in-app/shared/nested')).toThrow(/purity/)
+  })
+
   it('lets exact generated Remote contributions inline without admitting their package implementation', () => {
     expect(resolveId('@arx-ai/arx-goal/remote')).toBeNull()
     expect(() => resolveId('@arx-ai/arx-goal')).toThrow(/purity/)

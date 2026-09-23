@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import {
-  createLaunchEnvironmentSnapshot, ARX_LAUNCH_ENVIRONMENT_KEY, launchEnvironmentOf,
+  createLaunchEnvironmentSnapshot, ARX_LAUNCH_ENVIRONMENT_KEY, launchEnvironmentOf, launchedThroughSsh,
 } from '../src/index.ts'
 
 const layered = createLaunchEnvironmentSnapshot([
@@ -65,5 +65,21 @@ describe('launchEnvironmentOf', () => {
     } finally {
       vi.unstubAllEnvs()
     }
+  })
+})
+
+describe('launchedThroughSsh', () => {
+  it.each(['SSH_CONNECTION', 'SSH_TTY'])('reads a non-empty %s in the inherited process layer as SSH', (name) => {
+    expect(launchedThroughSsh(createLaunchEnvironmentSnapshot([
+      { source: 'process', values: { [name]: '10.0.0.2 51000 10.0.0.1 22' } },
+    ]))).toBe(true)
+  })
+
+  it('ignores markers that are empty or come only from a .env layer', () => {
+    expect(launchedThroughSsh(createLaunchEnvironmentSnapshot([
+      { source: 'process', values: { SSH_CONNECTION: '', SSH_TTY: '' } },
+      { source: 'project-env', path: '/work/.env', values: { SSH_CONNECTION: '10.0.0.2 51000 10.0.0.1 22' } },
+      { source: 'user-env', path: '/home/.arx/.env', values: { SSH_TTY: '/dev/pts/0' } },
+    ]))).toBe(false)
   })
 })

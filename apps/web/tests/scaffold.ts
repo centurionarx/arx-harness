@@ -301,6 +301,14 @@ export interface LaunchOptions {
    * give; a scenario covering the pathless surface asks for false.
    */
   nativeOpen?: boolean
+  /**
+   * Mount the open-in-app host and browser rows. Off by default: the host
+   * resolves the applications installed on the running machine, so every
+   * golden capturing a session header would otherwise differ per host. A
+   * scenario that turns it on pins what the host resolves against (PATH,
+   * display, home, XDG roots) itself.
+   */
+  openInApp?: boolean
 }
 
 /** Dispose the booted tree and remove both owned temp roots, reporting every independent cleanup failure. */
@@ -494,6 +502,8 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       { id: 'directory-picker-browse', name: '@arx-ai/arx-host-directory-picker-browse' },
       { id: 'ui-directory-picker-browse', name: '@arx-ai/arx-client-ui-directory-picker-browse' },
     ] },
+    { id: 'open-in-app', disabled: options.openInApp !== true },
+    { id: 'ui-open-in-app', disabled: options.openInApp !== true },
     ...options.agentPresets === undefined
       ? []
       // Never the derived harness-home root: a developer's own presets must not

@@ -19,7 +19,7 @@ import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import { addHarnessSourceSection } from '@arx-ai/arx-app-boot'
 import * as FrontendStatic from '@arx-ai/arx-host-frontend-static'
-import { launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
+import { launchedThroughSsh, launchEnvironmentOf } from '@arx-ai/arx-launch-environment'
 import { scrubbedParentEnv } from '@arx-ai/arx-subprocess'
 import type {} from '@arx-ai/cordis-plugin-loader'
 import type {} from '@arx-ai/arx-host-webserver'
@@ -78,15 +78,6 @@ const ARX_WEB_URL = 'ARX_WEB_URL' as const
 const LOOPBACK_HOST = '127.0.0.1'
 /** The webserver schema's all-interfaces bind literal. */
 const ALL_INTERFACES_HOST = '0.0.0.0'
-
-/** Whether this process was launched through SSH, including a forwarded-port session. */
-function launchedThroughSsh(ctx: Context): boolean {
-  const environment = launchEnvironmentOf(ctx)
-  return ['SSH_CONNECTION', 'SSH_TTY'].some((name) => {
-    const value = environment.getFrom(name, ['process'])?.value
-    return value !== undefined && value !== ''
-  })
-}
 
 const BROWSER_OPENER_MODULE = import.meta.resolve('open')
 
@@ -227,7 +218,7 @@ export function apply(ctx: Context, config: Config): void {
   const runtime = resolveLanTrust(ctx.webServer.host, config.trustedHosts)
   // The loopback URL belongs to this host. Under SSH, the operator reaches it
   // through a local forwarding address that this process cannot derive.
-  const handoffBrowser = config.openBrowser && !launchedThroughSsh(ctx)
+  const handoffBrowser = config.openBrowser && !launchedThroughSsh(launchEnvironmentOf(ctx))
   // Release dependent rows only after bind-dependent trust has been sampled once.
   ctx.provide(WEB_RUNTIME_SERVICE, runtime)
   ctx.plugin(FrontendStatic, { distIndex: internals.resolveDistIndex() })
