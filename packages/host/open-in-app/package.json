@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-open-in-app",
   "description": "Host half of open-in-app: resolves installed editors, Git GUIs, terminals, and file managers to verified launchers and serves the catalog, icons, and launches over a loopback-only connection RPC channel",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "publishConfig": {
     "access": "public"
   },
