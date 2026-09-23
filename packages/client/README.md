@@ -31,6 +31,7 @@ The browser side of the arx web GUI: shell boot, browser-host communication, sha
 | [`ui-reference/`](ui-reference/README.md) | Unified Web `@file` / `@session` reference source. |
 | [`ui-subagent/`](ui-subagent/README.md) | Provides subagent navigation, child transcript states, and inline references. |
 | [`ui-jobs/`](ui-jobs/README.md) | Lists this session's background jobs in the conversation header. |
+| [`ui-open-in-app/`](ui-open-in-app/README.md) | Opens the session's workspace directory in a host application from the conversation header. |
 | [`ui-model-selection/`](ui-model-selection/README.md) | Provides model selection in conversation surfaces. |
 | [`ui-permission/`](ui-permission-presets/README.md) | Configures default permissions and switches the current session's access. |
 | [`ui-plan/`](ui-plan/README.md) | Presents active plan-mode status and its exit control. |

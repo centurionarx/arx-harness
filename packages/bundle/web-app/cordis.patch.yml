@@ -70,6 +70,17 @@
     - id: session-log-download
       name: '@arx-ai/arx-session-log-export'
 
+    # Session-header "open in application": resolves the installed editors,
+    # Git GUIs, terminals, and file managers once per process and launches one
+    # on the workspace directory over a loopback-only connection RPC channel.
+    # Its browser surface is the ui-open-in-app roster row.
+    - id: open-in-app
+      name: '@arx-ai/arx-host-open-in-app'
+      config:
+        probeTimeoutMs: 10000
+        iconTimeoutMs: 10000
+        launchWatchMs: 1000
+
     - id: project-runner
       name: '@arx-ai/arx-project-runner'
 
@@ -264,6 +275,10 @@
     # Remove this entry to turn the surface off; the tail hole renders empty.
     - id: ui-deliverables
       name: '@arx-ai/arx-client-ui-deliverables'
+
+    # Session header: the open-in-app split button over the host open-in-app row.
+    - id: ui-open-in-app
+      name: '@arx-ai/arx-client-ui-open-in-app'
 
 
     - id: ui-workspace

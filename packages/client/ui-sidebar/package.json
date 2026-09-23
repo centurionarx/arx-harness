@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-sidebar",
   "description": "Sidebar plugin: session multi-level tree, search, grouping, state dots",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "publishConfig": {
     "access": "public"
   },

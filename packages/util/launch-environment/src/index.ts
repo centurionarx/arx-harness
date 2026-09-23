@@ -116,6 +116,21 @@ export function launchEnvironmentOf(ctx: Context): LaunchEnvironmentSnapshot {
     ?? createLaunchEnvironmentSnapshot([{ source: 'process', values: process.env as Record<string, string> }])
 }
 
+/**
+ * Whether this run was launched through SSH, including a forwarded-port
+ * session: the inherited process layer carries a non-empty `SSH_CONNECTION`
+ * or `SSH_TTY`. Only that layer counts — a project or user `.env` naming
+ * either marker cannot make a local run read as remote.
+ * @param environment - this run's snapshot ({@link launchEnvironmentOf}).
+ * @returns true when the launching environment is an SSH session.
+ */
+export function launchedThroughSsh(environment: LaunchEnvironmentSnapshot): boolean {
+  return ['SSH_CONNECTION', 'SSH_TTY'].some((name) => {
+    const value = environment.getFrom(name, ['process'])?.value
+    return value !== undefined && value !== ''
+  })
+}
+
 declare module '@arx-ai/cordis' {
   interface Context {
     /** Launcher-owned snapshot of this run's environment; absent in compositions the product CLI did not boot. */

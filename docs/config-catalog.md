@@ -879,6 +879,37 @@ export interface Config {
 
 Source: [`packages/host/frontend-static/src/index.ts:28`](../packages/host/frontend-static/src/index.ts)
 
+<a id="arx-aiarx-host-open-in-app"></a>
+
+## `@arx-ai/arx-host-open-in-app`
+
+Requires: `connection` · `webServer` · `subprocess`
+
+```ts config-catalog
+/** Open-in-app host configuration. */
+export interface Config {
+  /**
+   * Per-command deadline in milliseconds for catalog-resolution host
+   * commands (`xcode-select`, the Windows registry reads).
+   */
+  readonly probeTimeoutMs: number
+  /**
+   * Per-command deadline in milliseconds for icon-extraction host commands
+   * (`plutil`/`sips` on macOS, the PowerShell extraction on Windows).
+   */
+  readonly iconTimeoutMs: number
+  /**
+   * Early-failure watch window per launch, in milliseconds: a launcher still
+   * running when the window closes counts as launched and keeps running, so
+   * this bounds how long `open` holds a successful launch, not how long an
+   * application may live.
+   */
+  readonly launchWatchMs: number
+}
+```
+
+Source: [`packages/host/open-in-app/src/index.ts:55`](../packages/host/open-in-app/src/index.ts)
+
 <a id="arx-aiarx-host-webserver"></a>
 
 ## `@arx-ai/arx-host-webserver`
@@ -3425,6 +3456,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
 - `@arx-ai/arx-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
 - `@arx-ai/arx-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
+- `@arx-ai/arx-client-ui-open-in-app` ([`packages/client/ui-open-in-app/src/index.ts`](../packages/client/ui-open-in-app/src/index.ts))
 - `@arx-ai/arx-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))
 - `@arx-ai/arx-client-ui-plan` ([`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts))
 - `@arx-ai/arx-client-ui-projects` ([`packages/client/ui-projects/src/index.ts`](../packages/client/ui-projects/src/index.ts))

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-app",
   "description": "The arx browser-surface bundle: the web patch layer over arx-base plus the runtime glue plugin (frontend dist serving, web-surface prompt, bash runtime variables, URL line)",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "publishConfig": {
     "access": "public"
   },
@@ -68,6 +68,7 @@
     "@arx-ai/arx-client-ui-layout": "workspace:^",
     "@arx-ai/arx-client-ui-message-feedback": "workspace:^",
     "@arx-ai/arx-client-ui-model-selection": "workspace:^",
+    "@arx-ai/arx-client-ui-open-in-app": "workspace:^",
     "@arx-ai/arx-client-ui-permission-presets": "workspace:^",
     "@arx-ai/arx-client-ui-plan": "workspace:^",
     "@arx-ai/arx-client-ui-reference": "workspace:^",
@@ -97,6 +98,7 @@
     "@arx-ai/arx-host-directory-picker-browse": "workspace:^",
     "@arx-ai/arx-host-directory-picker-native": "workspace:^",
     "@arx-ai/arx-host-frontend-static": "workspace:^",
+    "@arx-ai/arx-host-open-in-app": "workspace:^",
     "@arx-ai/arx-host-plugin-inventory": "workspace:^",
     "@arx-ai/arx-host-webserver": "workspace:^",
     "@arx-ai/arx-launch-environment": "workspace:^",

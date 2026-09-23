@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
-import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFailed, onTestFinished } from 'vitest'
 import type { Session, SessionEvent, SessionId } from '@arx-ai/arx-session'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden,
@@ -32,6 +32,7 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
   let page: Page
   let tripwire: ReturnType<typeof watchConsole>
   let prompt: string
+  const releaseChild = Promise.withResolvers<undefined>()
 
   const waitForParentSettlement = (): Promise<SessionId> => new Promise((resolve, reject) => {
     let dispose = (): void => {}
@@ -53,8 +54,13 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
     scaffold = await launchWebScaffold({
       replayFixture: PARENT_FIXTURE,
       replayChildFixtures: [CHILD_FIXTURE],
-      paceMs: 50,
     })
+    // Keep the live child available throughout disclosure, layout, and navigation checks.
+    scaffold.ctx.on('llm/stream', async function* (options, next) {
+      const session = options.sessionId === undefined ? undefined : scaffold.ctx.sessions.get(options.sessionId)
+      if (session?.header.origin === 'subagent') await releaseChild.promise
+      yield* next()
+    }, { prepend: true })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
@@ -64,6 +70,7 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
   }, 120_000)
 
   afterAll(async () => {
+    releaseChild.resolve(undefined)
     await browser?.close()
     await scaffold?.close()
   })
@@ -71,6 +78,9 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
   it('shows the live member, opens its local child, then retains the settled record beside the tool row', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-workflow-run-live'))
     const settled = waitForParentSettlement()
+    onTestFinished(() => {
+      releaseChild.resolve(undefined)
+    })
     const input = page.locator('textarea').first()
     await input.fill(prompt)
     await input.press('Enter')
@@ -175,6 +185,7 @@ describe.skipIf(MODE === 'record')('web e2e: durable workflow run in Chat', () =
 
     const sessions = page.getByRole('tree', { name: 'Sessions' })
     await sessions.getByRole('treeitem', { name: /Use the workflow tool exactly/ }).click()
+    releaseChild.resolve(undefined)
     await settled
     await page.locator('[data-workflow-run][data-run-status="completed"]').waitFor()
 

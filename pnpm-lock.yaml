@@ -1401,6 +1401,9 @@ importers:
       '@arx-ai/arx-client-ui-model-selection':
         specifier: workspace:^
         version: link:../../client/ui-model-selection
+      '@arx-ai/arx-client-ui-open-in-app':
+        specifier: workspace:^
+        version: link:../../client/ui-open-in-app
       '@arx-ai/arx-client-ui-permission-presets':
         specifier: workspace:^
         version: link:../../client/ui-permission-presets
@@ -1503,6 +1506,9 @@ importers:
       '@arx-ai/arx-host-frontend-static':
         specifier: workspace:^
         version: link:../../host/frontend-static
+      '@arx-ai/arx-host-open-in-app':
+        specifier: workspace:^
+        version: link:../../host/open-in-app
       '@arx-ai/arx-host-plugin-inventory':
         specifier: workspace:^
         version: link:../../host/plugin-inventory
@@ -2492,6 +2498,45 @@ importers:
       '@arx-ai/arx-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+
+  packages/client/ui-open-in-app:
+    devDependencies:
+      '@arx-ai/arx-client-connection':
+        specifier: workspace:^
+        version: link:../connection
+      '@arx-ai/arx-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@arx-ai/arx-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@arx-ai/arx-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@arx-ai/arx-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../ui-conversation
+      '@arx-ai/arx-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@arx-ai/arx-host-open-in-app':
+        specifier: workspace:^
+        version: link:../../host/open-in-app
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
@@ -5675,6 +5720,40 @@ importers:
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-loader':
+        specifier: workspace:^
+        version: link:../../../vendor/loader
+
+  packages/host/open-in-app:
+    dependencies:
+      '@arx-ai/arx-launch-environment':
+        specifier: workspace:^
+        version: link:../../util/launch-environment
+      '@arx-ai/arx-native-command':
+        specifier: workspace:^
+        version: link:../../util/native-command
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@arx-ai/arx-client-connection':
+        specifier: workspace:^
+        version: link:../../client/connection
+      '@arx-ai/arx-host-webserver':
+        specifier: workspace:^
+        version: link:../webserver
+      '@arx-ai/arx-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+      '@arx-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@arx-ai/cordis-plugin-include':
+        specifier: workspace:^
+        version: link:../../../vendor/include
       '@arx-ai/cordis-plugin-loader':
         specifier: workspace:^
         version: link:../../../vendor/loader

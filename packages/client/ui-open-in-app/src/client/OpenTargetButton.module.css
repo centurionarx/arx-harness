@@ -1,0 +1,52 @@
+/* Sized to sit in the session header's 24px control row beside its icon
+   buttons: a hairline pill whose main half shows the default application's
+   icon and whose narrow chevron half opens the application menu. */
+
+.split {
+  display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  height: 24px;
+  overflow: hidden;
+  border: 0.5px solid var(--arx-alias-border-l4);
+  border-radius: 9px;
+  font-family: var(--arx-font-family);
+}
+
+.main,
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--arx-alias-label-primary);
+  cursor: pointer;
+}
+
+.main {
+  padding: 3px 6px;
+}
+
+.chevron {
+  padding: 3px 4px 3px 3px;
+  border-left: 0.5px solid var(--arx-alias-border-l4);
+  color: var(--arx-alias-label-secondary);
+}
+
+.main:hover:not(:disabled),
+.main:focus-visible,
+.chevron:hover:not(:disabled),
+.chevron:focus-visible {
+  background: var(--arx-alias-interactive-bg-hover);
+}
+
+/* A launch in flight disables both halves without a restyle; only hover feedback pauses. */
+.main:disabled,
+.chevron:disabled {
+  cursor: default;
+}
+
+.appIcon {
+  object-fit: contain;
+}
