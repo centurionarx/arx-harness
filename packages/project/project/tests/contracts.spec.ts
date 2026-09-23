@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, realpath, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -30,7 +30,10 @@ afterEach(async () => {
 })
 
 async function setup(config: Config = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-contract-'))
+  // The workspace registry stores canonical paths and checks a task session's
+  // cwd through realpath; a runner's temp dir can be a symlink or, on Windows,
+  // an 8.3 short name, so the fixture starts from the canonical spelling.
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-contract-')))
   roots.push(root)
   const workspaceId = WorkspaceId('contract-workspace')
   const parent = SessionId('parent')
