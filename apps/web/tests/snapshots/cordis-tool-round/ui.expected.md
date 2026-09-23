@@ -1,8 +1,10 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Use only Cordis tools. First" [disabled]
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
