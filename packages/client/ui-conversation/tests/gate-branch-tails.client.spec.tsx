@@ -14,7 +14,7 @@ import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
 import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
 import { createChatStore } from '../src/client/stores.ts'
 import { AssistantMarkdown, type AssistantMarkdownProps } from '../src/client/chat/AssistantMarkdown.tsx'
-import { StatsLine } from '../src/client/chat/StatsLine.tsx'
+import { StatsPills } from '../src/client/chat/StatsPills.tsx'
 import { DetailsPanel } from '../src/client/skeleton/DetailsPanel.tsx'
 import type { DetailsContentOwnerProps } from '../src/client/contract/slots.ts'
 import { en } from '../src/client/locales.ts'
@@ -24,7 +24,7 @@ import { chatSnapshotFixture } from './chat-snapshot-fixture.client.ts'
 const t: AssistantMarkdownProps['t'] = makeTranslate(en, commonEn)
 const renderMessageImages: AssistantMarkdownProps['renderMessageImages'] = () => null
 
-/** jsdom has no ResizeObserver; StatsLine watches its row for ellipsis truncation through one. */
+/** jsdom has no ResizeObserver; the chat views measure their rows through one. */
 class ResizeObserverStub {
   observe(): void {}
   unobserve(): void {}
@@ -73,7 +73,7 @@ describe('render branch tails', () => {
     expect(view.container.querySelector('[data-state="ok"]')).not.toBeNull()
   })
 
-  it('StatsLine falls back to window-node counts and drops every token group without projections', () => {
+  it('StatsPills falls back to window-node counts and drops the usage pill without projections', () => {
     // No sessionStats key → the window fold supplies the counts (the
     // assembly-without-the-unit fallback). Node `usage` is deliberately
     // ignored: billing rides the durable tokenUsage projection, so an absent
@@ -92,13 +92,13 @@ describe('render branch tails', () => {
     }
     const source = { getSnapshot: () => snap, subscribe: () => () => {} }
     const view = render(
-      <StatsLine
+      <StatsPills
         t={t}
         useSession={bindSnapshotSelector(source) as unknown as UseSession<ConversationSnapshot>}
         useProjection={() => undefined}
       />,
     )
-    expect(view.container.textContent).toBe('2 turns · 3 steps')
+    expect(view.container.textContent).toBe('2 turns 3 steps')
   })
 
   it('AssistantMarkdown reasoning as the streaming tail renders the running ring', () => {
