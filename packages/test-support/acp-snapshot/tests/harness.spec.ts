@@ -8,7 +8,10 @@ import { PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
 import { runScenario, snapshotSpillRoot, type AgentUnderTest, type InputStep } from '../src/harness.ts'
 import { launchAcpTestAgent } from '../src/launcher.ts'
 
-const fsControl = vi.hoisted(() => ({ cleanupFailure: undefined as Error | undefined }))
+const fsControl = vi.hoisted(() => ({
+  cleanupFailure: undefined as Error | undefined,
+  sessionsReadDelayMs: undefined as number | undefined,
+}))
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()
@@ -23,6 +26,15 @@ vi.mock('node:fs/promises', async (importOriginal) => {
       }
       await actual.rm(...args)
     },
+    // Holds each listing of a scenario's sessions root, so a wait's budget can
+    // end before its first log harvest settles.
+    readdir: (async (...args: Parameters<typeof actual.readdir>) => {
+      const delayMs = fsControl.sessionsReadDelayMs
+      if (delayMs !== undefined && String(args[0]).includes('acp-snap-sessions-')) {
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
+      return await actual.readdir(...args)
+    }) as typeof actual.readdir,
   }
 })
 
@@ -794,6 +806,19 @@ describe('runScenario', () => {
     )
     if (turn === 1) await expect(result).rejects.toThrow(/did not persist turn\/end within 200ms/)
     else expect((await result).sessionLogs[0]?.content).toContain('"turn":2')
+  })
+
+  it('keeps the wait diagnostic when the budget ends before the first log harvest settles', { timeout: 20_000 }, async () => {
+    const missing = await scenario({})
+    fsControl.sessionsReadDelayMs = 200
+    try {
+      await expect(runScenario(
+        { steps: [...boot, { op: 'waitForTurnEnd', timeoutMs: 20 }] },
+        { agent: AGENT, mode: 'replay', fixtureFile: missing.fixtureFile },
+      )).rejects.toThrow(/did not persist turn\/end within 20ms/)
+    } finally {
+      fsControl.sessionsReadDelayMs = undefined
+    }
   })
 
   it('waitForTurnEnd times out for a missing log and an open logged turn', { timeout: 20_000 }, async () => {
