@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-plan-mode",
   "description": "Logged per-agent plan mode with deployment guidance, a direct slash command, and a user-reviewed exit",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "publishConfig": {
     "access": "public"
   },
