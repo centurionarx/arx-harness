@@ -95,11 +95,8 @@ async function startChild(ctx: Context, parent: Agent, prompt = 'child task') {
     },
     signal: testSignal,
   })
-  const child = await vi.waitFor(() => {
-    const live = ctx.agents.get(started.childId)
-    expect(live).toBeDefined()
-    return live as Agent
-  })
+  await expect.poll(() => ctx.agents.get(started.childId) !== undefined).toBe(true)
+  const child = ctx.agents.get(started.childId) as Agent
   return { started, child }
 }
 
@@ -109,9 +106,7 @@ async function startHeldParentTurn(parent: Agent, adapter: HeldAdapter): Promise
     content: [{ type: 'text', text: 'parent work' }],
     source: { kind: 'user' },
   }))
-  await vi.waitFor(() => {
-    expect(adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
-  })
+  await expect.poll(() => adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
 }
 
 let calls = 0
@@ -195,11 +190,8 @@ describe('arx-tool-subagent-report', () => {
       },
       signal: testSignal,
     })
-    const child = await vi.waitFor(() => {
-      const live = ctx.agents.get(started.childId)
-      expect(live).toBeDefined()
-      return live as Agent
-    })
+    await expect.poll(() => ctx.agents.get(started.childId) !== undefined).toBe(true)
+    const child = ctx.agents.get(started.childId) as Agent
     const names = ctx.tools.schemas(child).map(schema => schema.name)
     expect(names).toContain('report')
     expect(names).not.toContain('send_message')
@@ -245,9 +237,7 @@ describe('arx-tool-subagent-report', () => {
     const result = await callReport(ctx, child, 'WAKE_UP')
     expect(result.isError).toBe(false)
     expect(enqueues).toEqual(['steering'])
-    await vi.waitFor(() => {
-      expect(adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
-    })
+    await expect.poll(() => adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
   })
 
   it('batches repeated next-step reports in accepted order', async () => {
@@ -268,7 +258,7 @@ describe('arx-tool-subagent-report', () => {
 
     expect((await callReport(ctx, child, 'ORDERED_REPORT')).isError).toBe(false)
     adapter.release(started.childId)
-    await vi.waitFor(() => { expect(ctx.agents.get(started.childId)).toBeUndefined() })
+    await expect.poll(() => ctx.agents.get(started.childId) === undefined).toBe(true)
 
     expect(parent.inbox.nextStep.map(message => message.source.kind)).toEqual([
       'subagent-report',
@@ -302,7 +292,7 @@ describe('arx-tool-subagent-report', () => {
     // its inbox until that turn reaches its next safe log boundary.
     expect(reports(child)).toHaveLength(1)
     adapter.release()
-    await vi.waitFor(() => { expect(reports(child)).toHaveLength(1) })
+    await expect.poll(() => reports(child)).toHaveLength(1)
     expect(reports(child)[0]?.sender).toBe(grandchildStart.childId)
     expect(reports(child)[0]?.text).toContain('FROM_GRANDCHILD')
   })
@@ -316,7 +306,7 @@ describe('arx-tool-subagent-report', () => {
     expect(ctx.agents.get(child.id)).toBe(child)
 
     adapter.release()
-    await vi.waitFor(() => { expect(reports(child)).toHaveLength(1) })
+    await expect.poll(() => reports(child)).toHaveLength(1)
     expect(reports(child)[0]?.sender).toBe(grandchildStart.childId)
     expect(reports(child)[0]?.text).toContain('WAKE_PARENT_CHILD')
   })
@@ -574,9 +564,7 @@ describe('arx-tool-subagent-report', () => {
 
     expect((await callReport(ctx, child, 'DEFAULT_WAKES')).isError).toBe(false)
     expect(enqueues).toEqual(['steering'])
-    await vi.waitFor(() => {
-      expect(adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
-    })
+    await expect.poll(() => adapter.requests.some(request => request.sessionId === parent.id)).toBe(true)
   })
 })
 
