@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-token-meter",
   "description": "Replay-aware token measurement service (ctx.tokenMeter) for the arx Harness",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "publishConfig": {
     "access": "public"
   },
