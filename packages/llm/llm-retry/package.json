@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-retry",
   "description": "Provider-routed LLM request retry policy for the arx Harness",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "publishConfig": {
     "access": "public"
   },
