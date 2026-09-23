@@ -16,6 +16,15 @@ beforeEach(() => {
   vi.useRealTimers()
 })
 
+/**
+ * Budget for every lazy grammar to register. Each is a dynamic import that
+ * settles within a second on an idle host; a contended lane takes the larger
+ * of that floor and its own budget, which no Vitest flag passes to
+ * `vi.waitFor`.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const GRAMMAR_LOAD_TIMEOUT_MS = Math.max(Number.isSafeInteger(LANE_TIMEOUT_MS) ? LANE_TIMEOUT_MS : 0, 5_000)
+
 describe('highlightToHtml', () => {
   it('highlights a registered grammar into css-variables token spans', () => {
     const html = highlightToHtml('const x: number = 1', 'typescript')
@@ -47,7 +56,7 @@ describe('highlightToHtml', () => {
     // Once every grammar has registered, the same call highlights.
     await vi.waitFor(() => {
       for (const alias of LAZY_ALIASES) expect(highlightToHtml('x', alias)).toContain('shiki')
-    }, { timeout: 5_000 })
+    }, { timeout: GRAMMAR_LOAD_TIMEOUT_MS })
   })
 })
 

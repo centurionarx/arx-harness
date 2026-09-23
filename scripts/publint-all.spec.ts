@@ -6,6 +6,14 @@ import { spawnSync } from 'node:child_process'
 import { afterEach, describe, expect, it } from 'vitest'
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
+/**
+ * Kill deadline for one runner child: it starts Node, compiles the runner
+ * through tsx, and lints, which takes a few seconds on an idle host. A
+ * contended lane takes the larger of that floor and its own budget, which
+ * `--testTimeout` cannot reach inside a synchronous spawn.
+ */
+const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
+const RUNNER_TIMEOUT_MS = Math.max(Number.isSafeInteger(LANE_TIMEOUT_MS) ? LANE_TIMEOUT_MS : 0, 5_000)
 const runner = fileURLToPath(new URL('./publint-all.ts', import.meta.url))
 const roots: string[] = []
 
@@ -49,7 +57,7 @@ function run(root: string) {
   ], {
     cwd: repositoryRoot,
     encoding: 'utf8',
-    timeout: 5_000,
+    timeout: RUNNER_TIMEOUT_MS,
   })
 }
 
