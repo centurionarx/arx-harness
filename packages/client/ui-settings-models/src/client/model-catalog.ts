@@ -72,6 +72,21 @@ export interface ModelCatalogRules {
 export type ModelEntryFormat = 'pi-ai' | 'agent-cli'
 
 /**
+ * The adapter a settings namespace belongs to. Namespaces are an open set —
+ * any adapter may register one — so a namespace these cards have no form for
+ * has no format.
+ * @param ns - the settings namespace that owns a provider's profile.
+ * @returns that adapter's entry format, or undefined for any other namespace.
+ */
+export function entryFormatOf(ns: string): ModelEntryFormat | undefined {
+  switch (ns) {
+    case 'llm-pi-ai': return 'pi-ai'
+    case 'llm-agent-cli': return 'agent-cli'
+    default: return undefined
+  }
+}
+
+/**
  * Each adapter's catalog rules. `llm-pi-ai` supplies a route-level context
  * window when a model states none; `llm-agent-cli` has no such fallback, and
  * the CLI it drives discloses no capacity to read one from.

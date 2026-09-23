@@ -1,6 +1,6 @@
 /** Copy dictionaries for the Models settings section. */
 
-import { HOME_MIGRATION_NOTICE_COPY, WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
+import { HOME_MIGRATION_NOTICE_COPY, PROVIDER_GUIDE_COPY, WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
 
 /** English strings (the key-set source of truth for this pair). */
 export const en = {
@@ -98,6 +98,15 @@ export const en = {
   homeMigrationTitle: HOME_MIGRATION_NOTICE_COPY.en.title,
   homeMigrationBody: HOME_MIGRATION_NOTICE_COPY.en.body,
   homeMigrationContinue: HOME_MIGRATION_NOTICE_COPY.en.continueLabel,
+  providerGuideTitle: PROVIDER_GUIDE_COPY.en.title,
+  providerGuideBody: PROVIDER_GUIDE_COPY.en.body,
+  providerGuideOffersLead: PROVIDER_GUIDE_COPY.en.offersLead,
+  providerGuideHosted: PROVIDER_GUIDE_COPY.en.hosted,
+  providerGuideHostedOne: PROVIDER_GUIDE_COPY.en.hostedOne,
+  providerGuideCompatible: PROVIDER_GUIDE_COPY.en.compatible,
+  providerGuideCommandLine: PROVIDER_GUIDE_COPY.en.commandLine,
+  providerGuideOpen: PROVIDER_GUIDE_COPY.en.open,
+  providerGuideLater: PROVIDER_GUIDE_COPY.en.later,
 }
 
 /** The settings.models namespace key union. */

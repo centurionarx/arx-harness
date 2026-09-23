@@ -75,6 +75,8 @@ interface BenchOptions {
   inert?: boolean
   workspacePickerOpen?: boolean
   onRequestWorkspace?: () => void
+  /** A block another plugin raised for this session. */
+  blocked?: InputBarProps['blocked']
   promptError?: ConversationSnapshot['promptError']
   /** Authoritative queue rows served to the machine overlay (empty = none). */
   queue?: ConversationSnapshot['queue']
@@ -194,6 +196,7 @@ function bench(over?: BenchOptions) {
     ...(over?.inert === true ? { disabled: true } : {}),
     ...(over?.workspacePickerOpen !== undefined ? { workspacePickerOpen: over.workspacePickerOpen } : {}),
     ...(over?.onRequestWorkspace !== undefined ? { onRequestWorkspace: over.onRequestWorkspace } : {}),
+    ...(over?.blocked !== undefined ? { blocked: over.blocked } : {}),
     ...(over?.placeholder !== undefined ? { placeholder: over.placeholder } : {}),
     ...(over?.accessory !== undefined ? { accessory: over.accessory } : {}),
     ...(over?.overlay !== undefined ? { overlay: over.overlay } : {}),
@@ -1075,7 +1078,7 @@ describe('running and lock semantics', () => {
       inert: true,
       workspacePickerOpen: false,
       onRequestWorkspace,
-      placeholder: '选择一个工作区开始',
+      placeholder: 'Choose a workspace to start',
     })
     expect(textarea.disabled).toBe(false)
     expect(textarea.readOnly).toBe(true)
@@ -1101,6 +1104,48 @@ describe('running and lock semantics', () => {
       document.removeEventListener('pointerdown', onDocumentPointerDown)
     }
     expect(onDocumentPointerDown).not.toHaveBeenCalled()
+  })
+
+  it('a block with an action makes the card that action and locks the model seat', () => {
+    const run = vi.fn()
+    const live = vi.fn()
+    const { view, textarea, slotCalls } = bench({
+      blocked: { reason: 'Set up a model provider to start', action: { label: 'Set up a model provider', run } },
+      placeholder: 'Set up a model provider to start',
+      rightItems: <button type="button" onClick={live}>Still live</button>,
+    })
+    expect(textarea.disabled).toBe(false)
+    expect(textarea.readOnly).toBe(true)
+    expect(textarea.getAttribute('aria-label')).toBe('Set up a model provider')
+    expect(textarea.getAttribute('aria-haspopup')).toBe('dialog')
+    expect(textarea.hasAttribute('aria-expanded')).toBe(false)
+    // Choosing a model cannot clear this block, so the seat locks with the rest.
+    const seat = slotCalls.filter(call => call.key === 'conversation.input.model').at(-1)
+    expect((seat?.owner as { locked: boolean }).locked).toBe(true)
+
+    fireEvent.click(textarea)
+    fireEvent.keyDown(textarea, { key: 'Enter' })
+    fireEvent.keyDown(textarea, { key: ' ' })
+    fireEvent.keyDown(textarea, { key: 'a' })
+    expect(run).toHaveBeenCalledTimes(3)
+    fireEvent.click(view.container.querySelector('[data-composer-card]') as HTMLElement)
+    expect(run).toHaveBeenCalledTimes(4)
+    // A control that stays live inside the card keeps its own click.
+    fireEvent.click(view.getByRole('button', { name: 'Still live' }))
+    expect(live).toHaveBeenCalledOnce()
+    expect(run).toHaveBeenCalledTimes(4)
+  })
+
+  it('a block without an action leaves the textarea inert and the model seat live', () => {
+    const { view, textarea, slotCalls } = bench({
+      blocked: { reason: 'Select a model to start' },
+      placeholder: 'Select a model to start',
+    })
+    expect(textarea.disabled).toBe(true)
+    expect(textarea.hasAttribute('aria-haspopup')).toBe(false)
+    const seat = slotCalls.filter(call => call.key === 'conversation.input.model').at(-1)
+    expect((seat?.owner as { locked: boolean }).locked).toBe(false)
+    expect((view.getByLabelText('Commands') as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('the plan projection swaps the placeholder while its effective target is plan mode', () => {

@@ -14,7 +14,8 @@ import { createScope } from '@arx-ai/arx-client-runtime/client'
 import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
 import { TestRemote } from '@arx-ai/arx-client-test-runtime'
-import type { ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { ModelProviderGroup, ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { ComposerBlock } from '@arx-ai/arx-client-ui-conversation/client'
 import type { CommandContribution, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 import type { ModelSelectInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
@@ -67,6 +68,8 @@ async function bench({ selected = true, wire = {} }: { selected?: boolean; wire?
   let current: ModelSelection | undefined = selected
     ? { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
     : undefined
+  // The catalog the Host lists; empty is a deployment with no provider at all.
+  let groups: readonly ModelProviderGroup[] = GROUPS
   const calls = { models: 0, select: 0 }
   ctx.provide('connection', { api: { sessions: {
     models: () => {
@@ -77,7 +80,7 @@ async function bench({ selected = true, wire = {} }: { selected?: boolean; wire?
           ok: true as const,
           value: {
             ...current === undefined ? {} : { current },
-            routable, groups: GROUPS, failures: [],
+            routable, groups, failures: [],
           },
         },
       })
@@ -98,10 +101,10 @@ async function bench({ selected = true, wire = {} }: { selected?: boolean; wire?
   // Whether the Host reports an adapter for the current route; the composer
   // block follows this, never catalog membership.
   let routable = true
-  const blocks = new Map<SessionId, { reason: string } | undefined>()
+  const blocks = new Map<SessionId, ComposerBlock | undefined>()
   ctx.provide('conversation', {
     blocks: {
-      set: (id: SessionId, block: { reason: string } | undefined) => { blocks.set(id, block) },
+      set: (id: SessionId, block: ComposerBlock | undefined) => { blocks.set(id, block) },
     },
   })
   let contribution: CommandContribution | undefined
@@ -153,6 +156,7 @@ async function bench({ selected = true, wire = {} }: { selected?: boolean; wire?
     setHostCurrent: (selection: ModelSelection) => { current = selection },
     address: (id: SessionId) => { addressed.add(id) },
     setRoutable: (next: boolean) => { routable = next },
+    setGroups: (next: readonly ModelProviderGroup[]) => { groups = next },
     blockOf: (key: string) => blocks.get(sid(key)),
   }
 }
@@ -350,6 +354,36 @@ describe('ui-model-selection dual entry', () => {
     await Promise.resolve()
     await Promise.resolve()
     expect(b.blockOf('s1')).toBeUndefined()
+  })
+
+  it('asks for a selection when nothing is selected yet', async () => {
+    const b = await bench({ selected: false })
+    b.mint('s1')
+    b.setRoutable(false)
+    b.seat().inject!(sid('s1')).load()
+    await Promise.resolve()
+    await Promise.resolve()
+    // Nothing to call unavailable: the user has simply not picked one.
+    expect(b.blockOf('s1')).toEqual({ reason: en['blocked.unselected'] })
+  })
+
+  it('offers the way to add a provider when none serves anything', async () => {
+    const b = await bench()
+    const requests: string[] = []
+    b.ctx.on('settings/open-section', (id) => { requests.push(id) })
+    b.mint('s1')
+    b.setRoutable(false)
+    b.setGroups([])
+    b.seat().inject!(sid('s1')).load()
+    await Promise.resolve()
+    await Promise.resolve()
+    // There is nothing to select, so the block carries its own recovery, for a
+    // saved selection and a missing one alike.
+    const block = b.blockOf('s1')
+    expect(block?.reason).toBe(en['blocked.noProvider'])
+    expect(block?.action?.label).toBe(en['blocked.setUpProvider'])
+    block?.action?.run()
+    expect(requests).toEqual(['models'])
   })
 
   it('never blocks on catalog membership alone', async () => {

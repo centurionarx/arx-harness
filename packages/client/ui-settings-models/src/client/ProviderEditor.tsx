@@ -30,7 +30,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CredentialView, IApiClient, SettingsNamespaceView, SettingsPathOpView } from '@arx-ai/arx-api-remotes/client'
-import { CATALOG_RULES, modelDrafts, validateModelCatalog } from './model-catalog.ts'
+import { CATALOG_RULES, entryFormatOf, modelDrafts, validateModelCatalog } from './model-catalog.ts'
 import type { ModelCatalogFailure, ModelEntryFormat } from './model-catalog.ts'
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
@@ -115,19 +115,6 @@ export function pathOps(
   return ops
 }
 
-/**
- * The editor layout the owning namespace selects. Namespaces are an open set —
- * any adapter may register one — so a namespace this card has no form for gets
- * the hint that points at `settings.yaml`.
- */
-function layoutOf(ns: string): EditorLayout {
-  switch (ns) {
-    case 'llm-pi-ai': return 'pi-ai'
-    case 'llm-agent-cli': return 'agent-cli'
-    default: return 'unknown'
-  }
-}
-
 /* v8 ignore next 3 -- closed-union default only defends future source widening */
 function assertNever(_value: never): never {
   throw new Error('unexpected provider editor layout')
@@ -170,7 +157,9 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   const node = useMemo(() => schema.nodeAtPath(root, settingsPath), [root, schema, settingsPath])
   const fallback = schema.getPath(namespace.value, settingsPath)
   const disabled = props.readOnly || busy
-  const layout = layoutOf(namespace.ns)
+  // A namespace this card has no form for gets the hint that points at
+  // `settings.yaml`.
+  const layout: EditorLayout = entryFormatOf(namespace.ns) ?? 'unknown'
   const keyRef = refFor(schema, namespace, settingsPath, props.provider)
   // The same schema read the create card makes, so the choices offered here
   // and there cannot drift apart: both come from the adapter's own `Config`.

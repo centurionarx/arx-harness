@@ -1,8 +1,9 @@
 /**
  * Models settings and product-onboarding plugin, browser half. It registers
- * the Models page plus the internal-testing onboarding notice, whose UI uses
- * this package's modal wrapper. The Host settings and credential contracts
- * stay behind their existing wire APIs.
+ * the Models page plus three onboarding steps — the internal-testing notice,
+ * the home-migration notice, and the guide shown while no provider is usable
+ * — whose UI uses this package's modal wrapper. The Host settings and
+ * credential contracts stay behind their existing wire APIs.
  * Export discipline:
  * packages/client/AGENTS.md.
  */
@@ -21,12 +22,14 @@ import { WelcomeNotice } from './WelcomeNotice.tsx'
 import type { WelcomeNoticeInjected } from './WelcomeNotice.tsx'
 import { HomeMigrationNotice } from './HomeMigrationNotice.tsx'
 import type { HomeMigrationNoticeInjected } from './HomeMigrationNotice.tsx'
+import { ProviderGuide } from './ProviderGuide.tsx'
+import type { ProviderGuideInjected } from './ProviderGuide.tsx'
 import { decodeNoticeSection, AcknowledgedNoticeStore } from './notice-store.ts'
 import { ModelsSettingsStore } from './store.ts'
 import { createSettingsSchemaOperations } from './schema-operations.ts'
 import { en, type ModelsKey } from './locales.ts'
 import {
-  HOME_MIGRATION_ACK_FIELD,
+  HOME_MIGRATION_ACK_FIELD, PROVIDER_GUIDE_ACK_FIELD, PROVIDER_GUIDE_VERSION,
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../onboarding-copy.ts'
 
@@ -119,6 +122,24 @@ export function apply(ctx: ClientContext): void {
     },
     t,
   })
+  const providerGuideController = new AcknowledgedNoticeStore({
+    scope: ctx.settingsScope.bind({
+      namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE,
+      decode: decodeNoticeSection,
+    }),
+    field: PROVIDER_GUIDE_ACK_FIELD,
+    version: () => PROVIDER_GUIDE_VERSION,
+    subject: 'provider guide',
+  })
+  // The guide reads the page's own store, so the directory it summarizes is
+  // the one the page it opens then shows.
+  const providerGuideInjected = (): ProviderGuideInjected => ({
+    controller: providerGuideController,
+    models: controller,
+    schema,
+    hooks: { providerGuide: providerGuideController.store, models: controller.store },
+    t,
+  })
 
   // Pushed invalidations converge every open surface without polling. The
   // settingsScope injection makes ui-settings activate first, and remote
@@ -136,6 +157,7 @@ export function apply(ctx: ClientContext): void {
     return () => {
       welcomeController.dispose()
       homeMigrationController.dispose()
+      providerGuideController.dispose()
       for (const dispose of disposers) dispose()
     }
   }, 'ui-settings-models: pushed invalidations')
@@ -161,4 +183,12 @@ export function apply(ctx: ClientContext): void {
     order: -90,
     inject: homeMigrationInjected,
   }, HomeMigrationNotice))
+  // After both notices: what the product is, and where earlier settings went,
+  // come before what it needs in order to start a task.
+  ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
+    name: 'settings.onboarding',
+    id: 'provider-guide',
+    order: -50,
+    inject: providerGuideInjected,
+  }, ProviderGuide))
 }

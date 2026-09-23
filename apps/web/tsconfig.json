@@ -48,6 +48,7 @@
     "tests/declared-reasoning.e2e.ts",
     "tests/remote-welcome.e2e.ts",
     "tests/home-migration-notice.e2e.ts",
+    "tests/first-run-provider-guide.e2e.ts",
     "tests/workspace-management.e2e.ts",
     "tests/replay-round-trip.e2e.ts",
     "tests/hmr-live.e2e.ts",

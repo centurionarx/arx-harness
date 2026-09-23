@@ -18,7 +18,7 @@ import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@arx-ai/arx-client-ui-primitives'
 import type { InjectFace } from '@arx-ai/arx-client-ui-slots'
 import { CustomProviderCard, type CustomProviderPreset } from './CustomProviderCard.tsx'
-import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
+import { BY_NAME, deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 import { ProviderEditor, type ProviderEditorProps } from './ProviderEditor.tsx'
@@ -137,9 +137,6 @@ export function needsSetup(row: ProviderRow, anyUsable: boolean): boolean {
   if (row.entry.settingsPath.length > 0) return false
   return row.credential?.configured !== true
 }
-
-/** Provider names compared as a reader scans them: letters, not character codes. */
-const BY_NAME = new Intl.Collator(undefined, { sensitivity: 'base' })
 
 function targetOf(row: ProviderRow): EditorTarget {
   const managedRef = deriveKeyRef(row.entry.provider)

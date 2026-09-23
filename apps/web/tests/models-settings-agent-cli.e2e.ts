@@ -121,10 +121,10 @@ describe.skipIf(MODE === 'record')('web e2e: Models settings page configures the
     await pathInput.press('Enter')
     await picker.getByRole('button', { name: 'Open', exact: true }).click()
     // Nothing is selected yet: the trigger names no model, and the composer
-    // says why it is blocked rather than accepting a prompt it cannot send.
+    // asks for one rather than accepting a prompt it cannot send.
     const trigger = page.getByRole('button', { name: 'Select model', exact: true })
     await trigger.waitFor({ timeout: 15_000 })
-    await page.locator('textarea:disabled[placeholder="This model is unavailable — select one to continue"]')
+    await page.locator('textarea:disabled[placeholder="Select a model to start"]')
       .waitFor({ timeout: 10_000 })
     await trigger.click()
     await page.getByRole('menuitem', { name: /Model/ }).click()

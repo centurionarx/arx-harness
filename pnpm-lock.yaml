@@ -2480,6 +2480,9 @@ importers:
       '@arx-ai/arx-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
       '@arx-ai/arx-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots

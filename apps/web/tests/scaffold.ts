@@ -101,6 +101,22 @@ export const HOME_MIGRATION_NOTICE_COPY = {
   },
 } as const
 
+/**
+ * The guide shown while no provider is usable, mirrored from the same module as
+ * the welcome copy above and for the same reason. Ordinary scenarios dismiss
+ * it before browser boot, as they do the welcome notice; `{count}` and
+ * `{name}` are filled from the provider directory.
+ */
+const PROVIDER_GUIDE_ACK_FIELD = 'providerGuideVersion'
+const PROVIDER_GUIDE_VERSION = '2026-09-23.1'
+export const PROVIDER_GUIDE_COPY = {
+  en: {
+    title: 'Set up a model provider',
+    open: 'Open Models settings',
+    later: 'Later',
+  },
+} as const
+
 /** Snapshot mode for the lane, from $ARX_SNAPSHOT (same vocabulary as the other snapshot suites). */
 export type WebSnapshotMode = 'replay' | 'record' | 'refresh'
 
@@ -277,6 +293,12 @@ export interface LaunchOptions {
   missingModelCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
+  /**
+   * Leave the provider guide pending; ordinary scenarios dismiss it before
+   * browser boot. It shows only while no provider is usable, which only the
+   * keyless first-run lane boots into.
+   */
+  providerGuidePending?: boolean
   /**
    * Report a legacy-home copy as the launcher would have, so the notice that
    * announces one has a Host fact to render. Absent, no copy happened, which
@@ -590,6 +612,11 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (options.welcomeNoticePending !== true) {
       await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
         op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION,
+      }])
+    }
+    if (options.providerGuidePending !== true) {
+      await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
+        op: 'set', path: [PROVIDER_GUIDE_ACK_FIELD], value: PROVIDER_GUIDE_VERSION,
       }])
     }
     const boundPort = ctx.get('webServer')?.port

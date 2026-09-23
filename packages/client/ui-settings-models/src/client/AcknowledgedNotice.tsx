@@ -16,6 +16,12 @@ export interface AcknowledgedNoticeLifecycle {
   pending: boolean
   /** Persist the acknowledgement, completing the step once it holds. */
   acknowledge: () => Promise<void>
+  /**
+   * Complete the step now and persist the acknowledgement without waiting on
+   * it. A write that does not persist shows the step again on the next pass
+   * instead of holding the user in the dialog.
+   */
+  dismiss: () => void
 }
 
 /**
@@ -26,7 +32,7 @@ export interface AcknowledgedNoticeLifecycle {
  * @param complete - the coordinator's completion callback for this step.
  * @param nothingToAnnounce - true once the notice knows it has no content,
  *   which completes the step without showing anything.
- * @returns whether the notice is pending, and the acknowledgement action.
+ * @returns whether the notice is pending, and its two ways to leave it.
  */
 export function useAcknowledgedNotice(
   controller: AcknowledgedNoticeStore,
@@ -53,9 +59,15 @@ export function useAcknowledgedNotice(
     if (await controller.acknowledge()) finish()
   }, [controller, finish])
 
+  const dismiss = useCallback((): void => {
+    void controller.acknowledge()
+    finish()
+  }, [controller, finish])
+
   return {
     pending: state.status !== 'idle' && state.status !== 'loading' && !state.acknowledged,
     acknowledge,
+    dismiss,
   }
 }
 

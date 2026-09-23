@@ -8,7 +8,9 @@
  * open state and the active section id are component-local viewing state;
  * the onboarding coordinator mounts exactly one ordered registrant while the
  * sessions-derived empty-Hero fact is active. Visible dialog chrome belongs
- * to the step, so a mounted-but-deciding step paints nothing here.
+ * to the step, so a mounted-but-deciding step paints nothing here. Another
+ * plugin opens a section through the `settings/open-section` event, which
+ * lands on the same open state the onboarding steps' `openSection` sets.
  */
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
@@ -102,7 +104,7 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
  * @returns the settings shell element tree.
  */
 export function SettingsRoot(props: SettingsRootComponentProps) {
-  const { wide, useSections, useOnboardingSteps, useSessions, renderSlot } = props
+  const { wide, useSections, useOnboardingSteps, useOpenRequest, useSessions, renderSlot } = props
   const [open, setOpen] = useState(false)
   const [activeId, setActiveId] = useState<string | undefined>(undefined)
   const [completedOnboarding, setCompletedOnboarding] = useState<ReadonlySet<string>>(() => new Set())
@@ -114,6 +116,16 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
     setActiveId(id)
     setOpen(true)
   }, [])
+
+  // A request made before this shell mounted is not replayed: a remounted
+  // shell must not reopen a panel its user already closed.
+  const openRequest = useOpenRequest(request => request)
+  const answeredRequest = useRef(openRequest?.seq ?? 0)
+  useEffect(() => {
+    if (openRequest === undefined || openRequest.seq <= answeredRequest.current) return
+    answeredRequest.current = openRequest.seq
+    openSection(openRequest.id)
+  }, [openRequest, openSection])
 
   // The ledger tick keeps the nav rows fresh: registrants re-register with
   // freshly localized text on locale change, and the trigger/header/close

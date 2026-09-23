@@ -16,11 +16,14 @@ interface OnboardingSettings {
    * notice compares.
    */
   homeMigrationNoticedAt?: string
+  /** Last version dismissed of the guide shown while no model provider is usable. */
+  providerGuideVersion?: string
 }
 
 const OnboardingSettingsSchema: z<OnboardingSettings> = z.object({
   welcomeNoticeVersion: z.string(),
   homeMigrationNoticedAt: z.string(),
+  providerGuideVersion: z.string(),
 })
 
 /** Register the durable GUI-onboarding section when a settings provider exists. */

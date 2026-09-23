@@ -8,12 +8,14 @@ import { TestRemote } from '@arx-ai/arx-client-test-runtime'
 import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
 import { apply, inject, refreshIfLoaded } from '@arx-ai/arx-client-ui-settings-models/client'
 import {
+  PROVIDER_GUIDE_ACK_FIELD, PROVIDER_GUIDE_VERSION,
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../src/onboarding-copy.ts'
 import type { HostDescription } from '@arx-ai/arx-client-connection/client'
 import { ModelsSection } from '../src/client/ModelsSection.tsx'
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
 import { HomeMigrationNotice } from '../src/client/HomeMigrationNotice.tsx'
+import { ProviderGuide } from '../src/client/ProviderGuide.tsx'
 
 // These specs assert the shipped English copy. The lane has no jsdom `window`,
 // so browser-language detection never runs and a fresh LocaleRuntime opens on
@@ -76,6 +78,11 @@ function declare(slots: SlotRegistry): () => void {
 
 /** A settings face whose onboarding namespace records one acknowledged copy instant. */
 function onboardingFace(acknowledgedAt: string | undefined) {
+  return onboardingSection(acknowledgedAt === undefined ? {} : { homeMigrationNoticedAt: acknowledgedAt })
+}
+
+/** A settings face whose onboarding namespace holds exactly `value`. */
+function onboardingSection(value: Record<string, string>) {
   return {
     describe: vi.fn(() => Promise.resolve({
       rpcId: 'apply-home-migration' as never,
@@ -87,7 +94,7 @@ function onboardingFace(acknowledgedAt: string | undefined) {
           namespaces: [{
             ns: WELCOME_NOTICE_SETTINGS_NAMESPACE,
             schema: {},
-            value: acknowledgedAt === undefined ? {} : { homeMigrationNoticedAt: acknowledgedAt },
+            value,
             applies: 'live' as const,
             secrets: [],
             revision: 0,
@@ -129,7 +136,7 @@ describe('ui-settings-models apply', () => {
     expect(injected.hooks.snapshot).toBe(injected.controller.store)
     expect(injected.api).toBeDefined()
     const onboarding = before.slots.entries('settings.onboarding')
-    expect(onboarding).toHaveLength(2)
+    expect(onboarding).toHaveLength(3)
     expect(onboarding.find(entry => entry.options.id === 'welcome-notice')).toMatchObject({
       component: WelcomeNotice,
       options: { id: 'welcome-notice', order: -100 },
@@ -140,6 +147,11 @@ describe('ui-settings-models apply', () => {
       component: HomeMigrationNotice,
       options: { id: 'home-migration-notice', order: -90 },
     })
+    // Both notices come before the guide to what the product needs to start.
+    expect(onboarding.find(entry => entry.options.id === 'provider-guide')).toMatchObject({
+      component: ProviderGuide,
+      options: { id: 'provider-guide', order: -50 },
+    })
 
     const after = await bench()
     await after.ctx.plugin({ inject: [...inject], apply }).await()
@@ -148,7 +160,7 @@ describe('ui-settings-models apply', () => {
     declare(after.slots)
     await Promise.resolve()
     expect(after.slots.entries('settings.section')[0]!.component).toBe(ModelsSection)
-    expect(after.slots.entries('settings.onboarding')).toHaveLength(2)
+    expect(after.slots.entries('settings.onboarding')).toHaveLength(3)
     // The self-inflicted ledger notifications hit the duplicate guard.
     expect(after.slots.entries('settings.section')).toHaveLength(1)
   })
@@ -185,7 +197,7 @@ describe('ui-settings-models apply', () => {
     declare(b.slots)
     await Promise.resolve()
     expect(b.slots.entries('settings.section')[0]!.component).toBe(ModelsSection)
-    expect(b.slots.entries('settings.onboarding')).toHaveLength(2)
+    expect(b.slots.entries('settings.onboarding')).toHaveLength(3)
     // The locale path also recovers through the same ledger re-check.
     b.locale.setLocale('en')
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Models')
@@ -247,6 +259,45 @@ describe('ui-settings-models apply', () => {
     await injected.controller.load()
     await vi.waitFor(() => {
       expect(injected.hooks.homeMigrationNotice.getSnapshot()).toMatchObject({ status: 'ready', acknowledged: false })
+    })
+  })
+
+  it('hands the guide the Models page store and its own dismissal controller', async () => {
+    const b = await bench(false)
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const models = (
+      b.slots.entries('settings.section')[0]!.inject as unknown as
+      () => import('../src/client/ModelsSection.tsx').ModelsSectionInjected
+    )()
+    const entry = b.slots.entries('settings.onboarding')
+      .find(candidate => candidate.options.id === 'provider-guide')!
+    const injected = (
+      entry.inject as unknown as () => import('../src/client/ProviderGuide.tsx').ProviderGuideInjected
+    )()
+
+    // One directory read serves the guide and the page it opens.
+    expect(injected.models).toBe(models.controller)
+    expect(injected.hooks.models).toBe(models.controller.store)
+    expect(injected.hooks.providerGuide).toBe(injected.controller.store)
+    expect(injected.t('providerGuideOpen')).toBe('Open Models settings')
+    await injected.controller.load()
+    expect(injected.controller.store.getSnapshot()).toEqual({ status: 'ready', acknowledged: false, error: null })
+  })
+
+  it('reads the guide as dismissed where the current guide version is stored', async () => {
+    const b = await bench(true, onboardingSection({ [PROVIDER_GUIDE_ACK_FIELD]: PROVIDER_GUIDE_VERSION }))
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const entry = b.slots.entries('settings.onboarding')
+      .find(candidate => candidate.options.id === 'provider-guide')!
+    const injected = (
+      entry.inject as unknown as () => import('../src/client/ProviderGuide.tsx').ProviderGuideInjected
+    )()
+
+    await injected.controller.load()
+    await vi.waitFor(() => {
+      expect(injected.hooks.providerGuide.getSnapshot()).toMatchObject({ status: 'ready', acknowledged: true })
     })
   })
 
