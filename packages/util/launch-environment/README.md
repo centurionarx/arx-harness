@@ -28,6 +28,8 @@ const endpoint = launchEnvironmentOf(ctx).get('DEEPSEEK_BASE_URL')?.value
 
 `launchEnvironmentOf(ctx)` returns the launcher's snapshot when the product CLI booted the tree, and otherwise the inherited environment as the only layer. That fallback does not weaken the rules: an SDK host or a bare `cordis.yml` discovered no files, so everything it has really is the environment it was launched with.
 
+`launchedThroughSsh(snapshot)` answers whether this run was launched through SSH, a forwarded-port session included: a non-empty `SSH_CONNECTION` or `SSH_TTY` in the `process` layer. A `.env` layer naming either marker does not count, so a project cannot make a local run read as remote. The Web launcher uses it to skip opening a browser on the host, and [`arx-host-open-in-app`](../../host/open-in-app/README.md) to offer no host applications.
+
 ## Known Limitations and Deferred Work
 
 - **The snapshot is not a subprocess boundary** — every layer is also materialized into `process.env`, so ordinary project variables reach child processes under [`arx-subprocess`](../../subprocess/subprocess/README.md)'s scrub. The product launcher's [`.env` contract](../../boot/app-boot/README.md#profiles) rejects bootstrap variables before materialization.

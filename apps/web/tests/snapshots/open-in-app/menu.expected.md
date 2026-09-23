@@ -1,0 +1,7 @@
+- menu:
+  - menuitem "Files (default)":
+    - img
+    - text: Files (default)
+  - menuitem "VS Code":
+    - img
+    - text: VS Code

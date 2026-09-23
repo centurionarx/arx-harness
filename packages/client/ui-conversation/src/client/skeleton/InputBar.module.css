@@ -19,6 +19,25 @@
   padding: 0 var(--arx-composer-side-clearance) 8px;
 }
 
+/* The populated dock supplies the other 4px of the bottom clearance. */
+.root:has(.dock:not(:empty)) {
+  padding-bottom: 4px;
+}
+
+/* Dock row under the card: session stats pills, then the context meter. */
+.dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: 100%;
+  padding-top: 4px;
+}
+
+.dock:empty {
+  display: none;
+}
+
 .hero {
   /* No bottom pad in the centered hero, but the side clearance must survive:
      the hero wrapper is full-width on narrow viewports, so this padding is

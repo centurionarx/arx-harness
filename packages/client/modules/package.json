@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-modules",
   "description": "Client module system, dual-face: node half composes the __ARX_BOOT__ entry graph (incremental arx.client scan, bundle route, index tap, webPlugins service); browser half is the lazy-CJS module table the vendored cordis Loader consumes as its internal seam",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "publishConfig": {
     "access": "public"
   },

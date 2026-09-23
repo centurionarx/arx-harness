@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-webhook-github",
   "description": "Authenticated allowlisted GitHub adapter for the durable arx webhook runtime",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

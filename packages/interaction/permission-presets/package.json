@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-permission-presets",
   "description": "User-facing permission presets (ctx.permissionPresets) for the arx Harness: one product-level Permissions select bundling the sandbox-mode and approval-policy knobs, written through to their own session events",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "publishConfig": {
     "access": "public"
   },

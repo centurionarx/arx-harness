@@ -10,7 +10,7 @@ Users therefore could not distinguish a nearly complete cache hit from a true fu
 
 ## Decision
 
-`StatsLine` continues to derive the ratio from the whole-session `tokenUsage` projection owned by `@arx-ai/arx-token-meter`; the projection remains the only owner of the uncached-input, cache-read, cache-write, and output counts ([projection decision](../architecture/2026-07-29-projected-token-usage-and-request-context.md)). The presentation layer changes only the text inserted into the existing `stats.cacheHit` locale template.
+`StatsPills` continues to derive the ratio from the whole-session `tokenUsage` projection owned by `@arx-ai/arx-token-meter`; the projection remains the only owner of the uncached-input, cache-read, cache-write, and output counts ([projection decision](../architecture/2026-07-29-projected-token-usage-and-request-context.md)). The presentation layer changes only the text inserted into the existing `stats.cacheHit` locale template.
 
 | Actual ratio | Display |
 |---|---|
@@ -19,11 +19,11 @@ Users therefore could not distinguish a nearly complete cache hit from a true fu
 | Non-full ratio whose current rounding is 100% | Minimum decimal precision whose rounded result is below 100% |
 | 100% | `100%` |
 
-Every non-empty ratio starts at zero decimal places. A non-full ratio increases precision one place at a time only while rounding would produce 100%, so `99.1%` and `99.49%` remain `99%`, while `99.5%`, `99.95%`, and `99.995%` retain one, two, and three decimal places respectively. `StatsLine` uses exact small-factor comparisons over the safe-integer token counts, then scales the near-full gap only while the intermediate remains within that range. This avoids floating-point tie errors without imposing a precision cap or substitute label. A full hit does not carry a redundant decimal. The same derived string feeds the inline row and its overflow tooltip.
+Every non-empty ratio starts at zero decimal places. A non-full ratio increases precision one place at a time only while rounding would produce 100%, so `99.1%` and `99.49%` remain `99%`, while `99.5%`, `99.95%`, and `99.995%` retain one, two, and three decimal places respectively. `StatsPills` uses exact small-factor comparisons over the safe-integer token counts, then scales the near-full gap only while the intermediate remains within that range. This avoids floating-point tie errors without imposing a precision cap or substitute label. A full hit does not carry a redundant decimal. The same derived string feeds the inline row and its overflow tooltip.
 
 ## Ownership and lifecycle
 
-Token-meter continues to fold usage from the complete durable session log. `StatsLine` performs a synchronous display derivation whenever the standard projection value changes. It introduces no setting, stored percentage, event, wire field, client state, or recovery path.
+Token-meter continues to fold usage from the complete durable session log. `StatsPills` performs a synchronous display derivation whenever the standard projection value changes. It introduces no setting, stored percentage, event, wire field, client state, or recovery path.
 
 Live updates, reload replay, and reconnect recovery all restore the same `tokenUsage` counts and run the same display function. A missing projection still omits every token group, and a zero input denominator still omits only the cache-hit group.
 

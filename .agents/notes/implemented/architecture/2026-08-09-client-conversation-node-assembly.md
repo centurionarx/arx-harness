@@ -304,7 +304,7 @@ Unknown fallback demonstrates Registry ownership: it handles only append-surface
 
 The Assembler calls `replace({ nodes, timeline })` on low-frequency complete replacements and `apply({ upserts, timeline })` for ordinary prepend/append flushes. Builders receive only final target Nodes already constructed by Definitions.
 
-[`ChatSnapshotBuilder`](../../../../packages/client/ui-conversation/src/client/conversation-nodes/chat-snapshot-builder.ts) maintains `order`, a keyed `nodes` store, the turn/step `locations` index, `timeline`, and the `legacy` slice used by StatsLine and mirrored into top-level public compatibility fields.
+[`ChatSnapshotBuilder`](../../../../packages/client/ui-conversation/src/client/conversation-nodes/chat-snapshot-builder.ts) maintains `order`, a keyed `nodes` store, the turn/step `locations` index, `timeline`, and the `legacy` slice used by StatsPills and mirrored into top-level public compatibility fields.
 
 Only a new key or a change to `anchorSeq`, visibility, or Location identity makes a Chat update structural. An ordinary content change does not rebuild `order`; the keyed Node store replaces only that key's value.
 
@@ -326,7 +326,7 @@ When business logic deliberately changes a materialized Node to hidden, it leave
 
 The concrete Tool renderer remains governed by the [`ui-tool ownership decision`](2026-08-08-client-tool-presentation-ownership.md). Tool Definition supplies recursive root/subcall data, and `ui-tool` dispatches concrete presentation by the Tool-name keyed slot.
 
-Trajectory registers its own target and business Definitions against the same Assembler and Session event window as Chat. Its target builder preserves the stage-oriented read model without consuming the Chat Builder's legacy slice or running an independent history fold. The Chat Builder retains its legacy slice for StatsLine and the top-level public compatibility fields; target-specific Definitions do not change the shared Context, Reader, or Location contracts.
+Trajectory registers its own target and business Definitions against the same Assembler and Session event window as Chat. Its target builder preserves the stage-oriented read model without consuming the Chat Builder's legacy slice or running an independent history fold. The Chat Builder retains its legacy slice for StatsPills and the top-level public compatibility fields; target-specific Definitions do not change the shared Context, Reader, or Location contracts.
 
 The target-specific Trajectory Definitions, retained stage model, Steering adaptation, complexity bounds, and presentation hot paths are owned by the [Trajectory Context assembly decision](2026-08-11-trajectory-conversation-context-assembly.md).
 
@@ -403,4 +403,4 @@ Steps and Turns become stable homes for cross-business aggregates. Turn Tail and
 
 The cost is new Runtime contracts for Registry, Assembler, Location data, dependency replay, and per-target Builders, plus parent-owned common inject and per-occurrence `hookContext` in UI Slots. Definition authors must understand stable IDs, unique starts, forward replay, Step→Turn publication order, read-only Reader access, and the prohibition on Node withdrawal.
 
-`useTurnData()` does not revoke the standard `useSession` capability from session-scoped renderers, so this boundary relies on API guidance and tests rather than capability isolation. Registry changes remain low-frequency full rebuilds; the Chat Builder still maintains a legacy slice for StatsLine and the top-level public fields, while Trajectory owns target-specific Definitions and a Builder over the shared Session window. Built-in Definitions remain in their respective UI packages, and these compatibility boundaries do not return business interpretation to Session.
+`useTurnData()` does not revoke the standard `useSession` capability from session-scoped renderers, so this boundary relies on API guidance and tests rather than capability isolation. Registry changes remain low-frequency full rebuilds; the Chat Builder still maintains a legacy slice for StatsPills and the top-level public fields, while Trajectory owns target-specific Definitions and a Builder over the shared Session window. Built-in Definitions remain in their respective UI packages, and these compatibility boundaries do not return business interpretation to Session.

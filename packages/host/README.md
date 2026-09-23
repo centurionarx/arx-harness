@@ -12,6 +12,7 @@ The host side of the arx web GUI: the API gateway every client shape shares, and
 | [`directory-picker-browse/`](directory-picker-browse/README.md) | In-app directory-browser backend and interaction | registers `ctx.directoryPicker` |
 | [`directory-picker-auto/`](directory-picker-auto/README.md) | Host-adaptive picker composition | mounts a backend |
 | [`plugin-inventory/`](plugin-inventory/README.md) | Read-only projection of current Loader entries | Remote `pluginInventory/list` |
+| [`open-in-app/`](open-in-app/README.md) | Resolves installed editors, Git GUIs, terminals, and file managers and launches one on a workspace directory | loopback RPC channel `/open-in-app` |
 
 `apiproxy` remains transport-independent; [`client/connection`](../client/connection/README.md) supplies the browser/HTTP carrier. Picker implementations replace one another behind the shared seam.
 

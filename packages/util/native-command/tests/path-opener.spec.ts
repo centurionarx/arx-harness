@@ -16,7 +16,7 @@ vi.mock('node:child_process', () => ({ execFile: execFileMock }))
 
 import { release as osRelease } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
-import { canOpenNativePath, openNativePath, openNativeTextFile, type PathOpenerRunner } from '../src/native-path-opener.ts'
+import { canOpenNativePath, openNativePath, openNativeTextFile, type PathOpenerRunner } from '../src/path-opener.ts'
 
 const signal = () => new AbortController().signal
 
@@ -317,5 +317,11 @@ describe('canOpenNativePath', () => {
       || marked(env.DISPLAY) || marked(env.WAYLAND_DISPLAY)
 
     expect(canOpenNativePath({ platform: 'linux', osRelease: '6.8.0-generic' })).toBe(expected)
+  })
+
+  it('reads the platform of this process when no override is supplied', () => {
+    const facts = { osRelease: '6.8.0-generic', env: {} }
+
+    expect(canOpenNativePath(facts)).toBe(canOpenNativePath({ ...facts, platform: process.platform }))
   })
 })
