@@ -17,7 +17,7 @@ After the typed locale standard seat landed (`locale:` on register → framework
 **The non-translation boundary (deliberate decisions, not debt):**
 
 - **Error/failure strings stay English**: client-authored fallbacks (`command failed`, plan-toggle failures), RpcError messages, and wire `error.message (code)` pass-throughs render verbatim.
-- **Design literals stay out of the dictionaries**: tool-row variant titles (Think/Bash/…), SYSTEM/USER-style kind badges, the Plan chip wordmark, the whole StatsLine — identical in both languages.
+- **Design literals stay out of the dictionaries**: tool-row variant titles (Think/Bash/…), SYSTEM/USER-style kind badges, the Plan chip wordmark — identical in both languages.
 - **ui-trajectory is deferred wholesale** (a developer inspection surface, terminology-dense, ruled separately).
 - **Boot copy stays hardcoded** (the framework-free boot page runs before the locale service exists).
 

@@ -829,7 +829,6 @@ export function InputBar({
           <div className={css.trailing}>
             {rightItems}
             {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
-            <ContextMeter useProjection={useProjection} t={t} />
             {interruptible && (
               <Tooltip label={t('input.stop')} side="top" delayMs={500}>
                 <button
@@ -869,7 +868,13 @@ export function InputBar({
           </div>
         </div>
       </div>
-      {footer}
+      {/* The dock row below the card: the footer's session stats, then the
+          context meter. Both render nothing until their data exists, and the
+          empty row takes no space. */}
+      <div className={css.dock}>
+        {footer}
+        <ContextMeter useProjection={useProjection} t={t} />
+      </div>
     </div>
   )
 }
