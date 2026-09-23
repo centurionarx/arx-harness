@@ -94,6 +94,16 @@ describe('CI workflow', () => {
       isRecord(step) && typeof step.run === 'string'
     ))
     expect(nativeCommandSteps.map(step => step.run)).toContain('pnpm run check:ci:windows-complete')
+    // The shard, worker, and gate counts are sized from the runner's cores
+    // before the gates start, never pinned for a larger pool.
+    const sizing = nativeCommandSteps.findIndex(step => step.name === 'Size the gate inventory to this runner')
+    const gates = nativeCommandSteps.findIndex(step => step.run === 'pnpm run check:ci:windows-complete')
+    expect(sizing).toBeGreaterThanOrEqual(0)
+    expect(sizing).toBeLessThan(gates)
+    for (const name of ['ARX_COVERAGE_PARTITIONS', 'ARX_COVERAGE_MAX_WORKERS', 'ARX_GATE_CONCURRENCY', 'ARX_PUBLINT_CONCURRENCY']) {
+      expect(nativeCommandSteps[sizing]?.run).toContain(`"${name}=$`)
+      expect(windowsNative.env).not.toHaveProperty(name)
+    }
 
     // wine-apt-cache: master-only, seeds the Wine apt cache, lives in ci-master.
     expect(wineAptCache.if).toBe("github.event_name == 'push' && github.ref == 'refs/heads/master'")

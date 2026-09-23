@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-acp-demo",
   "description": "ACP automation server app: agent spine + JSONL persistence + ACP transport, with a JSON-RPC stdio bin",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },

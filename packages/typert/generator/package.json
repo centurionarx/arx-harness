@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-typert-generator",
   "description": "TypeScript project analyzer and model-driven Typert artifact generator",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },

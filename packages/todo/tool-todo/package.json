@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-todo",
   "description": "Model-facing todo_write tool over the arx Harness event-sourced session log",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },

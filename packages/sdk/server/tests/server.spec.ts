@@ -156,7 +156,7 @@ describe('HarnessSdkJsonRpcServer', () => {
       })
       expect((receipt as { messageId?: unknown }).messageId).toBeTypeOf('string')
 
-      await vi.waitFor(() => { expect(llmServer.requests).toHaveLength(1) })
+      await expect.poll(() => llmServer.requests).toHaveLength(1)
       const body = llmServer.requests[0] as { model: string; messages: { role: string }[]; max_tokens?: number }
       expect(body.model).toBe('dsagent-model')
       expect(body.max_tokens).toBe(321)
@@ -164,18 +164,16 @@ describe('HarnessSdkJsonRpcServer', () => {
       expect(body.messages.at(-1)?.role).toBe('user')
       expect(llmServer.headers[0]?.authorization).toBe('Bearer test-key')
       expect(transport.notifications.some(n => n.method === 'session.event')).toBe(true)
-      await vi.waitFor(() => {
-        expect(transport.notifications.findLast(n => n.method === 'session.status')).toEqual({
-          method: 'session.status',
-          params: { sessionId: 'main', status: 'idle' },
-        })
+      await expect.poll(() => transport.notifications.findLast(n => n.method === 'session.status')).toEqual({
+        method: 'session.status',
+        params: { sessionId: 'main', status: 'idle' },
       })
 
       await server.handleRequest('session/prompt', {
         sessionId: 'main',
         contentBlocks: [{ type: 'text', text: 'again' }],
       })
-      await vi.waitFor(() => { expect(llmServer.requests).toHaveLength(2) })
+      await expect.poll(() => llmServer.requests).toHaveLength(2)
 
       const orphanHandle = await ctx.agents.create({
         sessionId: SessionId('orphan-session'),
@@ -333,7 +331,7 @@ describe('HarnessSdkJsonRpcServer', () => {
         contentBlocks: [{ type: 'text', text: 'hello' }],
       })
 
-      await vi.waitFor(() => { expect(llmServer.requests).toHaveLength(1) })
+      await expect.poll(() => llmServer.requests).toHaveLength(1)
       await server.shutdown()
     } finally {
       await ctx.fiber.dispose()

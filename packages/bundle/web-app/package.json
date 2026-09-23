@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-app",
   "description": "The arx browser-surface bundle: the web patch layer over arx-base plus the runtime glue plugin (frontend dist serving, web-surface prompt, bash runtime variables, URL line)",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "publishConfig": {
     "access": "public"
   },

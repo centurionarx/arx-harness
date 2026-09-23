@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 import { join, sep } from 'node:path'
 import type { Browser, Locator, Page } from 'playwright'
 import { chromium } from 'playwright'
-import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFailed, vi } from 'vitest'
 import { SessionId } from '@arx-ai/arx-session'
 import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureStableAria, compareOrRefreshGolden,
@@ -101,16 +101,17 @@ describe('web e2e: workspace management (create / rename / flat view / hover aff
   }
 
   /**
-   * Reveal and click a row action, re-hovering if a projection update replaces
-   * the row before its hover-only button becomes visible.
+   * Reveal and click a row action. A projection update can replace the row at
+   * any point, and the replacement is not hovered, so each attempt hovers the
+   * current row and clicks with a short actionability wait. A click either
+   * lands or throws before clicking, so a failed attempt is safe to repeat.
    */
   async function clickHoverAction(row: Locator, name: string): Promise<void> {
     const button = row.getByRole('button', { name })
-    await expect.poll(async () => {
+    await vi.waitFor(async () => {
       await row.hover()
-      return await button.isVisible()
-    }, { timeout: 10_000 }).toBe(true)
-    await button.click()
+      await button.click({ timeout: 1_000 })
+    }, { timeout: 10_000, interval: 100 })
   }
 
   beforeAll(async () => {

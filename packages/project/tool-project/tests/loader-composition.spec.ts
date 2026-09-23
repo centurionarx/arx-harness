@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -40,7 +40,9 @@ function resultJson(result: { readonly isError: boolean; readonly content: reado
 
 describe('project tool real Loader composition through cordis.yml', () => {
   it('boots the service and consumer, then returns an effective prompt snapshot through the tool result', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-project-loader-'))
+    // Canonical like every registered workspace path: the project service
+    // compares it with the task session's realpath'd cwd.
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-loader-')))
     const workspacePath = join(root, 'workspace')
     const storageRoot = join(root, 'storage')
     await import('node:fs/promises').then(fs => fs.mkdir(workspacePath))
