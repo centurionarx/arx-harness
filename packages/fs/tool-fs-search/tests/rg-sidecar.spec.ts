@@ -22,15 +22,32 @@ afterEach(() => {
   Reflect.deleteProperty(process, 'pkg')
 })
 
+/**
+ * Run a case as a packaged runtime on one platform: the sidecar name depends
+ * on the platform, so each case pins it rather than inheriting the host's.
+ */
+async function asPackagedRuntime(platform: NodeJS.Platform, body: () => Promise<void>): Promise<void> {
+  const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform')
+  Object.defineProperty(process, 'platform', { configurable: true, value: platform })
+  Reflect.defineProperty(process, 'pkg', { configurable: true, value: {} })
+  try {
+    await body()
+  } finally {
+    Object.defineProperty(process, 'platform', originalPlatform as PropertyDescriptor)
+    Reflect.deleteProperty(process, 'pkg')
+  }
+}
+
 describe('ripgrep resolution', () => {
   it('uses the native sidecar beside the current executable', async () => {
-    Reflect.defineProperty(process, 'pkg', { configurable: true, value: {} })
-    existsSync.mockReturnValue(true)
-    const sidecar = `${process.execPath}-rg`
-    const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
+    await asPackagedRuntime('linux', async () => {
+      existsSync.mockReturnValue(true)
+      const sidecar = `${process.execPath}-rg`
+      const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
 
-    await expect(resolveRgPath()).resolves.toBe(sidecar)
-    expect(existsSync).toHaveBeenCalledWith(sidecar)
+      await expect(resolveRgPath()).resolves.toBe(sidecar)
+      expect(existsSync).toHaveBeenCalledWith(sidecar)
+    })
   })
 
   it('uses the dependency binary in an ordinary Node process', async () => {
@@ -42,28 +59,23 @@ describe('ripgrep resolution', () => {
   })
 
   it('uses the dependency binary when a packaged runtime has no sidecar', async () => {
-    Reflect.defineProperty(process, 'pkg', { configurable: true, value: {} })
-    existsSync.mockReturnValue(false)
-    const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
+    await asPackagedRuntime('linux', async () => {
+      existsSync.mockReturnValue(false)
+      const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
 
-    await expect(resolveRgPath()).resolves.toBe(dependencyRgPath)
-    expect(existsSync).toHaveBeenCalledWith(`${process.execPath}-rg`)
+      await expect(resolveRgPath()).resolves.toBe(dependencyRgPath)
+      expect(existsSync).toHaveBeenCalledWith(`${process.execPath}-rg`)
+    })
   })
 
   it('names the windows sidecar with the spawnable .exe twin', async () => {
-    const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform')
-    Object.defineProperty(process, 'platform', { configurable: true, value: 'win32' })
-    Reflect.defineProperty(process, 'pkg', { configurable: true, value: {} })
-    try {
+    await asPackagedRuntime('win32', async () => {
       existsSync.mockReturnValue(true)
       const { resolveRgPath } = await import('@arx-ai/arx-tool-fs-search')
 
       const sidecar = `${process.execPath}-rg.exe`
       await expect(resolveRgPath()).resolves.toBe(sidecar)
       expect(existsSync).toHaveBeenCalledWith(sidecar)
-    } finally {
-      Object.defineProperty(process, 'platform', originalPlatform as PropertyDescriptor)
-      Reflect.deleteProperty(process, 'pkg')
-    }
+    })
   })
 })
