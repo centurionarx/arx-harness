@@ -438,19 +438,9 @@ jobs:
     name: windows node 24 / native complete
     timeout-minutes: 120
     env:
-      # One worker per core on the standard hosted runner, as on the Linux
-      # coverage lane: `windows-2025` has four, the instrumented and exempt
-      # gates run at the same time out of this one total, and the multi-worktree
-      # Lefthook cases wait on a peer installer's lock — a starved peer spends
-      # their budget without the installer behaving differently. The self-hosted
-      # pool is larger and keeps the higher count.
-      ARX_COVERAGE_MAX_WORKERS: ${{ vars.ARX_CI_FAILOVER_WINDOWS == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && '6' || '4' }}
-      ARX_COVERAGE_PARTITIONS: '8'
       # Instrumented process and polling fixtures can exceed Vitest's defaults
       # under the complete lane's concurrent gate load.
       ARX_COVERAGE_TEST_TIMEOUT_MS: '30000'
-      ARX_GATE_CONCURRENCY: '4'
-      ARX_PUBLINT_CONCURRENCY: '8'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -477,6 +467,36 @@ jobs:
       - name: Install (immutable)
         shell: pwsh
         run: pnpm install --frozen-lockfile
+
+      # The shard, worker, and gate counts come from the cores this runner
+      # reports. The standard `windows-2025` size depends on the repository:
+      # a private repository gets two cores and 7 GB, a public one four cores
+      # and 16 GB, and the counts measured for a 16-core pool starve both.
+      # On a hosted runner the instrumented shards match the cores, the exempt
+      # gate takes its share of the same total, and the outer gates run one
+      # at a time from four cores down, so no gate's fixtures wait on a peer
+      # that has no core to run. The self-hosted pool keeps its measured
+      # counts.
+      - name: Size the gate inventory to this runner
+        shell: pwsh
+        env:
+          ARX_WINDOWS_POOL: ${{ vars.ARX_CI_FAILOVER_WINDOWS == 'selfhosted' && github.event.pull_request.user.login != 'dependabot[bot]' && 'self-hosted' || 'hosted' }}
+        run: |
+          $cores = [Environment]::ProcessorCount
+          $memoryGiB = [math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+          if ($env:ARX_WINDOWS_POOL -eq 'self-hosted') {
+            $partitions = 8; $workers = 6; $gates = 4; $publint = 8
+          } else {
+            $partitions = [math]::Max(2, $cores)
+            $workers = $cores
+            $gates = [math]::Max(1, [math]::Floor($cores / 4))
+            $publint = $cores
+          }
+          "ARX_COVERAGE_PARTITIONS=$partitions" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "ARX_COVERAGE_MAX_WORKERS=$workers" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "ARX_GATE_CONCURRENCY=$gates" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "ARX_PUBLINT_CONCURRENCY=$publint" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Output "$($env:ARX_WINDOWS_POOL) runner: $cores logical processors, $memoryGiB GiB; coverage partitions $partitions, coverage workers $workers, concurrent gates $gates, publint workers $publint"
 
       - name: Run complete native Windows gate inventory
         shell: pwsh
