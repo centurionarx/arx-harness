@@ -42,6 +42,8 @@ describe('ContextMeter', () => {
       contextBreakdown: BREAKDOWN,
     })
     const trigger = view.getByRole('button', { name: '25% of context used' })
+    // The percentage reads beside the ring, not only in the accessible name.
+    expect(trigger.textContent).toBe('25%')
     expect(view.container.querySelector('[role="dialog"]')).toBeNull()
     fireEvent.click(trigger)
     const panel = view.container.querySelector('[role="dialog"]')!

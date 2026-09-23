@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-native-command",
   "description": "Zero-dependency no-shell execFile runner for host-native OS integrations (utf8 stdio capture, abort propagation, Windows hide) and the native path openers built on it",
-  "version": "1.0.11",
+  "version": "1.0.17",
   "publishConfig": {
     "access": "public"
   },

@@ -1,8 +1,10 @@
 - banner:
   - navigation "Session hierarchy":
     - button "workspace" [disabled]
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
@@ -210,6 +212,11 @@
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "9% of context used"
 - button "Send message" [disabled]
-- text: 2 turns · 12 steps LLM {{duration}} · Tool call {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 91% Input 113K tok · Output 2.4K tok
+- button "2 turns 12 steps · {{throughput}} tok/s":
+  - img
+  - text: 2 turns 12 steps{{throughput}} tok/s
+- button "115K tok · Cache hit 91%":
+  - img
+  - text: 115K tokCache hit 91%
+- button "9% of context used": 9%

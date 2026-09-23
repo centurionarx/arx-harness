@@ -1,8 +1,10 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Reply with the single word" [disabled]
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
@@ -42,6 +44,11 @@
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "6% of context used"
 - button "Send message" [disabled]
-- text: 1 turns · 1 steps LLM {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 99% Input 7.8K tok · Output 21 tok
+- button "1 turns 1 steps · {{throughput}} tok/s":
+  - img
+  - text: 1 turns 1 steps{{throughput}} tok/s
+- button "7.8K tok · Cache hit 99%":
+  - img
+  - text: 7.8K tokCache hit 99%
+- button "6% of context used": 6%

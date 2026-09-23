@@ -428,6 +428,19 @@
 }
 
 .modelCatalogMeta,
+/* A row's boolean capability sits in the capacity grid as a labelled checkbox,
+   aligned with the inputs beside it rather than with their labels. */
+.modelToggle {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: 8px;
+  height: 32px;
+  color: var(--arx-alias-label-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
 .modelEmpty {
   margin: 0;
   color: var(--arx-alias-label-tertiary);

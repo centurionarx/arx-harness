@@ -18,6 +18,23 @@ export const DEFAULT_ARX_HOME_DISPLAY = `~/${ARX_HOME_DIR_NAME}`
 export const ARX_HOME_ENV = 'ARX_HOME'
 
 /**
+ * The home this product wrote before it was named arx.
+ *
+ * Kept so a one-time copy can find data a user already has. It is not a
+ * fallback: nothing resolves reads or writes here, and no other product's home
+ * belongs in this constant — a directory written by a differently-composed
+ * harness holds settings namespaces this one does not own.
+ */
+export const LEGACY_ARX_HOME = {
+  /** Environment variable that overrode the legacy home. */
+  env: 'CXH_HOME',
+  /** Directory name the legacy home took under the OS home. */
+  dirName: '.cxh',
+  /** Stable user-facing display form for the default legacy home. */
+  display: '~/.cxh',
+} as const
+
+/**
  * Give a native filesystem watcher one canonical spelling of a path, even
  * when its final components do not exist yet. The deepest existing ancestor
  * is resolved through {@link realpath}; when a suffix is missing, that
@@ -88,6 +105,34 @@ export function resolveArxHome(configured?: string, env: Record<string, string |
   const fromEnv = env[ARX_HOME_ENV]
   const selected = configured ?? (fromEnv !== undefined && fromEnv.trim().length > 0 ? fromEnv : defaultArxHome())
   return resolve(expandHomePath(selected))
+}
+
+/**
+ * Resolve where this product kept user data before it was named arx.
+ *
+ * It follows {@link resolveArxHome}'s precedence over the legacy names, so a
+ * user who pointed `$CXH_HOME` somewhere is found there rather than at
+ * `~/.cxh`. Resolving a path says nothing about whether it exists.
+ * @param env - environment mapping used to read `CXH_HOME`.
+ * @returns the normalized absolute legacy home path.
+ */
+export function resolveLegacyArxHome(env: Record<string, string | undefined> = process.env): string {
+  const fromEnv = env[LEGACY_ARX_HOME.env]
+  const selected = fromEnv !== undefined && fromEnv.trim().length > 0
+    ? fromEnv
+    : join(homedir(), LEGACY_ARX_HOME.dirName)
+  return resolve(expandHomePath(selected))
+}
+
+/**
+ * Describe a resolved legacy home symbolically for user-facing display.
+ * @param resolvedHome - the absolute path returned by {@link resolveLegacyArxHome}.
+ * @returns `~/.cxh` for the default legacy home, otherwise `$CXH_HOME`.
+ */
+export function legacyArxHomeDisplay(resolvedHome: string): string {
+  return resolvedHome === resolve(join(homedir(), LEGACY_ARX_HOME.dirName))
+    ? LEGACY_ARX_HOME.display
+    : `$${LEGACY_ARX_HOME.env}`
 }
 
 /**

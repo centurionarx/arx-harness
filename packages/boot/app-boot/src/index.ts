@@ -48,6 +48,13 @@ export {
   type ProfileLayer,
   type ProfileManifest,
 } from './profile.ts'
+export {
+  HOME_MIGRATION_MARKER,
+  migrateLegacyHome,
+  readHomeMigrationMarker,
+  type HomeMigrationOptions,
+  type HomeMigrationReport,
+} from './home-migration.ts'
 
 /**
  * Resolve the config to boot. Replay swaps a `cordis.yml` basename for

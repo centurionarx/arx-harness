@@ -2,9 +2,9 @@
 /**
  * The three conversation-adjacent surfaces: the General-settings row naming the
  * default for later sessions, the new-session chip naming the next one's, and
- * the session header's read-only label. The split is the host's rule — a
- * session's history is produced under its preset's tools, so the choice is
- * only ever offered before one starts.
+ * the session header's switch. The split is the host's rule — a session's
+ * history is produced under its preset's tools, so a started session is never
+ * recomposed, and a pick from its header opens a new session instead.
  */
 
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -30,13 +30,13 @@ const ROW_READY: AgentPresetSettingsState = {
   currentValue: 'standard',
   // `mine` deliberately names itself nothing: the row must fall back to the
   // id for a preset whose author wrote no metadata.
-  options: [{ id: 'standard', trust: 'system', name: '标准模式' }, { id: 'mine', trust: 'user' }],
+  options: [{ id: 'standard', trust: 'system', name: 'Standard (file)' }, { id: 'mine', trust: 'user' }],
 }
 
 const SEAT_READY: AgentPresetSeatState = {
   current: 'standard',
   options: [
-    { id: 'standard', trust: 'system', name: '标准模式', description: '完整的编码 agent。' },
+    { id: 'standard', trust: 'system', name: 'Standard (file)', description: 'Complete coding agent (file).' },
     { id: 'mine', trust: 'user' },
   ],
   busy: false,
@@ -80,14 +80,16 @@ function renderLabel(
   })
   const sessions = createSnapshotStore({ byId: summary === undefined ? {} : { s1: summary } })
   const load = vi.fn(() => Promise.resolve())
+  const choose = vi.fn()
   const view = render(<AgentPresetLabel {...({
     load,
+    choose,
     sessionId: 's1',
     useSessions: bindSnapshotSelector(sessions),
     useAgentPresets: bindSnapshotSelector(store),
     t: (key: keyof typeof en) => en[key],
   } as unknown as AgentPresetLabelProps)} />)
-  return { load, view }
+  return { load, choose, view }
 }
 
 describe('the General-settings row', () => {
@@ -114,10 +116,10 @@ describe('the General-settings row', () => {
     renderRow({
       currentValue: 'mine',
       options: [
-        { id: 'standard', trust: 'system', name: '标准模式' },
+        { id: 'standard', trust: 'system', name: 'Standard (file)' },
         { id: 'bare', trust: 'system' },
         { id: 'mine', trust: 'user' },
-        { id: 'ours', trust: 'user', name: '团队模式' },
+        { id: 'ours', trust: 'user', name: 'Team mode' },
       ],
     })
 
@@ -127,7 +129,7 @@ describe('the General-settings row', () => {
     fireEvent.click(screen.getByRole('button'))
 
     // A locally authored preset is marked whether or not it named itself.
-    expect(screen.getByText(`团队模式 · ${en.userTrust}`)).toBeTruthy()
+    expect(screen.getByText(`Team mode · ${en.userTrust}`)).toBeTruthy()
     expect(screen.getByText(`mine · ${en.userTrust}`)).toBeTruthy()
     // A shipped preset with no metadata is listed by id and carries no mark.
     expect(screen.getByText('bare')).toBeTruthy()
@@ -314,12 +316,12 @@ describe('the chip introduce cue', () => {
     expect(delayedChars()).toHaveLength(0)
   })
 
-  it('keeps the per-tick cap for a short CJK name', () => {
+  it('keeps the per-tick cap for a short name', () => {
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })))
     vi.useFakeTimers()
     renderSeat({
       current: 'creator',
-      options: [{ id: 'creator', trust: 'user', name: '创造模式' }],
+      options: [{ id: 'creator', trust: 'user', name: 'Make' }],
       introduce: true,
     })
 
@@ -365,14 +367,64 @@ describe('the chip introduce cue', () => {
   })
 })
 
-describe('the session-header label', () => {
-  it('names the preset the session runs, and never offers a switch', async () => {
+describe('the session-header switch', () => {
+  it('names the preset the session runs on a button that opens the roster', async () => {
     const { load } = renderLabel({ blank: false, agentPreset: 'standard' })
 
     await waitFor(() => { expect(load).toHaveBeenCalledTimes(1) })
-    // A control here would promise a switch the host refuses outright.
-    expect(screen.queryByRole('button')).toBeNull()
-    expect(screen.getByTitle(en.presetStandardDescription).textContent).toBe(en.presetStandardName)
+    const trigger = screen.getByRole('button', { name: en.presetStandardName })
+    expect(trigger.getAttribute('title')).toBe(en.presetStandardDescription)
+
+    fireEvent.click(trigger)
+
+    // Every preset with what it is for, and the running one marked.
+    expect(trigger.getAttribute('aria-expanded')).toBe('true')
+    const [running, other] = screen.getAllByRole('menuitem')
+    expect(running!.textContent).toContain(en.presetStandardDescription)
+    expect(running!.querySelector('svg')).not.toBeNull()
+    expect(other!.textContent).toContain(en.noDescription)
+    expect(other!.querySelector('svg')).toBeNull()
+  })
+
+  it('says which picks start a new session once the session has started', () => {
+    renderLabel({ blank: false, agentPreset: 'standard' })
+
+    fireEvent.click(screen.getByRole('button'))
+
+    // The host never recomposes a started session, so the rows say what the
+    // pick does before the click; the running row does nothing.
+    const [running, other] = screen.getAllByRole('menuitem')
+    expect(other!.textContent).toContain(en.headerNewSession)
+    expect(running!.textContent).not.toContain(en.headerNewSession)
+  })
+
+  it('offers a blank session its switch in place, with no new-session line', () => {
+    renderLabel({ blank: true, agentPreset: 'standard' })
+
+    fireEvent.click(screen.getByRole('button'))
+
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2)
+    expect(screen.queryByText(en.headerNewSession)).toBeNull()
+  })
+
+  it('hands the pick to the session flow and closes the menu', () => {
+    const { choose } = renderLabel({ blank: false, agentPreset: 'standard' })
+    fireEvent.click(screen.getByRole('button'))
+
+    fireEvent.click(screen.getByText('mine'))
+
+    expect(choose).toHaveBeenCalledWith('s1', 'mine')
+    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('closes on an outside dismissal without a pick', () => {
+    const { choose } = renderLabel({ blank: false, agentPreset: 'standard' })
+    fireEvent.click(screen.getByRole('button'))
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false')
+    expect(choose).not.toHaveBeenCalled()
   })
 
   it('falls back to the id, and to the generic hint, when metadata is absent', () => {
@@ -381,12 +433,14 @@ describe('the session-header label', () => {
     expect(screen.getByTitle(en.headerHint).textContent).toBe('mine')
   })
 
-  it('shows the id until the roster resolves it', () => {
+  it('shows the id, and waits for the roster before it opens', () => {
     renderLabel({ blank: false, agentPreset: 'standard' }, { options: [] })
 
     // The session's own summary is the authority on which preset it runs; the
-    // roster only supplies the display name, and its arrival is a later frame.
-    expect(screen.getByTitle(en.headerHint).textContent).toBe('standard')
+    // roster only supplies names and choices, and its arrival is a later frame.
+    const trigger = screen.getByTitle(en.headerHint)
+    expect(trigger.textContent).toBe('standard')
+    expect(trigger).toHaveProperty('disabled', true)
   })
 
   it('renders nothing, and reads no roster, when the session records no preset', async () => {

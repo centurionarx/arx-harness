@@ -1,4 +1,4 @@
-/** Composer context-occupancy meter: a ring beside the send button fed by the
+/** Composer context-occupancy meter: a ring and percentage below the card fed by the
  * `contextPressure` projection, with a click-open panel of the heuristic
  * `contextBreakdown` composition (system prompt, tools, conversation).
  * Renders nothing until a provider reports both pressure and a route
@@ -10,7 +10,7 @@ import type { UseProjection } from '@arx-ai/arx-client-runtime/client'
 import type {} from '@arx-ai/arx-token-meter/client'
 import { Tooltip } from '@arx-ai/arx-client-ui-primitives'
 import type { ComposerBarProps } from '../contract/slots.ts'
-import { contextOccupancy, formatTokens } from '../chat/StatsLine.tsx'
+import { contextOccupancy, formatTokens } from '../chat/StatsPills.tsx'
 import css from './ContextMeter.module.css'
 
 /** Ring geometry: 14px viewBox, 2px stroke. */
@@ -110,6 +110,7 @@ export function ContextMeter({ useProjection, t }: ContextMeterProps) {
               transform="rotate(-90 7 7)"
             />
           </svg>
+          <span>{reading}</span>
         </button>
       </Tooltip>
       {open && (

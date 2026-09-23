@@ -1,14 +1,22 @@
 /**
- * One provider's editor card: the primary field is a single write-only **API
- * key** input (the page never asks for an environment-variable name — a typed
- * key stores through `credentials.set` under the profile's reference, deriving
+ * One provider's editor card, laid out for the adapter that owns the profile.
+ *
+ * A pi-ai route's primary field is a single write-only **API key** input (the
+ * page never asks for an environment-variable name — a typed key stores
+ * through `credentials.set` under the profile's reference, deriving
  * `<ROUTE>_API_KEY` when the profile has none. The profile records that
  * derivation as `apiKeyEnv` only when a key is entered; a blank key
  * materializes a reference-free profile for provider-native authentication);
- * the collapsed 自定义设置 area carries the curated extras (`baseURL`, the
- * model list, and the display name and wire protocol of a route the adapter
- * does not ship — the two fields the create card asked that route for,
- * editable here for the same reason).
+ * the collapsed "Customized settings" area carries the curated extras
+ * (`baseURL`, the model list, and the display name and wire protocol of a
+ * route the adapter does not ship — the two fields the create card asked that
+ * route for, editable here for the same reason).
+ *
+ * A CLI-backed route has no key, endpoint, or protocol to edit: the CLI signs
+ * in with the login the host already holds, and nothing on this card stores or
+ * reads a credential. Its card is the model list, shown unfolded because a
+ * model with a context window is what the route cannot serve without.
+ *
  * Reasoning effort is deliberately absent: it is a per-MODEL capability, and
  * the models under one provider disagree about it, so a provider-scoped
  * control can only be set to a value some of them reject. The composer's
@@ -22,7 +30,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CredentialView, IApiClient, SettingsNamespaceView, SettingsPathOpView } from '@arx-ai/arx-api-remotes/client'
-import { modelDrafts, validateModelCatalog } from './model-catalog.ts'
+import { CATALOG_RULES, entryFormatOf, modelDrafts, validateModelCatalog } from './model-catalog.ts'
+import type { ModelCatalogFailure, ModelEntryFormat } from './model-catalog.ts'
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
 import { ModelListEditor } from './ModelListEditor.tsx'
@@ -31,8 +40,8 @@ import type { SettingsSchemaOperations } from './schema-operations.ts'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
 
-/** The curated field set, or the hint alone for a namespace that has none. */
-type EditorLayout = 'pi-ai' | 'unknown'
+/** One adapter's curated field set, or the hint alone for a namespace that has none. */
+type EditorLayout = ModelEntryFormat | 'unknown'
 
 /** Props of {@link ProviderEditor}. */
 export interface ProviderEditorProps {
@@ -106,9 +115,9 @@ export function pathOps(
   return ops
 }
 
-/** The editor layout the owning namespace selects. */
-function layoutOf(ns: string): EditorLayout {
-  return ns === 'llm-pi-ai' ? 'pi-ai' : 'unknown'
+/* v8 ignore next 3 -- closed-union default only defends future source widening */
+function assertNever(_value: never): never {
+  throw new Error('unexpected provider editor layout')
 }
 
 /** The credential reference this profile resolves keys through. */
@@ -148,7 +157,9 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   const node = useMemo(() => schema.nodeAtPath(root, settingsPath), [root, schema, settingsPath])
   const fallback = schema.getPath(namespace.value, settingsPath)
   const disabled = props.readOnly || busy
-  const layout = layoutOf(namespace.ns)
+  // A namespace this card has no form for gets the hint that points at
+  // `settings.yaml`.
+  const layout: EditorLayout = entryFormatOf(namespace.ns) ?? 'unknown'
   const keyRef = refFor(schema, namespace, settingsPath, props.provider)
   // The same schema read the create card makes, so the choices offered here
   // and there cannot drift apart: both come from the adapter's own `Config`.
@@ -160,6 +171,9 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   )
 
   useEffect(() => {
+    // Only a key-bearing layout has a stored key worth a hint; asking about one
+    // for a CLI-backed route would describe a reference nothing ever sets.
+    if (layout !== 'pi-ai') return
     let stale = false
     setKeyState(undefined)
     // The key state is a placeholder hint, not a precondition for editing:
@@ -174,7 +188,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
       () => undefined,
     )
     return () => { stale = true }
-  }, [api.credentials, keyRef])
+  }, [api.credentials, keyRef, layout])
 
   const stringAt = (source: unknown, key: string): string | undefined => {
     const value = schema.getPath(source, [key])
@@ -192,8 +206,11 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   }
 
   // The model list is validated per row, so a bad row is named by its position
-  // rather than by a blanket message.
-  const modelFailure = validateModelCatalog(schema.getPath(draft, ['models']))
+  // rather than by a blanket message. A namespace with no form has no rules to
+  // judge its rows by, and its card cannot write them anyway.
+  const rowFailure = (value: unknown): ModelCatalogFailure | undefined =>
+    layout === 'unknown' ? undefined : validateModelCatalog(value, CATALOG_RULES[layout])
+  const modelFailure = rowFailure(schema.getPath(draft, ['models']))
   const keyFailure = apiKeyFailure(keyDraft)
   // What a probe or a write must carry: the typed key with paste whitespace
   // removed. A blank field yields an empty string, which both call sites read
@@ -230,7 +247,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
     // The same checker gates the submit button, so a card cannot reach this
     // with a bad row; it stays because nothing but this function decides what
     // is written.
-    const failure = validateModelCatalog(schema.getPath(next, ['models']))
+    const failure = rowFailure(schema.getPath(next, ['models']))
     /* v8 ignore next 3 -- unreachable from the card: the same failure disables submit */
     if (failure !== undefined) {
       return `${t('model')} ${String(failure.index + 1)}: ${t(failure.key)}`
@@ -300,30 +317,62 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
     return pinned ?? schema.nodeAtPath(root, [...settingsPath, 'models'])?.meta.default
   }
 
-  /**
-   * The curated fields of the one namespace that has them; an unknown
-   * namespace renders the hint instead and never reaches this body.
-   */
+  // What a hand-declared route names for itself and nothing else can supply.
+  const ownsIdentity = props.declared === true
+  const modelsOverridden = schema.hasPath(draft, ['models'])
+  const models = modelDrafts(modelsOverridden ? schema.getPath(draft, ['models']) : inheritedModels())
+  // A layer beneath the user's to fall back to: a pi-ai route always has one,
+  // its installed catalog; a CLI-backed route has one only when the
+  // composition pinned models for it, and otherwise has nothing to restore.
+  const inherits = layout === 'pi-ai' || schema.hasPath(namespace.base, [...settingsPath, 'models'])
+  // The CLI-backed route serves exactly what it lists and refuses anything
+  // else, so a card that would leave it listing nothing cannot apply.
+  const needsModels = layout === 'agent-cli' && models.length === 0
+  /** What the model-list editor takes: the rows, whose layer owns them, and the writes. */
+  const catalogProps = {
+    models,
+    ...inherits
+      ? {
+        overridden: modelsOverridden,
+        onReset: () => { setDraft(current => schema.deletePath(current, ['models'])) },
+      }
+      : {},
+    t,
+    disabled,
+    onChange: (next: Record<string, unknown>[]) => {
+      setDraft(current => schema.setPath(current, ['models'], next))
+    },
+  }
+
+  /** The display-name field of a hand-declared route, the one name nothing else supplies. */
+  const displayNameField = (): ReactNode => (
+    <div className={styles['field']}>
+      <span className={styles['fieldLabel']}>{t('customDisplayName')}</span>
+      <input
+        className={styles['input']}
+        type="text"
+        value={stringAt(draft, 'displayName') ?? ''}
+        // What this route is called the moment the field is
+        // cleared, which is the layer beneath the one this field
+        // edits: a `cordis.yml` may pin a name for a route the
+        // catalog does not ship, and only when nothing does is
+        // the answer the route id. Reading the effective value
+        // instead would echo the stored override back as the
+        // thing clearing restores.
+        placeholder={stringAt(schema.getPath(namespace.base, settingsPath), 'displayName')
+          ?? props.provider}
+        aria-label={t('customDisplayName')}
+        disabled={disabled}
+        onChange={(event) => { setField('displayName', event.target.value) }}
+      />
+    </div>
+  )
+
+  /** The pi-ai fields: the key, then the customized fold with the endpoint and the models. */
   const curatedFields = (): ReactNode => {
-    // What a hand-declared route names for itself and nothing else can supply.
-    const ownsIdentity = props.declared === true
-    const customModels = schema.getPath(draft, ['models'])
-    const modelsOverridden = schema.hasPath(draft, ['models'])
-    const models = modelDrafts(modelsOverridden ? customModels : inheritedModels())
     const keyPlaceholder = keyLocked
       ? t('keyEnvLocked')
       : keyState?.configured === true ? t('keyStored') : t('keyPlaceholderNative')
-    /** What the model-list editor takes: the rows, whose layer owns them, and the two writes. */
-    const catalogProps = {
-      models,
-      overridden: modelsOverridden,
-      t,
-      disabled,
-      onChange: (next: Record<string, unknown>[]) => {
-        setDraft(current => schema.setPath(current, ['models'], next))
-      },
-      onReset: () => { setDraft(current => schema.deletePath(current, ['models'])) },
-    }
     return (
       <>
         <div className={styles['field']}>
@@ -347,30 +396,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
             {/* The name and the protocol are the create card's two remaining
                 profile fields; a route the adapter ships defaults both from
                 its catalog entry and neither belongs on its card. */}
-            {ownsIdentity
-              ? (
-                <div className={styles['field']}>
-                  <span className={styles['fieldLabel']}>{t('customDisplayName')}</span>
-                  <input
-                    className={styles['input']}
-                    type="text"
-                    value={stringAt(draft, 'displayName') ?? ''}
-                    // What this route is called the moment the field is
-                    // cleared, which is the layer beneath the one this field
-                    // edits: a `cordis.yml` may pin a name for a route the
-                    // catalog does not ship, and only when nothing does is
-                    // the answer the route id. Reading the effective value
-                    // instead would echo the stored override back as the
-                    // thing clearing restores.
-                    placeholder={stringAt(schema.getPath(namespace.base, settingsPath), 'displayName')
-                      ?? props.provider}
-                    aria-label={t('customDisplayName')}
-                    disabled={disabled}
-                    onChange={(event) => { setField('displayName', event.target.value) }}
-                  />
-                </div>
-              )
-              : null}
+            {ownsIdentity ? displayNameField() : null}
             <div className={styles['field']}>
               <span className={styles['fieldLabel']}>{t('baseUrl')}</span>
               <input
@@ -410,11 +436,36 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
                 </div>
               )
               : null}
-            <ModelListEditor {...catalogProps} probe={probe} probeBlocked={keyFailure} api={api} />
+            <ModelListEditor format="pi-ai" {...catalogProps} probe={probe} probeBlocked={keyFailure} api={api} />
           </div>
         </details>
       </>
     )
+  }
+
+  /**
+   * The CLI-backed fields: what the route signs in with, the terms it runs
+   * under, and the models it serves — with no key, endpoint, or protocol,
+   * because the host's own CLI login is the whole credential.
+   */
+  const agentCliFields = (): ReactNode => (
+    <>
+      <p className={styles['intro']}>{t('agentCliCaption')}</p>
+      <p className={styles['notice']}>{t('agentCliTerms')}</p>
+      {ownsIdentity ? displayNameField() : null}
+      <ModelListEditor format="agent-cli" {...catalogProps} probe={probe} api={api} />
+    </>
+  )
+
+  /** The body the layout selects; a namespace with no form gets the hint alone. */
+  const body = (): ReactNode => {
+    switch (layout) {
+      case 'pi-ai': return curatedFields()
+      case 'agent-cli': return agentCliFields()
+      case 'unknown': return <p className={styles['advancedHint']}>{`${t('advancedHint')} (${namespace.ns})`}</p>
+      /* v8 ignore next -- closed-union default only defends future source widening */
+      default: return assertNever(layout)
+    }
   }
 
   return (
@@ -429,12 +480,10 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
               : null}
           </div>
         )}
-      {layout === 'unknown'
-        ? <p className={styles['advancedHint']}>{`${t('advancedHint')} (${namespace.ns})`}</p>
-        : curatedFields()}
+      {body()}
       {failure !== undefined ? <p className={styles['error']}>{failure}</p> : null}
       {modelFailure === undefined
-        ? null
+        ? needsModels ? <p className={styles['advancedHint']}>{t('agentCliNeedsModels')}</p> : null
         : (
           <p className={styles['advancedHint']}>
             {`${t('model')} ${String(modelFailure.index + 1)}: ${t(modelFailure.key)}`}
@@ -445,7 +494,8 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
         busy={busy}
         submitDisabled={disabled || layout === 'unknown'
           || modelFailure !== undefined
-          || keyFailure !== undefined}
+          || keyFailure !== undefined
+          || needsModels}
         submitLabel="apply"
         submitBusyLabel="applying"
         onCancel={() => { props.onClose(false) }}

@@ -277,20 +277,26 @@ function mount(
 }
 
 describe('Hero chrome', () => {
-  it('renders the English preview badge through the hero locale seat', () => {
+  it('asks for the brand mark and name at twice the sidebar size, with no preview badge', () => {
     const renderSlot = vi.fn<HeroShellProps['renderSlot']>(() => null)
-    const view = render(<HeroShell t={makeTranslate(en, commonEn)} renderSlot={renderSlot} />)
-    expect(view.getByText('Into the Unknown')).toBeTruthy()
-    expect(view.getByText('Preview')).toBeTruthy()
-    expect(renderSlot).toHaveBeenCalledOnce()
-    expect(renderSlot.mock.calls[0]?.[0]).toBe('conversation.hero.brand.mark')
-    const brandMarkOwner = renderSlot.mock.calls[0]?.[1]
-    if (brandMarkOwner === undefined || !('size' in brandMarkOwner) || !('className' in brandMarkOwner)) {
-      throw new Error('hero brand-mark owner must provide size and className')
-    }
-    expect(brandMarkOwner.size).toBe(34)
-    expect(brandMarkOwner.className).toBeTypeOf('string')
-    expect(renderSlot.mock.calls[0]?.[2]?.fallback).toBeTruthy()
+    const view = render(<HeroShell renderSlot={renderSlot} />)
+    expect(view.container.querySelector('[data-hero-headline]')).not.toBeNull()
+    expect(view.queryByText('Preview')).toBeNull()
+    expect(renderSlot).toHaveBeenCalledTimes(2)
+    const [markCall, nameCall] = renderSlot.mock.calls
+    expect(markCall?.[0]).toBe('conversation.hero.brand.mark')
+    expect(markCall?.[1]).toEqual({ size: 96, className: expect.any(String) as string })
+    expect(markCall?.[2]?.fallback).toBeTruthy()
+    expect(nameCall?.[0]).toBe('conversation.hero.brand.name')
+    expect(nameCall?.[1]).toEqual({ size: 48, className: expect.any(String) as string })
+    expect(nameCall?.[2]?.fallback).toBeTruthy()
+  })
+
+  it('shows the unbranded placeholder when no occupant fills the name slot', () => {
+    const renderSlot = vi.fn<HeroShellProps['renderSlot']>((_key, _owner, opts) => opts?.fallback ?? null)
+    const view = render(<HeroShell renderSlot={renderSlot} />)
+    expect(view.getByText('ARX Local Build')).toBeTruthy()
+    expect(view.queryByText('Into the Unknown')).toBeNull()
   })
 })
 
@@ -408,8 +414,9 @@ describe('ConversationRoot resident composer', () => {
     const header = b.view.container.querySelector('header')
     expect(host).not.toBeNull()
     expect(header?.getAttribute('aria-hidden')).toBe('true')
-    expect(b.view.getByText('Into the Unknown')).toBeTruthy()
-    expect(b.view.getByText('Preview')).toBeTruthy()
+    expect(b.view.container.querySelector('[data-hero-headline]')).not.toBeNull()
+    expect(b.view.getByTestId('view-conversation.hero.brand.name')).toBeTruthy()
+    expect(b.view.queryByText('Preview')).toBeNull()
     expect(b.view.queryByTestId('view-chat')).toBeNull()
     // The same machine-backed textarea is live in the hero, and the
     // persistence mirror stays bound (ConversationSession mounts chrome-hidden
@@ -432,7 +439,7 @@ describe('ConversationRoot resident composer', () => {
     const b = mount(conversationSnapshot({ composerPhase: 'blank', blank: true, openState: 'loading' }))
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('settling')
-    expect(b.view.queryByText('Into the Unknown')).toBeNull()
+    expect(b.view.container.querySelector('[data-hero-headline]')).toBeNull()
   })
 
   it('settling phase: a session the list has no row for settles conservatively', () => {
@@ -457,7 +464,7 @@ describe('ConversationRoot resident composer', () => {
     // blank the column for the history round-trip.
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('hero')
-    expect(b.view.getByText('Into the Unknown')).toBeTruthy()
+    expect(b.view.container.querySelector('[data-hero-headline]')).not.toBeNull()
     expect(b.view.getByRole('textbox')).toBeTruthy()
   })
 
@@ -465,6 +472,9 @@ describe('ConversationRoot resident composer', () => {
     const b = mount(conversationSnapshot({ composerPhase: 'blank', blank: true }))
     const before = b.view.getByRole('textbox')
     fireEvent.change(before, { target: { value: 'kept across flip' } })
+    // Typing alone keeps the hero and its brand headline; only the sent
+    // first message below replaces them.
+    expect(b.view.container.querySelector('[data-hero-headline]')).not.toBeNull()
     // First message landed: content exists, phase leaves blank. Composer
     // already sat in the resident scrollport during hero, so the textarea
     // node and InputHub draft both survive.
@@ -475,7 +485,7 @@ describe('ConversationRoot resident composer', () => {
     expect(after.value).toBe('kept across flip')
     expect(b.chat.store.getSnapshot().draft).toBe('kept across flip')
     expect(b.view.container.querySelector('[data-conversation-scroll]')?.contains(after)).toBe(true)
-    expect(b.view.queryByText('Into the Unknown')).toBeNull()
+    expect(b.view.container.querySelector('[data-hero-headline]')).toBeNull()
     expect(b.view.getByTestId('view-chat')).toBeTruthy()
   })
 

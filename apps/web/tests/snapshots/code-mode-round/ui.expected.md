@@ -1,8 +1,10 @@
 - banner:
   - navigation "Session hierarchy":
     - 'button "Using ONE run_code program: run" [disabled]'
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
@@ -51,6 +53,11 @@
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "7% of context used"
 - button "Send message" [disabled]
-- text: 1 turns · 2 steps LLM {{duration}} · Tool call {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 52% Input 17.2K tok · Output 252 tok
+- button "1 turns 2 steps · {{throughput}} tok/s":
+  - img
+  - text: 1 turns 2 steps{{throughput}} tok/s
+- button "17.5K tok · Cache hit 52%":
+  - img
+  - text: 17.5K tokCache hit 52%
+- button "7% of context used": 7%

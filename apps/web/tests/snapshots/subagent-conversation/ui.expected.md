@@ -6,8 +6,10 @@
     - button "1 subagent":
       - text: 1 subagent
       - img
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
@@ -56,6 +58,11 @@
 - button "Commands":
   - img
 - 'button "Access mode, current: Custom"': Custom
-- button "6% of context used"
 - button "Send message" [disabled]
-- text: 2 turns · 2 steps LLM {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 99% Input 15.6K tok · Output 158 tok
+- button "2 turns 2 steps · {{throughput}} tok/s":
+  - img
+  - text: 2 turns 2 steps{{throughput}} tok/s
+- button "15.7K tok · Cache hit 99%":
+  - img
+  - text: 15.7K tokCache hit 99%
+- button "6% of context used": 6%

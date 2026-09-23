@@ -5,9 +5,10 @@
 //
 // Two surfaces, one host rule: a session's composition is fixed when the
 // session starts. Before that, the new-session chip stages the choice beside
-// the workspace picker — the only screen where it still works. After it, the
-// session header names what the session runs and offers no control at all,
-// because the host answers `agent-preset-locked` to anything else.
+// the workspace picker. After it, the session header names what the session
+// runs and opens the roster, but never asks the host to recompose it — the
+// host answers `agent-preset-locked` — so a different pick there opens a new
+// session under that preset and leaves the started one as it was.
 //
 // Zero model calls: no replay fixture mounts, so a stray stream fails loud.
 import { fileURLToPath } from 'node:url'
@@ -30,6 +31,7 @@ const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/agent-preset-selection',
 const HERO_EXPECTED = join(SNAPSHOT_DIR, 'hero.expected.md')
 const MENU_EXPECTED = join(SNAPSHOT_DIR, 'menu.expected.md')
 const HEADER_EXPECTED = join(SNAPSHOT_DIR, 'header.expected.md')
+const HEADER_MENU_EXPECTED = join(SNAPSHOT_DIR, 'header-menu.expected.md')
 /** The shipped roster, beside the composition that names it. */
 const SHIPPED_PRESETS = fileURLToPath(new URL('../../cli/config/agent-presets', import.meta.url))
 const MODE = webSnapshotMode()
@@ -145,6 +147,15 @@ async function seedSubagent(scaffold: WebScaffold, parentId: SessionId): Promise
  * @returns the live session's preset, or undefined before it is listed.
  */
 async function livePreset(baseUrl: string): Promise<string | undefined> {
+  return (await listedSessions(baseUrl)).find(item => item.sessionId !== SEED_ID)?.agentPreset
+}
+
+/**
+ * The host's session list, as the browser's own client reads it.
+ * @param baseUrl - the scaffold's origin.
+ * @returns every listed session with the preset it runs.
+ */
+async function listedSessions(baseUrl: string): Promise<{ sessionId: string; agentPreset?: string }[]> {
   const response = await fetch(`${baseUrl}/api/session.list`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -155,7 +166,7 @@ async function livePreset(baseUrl: string): Promise<string | undefined> {
   const body = await response.json() as {
     result: { value?: { items: { sessionId: string; agentPreset?: string }[] } }
   }
-  return body.result.value?.items.find(item => item.sessionId !== SEED_ID)?.agentPreset
+  return body.result.value?.items ?? []
 }
 
 /** Every option label the trigger menu currently lists. */
@@ -284,9 +295,58 @@ describe('web e2e: agent-preset selection', () => {
     expect(snapshot).toContain('button "1 subagent"')
     expect(snapshot.indexOf('button "1 subagent"')).toBeLessThan(snapshot.indexOf('Minimal mode'))
     expect(snapshot.indexOf('Minimal mode')).toBeLessThan(snapshot.indexOf('button "Session log"'))
-    // Static chrome, not a control: the header can only report a composition
-    // the host would refuse to change.
-    expect(snapshot).not.toContain('button "Minimal mode"')
+    // The running preset names a control that opens the roster.
+    expect(snapshot).toContain('button "Minimal mode"')
+  })
+
+  it('lists every preset from the header, marking the running one', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-header-menu'))
+    await page.locator('[class*="titleRow"]').getByRole('button', { name: 'Minimal mode', exact: true }).click()
+    const menu = page.getByRole('menu')
+    await menu.waitFor({ timeout: 10_000 })
+
+    const snapshot = await captureStableAria(page, '[role="menu"]', scaffold.workspaceCwd)
+
+    await compareOrRefreshGolden(HEADER_MENU_EXPECTED, snapshot, MODE)
+    // The seeded session has run a turn, so every other preset says what its
+    // pick does before the click; the running one is marked and says nothing.
+    const note = 'Starts a new session in this mode'
+    const running = menu.getByRole('menuitem', { name: /^Minimal mode/ })
+    expect(await running.textContent()).not.toContain(note)
+    expect(await running.locator('svg').count()).toBe(1)
+    for (const name of ['Standard mode', 'PTC mode', 'Creator mode']) {
+      expect(await menu.getByRole('menuitem', { name: new RegExp(`^${name}`) }).textContent()).toContain(note)
+    }
+  })
+
+  it('does nothing when the header pick is the preset the session runs', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-header-same'))
+    const compositions = async (): Promise<string[]> => (await listedSessions(scaffold.baseUrl))
+      .map(item => `${item.sessionId}:${item.agentPreset ?? ''}`).sort()
+    const before = await compositions()
+
+    await page.getByRole('menu').getByRole('menuitem', { name: /^Minimal mode/ }).click()
+    await page.getByRole('menu').waitFor({ state: 'detached', timeout: 10_000 })
+
+    // Still the seeded session, still on its own composition, and no session
+    // was started for a pick that changes nothing.
+    await page.getByText('Seeded turn.').waitFor({ timeout: 10_000 })
+    expect(await compositions()).toEqual(before)
+  })
+
+  it('opens a new session for a different header pick, and leaves the started one as it was', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-header-new-session'))
+    await page.locator('[class*="titleRow"]').getByRole('button', { name: 'Minimal mode', exact: true }).click()
+    await page.getByRole('menu').getByRole('menuitem', { name: /^PTC mode/ }).click()
+
+    // The new-session screen opens with the pick already on its chip, and the
+    // host composes the blank session it lands on under that preset.
+    await page.locator('[class*="heroWorkspaceRow"]').getByRole('button', { name: 'PTC mode', exact: true })
+      .waitFor({ timeout: 15_000 })
+    await expect.poll(() => livePreset(scaffold.baseUrl), { timeout: 15_000 }).toBe('code')
+    // The started session was never asked to change.
+    const seeded = (await listedSessions(scaffold.baseUrl)).find(item => item.sessionId === SEED_ID)
+    expect(seeded?.agentPreset).toBe('minimal')
   })
 
   it('drove every surface without a page error or a stream warning', () => {

@@ -23,7 +23,7 @@ const SEED_ID = 'stats-paged-history-web-e2e'
 
 /** Turn count: 2 surface messages per turn, so 28 turns overflow one 50-message page. */
 const TURNS = 28
-const FULL_COUNTS = `${TURNS} turns · ${TURNS} steps`
+const FULL_COUNTS = `${TURNS} turns ${TURNS} steps`
 
 /**
  * Generate the seed: TURNS closed single-step turns of one short user prompt
@@ -106,8 +106,8 @@ describe('web e2e: whole-session stats survive history paging', () => {
     // turns are NOT loaded, yet the strip already reports the whole log —
     // the sessionStats projection, not the window fold.
     expect(await page.getByText('m1', { exact: true }).count()).toBe(0)
-    await expect.poll(() => page.getByText(FULL_COUNTS, { exact: false }).count(), { timeout: 10_000 }).toBe(1)
-    const strip = page.getByText(FULL_COUNTS, { exact: false }).locator('..')
+    const strip = page.locator('[data-composer-stats]')
+    await expect.poll(() => strip.getByText(FULL_COUNTS, { exact: false }).count(), { timeout: 10_000 }).toBe(1)
     const stripBeforePaging = await strip.textContent()
 
     // Load earlier: prepending the older page must not move ANY strip figure —

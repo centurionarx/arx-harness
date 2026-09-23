@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-agent-cli",
   "description": "LLM adapter that drives a subscription-authenticated vendor CLI as an ordinary model route",
-  "version": "1.0.11",
+  "version": "1.0.17",
   "publishConfig": {
     "access": "public"
   },
@@ -34,6 +34,7 @@
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
     "@arx-ai/arx-subprocess": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   },
@@ -46,6 +47,8 @@
   "devDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-settings-file": "workspace:^",
     "@arx-ai/arx-subprocess": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   }

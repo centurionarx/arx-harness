@@ -161,9 +161,9 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     if (MODE !== 'record') {
       expect(fixtureUserPrompts(await readFile(FIXTURE, 'utf8'))).toEqual([PROMPT])
     }
-    // The blank frame renders the hero, not the resident composer: the
+    // The blank frame renders the hero, not the resident composer: the brand
     // headline plus the guidance placeholder are the empty state's anchors.
-    await expect.poll(() => page.getByText('Into the Unknown', { exact: false }).count(), { timeout: 15_000 }).toBe(1)
+    await expect.poll(() => page.locator('[data-hero-headline]').count(), { timeout: 15_000 }).toBe(1)
     const input = page.locator('textarea').first()
     await input.waitFor({ timeout: 10_000 })
     if (MODE !== 'record') {
@@ -174,6 +174,8 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     }
     const settled = scaffold.whenTurnSettled()
     await input.fill(PROMPT)
+    // Typing alone keeps the brand headline; the send below replaces it.
+    expect(await page.locator('[data-hero-headline]').count()).toBe(1)
     const observeTurn = async () => {
       const originalViewport = page.viewportSize() ?? { width: 1680, height: 1000 }
       if (MODE !== 'record') await page.setViewportSize({ width: 480, height: 1000 })
@@ -192,6 +194,7 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
       }
     }
     const sessionId = await observeTurn()
+    expect(await page.locator('[data-hero-headline]').count()).toBe(0)
     if (MODE === 'record') {
       await recordFixture(scaffold, sessionId, FIXTURE)
     }
@@ -209,7 +212,10 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     ).toBeGreaterThanOrEqual(1)
     await expect.poll(() => page.locator('[role="treeitem"][aria-selected="true"]').count(), { timeout: 10_000 }).toBe(1)
     await expect.poll(() => page.getByText('LIGHTHOUSE', { exact: true }).count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(1)
-    await expect.poll(() => page.getByText('Cache hit 99.5%', { exact: true }).count(), { timeout: 15_000 }).toBe(1)
+    await expect.poll(
+      () => page.locator('[data-composer-stats]').getByText('Cache hit 99.5%', { exact: false }).count(),
+      { timeout: 15_000 },
+    ).toBe(1)
     // Host: the session's durable header cwd is the folder the workspace
     // flow created and adopted (<workspaceCwd>/workspace) — the proof the
     // send went through workspace materialization rather than a bare

@@ -62,6 +62,13 @@ export class AgentPresetSeatController {
   /** Set while a pick is waiting for a session; cleared once applied. */
   private staged: string | undefined
 
+  /**
+   * The started session a {@link stage} was made from. The flow is leaving it
+   * for a new session, so list changes while it is still current keep the
+   * stage waiting instead of spending it on a session that refuses the swap.
+   */
+  private leaving: SessionId | undefined
+
   constructor(
     private readonly api: Pick<IApiClient, 'agentPresets'>,
     /** The session the hero is about to hand over to, when there is one. */
@@ -115,23 +122,31 @@ export class AgentPresetSeatController {
    */
   async select(id: string): Promise<void> {
     if (this.store.getSnapshot().busy) return
-    this.stage(id)
+    this.hold(id, false, undefined)
     await this.apply()
   }
 
   /**
    * Stage a pick WITHOUT the immediate apply, for a flow that starts the
-   * receiving session after the pick (the settings section's creator entry).
-   * `select()`'s immediate apply would meet the still-current running session
-   * and drop the stage as unservable; staging alone leaves it for the
-   * list-change applier, which fires when the started session becomes
-   * current.
+   * receiving session after the pick (the settings section's creator entry
+   * and the session-header switch). `select()`'s immediate apply would meet
+   * the still-current running session and drop the stage as unservable;
+   * staging alone leaves it for the list-change applier, which fires when the
+   * started session becomes current. A started session current at staging
+   * time is the one the flow leaves: the list changes that precede the new
+   * session's arrival — its creation among them — do not spend the stage.
    * @param id - the preset to stage.
    * @param introduce - true when the stage came from another screen and the
    * chip should announce itself on the session it lands on.
    */
   stage(id: string, introduce = false): void {
+    const current = this.currentSession()
+    this.hold(id, introduce, current === undefined || current.blank ? undefined : current.id)
+  }
+
+  private hold(id: string, introduce: boolean, leaving: SessionId | undefined): void {
     this.staged = id
+    this.leaving = leaving
     this.set({ current: id, error: null, introduce })
   }
 
@@ -151,13 +166,15 @@ export class AgentPresetSeatController {
   async apply(): Promise<void> {
     const staged = this.staged
     const session = this.currentSession()
-    if (staged === undefined || session === undefined) return
+    if (staged === undefined || session === undefined || session.id === this.leaving) return
     // A started session's history was produced under its own composition; the
     // host refuses the swap, so the stage is no longer meaningful.
     if (!session.blank || session.agentPreset === staged) {
       this.staged = undefined
+      this.leaving = undefined
       return
     }
+    this.leaving = undefined
     this.set({ busy: true, error: null })
     try {
       const response = await this.api.agentPresets.select({ sessionId: session.id, agentPreset: staged })

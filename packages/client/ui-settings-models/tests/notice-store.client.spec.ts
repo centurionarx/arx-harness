@@ -4,7 +4,8 @@ import { Context } from '@arx-ai/cordis'
 import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
 import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import { SettingsScopeController } from '@arx-ai/arx-client-ui-settings/src/client/settings-scope.ts'
-import { decodeWelcomeSection, WelcomeNoticeStore } from '../src/client/welcome-store.ts'
+import { decodeNoticeSection, AcknowledgedNoticeStore } from '../src/client/notice-store.ts'
+import type { AcknowledgedNoticeBinding } from '../src/client/notice-store.ts'
 import {
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../src/onboarding-copy.ts'
@@ -40,15 +41,23 @@ function buildWelcome(
   const mirror = new SettingsDescribeMirror(wire, persistence)
   const scope = new SettingsScopeController(
     wire,
-    { namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE, decode: decodeWelcomeSection },
+    { namespace: WELCOME_NOTICE_SETTINGS_NAMESPACE, decode: decodeNoticeSection },
     mirror,
     persistence,
     schemaService,
   )
-  return { mirror, controller: new WelcomeNoticeStore(scope) }
+  return { mirror, controller: new AcknowledgedNoticeStore(binding(scope)) }
 }
 
-describe('WelcomeNoticeStore', () => {
+/** The welcome notice's own binding; the store is generic over field and version. */
+const binding = (scope: AcknowledgedNoticeBinding['scope']): AcknowledgedNoticeBinding => ({
+  scope,
+  field: WELCOME_NOTICE_ACK_FIELD,
+  version: () => WELCOME_NOTICE_VERSION,
+  subject: 'welcome',
+})
+
+describe('AcknowledgedNoticeStore', () => {
   it('acknowledges in memory without calling loopback-only settings APIs', async () => {
     const describeCall = vi.fn()
     const mutate = vi.fn()

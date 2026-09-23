@@ -1,27 +1,35 @@
-/* Context-occupancy ring beside the send button plus its click-open breakdown
-   panel (menu surface: r12, inverted hairline, shadow-lv3). */
+/* Context-occupancy pill below the composer card, after the session stats
+   pills, plus its click-open breakdown panel (menu surface: r12, inverted
+   hairline, shadow-lv3). The pill wears the stats pills' 12/20 tertiary tier. */
 
 .root {
   position: relative;
   display: inline-flex;
+  flex: none;
 }
 
-/* Same 28px circular hit target family as the composer's attach button. */
 .trigger {
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   flex: none;
-  width: 28px;
-  height: 28px;
+  padding: 1px 8px;
   border: none;
-  border-radius: 999px;
+  border-radius: 24px;
   background: transparent;
-  color: var(--arx-alias-label-secondary);
+  color: var(--arx-alias-label-tertiary);
+  font-family: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 20px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.trigger:hover {
+.trigger:hover,
+.trigger[aria-expanded='true'] {
   background: var(--arx-alias-interactive-bg-hover);
+  color: var(--arx-alias-label-secondary);
 }
 
 .track {

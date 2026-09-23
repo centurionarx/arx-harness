@@ -88,6 +88,10 @@ Run checks before pushes via [arx-pre-push-checks](.agents/skills/arx-pre-push-c
 - Never default to the full suite or repeat a passing check for commit or push. CI owns exhaustive coverage and the platform matrix; rehearse all locally only by explicit request, for CI diagnosis, or for an irreducibly repository-wide change.
 - `test:coverage`, not `test`, is the CI coverage gate ([why](docs/testing.md)).
 
+### After a merge, sync the local clones
+
+When a PR merges into `master`, the owner's clones MUST reach it: the notebook `C:\DESENVOLVIMENTO\Projeto-arx-ai\arx-harness` and the Azure VM `azureuser@dev-01:~/dev/arx-harness`. Run `git fetch origin`, then `git merge --ff-only origin/master` on `master`, or `git fetch origin master:master` from another branch. A dirty tree or diverged `master` stops that clone's sync and is reported, never stashed, reset, or overwritten. An agent without access to a clone gives the owner these commands instead of claiming the sync ([why](.agents/notes/implemented/process/2026-09-22-a-merge-reaches-the-local-clones.md)).
+
 ## Secrets / .env
 
 Real-API tests and demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, and root `.env`. cordis.yml allows `!!js` (never `!js`) under plugin `config` and entry `disabled`; other metadata stays literal, so conditional composition also uses overlays ([primer](docs/cordis-primer.md#loader-configuration)). Never commit credentials. CI e2e skips without a key; [testing.md](docs/testing.md) owns key policy.

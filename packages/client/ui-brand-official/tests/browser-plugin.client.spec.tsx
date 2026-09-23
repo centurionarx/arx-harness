@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import { SlotRegistry } from '@arx-ai/arx-client-runtime/client'
 import { apply, inject } from '../src/client/index.ts'
-import { OfficialBrandMark, OfficialBrandName } from '../src/client/Brand.tsx'
+import { OfficialBrandMark, OfficialBrandName, OfficialHeroBrandName } from '../src/client/Brand.tsx'
 
 afterEach(() => {
   cleanup()
@@ -15,6 +15,7 @@ const HOLES = [
   'sidebar.brand.mark',
   'sidebar.brand.name',
   'conversation.hero.brand.mark',
+  'conversation.hero.brand.name',
 ] as const
 
 async function bench(declare = true) {
@@ -75,5 +76,13 @@ describe('official browser-brand plugin', () => {
     expect(mark.container.querySelector('span')?.className.split(' ')).toContain('hero-mark')
     mark.rerender(<OfficialBrandMark size={24} />)
     expect(mark.container.querySelector('span')?.style.width).toBe('24px')
+  })
+
+  it('renders the new-session name artwork at the requested height', () => {
+    const name = render(<OfficialHeroBrandName size={48} className="hero-name" />)
+    const svg = name.container.querySelector('svg')
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 180 34')
+    expect(svg?.getAttribute('height')).toBe('48')
+    expect(svg?.getAttribute('class')?.split(' ')).toContain('hero-name')
   })
 })

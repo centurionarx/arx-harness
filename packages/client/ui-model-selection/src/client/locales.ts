@@ -28,5 +28,8 @@ export const en = {
   'warning.groupLoad': '{name} failed to load: {message}',
   'empty.models': 'No models available.',
   'blocked.composer': 'This model is unavailable — select one to continue',
+  'blocked.unselected': 'Select a model to start',
+  'blocked.noProvider': 'Set up a model provider to start',
+  'blocked.setUpProvider': 'Set up a model provider',
   'empty.efforts': 'This model provides no reasoning effort levels.',
 } satisfies Record<string, string>

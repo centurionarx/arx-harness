@@ -1,8 +1,10 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Use only Cordis tools. First" [disabled]
-  - img
-  - text: Standard mode
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
   - button "Session log":
     - text: Session log
     - img
@@ -100,6 +102,11 @@
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "0% of context used"
 - button "Send message" [disabled]
-- text: 3 turns · 7 steps LLM {{duration}} · Tool call {{duration}} Cache hit 77% Input 66.5K tok · Output 321 tok
+- button "3 turns 7 steps":
+  - img
+  - text: 3 turns 7 steps
+- button "66.8K tok · Cache hit 77%":
+  - img
+  - text: 66.8K tokCache hit 77%
+- button "0% of context used": 0%

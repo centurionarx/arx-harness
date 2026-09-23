@@ -355,4 +355,6 @@
   - text: DeepSeek-V4-Flash
   - img
 - button "Send message" [disabled]
-- text: 28 turns · 28 steps LLM {{duration}}
+- button "28 turns 28 steps":
+  - img
+  - text: 28 turns 28 steps

@@ -2048,9 +2048,15 @@ importers:
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
+      '@types/react-dom':
+        specifier: ~18.3.0
+        version: 18.3.7(@types/react@18.3.31)
       react:
         specifier: ^18.2.0
         version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
 
   packages/client/ui-deliverables:
     devDependencies:
@@ -2486,6 +2492,9 @@ importers:
       '@arx-ai/arx-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives
+      '@arx-ai/arx-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
       '@arx-ai/arx-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots
@@ -6081,6 +6090,12 @@ importers:
       '@arx-ai/arx-llm':
         specifier: workspace:^
         version: link:../llm
+      '@arx-ai/arx-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
+      '@arx-ai/arx-settings-file':
+        specifier: workspace:^
+        version: link:../../settings/settings-file
       '@arx-ai/arx-subprocess':
         specifier: workspace:^
         version: link:../../subprocess/subprocess
