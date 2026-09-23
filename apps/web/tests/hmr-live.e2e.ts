@@ -1,9 +1,9 @@
 /** Published arx web + pnpm dev:web → browser HMR, with no page reload. */
 
-import { existsSync, globSync } from 'node:fs'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { existsSync, globSync, statSync } from 'node:fs'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { chromium } from 'playwright'
 import { expect, it } from 'vitest'
 import { Context } from '@arx-ai/cordis'
@@ -12,6 +12,22 @@ import LocalSubprocessRuntime from '@arx-ai/arx-subprocess-local'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 import { readClientBuildRecord } from '../../../scripts/client-build-environment.ts'
 import { REPO_ROOT } from './support.ts'
+
+// The paths `readClientBuildRecord` digests. The check after restoration fails
+// this test if the two lists drift apart.
+const CLIENT_ARTIFACT_PATTERNS = [
+  'apps/web/dist/**/*',
+  'packages/*/*/lib/client.js',
+  'packages/*/*/lib/client.js.map',
+]
+
+/** Return every artifact that `pnpm run dev:web` can rewrite. */
+function clientArtifactPaths(): string[] {
+  return globSync(CLIENT_ARTIFACT_PATTERNS, { cwd: REPO_ROOT })
+    .map(path => join(REPO_ROOT, path))
+    .filter(path => statSync(path).isFile())
+    .sort()
+}
 
 function spawnSpec(argv: readonly string[], cwd: string, env?: Record<string, string>): SubprocessSpawnSpec {
   return {
@@ -76,14 +92,17 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
   const binPath = join(REPO_ROOT, 'apps/cli/lib/bin.js')
   if (!existsSync(binPath)) throw new Error('HMR browser test needs the built arx bin; run pnpm run build first')
   const clientBuildEnvironment = readClientBuildRecord(REPO_ROOT).environment
-  const clientBundlePaths = globSync('packages/*/*/lib/client.js{,.map}', { cwd: REPO_ROOT })
-    .map(path => join(REPO_ROOT, path))
-  const originalClientBundles = await Promise.all(clientBundlePaths.map(async path => [path, await readFile(path)] as const))
+  const originalClientArtifacts = await Promise.all(clientArtifactPaths()
+    .map(async path => [path, await readFile(path)] as const))
+  const originalClientArtifactPaths = new Set(originalClientArtifacts.map(([path]) => path))
   const originalSource = await readFile(sourcePath)
-  const oldText = 'Into the Unknown'
-  const sourceNeedle = "'hero.headline': 'Into the Unknown'"
+  // The workspace chip's accessible name is ui-conversation copy the
+  // new-session screen renders in every build profile; the headline is brand
+  // artwork in the official one.
+  const oldText = 'Choose workspace'
+  const sourceNeedle = "'hero.chooseWorkspace': 'Choose workspace'"
   const newText = `HMR UPDATED ${'x'.repeat(80)}`
-  const updatedSource = originalSource.toString().replace(sourceNeedle, `'hero.headline': '${newText}'`)
+  const updatedSource = originalSource.toString().replace(sourceNeedle, `'hero.chooseWorkspace': '${newText}'`)
   if (updatedSource === originalSource.toString()) throw new Error(`HMR source lacks ${JSON.stringify(sourceNeedle)}`)
 
   const subprocessCtx = new Context()
@@ -114,7 +133,7 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
     const pageErrors: string[] = []
     page.on('pageerror', error => pageErrors.push(String(error)))
     await page.goto(baseUrl, { waitUntil: 'load' })
-    await page.getByText(oldText, { exact: true }).waitFor({ timeout: 15_000 })
+    await page.getByRole('button', { name: oldText, exact: true }).waitFor({ timeout: 15_000 })
     const pageIdentity = await page.evaluate(() => {
       const identity = crypto.randomUUID()
       Object.defineProperty(window, '__arxHmrPageIdentity', { value: identity })
@@ -122,7 +141,7 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
     })
 
     await writeFile(sourcePath, updatedSource)
-    await page.getByText(newText, { exact: true }).waitFor({ timeout: 30_000 })
+    await page.getByRole('button', { name: newText, exact: true }).waitFor({ timeout: 30_000 })
     expect(await page.evaluate(() => (window as Window & { __arxHmrPageIdentity?: string }).__arxHmrPageIdentity))
       .toBe(pageIdentity)
     expect(pageErrors).toEqual([])
@@ -131,12 +150,25 @@ it('hot-reloads a real client-plugin source edit without refreshing the page', a
   } finally {
     await writeFile(sourcePath, originalSource).catch((error: unknown) => failures.push(error))
     if (watcher !== undefined) await stopTree(watcher).catch((error: unknown) => failures.push(error))
-    await Promise.all(originalClientBundles.map(async ([path, content]) => {
-      await writeFile(path, content).catch((error: unknown) => failures.push(error))
-    }))
     if (host !== undefined) await stopTree(host).catch((error: unknown) => failures.push(error))
     await browser?.close().catch((error: unknown) => failures.push(error))
     await subprocessFiber?.dispose().catch((error: unknown) => failures.push(error))
+    // The watcher's vite stage rewrites apps/web/dist as well as the lib bundles,
+    // and a rebuild cut short by the stop can leave files it added. Every later
+    // consumer of the build record needs the tree `pnpm run build` recorded.
+    await Promise.all(clientArtifactPaths()
+      .filter(path => !originalClientArtifactPaths.has(path))
+      .map(async (path) => { await rm(path, { force: true }) }))
+      .catch((error: unknown) => failures.push(error))
+    await Promise.all(originalClientArtifacts.map(async ([path, content]) => {
+      await mkdir(dirname(path), { recursive: true })
+      await writeFile(path, content)
+    })).catch((error: unknown) => failures.push(error))
+    try {
+      readClientBuildRecord(REPO_ROOT)
+    } catch (error) {
+      failures.push(error)
+    }
     await rm(world, { recursive: true, force: true }).catch((error: unknown) => failures.push(error))
   }
   if (failures.length > 0) throw new AggregateError(failures, 'HMR browser test or cleanup failed')

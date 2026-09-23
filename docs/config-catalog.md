@@ -1003,7 +1003,7 @@ export interface AgentCliModel {
 export type AgentCliEffort = (typeof AGENT_CLI_EFFORTS)[number]
 ```
 
-Source: [`packages/llm/llm-agent-cli/src/config.ts:68`](../packages/llm/llm-agent-cli/src/config.ts)
+Source: [`packages/llm/llm-agent-cli/src/config.ts:70`](../packages/llm/llm-agent-cli/src/config.ts)
 
 <a id="arx-aiarx-llm-pi-ai"></a>
 

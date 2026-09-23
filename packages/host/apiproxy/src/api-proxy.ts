@@ -605,6 +605,13 @@ export interface ApiProxyDefaults {
    */
   appVersion?: () => string | undefined
   /**
+   * The pre-rename harness home this installation copied, reported by
+   * `host.describe` so a client can tell the user where their settings came
+   * from. Read per call for the same reason as {@link ApiProxyDefaults.appVersion}.
+   * Absent, and absent when it answers `undefined`, the wire omits the field.
+   */
+  homeMigration?: () => { fromDisplay: string; toDisplay: string; at: string } | undefined
+  /**
    * Record a selection as the new default. Either absent, or a closure that
    * may itself decline — the gateway plugin always passes one, and it no-ops
    * when the deployment mounts no settings provider or when the write races
@@ -2885,6 +2892,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     host: {
       describe(request) {
         const selection = defaults.defaultModelSelection()
+        const migration = defaults.homeMigration?.()
         return Promise.resolve(ok(request, {
           // Read per call, not captured: the launcher provides it before the
           // tree mounts, and a reconnecting client must see the running app's
@@ -2900,6 +2908,9 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           attachedSessions: ctx.agents.list().length,
           home: homedir(),
           canOpenPath: canOpenPaths(),
+          // Display forms the launcher resolved; an absent copy omits the
+          // field rather than reporting an empty one.
+          ...migration === undefined ? {} : { homeMigration: migration },
         }))
       },
 

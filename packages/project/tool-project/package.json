@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-project",
   "description": "Model-facing durable project, plan, prompt, task, and workflow orchestration tool",
-  "version": "1.0.11",
+  "version": "1.0.16",
   "publishConfig": {
     "access": "public"
   },

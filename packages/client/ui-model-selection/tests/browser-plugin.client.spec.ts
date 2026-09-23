@@ -9,12 +9,13 @@
  * Scope disposal drops the directory (HMR safety).
  */
 import { Context } from '@arx-ai/cordis'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createScope } from '@arx-ai/arx-client-runtime/client'
 import type { SessionId } from '@arx-ai/arx-client-runtime/client'
 import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
 import { TestRemote } from '@arx-ai/arx-client-test-runtime'
-import type { ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { ModelProviderGroup, ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { ComposerBlock } from '@arx-ai/arx-client-ui-conversation/client'
 import type { CommandContribution, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 import type { ModelSelectInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
@@ -53,30 +54,40 @@ const GROUPS = [{
   ],
 }]
 
+/** Wire calls a case replaces to control when, and whether, the Host answers. */
+interface WireOverrides {
+  models?: () => Promise<unknown>
+  selectModel?: () => Promise<unknown>
+}
+
 /** Boot the plugin over fake faces + a stateful fake host (current moves on selectModel). */
-async function bench({ selected = true }: { selected?: boolean } = {}) {
+async function bench({ selected = true, wire = {} }: { selected?: boolean; wire?: WireOverrides } = {}) {
   const ctx = new Context()
   // `selected: false` is the deployment that ships no default model: the Host
   // answers with the field absent, not with a fabricated pair.
   let current: ModelSelection | undefined = selected
     ? { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
     : undefined
+  // The catalog the Host lists; empty is a deployment with no provider at all.
+  let groups: readonly ModelProviderGroup[] = GROUPS
   const calls = { models: 0, select: 0 }
   ctx.provide('connection', { api: { sessions: {
     models: () => {
       calls.models += 1
+      if (wire.models !== undefined) return wire.models()
       return Promise.resolve({
         result: {
           ok: true as const,
           value: {
             ...current === undefined ? {} : { current },
-            routable, groups: GROUPS, failures: [],
+            routable, groups, failures: [],
           },
         },
       })
     },
     selectModel: (payload: { provider: string; model: string; reasoningEffort?: string }) => {
       calls.select += 1
+      if (wire.selectModel !== undefined) return wire.selectModel()
       current = {
         provider: payload.provider,
         model: payload.model,
@@ -90,10 +101,10 @@ async function bench({ selected = true }: { selected?: boolean } = {}) {
   // Whether the Host reports an adapter for the current route; the composer
   // block follows this, never catalog membership.
   let routable = true
-  const blocks = new Map<SessionId, { reason: string } | undefined>()
+  const blocks = new Map<SessionId, ComposerBlock | undefined>()
   ctx.provide('conversation', {
     blocks: {
-      set: (id: SessionId, block: { reason: string } | undefined) => { blocks.set(id, block) },
+      set: (id: SessionId, block: ComposerBlock | undefined) => { blocks.set(id, block) },
     },
   })
   let contribution: CommandContribution | undefined
@@ -145,6 +156,7 @@ async function bench({ selected = true }: { selected?: boolean } = {}) {
     setHostCurrent: (selection: ModelSelection) => { current = selection },
     address: (id: SessionId) => { addressed.add(id) },
     setRoutable: (next: boolean) => { routable = next },
+    setGroups: (next: readonly ModelProviderGroup[]) => { groups = next },
     blockOf: (key: string) => blocks.get(sid(key)),
   }
 }
@@ -219,6 +231,64 @@ describe('ui-model-selection dual entry', () => {
     expect(seatFace.directory.getSnapshot().current).toBeNull()
   })
 
+  it('reports a catalog call that throws instead of refreshing forever', async () => {
+    // A response the browser refuses, or a transport failure, never answers
+    // with a result; the menu must show why rather than an endless refresh.
+    const b = await bench({ wire: { models: () => Promise.reject(new Error('refused response')) } })
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+
+    face.load()
+
+    await vi.waitFor(() => { expect(face.directory.getSnapshot().status).toBe('error') })
+    expect(face.directory.getSnapshot().error).toBe('refused response')
+  })
+
+  it('reports a selection call that throws instead of staying busy', async () => {
+    const b = await bench({ wire: { selectModel: () => Promise.reject(new Error('offline')) } })
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+
+    await expect(face.select({ provider: 'deepseek-official', model: 'deepseek-v4-pro' })).resolves.toBe(false)
+
+    expect(face.directory.getSnapshot()).toMatchObject({ status: 'error', error: 'offline' })
+  })
+
+  it('lets a newer answer stand over an older call that fails late', async () => {
+    let failFirst: (error: Error) => void = () => undefined
+    let calls = 0
+    const b = await bench({ wire: { models: () => {
+      calls += 1
+      return calls === 1
+        ? new Promise((_resolve, reject) => { failFirst = reject })
+        : Promise.resolve({ result: { ok: true as const, value: { routable: true, groups: [], failures: [] } } })
+    } } })
+    b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+
+    face.load()
+    face.load()
+    await vi.waitFor(() => { expect(face.directory.getSnapshot().status).toBe('ready') })
+    failFirst(new Error('late'))
+    await Promise.resolve()
+
+    expect(face.directory.getSnapshot()).toMatchObject({ status: 'ready', error: null })
+  })
+
+  it('publishes nothing for a call that fails after its session scope went', async () => {
+    let fail: (error: Error) => void = () => undefined
+    const b = await bench({ wire: { models: () => new Promise((_resolve, reject) => { fail = reject }) } })
+    const scope = b.mint('s1')
+    const face = b.seat().inject!(sid('s1'))
+
+    face.load()
+    await scope.fiber.dispose()
+    fail(new Error('late'))
+    await Promise.resolve()
+
+    expect(face.directory.getSnapshot().status).not.toBe('error')
+  })
+
   it('both entries share one directory instance per session, isolated across sessions', async () => {
     const b = await bench()
     b.mint('a')
@@ -241,10 +311,11 @@ describe('ui-model-selection dual entry', () => {
 
     b.ctx.emit('connection/reset')
     expect(face.directory.getSnapshot()).toMatchObject({ current: null, status: 'loading' })
-    await Promise.resolve()
-    expect(face.directory.getSnapshot()).toMatchObject({
-      current: { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
-      status: 'ready',
+    await vi.waitFor(() => {
+      expect(face.directory.getSnapshot()).toMatchObject({
+        current: { provider: 'deepseek-official', model: 'deepseek-v4-flash' },
+        status: 'ready',
+      })
     })
   })
 
@@ -283,6 +354,36 @@ describe('ui-model-selection dual entry', () => {
     await Promise.resolve()
     await Promise.resolve()
     expect(b.blockOf('s1')).toBeUndefined()
+  })
+
+  it('asks for a selection when nothing is selected yet', async () => {
+    const b = await bench({ selected: false })
+    b.mint('s1')
+    b.setRoutable(false)
+    b.seat().inject!(sid('s1')).load()
+    await Promise.resolve()
+    await Promise.resolve()
+    // Nothing to call unavailable: the user has simply not picked one.
+    expect(b.blockOf('s1')).toEqual({ reason: en['blocked.unselected'] })
+  })
+
+  it('offers the way to add a provider when none serves anything', async () => {
+    const b = await bench()
+    const requests: string[] = []
+    b.ctx.on('settings/open-section', (id) => { requests.push(id) })
+    b.mint('s1')
+    b.setRoutable(false)
+    b.setGroups([])
+    b.seat().inject!(sid('s1')).load()
+    await Promise.resolve()
+    await Promise.resolve()
+    // There is nothing to select, so the block carries its own recovery, for a
+    // saved selection and a missing one alike.
+    const block = b.blockOf('s1')
+    expect(block?.reason).toBe(en['blocked.noProvider'])
+    expect(block?.action?.label).toBe(en['blocked.setUpProvider'])
+    block?.action?.run()
+    expect(requests).toEqual(['models'])
   })
 
   it('never blocks on catalog membership alone', async () => {

@@ -30,11 +30,22 @@ function mount({
     { id: 'welcome', order: -100 },
     { id: 'credential', order: 0 },
   ],
-}: { wide?: boolean; onboardingActive?: boolean; rows?: Row[]; steps?: Step[] } = {}) {
+  openRequest,
+}: {
+  wide?: boolean
+  onboardingActive?: boolean
+  rows?: Row[]
+  steps?: Step[]
+  openRequest?: { id: string; seq: number }
+} = {}) {
   // Mutable row source standing in for the bound useSections hook; bump()
   // plays a ledger change through the same observable contract.
   let current = rows
   const listeners = new Set<() => void>()
+  // The same for the latest `settings/open-section` request; request() plays
+  // one arriving.
+  let latestRequest = openRequest
+  const requestListeners = new Set<() => void>()
   const renderSlot = vi.fn(
     ((key: string, _owner: unknown, opts?: { only?: string }) => {
       if (key === 'settings.section') return <div data-testid={`section-${opts?.only ?? 'all'}`} />
@@ -54,6 +65,15 @@ function mount({
     useWorkspaces: unusedHook,
     wide,
     useOnboardingSteps: select => select(steps),
+    useOpenRequest: (select) => {
+      const [, force] = useState(0)
+      useEffect(() => {
+        const listener = () => { force(n => n + 1) }
+        requestListeners.add(listener)
+        return () => { requestListeners.delete(listener) }
+      }, [])
+      return select(latestRequest)
+    },
     useSections: (select) => {
       const [, force] = useState(0)
       useEffect(() => {
@@ -72,7 +92,13 @@ function mount({
       for (const fn of [...listeners]) fn()
     })
   }
-  return { view, renderSlot, bump, listeners }
+  const request = (id: string) => {
+    act(() => {
+      latestRequest = { id, seq: (latestRequest?.seq ?? 0) + 1 }
+      for (const fn of [...requestListeners]) fn()
+    })
+  }
+  return { view, renderSlot, bump, listeners, request }
 }
 
 function openPanel() {
@@ -94,6 +120,31 @@ describe('SettingsRoot trigger', () => {
   it('hands the rail state to the trigger seat', () => {
     const { renderSlot } = mount({ wide: false })
     expect(renderSlot).toHaveBeenCalledWith('settings.trigger', { wide: false })
+  })
+})
+
+describe('SettingsRoot open requests', () => {
+  it('opens the panel on the section another plugin requested', () => {
+    const { renderSlot, request } = mount({ onboardingActive: false })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    request('models')
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Models' }).getAttribute('aria-current')).toBe('true')
+    expect(renderSlot).toHaveBeenCalledWith('settings.section', { close: expect.any(Function) as () => void }, { only: 'models' })
+  })
+
+  it('does not replay a request made before it mounted', () => {
+    mount({ onboardingActive: false, openRequest: { id: 'models', seq: 3 } })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('answers the same request again once its user closed the panel', () => {
+    const { request } = mount({ onboardingActive: false })
+    request('models')
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    request('models')
+    expect(screen.getByRole('dialog')).toBeTruthy()
   })
 })
 

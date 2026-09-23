@@ -1,14 +1,15 @@
 /**
  * Agent-preset surface plugin, browser half — four surfaces over one roster:
  * a General-settings row for the default preset, a chip on the new-session
- * screen for the session about to start, a read-only label in the session
- * header, and a settings section that manages the roster (copy, delete,
- * default, and the way into a preset's own files).
+ * screen for the session about to start, a switch in the session header, and
+ * a settings section that manages the roster (copy, delete, default, and the
+ * way into a preset's own files).
  *
  * A running session keeps the composition it began with (the host refuses to
- * adopt an existing session under a different preset). That is what splits
- * the choice from the display: the General row and the hero chip are both
- * before-the-fact, while the header only reports what a session already runs.
+ * adopt an existing session under a different preset). The General row and the
+ * hero chip are therefore before-the-fact, and the header switch never
+ * recomposes a started session: its pick opens a new session under the chosen
+ * preset through the same stage the chip applies.
  */
 
 import type { ConnectionHandle } from '@arx-ai/arx-api-remotes/client'
@@ -19,7 +20,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-api-remotes/client'
 // Type-only: pulls the settings shell's SlotMap merge (the 'settings.section' entry).
 import type {} from '@arx-ai/arx-client-ui-settings/client'
-import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client'
 import { AgentPresetLabel } from './AgentPresetLabel.tsx'
 import type { AgentPresetLabelInjected } from './AgentPresetLabel.tsx'
 import { AgentPresetRow } from './AgentPresetRow.tsx'
@@ -97,7 +98,7 @@ export function apply(ctx: ClientContext): void {
   // render and simply hides the button while no flow exists.
   let creatorDraft: (() => void) | undefined
 
-  // The new-session chip and the header label: one controller, because the
+  // The new-session chip and the header switch: one controller, because the
   // staged choice belongs to the flow rather than to any one session.
   ctx.inject(['slots', 'conversation', 'sessions', 'workspaces'], (scope: ClientContext) => {
     const api = (scope.get('connection') as ConnectionHandle).api
@@ -122,9 +123,27 @@ export function apply(ctx: ClientContext): void {
       introduced: () => { seat.introduced() },
     })
 
+    // The header's pick. The running preset needs nothing. A blank session is
+    // the current one, so the chip's select switches it in place. A started
+    // one keeps its composition — the host refuses the swap — so the pick is
+    // staged WITHOUT applying, for the reason creatorDraft states, and lands
+    // on the blank session a new start in the same workspace produces; the
+    // introduce cue announces it there, because the chip never saw the pick.
+    const chooseFromHeader = (sessionId: SessionId, id: string): void => {
+      const summary = scope.sessions.list.getSnapshot().byId[sessionId]
+      if (summary === undefined || summary.agentPreset === id) return
+      if (summary.blank) {
+        void seat.select(id)
+        return
+      }
+      seat.stage(id, true)
+      scope.workspaces.startSession()
+    }
+
     const labelInjected = (): AgentPresetLabelInjected => ({
       hooks: { agentPresets: controller.store },
       load: () => controller.load(),
+      choose: chooseFromHeader,
     })
 
     scope.effect(() => {
@@ -184,7 +203,7 @@ export function apply(ctx: ClientContext): void {
         chip()
         label()
       }
-    }, 'ui-agent-preset: new-session chip and header label')
+    }, 'ui-agent-preset: new-session chip and header switch')
   })
 
   const sectionInjected = (): AgentPresetSectionInjected => ({

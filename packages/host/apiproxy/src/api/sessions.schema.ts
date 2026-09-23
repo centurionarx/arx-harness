@@ -249,7 +249,11 @@ export const sessionModelsRequestSchema = z.object({
 
 /** session.models response value. */
 export const sessionModelsValueSchema = z.object({
-  current: modelSelectionSchema,
+  // Absent is how the wire spells "no selection" — a deployment that ships no
+  // default model answers every fresh session this way. Required here, the
+  // browser would refuse the Host's own answer and the model menu could never
+  // load.
+  current: modelSelectionSchema.optional(),
   routable: z.boolean(),
   groups: z.array(modelProviderGroupSchema),
   failures: z.array(modelCatalogFailureSchema),

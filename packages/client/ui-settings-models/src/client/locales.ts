@@ -1,12 +1,12 @@
 /** Copy dictionaries for the Models settings section. */
 
-import { WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
+import { HOME_MIGRATION_NOTICE_COPY, PROVIDER_GUIDE_COPY, WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
 
 /** English strings (the key-set source of truth for this pair). */
 export const en = {
   nav: 'Models',
   title: 'Models',
-  intro: 'Enter your API keys to use models from the following providers.',
+  intro: 'Configure the providers whose models you want to use.',
   edit: 'Edit',
   editProvider: 'Edit {provider}',
   remove: 'Delete',
@@ -56,12 +56,14 @@ export const en = {
   modelIdDuplicate: 'Model ID must be unique.',
   modelNameInvalid: 'Display name cannot be empty.',
   modelContextInvalid: 'Context window must be a positive count, like 131072, 256K, or 1M.',
+  modelContextRequired: 'Context window is required.',
   modelMaxTokensInvalid: 'Max output tokens must be a positive count, like 8192, 64K, or 1M.',
   advancedHint: 'Other fields live in settings.yaml; edit that section directly.',
   modelCapacityInvalid: 'A capacity must be a number, optionally suffixed K or M.',
   modelDuplicate: 'Each model ID may appear once.',
   modelContextWindow: 'Context window',
   modelMaxTokens: 'Max output tokens',
+  modelAcceptsImages: 'Accepts images',
   fetchModels: 'Fetch available models',
   fetching: 'Asking the provider\u2026',
   fetchNeedsBaseUrl: 'Enter the base URL first, then fetch.',
@@ -84,12 +86,27 @@ export const en = {
   customApiUnset: 'Not selected',
   customNeedsBaseUrl: 'A custom provider needs a base URL.',
   customNeedsModels: 'A custom provider needs at least one model.',
+  agentCliCaption: 'Uses this provider\'s command-line tool, already installed and signed in on this machine. No API key is stored here.',
+  agentCliTerms: 'Using a subscription from another program may be outside its terms. Check them before relying on this route.',
+  agentCliNeedsModels: 'Add at least one model, with its context window.',
   create: 'Create provider',
   creating: 'Creating\u2026',
   welcomeTitle: WELCOME_NOTICE_COPY.en.title,
   welcomeBody: WELCOME_NOTICE_COPY.en.body,
   welcomeContinue: WELCOME_NOTICE_COPY.en.continueLabel,
   welcomeError: 'The acknowledgement could not be saved. Please try again.',
+  homeMigrationTitle: HOME_MIGRATION_NOTICE_COPY.en.title,
+  homeMigrationBody: HOME_MIGRATION_NOTICE_COPY.en.body,
+  homeMigrationContinue: HOME_MIGRATION_NOTICE_COPY.en.continueLabel,
+  providerGuideTitle: PROVIDER_GUIDE_COPY.en.title,
+  providerGuideBody: PROVIDER_GUIDE_COPY.en.body,
+  providerGuideOffersLead: PROVIDER_GUIDE_COPY.en.offersLead,
+  providerGuideHosted: PROVIDER_GUIDE_COPY.en.hosted,
+  providerGuideHostedOne: PROVIDER_GUIDE_COPY.en.hostedOne,
+  providerGuideCompatible: PROVIDER_GUIDE_COPY.en.compatible,
+  providerGuideCommandLine: PROVIDER_GUIDE_COPY.en.commandLine,
+  providerGuideOpen: PROVIDER_GUIDE_COPY.en.open,
+  providerGuideLater: PROVIDER_GUIDE_COPY.en.later,
 }
 
 /** The settings.models namespace key union. */

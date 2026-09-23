@@ -1,0 +1,74 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - heading "Models" [level=2]
+  - paragraph: Configure the providers whose models you want to use.
+  - list
+  - text: Provider
+  - combobox "Provider":
+    - option "amazon-bedrock"
+    - option "ant-ling"
+    - option "anthropic"
+    - option "azure-openai-responses"
+    - option "cerebras"
+    - option "Claude (subscription)" [selected]
+    - option "cloudflare-ai-gateway"
+    - option "cloudflare-workers-ai"
+    - option "deepseek"
+    - option "fireworks"
+    - option "github-copilot"
+    - option "google"
+    - option "google-vertex"
+    - option "groq"
+    - option "huggingface"
+    - option "kimi-coding"
+    - option "minimax"
+    - option "minimax-cn"
+    - option "mistral"
+    - option "moonshotai"
+    - option "moonshotai-cn"
+    - option "nvidia"
+    - option "openai"
+    - option "openai-codex"
+    - option "opencode"
+    - option "opencode-go"
+    - option "openrouter"
+    - option "qwen-token-plan"
+    - option "qwen-token-plan-cn"
+    - option "together"
+    - option "vercel-ai-gateway"
+    - option "xai"
+    - option "xiaomi"
+    - option "xiaomi-token-plan-ams"
+    - option "xiaomi-token-plan-cn"
+    - option "xiaomi-token-plan-sgp"
+    - option "zai"
+    - option "zai-coding-cn"
+  - paragraph: Uses this provider's command-line tool, already installed and signed in on this machine. No API key is stored here.
+  - paragraph: Using a subscription from another program may be outside its terms. Check them before relying on this route.
+  - region "Models":
+    - text: Models
+    - button "Fetch available models"
+    - button "Add model"
+  - paragraph: Add at least one model, with its context window.
+  - button "Cancel"
+  - button "Apply" [disabled]

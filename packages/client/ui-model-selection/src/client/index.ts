@@ -29,6 +29,7 @@ import { en, type ModelKey } from './locales.ts'
 export { ModelDirectory } from './directory.ts'
 export type { ModelDirectoryState } from './directory.ts'
 export { ModelDirectoryResolver } from './service.ts'
+export type { ComposerBlockCopy } from './service.ts'
 export type { ModelSelectInjected } from './slots.ts'
 export type { ModelKey } from './locales.ts'
 
@@ -112,9 +113,16 @@ export function apply(ctx: ClientContext): void {
   // through the bound translate; the seat component reads the standard seat.
   const t = ctx.locale.bind(NS)
 
-  // The composer-block reason is this plugin's own copy, read at raise time so
-  // a locale change reaches the next publish.
-  ctx.plugin(ModelDirectoryResolver, { blockReason: () => t('blocked.composer') })
+  // The composer-block copy is this plugin's own, read at raise time so a
+  // locale change reaches the next publish.
+  ctx.plugin(ModelDirectoryResolver, {
+    blockCopy: {
+      unavailable: () => t('blocked.composer'),
+      unselected: () => t('blocked.unselected'),
+      noProvider: () => t('blocked.noProvider'),
+      setUpProvider: () => t('blocked.setUpProvider'),
+    },
+  })
 
   // Entry 1: the /model popupSelect over the shared directory. The command
   // description is registry-held text: it reads t() once at registration and

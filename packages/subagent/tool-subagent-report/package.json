@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-subagent-report",
   "description": "Child-scoped report tool over ctx.subagents continuations",
-  "version": "1.0.11",
+  "version": "1.0.16",
   "publishConfig": {
     "access": "public"
   },

@@ -26,6 +26,14 @@ export interface SettingsOnboardingStep {
   order: number
 }
 
+/** The latest `settings/open-section` request, numbered in arrival order. */
+export interface SettingsOpenRequest {
+  /** The section the requester named. */
+  id: string
+  /** Arrival number; a repeated request for the same section is a new one. */
+  seq: number
+}
+
 /**
  * Registrant-private injected share of the settings shell (assembled in
  * apply): the ledger's nav-row projection as a hooks-compartment source —
@@ -37,6 +45,8 @@ export type SettingsRootInjected = {
     sections: HostObservable<readonly SettingsSectionRow[]>
     /** settings.onboarding ledger projected into coordinator order. */
     onboardingSteps: HostObservable<readonly SettingsOnboardingStep[]>
+    /** The latest request another plugin made to open a section, if any. */
+    openRequest: HostObservable<SettingsOpenRequest | undefined>
   }
 }
 

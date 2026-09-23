@@ -1,0 +1,39 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - heading "Models" [level=2]
+  - paragraph: Configure the providers whose models you want to use.
+  - status: Saved Claude (subscription) (claude-subscription).
+  - list:
+    - listitem:
+      - text: Claude (subscription)
+      - button "Edit Claude (subscription) (claude-subscription)": Edit
+      - button "Delete Claude (subscription) (claude-subscription)": Delete
+  - button "Add provider":
+    - img
+    - text: Add provider
+  - button "Add OpenAI compatible":
+    - img
+    - text: Add OpenAI compatible
+  - button "Add a custom provider":
+    - img
+    - text: Add a custom provider

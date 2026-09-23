@@ -20,6 +20,7 @@ import { IconAgentPresetOutline16, IconChevronDownOutline14, Menu } from '@arx-a
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type { AgentPresetSeatState } from './seat-store.ts'
 import { presetDisplayText } from './locales.ts'
+import { presetMenuItems } from './PresetMenuItem.tsx'
 import css from './AgentPresetSeat.module.css'
 
 /** Registration-side business face for the hero chip. */
@@ -129,20 +130,7 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
     <Menu
       open={open}
       onClose={() => { setOpen(false) }}
-      items={state.options.map((option) => {
-        const text = presetDisplayText(option, t)
-        return {
-          id: option.id,
-          // Name and description together: the id alone never says what a
-          // preset does, which is why the roster carries display copy.
-          label: (
-            <span className={css.item}>
-              <span className={css.itemName}>{text.name}</span>
-              <span className={css.itemDesc}>{text.description ?? t('noDescription')}</span>
-            </span>
-          ),
-        }
-      })}
+      items={presetMenuItems(state.options, t)}
       selectedId={state.current}
       onSelect={(id) => {
         setOpen(false)

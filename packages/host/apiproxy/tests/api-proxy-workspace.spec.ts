@@ -65,6 +65,7 @@ async function harness(
     openPath?: (path: string, signal: AbortSignal) => Promise<void>
     canOpenPath?: () => boolean
     requestExit?: () => ((code: number) => void) | undefined
+    homeMigration?: () => { fromDisplay: string; toDisplay: string; at: string } | undefined
   } = {},
 ) {
   const ctx = new Context()
@@ -109,6 +110,7 @@ async function harness(
     ...extras.openPath === undefined ? {} : { openPath: extras.openPath },
     ...extras.canOpenPath === undefined ? {} : { canOpenPath: extras.canOpenPath },
     ...extras.requestExit === undefined ? {} : { requestExit: extras.requestExit },
+    ...extras.homeMigration === undefined ? {} : { homeMigration: extras.homeMigration },
   })
   return { api, ctx, storageDomain, root }
 }
@@ -237,6 +239,27 @@ describe('host.openPath', () => {
     expect(expectOk(await visible.api.host.describe(request({}))).canOpenPath).toBe(true)
     expect(expectOk(await headless.api.host.describe(request({}))).canOpenPath).toBe(false)
     expect(expectOk(await visible.api.host.describe(request({}))).home).toBe(homedir())
+  })
+
+  it('reports the home copy this installation made, in display forms only', async () => {
+    const migrated = await harness(undefined, undefined, {
+      homeMigration: () => ({ fromDisplay: '~/.cxh', toDisplay: '~/.arx', at: '2026-09-22T10:00:00.000Z' }),
+    })
+    const value = expectOk(await migrated.api.host.describe(request({})))
+    expect(value.homeMigration).toEqual({
+      fromDisplay: '~/.cxh',
+      toDisplay: '~/.arx',
+      at: '2026-09-22T10:00:00.000Z',
+    })
+    // No absolute machine path reaches the client through this field.
+    expect(JSON.stringify(value.homeMigration)).not.toContain(homedir())
+  })
+
+  it('omits the home copy on an installation that never migrated one', async () => {
+    const never = await harness()
+    const answering = await harness(undefined, undefined, { homeMigration: () => undefined })
+    expect(expectOk(await never.api.host.describe(request({}))).homeMigration).toBeUndefined()
+    expect(expectOk(await answering.api.host.describe(request({}))).homeMigration).toBeUndefined()
   })
 
   it('opens through the injected native boundary', async () => {

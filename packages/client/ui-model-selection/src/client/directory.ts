@@ -64,7 +64,7 @@ export class ModelDirectory {
     this.assertAvailable()
     const generation = ++this.generation
     this.store.update((s) => { s.status = 'loading'; s.error = null })
-    const { result } = await this.sessions.models({ sessionId: this.sessionId })
+    const { result } = await this.settle(generation, this.sessions.models({ sessionId: this.sessionId }))
     if (this.disposed || generation !== this.generation) {
       if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`)
       return result.value
@@ -97,14 +97,14 @@ export class ModelDirectory {
     this.assertAvailable()
     const generation = ++this.generation
     this.store.update((s) => { s.status = 'selecting'; s.error = null })
-    const { result } = await this.sessions.selectModel({
+    const { result } = await this.settle(generation, this.sessions.selectModel({
       sessionId: this.sessionId,
       provider: selection.provider,
       model: selection.model,
       ...selection.reasoningEffort === undefined
         ? {}
         : { reasoningEffort: selection.reasoningEffort },
-    })
+    }))
     if (this.disposed || generation !== this.generation) {
       if (!result.ok) throw new Error(`${result.error.code}: ${result.error.message}`)
       return
@@ -146,6 +146,31 @@ export class ModelDirectory {
   /** Scope teardown: late settlements lose write access to the store. */
   dispose(): void {
     this.disposed = true
+  }
+
+  /**
+   * Await one wire call, publishing its failure when it throws rather than
+   * answering. The caller has already published `loading` or `selecting`; a
+   * transport failure or a refused response never reaches the `result` checks
+   * that replace it, so without this the menu would show a refresh, or a busy
+   * list, that never ends. A superseded or disposed operation leaves the store
+   * to the one that replaced it.
+   * @param generation - the operation this call belongs to.
+   * @param call - the in-flight wire call.
+   * @returns the call's answer.
+   */
+  private async settle<T>(generation: number, call: Promise<T>): Promise<T> {
+    try {
+      return await call
+    } catch (error) {
+      if (!this.disposed && generation === this.generation) {
+        this.store.update((s) => {
+          s.status = 'error'
+          s.error = error instanceof Error ? error.message : String(error)
+        })
+      }
+      throw error
+    }
   }
 
   private assertAvailable(): void {
