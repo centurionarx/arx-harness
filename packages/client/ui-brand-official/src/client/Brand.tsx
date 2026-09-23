@@ -1,5 +1,5 @@
 import { BrandMark, BrandWordmark } from '@arx-ai/arx-client-ui-primitives'
-import type { HeroBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
+import type { HeroBrandMarkOwnerProps, HeroBrandNameOwnerProps } from '@arx-ai/arx-client-ui-conversation/client'
 import type { SidebarBrandMarkOwnerProps } from '@arx-ai/arx-client-ui-sidebar/client'
 
 type OfficialBrandMarkProps = HeroBrandMarkOwnerProps & SidebarBrandMarkOwnerProps
@@ -19,4 +19,13 @@ export function OfficialBrandMark({ size, className }: OfficialBrandMarkProps) {
  */
 export function OfficialBrandName() {
   return <BrandWordmark />
+}
+
+/**
+ * Render the official name artwork at the height the new-session headline requests.
+ * @param props - Host-supplied name presentation.
+ * @returns the official name wordmark.
+ */
+export function OfficialHeroBrandName({ size, className }: HeroBrandNameOwnerProps) {
+  return <BrandWordmark size={size} className={className} />
 }

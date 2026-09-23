@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent",
   "description": "Agent interface, registry, initiator scope, and event vocabulary for the arx Harness",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "publishConfig": {
     "access": "public"
   },

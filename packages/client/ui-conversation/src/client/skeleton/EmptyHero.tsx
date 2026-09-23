@@ -1,4 +1,4 @@
-// Hero chrome for the blank-draft phase of ConversationRoot: mark headline,
+// Hero chrome for the blank-draft phase of ConversationRoot: brand headline,
 // glow backdrop, and the workspace row. Pure presentation — the resident
 // composer is NOT rendered here (it keeps its own stable tree position in
 // ConversationRoot so the textarea survives the hero → composer flip); CSS
@@ -98,11 +98,16 @@ export function HeroGlow({ className }: { className?: string | undefined }) {
   )
 }
 
+/**
+ * Brand edge and height on the blank-session headline: twice the sidebar's
+ * brand row (mark 48, name 24), so the new-session screen leads with it.
+ */
+const HERO_MARK_SIZE = 96
+const HERO_NAME_SIZE = 48
+
 /** Hero chrome props. The workspace row rides the InputBar accessory hole, not here. */
 export interface HeroShellProps {
-  /** The owner's locale seat, passed down as a plain prop. */
-  t: HeroTranslate
-  /** Authorized renderer for the hero brand-mark slot. */
+  /** Authorized renderer for the hero brand slots. */
   renderSlot: ConversationSlotProps['renderSlot']
   /** Overlay content after the stack (modals). */
   children?: ReactNode
@@ -114,19 +119,22 @@ export interface HeroShellProps {
  * @param props - see {@link HeroShellProps}.
  * @returns the centered hero element tree.
  */
-export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
+export function HeroShell({ renderSlot, children }: HeroShellProps) {
   return (
     <div className={css.root}>
       <div className={css.stack}>
-        <div className={css.headline}>
-          {/* figma 34:10412: mark 34×25 leading the headline, gap 10. */}
+        {/* The headline exists only while the session is blank: the first
+            send replaces the hero, and typing alone does not. */}
+        <div className={css.headline} data-hero-headline="">
           <span className={css.markHitbox}>
-            {renderSlot('conversation.hero.brand.mark', { size: 34, className: css.mark }, {
-              fallback: <BrandMark size={34} className={css.mark} />,
+            {renderSlot('conversation.hero.brand.mark', { size: HERO_MARK_SIZE, className: css.mark }, {
+              fallback: <BrandMark size={HERO_MARK_SIZE} className={css.mark} />,
             })}
           </span>
-          <span className={css.headlineText}>{t('hero.headline')}</span>
-          <span className={css.previewBadge}>{t('hero.preview')}</span>
+          {renderSlot('conversation.hero.brand.name', { size: HERO_NAME_SIZE, className: css.name }, {
+            // The unbranded placeholder the sidebar shows in the same place.
+            fallback: <span className={css.headlineText}>ARX Local Build</span>,
+          })}
         </div>
         <div className={css.body}>
           {/* The resident composer (ConversationRoot's root-owned scrollport;
