@@ -103,6 +103,7 @@ export class ApiProxyService extends Service implements ApiProxy {
       defaultModelSelection: () => ctx.agentDefaultModel.currentSelection(),
       requestExit: () => ctx.get('appExit'),
       appVersion: () => ctx.get('appVersion'),
+      homeMigration: () => ctx.get('homeMigration'),
       saveDefaultModelSelection: selection => ctx.agentDefaultModel.saveSelection(selection),
       cwd: process.cwd(),
       ...config.nativeOpen === undefined ? {} : { canOpenPath: () => config.nativeOpen as boolean },

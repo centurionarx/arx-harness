@@ -18,7 +18,7 @@ import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@arx-ai/arx-client-ui-primitives'
 import type { InjectFace } from '@arx-ai/arx-client-ui-slots'
 import { CustomProviderCard, type CustomProviderPreset } from './CustomProviderCard.tsx'
-import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
+import { BY_NAME, deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 import { ProviderEditor, type ProviderEditorProps } from './ProviderEditor.tsx'
@@ -286,7 +286,12 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
   // already has a provider to talk to.
   const anyUsable = state.rows.some(providerUsable)
   const configured = state.rows.filter(row => row.configured)
-  const addable = state.rows.filter(row => !row.configured && row.entry.settingsNs !== '')
+  // By name, not by the directory's order: that order is whichever adapter
+  // registered first, and the add card preselects the first entry, so leaving
+  // it would let registration timing choose which provider a user is offered.
+  const addable = state.rows
+    .filter(row => !row.configured && row.entry.settingsNs !== '')
+    .sort((a, b) => BY_NAME.compare(a.entry.displayName, b.entry.displayName))
   const addTarget = adding ? editing : undefined
   const addNamespace = addTarget === undefined ? undefined : state.namespaces.get(addTarget.settingsNs)
   // Hand-declared routes live in the pi-ai namespace, which is also the only

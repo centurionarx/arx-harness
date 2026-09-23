@@ -146,9 +146,17 @@ describe('web e2e: queue row actions', () => {
     await editRow.getByRole('button', { name: 'Edit queued message' }).click()
     const editor = page.getByRole('textbox', { name: 'Edit queued message' })
     await editor.fill(EDITED)
+    // The editing golden pins the Save tooltip. Hovering Save before the
+    // capture makes the tooltip a precondition instead of an accident of where
+    // the Edit click left the pointer, which raced the tooltip's open delay.
+    // The click below lands on the same element, so the pointer path the later
+    // goldens were recorded with is unchanged.
+    const save = page.getByRole('button', { name: 'Save queued message' })
+    await save.hover()
+    await page.getByRole('tooltip', { name: 'Save queued message', exact: true }).waitFor()
     const editingSnapshot = await captureStableAria(page, '[class*="centerCol"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(EDITING_EXPECTED, editingSnapshot, MODE)
-    await page.getByRole('button', { name: 'Save queued message' }).click()
+    await save.click()
     await page.getByText(EDITED, { exact: true }).waitFor()
 
     const removeRow = page.getByText(REMOVE, { exact: true }).locator('..')

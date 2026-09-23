@@ -42,7 +42,9 @@ export interface HostApi {
    * no explicit default (the adapter falls back internally);
    * attachedSessions = count of currently attached sessions (those with a live agent);
    * home = the host account home directory (Web display abbreviation on POSIX);
-   * canOpenPath = whether this deployment can hand a path to a user-visible native desktop.
+   * canOpenPath = whether this deployment can hand a path to a user-visible native desktop;
+   * homeMigration = the pre-rename harness home this installation copied, in display
+   * forms only, absent when none was ever copied.
    */
   describe(request: RpcRequest<{}>): Promise<RpcResponse<{
     version: string
@@ -52,6 +54,7 @@ export interface HostApi {
     attachedSessions: number
     home: string
     canOpenPath: boolean
+    homeMigration?: { fromDisplay: string; toDisplay: string; at: string }
   }>>
 
   /**

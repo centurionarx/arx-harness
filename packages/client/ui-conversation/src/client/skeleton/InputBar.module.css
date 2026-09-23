@@ -67,18 +67,18 @@
   --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2);
 }
 
-/* No-workspace trigger state: dashed l4 stroke marks the card as a pick-a-
-   workspace affordance rather than a live composer; hover answers in the
-   business blue to invite the click. Native `dashed` has a fixed browser
+/* Recovery trigger state (no workspace, or a block that carries an action):
+   dashed l4 stroke marks the card as that recovery's affordance rather than a
+   live composer; hover answers in the business blue to invite the click. Native `dashed` has a fixed browser
    pattern, so the stroke is an ::after overlay: theme-token background masked
    by an SVG dash ring (stroke-width 2 centered on the box edge = 1px visible
    inside), which keeps the 22px radius and both themes. */
-.cardWorkspaceTrigger {
+.cardTrigger {
   border-color: transparent;
   cursor: pointer;
 }
 
-.cardWorkspaceTrigger::after {
+.cardTrigger::after {
   content: '';
   position: absolute;
   inset: -1px;
@@ -92,12 +92,12 @@
 
 /* Disabled toolbar controls neither receive nor swallow clicks in the trigger
    state: pointer events fall through to the card's own click handler, making
-   the full capsule one pick target. */
-.cardWorkspaceTrigger :disabled {
+   the full capsule one trigger target. */
+.cardTrigger :disabled {
   pointer-events: none;
 }
 
-.cardWorkspaceTrigger:hover::after {
+.cardTrigger:hover::after {
   background: var(--arx-alias-state-business-primary);
 }
 

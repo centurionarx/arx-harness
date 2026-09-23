@@ -134,10 +134,20 @@ describe('web e2e: the composer model switch is the default for later sessions',
     await expect.poll(async () => box.isEnabled(), { timeout: 10_000 }).toBe(true)
 
     // What removing the provider on the Models page leaves behind: the saved
-    // default still names the route, and nothing serves it any more.
-    // `replace`, not `update`: a merge patch of `{providers: {}}` leaves every
-    // stored profile in place.
-    await scaffold.ctx.settings.replace(settingsNamespace('llm-pi-ai'), { providers: {} })
+    // default still names the route, and nothing serves it any more. The
+    // other route stays, so there is still something to select; with no
+    // provider left at all the composer offers to add one instead.
+    // `replace`, not `update`: a merge patch leaves every stored profile in place.
+    await scaffold.ctx.settings.replace(settingsNamespace('llm-pi-ai'), {
+      providers: {
+        [START_ROUTE]: {
+          displayName: 'Origin Gateway',
+          api: 'openai-completions',
+          baseURL: 'https://gateway.origin.example/v1',
+          models: [{ id: START_MODEL, name: 'Origin Large' }],
+        },
+      },
+    })
 
     await expect.poll(async () => box.isEnabled(), { timeout: 15_000 }).toBe(false)
     expect(await box.getAttribute('placeholder')).toBe('This model is unavailable — select one to continue')

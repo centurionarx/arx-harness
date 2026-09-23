@@ -86,6 +86,37 @@ export const WELCOME_NOTICE_COPY = {
   },
 } as const
 
+/**
+ * The home-migration notice, mirrored from the same module as the welcome copy
+ * above and for the same reason. `{from}` and `{to}` are substituted with the
+ * symbolic home names the Host reports.
+ */
+export const HOME_MIGRATION_NOTICE_COPY = {
+  en: {
+    title: 'Your settings were copied',
+    body: 'This installation found configuration from an earlier version at {from} and copied it to {to}.'
+      + '\n\nYour models, credentials, profiles, and past sessions came across. {from} was left exactly as it was;'
+      + ' delete it once you are satisfied everything works.',
+    continueLabel: 'Continue',
+  },
+} as const
+
+/**
+ * The guide shown while no provider is usable, mirrored from the same module as
+ * the welcome copy above and for the same reason. Ordinary scenarios dismiss
+ * it before browser boot, as they do the welcome notice; `{count}` and
+ * `{name}` are filled from the provider directory.
+ */
+const PROVIDER_GUIDE_ACK_FIELD = 'providerGuideVersion'
+const PROVIDER_GUIDE_VERSION = '2026-09-23.1'
+export const PROVIDER_GUIDE_COPY = {
+  en: {
+    title: 'Set up a model provider',
+    open: 'Open Models settings',
+    later: 'Later',
+  },
+} as const
+
 /** Snapshot mode for the lane, from $ARX_SNAPSHOT (same vocabulary as the other snapshot suites). */
 export type WebSnapshotMode = 'replay' | 'record' | 'refresh'
 
@@ -262,6 +293,18 @@ export interface LaunchOptions {
   missingModelCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
+  /**
+   * Leave the provider guide pending; ordinary scenarios dismiss it before
+   * browser boot. It shows only while no provider is usable, which only the
+   * keyless first-run lane boots into.
+   */
+  providerGuidePending?: boolean
+  /**
+   * Report a legacy-home copy as the launcher would have, so the notice that
+   * announces one has a Host fact to render. Absent, no copy happened, which
+   * is what every other scenario boots into.
+   */
+  homeMigration?: { fromDisplay: string; toDisplay: string; at: string }
   /**
    * Replace the roster the scaffold mounts by default (the shipped directory
    * at `system` trust, default `standard`). Supply this only to change WHICH
@@ -551,6 +594,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       // golden. The brand row that prints it is aria-hidden, so no capture
       // sees this value at all.
       version: '0.0.0-web-e2e',
+      ...options.homeMigration === undefined ? {} : { homeMigration: options.homeMigration },
     })
     await ctx.plugin(Loader)
     ctx.loader.builtins.include = Include
@@ -568,6 +612,11 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (options.welcomeNoticePending !== true) {
       await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
         op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION,
+      }])
+    }
+    if (options.providerGuidePending !== true) {
+      await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
+        op: 'set', path: [PROVIDER_GUIDE_ACK_FIELD], value: PROVIDER_GUIDE_VERSION,
       }])
     }
     const boundPort = ctx.get('webServer')?.port

@@ -18,3 +18,52 @@ export const WELCOME_NOTICE_COPY = {
     continueLabel: 'Continue',
   },
 } as const
+
+/** Field storing the last home-migration notice the user acknowledged. */
+export const HOME_MIGRATION_ACK_FIELD = 'homeMigrationNoticedAt'
+
+/**
+ * The home-migration notice in the supported GUI locale.
+ *
+ * `{from}` and `{to}` are replaced with the symbolic home names the Host
+ * reports, so the notice never prints an absolute path from the user's
+ * machine.
+ */
+export const HOME_MIGRATION_NOTICE_COPY = {
+  en: {
+    title: 'Your settings were copied',
+    body: 'This installation found configuration from an earlier version at {from} and copied it to {to}.'
+      + '\n\nYour models, credentials, profiles, and past sessions came across. {from} was left exactly as it was;'
+      + ' delete it once you are satisfied everything works.',
+    continueLabel: 'Continue',
+  },
+} as const
+
+/** Field storing the last provider guide version the user dismissed. */
+export const PROVIDER_GUIDE_ACK_FIELD = 'providerGuideVersion'
+
+/**
+ * Bump only when the guide changes materially and every user who still has
+ * no usable provider should see it again. The acknowledgement is compared for
+ * exact equality.
+ */
+export const PROVIDER_GUIDE_VERSION = '2026-09-23.1'
+
+/**
+ * The guide shown while no model provider is usable, in the supported GUI
+ * locale. It names no provider itself: `{count}` and `{name}` are filled from
+ * the provider directory, so it lists what this installation can add.
+ */
+export const PROVIDER_GUIDE_COPY = {
+  en: {
+    title: 'Set up a model provider',
+    body: 'arx Harness does not come with a model provider, so it cannot start a task yet. Add one in Settings → Models.',
+    offersLead: 'This installation can use:',
+    hosted: '{count} hosted providers, reached with an API key or cloud credentials',
+    hostedOne: 'One hosted provider, reached with an API key or cloud credentials',
+    compatible: 'Any service with an OpenAI-compatible API',
+    commandLine: '{name}, through its command-line tool signed in on this machine',
+    open: 'Open Models settings',
+    later: 'Later',
+  },
+} as const

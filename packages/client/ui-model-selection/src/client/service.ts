@@ -16,12 +16,55 @@ import { Service } from '@arx-ai/cordis'
 import type { Context } from '@arx-ai/cordis'
 import type { ConnectionHandle, SessionId } from '@arx-ai/arx-api-remotes/client'
 import type { SessionRuntime } from '@arx-ai/arx-client-runtime/client'
+import type { ComposerBlock } from '@arx-ai/arx-client-ui-conversation/client'
+// Type-only: pulls the `settings/open-section` event declaration.
+import type {} from '@arx-ai/arx-client-ui-settings/client'
 import { ModelDirectory } from './directory.ts'
+import type { ModelDirectoryState } from './directory.ts'
 
 declare module '@arx-ai/cordis' {
   interface Context {
     modelDirectories: ModelDirectoryResolver
   }
+}
+
+/**
+ * The settings section that adds a provider: the Models page's id. The shell
+ * opens its first section when no entry registers this one.
+ */
+const PROVIDER_SECTION = 'models'
+
+/** The composer-block copy this plugin owns, read at raise time. */
+export interface ComposerBlockCopy {
+  /** A selection names a route no adapter serves. */
+  unavailable: () => string
+  /** Nothing is selected yet, and some provider can serve a selection. */
+  unselected: () => string
+  /** No provider serves anything, so there is nothing to select. */
+  noProvider: () => string
+  /** Accessible name of the composer while it opens the provider settings. */
+  setUpProvider: () => string
+}
+
+/**
+ * The block one directory answer raises. Only a definite `routable: false`
+ * blocks, and its reason says what the user can do about it. With no provider
+ * at all there is nothing to select, so that block carries the way to add one.
+ * @param state - the session's directory snapshot.
+ * @param copy - this plugin's block copy.
+ * @param openProviders - open the settings section that adds a provider.
+ * @returns the block to raise, or undefined to clear it.
+ */
+function composerBlockFor(
+  state: ModelDirectoryState,
+  copy: ComposerBlockCopy,
+  openProviders: () => void,
+): ComposerBlock | undefined {
+  if (state.routable !== false) return undefined
+  if (state.groups.length === 0 && state.failures.length === 0) {
+    return { reason: copy.noProvider(), action: { label: copy.setUpProvider(), run: openProviders } }
+  }
+  return { reason: state.current === null ? copy.unselected() : copy.unavailable() }
 }
 
 /** Live mutable state in one holder (service methods run behind the caller-ctx tracker). */
@@ -36,16 +79,16 @@ export class ModelDirectoryResolver extends Service {
 
   private readonly live: LiveState = { directories: new Map() }
 
-  /** Localized composer-block copy; this plugin owns the string it raises. */
-  private readonly blockReason: () => string
+  /** Localized composer-block copy; this plugin owns the strings it raises. */
+  private readonly blockCopy: ComposerBlockCopy
 
   /**
    * @param ctx - owning root context (the service registers itself as `models`).
-   * @param config - the bound translator for this plugin's own dictionary.
+   * @param config - the block copy, bound to this plugin's own dictionary.
    */
-  constructor(ctx: Context, config: { blockReason: () => string }) {
+  constructor(ctx: Context, config: { blockCopy: ComposerBlockCopy }) {
     super(ctx, 'modelDirectories')
-    this.blockReason = config.blockReason
+    this.blockCopy = config.blockCopy
     ctx.on('connection/reset', () => {
       for (const directory of this.live.directories.values()) directory.resetConnected()
     })
@@ -87,10 +130,9 @@ export class ModelDirectoryResolver extends Service {
     // slow or unreachable Host would lock a working composer.
     const conversation = this.ctx.get('conversation')
     if (conversation !== undefined) {
+      const openProviders = (): void => { this.ctx.emit('settings/open-section', PROVIDER_SECTION) }
       const publish = (): void => {
-        conversation.blocks.set(sessionId, directory.store.getSnapshot().routable === false
-          ? { reason: this.blockReason() }
-          : undefined)
+        conversation.blocks.set(sessionId, composerBlockFor(directory.store.getSnapshot(), this.blockCopy, openProviders))
       }
       publish()
       actx.effect(() => {

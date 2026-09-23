@@ -539,12 +539,14 @@ export interface ComposerBarOwnerProps {
   variant: 'hero' | 'composer'
   /**
    * A block another plugin raised for this session: the bar refuses input and
-   * shows the blocker's reason as the placeholder, but — unlike `disabled` —
-   * keeps the model seat live. Every block this contract has is one the user
-   * clears by choosing a model, so locking that seat too would leave the
-   * composer telling them to do the one thing it prevents.
+   * shows the blocker's reason as the placeholder. A block without an action
+   * — unlike `disabled` — keeps the model seat live: the user clears it by
+   * choosing a model, so locking that seat too would leave the composer
+   * telling them to do the one thing it prevents. A block with an action
+   * makes the card that action's trigger instead, as the no-workspace state
+   * makes it the picker's, and locks the model seat with the other controls.
    */
-  blocked?: { readonly reason: string }
+  blocked?: ComposerBlock
   /**
    * Inert no-workspace state: the bar locks message actions while preserving
    * its normal DOM so the Workspace pick transitions in place.
