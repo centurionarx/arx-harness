@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -42,23 +42,6 @@ function write(root: string, files: Readonly<Record<string, string>>): void {
   }
 }
 
-function commitAll(root: string, message: string): string {
-  git(root, ['add', '-A'])
-  git(root, ['commit', '-q', '-m', message])
-  return git(root, ['rev-parse', 'HEAD'])
-}
-
-/** Land one change on master as a merged pull request. */
-function mergePullRequest(root: string, pr: number, files: Readonly<Record<string, string>>, remove: readonly string[] = []): void {
-  const branch = `topic-${String(pr)}`
-  git(root, ['checkout', '-q', '-b', branch])
-  write(root, files)
-  for (const path of remove) git(root, ['rm', '-q', path])
-  commitAll(root, `topic ${String(pr)}`)
-  git(root, ['checkout', '-q', 'master'])
-  git(root, ['merge', '-q', '--no-ff', '-m', `Merge pull request #${String(pr)} from owner/${branch}`, branch])
-}
-
 const note = (title: string): string => `# Agent Note: ${title}\n`
 
 const EVENTS_V1 = [
@@ -73,21 +56,104 @@ const EVENTS_V1 = [
 const EVENTS_V2 = EVENTS_V1.replace('    \'plugin/first\': { a: string }', '    \'plugin/first\': { a: string }\n    \'plugin/second\': { b: number }')
 const EVENTS_V3 = EVENTS_V2.replace('export const unrelated = 1', 'export const unrelated = 2')
 
-/** An upstream repository whose first commit is the fork base. */
-function upstream(): { root: string; base: string } {
-  const root = temporaryRoot()
-  git(root, ['init', '-q', '--initial-branch=master'])
-  git(root, ['config', 'user.email', 'triage@example.com'])
-  git(root, ['config', 'user.name', 'Triage Tests'])
-  git(root, ['config', 'commit.gpgsign', 'false'])
-  git(root, ['config', 'core.hooksPath', join(root, '.git', 'no-hooks')])
-  write(root, {
-    'README.md': '# upstream\n',
-    'packages/core/session/src/index.ts': 'export const version = 1\n',
-    'packages/plugin/events/src/events.ts': EVENTS_V1,
-    '.agents/notes/implemented/feature/2026-01-01-before-the-fork.md': note('before'),
-  })
-  return { root, base: commitAll(root, 'base') }
+/** Commit time of the fork base: 2026-01-01T00:00:00Z. */
+const FIXTURE_EPOCH = 1_767_225_600
+
+/** Frame text as a `git fast-import` data block. */
+function data(text: string): string {
+  return `data ${String(Buffer.byteLength(text))}\n${text}`
+}
+
+/**
+ * An upstream history whose first commit on master is the fork base, written
+ * by one `git fast-import` process: Windows runners start git processes slowly
+ * enough that one process per commit, checkout, and merge outran the lane's
+ * 30-second case budget there.
+ */
+class Upstream {
+  /** Mark of the fork base. */
+  readonly base: number
+  private readonly commands: string[] = []
+  private marks = 0
+  private master: number
+
+  constructor() {
+    this.base = this.commit('master', 'base', {
+      'README.md': '# upstream\n',
+      'packages/core/session/src/index.ts': 'export const version = 1\n',
+      'packages/plugin/events/src/events.ts': EVENTS_V1,
+      '.agents/notes/implemented/feature/2026-01-01-before-the-fork.md': note('before'),
+    }, [], [])
+    this.master = this.base
+  }
+
+  /**
+   * Commit directly on master.
+   * @param message - commit subject.
+   * @param files - files written by the commit.
+   */
+  commitOnMaster(message: string, files: Readonly<Record<string, string>>): void {
+    this.master = this.commit('master', message, files, [], [this.master])
+  }
+
+  /**
+   * Land one change on master as a merged pull request.
+   * @param pr - pull request number.
+   * @param files - files written by the change.
+   * @param remove - files the change deletes.
+   */
+  mergePullRequest(pr: number, files: Readonly<Record<string, string>>, remove: readonly string[] = []): void {
+    const branch = `topic-${String(pr)}`
+    const topic = this.commit(branch, `topic ${String(pr)}`, files, remove, [this.master])
+    this.master = this.commit('master', `Merge pull request #${String(pr)} from owner/${branch}`, files, remove, [this.master, topic])
+  }
+
+  /**
+   * Commit on a new branch with no parent.
+   * @param branch - branch name.
+   * @param message - commit subject.
+   */
+  orphan(branch: string, message: string): void {
+    this.commit(branch, message, { 'README.md': '# unrelated\n' }, [], [])
+  }
+
+  /**
+   * Create the repository.
+   * @returns the repository root and the full SHA of the fork base.
+   */
+  write(): { root: string; base: string } {
+    const root = temporaryRoot()
+    const marks = join(root, '.git', 'fixture-marks')
+    git(root, ['init', '-q', '--initial-branch=master'])
+    execFileSync('git', ['-C', root, 'fast-import', '--quiet', `--export-marks=${marks}`], {
+      input: `${this.commands.join('\n')}\n`,
+      stdio: ['pipe', 'ignore', 'pipe'],
+    })
+    const base = readFileSync(marks, 'utf8').split('\n').find(line => line.startsWith(`:${String(this.base)} `))
+    if (base === undefined) throw new Error('fast-import exported no fork base')
+    return { root, base: base.slice(base.indexOf(' ') + 1) }
+  }
+
+  private commit(
+    branch: string,
+    message: string,
+    files: Readonly<Record<string, string>>,
+    remove: readonly string[],
+    parents: readonly number[],
+  ): number {
+    const mark = ++this.marks
+    this.commands.push([
+      `commit refs/heads/${branch}`,
+      `mark :${String(mark)}`,
+      `committer Triage Tests <triage@example.com> ${String(FIXTURE_EPOCH + mark * 60)} +0000`,
+      data(message),
+      ...parents.slice(0, 1).map(parent => `from :${String(parent)}`),
+      ...parents.slice(1).map(parent => `merge :${String(parent)}`),
+      ...remove.map(path => `D ${path}`),
+      ...Object.entries(files).flatMap(([path, content]) => [`M 100644 inline ${path}`, data(content)]),
+    ].join('\n'))
+    return mark
+  }
 }
 
 function manifestFor(base: string, verdicts: Record<string, unknown> = {}): UpstreamSyncManifest {
@@ -105,46 +171,43 @@ function manifestFor(base: string, verdicts: Record<string, unknown> = {}): Upst
 
 /** An upstream history that exercises every classification path. */
 function history(): { root: string; base: string; localNotes: Map<string, string> } {
-  const { root, base } = upstream()
-  mergePullRequest(root, 11, {
+  const upstream = new Upstream()
+  upstream.mergePullRequest(11, {
     '.agents/notes/implemented/feature/2026-01-02-client-thing.md': note('client'),
     '.agents/notes/implemented/feature/2026-01-02-client-thing.zh.md': note('translated side'),
     'packages/client/ui-x/src/a.ts': 'export const a = 1\n',
     'docs/guide.zh.md': 'translated side\n',
   })
-  mergePullRequest(root, 12, {
+  upstream.mergePullRequest(12, {
     '.agents/notes/implemented/architecture/2026-01-03-core-change.md': note('core'),
     'packages/core/session/src/index.ts': 'export const version = 2\n',
     'packages/core/session/README.md': '# session\n',
   })
-  mergePullRequest(root, 13, {
+  upstream.mergePullRequest(13, {
     '.agents/notes/implemented/feature/2026-01-04-event-member.md': note('event member'),
     'packages/plugin/events/src/events.ts': EVENTS_V2,
   })
-  mergePullRequest(root, 14, {
+  upstream.mergePullRequest(14, {
     '.agents/notes/implemented/feature/2026-01-05-event-neighbour.md': note('event neighbour'),
     'packages/plugin/events/src/events.ts': EVENTS_V3,
   })
-  write(root, {
+  upstream.commitOnMaster('feat: sign in (#15)', {
     '.agents/notes/implemented/feature/2026-01-06-acme-login.md': note('login'),
     'packages/llm/llm-acme/src/login.ts': 'export {}\n',
   })
-  commitAll(root, 'feat: sign in (#15)')
-  mergePullRequest(root, 16, {
+  upstream.mergePullRequest(16, {
     '.agents/notes/implemented/feature/2026-01-07-verdict-note.md': note('verdict'),
     'packages/client/ui-y/src/b.ts': 'export const b = 1\n',
     'packages/llm/llm-acme/src/extra.ts': 'export {}\n',
   })
-  mergePullRequest(root, 17, { '.agents/notes/proposed/feature/2026-01-08-moved.md': note('moved') })
-  mergePullRequest(
-    root,
+  upstream.mergePullRequest(17, { '.agents/notes/proposed/feature/2026-01-08-moved.md': note('moved') })
+  upstream.mergePullRequest(
     18,
     { '.agents/notes/implemented/feature/2026-01-08-moved.md': note('moved') },
     ['.agents/notes/proposed/feature/2026-01-08-moved.md'],
   )
-  write(root, { '.agents/notes/proposed/process/2026-01-09-direct.md': note('direct') })
-  commitAll(root, 'chore: record a proposal')
-  mergePullRequest(root, 19, {
+  upstream.commitOnMaster('chore: record a proposal', { '.agents/notes/proposed/process/2026-01-09-direct.md': note('direct') })
+  upstream.mergePullRequest(19, {
     '.agents/notes/implemented/feature/2026-01-10-present.md': note('present'),
     '.agents/notes/rejected/feature/2026-01-11-diverged.md': note('diverged'),
     '.agents/notes/archived/feature/2026-01-12-archived.md': note('archived'),
@@ -155,12 +218,12 @@ function history(): { root: string; base: string; localNotes: Map<string, string
     'weird dir/x.md': 'x\n',
     'scripts/a.ts': 'export {}\n',
   })
-  mergePullRequest(root, 20, { 'packages/client/ui-x/src/a.ts': 'export const a = 2\n' })
+  upstream.mergePullRequest(20, { 'packages/client/ui-x/src/a.ts': 'export const a = 2\n' })
   const localNotes = new Map([
     ['2026-01-10-present', '.agents/notes/implemented/feature/2026-01-10-present.md'],
     ['2026-01-11-diverged', '.agents/notes/implemented/feature/2026-01-11-diverged.md'],
   ])
-  return { root, base, localNotes }
+  return { ...upstream.write(), localNotes }
 }
 
 function rowNamed(rows: readonly TriageRow[], name: string): TriageRow {
@@ -169,7 +232,8 @@ function rowNamed(rows: readonly TriageRow[], name: string): TriageRow {
   return row
 }
 
-// Each case spawns dozens of git processes, which Windows runners start slowly.
+// Matches ARX_COVERAGE_TEST_TIMEOUT_MS in .github/workflows/ci.yml, as the
+// describe value overrides the lane's --testTimeout.
 describe('collectTriage', { timeout: 30_000 }, () => {
   it('classifies every note added on the first-parent history after the fork base', () => {
     const { root, base, localNotes } = history()
@@ -228,16 +292,17 @@ describe('collectTriage', { timeout: 30_000 }, () => {
   })
 
   it('refuses a revision the fork base does not precede', () => {
-    const { root, base } = upstream()
-    git(root, ['checkout', '-q', '--orphan', 'unrelated'])
-    commitAll(root, 'unrelated history')
+    const upstream = new Upstream()
+    upstream.orphan('unrelated', 'unrelated history')
+    const { root, base } = upstream.write()
     expect(() => collectTriage({ checkout: root, ref: 'unrelated', manifest: manifestFor(base), localNotes: new Map() }))
       .toThrow(`fork base ${base} is not an ancestor of unrelated`)
   })
 
   it('refuses a verdict that names no note or a note already here', () => {
-    const { root, base } = upstream()
-    mergePullRequest(root, 11, { '.agents/notes/implemented/feature/2026-01-02-landed.md': note('landed') })
+    const upstream = new Upstream()
+    upstream.mergePullRequest(11, { '.agents/notes/implemented/feature/2026-01-02-landed.md': note('landed') })
+    const { root, base } = upstream.write()
     const unknown = manifestFor(base, { missing: { class: 'drop', reason: 'no such note' } })
     expect(() => collectTriage({ checkout: root, ref: 'master', manifest: unknown, localNotes: new Map() }))
       .toThrow('verdicts.missing names no Agent Note added upstream after the fork base')

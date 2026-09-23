@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-skill",
   "description": "Model-facing skill loading tool for the arx Harness",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "publishConfig": {
     "access": "public"
   },
