@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-title-first-prompt-llm",
   "description": "First-message LLM provider plugin for arx Harness session titles",
-  "version": "1.0.10",
+  "version": "1.0.14",
   "publishConfig": {
     "access": "public"
   },

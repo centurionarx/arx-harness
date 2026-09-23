@@ -32,6 +32,30 @@ import { PermissionSelect } from './PermissionSelect.tsx'
 import { isSafariBrowser, repairSafariTextareaLayout } from './safari.ts'
 import css from './InputBar.module.css'
 
+/** The recovery the inert textarea runs in place of accepting input. */
+interface ComposerTrigger {
+  /** Run the recovery. */
+  run: () => void
+  /** Accessible name of the textarea while it is this trigger. */
+  label: string
+  /** The kind of surface the recovery opens. */
+  popup: 'menu' | 'dialog'
+  /** Whether that surface is open, where the bar knows it. */
+  expanded: boolean | undefined
+}
+
+/**
+ * Whether a click inside a trigger card landed on a control that keeps its
+ * own click: a locked control has its pointer events disarmed and never is
+ * the target, but one that stays live, such as the context meter, is.
+ * @param target - the click's target.
+ * @returns true when that control, not the trigger, owns the click.
+ */
+function ownClick(target: EventTarget): boolean {
+  return target instanceof Element
+    && target.closest('button:enabled, a[href], [role="dialog"], [role="menu"]') !== null
+}
+
 /** Decoration product of the no-session state (no machine, empty draft). */
 const INERT_DECORATIONS: DraftDecorations = { token: null, chips: [], textRefs: [], hint: null }
 
@@ -167,18 +191,27 @@ export function InputBar({
   // adjudicating and submitting render read-only so the draft stays visible.
   const disabled = removed || inert || !live || blocked !== undefined || parentOffline
   const locked = disabled
-  // The model seat is the ONE control a block leaves live: every block this
-  // contract has is cleared by choosing a model, so locking it too would leave
-  // the composer asking for the only thing it prevents. The other reasons to
-  // be disabled do lock it — there is no session to choose a model for.
-  const modelSeatLocked = removed || inert || !live
+  // A block that carries its own recovery is cleared by running it, not by
+  // choosing a model.
+  const blockAction = removed ? undefined : blocked?.action
+  // The model seat is the ONE control a block without an action leaves live:
+  // that block is cleared by choosing a model, so locking the seat too would
+  // leave the composer asking for the only thing it prevents. A block with an
+  // action locks it with the rest, and the card becomes that action. The other
+  // reasons to be disabled do lock it — there is no session to choose a model for.
+  const modelSeatLocked = removed || inert || !live || blockAction !== undefined
   const machineBusy = input?.phase === 'adjudicating' || input?.phase === 'submitting'
-  // The no-workspace textarea remains the resident DOM node but acts as the
-  // existing picker trigger. Message controls stay locked until a Session
-  // exists; the trigger itself is read-only rather than disabled so pointer
-  // and keyboard users can reach the recovery action.
-  const workspaceTrigger = inert && !removed && onRequestWorkspace !== undefined
-  const textareaDisabled = removed || (locked && !workspaceTrigger)
+  // The inert textarea remains the resident DOM node but acts as a recovery
+  // trigger: with no workspace it opens the existing picker, and under a block
+  // that carries an action it runs that action. Message controls stay locked
+  // either way; the trigger itself is read-only rather than disabled so
+  // pointer and keyboard users can reach the recovery.
+  const trigger: ComposerTrigger | undefined = inert && !removed && onRequestWorkspace !== undefined
+    ? { run: onRequestWorkspace, label: t('hero.chooseWorkspace'), popup: 'menu', expanded: workspacePickerOpen }
+    : blockAction === undefined
+      ? undefined
+      : { run: blockAction.run, label: blockAction.label, popup: 'dialog', expanded: undefined }
+  const textareaDisabled = removed || (locked && trigger === undefined)
   const canSteerQueue = !locked && !machineBusy && !commandMenuOpen && empty && running && subagent === null
     && input.queue.some(row => row.placement === 'queued')
 
@@ -346,15 +379,15 @@ export function InputBar({
   }, [])
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (workspaceTrigger) {
+    if (trigger !== undefined) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
-        onRequestWorkspace()
+        trigger.run()
       }
       return
     }
-    // Absent machine without a Workspace recovery action stays disabled; the
-    // guard narrows the faces for the paths below.
+    // Absent machine without a recovery trigger stays disabled; the guard
+    // narrows the faces for the paths below.
     if (input === undefined || keyboard === undefined || inputActions === undefined) return
     // Shift+Enter is the native newline UNCONDITIONALLY — decided before the
     // IME guard so a composition-closing Shift+Enter still breaks the line.
@@ -699,10 +732,15 @@ export function InputBar({
           click's reopen (close-then-open flickers the chip's open echo). */}
       <div
         ref={cardRef}
-        className={clsx(css.card, workspaceTrigger && css.cardWorkspaceTrigger)}
+        className={clsx(css.card, trigger !== undefined && css.cardTrigger)}
         data-composer-card
-        onClick={workspaceTrigger ? onRequestWorkspace : undefined}
-        onPointerDown={workspaceTrigger ? (e) => { e.stopPropagation() } : undefined}
+        onClick={trigger === undefined
+          ? undefined
+          : (e) => {
+            if (ownClick(e.target)) return
+            trigger.run()
+          }}
+        onPointerDown={trigger === undefined ? undefined : (e) => { e.stopPropagation() }}
       >
         {overlay !== undefined && <div className={css.overlayAnchor}>{overlay}</div>}
         {accessory !== undefined && <div className={css.accessory}>{accessory}</div>}
@@ -738,10 +776,10 @@ export function InputBar({
               className={css.input}
               value={draft}
               disabled={textareaDisabled}
-              readOnly={machineBusy || workspaceTrigger}
-              aria-label={workspaceTrigger ? t('hero.chooseWorkspace') : undefined}
-              aria-haspopup={workspaceTrigger ? 'menu' : undefined}
-              aria-expanded={workspaceTrigger ? workspacePickerOpen : undefined}
+              readOnly={machineBusy || trigger !== undefined}
+              aria-label={trigger?.label}
+              aria-haspopup={trigger?.popup}
+              aria-expanded={trigger?.expanded}
               data-phase={input?.phase ?? 'inert'}
               placeholder={placeholder ?? (parentOffline
                 ? t('placeholder.parentOffline')

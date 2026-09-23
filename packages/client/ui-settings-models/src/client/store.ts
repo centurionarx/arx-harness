@@ -13,6 +13,10 @@ import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
+import { entryFormatOf } from './model-catalog.ts'
+
+/** Provider names compared as a reader scans them: letters, not character codes. */
+export const BY_NAME = new Intl.Collator(undefined, { sensitivity: 'base' })
 
 /**
  * Any route key walks a dict schema to the same profile node, so the lookup
@@ -222,4 +226,39 @@ export function providerUsable(row: ProviderRow): boolean {
   if (!row.entry.active) return false
   if (row.apiKeyEnv === undefined) return true
   return row.credential?.configured === true
+}
+
+/** What a user without a usable provider can add, read from the provider directory. */
+export interface ProviderOffer {
+  /** Providers the key-bearing adapter ships in its own catalog. */
+  hosted: number
+  /** Whether a route can be declared for a service with an OpenAI-compatible API. */
+  compatible: boolean
+  /** Display names of the routes that sign in through a host command-line tool, by name. */
+  commandLine: readonly string[]
+}
+
+/**
+ * Read what the page can add from the same join it renders: the catalog
+ * providers of the key-bearing adapter, whether a route can be declared by
+ * hand, and each command-line route by name. A namespace with no curated
+ * layout contributes nothing, as it gets no card on the page either.
+ * @param state - the page snapshot.
+ * @param schema - settings schema operations.
+ * @returns the offer; empty where the directory lists nothing.
+ */
+export function providerOffer(state: ModelsSettingsState, schema: SettingsSchemaOperations): ProviderOffer {
+  let hosted = 0
+  const commandLine = new Set<string>()
+  for (const row of state.rows) {
+    const format = entryFormatOf(row.entry.settingsNs)
+    // A hand-declared route is one the user already added, not one on offer.
+    if (format === 'pi-ai' && row.entry.declared !== true) hosted += 1
+    else if (format === 'agent-cli') commandLine.add(row.entry.displayName)
+  }
+  return {
+    hosted,
+    compatible: protocolChoices(state.namespaces.get('llm-pi-ai'), schema).length > 0,
+    commandLine: [...commandLine].sort((a, b) => BY_NAME.compare(a, b)),
+  }
 }

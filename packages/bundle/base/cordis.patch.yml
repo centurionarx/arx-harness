@@ -74,8 +74,8 @@
       name: '@arx-ai/arx-llm-retry'
 
     # User-settings document (`$ARX_HOME/settings.yaml`, hot-reloaded): an
-    # `llm-pi-ai:` section there configures the adapter without a restart, and
-    # is what the web Models page writes.
+    # `llm-pi-ai:` or `llm-agent-cli:` section there configures its adapter
+    # without a restart, and is what the web Models page writes.
     - id: settings
       name: '@arx-ai/arx-settings-file'
 
@@ -99,8 +99,9 @@
     # A subscription-authenticated vendor CLI as an ordinary model route,
     # mounted dormant like the adapter above: no configured provider means no
     # route, so the picker gains nothing and no request can reach a CLI the
-    # host may never have logged in to. Configuring one is a deployment
-    # decision, because the login it inherits belongs to the host.
+    # host may never have logged in to. Its `llm-agent-cli:` section is what
+    # the Models page writes to configure one, and the route it names carries
+    # no credential — the CLI serves the login the host already holds.
     - id: llm-agent-cli
       name: '@arx-ai/arx-llm-agent-cli'
 

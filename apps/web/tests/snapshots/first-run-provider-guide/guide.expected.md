@@ -1,0 +1,10 @@
+- dialog "Set up a model provider":
+  - heading "Set up a model provider" [level=2]
+  - paragraph: arx Harness does not come with a model provider, so it cannot start a task yet. Add one in Settings → Models.
+  - paragraph: "This installation can use:"
+  - list:
+    - listitem: 37 hosted providers, reached with an API key or cloud credentials
+    - listitem: Any service with an OpenAI-compatible API
+    - listitem: Claude (subscription), through its command-line tool signed in on this machine
+  - button "Later"
+  - button "Open Models settings"

@@ -125,6 +125,27 @@ describe('ui-settings apply', () => {
     off()
   })
 
+  it('numbers every open-section request, repeats included, and stops listening with the fiber', async () => {
+    const b = await bench()
+    declare(b.slots)
+    const fiber = b.ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    const { openRequest } = injectedOf(b.slots).hooks
+    expect(openRequest.getSnapshot()).toBeUndefined()
+    const listener = vi.fn()
+    const off = openRequest.subscribe(listener)
+    b.ctx.emit('settings/open-section', 'models')
+    expect(openRequest.getSnapshot()).toEqual({ id: 'models', seq: 1 })
+    // A second request for the same section is a new one the shell answers.
+    b.ctx.emit('settings/open-section', 'models')
+    expect(openRequest.getSnapshot()).toEqual({ id: 'models', seq: 2 })
+    expect(listener).toHaveBeenCalledTimes(2)
+    off()
+    await fiber.dispose()
+    b.ctx.emit('settings/open-section', 'general')
+    expect(openRequest.getSnapshot()).toEqual({ id: 'models', seq: 2 })
+  })
+
   it('re-registers after an HMR collapse re-declares the slot (stale disposer must not block)', async () => {
     const b = await bench()
     const redeclare = declare(b.slots)

@@ -1,23 +1,20 @@
 /** Product-wide, versioned internal-testing notice. */
 
-import { useCallback, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { InjectFace, PropsRuntime } from '@arx-ai/arx-client-ui-slots'
-import { Button } from '@arx-ai/arx-client-ui-primitives'
-import type { WelcomeNoticeState, WelcomeNoticeStore } from './welcome-store.ts'
+import { AcknowledgedNoticeModal, useAcknowledgedNotice } from './AcknowledgedNotice.tsx'
+import type { AcknowledgedNoticeState, AcknowledgedNoticeStore } from './notice-store.ts'
 import type { en } from './locales.ts'
-import { OnboardingModal } from './OnboardingModal.tsx'
-import css from './WelcomeNotice.module.css'
 
 /** Registration-side dependencies of {@link WelcomeNotice}. */
 export interface WelcomeNoticeInjected {
   hooks: {
     /** Durable or process-local acknowledgement state. */
-    welcome: SnapshotStore<WelcomeNoticeState>
+    welcome: SnapshotStore<AcknowledgedNoticeState>
   }
   /** Welcome acknowledgement controller. */
-  controller: WelcomeNoticeStore
+  controller: AcknowledgedNoticeStore
   /** Onboarding copy. */
   t: (key: keyof typeof en) => string
 }
@@ -34,44 +31,18 @@ export type WelcomeNoticeProps =
 export function WelcomeNotice(props: WelcomeNoticeProps): ReactNode {
   const { complete, controller, useWelcome, t } = props
   const state = useWelcome(snapshot => snapshot)
-  const finished = useRef(false)
-  const finish = useCallback((): void => {
-    if (finished.current) return
-    finished.current = true
-    complete()
-  }, [complete])
+  const { pending, acknowledge } = useAcknowledgedNotice(controller, state, complete, false)
 
-  useEffect(() => {
-    if (state.status === 'idle') void controller.load()
-  }, [controller, state.status])
-
-  useEffect(() => {
-    if (state.acknowledged) finish()
-  }, [finish, state.acknowledged])
-
-  if (state.status === 'idle' || state.status === 'loading' || state.acknowledged) return null
-
-  const acknowledge = async (): Promise<void> => {
-    if (await controller.acknowledge()) finish()
-  }
-  const paragraphs = t('welcomeBody').split('\n\n')
+  if (!pending) return null
 
   return (
-    <OnboardingModal title={t('welcomeTitle')}>
-      <div className={css.copy}>
-        {paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-      </div>
-      {state.error === null ? null : <p className={css.error} role="alert">{t('welcomeError')}</p>}
-      <div className={css.actions}>
-        <Button
-          variant="primary"
-          className={css.primary}
-          disabled={state.status === 'saving'}
-          onClick={() => { void acknowledge() }}
-        >
-          {t('welcomeContinue')}
-        </Button>
-      </div>
-    </OnboardingModal>
+    <AcknowledgedNoticeModal
+      title={t('welcomeTitle')}
+      paragraphs={t('welcomeBody').split('\n\n')}
+      error={state.error === null ? null : t('welcomeError')}
+      continueLabel={t('welcomeContinue')}
+      saving={state.status === 'saving'}
+      onContinue={() => { void acknowledge() }}
+    />
   )
 }

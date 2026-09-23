@@ -1,25 +1,26 @@
 /**
- * Welcome-notice state derived from the welcome settings scope. The scope is
- * the transport: a loopback browser follows the durable Host section, while a
- * remote browser's memory-mode scope never answers and the acknowledgement
- * stays process-local here.
+ * Acknowledgement state for a versioned onboarding notice, derived from the
+ * settings scope that stores it. The scope is the transport: a loopback
+ * browser follows the durable Host section, while a remote browser's
+ * memory-mode scope never answers and the acknowledgement stays process-local
+ * here.
+ *
+ * One store serves every notice because they differ only in which field holds
+ * the acknowledgement and which version string counts as current.
  */
 
 import type { SettingsScope, SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
-import {
-  WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_VERSION,
-} from '../onboarding-copy.ts'
 
-/** State rendered by the welcome step. */
-export interface WelcomeNoticeState {
+/** State rendered by a notice step. */
+export interface AcknowledgedNoticeState {
   status: 'idle' | 'loading' | 'ready' | 'saving' | 'error'
   acknowledged: boolean
   error: string | null
 }
 
-/** The welcome section as the notice reads it. */
-export type WelcomeSection = Record<string, unknown>
+/** The settings section a notice reads its acknowledgement from. */
+export type NoticeSection = Record<string, unknown>
 
 /**
  * Accept any object section verbatim; a malformed durable value reads as an
@@ -28,21 +29,37 @@ export type WelcomeSection = Record<string, unknown>
  * @param section - the wire section value.
  * @returns the section object, or an empty one for non-object values.
  */
-export function decodeWelcomeSection(section: unknown): WelcomeSection {
+export function decodeNoticeSection(section: unknown): NoticeSection {
   return typeof section === 'object' && section !== null && !Array.isArray(section)
-    ? section as WelcomeSection
+    ? section as NoticeSection
     : {}
 }
 
 /* v8 ignore next 3 -- closed-union default only defends future source widening */
 function assertNever(_value: never): never {
-  throw new Error('unexpected welcome settings status')
+  throw new Error('unexpected notice settings status')
+}
+
+/** What one notice stores, and where. */
+export interface AcknowledgedNoticeBinding {
+  /** The settings namespace scope holding the acknowledgement. */
+  scope: SettingsScope<NoticeSection>
+  /** Field in that section recording the acknowledged version. */
+  field: string
+  /**
+   * Version counted as current, compared for exact equality. Read per
+   * comparison rather than captured: a notice whose version is a Host fact
+   * learns it after this binding is made.
+   */
+  version: () => string
+  /** What an unavailable namespace is reported as failing to acknowledge. */
+  subject: string
 }
 
 /** Coordinates durable Host acknowledgement or a process-local remote fallback. */
-export class WelcomeNoticeStore {
-  /** uSES-safe state source shared by the registered welcome step. */
-  readonly store: SnapshotStore<WelcomeNoticeState> = createSnapshotStore<WelcomeNoticeState>({
+export class AcknowledgedNoticeStore {
+  /** uSES-safe state source shared by the registered notice step. */
+  readonly store: SnapshotStore<AcknowledgedNoticeState> = createSnapshotStore<AcknowledgedNoticeState>({
     status: 'idle', acknowledged: false, error: null,
   })
 
@@ -51,17 +68,18 @@ export class WelcomeNoticeStore {
   private following: (() => void) | undefined
 
   /**
-   * @param scope - the welcome settings namespace scope; its memory mode is
-   * what keeps a remote browser process-local.
+   * @param binding - the scope holding this notice's acknowledgement, the
+   * field and version it compares, and the subject its failures name. The
+   * scope's own memory mode is what keeps a remote browser process-local.
    */
-  constructor(private readonly scope: SettingsScope<WelcomeSection>) {}
+  constructor(private readonly binding: AcknowledgedNoticeBinding) {}
 
   /**
    * Begin following the bound scope (idempotent) and publish its current answer.
    * @returns settlement after the current answer is published.
    */
   load(): Promise<void> {
-    this.following ??= this.scope.subscribe(() => { this.derive() })
+    this.following ??= this.binding.scope.subscribe(() => { this.derive() })
     this.derive()
     return Promise.resolve()
   }
@@ -73,7 +91,7 @@ export class WelcomeNoticeStore {
    * @returns true when the selected persistence mode holds the acknowledgement.
    */
   async acknowledge(): Promise<boolean> {
-    if (this.scope.getSnapshot().mode === 'memory') {
+    if (this.binding.scope.getSnapshot().mode === 'memory') {
       this.localAcknowledged = true
       this.derive()
       return true
@@ -81,7 +99,7 @@ export class WelcomeNoticeStore {
     this.saving = true
     this.store.update((state) => { state.status = 'saving'; state.error = null })
     try {
-      await this.scope.set(WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_VERSION)
+      await this.binding.scope.set(this.binding.field, this.binding.version())
     } finally {
       this.saving = false
     }
@@ -104,7 +122,7 @@ export class WelcomeNoticeStore {
 
   private derive(): void {
     if (this.saving) return
-    const scope = this.scope.getSnapshot()
+    const scope = this.binding.scope.getSnapshot()
     if (scope.mode === 'memory') {
       this.store.update((state) => {
         state.status = 'ready'
@@ -121,11 +139,11 @@ export class WelcomeNoticeStore {
         this.store.update((state) => {
           state.status = 'error'
           state.acknowledged = false
-          state.error = 'welcome acknowledgement settings are unavailable'
+          state.error = `${this.binding.subject} acknowledgement settings are unavailable`
         })
         return
       case 'ready': {
-        const acknowledged = scope.value?.[WELCOME_NOTICE_ACK_FIELD] === WELCOME_NOTICE_VERSION
+        const acknowledged = scope.value?.[this.binding.field] === this.binding.version()
         this.store.update((state) => {
           state.status = 'ready'
           state.acknowledged = acknowledged

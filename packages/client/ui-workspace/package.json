@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-workspace",
   "description": "Workspace picker plugin: one WorkspacePicker registered into the sidebar and empty-state workspace slots",
-  "version": "1.0.10",
+  "version": "1.0.14",
   "publishConfig": {
     "access": "public"
   },

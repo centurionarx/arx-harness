@@ -35,7 +35,7 @@ import { resolveArxHome } from '@arx-ai/arx-home-paths'
 const SHIPPED_PRESET_ROOT = fileURLToPath(new URL('../config/agent-presets/', import.meta.url))
 
 import { ARX_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@arx-ai/arx-launch-environment'
-import { provideCmdline } from '@arx-ai/arx-cmdline'
+import { provideCmdline, type HomeMigration } from '@arx-ai/arx-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
 
 const NAME = 'arx'
@@ -182,6 +182,12 @@ export interface RunProfileOptions {
   args: readonly string[]
   /** This app's released version, handed to the tree through `ctx.appVersion`. */
   version: string
+  /**
+   * The pre-rename home this launch copied, or the one an earlier launch
+   * recorded, handed to the tree through `ctx.homeMigration`. Absent when no
+   * home was ever migrated.
+   */
+  homeMigration?: HomeMigration
 }
 
 /**
@@ -261,6 +267,7 @@ export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Con
       args: options.args,
       exit: (code) => { shutdown.exit(code) },
       version: options.version,
+      ...options.homeMigration === undefined ? {} : { homeMigration: options.homeMigration },
     })
   })
   app.current = ctx

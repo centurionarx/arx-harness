@@ -8,6 +8,7 @@
  * Export discipline: packages/client/AGENTS.md.
  */
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { ConnectionHandle } from '@arx-ai/arx-api-remotes/client'
 import { resolveSlotLabel } from '@arx-ai/arx-client-ui-slots'
 // Type-only: the settings slot declarations plus the ctx.settingsScope Context
@@ -17,7 +18,7 @@ import type {} from '@arx-ai/arx-client-ui-settings/client'
 // Type-only: pulls ctx.locale into this program.
 import type {} from '@arx-ai/arx-client-locale/client'
 import type {
-  SettingsOnboardingStep, SettingsRootInjected, SettingsSectionRow,
+  SettingsOnboardingStep, SettingsOpenRequest, SettingsRootInjected, SettingsSectionRow,
 } from './shell-contract.ts'
 import { SettingsRoot } from './SettingsRoot.tsx'
 import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
@@ -90,6 +91,15 @@ export function apply(ctx: ClientContext): void {
   let rows: readonly SettingsSectionRow[] = []
   let onboardingVersion = -1
   let onboardingSteps: readonly SettingsOnboardingStep[] = []
+  // Open state is the shell component's own, so a request reaches it as the
+  // latest numbered request; the component answers each one newer than its
+  // own mount.
+  let openRequests = 0
+  const openRequest = createSnapshotStore<SettingsOpenRequest | undefined>(undefined)
+  ctx.on('settings/open-section', (id) => {
+    openRequests += 1
+    openRequest.set({ id, seq: openRequests })
+  })
   const shellInjected = (): SettingsRootInjected => ({
     hooks: {
       sections: {
@@ -136,6 +146,7 @@ export function apply(ctx: ClientContext): void {
         },
         subscribe: listener => ctx.slots.subscribe('settings.onboarding', listener),
       },
+      openRequest,
     },
   })
   ctx.slots.inject('sidebar.settings', () => ctx.slots.register({

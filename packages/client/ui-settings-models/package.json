@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-settings-models",
   "description": "Models settings and shared product-onboarding dialogs over existing settings and credential joins",
-  "version": "1.0.10",
+  "version": "1.0.14",
   "publishConfig": {
     "access": "public"
   },

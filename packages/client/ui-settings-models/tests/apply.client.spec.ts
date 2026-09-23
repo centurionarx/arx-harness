@@ -8,16 +8,42 @@ import { TestRemote } from '@arx-ai/arx-client-test-runtime'
 import { apply as settingsApply, inject as settingsInject } from '@arx-ai/arx-client-ui-settings/client'
 import { apply, inject, refreshIfLoaded } from '@arx-ai/arx-client-ui-settings-models/client'
 import {
+  PROVIDER_GUIDE_ACK_FIELD, PROVIDER_GUIDE_VERSION,
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
 } from '../src/onboarding-copy.ts'
+import type { HostDescription } from '@arx-ai/arx-client-connection/client'
 import { ModelsSection } from '../src/client/ModelsSection.tsx'
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
+import { HomeMigrationNotice } from '../src/client/HomeMigrationNotice.tsx'
+import { ProviderGuide } from '../src/client/ProviderGuide.tsx'
 
 // These specs assert the shipped English copy. The lane has no jsdom `window`,
 // so browser-language detection never runs and a fresh LocaleRuntime opens on
 // FALLBACK_LOCALE (en), the only locale the client ships.
 
-async function bench(isLoopback = true, settings?: object, services: object = {}) {
+/** The Host facts every description carries, beside the copy under test. */
+const HOST: HostDescription = {
+  version: '1.0.10',
+  cwd: '/workspace',
+  attachedSessions: 0,
+  home: '/home/tester',
+  canOpenPath: false,
+}
+
+/** A host-description source answering one fixed description, as the wire root exposes. */
+function describing(homeMigration?: HostDescription['homeMigration']) {
+  const description: HostDescription | undefined = homeMigration === undefined
+    ? undefined
+    : { ...HOST, homeMigration }
+  return { getSnapshot: () => description, subscribe: () => () => {} }
+}
+
+async function bench(
+  isLoopback = true,
+  settings?: object,
+  services: object = {},
+  hostDescription = describing(),
+) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
@@ -31,6 +57,7 @@ async function bench(isLoopback = true, settings?: object, services: object = {}
   ctx.provide('connection', {
     api: settings === undefined ? services : { ...services, settings },
     isLoopback,
+    hostDescription,
   } as never)
   await ctx.plugin({ inject: [...settingsInject], apply: settingsApply }).await()
   return { ctx, slots: ctx.get('slots') as SlotRegistry, locale }
@@ -47,6 +74,45 @@ function declare(slots: SlotRegistry): () => void {
     } as never,
     () => null,
   )
+}
+
+/** A settings face whose onboarding namespace records one acknowledged copy instant. */
+function onboardingFace(acknowledgedAt: string | undefined) {
+  return onboardingSection(acknowledgedAt === undefined ? {} : { homeMigrationNoticedAt: acknowledgedAt })
+}
+
+/** A settings face whose onboarding namespace holds exactly `value`. */
+function onboardingSection(value: Record<string, string>) {
+  return {
+    describe: vi.fn(() => Promise.resolve({
+      rpcId: 'apply-home-migration' as never,
+      result: {
+        ok: true as const,
+        value: {
+          writable: true,
+          hasDocument: false,
+          namespaces: [{
+            ns: WELCOME_NOTICE_SETTINGS_NAMESPACE,
+            schema: {},
+            value,
+            applies: 'live' as const,
+            secrets: [],
+            revision: 0,
+          }],
+        },
+      },
+    })),
+  }
+}
+
+/** The home-migration step's injected face, from the onboarding slot. */
+function homeMigrationFace(slots: SlotRegistry) {
+  const entry = slots.entries('settings.onboarding')
+    .find(candidate => candidate.options.id === 'home-migration-notice')!
+  return (
+    entry.inject as unknown as
+    () => import('../src/client/HomeMigrationNotice.tsx').HomeMigrationNoticeInjected
+  )()
 }
 
 describe('ui-settings-models apply', () => {
@@ -70,10 +136,21 @@ describe('ui-settings-models apply', () => {
     expect(injected.hooks.snapshot).toBe(injected.controller.store)
     expect(injected.api).toBeDefined()
     const onboarding = before.slots.entries('settings.onboarding')
-    expect(onboarding).toHaveLength(1)
+    expect(onboarding).toHaveLength(3)
     expect(onboarding.find(entry => entry.options.id === 'welcome-notice')).toMatchObject({
       component: WelcomeNotice,
       options: { id: 'welcome-notice', order: -100 },
+    })
+    // The welcome notice comes first: a user meeting the product reads what it
+    // is before being told where their previous settings went.
+    expect(onboarding.find(entry => entry.options.id === 'home-migration-notice')).toMatchObject({
+      component: HomeMigrationNotice,
+      options: { id: 'home-migration-notice', order: -90 },
+    })
+    // Both notices come before the guide to what the product needs to start.
+    expect(onboarding.find(entry => entry.options.id === 'provider-guide')).toMatchObject({
+      component: ProviderGuide,
+      options: { id: 'provider-guide', order: -50 },
     })
 
     const after = await bench()
@@ -83,7 +160,7 @@ describe('ui-settings-models apply', () => {
     declare(after.slots)
     await Promise.resolve()
     expect(after.slots.entries('settings.section')[0]!.component).toBe(ModelsSection)
-    expect(after.slots.entries('settings.onboarding')).toHaveLength(1)
+    expect(after.slots.entries('settings.onboarding')).toHaveLength(3)
     // The self-inflicted ledger notifications hit the duplicate guard.
     expect(after.slots.entries('settings.section')).toHaveLength(1)
   })
@@ -120,7 +197,7 @@ describe('ui-settings-models apply', () => {
     declare(b.slots)
     await Promise.resolve()
     expect(b.slots.entries('settings.section')[0]!.component).toBe(ModelsSection)
-    expect(b.slots.entries('settings.onboarding')).toHaveLength(1)
+    expect(b.slots.entries('settings.onboarding')).toHaveLength(3)
     // The locale path also recovers through the same ledger re-check.
     b.locale.setLocale('en')
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Models')
@@ -152,6 +229,88 @@ describe('ui-settings-models apply', () => {
     await injected.controller.load()
     expect(injected.controller.store.getSnapshot()).toEqual({
       status: 'ready', acknowledged: false, error: null,
+    })
+  })
+
+  it('acknowledges the home copy by the instant the Host reports for it', async () => {
+    const migration = { fromDisplay: '~/.cxh', toDisplay: '~/.arx', at: '2026-09-22T10:00:00.000Z' }
+    // Durable scope: the acknowledged instant is compared against the Host's,
+    // which is what the memory-mode branch never reaches.
+    const b = await bench(true, onboardingFace(migration.at), {}, describing(migration))
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = homeMigrationFace(b.slots)
+
+    expect(injected.hooks.homeMigrationNotice).toBe(injected.controller.store)
+    expect(injected.hooks.hostDescription.getSnapshot()?.homeMigration).toEqual(migration)
+    await injected.controller.load()
+    await vi.waitFor(() => {
+      expect(injected.hooks.homeMigrationNotice.getSnapshot()).toMatchObject({ acknowledged: true })
+    })
+  })
+
+  it('leaves an older acknowledged instant unmatched by a newer copy', async () => {
+    const migration = { fromDisplay: '~/.cxh', toDisplay: '~/.arx', at: '2026-09-22T10:00:00.000Z' }
+    const b = await bench(true, onboardingFace('2020-01-01T00:00:00.000Z'), {}, describing(migration))
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = homeMigrationFace(b.slots)
+
+    await injected.controller.load()
+    await vi.waitFor(() => {
+      expect(injected.hooks.homeMigrationNotice.getSnapshot()).toMatchObject({ status: 'ready', acknowledged: false })
+    })
+  })
+
+  it('hands the guide the Models page store and its own dismissal controller', async () => {
+    const b = await bench(false)
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const models = (
+      b.slots.entries('settings.section')[0]!.inject as unknown as
+      () => import('../src/client/ModelsSection.tsx').ModelsSectionInjected
+    )()
+    const entry = b.slots.entries('settings.onboarding')
+      .find(candidate => candidate.options.id === 'provider-guide')!
+    const injected = (
+      entry.inject as unknown as () => import('../src/client/ProviderGuide.tsx').ProviderGuideInjected
+    )()
+
+    // One directory read serves the guide and the page it opens.
+    expect(injected.models).toBe(models.controller)
+    expect(injected.hooks.models).toBe(models.controller.store)
+    expect(injected.hooks.providerGuide).toBe(injected.controller.store)
+    expect(injected.t('providerGuideOpen')).toBe('Open Models settings')
+    await injected.controller.load()
+    expect(injected.controller.store.getSnapshot()).toEqual({ status: 'ready', acknowledged: false, error: null })
+  })
+
+  it('reads the guide as dismissed where the current guide version is stored', async () => {
+    const b = await bench(true, onboardingSection({ [PROVIDER_GUIDE_ACK_FIELD]: PROVIDER_GUIDE_VERSION }))
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const entry = b.slots.entries('settings.onboarding')
+      .find(candidate => candidate.options.id === 'provider-guide')!
+    const injected = (
+      entry.inject as unknown as () => import('../src/client/ProviderGuide.tsx').ProviderGuideInjected
+    )()
+
+    await injected.controller.load()
+    await vi.waitFor(() => {
+      expect(injected.hooks.providerGuide.getSnapshot()).toMatchObject({ status: 'ready', acknowledged: true })
+    })
+  })
+
+  it('holds no copy instant on an installation that migrated nothing', async () => {
+    const b = await bench(true, onboardingFace(undefined))
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const injected = homeMigrationFace(b.slots)
+
+    expect(injected.hooks.hostDescription.getSnapshot()).toBeUndefined()
+    await injected.controller.load()
+    await vi.waitFor(() => {
+      expect(injected.hooks.homeMigrationNotice.getSnapshot()).toMatchObject({ status: 'ready', acknowledged: false })
     })
   })
 })
