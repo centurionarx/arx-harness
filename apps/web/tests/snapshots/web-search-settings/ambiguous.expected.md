@@ -1,0 +1,53 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Web search":
+      - img
+      - text: Web search
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - region "Web search":
+    - heading "Web search" [level=2]
+    - paragraph: Choose which provider answers web searches and store its API key.
+    - text: Search provider
+    - combobox "Search provider":
+      - option "Automatic — the one usable provider" [selected]
+      - option "Exa"
+      - option "Perplexity"
+    - status: More than one provider is usable; pin one.
+    - paragraph: Saved the Perplexity key.
+    - list:
+      - listitem:
+        - text: Exa
+        - img "Usable"
+        - img "API key configured"
+        - text: API key for Exa
+        - textbox "API key for Exa":
+          - /placeholder: EXA_API_KEY
+        - text: Stored outside the settings document. Leave blank to keep the current key.
+        - button "Save" [disabled]
+        - button "Remove key"
+      - listitem:
+        - text: Perplexity
+        - img "Usable"
+        - img "API key configured"
+        - text: API key for Perplexity
+        - textbox "API key for Perplexity":
+          - /placeholder: PERPLEXITY_API_KEY
+        - text: Stored outside the settings document. Leave blank to keep the current key.
+        - button "Save" [disabled]
+        - button "Remove key"

@@ -1,40 +1,35 @@
-// Web e2e scenario: the Web search settings section end to end through the real
-// wire. The shipped Web composition mounts both search providers dormant and
-// names no credential reference for either, so the page it produces is two
-// unusable rows over a seam that fails loud — the first scenario pins exactly
-// that. A deployment that names the references (this file's overlay) makes the
-// key form reachable: a key typed there reaches the credentials domain under the
-// reference the provider's own settings section carries, never the settings
-// document, and flips that provider to the one the seam resolves. A second key
-// makes the choice ambiguous, and pinning one writes `web.searchProvider`.
-// Zero model calls: this is settings, credentials, and web-domain traffic only,
-// so there is no fixture and a stray stream would fail loud on the open llm seam.
+// Shipped Web search onboarding through the real Loader, settings, credentials,
+// providers, and browser. Only the reference-free opt-out scenario uses an
+// overlay; the onboarding path must obtain its references from the bundle.
+// Fake keys exercise local availability without a search or model request.
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
-import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFailed, vi } from 'vitest'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden,
   launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
 import { newEnglishPage, saveFailureShot } from './support.ts'
 
-/** Names the credential reference on each shipped provider (see the file's header). */
-const OVERLAY = fileURLToPath(new URL('./web-search-settings.overlay.yml', import.meta.url))
+const REFERENCE_FREE_OVERLAY = fileURLToPath(new URL('./web-search-settings.overlay.yml', import.meta.url))
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/web-search-settings', import.meta.url))
-const SHIPPED_EXPECTED = join(SNAPSHOT_DIR, 'shipped.expected.md')
 const MODE = webSnapshotMode()
 
-describe('web e2e: Web search settings page configures the dormant providers', () => {
+describe('web e2e: shipped Web search credential onboarding', () => {
   let scaffold: WebScaffold
   let browser: Browser
   let page: Page
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({ extraOverlayPath: OVERLAY })
+    // An operator's keys or pin must not configure this isolated keyless boot.
+    for (const name of ['EXA_API_KEY', 'PERPLEXITY_API_KEY', 'ARX_WEB_SEARCH_PROVIDER']) {
+      vi.stubEnv(name, undefined)
+    }
+    scaffold = await launchWebScaffold({})
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
@@ -43,8 +38,15 @@ describe('web e2e: Web search settings page configures the dormant providers', (
   }, 120_000)
 
   afterAll(async () => {
-    await browser?.close()
-    await scaffold?.close()
+    try {
+      await browser?.close()
+    } finally {
+      try {
+        await scaffold?.close()
+      } finally {
+        vi.unstubAllEnvs()
+      }
+    }
   })
 
   /** The settings document as the Host has written it so far. */
@@ -58,10 +60,8 @@ describe('web e2e: Web search settings page configures the dormant providers', (
   }
 
   /**
-   * Open the settings dialog on the Web search section. The scenarios share one
-   * page, so this leaves any dialog a previous scenario opened closed first —
-   * its mask would otherwise swallow the trigger click.
-   * @param target - the page to drive (the shared one unless a scenario owns another).
+   * Open Web search after dismissing any existing settings dialog.
+   * @param target - the shared page, or a scenario's isolated page.
    * @returns the open settings dialog locator.
    */
   async function openWebSearch(target: Page = page) {
@@ -77,70 +77,62 @@ describe('web e2e: Web search settings page configures the dormant providers', (
     return dialog
   }
 
-  it('offers no key field where the composition names no credential reference', async () => {
-    // The shipped Web bundle mounts both providers with no config at all, so
-    // neither settings section carries an `apiKeyEnv` and the page has nothing
-    // to write a key under. It still reports the seam's own state, which is the
-    // half a deployment cannot configure away.
-    const shipped = await launchWebScaffold({})
-    const shippedPage = await newEnglishPage(browser)
-    const shippedTripwire = watchConsole(shippedPage)
-    onTestFailed(() => saveFailureShot(shippedPage, 'web-e2e-web-search-shipped'))
-    try {
-      await shippedPage.goto(shipped.baseUrl, { waitUntil: 'load' })
-      await shippedPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-      const dialog = await openWebSearch(shippedPage)
+  /**
+   * Pin a settled settings milestone without exposing entered keys.
+   * @param name - the milestone's golden basename.
+   */
+  async function snapshot(name: string): Promise<void> {
+    const actual = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
+    expect(actual).not.toContain('exa-e2e-key')
+    expect(actual).not.toContain('pplx-e2e-key')
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, name), actual, MODE)
+  }
 
-      // Scoped to the row list: each provider also names an option in the
-      // selection control above it.
-      const rows = dialog.getByRole('list')
-      await rows.getByText('Exa', { exact: true }).waitFor({ timeout: 10_000 })
-      expect(await rows.getByText('Perplexity', { exact: true }).count()).toBe(1)
-      expect(await dialog.getByLabel('Not usable', { exact: true }).count()).toBe(2)
-      expect(await dialog.getByLabel(/^API key for /).count()).toBe(0)
-
-      // Nothing is usable, so the seam reports the failure rather than letting
-      // composition order pick a provider.
-      await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
-        .toBe('No provider has a usable key; searches fail until one does.')
-      expect(await dialog.getByLabel('Search provider').inputValue()).toBe('')
-
-      const snapshot = await captureStableAria(shippedPage, '[role="dialog"]', shipped.workspaceCwd)
-      await compareOrRefreshGolden(SHIPPED_EXPECTED, snapshot, MODE)
-      expect(shippedTripwire.pageErrors).toEqual([])
-      expect(shippedTripwire.warnings).toEqual([])
-    } finally {
-      await shippedPage.close()
-      await shipped.close()
+  it('boots keyless with writable credential fields for both shipped providers', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-web-search-shipped'))
+    const dialog = await openWebSearch()
+    const rows = dialog.getByRole('list')
+    await rows.getByText('Exa', { exact: true }).waitFor({ timeout: 10_000 })
+    expect(await rows.getByText('Perplexity', { exact: true }).count()).toBe(1)
+    await expect.poll(() => dialog.getByLabel('API key missing').count(), { timeout: 10_000 }).toBe(2)
+    expect(await dialog.getByLabel('Not usable', { exact: true }).count()).toBe(2)
+    expect(await dialog.getByLabel(/^API key for /).count()).toBe(2)
+    for (const [provider, ref] of [['Exa', 'EXA_API_KEY'], ['Perplexity', 'PERPLEXITY_API_KEY']] as const) {
+      const field = dialog.getByLabel('API key for ' + provider)
+      expect(await field.isEnabled()).toBe(true)
+      expect(await field.getAttribute('type')).toBe('password')
+      expect(await field.getAttribute('placeholder')).toBe(ref)
+      expect(await field.inputValue()).toBe('')
     }
-  }, 120_000)
+    await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
+      .toBe('No provider has a usable key; searches fail until one does.')
+    expect(await dialog.getByLabel('Search provider').inputValue()).toBe('')
+    expect(await credentialDocument()).toBe('')
+    await snapshot('shipped.expected.md')
+    expect(tripwire.pageErrors).toEqual([])
+  }, 60_000)
 
-  it('stores a key under the provider reference and never in the settings document', async () => {
+  it('stores a key in credentials and makes the sole usable provider automatic', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-web-search-key'))
     const dialog = await openWebSearch()
     const exaRow = dialog.locator('li').filter({ hasText: 'API key for Exa' })
 
-    await expect.poll(() => dialog.getByLabel('API key for Exa').count(), { timeout: 10_000 }).toBe(1)
-    expect(await dialog.getByLabel('API key missing').count()).toBe(2)
     await dialog.getByLabel('API key for Exa').fill('exa-e2e-key')
     await exaRow.getByRole('button', { name: 'Save', exact: true }).click()
-
-    // The key lands in the harness home's credential file under the reference
-    // the section names, and the settings document never sees the value.
     await expect.poll(credentialDocument, { timeout: 10_000 }).toContain('EXA_API_KEY: exa-e2e-key')
     expect(await settingsDocument()).not.toContain('exa-e2e-key')
-
-    // The page reloads its join after the write: the provider it configured is
-    // now usable, and it is the only one, so the seam resolves it with nothing
-    // pinned.
+    expect(await settingsDocument()).not.toContain('searchProvider')
     await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
       .toBe('Searches run through Exa.')
-    expect(await dialog.getByLabel('Usable', { exact: true }).count()).toBe(1)
-    expect(await dialog.getByLabel('API key configured').count()).toBe(1)
+    expect(await exaRow.getByLabel('Usable', { exact: true }).count()).toBe(1)
+    expect(await exaRow.getByLabel('API key configured').count()).toBe(1)
+    await expect.poll(() => dialog.getByLabel('API key for Exa').inputValue()).toBe('')
+    expect(await dialog.getByLabel('Search provider').inputValue()).toBe('')
+    await snapshot('usable.expected.md')
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
-  it('reports two usable providers as ambiguous until one is pinned', async () => {
+  it('requires a selection when both keys are stored and persists the chosen provider', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-web-search-pin'))
     const dialog = await openWebSearch()
     const perplexityRow = dialog.locator('li').filter({ hasText: 'API key for Perplexity' })
@@ -148,15 +140,29 @@ describe('web e2e: Web search settings page configures the dormant providers', (
     await dialog.getByLabel('API key for Perplexity').fill('pplx-e2e-key')
     await perplexityRow.getByRole('button', { name: 'Save', exact: true }).click()
     await expect.poll(credentialDocument, { timeout: 10_000 }).toContain('PERPLEXITY_API_KEY: pplx-e2e-key')
-
-    // Two usable providers and no pin: the seam refuses to choose.
+    expect(await settingsDocument()).not.toContain('pplx-e2e-key')
     await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
       .toBe('More than one provider is usable; pin one.')
+    expect(await dialog.getByLabel('Usable', { exact: true }).count()).toBe(2)
+    expect(await dialog.getByLabel('Search provider').inputValue()).toBe('')
+    await expect.poll(() => dialog.getByLabel('API key for Perplexity').inputValue()).toBe('')
+    await snapshot('ambiguous.expected.md')
 
     await dialog.getByLabel('Search provider').selectOption('exa')
     await expect.poll(settingsDocument, { timeout: 10_000 }).toMatch(/web:\n\s+searchProvider: exa/)
     await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
       .toBe('Searches run through Exa.')
+    expect(await dialog.getByLabel('Search provider').inputValue()).toBe('exa')
+    await snapshot('selected.expected.md')
+
+    await page.reload({ waitUntil: 'load' })
+    const reloaded = await openWebSearch()
+    await expect.poll(() => reloaded.getByRole('status').textContent(), { timeout: 10_000 })
+      .toBe('Searches run through Exa.')
+    expect(await reloaded.getByLabel('Search provider').inputValue()).toBe('exa')
+    expect(await reloaded.getByLabel('API key configured').count()).toBe(2)
+    expect(await reloaded.getByLabel('API key for Exa').inputValue()).toBe('')
+    expect(await reloaded.getByLabel('API key for Perplexity').inputValue()).toBe('')
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
@@ -167,16 +173,40 @@ describe('web e2e: Web search settings page configures the dormant providers', (
 
     await perplexityRow.getByRole('button', { name: 'Remove key' }).click()
     await expect.poll(credentialDocument, { timeout: 10_000 }).not.toContain('PERPLEXITY_API_KEY: pplx-e2e-key')
-
-    // The pin is settings state, not credential state: removing the other
-    // provider's key leaves it exactly where the user put it.
+    expect(await credentialDocument()).toContain('EXA_API_KEY: exa-e2e-key')
     expect(await settingsDocument()).toMatch(/web:\n\s+searchProvider: exa/)
-    await expect.poll(() => dialog.getByLabel('Usable', { exact: true }).count(), { timeout: 10_000 }).toBe(1)
+    await expect.poll(() => perplexityRow.getByLabel('Not usable', { exact: true }).count(), { timeout: 10_000 }).toBe(1)
+    expect(await perplexityRow.getByLabel('API key missing').count()).toBe(1)
+    await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
+      .toBe('Searches run through Exa.')
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
+  it('does not invent credential references when a deployment removes them', async () => {
+    const referenceFree = await launchWebScaffold({ extraOverlayPath: REFERENCE_FREE_OVERLAY })
+    const referenceFreePage = await newEnglishPage(browser)
+    const referenceFreeTripwire = watchConsole(referenceFreePage)
+    onTestFailed(() => saveFailureShot(referenceFreePage, 'web-e2e-web-search-reference-free'))
+    try {
+      await referenceFreePage.goto(referenceFree.baseUrl, { waitUntil: 'load' })
+      await referenceFreePage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+      const dialog = await openWebSearch(referenceFreePage)
+      await expect.poll(() => dialog.getByRole('status').textContent(), { timeout: 10_000 })
+        .toBe('No provider has a usable key; searches fail until one does.')
+      expect(await dialog.getByLabel('Not usable', { exact: true }).count()).toBe(2)
+      expect(await dialog.getByLabel(/^API key for /).count()).toBe(0)
+      expect(referenceFreeTripwire.pageErrors).toEqual([])
+      expect(referenceFreeTripwire.warnings).toEqual([])
+    } finally {
+      await referenceFreePage.close()
+      await referenceFree.close()
+    }
+  }, 120_000)
+
   it.skipIf(MODE === 'record')('keeps the fixture inventory closed', async () => {
     expect(tripwire.warnings).toEqual([])
-    await assertFixtureInventory(SNAPSHOT_DIR, ['shipped.expected.md'])
+    await assertFixtureInventory(SNAPSHOT_DIR, [
+      'shipped.expected.md', 'usable.expected.md', 'ambiguous.expected.md', 'selected.expected.md',
+    ])
   })
 })
