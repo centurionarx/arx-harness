@@ -4,7 +4,7 @@ Status: implemented
 
 ## Problem
 
-The Host carried subscription sign-ins that no person could reach. [`arx-llm-pi-ai`](../../../../packages/llm/llm-pi-ai/README.md) registers an authorization flow for each installed provider that ships a login, but no shipped composition mounted [`arx-authorization`](../../../../packages/credentials/authorization/README.md), no wire method carried an attempt to a browser, and no control started one; [the proposal](../../proposed/feature/2026-09-23-subscription-login-surface.md) records all three gaps.
+The Host carried subscription sign-ins that no person could reach. [`arx-llm-pi-ai`](../../../../packages/llm/llm-pi-ai/README.md) registers an authorization flow for each installed provider that ships a login, but no shipped composition mounted [`arx-authorization`](../../../../packages/credentials/authorization/README.md), no wire method carried an attempt to a browser, and no control started one; [the proposal](../../rejected/feature/2026-09-23-subscription-login-surface.md) records all three gaps.
 
 The command-line route [made configurable from the Models page](2026-09-22-agent-cli-route-configurable-from-settings.md) had the opposite gap. It needs the vendor tool installed and signed in on the Host, and the page could only say so: it could not tell whether the tool was signed in, could not sign it in, and could not turn the account's own models into a route. Building the route by hand also meant typing a context window for every model, including canonical ids whose capacity the installed model catalog already records.
 
@@ -18,7 +18,7 @@ The gateway carries both conversations as the `authorization.*` and `nativeAccou
 
 The Models page composes two child slots after its introduction. **OpenAI Codex chat models** runs the `llm-pi-ai/openai-codex` flow's `oauth` method and, once the grant is stored, sets an empty `openai-codex` profile, which keeps the adapter's catalog. **Native product accounts** shows both tools and starts their sign-in. For a Claude Code account signed in with a subscription, **Enable in chat** sets the `claude-subscription` route in `llm-agent-cli` to the account's models under their canonical ids, with the effort levels the route accepts and without a display name or capacities.
 
-[`arx-llm-agent-cli`](../../../../packages/llm/llm-agent-cli/README.md) resolves those capacities. A model whose exact id the installed Anthropic catalog lists inherits its context window, output cap, and image input where it states none. Any other id must state its context window, and validation refuses a write that omits it, naming the route and model. The Models page editor no longer requires a context window on each row; the adapter is the one place that decides.
+[`arx-llm-agent-cli`](../../../../packages/llm/llm-agent-cli/README.md) resolves those capacities. A model whose exact id the installed Anthropic catalog lists inherits its context window, output cap, and image input where it states none. Any other id must state its context window, and validation refuses a write that omits it, naming the route and model. The Models page editor requires no context window on a row; the adapter is the one place that decides.
 
 ## Alternatives considered
 
