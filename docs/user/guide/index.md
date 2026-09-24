@@ -1,10 +1,12 @@
 # Use the Web UI
 
+English | [Português](index.pt-BR.md)
+
 Start the Web UI through the [root README](../../../README.md#run); the command prints its URL. This guide begins after that server is running. The `arx` process uses its invoking directory as the default filesystem location, but a fresh Web UI has no selected workspace until you add one.
 
 ## Configure a model
 
-Open **Settings → Models**, enter a [DeepSeek API key](https://platform.deepseek.com/), and save it. The model route becomes usable immediately without restarting the server.
+Open **Settings → Models**, choose **Add provider**, select your provider, and save its credential. No provider ships configured; a valid configuration makes the model route usable without restarting the server.
 
 The [model configuration guide](./providers.md) covers other providers and custom OpenAI-compatible endpoints.
 
@@ -24,6 +26,7 @@ The agent can read and edit workspace files, run commands, delegate work, and ma
 
 - [Configure models](./providers.md)
 - [Platform support](./platforms.md)
+- [Access and security](./security.md)
 - [Use the Python SDK](./python-sdk.md)
 - [Use other CLI modes](../../../apps/cli/README.md)
 - [Develop a plugin](../develop/basic/index.md)

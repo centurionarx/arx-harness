@@ -2,7 +2,7 @@
 
 English | [Português](README.pt-BR.md)
 
-arx Harness (`arx`) is a closed-source agent harness developed by CENTURIONarx.
+arx Harness (`arx`) is a plugin-based agent harness developed by CENTURIONarx.
 
 It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
