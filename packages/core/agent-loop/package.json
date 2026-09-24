@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-loop",
   "description": "The concrete agent loop plugin for the arx Harness",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "publishConfig": {
     "access": "public"
   },
