@@ -224,7 +224,7 @@ describe('native Claude sign-in', () => {
     } })
     const failure = host.driver.login('browser', live(), notice, async () => '')
     await expect(failure).rejects.toThrow('Native sign-in output could not be relayed')
-    await expect(failure).rejects.toMatchObject({ cause: expect.objectContaining({ message: 'Invalid URL' }) })
+    expect(await failure.catch((error: unknown) => (error as Error).cause)).toMatchObject({ message: 'Invalid URL' })
     expect(notice).not.toHaveBeenCalled()
   })
   it('cancels a pending code prompt without writing to the CLI', async () => {
