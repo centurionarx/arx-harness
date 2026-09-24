@@ -55,6 +55,9 @@ const SESSION_TITLE_CONFIG = fileURLToPath(new URL('../session-title.cordis.yml'
 const SUBAGENT_REPORT_CONFIG = fileURLToPath(
   new URL('../subagent-report.cordis.yml', import.meta.url),
 )
+const SUBAGENT_LIST_AGENTS_CONFIG = fileURLToPath(
+  new URL('../subagent-list-agents.cordis.yml', import.meta.url),
+)
 const SUBAGENT_DURABILITY_FAILURE_CONFIG = fileURLToPath(
   new URL('../subagent-durability-failure.cordis.yml', import.meta.url),
 )
@@ -507,16 +510,19 @@ const SCENARIOS: Scenario[] = [
     pinsChildToolSchemas: [1],
     pinsChildSystemPrompts: [1],
   },
-  // Authored durable-catalog transcript: the snapshot-only lifecycle marker
-  // fences the second parent turn behind the child's Activation end, so
+  // Authored durable-catalog transcript: a spawn-turn fence holds the child
+  // until the parent is idle after its first turn, so the settlement notice
+  // opens the second parent turn. The snapshot-only lifecycle marker fences the
+  // follow-up prompt behind the child's Activation end, so
   // `list_agents({ scope: 'descendants' })` deterministically reads the
   // persisted child as complete, then `interrupt_agent` executes its accepted
   // no-op against that settled id. Both tools run through the assembled control
-  // service; the marker is not model-visible.
+  // service; neither fence is model-visible.
   {
     name: 'subagent-list-agents',
     hasModelTurn: true,
     recorded: false,
+    configPath: SUBAGENT_LIST_AGENTS_CONFIG,
     pinsChildToolSchemas: [1],
     pinsChildSystemPrompts: [1],
   },
