@@ -4,15 +4,15 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { withFileLock, writeFileAtomic } from '../src/index.ts'
 
-const state = vi.hoisted(() => ({ failLockCreateWithEPERM: false }))
+const state = vi.hoisted(() => ({ lockCreateEPERMFailures: 0 }))
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()
   return {
     ...actual,
     writeFile: (async (path: unknown, ...rest: never[]) => {
-      if (state.failLockCreateWithEPERM && String(path).endsWith('.lock')) {
-        state.failLockCreateWithEPERM = false
+      if (state.lockCreateEPERMFailures > 0 && String(path).endsWith('.lock')) {
+        state.lockCreateEPERMFailures -= 1
         throw Object.assign(new Error('EPERM: injected exclusive-create failure'), { code: 'EPERM' })
       }
       return (actual.writeFile as (path: unknown, ...args: never[]) => Promise<void>)(path, ...rest)
@@ -20,9 +20,16 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   }
 })
 
+const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!
+
 afterEach(() => {
-  state.failLockCreateWithEPERM = false
+  state.lockCreateEPERMFailures = 0
+  Object.defineProperty(process, 'platform', originalPlatform)
 })
+
+function platform(value: NodeJS.Platform): void {
+  Object.defineProperty(process, 'platform', { ...originalPlatform, value })
+}
 
 async function scratch(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'arx-atomic-write-'))
@@ -86,7 +93,7 @@ describe('withFileLock', () => {
     const lockPath = `${target}.lock`
     await writeFile(lockPath, 'holder\n')
     const release = setTimeout(() => { void rm(lockPath, { force: true }) }, 50)
-    state.failLockCreateWithEPERM = true
+    state.lockCreateEPERMFailures = 1
     let called = false
 
     try {
@@ -98,11 +105,33 @@ describe('withFileLock', () => {
   })
 
   it('preserves EPERM when no lock path exists', async () => {
+    platform('linux')
     const dir = await scratch()
     const operation = vi.fn(async () => {})
-    state.failLockCreateWithEPERM = true
+    state.lockCreateEPERMFailures = 1
 
     await expect(withFileLock(join(dir, 'document'), operation)).rejects.toMatchObject({ code: 'EPERM' })
+    expect(operation).not.toHaveBeenCalled()
+  })
+
+  it('retries a Windows EPERM whose lock finished its pending deletion before the retry', async () => {
+    platform('win32')
+    const dir = await scratch()
+    const operation = vi.fn(async () => 'acquired')
+    state.lockCreateEPERMFailures = 1
+
+    await expect(withFileLock(join(dir, 'document'), operation)).resolves.toBe('acquired')
+    expect(operation).toHaveBeenCalledOnce()
+  })
+
+  it('rethrows a Windows EPERM that outlasts the wait instead of reporting a timeout', async () => {
+    platform('win32')
+    const dir = await scratch()
+    const operation = vi.fn(async () => {})
+    state.lockCreateEPERMFailures = Number.POSITIVE_INFINITY
+
+    await expect(withFileLock(join(dir, 'document'), operation, { waitMs: 50 }))
+      .rejects.toMatchObject({ code: 'EPERM' })
     expect(operation).not.toHaveBeenCalled()
   })
 

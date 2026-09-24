@@ -168,11 +168,17 @@ export async function writeFileAtomic(filename: string, content: string, options
   }
 }
 
-/** Whether an exclusive create found an existing lock. */
+/**
+ * Whether a failed exclusive create is contention for the lock. On Windows an
+ * `EPERM` always is: the system answers the create with `EPERM` while a
+ * released lock is still pending deletion, and the lock can finish
+ * disappearing before any inspection runs.
+ */
 async function isLockContention(error: unknown, lockPath: string): Promise<boolean> {
   const code = (error as NodeJS.ErrnoException | null)?.code
   if (code === 'EEXIST') return true
   if (code !== 'EPERM') return false
+  if (process.platform === 'win32') return true
   try {
     await lstat(lockPath)
     return true
@@ -218,11 +224,13 @@ export interface FileLockOptions {
  * Hold the cross-process writer lock for `filename` around one operation. The
  * lock is a `wx`-created sibling (`<filename>.lock`); paired with the
  * rename-based commit of {@link writeFileAtomic}, readers stay lock-free and
- * only writers contend. `EEXIST` is contention directly; an `EPERM` is
- * contention only when a fresh `lstat` confirms the lock path exists, covering
- * Windows exclusive-create behavior without hiding an unrelated permission
- * failure. Contention backs off exponentially and fails with a timed-out error
- * after the deadline. The contender never removes an existing lock because
+ * only writers contend. `EEXIST` is contention directly. An `EPERM` is
+ * contention on Windows, which reports a lock pending deletion that way, and
+ * elsewhere only when a fresh `lstat` confirms the lock path exists.
+ * Contention backs off exponentially until the deadline; a contender whose
+ * last create failed with `EPERM` then rethrows it, so a permission failure
+ * surfaces with its code, and any other contender fails with a timed-out
+ * error. The contender never removes an existing lock because
  * file age cannot prove that its owner stopped; orphan recovery is an operator
  * action. The parent directory must exist.
  * @param filename - the file whose writers this lock serializes.
@@ -244,9 +252,11 @@ export async function withFileLock<T>(
       break
     } catch (error) {
       if (!await isLockContention(error, lockPath)) throw error
-    }
-    if (Date.now() >= deadline) {
-      throw new Error(`atomic-write: timed out waiting for the writer lock at ${lockPath}`)
+      if (Date.now() >= deadline) {
+        throw (error as NodeJS.ErrnoException).code === 'EPERM'
+          ? error
+          : new Error(`atomic-write: timed out waiting for the writer lock at ${lockPath}`)
+      }
     }
     await new Promise(resolve => setTimeout(resolve, delay))
     delay = Math.min(delay * 2, LOCK_RETRY_MAX_MS)
