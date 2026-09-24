@@ -87,7 +87,7 @@ describe('writeFileAtomic', () => {
 })
 
 describe('withFileLock', () => {
-  it('retries EPERM only when the lock path currently exists', async () => {
+  it('retries an EPERM while the lock is held and acquires the lock once it is released', async () => {
     const dir = await scratch()
     const target = join(dir, 'document')
     const lockPath = `${target}.lock`
@@ -102,6 +102,22 @@ describe('withFileLock', () => {
       clearTimeout(release)
     }
     expect(called).toBe(true)
+  })
+
+  it('waits out a non-Windows EPERM while the lock path exists, then rethrows it', async () => {
+    platform('linux')
+    const dir = await scratch()
+    const target = join(dir, 'document')
+    const lockPath = `${target}.lock`
+    await writeFile(lockPath, 'holder\n')
+    const operation = vi.fn(async () => {})
+    state.lockCreateEPERMFailures = Number.POSITIVE_INFINITY
+    const started = Date.now()
+
+    await expect(withFileLock(target, operation, { waitMs: 100 })).rejects.toMatchObject({ code: 'EPERM' })
+    expect(Date.now() - started).toBeGreaterThanOrEqual(100)
+    expect(operation).not.toHaveBeenCalled()
+    expect(await readFile(lockPath, 'utf8')).toBe('holder\n')
   })
 
   it('preserves EPERM when no lock path exists', async () => {
