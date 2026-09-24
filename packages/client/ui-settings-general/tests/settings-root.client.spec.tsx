@@ -53,6 +53,8 @@ function mount({
     useSessions,
     useWorkspaces: unusedHook,
     wide,
+    consumeNavigation: vi.fn(),
+    useNavigation: select => select(null),
     useOnboardingSteps: select => select(steps),
     useSections: (select) => {
       const [, force] = useState(0)
@@ -72,7 +74,7 @@ function mount({
       for (const fn of [...listeners]) fn()
     })
   }
-  return { view, renderSlot, bump, listeners }
+  return { view, renderSlot, bump, listeners, props }
 }
 
 function openPanel() {
@@ -266,4 +268,23 @@ describe('SettingsPanel navigation', () => {
     view.unmount()
     expect(listeners.size).toBe(0)
   })
+})
+
+
+it('consumes a requested Models section and does not reopen it after closing or remounting', () => {
+  const b = mount({ rows: [{ id: 'general', order: 0, label: 'General' }, { id: 'models', order: 1, label: 'Models' }], steps: [] })
+  b.view.unmount()
+  let request: { section: string; sequence: number } | null = { section: 'models', sequence: 1 }
+  const consumeNavigation = vi.fn(() => { request = null })
+  const props: SettingsRootComponentProps = {
+    ...b.props, useNavigation: select => select(request), consumeNavigation,
+  }
+  const view = render(<SettingsRoot {...props} />)
+  expect(screen.getByTestId('section-models')).toBeTruthy()
+  expect(consumeNavigation).toHaveBeenCalledWith(1)
+  fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  view.unmount()
+  render(<SettingsRoot {...props} />)
+  expect(screen.queryByRole('dialog')).toBeNull()
 })

@@ -5,17 +5,18 @@
  */
 
 import z from '@arx-ai/schemastery'
+import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 
 /** One model this adapter serves on a route. */
 export interface AgentCliModel {
   /** Model id callers pass as `GenerateOptions.model`. */
   id: string
   /**
-   * Maximum combined request and response context. Required: automatic
-   * compaction refuses to run against a route whose adapter advertises no
-   * capacity, and the vendor CLI's own model rows carry none.
+   * Maximum combined request and response context. Exact canonical model ids
+   * inherit this value from the installed provider catalog; unknown ids and
+   * aliases require an explicit value.
    */
-  contextWindow: number
+  contextWindow?: number
   /** Per-request output cap materialized when a caller omits one. */
   maxTokens?: number
   /** Human-readable name for selectors. */
@@ -84,7 +85,7 @@ const effort: z<AgentCliEffort> = z.union(AGENT_CLI_EFFORTS.map(level => z.const
 
 const model: z<AgentCliModel> = z.object({
   id: z.string().required(),
-  contextWindow: z.number().step(1).min(1).required(),
+  contextWindow: z.number().step(1).min(1),
   maxTokens: z.number().step(1).min(1),
   name: z.string(),
   acceptsImages: z.boolean(),
@@ -104,12 +105,15 @@ export const Config: z<Config> = z.object({
   cwd: z.string(),
 })
 
+/** Model metadata after explicit overrides and the installed catalog are resolved. */
+export type ResolvedAgentCliModel = Omit<AgentCliModel, 'contextWindow'> & { contextWindow: number }
+
 /** One route resolved from configuration, with every default materialized. */
 export interface ResolvedRoute {
   readonly provider: string
   readonly displayName: string
   readonly disposeGraceMs: number
-  readonly models: ReadonlyMap<string, AgentCliModel>
+  readonly models: ReadonlyMap<string, ResolvedAgentCliModel>
 }
 
 /**
@@ -130,7 +134,8 @@ export function resolveRoutes(
 ): ReadonlyMap<string, ResolvedRoute> {
   const routes = new Map<string, ResolvedRoute>()
   for (const [provider, configured] of Object.entries(providers)) {
-    const models = new Map<string, AgentCliModel>()
+    const catalog = getBuiltinModels('anthropic')
+    const models = new Map<string, ResolvedAgentCliModel>()
     for (const entry of configured.models ?? []) {
       if (entry.defaultEffort !== undefined && !(entry.efforts ?? []).includes(entry.defaultEffort)) {
         throw new Error(
@@ -138,7 +143,17 @@ export function resolveRoutes(
           + `"${entry.defaultEffort}", which is not among its declared efforts`,
         )
       }
-      models.set(entry.id, entry)
+      const known = catalog.find(model => model.id === entry.id)
+      const contextWindow = entry.contextWindow ?? known?.contextWindow
+      if (contextWindow === undefined) {
+        throw new Error(`llm-agent-cli: model "${entry.id}" is absent from the installed catalog; specify contextWindow`)
+      }
+      models.set(entry.id, {
+        ...entry,
+        contextWindow,
+        ...(entry.maxTokens === undefined && known !== undefined ? { maxTokens: known.maxTokens } : {}),
+        ...(entry.acceptsImages === undefined && known !== undefined ? { acceptsImages: known.input.includes('image') } : {}),
+      })
     }
     routes.set(provider, {
       provider,

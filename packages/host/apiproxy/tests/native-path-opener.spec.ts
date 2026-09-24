@@ -60,7 +60,7 @@ describe('native path opener', () => {
         [
           '-NoProfile',
           '-Command',
-          "Invoke-Item -LiteralPath '\\\\wsl.localhost\\Ubuntu\\home\\test user\\settings.yaml'",
+          "Start-Process -FilePath notepad.exe -ArgumentList '\"\\\\wsl.localhost\\Ubuntu\\home\\test user\\settings.yaml\"' -ErrorAction Stop",
         ],
         requestSignal,
       ],
@@ -97,14 +97,22 @@ describe('native path opener', () => {
     )
   })
 
-  it('uses the Windows desktop association for text documents', async () => {
+  it('launches a Windows text editor without an association or waiting for the editor', async () => {
     const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
-    await openNativeTextFile('C:\\work\\settings.yaml', signal(), { platform: 'win32', run })
+    await openNativeTextFile("C:\\work files\\o'reilly $draft [1].yaml", signal(), { platform: 'win32', run })
     expect(run).toHaveBeenCalledWith(
       'powershell.exe',
-      ['-NoProfile', '-Command', "Invoke-Item -LiteralPath 'C:\\work\\settings.yaml'"],
+      ['-NoProfile', '-Command',
+        "Start-Process -FilePath notepad.exe -ArgumentList '\"C:\\work files\\o''reilly $draft [1].yaml\"' -ErrorAction Stop"],
       expect.any(AbortSignal),
     )
+    expect(run.mock.calls[0]?.[1].join(' ')).not.toContain('-Wait')
+  })
+
+  it('reports a failed Windows editor launch', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => { throw new Error('editor unavailable') })
+    await expect(openNativeTextFile('C:\\settings.yaml', signal(), { platform: 'win32', run }))
+      .rejects.toThrow('editor unavailable')
   })
 
   it('opens with Linux xdg-open', async () => {

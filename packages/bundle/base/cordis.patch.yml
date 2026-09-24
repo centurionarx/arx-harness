@@ -83,6 +83,12 @@
     # `$ARX_HOME/.credentials.yaml`, with project and user `.env` fallbacks.
     # Adapters resolve references per request; the Models page writes only the
     # managed document, which is never materialized into the process environment.
+    - id: native-accounts
+      name: '@arx-ai/arx-native-accounts'
+
+    - id: authorization
+      name: '@arx-ai/arx-authorization'
+
     - id: credentials
       name: '@arx-ai/arx-credentials-local'
 

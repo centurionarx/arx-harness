@@ -1,3 +1,5 @@
+import { authorizationDescribeRequestSchema, authorizationBeginRequestSchema, authorizationPollRequestSchema, authorizationSubmitRequestSchema, authorizationCancelRequestSchema } from '../api/authorization.schema.ts'
+import { nativeAccountsDescribeRequestSchema, nativeAccountsBeginRequestSchema, nativeAccountsPollRequestSchema, nativeAccountsSubmitRequestSchema, nativeAccountsCancelRequestSchema } from '../api/native-accounts.schema.ts'
 /**
  * Server side of the fetch carrier: maps an ApiProxy onto a pure
  * WHATWG Request->Response function. Two-level parse: full form (type/rpcId/method +
@@ -136,6 +138,16 @@ const UNARY_ROUTES: UnaryRoutes = {
   'settings.update': { schema: settingsUpdateRequestSchema, invoke: (api, r) => api.settings.update(r) },
   'settings.replace': { schema: settingsReplaceRequestSchema, invoke: (api, r) => api.settings.replace(r) },
   'settings.mutate': { schema: settingsMutateRequestSchema, invoke: (api, r) => api.settings.mutate(r) },
+  'authorization.describe': { schema: authorizationDescribeRequestSchema, invoke: (api, r) => api.authorization.describe(r) },
+  'authorization.begin': { schema: authorizationBeginRequestSchema, invoke: (api, r) => api.authorization.begin(r) },
+  'authorization.poll': { schema: authorizationPollRequestSchema, invoke: (api, r) => api.authorization.poll(r) },
+  'authorization.submit': { schema: authorizationSubmitRequestSchema, invoke: (api, r) => api.authorization.submit(r) },
+  'authorization.cancel': { schema: authorizationCancelRequestSchema, invoke: (api, r) => api.authorization.cancel(r) },
+  'nativeAccounts.describe': { schema: nativeAccountsDescribeRequestSchema, invoke: (api, r) => api.nativeAccounts.describe(r) },
+  'nativeAccounts.begin': { schema: nativeAccountsBeginRequestSchema, invoke: (api, r) => api.nativeAccounts.begin(r) },
+  'nativeAccounts.poll': { schema: nativeAccountsPollRequestSchema, invoke: (api, r) => api.nativeAccounts.poll(r) },
+  'nativeAccounts.submit': { schema: nativeAccountsSubmitRequestSchema, invoke: (api, r) => api.nativeAccounts.submit(r) },
+  'nativeAccounts.cancel': { schema: nativeAccountsCancelRequestSchema, invoke: (api, r) => api.nativeAccounts.cancel(r) },
   'credentials.describe': { schema: credentialsDescribeRequestSchema, invoke: (api, r) => api.credentials.describe(r) },
   'credentials.set': { schema: credentialsSetRequestSchema, invoke: (api, r) => api.credentials.set(r) },
   'credentials.unset': { schema: credentialsUnsetRequestSchema, invoke: (api, r) => api.credentials.unset(r) },

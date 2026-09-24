@@ -1,18 +1,18 @@
 /**
- * Model selection plugin, browser half — TWO entries over ONE per-session
+ * Model selection plugin, browser half â€” TWO entries over ONE per-session
  * directory owned by ModelDirectoryResolver (`ctx.modelDirectories`). The /model popupSelect
  * contribution and the composer's named `conversation.input.model` seat both
  * load the session's provider-grouped advisory directory (`session.models`)
  * and submit through `session.selectModel` via the same directory instance,
  * so the host-reported current selection is the single fact both surfaces echo
- * — a switch made in either entry is what the other shows next. Failures
+ * â€” a switch made in either entry is what the other shows next. Failures
  * ride each entry's own retry surface (popup shell error/retry; seat menu
  * inline error) without forking the state. Addressed subagent sessions expose
  * neither entry because those Agent-bound RPCs would activate persisted
  * history outside the direct-parent continuation path.
  */
 // Type-only: the carrier types, the forwarded Host-event face and the ctx.remote merge.
-import type { ModelSelection, SessionModels } from '@arx-ai/arx-api-remotes/client'
+import type { ConnectionHandle, ModelSelection, SessionModels } from '@arx-ai/arx-api-remotes/client'
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type { CommandUiContract, SelectOption } from '@arx-ai/arx-client-ui-commands/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.model seat).
@@ -22,6 +22,8 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import type { ModelDirectoryState } from './directory.ts'
 import { ModelDirectoryResolver } from './service.ts'
+import { DefaultModelDirectory } from './default-directory.ts'
+import type {} from '@arx-ai/arx-client-ui-settings/client'
 import type { ModelSelectInjected } from './slots.ts'
 import { ModelSelect } from './ModelSelect.tsx'
 import { en, type ModelKey } from './locales.ts'
@@ -52,7 +54,7 @@ function optionsOf(directory: SessionModels, t: TranslateNS<'model'>): SelectOpt
       rows.push({
         id: rowId(group.id, model.id),
         label: model.name,
-        detail: model.description !== undefined ? `${group.name} · ${model.description}` : group.name,
+        detail: model.description !== undefined ? `${group.name} Â· ${model.description}` : group.name,
         ...(directory.current?.provider === group.id && directory.current.model === model.id
           ? { active: true } : {}),
       })
@@ -70,7 +72,7 @@ function optionsOf(directory: SessionModels, t: TranslateNS<'model'>): SelectOpt
 
 /**
  * Resolve a picked row back to its model selection by matching against the loaded
- * groups (the same data the rows were built from — ids stay opaque).
+ * groups (the same data the rows were built from â€” ids stay opaque).
  * @param state - the session's directory snapshot.
  * @param id - the picked row id.
  * @returns the row's model selection, or undefined for failure rows / stale ids.
@@ -97,7 +99,7 @@ function selectionOf(state: ModelDirectoryState, id: string): ModelSelection | u
 const NS = 'model'
 
 /** Required services: the contribution registry, the seat's slot registry, locale, and the service's own faces. */
-export const inject = ['commandUi', 'connection', 'locale', 'sessions', 'slots', 'remote']
+export const inject = ['commandUi', 'connection', 'locale', 'sessions', 'slots', 'remote', 'settingsScope']
 
 /**
  * Client plugin body: mount ModelDirectoryResolver, register the `model` dictionaries,
@@ -115,6 +117,16 @@ export function apply(ctx: ClientContext): void {
   // The composer-block reason is this plugin's own copy, read at raise time so
   // a locale change reaches the next publish.
   ctx.plugin(ModelDirectoryResolver, { blockReason: () => t('blocked.composer') })
+
+  const connection = ctx.get('connection') as ConnectionHandle
+  const defaults = new DefaultModelDirectory(connection.api, ctx.settingsScope.describe())
+  ctx.effect(() => () => { defaults.dispose() }, 'ui-model-selection: default directory')
+  const refreshDefaults = (): void => {
+    if (defaults.store.getSnapshot().status !== 'idle') void defaults.load().catch(() => { /* surfaced on the store */ })
+  }
+  ctx.on('connection/reset', refreshDefaults)
+  ctx.remote.$on('llm/adapters-updated', refreshDefaults)
+  ctx.remote.$on('settings/document-updated', refreshDefaults)
 
   // Entry 1: the /model popupSelect over the shared directory. The command
   // description is registry-held text: it reads t() once at registration and
@@ -142,7 +154,7 @@ export function apply(ctx: ClientContext): void {
           const directory = models.directoryFor(session.sessionId)
           const selection = selectionOf(directory.store.getSnapshot(), option.id)
           if (selection === undefined) {
-            throw new Error('this provider\'s catalog failed to load — pick a model from a loaded group')
+            throw new Error('this provider\'s catalog failed to load â€” pick a model from a loaded group')
           }
           await directory.select(selection)
         },
@@ -158,10 +170,11 @@ export function apply(ctx: ClientContext): void {
       name: 'conversation.input.model',
       locale: NS,
       inject: (sessionId): ModelSelectInjected => {
-        const directory = models.directoryFor(sessionId)
-        const available = sessions.subagentAddress(sessionId) === undefined
+        const directory = sessionId === undefined ? defaults : models.directoryFor(sessionId)
+        const available = sessionId === undefined || sessions.subagentAddress(sessionId) === undefined
         return {
           available,
+          configureModels: () => { ctx.settingsScope.openSection('models') },
           directory: directory.store,
           load: () => {
             if (available) directory.load().catch(() => { /* surfaced on the store */ })

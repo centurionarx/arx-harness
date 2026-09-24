@@ -35,7 +35,8 @@
         "@arx-ai/arx-client-locale",
         "@arx-ai/arx-client-runtime",
         "@arx-ai/arx-client-ui-commands",
-        "@arx-ai/arx-api-remotes"
+        "@arx-ai/arx-api-remotes",
+        "@arx-ai/arx-client-ui-settings"
       ],
       "platform": "web"
     }
@@ -70,7 +71,8 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@types/react": "~18.3.1",
     "@arx-ai/cordis": "workspace:^",
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "@arx-ai/arx-client-ui-settings": "workspace:^"
   },
   "files": [
     "lib/index.js",

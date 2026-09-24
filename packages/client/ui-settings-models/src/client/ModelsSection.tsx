@@ -16,7 +16,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@arx-ai/arx-client-ui-primitives'
-import type { InjectFace } from '@arx-ai/arx-client-ui-slots'
+import type { InjectFace, PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
 import { CustomProviderCard, type CustomProviderPreset } from './CustomProviderCard.tsx'
 import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
@@ -45,7 +45,7 @@ export interface ModelsSectionInjected {
  * Props delivered by the slot outlet: the inject face spread flat (the
  * renderer erases the share boundary at the render call).
  */
-export type ModelsSectionProps = Partial<InjectFace<ModelsSectionInjected>>
+export type ModelsSectionProps = Partial<InjectFace<ModelsSectionInjected> & PropsRenderSlots<'settings.models.nativeAccounts' | 'settings.models.chatAuthorization'>>
 
 type ModelsSectionFace = InjectFace<ModelsSectionInjected>
 
@@ -192,10 +192,11 @@ export function ModelsSection(props: ModelsSectionProps): ReactNode {
     controller === undefined || useSnapshot === undefined || api === undefined
     || schema === undefined || t === undefined
   ) return null
-  return <Loaded injected={{ controller, useSnapshot, api, schema, t }} />
+  return <Loaded injected={{ controller, useSnapshot, api, schema, t }}
+    {...props.renderSlot === undefined ? {} : { renderSlot: props.renderSlot }} />
 }
 
-function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
+function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace } & Partial<PropsRenderSlots<'settings.models.nativeAccounts' | 'settings.models.chatAuthorization'>>): ReactNode {
   const { controller, api, schema, t } = injected
   const state = injected.useSnapshot(snapshot => snapshot)
   const [editing, setEditing] = useState<EditorTarget | undefined>(undefined)
@@ -298,6 +299,8 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
     <div className={styles['section']}>
       <h2 className={styles['title']}>{t('title')}</h2>
       <p className={styles['intro']}>{t('intro')}</p>
+      {renderSlot?.('settings.models.chatAuthorization', {})}
+      {renderSlot?.('settings.models.nativeAccounts', {})}
       {!state.writable && state.status === 'ready' ? <p className={styles['notice']}>{t('readOnly')}</p> : null}
       {savedIdentity === undefined
         ? null

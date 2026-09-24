@@ -106,6 +106,14 @@ export async function loadWin32DialogBindings(): Promise<Win32DialogBindings> {
   const protoGetResult = koffi.proto('int32 __stdcall ArxDialogGetResult(void *self, _Out_ void **item)')
   const protoGetDisplayName = koffi.proto('int32 __stdcall ArxItemGetDisplayName(void *self, int32 form, _Out_ void **name)')
   const protoRelease = koffi.proto('uint32 __stdcall ArxComRelease(void *self)')
+  const setTimer = user32.func('__stdcall', 'SetTimer', 'uintptr', ['void *', 'uintptr', 'uint32', 'void *'])
+  const killTimer = user32.func('__stdcall', 'KillTimer', 'int', ['void *', 'uintptr'])
+  const enumThreadWindows = user32.func('__stdcall', 'EnumThreadWindows', 'int', ['uint32', 'void *', 'intptr'])
+  const getClassName = user32.func('__stdcall', 'GetClassNameW', 'int', ['void *', 'void *', 'int'])
+  const showWindow = user32.func('__stdcall', 'ShowWindow', 'int', ['void *', 'int'])
+  const setForegroundWindow = user32.func('__stdcall', 'SetForegroundWindow', 'int', ['void *'])
+  const protoTimer = koffi.proto('void __stdcall ArxDialogVisibilityTimer(void *hwnd, uint32 message, uintptr timer, uint32 time)')
+  const protoEnum = koffi.proto('int __stdcall ArxDialogVisibilityWindow(void *hwnd, intptr data)')
 
   /** Bind vtable slot `slot` of COM object `self` to a caller through `proto`. */
   const method = (self: unknown, slot: number, proto: unknown): (...args: unknown[]) => number => {
@@ -146,7 +154,39 @@ export async function loadWin32DialogBindings(): Promise<Win32DialogBindings> {
       return {
         setOptions: options => method(dialog, SLOT_SET_OPTIONS, protoSetOptions)(options),
         setTitle: title => method(dialog, SLOT_SET_TITLE, protoSetTitle)(title),
-        show: () => method(dialog, SLOT_SHOW, protoShow)(null),
+        show: () => {
+          // windowsHide also supplies hidden startup show state. A thread timer
+          // runs inside Show's modal loop, after creation, and activates only
+          // this worker's folder dialog. USER_TIMER_MINIMUM is 10 ms.
+          let presented = false
+          const enumCallback = koffi.register((hwnd: unknown) => {
+            const name = Buffer.alloc(512)
+            const length = getClassName(hwnd, name, 256) as number
+            if (name.toString('utf16le', 0, length * 2) !== '#32770') return 1
+            presented = true
+            killTimer(null, timer)
+            showWindow(hwnd, 3) // SW_MAXIMIZE
+            setForegroundWindow(hwnd)
+            return 0
+          }, koffi.pointer(protoEnum))
+          const timerCallback = koffi.register(() => {
+            if (presented) return
+            enumThreadWindows(getCurrentThreadId(), enumCallback, 0)
+          }, koffi.pointer(protoTimer))
+          const timer = setTimer(null, 0, 10, timerCallback)
+          if (!timer) {
+            koffi.unregister(timerCallback)
+            koffi.unregister(enumCallback)
+            throw new Error('SetTimer failed for the folder dialog')
+          }
+          try {
+            return method(dialog, SLOT_SHOW, protoShow)(null)
+          } finally {
+            killTimer(null, timer)
+            koffi.unregister(timerCallback)
+            koffi.unregister(enumCallback)
+          }
+        },
         resultPath: () => {
           const itemOut: unknown[] = [null]
           const gotItem = method(dialog, SLOT_GET_RESULT, protoGetResult)(itemOut)

@@ -106,6 +106,12 @@
     },
     {
       "path": "../directory-picker"
+    },
+    {
+      "path": "../../credentials/native-accounts"
+    },
+    {
+      "path": "../../credentials/authorization"
     }
   ]
 }

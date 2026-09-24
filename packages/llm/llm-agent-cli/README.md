@@ -47,7 +47,9 @@ Deltas already streamed for a repaired block are superseded by its authoritative
 
 ## Config
 
-`contextWindow` is required per model. Automatic compaction resolves capacity from the route serving the request and refuses to run against a route that advertises none, and the vendor CLI discloses no capacity of its own.
+`contextWindow` can be omitted for an exact canonical model id in the installed Anthropic catalog. Its capacity, output limit, and image support come from that catalog; explicit configuration takes precedence. Unknown ids and aliases require an explicit context capacity. Account model discovery establishes availability; catalog metadata does not establish subscription entitlement.
+
+The `llm-agent-cli` Settings section updates routes live. Enabling a connected Claude subscription in Settings writes this section; subsequent model directory reads see the route without restarting. Calls already prepared retain their original route metadata and working directory. Removing the section falls back to the deployment configuration.
 
 ```yaml
 - id: llm-agent-cli
@@ -67,7 +69,7 @@ Deltas already streamed for a repaired block are superseded by its authoritative
             defaultEffort: high
 ```
 
-`acceptsImages` is per model and defaults to false. The route states which models take image input; declaring it on a model that refuses images turns every attached image into a failed request instead of a refused attachment. Image bytes are read from `ctx.attachments` under the vendor's own documented limits, which are fixed rather than configurable: encoding past them produces a request the provider rejects, not a slower one.
+`acceptsImages` is per model, inherits exact catalog metadata when available, and otherwise defaults to false. The route states which models take image input; declaring it on a model that refuses images turns every attached image into a failed request instead of a refused attachment. Image bytes are read from `ctx.attachments` under the vendor's own documented limits, which are fixed rather than configurable: encoding past them produces a request the provider rejects, not a slower one.
 
 `efforts` lists the reasoning levels a model serves, in the order a selector offers them; `defaultEffort` names the one requests carry when they name none, and must be among them — a default outside the list fails the plugin at load. A model that declares no efforts is reported with no reasoning capability at all, which leaves requests at the vendor's own level rather than offering a control that changes nothing. The vendor silently downgrades a level its model does not serve, so a request naming an undeclared one is refused with `UNSUPPORTED_REASONING_EFFORT` rather than run at a level the selector would then misreport.
 

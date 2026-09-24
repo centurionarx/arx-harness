@@ -192,6 +192,21 @@ describe('route metadata', () => {
 })
 
 describe('stream', () => {
+  it('keeps a prepared call on its original route after Settings replaces the route', async () => {
+    let routes = resolveRoutes(ROUTES)
+    let cwd = '/first-workspace'
+    const one = new AgentCliAdapter({ routes: () => routes, cwd: () => cwd, spawn: recordingSpawn().spawn, attachments: () => undefined })
+    const prepared = await one.prepareCall('claude', 'sonnet')
+    routes = resolveRoutes({})
+    cwd = '/next-workspace'
+    queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success' }]))
+    await drain(prepared.stream({ provider: 'claude', model: 'sonnet', messages: [ask] }))
+    const options = (queryMock.mock.calls[0]?.[0] as { options: Record<string, unknown> }).options
+    expect(options['cwd']).toBe('/first-workspace')
+    expect(options['model']).toBe('sonnet')
+    expect(() => one.resolveModel('claude', 'sonnet')).toThrow(/not configured/)
+  })
+
   it('replaces the CLI agent loop with one model call', async () => {
     queryMock.mockReturnValue(vendorRun([{ type: 'result', subtype: 'success', session_id: 'vendor-1' }]))
     await drain(adapter().stream({

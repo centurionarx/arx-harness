@@ -128,6 +128,7 @@ async function bench({ selected = true }: { selected?: boolean } = {}) {
       ? { parentSessionId: sid('parent'), childSessionId: id, mode: 'continuable' as const }
       : undefined,
   })
+  ctx.provide('settingsScope', { describe: () => ({}), openSection: () => {} })
   new TestRemote(ctx)
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()

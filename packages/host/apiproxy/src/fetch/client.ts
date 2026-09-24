@@ -1,3 +1,5 @@
+import { authorizationDescribeValueSchema, authorizationBeginValueSchema, authorizationPollValueSchema, authorizationSubmitValueSchema, authorizationCancelValueSchema } from '../api/authorization.schema.ts'
+import { nativeAccountsDescribeValueSchema, nativeAccountsBeginValueSchema, nativeAccountsPollValueSchema, nativeAccountsSubmitValueSchema, nativeAccountsCancelValueSchema } from '../api/native-accounts.schema.ts'
 /**
  * Client side of the fetch carrier. AbstractApiClient holds every protocol invariant: rpcId minting,
  * four-quadrant envelope wrap/unwrap, zod parsing, in-process SSE frame decoding, and the payload-direct
@@ -154,6 +156,20 @@ export interface IApiClient {
     replace(payload: RequestPayload<'settings.replace'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'settings.replace'>>>
     mutate(payload: RequestPayload<'settings.mutate'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'settings.mutate'>>>
   }
+  authorization: {
+    describe(payload: RequestPayload<'authorization.describe'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'authorization.describe'>>>
+    begin(payload: RequestPayload<'authorization.begin'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'authorization.begin'>>>
+    poll(payload: RequestPayload<'authorization.poll'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'authorization.poll'>>>
+    submit(payload: RequestPayload<'authorization.submit'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'authorization.submit'>>>
+    cancel(payload: RequestPayload<'authorization.cancel'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'authorization.cancel'>>>
+  }
+  nativeAccounts: {
+    describe(payload: RequestPayload<'nativeAccounts.describe'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'nativeAccounts.describe'>>>
+    begin(payload: RequestPayload<'nativeAccounts.begin'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'nativeAccounts.begin'>>>
+    poll(payload: RequestPayload<'nativeAccounts.poll'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'nativeAccounts.poll'>>>
+    submit(payload: RequestPayload<'nativeAccounts.submit'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'nativeAccounts.submit'>>>
+    cancel(payload: RequestPayload<'nativeAccounts.cancel'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'nativeAccounts.cancel'>>>
+  }
   credentials: {
     describe(payload: RequestPayload<'credentials.describe'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'credentials.describe'>>>
     set(payload: RequestPayload<'credentials.set'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'credentials.set'>>>
@@ -223,6 +239,16 @@ const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseV
   'settings.update': settingsUpdateValueSchema,
   'settings.replace': settingsReplaceValueSchema,
   'settings.mutate': settingsMutateValueSchema,
+  'authorization.describe': authorizationDescribeValueSchema,
+  'authorization.begin': authorizationBeginValueSchema,
+  'authorization.poll': authorizationPollValueSchema,
+  'authorization.submit': authorizationSubmitValueSchema,
+  'authorization.cancel': authorizationCancelValueSchema,
+  'nativeAccounts.describe': nativeAccountsDescribeValueSchema,
+  'nativeAccounts.begin': nativeAccountsBeginValueSchema,
+  'nativeAccounts.poll': nativeAccountsPollValueSchema,
+  'nativeAccounts.submit': nativeAccountsSubmitValueSchema,
+  'nativeAccounts.cancel': nativeAccountsCancelValueSchema,
   'credentials.describe': credentialsDescribeValueSchema,
   'credentials.set': credentialsSetValueSchema,
   'credentials.unset': credentialsUnsetValueSchema,
@@ -264,7 +290,8 @@ export abstract class AbstractApiClient implements IApiClient {
   /**
    * Subscribe to batched envelope observation (diagnostics/logging consumers).
    * Batches follow microtask boundaries; a listener throw is isolated (observation
-   * must never break the carrier).
+   * must never break the carrier). Authorization and native-account envelopes
+   * are excluded because they carry private capabilities and login material.
    * @param listener - receives each flushed batch in arrival order.
    * @returns unsubscribe function.
    */
@@ -345,10 +372,11 @@ export abstract class AbstractApiClient implements IApiClient {
     timeoutPolicy: UnaryTimeoutPolicy = 'default',
   ): Promise<RpcResponse<ResponseValue<K>>> {
     const message: ClientRequest = { type: 'client-request', rpcId: this.mintRpcId(), method, payload }
-    this.onEnvelope(message)
+    const privateAuthorization = method.startsWith('authorization.') || method.startsWith('nativeAccounts.')
+    if (!privateAuthorization) this.onEnvelope(message)
     const response = await this.postJson(`/api/${method}`, message, signal, timeoutPolicy)
     const full = serverResponseSchema.parse(await response.json())
-    this.onEnvelope(full)
+    if (!privateAuthorization) this.onEnvelope(full)
     if (full.rpcId !== message.rpcId) throw new Error(`rpcId mismatch for ${method}: sent ${message.rpcId}, got ${full.rpcId}`)
     if (!full.result.ok) return { rpcId: full.rpcId, result: full.result }
     // Second-level S→C parse: the ok value must match the method's Value schema (mirror of the
@@ -495,6 +523,22 @@ export abstract class AbstractApiClient implements IApiClient {
     update: (payload, signal) => this.callUnary('settings.update', payload, signal),
     replace: (payload, signal) => this.callUnary('settings.replace', payload, signal),
     mutate: (payload, signal) => this.callUnary('settings.mutate', payload, signal),
+  }
+
+  readonly authorization: IApiClient['authorization'] = {
+    describe: (payload, signal) => this.callUnary('authorization.describe', payload, signal),
+    begin: (payload, signal) => this.callUnary('authorization.begin', payload, signal),
+    poll: (payload, signal) => this.callUnary('authorization.poll', payload, signal),
+    submit: (payload, signal) => this.callUnary('authorization.submit', payload, signal),
+    cancel: (payload, signal) => this.callUnary('authorization.cancel', payload, signal),
+  }
+
+  readonly nativeAccounts: IApiClient['nativeAccounts'] = {
+    describe: (payload, signal) => this.callUnary('nativeAccounts.describe', payload, signal),
+    begin: (payload, signal) => this.callUnary('nativeAccounts.begin', payload, signal),
+    poll: (payload, signal) => this.callUnary('nativeAccounts.poll', payload, signal),
+    submit: (payload, signal) => this.callUnary('nativeAccounts.submit', payload, signal),
+    cancel: (payload, signal) => this.callUnary('nativeAccounts.cancel', payload, signal),
   }
 
   readonly credentials: IApiClient['credentials'] = {

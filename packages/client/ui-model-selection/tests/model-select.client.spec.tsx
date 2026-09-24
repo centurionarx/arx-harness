@@ -182,3 +182,18 @@ describe('ModelSelect reasoning effort', () => {
     expect(load).not.toHaveBeenCalled()
   })
 })
+
+
+it('offers provider configuration from an empty catalog without opening the workspace picker', () => {
+  const configureModels = vi.fn()
+  const requestWorkspace = vi.fn()
+  render(<div onClick={requestWorkspace}><ModelSelect locked={false} available
+    directory={createSnapshotStore<ModelDirectoryState>(state({ groups: [], current: null }))}
+    load={vi.fn()} select={vi.fn()} configureModels={configureModels} t={t} /></div>)
+  fireEvent.click(screen.getByRole('button', { name: 'Select model' }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /Model/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Configure models' }))
+  expect(configureModels).toHaveBeenCalledOnce()
+  expect(requestWorkspace).not.toHaveBeenCalled()
+  expect(screen.queryByRole('menu')).toBeNull()
+})

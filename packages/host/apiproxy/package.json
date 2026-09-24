@@ -74,13 +74,15 @@
     "@arx-ai/schemastery": "workspace:^",
     "fflate": "^0.8.2",
     "zod": "^4.4.3",
-    "@arx-ai/arx-web": "workspace:^"
+    "@arx-ai/arx-web": "workspace:^",
+    "@arx-ai/arx-authorization": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-agent-presets": "workspace:^",
     "@arx-ai/arx-cordis-host-runner": "workspace:^",
-    "@arx-ai/arx-invariants": "workspace:^"
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-native-accounts": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/cordis": "workspace:^",
@@ -90,6 +92,7 @@
     "@arx-ai/arx-storage": "workspace:^",
     "@arx-ai/arx-storage-domain": "workspace:^",
     "@arx-ai/arx-typert-protocol": "workspace:^",
-    "@arx-ai/arx-typert-registry": "workspace:^"
+    "@arx-ai/arx-typert-registry": "workspace:^",
+    "@arx-ai/arx-native-accounts": "workspace:^"
   }
 }

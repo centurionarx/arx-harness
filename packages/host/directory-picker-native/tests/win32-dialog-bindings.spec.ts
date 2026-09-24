@@ -30,6 +30,10 @@ interface ComWorld {
   /** Contexts `SetThreadDpiAwarenessContext` accepts; others return NULL. */
   supportedDpiContexts: number[]
   enumThrows: boolean
+  timerFails: boolean
+  timerKilled: number
+  enumeratedThread: unknown
+  timerCallback?: { fn: (...args: unknown[]) => unknown }
   path: string
   titles: string[]
   options: number[]
@@ -37,6 +41,7 @@ interface ComWorld {
   freed: unknown[]
   released: string[]
   posted: { hwnd: unknown; message: number }[]
+  shown: { hwnd: unknown; command: unknown }[]
   registered: number
   unregistered: number
   uninitialized: number
@@ -45,9 +50,9 @@ interface ComWorld {
 function comWorld(overrides: Partial<ComWorld> = {}): ComWorld {
   return {
     coInitHr: 0, coCreateHr: 0, showHr: 0, getResultHr: 0, getDisplayNameHr: 0,
-    hasThreadDpi: true, supportedDpiContexts: [-4], enumThrows: false,
+    hasThreadDpi: true, supportedDpiContexts: [-4], enumThrows: false, timerFails: false, timerKilled: 0, enumeratedThread: undefined,
     path: 'C:\\选中\\directory',
-    titles: [], options: [], dpiContexts: [], freed: [], released: [], posted: [],
+    titles: [], options: [], dpiContexts: [], freed: [], released: [], posted: [], shown: [],
     registered: 0, unregistered: 0, uninitialized: 0,
     ...overrides,
   }
@@ -67,7 +72,10 @@ function installFakeKoffi(world: ComWorld): void {
       switch (slot) {
         case 9: world.options.push(args[0] as number); return 0
         case 17: world.titles.push(args[0] as string); return 0
-        case 3: return world.showHr
+        case 3:
+          world.timerCallback?.fn()
+          world.timerCallback?.fn()
+          return world.showHr
         case 20: {
           if (world.getResultHr < 0) return world.getResultHr
           ;(args[0] as unknown[])[0] = itemPtr
@@ -115,9 +123,22 @@ function installFakeKoffi(world: ComWorld): void {
             }
             case 'EnumThreadWindows': return (_tid: unknown, callback: { fn: (hwnd: unknown, lparam: unknown) => number }, lparam: unknown) => {
               if (world.enumThrows) throw new Error('EnumThreadWindows refused')
+              world.enumeratedThread = _tid
               callback.fn({ kind: 'hwnd', n: 1 }, lparam)
               callback.fn({ kind: 'hwnd', n: 2 }, lparam)
               return 1
+            }
+            case 'SetTimer': return (_hwnd: unknown, _id: unknown, _interval: unknown, callback: { fn: (...args: unknown[]) => unknown }) => {
+              world.timerCallback = callback
+              return world.timerFails ? 0 : 42
+            }
+            case 'KillTimer': return () => { world.timerKilled += 1; return 1 }
+            case 'ShowWindow': return (hwnd: unknown, command: unknown) => { world.shown.push({ hwnd, command }); return 1 }
+            case 'SetForegroundWindow': return () => 1
+            case 'GetClassNameW': return (hwnd: { n: number }, buffer: Buffer) => {
+              const name = hwnd.n === 1 ? 'other' : '#32770'
+              buffer.write(name, 'utf16le')
+              return name.length
             }
             case 'PostMessageW': return (hwnd: unknown, message: number) => { world.posted.push({ hwnd, message }); return 1 }
             default: throw new Error(`unexpected native import ${dll}/${name}`)
@@ -238,6 +259,30 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
     // The shell item is released even when its display name cannot be read.
     expect(nameWorld.released).toEqual(['item', 'dialog'])
     expect(nameWorld.freed).toHaveLength(0)
+  })
+})
+
+describe('native chooser visibility', () => {
+  it('maximizes only the first dialog on the worker thread and releases its timer', async () => {
+    const world = comWorld()
+    installFakeKoffi(world)
+    const { loadWin32DialogBindings } = await loadBindingsModule()
+    const bindings = await loadWin32DialogBindings()
+    expect(bindings.createFolderDialog().show()).toBe(0)
+    expect(world.enumeratedThread).toBe(31337)
+    expect(world.shown).toEqual([{ hwnd: { kind: 'hwnd', n: 2 }, command: 3 }])
+    expect(world.timerKilled).toBe(2)
+    expect(world.unregistered).toBe(2)
+  })
+
+  it('releases callbacks if the thread timer cannot install', async () => {
+    const world = comWorld({ timerFails: true })
+    installFakeKoffi(world)
+    const { loadWin32DialogBindings } = await loadBindingsModule()
+    const bindings = await loadWin32DialogBindings()
+    expect(() => bindings.createFolderDialog().show()).toThrow('SetTimer failed')
+    expect(world.unregistered).toBe(2)
+    expect(world.timerKilled).toBe(0)
   })
 })
 

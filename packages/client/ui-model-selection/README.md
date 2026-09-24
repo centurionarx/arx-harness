@@ -25,3 +25,6 @@ Switching the route can reduce or invalidate provider-side cache reuse for subse
 - **No create-time or addressed-subagent selection** — both entries require an existing ordinary session's Agent; there is no draft-phase model choice to fold into session creation, and subagent continuation deliberately exposes no independent model-selection contract.
 - **Directory names are presentation-only** — selection and persistence use provider/model/effort ids; a provider whose catalog or exact-model metadata lookup fails lists as an unselectable failure row until reload.
 - **No arbitrary effort input** — the composer offers only the exact model's adapter-advertised levels; an adapter without reasoning metadata leaves the Effort row absent.
+
+
+The composer keeps the model selector available before a Workspace is chosen. In that state it reads the global model catalog and saves the complete `agent-default-model` settings selection for future sessions, without creating a session. After a session is selected, the existing per-session model selection applies. An empty catalog offers **Configure models**, which opens Settings at Models; no provider or model is fabricated.

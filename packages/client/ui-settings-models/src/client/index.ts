@@ -15,6 +15,12 @@ import type {} from '@arx-ai/arx-client-locale/client'
 // Type-only: pulls the ctx.remote merge and the forwarded-event key face
 // (settings/credentials invalidations ride the allowlist) into this program.
 import type {} from '@arx-ai/arx-api-remotes/client'
+import { ChatAuthorization } from './ChatAuthorization.tsx'
+import type { ChatAuthorizationInjected } from './ChatAuthorization.tsx'
+import { ChatAuthorizationStore } from './chat-authorization-store.ts'
+import { NativeAccounts } from './NativeAccounts.tsx'
+import type { NativeAccountsInjected } from './NativeAccounts.tsx'
+import { NativeAccountsStore } from './native-accounts-store.ts'
 import { ModelsSection } from './ModelsSection.tsx'
 import type { ModelsSectionInjected } from './ModelsSection.tsx'
 import { WelcomeNotice } from './WelcomeNotice.tsx'
@@ -29,6 +35,10 @@ export type { ModelsSectionInjected, ModelsSectionProps } from './ModelsSection.
 export type { ModelsKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
+  interface SlotMap {
+    'settings.models.chatAuthorization': { kind: 'single'; scope: 'root'; owner: {} }
+    'settings.models.nativeAccounts': { kind: 'single'; scope: 'root'; owner: {} }
+  }
   interface LocaleNamespaceMap {
     /** The Models page + product-onboarding copy. */
     'settings.models': ModelsKey
@@ -68,6 +78,10 @@ export function apply(ctx: ClientContext): void {
   const connection = ctx.get('connection') as ConnectionHandle
   const schema = createSettingsSchemaOperations(ctx.settingsSchema)
   const controller = new ModelsSettingsStore(connection.api, schema, ctx.settingsScope.describe())
+  const accounts = new NativeAccountsStore(connection.api, ctx.settingsScope.describe(), () => { void controller.load() })
+  ctx.effect(() => () => { accounts.dispose() }, 'ui-settings-models: native accounts')
+  const chatAuthorization = new ChatAuthorizationStore(connection.api, ctx.settingsScope.describe(), () => { void controller.load() })
+  ctx.effect(() => () => { chatAuthorization.dispose() }, 'ui-settings-models: chat authorization')
   // Registration-time text (the nav label thunk) and the inject faces share
   // one bound translate; copy freshness rides the locale revision.
   const t = ctx.locale.bind(NS) as ModelsSectionInjected['t']
@@ -115,7 +129,37 @@ export function apply(ctx: ClientContext): void {
     order: 10,
     label: () => t('nav'),
     inject: injected,
+    children: {
+      'settings.models.nativeAccounts': { kind: 'single', scope: 'root' },
+      'settings.models.chatAuthorization': { kind: 'single', scope: 'root' },
+    },
   }, ModelsSection))
+  ctx.slots.inject('settings.models.nativeAccounts', () => ctx.slots.register({
+    name: 'settings.models.nativeAccounts',
+    locale: NS,
+    inject: (): NativeAccountsInjected => ({
+      available: connection.isLoopback,
+      hooks: { accounts: accounts.store },
+      watch: () => accounts.watch(),
+      reload: () => { void accounts.load() },
+      begin: (provider, mode) => { void accounts.begin(provider, mode) },
+      cancel: () => { void accounts.cancel() },
+      submit: (code) => { void accounts.submit(code) },
+      enable: (provider) => { void accounts.enable(provider) },
+    }),
+  }, NativeAccounts))
+  ctx.slots.inject('settings.models.chatAuthorization', () => ctx.slots.register({
+    name: 'settings.models.chatAuthorization', locale: NS,
+    inject: (): ChatAuthorizationInjected => ({
+      available: connection.isLoopback, hooks: { authorization: chatAuthorization.store },
+      watch: () => chatAuthorization.watch(),
+      begin: () => { chatAuthorization.begin() },
+      cancel: () => { void chatAuthorization.cancel() },
+      submit: (answer) => { chatAuthorization.submit(answer) },
+      enable: () => { void chatAuthorization.enable() },
+      reload: () => { void chatAuthorization.load() },
+    }),
+  }, ChatAuthorization))
   ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
     name: 'settings.onboarding',
     id: 'welcome-notice',

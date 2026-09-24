@@ -1,9 +1,8 @@
 /**
  * Child-process entry for the Win32 folder dialog: blocks THIS process
  * inside the modal `Show` so the host event loop stays live, reporting over
- * the IPC channel. Spawned as a child process (not a worker thread) so the
- * dialog is the process's first window and Windows activates it without a
- * manual foreground call. Protocol: `{kind:'showing',threadId}` right
+ * the IPC channel. The child keeps its console hidden and the bindings
+ * maximize the folder dialog after window creation. Protocol: `{kind:'showing',threadId}` right
  * before the blocking call (the driver's abort lever needs the native
  * thread id), then exactly one of `{kind:'done',path}` or
  * `{kind:'error',message}`.

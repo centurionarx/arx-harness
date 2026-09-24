@@ -32,7 +32,9 @@ export interface SettingsOnboardingStep {
  * the shell reads no locale state and subscribes through the bound hook.
  */
 export type SettingsRootInjected = {
+  consumeNavigation: (sequence: number) => void
   hooks: {
+    navigation: HostObservable<{ section: string; sequence: number } | null>
     /** settings.section ledger projected into ordered nav rows. */
     sections: HostObservable<readonly SettingsSectionRow[]>
     /** settings.onboarding ledger projected into coordinator order. */

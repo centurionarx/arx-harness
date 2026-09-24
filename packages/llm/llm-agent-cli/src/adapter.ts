@@ -16,6 +16,7 @@ import {
   type LlmModelReasoningInfo,
   type LlmProviderInfo,
   type LlmResolvedModelInfo,
+  type PreparedAdapterCall,
   type StreamChunk,
   type ToolSchema,
 } from '@arx-ai/arx-llm'
@@ -86,6 +87,23 @@ const VENDOR_TOOLS = [
 export class AgentCliAdapter extends LlmAdapter {
   constructor(private readonly spec: AgentCliAdapterSpec) {
     super()
+  }
+
+  /**
+   * Bind metadata and dispatch to the same settings generation.
+   * @param provider - configured provider route.
+   * @param model - exact model id in that route.
+   * @param _signal - caller cancellation; metadata resolution performs no I/O.
+   * @returns resolved metadata and a stream bound to this route generation.
+   */
+  override async prepareCall(provider: string, model: string, _signal?: AbortSignal): Promise<PreparedAdapterCall> {
+    const routes = this.spec.routes()
+    const cwd = this.spec.cwd()
+    const bound = new AgentCliAdapter({ ...this.spec, routes: () => routes, cwd: () => cwd })
+    return {
+      model: await bound.resolveModel(provider, model),
+      stream: options => bound.stream(options),
+    }
   }
 
   /** Resolve one configured route or fail naming it. */

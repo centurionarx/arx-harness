@@ -43,7 +43,7 @@ interface EffortChoice {
  * @returns the trigger and, while open, the two-level menu.
  */
 export function ModelSelect(
-  { locked, available, directory, load, select, t }:
+  { locked, available, directory, load, select, configureModels, t }:
   ModelSelectInjected & { locked: boolean } & PropsLocale<'model'>,
 ) {
   const state = useSyncExternalStore(
@@ -217,7 +217,7 @@ export function ModelSelect(
   }
 
   return (
-    <div ref={rootRef} className={css.root} onKeyDown={onRootKeyDown} onBlur={onBlur}>
+    <div ref={rootRef} className={css.root} onClick={(event) => { event.stopPropagation() }} onKeyDown={onRootKeyDown} onBlur={onBlur}>
       <button
         ref={triggerRef}
         type="button"
@@ -320,7 +320,14 @@ export function ModelSelect(
                 })}
               </div>
               {state.status === 'ready' && choices.length === 0 && (
-                <div className={css.empty}>{t('empty.models')}</div>
+                <div className={css.empty}>
+                  <span>{t('empty.models')}</span>
+                  {configureModels !== undefined && (
+                    <button type="button" className={css.retry} onClick={() => { close(); configureModels() }}>
+                      {t('action.configure')}
+                    </button>
+                  )}
+                </div>
               )}
             </>
           )}

@@ -1,3 +1,6 @@
+import type {} from '@arx-ai/arx-native-accounts'
+import type {} from '@arx-ai/arx-authorization'
+import { AuthorizationSessions, AuthorizationSessionError, DEFAULT_AUTHORIZATION_LIMITS, type AuthorizationSessionLimits } from './authorization-sessions.ts'
 /**
  * Host-side ApiProxy implementation. Signature discipline: unary takes the
  * narrow RpcRequest<P> and echoes request.rpcId on the RpcResponse<T>.
@@ -586,6 +589,8 @@ function directoryError(error: unknown): RpcError {
 
 /** Resolved Agent model and project-directory defaults consumed by the API implementation. */
 export interface ApiProxyDefaults {
+  /** Configured bounds for browser-owned authorization attempts. */
+  authorization?: Partial<AuthorizationSessionLimits>
   /**
    * The model selection a session starts from when its own log names none. Read on
    * every access rather than captured, so a default saved during this process
@@ -1069,6 +1074,18 @@ function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceVie
  * @returns the ApiProxy implementation.
  */
 export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiProxy {
+  let authorizationSessions: AuthorizationSessions | undefined
+  ctx.inject(['authorization', 'credentials'], (authorizationCtx) => {
+    const sessions = new AuthorizationSessions({ authorization: authorizationCtx.authorization, credentials: authorizationCtx.credentials },
+      { ...DEFAULT_AUTHORIZATION_LIMITS, ...defaults.authorization })
+    authorizationSessions = sessions
+    authorizationCtx.effect(() => async () => {
+      if (authorizationSessions === sessions) authorizationSessions = undefined
+      await sessions.dispose()
+    })
+  })
+  const authorizationFailure = (error: unknown): RpcError => ({ code: 'bad-request',
+    message: error instanceof AuthorizationSessionError ? error.message : 'Authorization is unavailable. Please retry.', details: { issues: [] } })
   const sessionExportCompressionLevel = defaults.sessionExportCompressionLevel
     ?? DEFAULT_SESSION_LOG_COMPRESSION_LEVEL
   const coldBlankProbeMaxBytes = defaults.coldBlankProbeMaxBytes
@@ -3308,6 +3325,71 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       mutate: request => settingsWrite(request, request.payload.ns, 'mutate', request.payload.ops, request.payload.expectedRevision),
     },
 
+    authorization: {
+      async describe(request) {
+        const service = authorizationSessions
+        if (service === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+        try { return ok(request, { flows: await service.describe() }) }
+        catch (error) { return err(request, authorizationFailure(error)) }
+      },
+      async begin(request) {
+        const service = authorizationSessions
+        if (service === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: service.begin(request.payload.key, request.payload.method) }) }
+        catch (error) { return err(request, authorizationFailure(error)) }
+      },
+      async poll(request) {
+        const service = authorizationSessions
+        if (service === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: service.poll(request.payload.attemptId) }) }
+        catch (error) { return err(request, authorizationFailure(error)) }
+      },
+      async submit(request) {
+        const service = authorizationSessions
+        if (service === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: service.submit(request.payload.attemptId, request.payload.promptId, request.payload.answer) }) }
+        catch (error) { return err(request, authorizationFailure(error)) }
+      },
+      async cancel(request) {
+        const service = authorizationSessions
+        if (service === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: await service.cancel(request.payload.attemptId) }) }
+        catch (error) { return err(request, authorizationFailure(error)) }
+      },
+    },
+
+    nativeAccounts: {
+      async describe(request) {
+        const service = ctx.get('nativeAccounts')
+        if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+        try { return ok(request, { accounts: await service.describe() }) }
+        catch { return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} }) }
+      },
+      async begin(request) {
+        const service = ctx.get('nativeAccounts')
+        if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: await service.begin(request.payload.provider, request.payload.mode) }) }
+        catch { return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} }) }
+      },
+      async poll(request) {
+        const service = ctx.get('nativeAccounts')
+        if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: await service.poll(request.payload.attemptId) }) }
+        catch { return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} }) }
+      },
+      async submit(request) {
+        const service = ctx.get('nativeAccounts')
+        if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: await service.submit(request.payload.attemptId, request.payload.code) }) }
+        catch { return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} }) }
+      },
+      async cancel(request) {
+        const service = ctx.get('nativeAccounts')
+        if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+        try { return ok(request, { attempt: await service.cancel(request.payload.attemptId) }) }
+        catch { return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} }) }
+      },
+    },
     credentials: {
       async describe(request) {
         const credentials = ctx.get('credentials')

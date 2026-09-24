@@ -239,6 +239,19 @@ declare module '@arx-ai/cordis' {
 export class SettingsScopeBinder extends Service {
   private readonly mirror: SettingsDescribeMirror
   private readonly schema: SettingsSchemaService
+  /** One-shot navigation requests; the shell retains its own local viewing state. */
+  readonly navigation = createSnapshotStore<{ section: string; sequence: number } | null>(null)
+  private navigationSequence = 0
+
+  /** Request the shell to open a section. @param section - registered settings section id. */
+  openSection(section: string): void {
+    this.navigation.set({ section, sequence: ++this.navigationSequence })
+  }
+
+  /** Acknowledge only the request the shell consumed. @param sequence - request sequence. */
+  consumeNavigation(sequence: number): void {
+    if (this.navigation.getSnapshot()?.sequence === sequence) this.navigation.set(null)
+  }
 
   /**
    * @param ctx - the providing plugin's context.

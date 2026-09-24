@@ -28,6 +28,9 @@
     // not declaration path aliases, keep each package/vendor source compiled
     // under its own tsconfig boundary.
     "paths": {
+      "@arx-ai/arx-native-accounts/invariant": ["./packages/credentials/native-accounts/src/invariant.ts"],
+      "@arx-ai/arx-native-accounts": ["./packages/credentials/native-accounts/src/index.ts"],
+      "@arx-ai/arx-native-accounts/types": ["./packages/credentials/native-accounts/src/types.ts"],
       "@arx-ai/arx-webhook-github/types": ["./packages/webhook/webhook-github/src/types.ts"],
       "@arx-ai/arx-webhook-github": ["./packages/webhook/webhook-github/src/index.ts"],
       "@arx-ai/arx-webhook/invariant": ["./packages/webhook/webhook/src/invariant.ts"],

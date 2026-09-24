@@ -91,7 +91,9 @@ export function apply(ctx: ClientContext): void {
   let onboardingVersion = -1
   let onboardingSteps: readonly SettingsOnboardingStep[] = []
   const shellInjected = (): SettingsRootInjected => ({
+    consumeNavigation: (sequence) => { ctx.settingsScope.consumeNavigation(sequence) },
     hooks: {
+      navigation: ctx.settingsScope.navigation,
       sections: {
         getSnapshot: () => {
           const version = ctx.slots.getVersion('settings.section')

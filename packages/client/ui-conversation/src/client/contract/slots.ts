@@ -270,7 +270,7 @@ declare module '@arx-ai/arx-client-ui-slots' {
      * model-related block: every such block is one the user clears by picking
      * a model here.
      */
-    'conversation.input.model': { kind: 'single'; scope: 'session'; owner: InputControlOwnerProps }
+    'conversation.input.model': { kind: 'single'; scope: 'session-maybe'; owner: InputControlOwnerProps }
   }
 
   /**

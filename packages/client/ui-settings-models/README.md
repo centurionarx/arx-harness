@@ -31,3 +31,12 @@ None; this package neither assembles nor sends a provider request.
 - **Only pi-ai routes can be hand-declared** — the custom-provider card writes into `llm-pi-ai`, the one namespace whose profiles each describe a whole provider. A namespace whose whole section describes one provider is a composition fact, not something this page can create.
 - **Interrogation covers OpenAI-compatible endpoints** — the adapter reads only that model-list response format, so a gateway speaking another protocol reports that it cannot be asked and its models are entered by hand.
 - **Undeclared live routes render nowhere** — a route registered without a configurable-provider declaration has no settings address; it stays visible in pickers but not on this page's rows.
+
+
+## Subscription connections
+
+Models settings separates **OpenAI Codex chat models** from **Native product accounts**. OpenAI chat uses the registered `llm-pi-ai/openai-codex` authorization flow. After successful authorization, it enables the `openai-codex` adapter profile without replacing an existing model catalog. Native Codex login is for the delegated agent and does not authorize the chat adapter.
+
+The native account card reads sanitized tool status and model metadata. A confirmed Claude subscription can be enabled in chat using its reported canonical model ids; API-key or unknown authentication is not treated as a subscription. Existing explicit profiles are preserved, and absent capacities are resolved by the host adapter rather than guessed by this UI.
+
+Login progress uses caller-private attempt ids, host-provided polling intervals, and the actual sign-in link or prompt. Closing the page cancels its owned pending attempts; late starts are cancelled too. One-time answers are cleared after submission and never enter a UI store. These controls require the privileged local configuration carrier; a remote browser does not issue account or authorization reads. Unavailable native tools and authorization providers remain visible as unavailable.

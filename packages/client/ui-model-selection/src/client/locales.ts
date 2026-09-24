@@ -25,6 +25,7 @@ export const en = {
   'status.loading': 'Refreshing model list…',
   'error.action': 'Model operation failed: {message}',
   'action.reload': 'Reload',
+  'action.configure': 'Configure models',
   'warning.groupLoad': '{name} failed to load: {message}',
   'empty.models': 'No models available.',
   'blocked.composer': 'This model is unavailable — select one to continue',
