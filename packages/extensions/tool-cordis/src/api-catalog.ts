@@ -1749,7 +1749,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: 'describe(options?: SettingsDescribeOptions): SettingsDescriptor[]',
-        description: 'Describe every registered namespace for configuration surfaces, including the composition `base` and raw user layers so a form can mark which fields the user overrode (presence in `user`) and what a reset returns to.',
+        description: 'Describe every registered namespace for configuration surfaces, including the composition `base` and raw user layers so a form can mark which fields the user overrode (presence in `user`) and what a reset returns to. Redacted reads reject unsupported schemas, recursive graphs and incompatible data without quoting schema text or values; they never run schema callbacks.',
         parameters: [{ name: 'options', description: 'redaction switch; wire surfaces must redact.' }],
         returns: 'one descriptor per registered namespace, in registration order.',
       },
