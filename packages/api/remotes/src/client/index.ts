@@ -46,6 +46,8 @@ export type {} from '@arx-ai/arx-settings/types'
  * the carrier's runtime values stay behind their own module edge.
  */
 export type {
+  AuthorizationAttemptId, AuthorizationPromptId, AuthorizationFlowView, AuthorizationPromptView, AuthorizationAttemptView,
+  NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode, NativeAccountModel,
   ClientResponse, ConfigurableProviderView, ConnectionHandle, ConnectionSinks, ContentBlock,
   CredentialView, DirectoryListing, DiscoveredModelView, HistoryEntry, HostFrame, IApiClient,
   MessageId, ModelCatalogFailure, ModelProviderGroup, ModelReasoningEffort, ModelSelection,

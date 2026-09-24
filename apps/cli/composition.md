@@ -40,6 +40,10 @@ flowchart LR
   cfg --> plugin_arx_base_settings
   plugin_arx_base_credentials["credentials<br/>@arx-ai/arx-credentials-local"]
   cfg --> plugin_arx_base_credentials
+  plugin_arx_base_authorization["authorization<br/>@arx-ai/arx-authorization"]
+  cfg --> plugin_arx_base_authorization
+  plugin_arx_base_native_accounts["native-accounts<br/>@arx-ai/arx-native-accounts"]
+  cfg --> plugin_arx_base_native_accounts
   plugin_arx_base_llm_pi_ai["llm-pi-ai<br/>@arx-ai/arx-llm-pi-ai"]
   cfg --> plugin_arx_base_llm_pi_ai
   plugin_arx_base_llm_agent_cli["llm-agent-cli<br/>@arx-ai/arx-llm-agent-cli"]
@@ -182,6 +186,8 @@ flowchart LR
 | `llm-retry` | `@arx-ai/arx-llm-retry` |
 | `settings` | `@arx-ai/arx-settings-file` |
 | `credentials` | `@arx-ai/arx-credentials-local` |
+| `authorization` | `@arx-ai/arx-authorization` |
+| `native-accounts` | `@arx-ai/arx-native-accounts` |
 | `llm-pi-ai` | `@arx-ai/arx-llm-pi-ai` |
 | `llm-agent-cli` | `@arx-ai/arx-llm-agent-cli` |
 | `session-persistence-jsonl` | `@arx-ai/arx-session-persistence-jsonl` |

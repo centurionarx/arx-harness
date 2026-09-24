@@ -138,9 +138,11 @@ Check that the tool's own login is in place before configuring the route, using 
 
 Read your subscription's terms first. Driving a subscription tool from another program may exceed what that subscription permits, and that judgement is yours to make: the harness neither checks nor asserts anything about it.
 
-Open **Settings → Models**, choose **Add provider**, and select **Claude (subscription)**. The card asks for no key, endpoint, or protocol. Add at least one model with its **Context window** — the route cannot serve without one, because automatic compaction resolves capacity from the route serving the request and the tool discloses none of its own — tick **Accepts images** for a model that takes image input, and choose **Apply**. The route takes effect on the next request, without restarting the server, and its models appear in the model picker like any other.
+Open **Settings → Models**, choose **Add provider**, and select **Claude (subscription)**. The card asks for no key, endpoint, or protocol. Add at least one model. A model named by its full id, such as `claude-sonnet-4-5`, takes its context window, output cap, and image input from the catalog installed with the harness; a vendor alias such as `sonnet`, or an id that catalog does not list, needs its **Context window** filled in, because automatic compaction resolves capacity from the route serving the request and the tool discloses none of its own. **Apply** refuses such a model and names it. Tick **Accepts images** for a model outside the catalog that takes image input, and choose **Apply**. The route takes effect on the next request, without restarting the server, and its models appear in the model picker like any other.
 
-**Fetch available models** lists the models the tool's login can reach, by id. It starts the tool once to ask, so it needs the tool installed and signed in; each model you adopt from it still needs its context window.
+**Fetch available models** lists the models the tool's login can reach, by id. It starts the tool once to ask, so it needs the tool installed and signed in. It returns the tool's aliases, so each model you adopt from it still needs its context window.
+
+The **Native product accounts** card on the same page shows whether Claude Code and Codex are installed and signed in on this machine and starts their own sign-in: in a browser, or with a device code for Codex. When the tool asks for a code, the card shows a field for it. For a Claude Code account signed in with a subscription, **Enable in chat** writes the `claude-subscription` route with the models the account reports, under their full ids, so their context windows come from the catalog. The **OpenAI Codex chat models** card signs the library-backed `openai-codex` route in with your OpenAI subscription and then enables it; that sign-in is separate from the Codex tool's own. Both cards appear only in a browser on the machine that runs the harness, or through an authenticated local tunnel to it.
 
 The page writes the `llm-agent-cli` section of `$ARX_HOME/settings.yaml`, which you can also edit directly:
 
@@ -167,6 +169,7 @@ If a saved default names a provider that was deleted, the composer displays **Se
 
 - **`MISSING_CREDENTIAL`** — Store the provider key through the Models page or supply the referenced environment variable.
 - **`UNKNOWN_MODEL`** — Select a configured model or add the missing model to the custom provider.
+- **Apply refuses a subscription model and names it** — The installed catalog does not list that id: it is an alias, or newer than the catalog. Fill in its **Context window**, or use the model's full id.
 - **Fetching available models returns 401** — Check the key. Model discovery calls the OpenAI-compatible `GET /models` endpoint; enter models manually for endpoints that do not provide it.
 - **The gateway refuses every request although the key and URL are right** — Its request shape differs from OpenAI's. Start with `compat.supportsDeveloperRole: false` and `compat.maxTokensField: max_tokens` on the route.
 - **Only reasoning models fail** — pi-ai sends their system prompt as the `developer` role, which the gateway rejects. Set `compat.supportsDeveloperRole: false`.

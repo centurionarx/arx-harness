@@ -5,6 +5,9 @@
 
 // Type-only: the `ctx.web` Context merge, read optionally below.
 import type {} from '@arx-ai/arx-web'
+// Type-only: the `ctx.nativeAccounts` and `ctx.authorization` Context merges.
+import type {} from '@arx-ai/arx-native-accounts'
+import type {} from '@arx-ai/arx-authorization'
 import { randomUUID } from 'node:crypto'
 import { mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -112,6 +115,7 @@ import {
   inspectApiRemoteSession,
 } from '@arx-ai/arx-api-remotes'
 import { canOpenNativePath, openNativePath, openNativeTextFile } from '@arx-ai/arx-native-command'
+import { AuthorizationSessions, AuthorizationSessionError, DEFAULT_AUTHORIZATION_LIMITS, type AuthorizationSessionLimits } from './authorization-sessions.ts'
 
 /** Page size when history is called without maxMessages. */
 const DEFAULT_MAX_MESSAGES = 50
@@ -586,6 +590,8 @@ function directoryError(error: unknown): RpcError {
 
 /** Resolved Agent model and project-directory defaults consumed by the API implementation. */
 export interface ApiProxyDefaults {
+  /** Configured bounds for browser-owned authorization attempts. */
+  authorization?: Partial<AuthorizationSessionLimits>
   /**
    * The model selection a session starts from when its own log names none. Read on
    * every access rather than captured, so a default saved during this process
@@ -1076,6 +1082,50 @@ function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceVie
  * @returns the ApiProxy implementation.
  */
 export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiProxy {
+  let authorizationSessions: AuthorizationSessions | undefined
+  ctx.inject(['authorization', 'credentials'], (authorizationCtx) => {
+    const sessions = new AuthorizationSessions({ authorization: authorizationCtx.authorization, credentials: authorizationCtx.credentials },
+      { ...DEFAULT_AUTHORIZATION_LIMITS, ...defaults.authorization })
+    authorizationSessions = sessions
+    authorizationCtx.effect(() => async () => {
+      if (authorizationSessions === sessions) authorizationSessions = undefined
+      await sessions.dispose()
+    })
+  })
+  /**
+   * Run one call against the browser attempt owner. A composition without the
+   * authorization seam answers `internal`; an owner refusal keeps its fixed
+   * public message, and any other failure a generic one.
+   */
+  const viaAuthorization = async <T>(
+    request: RpcRequest<unknown>,
+    run: (sessions: AuthorizationSessions) => T | Promise<T>,
+  ): Promise<RpcResponse<T>> => {
+    const sessions = authorizationSessions
+    if (sessions === undefined) return err(request, { code: 'internal', message: 'Authorization is unavailable in this composition.', details: {} })
+    try {
+      return ok(request, await run(sessions))
+    } catch (error) {
+      return err(request, { code: 'bad-request', details: { issues: [] },
+        message: error instanceof AuthorizationSessionError ? error.message : 'Authorization is unavailable. Please retry.' })
+    }
+  }
+  /**
+   * Run one call against the native account service. Its failures reach the
+   * browser as one fixed message, never as product output.
+   */
+  const viaNativeAccounts = async <T>(
+    request: RpcRequest<unknown>,
+    run: (service: Context['nativeAccounts']) => T | Promise<T>,
+  ): Promise<RpcResponse<T>> => {
+    const service = ctx.get('nativeAccounts')
+    if (service === undefined) return err(request, { code: 'internal', message: 'Native accounts are unavailable in this composition.', details: {} })
+    try {
+      return ok(request, await run(service))
+    } catch {
+      return err(request, { code: 'internal', message: 'The native account operation could not complete. Retry or refresh the account status.', details: {} })
+    }
+  }
   const sessionExportCompressionLevel = defaults.sessionExportCompressionLevel
     ?? DEFAULT_SESSION_LOG_COMPRESSION_LEVEL
   const coldBlankProbeMaxBytes = defaults.coldBlankProbeMaxBytes
@@ -3338,6 +3388,25 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       mutate: request => settingsWrite(request, request.payload.ns, 'mutate', request.payload.ops, request.payload.expectedRevision),
     },
 
+    authorization: {
+      describe: request => viaAuthorization(request, async sessions => ({ flows: await sessions.describe() })),
+      begin: request => viaAuthorization(request, sessions => ({ attempt: sessions.begin(request.payload.key, request.payload.method) })),
+      poll: request => viaAuthorization(request, sessions => ({ attempt: sessions.poll(request.payload.attemptId) })),
+      submit: request => viaAuthorization(request, sessions => ({
+        attempt: sessions.submit(request.payload.attemptId, request.payload.promptId, request.payload.answer),
+      })),
+      cancel: request => viaAuthorization(request, async sessions => ({ attempt: await sessions.cancel(request.payload.attemptId) })),
+    },
+
+    nativeAccounts: {
+      describe: request => viaNativeAccounts(request, async service => ({ accounts: await service.describe() })),
+      begin: request => viaNativeAccounts(request, service => ({ attempt: service.begin(request.payload.provider, request.payload.mode) })),
+      poll: request => viaNativeAccounts(request, service => ({ attempt: service.poll(request.payload.attemptId) })),
+      submit: request => viaNativeAccounts(request, service => ({
+        attempt: service.submit(request.payload.attemptId, request.payload.code),
+      })),
+      cancel: request => viaNativeAccounts(request, async service => ({ attempt: await service.cancel(request.payload.attemptId) })),
+    },
     credentials: {
       async describe(request) {
         const credentials = ctx.get('credentials')

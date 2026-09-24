@@ -1097,6 +1097,43 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'nativeAccounts',
+    summary: 'Account lifecycle service; official products remain the only writers of their credentials.',
+    description: 'Account lifecycle service; official products remain the only writers of their credentials.',
+    methods: [
+      {
+        signature: 'describe(): Promise<NativeAccountView[]>',
+        description: 'Read sanitized account and native model metadata.',
+        parameters: [],
+        returns: 'bounded native probes without token material or account identifiers.',
+      },
+      {
+        signature: 'begin(provider: NativeAccountProvider, mode?: NativeLoginMode): NativeAccountAttempt',
+        description: 'Begin user-authorized native login.',
+        parameters: [{ name: 'provider', description: 'product selected by the human.' }, { name: 'mode', description: 'supported browser or device-code flow.' }],
+        returns: 'a private attempt capability and initial progress.',
+      },
+      {
+        signature: 'poll(id: NativeAccountAttemptId): NativeAccountAttempt',
+        description: 'Read the initiating surface\'s attempt.',
+        parameters: [{ name: 'id', description: 'private capability returned by begin.' }],
+        returns: 'sanitized progress.',
+      },
+      {
+        signature: 'submit(id: NativeAccountAttemptId, code: string): NativeAccountAttempt',
+        description: 'Answer the official CLI\'s manual-code prompt.',
+        parameters: [{ name: 'id', description: 'initiating surface\'s private capability.' }, { name: 'code', description: 'transient single-line authorization code.' }],
+        returns: 'progress without the submitted value.',
+      },
+      {
+        signature: 'cancel(id: NativeAccountAttemptId): Promise<NativeAccountAttempt>',
+        description: 'Cancel one owned attempt and await native process cleanup.',
+        parameters: [{ name: 'id', description: 'initiating surface\'s private capability.' }],
+        returns: 'terminal progress.',
+      },
+    ],
+  },
+  {
     key: 'permissionPresets',
     summary: 'Owns the deployment\'s permission presets and their write path.',
     description: 'Owns the deployment\'s permission presets and their write path. Requires a confining `ctx.shell` executor and `ctx.approval`; unmatched knob values are reported as CUSTOM_PRESET, not an error.',
@@ -4125,6 +4162,30 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ModelModalityMap',
     declaration: 'export interface ModelModalityMap {\n    text: \'text\';\n    image: \'image\';\n}',
+  },
+  {
+    name: 'NativeAccountAttempt',
+    declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: \'code\';\n}',
+  },
+  {
+    name: 'NativeAccountAttemptId',
+    declaration: 'export type NativeAccountAttemptId = Branded<\'native-account-attempt\'>;',
+  },
+  {
+    name: 'NativeAccountModel',
+    declaration: 'export interface NativeAccountModel {\n    id: string;\n    name: string;\n    resolvedModel?: string;\n    efforts?: string[];\n}',
+  },
+  {
+    name: 'NativeAccountProvider',
+    declaration: 'export type NativeAccountProvider = \'claude-code\' | \'codex\';',
+  },
+  {
+    name: 'NativeAccountView',
+    declaration: 'export interface NativeAccountView {\n    provider: NativeAccountProvider;\n    label: string;\n    availability: \'available\' | \'unavailable\';\n    status: \'connected\' | \'disconnected\' | \'unknown\';\n    authMode?: \'subscription\' | \'api-key\';\n    models?: NativeAccountModel[];\n    loginModes: NativeLoginMode[];\n    loginInFlight: boolean;\n}',
+  },
+  {
+    name: 'NativeLoginMode',
+    declaration: 'export type NativeLoginMode = \'browser\' | \'device-code\';',
   },
   {
     name: 'ObjectJsonSchema',

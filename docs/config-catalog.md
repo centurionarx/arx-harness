@@ -832,6 +832,8 @@ Requires: `agentDefaultModel` · `agents` · `attachments` · `directoryPicker` 
 ```ts config-catalog
 /** Gateway plugin configuration. */
 export interface Config {
+  /** Browser authorization attempt, retention, polling and answer bounds. */
+  authorization?: Partial<AuthorizationSessionLimits>
   /**
    * Whether this deployment can hand paths to a native desktop opener —
    * the `hasDocument` capability the agent-preset roster reports. Absent,
@@ -853,9 +855,23 @@ export interface Config {
    */
   coldBlankProbeMaxBytes?: number
 }
+
+/** Deployment limits for active and retained browser attempts. */
+export interface AuthorizationSessionLimits {
+  /** Milliseconds an attempt may run before it expires and its flow is withdrawn. */
+  attemptTimeoutMs: number
+  /** Milliseconds a settled attempt stays readable through its attempt id. */
+  resultRetentionMs: number
+  /** Milliseconds the browser waits between progress reads, advised in every attempt. */
+  pollIntervalMs: number
+  /** Most attempts held at once, running and retained together. */
+  maxAttempts: number
+  /** Longest answer, in UTF-16 code units, a prompt accepts. */
+  answerMaxLength: number
+}
 ```
 
-Source: [`packages/host/apiproxy/src/index.ts:44`](../packages/host/apiproxy/src/index.ts)
+Source: [`packages/host/apiproxy/src/index.ts:45`](../packages/host/apiproxy/src/index.ts)
 
 <a id="arx-aiarx-host-directory-picker-browse"></a>
 
@@ -1007,11 +1023,12 @@ export interface AgentCliModel {
   /** Model id callers pass as `GenerateOptions.model`. */
   id: string
   /**
-   * Maximum combined request and response context. Required: automatic
-   * compaction refuses to run against a route whose adapter advertises no
-   * capacity, and the vendor CLI's own model rows carry none.
+   * Maximum combined request and response context. An exact canonical model id
+   * inherits it from the installed Anthropic catalog; an unknown id or alias
+   * must state it, because automatic compaction refuses to run against a route
+   * whose adapter advertises no capacity and the vendor CLI discloses none.
    */
-  contextWindow: number
+  contextWindow?: number
   /** Per-request output cap materialized when a caller omits one. */
   maxTokens?: number
   /** Human-readable name for selectors. */
@@ -1042,7 +1059,7 @@ export interface AgentCliModel {
 export type AgentCliEffort = (typeof AGENT_CLI_EFFORTS)[number]
 ```
 
-Source: [`packages/llm/llm-agent-cli/src/config.ts:70`](../packages/llm/llm-agent-cli/src/config.ts)
+Source: [`packages/llm/llm-agent-cli/src/config.ts:72`](../packages/llm/llm-agent-cli/src/config.ts)
 
 <a id="arx-aiarx-llm-pi-ai"></a>
 
@@ -1509,6 +1526,41 @@ export interface Config {
 ```
 
 Source: [`packages/feedback/message-feedback/src/index.ts:49`](../packages/feedback/message-feedback/src/index.ts)
+
+<a id="arx-aiarx-native-accounts"></a>
+
+## `@arx-ai/arx-native-accounts`
+
+Requires: `subprocess`
+
+```ts config-catalog
+/** Deployment-owned process and login limits. */
+export interface Config {
+  /** Working directory the native tools run in; absent, the harness process's own. */
+  cwd?: string
+  /** Variables laid over the subprocess service's credential-scrubbed environment for every native tool run. */
+  env: Record<string, string>
+  /** Milliseconds a native process tree gets to exit after termination before it is killed. */
+  graceMs: number
+  /**
+   * Bound on the output kept from one native command: status output in bytes,
+   * and the trailing sign-in output scanned for an address and a code prompt.
+   */
+  outputMaxBytes: number
+  /** Milliseconds a sign-in may run before it expires and its native process is withdrawn. */
+  loginTimeoutMs: number
+  /** Milliseconds one account-status read may take before its probes are withdrawn and the account reports `unknown`. */
+  probeTimeoutMs: number
+  /** Milliseconds a settled sign-in stays readable through its attempt id. */
+  resultRetentionMs: number
+  /** Milliseconds the browser waits between progress reads, advised in every attempt. */
+  pollIntervalMs: number
+  /** Most sign-in attempts held at once, running and retained together. */
+  maxAttempts: number
+}
+```
+
+Source: [`packages/credentials/native-accounts/src/index.ts:13`](../packages/credentials/native-accounts/src/index.ts)
 
 <a id="arx-aiarx-permission-presets"></a>
 

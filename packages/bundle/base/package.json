@@ -114,7 +114,9 @@
     "@arx-ai/arx-user-questions": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/arx-workflow-worker-thread": "workspace:^",
-    "@arx-ai/arx-agent-instructions": "workspace:^"
+    "@arx-ai/arx-agent-instructions": "workspace:^",
+    "@arx-ai/arx-native-accounts": "workspace:^",
+    "@arx-ai/arx-authorization": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",

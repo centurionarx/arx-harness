@@ -118,6 +118,7 @@
     "scripts/client-bundle-purity.spec.ts"
   ],
   "references": [
+    { "path": "./packages/credentials/native-accounts" },
     { "path": "./packages/webhook/webhook-github" },
     { "path": "./packages/webhook/webhook" },
     { "path": "./packages/project/project-runner" },

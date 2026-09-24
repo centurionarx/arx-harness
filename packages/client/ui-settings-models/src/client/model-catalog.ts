@@ -54,18 +54,7 @@ export interface ModelCatalogFailure {
   /** Zero-based model position. */
   index: number
   /** Message key owned by the Models settings section. */
-  key: 'modelIdRequired' | 'modelIdDuplicate' | 'modelNameInvalid' | 'modelContextInvalid'
-  | 'modelContextRequired' | 'modelMaxTokensInvalid'
-}
-
-/** Constraints that differ between the adapters whose model entries a card edits. */
-export interface ModelCatalogRules {
-  /**
-   * Every row must state its context window. Set for an adapter that has no
-   * route-level fallback to supply one: automatic compaction refuses a route
-   * whose model advertises no capacity.
-   */
-  requireContextWindow: boolean
+  key: 'modelIdRequired' | 'modelIdDuplicate' | 'modelNameInvalid' | 'modelContextInvalid' | 'modelMaxTokensInvalid'
 }
 
 /** The adapters whose model entries these cards edit, named by their layout. */
@@ -87,16 +76,6 @@ export function entryFormatOf(ns: string): ModelEntryFormat | undefined {
 }
 
 /**
- * Each adapter's catalog rules. `llm-pi-ai` supplies a route-level context
- * window when a model states none; `llm-agent-cli` has no such fallback, and
- * the CLI it drives discloses no capacity to read one from.
- */
-export const CATALOG_RULES: Readonly<Record<ModelEntryFormat, ModelCatalogRules>> = {
-  'pi-ai': { requireContextWindow: false },
-  'agent-cli': { requireContextWindow: true },
-}
-
-/**
  * Convert a schema-validated catalog value into records without dropping
  * hidden fields.
  * @param value - the stored `models` value, in whatever shape it arrived.
@@ -111,12 +90,14 @@ export function modelDrafts(value: unknown): CatalogModelDraft[] {
 }
 
 /**
- * Validate adapter constraints that the serialized schema cannot express.
+ * Validate the entry constraints the serialized schema cannot express. A
+ * missing capacity is left to the owning adapter: `llm-pi-ai` sizes it from
+ * the route, and `llm-agent-cli` inherits it from its installed catalog and
+ * refuses the write, naming the model, when the id is not there.
  * @param value - user-owned `models` value, or undefined while inherited.
- * @param rules - the constraints of the adapter that owns the entries.
  * @returns the first invalid row, or undefined when the adapter will accept it.
  */
-export function validateModelCatalog(value: unknown, rules: ModelCatalogRules): ModelCatalogFailure | undefined {
+export function validateModelCatalog(value: unknown): ModelCatalogFailure | undefined {
   if (value === undefined) return undefined
   const models = modelDrafts(value)
   const seen = new Set<string>()
@@ -134,7 +115,6 @@ export function validateModelCatalog(value: unknown, rules: ModelCatalogRules): 
       return { index, key: 'modelNameInvalid' }
     }
     const contextWindow = model['contextWindow']
-    if (contextWindow === undefined && rules.requireContextWindow) return { index, key: 'modelContextRequired' }
     if (contextWindow !== undefined
       && (typeof contextWindow !== 'number' || !Number.isInteger(contextWindow) || contextWindow <= 0)) {
       return { index, key: 'modelContextInvalid' }

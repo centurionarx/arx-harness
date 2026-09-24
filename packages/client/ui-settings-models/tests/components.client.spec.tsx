@@ -11,7 +11,7 @@ import {
 import type { ModelsSectionInjected, ModelsSectionProps } from '../src/client/ModelsSection.tsx'
 import { pathOps } from '../src/client/ProviderEditor.tsx'
 import {
-  CATALOG_RULES, formatCapacity, modelDrafts, parseCapacity, validateModelCatalog,
+  formatCapacity, modelDrafts, parseCapacity, validateModelCatalog,
 } from '../src/client/model-catalog.ts'
 import { apiKeyFailure } from '../src/client/apiKey.ts'
 import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
@@ -21,7 +21,6 @@ import { en } from '../src/client/locales.ts'
 import { settingsSchema } from './settings-schema.client.ts'
 
 /** The catalog rules of `llm-pi-ai`, whose entries most cases here edit. */
-const PI_AI = CATALOG_RULES['pi-ai']
 
 afterEach(cleanup)
 
@@ -196,6 +195,18 @@ async function mountRowCard(overrides: Parameters<typeof scriptedFace>[0] = {}) 
 }
 
 describe('ModelsSection', () => {
+  it('composes the sign-in children after the introduction, chat sign-in first', async () => {
+    const scripted = scriptedFace()
+    const mirror = new SettingsDescribeMirror(scripted.face as never)
+    const controller = new ModelsSettingsStore(scripted.face as unknown as WireFace, settingsSchema, mirror)
+    await controller.load()
+    const renderSlot = vi.fn((name: string) => <p key={name}>{`child ${name}`}</p>)
+    render(<ModelsSection controller={controller} useSnapshot={bindSnapshotSelector(controller.store)}
+      api={scripted.face as never} schema={settingsSchema} t={t} renderSlot={renderSlot as never} />)
+    expect(screen.getAllByText(/^child settings\.models\./).map(node => node.textContent))
+      .toEqual(['child settings.models.chatAuthorization', 'child settings.models.nativeAccounts'])
+  })
+
   it('renders nothing before the slot injects its dependencies', () => {
     const uninjected = {} as ModelsSectionProps
     render(<ModelsSection {...uninjected} />)
@@ -335,43 +346,39 @@ describe('ModelsSection', () => {
   it('validates every adapter-owned model catalog invariant', () => {
     expect(modelDrafts(undefined)).toEqual([])
     expect(modelDrafts([null, 'bad', { id: 'ok' }])).toEqual([{}, {}, { id: 'ok' }])
-    expect(validateModelCatalog([{}], PI_AI)).toEqual({ index: 0, key: 'modelIdRequired' })
-    expect(validateModelCatalog([{ id: 'same' }, { id: 'same' }], PI_AI))
+    expect(validateModelCatalog([{}])).toEqual({ index: 0, key: 'modelIdRequired' })
+    expect(validateModelCatalog([{ id: 'same' }, { id: 'same' }]))
       .toEqual({ index: 1, key: 'modelIdDuplicate' })
-    expect(validateModelCatalog([{ id: 'model', name: '' }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', name: '' }]))
       .toEqual({ index: 0, key: 'modelNameInvalid' })
-    expect(validateModelCatalog([{ id: 'model', contextWindow: null }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', contextWindow: null }]))
       .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateModelCatalog([{ id: 'model', contextWindow: 1.5 }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', contextWindow: 1.5 }]))
       .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateModelCatalog([{ id: 'model', contextWindow: 0 }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', contextWindow: 0 }]))
       .toEqual({ index: 0, key: 'modelContextInvalid' })
-    expect(validateModelCatalog([{ id: 'model', contextWindow: 1 }], PI_AI)).toBeUndefined()
-    expect(validateModelCatalog([{ id: 'model', maxTokens: null }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', contextWindow: 1 }])).toBeUndefined()
+    expect(validateModelCatalog([{ id: 'model', maxTokens: null }]))
       .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateModelCatalog([{ id: 'model', maxTokens: 1.5 }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', maxTokens: 1.5 }]))
       .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateModelCatalog([{ id: 'model', maxTokens: 0 }], PI_AI))
+    expect(validateModelCatalog([{ id: 'model', maxTokens: 0 }]))
       .toEqual({ index: 0, key: 'modelMaxTokensInvalid' })
-    expect(validateModelCatalog([{ id: 'model', maxTokens: 8192 }], PI_AI)).toBeUndefined()
+    expect(validateModelCatalog([{ id: 'model', maxTokens: 8192 }])).toBeUndefined()
     // An id that is only whitespace is as absent as an empty one, and a
     // padded id is a duplicate of its trimmed twin.
-    expect(validateModelCatalog([{ id: '   ' }], PI_AI)).toEqual({ index: 0, key: 'modelIdRequired' })
-    expect(validateModelCatalog([{ id: 'model' }, { id: 'model ' }], PI_AI))
+    expect(validateModelCatalog([{ id: '   ' }])).toEqual({ index: 0, key: 'modelIdRequired' })
+    expect(validateModelCatalog([{ id: 'model' }, { id: 'model ' }]))
       .toEqual({ index: 1, key: 'modelIdDuplicate' })
   })
 
-  it('requires a context window only where the adapter has no fallback for one', () => {
-    // pi-ai supplies a route-level window, so a row may leave it to the route.
-    expect(validateModelCatalog([{ id: 'model' }], PI_AI)).toBeUndefined()
-    // The CLI-backed route has none and the CLI discloses none.
-    expect(validateModelCatalog([{ id: 'model' }], CATALOG_RULES['agent-cli']))
-      .toEqual({ index: 0, key: 'modelContextRequired' })
-    expect(validateModelCatalog([{ id: 'model', contextWindow: 200_000 }], CATALOG_RULES['agent-cli']))
-      .toBeUndefined()
+  it('leaves a missing context window to the owning adapter and refuses an unusable one', () => {
+    // pi-ai sizes it from the route; the CLI-backed route inherits it from
+    // its installed catalog and names the model when the id is not there.
+    expect(validateModelCatalog([{ id: 'model' }])).toBeUndefined()
+    expect(validateModelCatalog([{ id: 'model', contextWindow: 200_000 }])).toBeUndefined()
     // A stated but unusable window is still invalid rather than missing.
-    expect(validateModelCatalog([{ id: 'model', contextWindow: 0 }], CATALOG_RULES['agent-cli']))
-      .toEqual({ index: 0, key: 'modelContextInvalid' })
+    expect(validateModelCatalog([{ id: 'model', contextWindow: 0 }])).toEqual({ index: 0, key: 'modelContextInvalid' })
   })
 
   it('reads context windows written as counts, thousands, or millions', () => {

@@ -29,7 +29,7 @@ import type { ReactNode } from 'react'
 import type { IApiClient } from '@arx-ai/arx-api-remotes/client'
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
-import { CATALOG_RULES, validateModelCatalog } from './model-catalog.ts'
+import { validateModelCatalog } from './model-catalog.ts'
 import { ModelListEditor } from './ModelListEditor.tsx'
 import type { ModelDraft } from './ModelListEditor.tsx'
 import { deriveKeyRef, messageOf } from './store.ts'
@@ -128,7 +128,7 @@ export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
   // Rows are checked by the same per-row validator the editor cards use, so a
   // bad row is named by its position here too. Capacities have route-level
   // fallbacks; what a route cannot default is at least one model.
-  const modelFailure = validateModelCatalog(models, CATALOG_RULES['pi-ai'])
+  const modelFailure = validateModelCatalog(models)
   const keyFailure = apiKeyFailure(keyDraft)
   // The typed key with paste whitespace removed. A blank field yields an empty
   // string, which the create path reads as "no key supplied" — a route may

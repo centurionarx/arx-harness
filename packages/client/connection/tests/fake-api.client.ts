@@ -214,6 +214,38 @@ export class FakeApiClient implements IApiClient {
     mutate: payload => this.record('settings.mutate', payload, Promise.resolve(ok({ ns: 'fake', schema: {}, value: {}, applies: 'live' as const, secrets: [], revision: 0 }))),
   }
 
+  readonly nativeAccounts: IApiClient['nativeAccounts'] = {
+    describe: payload => this.record('nativeAccounts.describe', payload, Promise.resolve(ok({ accounts: [] }))),
+    begin: payload => this.record('nativeAccounts.begin', payload, Promise.resolve(ok({ attempt: {
+      id: 'fake-login' as never, provider: payload.provider, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    poll: payload => this.record('nativeAccounts.poll', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, provider: 'claude-code' as const, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    submit: payload => this.record('nativeAccounts.submit', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, provider: 'claude-code' as const, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    cancel: payload => this.record('nativeAccounts.cancel', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, provider: 'claude-code' as const, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+  }
+
+  readonly authorization: IApiClient['authorization'] = {
+    describe: payload => this.record('authorization.describe', payload, Promise.resolve(ok({ flows: [] }))),
+    begin: payload => this.record('authorization.begin', payload, Promise.resolve(ok({ attempt: {
+      id: 'fake-authorization' as never, key: payload.key, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    poll: payload => this.record('authorization.poll', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, key: 'llm-pi-ai/openai-codex' as never, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    submit: payload => this.record('authorization.submit', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, key: 'llm-pi-ai/openai-codex' as never, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+    cancel: payload => this.record('authorization.cancel', payload, Promise.resolve(ok({ attempt: {
+      id: payload.attemptId, key: 'llm-pi-ai/openai-codex' as never, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000,
+    } }))),
+  }
+
   readonly credentials: IApiClient['credentials'] = {
     describe: payload => this.record('credentials.describe', payload, Promise.resolve(ok({ credentials: {} }))),
     set: payload => this.record('credentials.set', payload, Promise.resolve(ok({}))),

@@ -1,3 +1,5 @@
+import type { AuthorizationApi } from './authorization.ts'
+import type { NativeAccountsApi } from './native-accounts.ts'
 /**
  * RPC method registry and signature-derived generics. The map
  * registers only client-request methods (respond is a client-response, so it is absent);
@@ -70,6 +72,16 @@ export interface RpcMethodMap {
   'settings.update': SettingsApi['update']
   'settings.replace': SettingsApi['replace']
   'settings.mutate': SettingsApi['mutate']
+  'authorization.describe': AuthorizationApi['describe']
+  'authorization.begin': AuthorizationApi['begin']
+  'authorization.poll': AuthorizationApi['poll']
+  'authorization.submit': AuthorizationApi['submit']
+  'authorization.cancel': AuthorizationApi['cancel']
+  'nativeAccounts.describe': NativeAccountsApi['describe']
+  'nativeAccounts.begin': NativeAccountsApi['begin']
+  'nativeAccounts.poll': NativeAccountsApi['poll']
+  'nativeAccounts.submit': NativeAccountsApi['submit']
+  'nativeAccounts.cancel': NativeAccountsApi['cancel']
   'credentials.describe': CredentialsApi['describe']
   'credentials.set': CredentialsApi['set']
   'credentials.unset': CredentialsApi['unset']

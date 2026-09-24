@@ -22,6 +22,17 @@
     - text: Close
   - heading "Models" [level=2]
   - paragraph: Configure the providers whose models you want to use.
+  - region "OpenAI Codex chat models":
+    - heading "OpenAI Codex chat models" [level=3]
+    - paragraph: Authorize your OpenAI subscription for this chat. This is separate from the Codex native tool used by delegated agents.
+    - paragraph: Not connected
+    - button "Connect OpenAI for chat"
+    - button "Refresh account status"
+  - region "Native product accounts":
+    - heading "Native product accounts" [level=3]
+    - paragraph: Connect the native tools used by delegated agents. Claude Code can also provide chat models. Codex chat models use a separate OpenAI connection.
+    - alert: Native accounts are unavailable in this composition.
+    - button "Refresh account status"
   - list
   - text: Provider
   - combobox "Provider":

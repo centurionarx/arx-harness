@@ -194,8 +194,8 @@ describe('adding a CLI-backed route', () => {
     expect(described).not.toContain(deriveKeyRef(ROUTE))
   })
 
-  it('refuses to apply until the route lists a model with its context window', async () => {
-    await mount()
+  it('refuses to apply until the route lists a model and leaves its context window to the catalog', async () => {
+    const { mutate } = await mount()
     await addRoute()
 
     // Nothing listed: the route would serve nothing, and it refuses an
@@ -206,14 +206,15 @@ describe('adding a CLI-backed route', () => {
 
     fireEvent.click(screen.getByText(en.addModel))
     fireEvent.change(screen.getByLabelText(`${en.modelId} 1`), { target: { value: 'model-a' } })
-    // The context window is the field a refusal points at, so it is not folded.
+    // A model outside the installed catalog must state its window, so the
+    // field is not folded; a catalog model inherits one, so it is optional.
     expect(screen.queryByLabelText(`${en.modelAdvanced} 1`)).toBeNull()
-    expect(screen.getByText(`${en.model} 1: ${en.modelContextRequired}`)).toBeTruthy()
-    expect(applyButton().disabled).toBe(true)
-
-    fireEvent.change(screen.getByLabelText(`${en.modelContextWindow} 1`), { target: { value: '200K' } })
+    expect(screen.getByLabelText(`${en.modelContextWindow} 1`)).toBeTruthy()
     expect(applyButton().disabled).toBe(false)
     expect(screen.queryByText(en.agentCliNeedsModels)).toBeNull()
+
+    fireEvent.click(applyButton())
+    await waitFor(() => { expect(mutate).toHaveBeenCalledOnce() })
   })
 
   it('writes the models and nothing else, storing no credential', async () => {

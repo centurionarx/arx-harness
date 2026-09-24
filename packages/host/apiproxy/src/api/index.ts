@@ -13,6 +13,8 @@ import type { SubagentsApi } from './subagents.ts'
 import type { EventsApi } from './events.ts'
 import type { GoalsApi } from './goals.ts'
 import type { SettingsApi } from './settings.ts'
+import type { AuthorizationApi } from './authorization.ts'
+import type { NativeAccountsApi } from './native-accounts.ts'
 import type { CredentialsApi } from './credentials.ts'
 import type { LlmApi } from './llm.ts'
 import type { WebApi } from './web.ts'
@@ -30,6 +32,8 @@ export interface ApiProxy {
   events: EventsApi
   goals: GoalsApi
   settings: SettingsApi
+  authorization: AuthorizationApi
+  nativeAccounts: NativeAccountsApi
   credentials: CredentialsApi
   llm: LlmApi
   web: WebApi
@@ -99,3 +103,7 @@ export {
 
 // ---- Method registry and derived generics ----
 export type { RequestPayload, ResponseValue, RpcMethodMap } from './rpc-map.ts'
+
+export type { NativeAccountsApi, NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode, NativeAccountModel } from './native-accounts.ts'
+
+export type { AuthorizationApi, AuthorizationAttemptId, AuthorizationPromptId, AuthorizationFlowView, AuthorizationPromptView, AuthorizationAttemptView } from './authorization.ts'

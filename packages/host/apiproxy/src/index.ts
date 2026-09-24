@@ -17,6 +17,7 @@ import z from '@arx-ai/schemastery'
 import type {} from '@arx-ai/arx-agent-default-model'
 // Declaration merge only: it is what types `ctx.get('appExit')` and `ctx.get('appVersion')`.
 import type {} from '@arx-ai/arx-cmdline'
+import { DEFAULT_AUTHORIZATION_LIMITS, type AuthorizationSessionLimits } from './authorization-sessions.ts'
 import type { ApiProxy } from './api/index.ts'
 import { createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from './api-proxy.ts'
 import {
@@ -42,6 +43,8 @@ declare module '@arx-ai/cordis' {
 
 /** Gateway plugin configuration. */
 export interface Config {
+  /** Browser authorization attempt, retention, polling and answer bounds. */
+  authorization?: Partial<AuthorizationSessionLimits>
   /**
    * Whether this deployment can hand paths to a native desktop opener —
    * the `hasDocument` capability the agent-preset roster reports. Absent,
@@ -76,6 +79,13 @@ export class ApiProxyService extends Service implements ApiProxy {
   ]
 
   static Config: z<Config> = z.object({
+    authorization: z.object({
+      attemptTimeoutMs: z.number().step(1).min(1).max(2147483647).default(DEFAULT_AUTHORIZATION_LIMITS.attemptTimeoutMs),
+      resultRetentionMs: z.number().step(1).min(1).max(2147483647).default(DEFAULT_AUTHORIZATION_LIMITS.resultRetentionMs),
+      pollIntervalMs: z.number().step(1).min(100).max(60000).default(DEFAULT_AUTHORIZATION_LIMITS.pollIntervalMs),
+      maxAttempts: z.number().step(1).min(1).default(DEFAULT_AUTHORIZATION_LIMITS.maxAttempts),
+      answerMaxLength: z.number().step(1).min(1).default(DEFAULT_AUTHORIZATION_LIMITS.answerMaxLength),
+    }),
     nativeOpen: z.boolean(),
     sessionExportCompressionLevel: z.number().step(1).min(0).max(9)
       .default(DEFAULT_SESSION_LOG_COMPRESSION_LEVEL) as z<SessionLogCompressionLevel>,
@@ -90,6 +100,8 @@ export class ApiProxyService extends Service implements ApiProxy {
   readonly skills: ApiProxy['skills']
   readonly agentPresets: ApiProxy['agentPresets']
   readonly settings: ApiProxy['settings']
+  readonly authorization: ApiProxy['authorization']
+  readonly nativeAccounts: ApiProxy['nativeAccounts']
   readonly credentials: ApiProxy['credentials']
   readonly llm: ApiProxy['llm']
   readonly web: ApiProxy['web']
@@ -106,6 +118,7 @@ export class ApiProxyService extends Service implements ApiProxy {
       homeMigration: () => ctx.get('homeMigration'),
       saveDefaultModelSelection: selection => ctx.agentDefaultModel.saveSelection(selection),
       cwd: process.cwd(),
+      ...config.authorization === undefined ? {} : { authorization: config.authorization },
       ...config.nativeOpen === undefined ? {} : { canOpenPath: () => config.nativeOpen as boolean },
       ...(config.sessionExportCompressionLevel === undefined
         ? {}
@@ -122,6 +135,8 @@ export class ApiProxyService extends Service implements ApiProxy {
     this.skills = api.skills
     this.agentPresets = api.agentPresets
     this.settings = api.settings
+    this.authorization = api.authorization
+    this.nativeAccounts = api.nativeAccounts
     this.credentials = api.credentials
     this.llm = api.llm
     this.web = api.web

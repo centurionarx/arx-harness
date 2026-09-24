@@ -15,6 +15,10 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       yield { rpcId: RpcId(`frame-${String(frames.indexOf(payload))}`), payload }
     }
   }
+  /** Private authorization domains are covered by their own carrier specs. */
+  async function refuseStub(request: RpcRequest<unknown>) {
+    return { rpcId: request.rpcId, result: { ok: false as const, error: { code: 'internal' as const, message: 'stub', details: {} } } }
+  }
   return {
     sessions: {
       async list(request) {
@@ -263,6 +267,12 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async mutate(request) {
         return { rpcId: request.rpcId, result: { ok: false, error: { code: 'settings-rejected', message: 'stub', details: { ns: request.payload.ns } } } }
       },
+    },
+    authorization: {
+      describe: refuseStub, begin: refuseStub, poll: refuseStub, submit: refuseStub, cancel: refuseStub,
+    },
+    nativeAccounts: {
+      describe: refuseStub, begin: refuseStub, poll: refuseStub, submit: refuseStub, cancel: refuseStub,
     },
     credentials: {
       async describe(request) {
