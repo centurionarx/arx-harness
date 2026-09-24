@@ -10,7 +10,7 @@ A background child's settlement can open and close the parent's second turn betw
 
 ## Decision
 
-The [snapshot harness](../../../../packages/test-support/acp-snapshot/src/harness.ts) accepts `minimumTurn` on `waitForTurnEnd`. It requires both a closed latest turn and a persisted closing record for the requested turn. The [continuable inheritance fixture](../../../../examples/acp-agent/tests/snapshots/subagent-continuable-inheritance/input.json) waits for closed turn 2 directly. `waitForTurnStart` keeps its open-turn semantics for cancellation synchronization.
+The [snapshot harness](../../../../packages/test-support/acp-snapshot/src/harness.ts) accepts `minimumTurn` on `waitForTurnEnd`. It requires both a closed latest turn and a persisted closing record for the requested turn. The [continuable fixture](../../../../examples/acp-agent/tests/snapshots/subagent-continuable/input.json) and the [continuable inheritance fixture](../../../../examples/acp-agent/tests/snapshots/subagent-continuable-inheritance/input.json) wait for closed turn 2 directly. `waitForTurnStart` keeps its open-turn semantics for cancellation synchronization.
 
 ## Alternatives considered
 
@@ -20,4 +20,4 @@ The [snapshot harness](../../../../packages/test-support/acp-snapshot/src/harnes
 
 ## Consequences
 
-The fixture accepts already completed settlement while rejecting an earlier closed turn. Transcript comparisons, the 30-second default timeout, cancellation readiness, and runtime disposal behavior remain unchanged.
+Both fixtures accept already completed settlement while rejecting an earlier closed turn. Transcript comparisons, the 30-second default timeout, cancellation readiness, and runtime disposal behavior remain unchanged.
