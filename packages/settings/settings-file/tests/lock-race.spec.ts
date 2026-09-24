@@ -1,11 +1,11 @@
-// A temp-file write failure cannot be timed from outside. The `fs/promises` API
-// injects it once, through the staging file's handle, so the test can prove that
-// the writer lock still releases.
+// A document-create race or write failure cannot be timed from outside, so each is
+// injected once: document creation through `fs/promises`, and the replacement
+// write at `writeFileAtomic`, whose private Windows staging bypasses `fs/promises`.
+// The atomic-write package proves its own staging cleanup.
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import type { FileHandle } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { settingsNamespace } from '@arx-ai/arx-settings'
@@ -35,16 +35,20 @@ vi.mock('node:fs/promises', async (importOriginal) => {
       }
       return (actual.writeFile as (path: unknown, ...args: never[]) => Promise<void>)(path, ...rest)
     }) as typeof actual.writeFile,
-    open: (async (path: unknown, ...rest: never[]) => {
-      const handle = await (actual.open as (path: unknown, ...args: never[]) => Promise<FileHandle>)(path, ...rest)
-      if (state.failTempWrite && String(path).endsWith('.tmp')) {
+  }
+})
+
+vi.mock('@arx-ai/arx-atomic-write', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@arx-ai/arx-atomic-write')>()
+  return {
+    ...actual,
+    writeFileAtomic: async (...args: Parameters<typeof actual.writeFileAtomic>) => {
+      if (state.failTempWrite) {
         state.failTempWrite = false
-        handle.writeFile = async () => {
-          throw Object.assign(new Error('ENOSPC: injected writeFile failure'), { code: 'ENOSPC' })
-        }
+        throw Object.assign(new Error('ENOSPC: injected writeFile failure'), { code: 'ENOSPC' })
       }
-      return handle
-    }) as typeof actual.open,
+      return actual.writeFileAtomic(...args)
+    },
   }
 })
 
@@ -119,7 +123,7 @@ describe('writer-lock failure cleanup', () => {
     await expect(access(`${path}.lock`)).rejects.toThrow()
   })
 
-  it('cleans up the temp file and releases the lock when the write fails mid-cycle', async () => {
+  it('releases the lock and keeps the document when the replacement write fails', async () => {
     const dir = await tempDir()
     const path = join(dir, 'settings.yaml')
     await writeFile(path, 'alpha:\n  value: 1\n')
