@@ -33,7 +33,7 @@
     "@arx-ai/arx-client-web": "workspace:^",
     "@arx-ai/arx-cmdline": "workspace:^",
     "@arx-ai/arx-pwsh-local": "workspace:^",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.3.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
     "@vitejs/plugin-react": "^4.0.0",
