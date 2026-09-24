@@ -357,7 +357,9 @@ function processAlive(pid: number): boolean {
     const state = stat.slice(stat.lastIndexOf(')') + 2).split(/\s+/, 1)[0]
     return !/^[ZXx]$/.test(state ?? '')
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false
+    // A pid reaped between the liveness probe and this read reports ENOENT or ESRCH.
+    const code = (error as NodeJS.ErrnoException).code
+    if (code === 'ENOENT' || code === 'ESRCH') return false
     throw error
   }
 }
