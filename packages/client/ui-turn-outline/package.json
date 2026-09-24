@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-turn-outline",
   "description": "Whole-session turn outline and conversation navigation",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "publishConfig": {
     "access": "public"
   },

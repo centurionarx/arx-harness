@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-log-export",
   "description": "Web Session-log export command and shared download dialog",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
