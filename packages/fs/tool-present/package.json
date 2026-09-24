@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-present",
   "description": "Declare validated current files as durable session deliverables",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "publishConfig": {
     "access": "public"
   },
