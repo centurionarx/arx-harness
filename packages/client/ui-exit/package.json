@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-exit",
   "description": "Exit seat below Settings: the sidebar foot row that stops the harness through host.exit",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },

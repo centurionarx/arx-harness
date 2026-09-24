@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-typert-protocol",
   "description": "Compiler-independent Remote metadata and Typert provider protocols",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-pwsh-local",
   "description": "Local PowerShell implementation of the arx Harness bash executor seam",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },

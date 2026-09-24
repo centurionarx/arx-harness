@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-hooks-codex",
   "description": "Bridge plugin: run a Codex hooks.json hook config on the arx Harness interception seams",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },

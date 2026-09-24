@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-skill",
   "description": "Agent skill provider registry for the arx Harness",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },
