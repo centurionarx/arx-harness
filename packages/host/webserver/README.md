@@ -16,5 +16,5 @@ None; this package neither assembles nor sends a provider request.
 
 ## Known Limitations and Deferred Work
 
-- **No TLS, auth, or origin policy** — binding a non-loopback address exposes the server to that network; deployment hardening (or fronting it with a real reverse proxy) is deliberately out of scope for the dev-facing v1.
+- **No TLS, auth, or origin policy** — binding a non-loopback address exposes the server to that network. Keep the backend on loopback and use an SSH tunnel for personal remote access; network deployments need an authenticated access layer that covers HTTP routes and upgrades and prevents direct backend access. See the [access and security guide](../../../docs/user/guide/security.md).
 - **Socket options are fixed** — config selects the bind host and port, while backlog and other socket settings remain internal until a deployment needs them.
