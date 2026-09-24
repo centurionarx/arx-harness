@@ -431,16 +431,16 @@ describe('resolveRoutes', () => {
   })
 
   it('inherits a canonical model\'s context window, output cap, and image input from the installed catalog', () => {
-    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1' }] } })
-    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
-      id: 'claude-opus-4-1', contextWindow: 200_000, maxTokens: 32_000, acceptsImages: true,
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5' }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5')).toEqual({
+      id: 'claude-opus-5-5', contextWindow: 1_000_000, maxTokens: 128_000, acceptsImages: true,
     })
   })
 
   it('keeps a stated context window, output cap, and image input over the catalog', () => {
-    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false }] } })
-    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
-      id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false,
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5', contextWindow: 1_000, maxTokens: 10, acceptsImages: false }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5')).toEqual({
+      id: 'claude-opus-5-5', contextWindow: 1_000, maxTokens: 10, acceptsImages: false,
     })
   })
 

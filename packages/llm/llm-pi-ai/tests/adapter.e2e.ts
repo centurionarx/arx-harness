@@ -13,7 +13,7 @@ import { assemble, type AssembledResult } from './assemble.ts'
  * Key-gated.
  */
 
-const FLASH = 'deepseek-v4-flash'
+const FLASH = 'deepseek-flash'
 const PRO = 'deepseek-v4-pro'
 const contexts: Context[] = []
 

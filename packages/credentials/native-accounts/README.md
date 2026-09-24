@@ -1,6 +1,6 @@
 # arx-native-accounts
 
-Native Claude Code and Codex account management for Settings. The package installs the official Claude Agent SDK 0.3.220 and Codex 0.147.0 payloads and resolves their platform executables without requiring a global CLI installation. The products own credential persistence; the harness never reads their credential files or copies tokens into settings.
+Native Claude Code and Codex account management for Settings. The package installs the official Claude Agent SDK 0.3.281 and Codex 0.147.0 payloads and resolves their platform executables without requiring a global CLI installation. The products own credential persistence; the harness never reads their credential files or copies tokens into settings.
 
 `ctx.nativeAccounts.describe()` runs bounded native status probes and returns connection state, supported login modes, and available native model metadata. Email addresses, account identifiers, tokens, raw stdout, and stderr are excluded. Claude model discovery uses the SDK initialization protocol without submitting a prompt; Codex uses `model/list` and follows its pagination. Native metadata supplies no inferred context-window capacities.
 

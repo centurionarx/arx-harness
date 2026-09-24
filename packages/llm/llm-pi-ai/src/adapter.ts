@@ -209,6 +209,20 @@ function requestHeaders(headers: Readonly<Record<string, string>> | undefined): 
 }
 
 /**
+ * Report a terminal error that follows the caller's abort as that abort. pi-ai
+ * turns any failure before dispatch into an `error` event, including the
+ * credential read that refuses an already-aborted signal, so the caller's own
+ * cancellation would otherwise finish as a provider failure.
+ * @param chunk - one translated stream chunk.
+ * @param signal - the caller's signal, when it passed one.
+ * @returns the chunk, with an error `finish` reclassified when the caller aborted.
+ */
+function callerAbortOutcome(chunk: StreamChunk, signal: AbortSignal | undefined): StreamChunk {
+  if (chunk.type !== 'finish' || chunk.reason.kind !== 'error' || signal?.aborted !== true) return chunk
+  return { ...chunk, reason: { kind: 'aborted', failure: { ...chunk.reason.failure, code: 'ABORTED' } } }
+}
+
+/**
  * pi-ai-backed multi-provider adapter. Each operation reads the current
  * profiles, so a configuration change reaches the next request without a
  * restart; model descriptors come from the collection those profiles built.
@@ -385,7 +399,7 @@ export class PiAiAdapter extends LlmAdapter {
             exhausted = true
             return
           }
-          yield result.value
+          yield callerAbortOutcome(result.value, options.signal)
         }
       } finally {
         if (!exhausted) {
