@@ -80,6 +80,6 @@
     - text: Models
     - button "Fetch available models"
     - button "Add model"
-  - paragraph: Add at least one model, with its context window.
+  - paragraph: Add at least one model. A model the host catalog does not list also needs its context window.
   - button "Cancel"
   - button "Apply" [disabled]

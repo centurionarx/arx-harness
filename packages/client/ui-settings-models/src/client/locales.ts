@@ -116,7 +116,7 @@ export const en = {
   customNeedsModels: 'A custom provider needs at least one model.',
   agentCliCaption: 'Uses this provider\'s command-line tool, already installed and signed in on this machine. No API key is stored here.',
   agentCliTerms: 'Using a subscription from another program may be outside its terms. Check them before relying on this route.',
-  agentCliNeedsModels: 'Add at least one model, with its context window.',
+  agentCliNeedsModels: 'Add at least one model. A model the host catalog does not list also needs its context window.',
   create: 'Create provider',
   creating: 'Creating\u2026',
   welcomeTitle: WELCOME_NOTICE_COPY.en.title,
