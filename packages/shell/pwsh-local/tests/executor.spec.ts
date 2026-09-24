@@ -61,6 +61,8 @@ async function setup(config: ConstructorParameters<typeof PwshLocalExecutor>[1] 
  */
 const LANE_TIMEOUT_MS = Number.parseInt(process.env.ARX_COVERAGE_TEST_TIMEOUT_MS ?? '', 10)
 const READ_TIMEOUT_MS = Number.isSafeInteger(LANE_TIMEOUT_MS) && LANE_TIMEOUT_MS > 5_000 ? LANE_TIMEOUT_MS : 5_000
+/** The foreground timeout a completing run case grants pwsh; a cold start on that runner outruns 10 s too. */
+const RUN_TIMEOUT_MS = Math.max(10_000, READ_TIMEOUT_MS)
 
 async function readUntil(proc: ShellProcess, expected: string, timeoutMs = READ_TIMEOUT_MS): Promise<string> {
   const deadline = Date.now() + timeoutMs
@@ -198,12 +200,12 @@ describe('spawn construction (pure, every platform)', () => {
 })
 
 describe.skipIf(!hasPwsh)('PwshLocalExecutor.run', () => {
-  it('resolves with output and the effective timeout', { timeout: 15_000 }, async () => {
-    const { bash } = await setup({ timeoutMs: 10_000 })
+  it('resolves with output and the effective timeout', { timeout: RUN_TIMEOUT_MS + 5_000 }, async () => {
+    const { bash } = await setup({ timeoutMs: RUN_TIMEOUT_MS })
     const result = await bash.run(bash.resolve({ command: 'Write-Output hi' }))
     expect(result.exitCode).toBe(0)
     expect(lf(result.stdout.text)).toBe('hi\n')
-    expect(result.timeoutMs).toBe(10_000)
+    expect(result.timeoutMs).toBe(RUN_TIMEOUT_MS)
   })
 
   it('uses config cwd, overridable per call', async () => {
