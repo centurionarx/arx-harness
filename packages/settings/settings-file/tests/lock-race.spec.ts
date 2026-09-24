@@ -1,9 +1,11 @@
 // A temp-file write failure cannot be timed from outside. The `fs/promises` API
-// injects it once so the test can prove that the writer lock still releases.
+// injects it once, through the staging file's handle, so the test can prove that
+// the writer lock still releases.
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import type { FileHandle } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { settingsNamespace } from '@arx-ai/arx-settings'
@@ -31,12 +33,18 @@ vi.mock('node:fs/promises', async (importOriginal) => {
         state.failDocumentCreate = false
         throw Object.assign(new Error('ENOSPC: injected document create failure'), { code: 'ENOSPC' })
       }
-      if (state.failTempWrite && String(path).endsWith('.tmp')) {
-        state.failTempWrite = false
-        throw Object.assign(new Error('ENOSPC: injected writeFile failure'), { code: 'ENOSPC' })
-      }
       return (actual.writeFile as (path: unknown, ...args: never[]) => Promise<void>)(path, ...rest)
     }) as typeof actual.writeFile,
+    open: (async (path: unknown, ...rest: never[]) => {
+      const handle = await (actual.open as (path: unknown, ...args: never[]) => Promise<FileHandle>)(path, ...rest)
+      if (state.failTempWrite && String(path).endsWith('.tmp')) {
+        state.failTempWrite = false
+        handle.writeFile = async () => {
+          throw Object.assign(new Error('ENOSPC: injected writeFile failure'), { code: 'ENOSPC' })
+        }
+      }
+      return handle
+    }) as typeof actual.open,
   }
 })
 

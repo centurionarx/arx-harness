@@ -1,65 +1,170 @@
 /**
- * Zero-dependency atomic file replacement and writer coordination.
- * `writeFileAtomic` writes a random-suffix sibling with exclusive create and
- * the caller's permission bits, then renames it over the target, so readers
- * observe either the old or the new complete content and a replaced file ends
- * up with exactly the stated mode. `withFileLock` serializes cross-process
- * writers of one file through a `wx`-created `<file>.lock` sibling, so a
- * read-modify-write cycle can never resurrect a state another writer just
- * replaced; readers stay lock-free because the rename commit is atomic.
+ * Atomic, flushed file replacement and cross-process writer coordination.
+ * Private Windows files use native protected DACLs, not Node's POSIX mode bits.
  * @module @arx-ai/arx-atomic-write
  */
 
 import { randomBytes } from 'node:crypto'
-import { lstat, mkdir, rename, rm, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { lstat, mkdir, open, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises'
+import type { FileHandle } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { createDirectoryWin32, openPrivateFileWin32, publishWin32 } from './win32.ts'
+import type { PrivateFileWin32 } from './win32.ts'
 
-/**
- * Filesystem options for {@link writeFileAtomic}; `mode` is required so the
- * permission decision stays visible at every call site.
- */
+/** Filesystem permissions for the replacement and newly created directories. */
 export interface WriteFileAtomicOptions {
   /**
-   * Permission bits stamped on the fresh temp inode and carried through the
-   * rename (subject to the process umask, like every fresh inode).
+   * POSIX inode mode, subject to umask. On Windows, 0600 creates a protected
+   * current-user-only DACL before any content; other modes retain Node semantics.
    */
   mode: number
   /**
-   * Permission bits for parent directories this call creates (subject to the
-   * umask; existing directories keep their mode). Omission uses the mkdir
-   * default — pass `0o700` when the tree holds user-private data.
+   * Mode for new parents only, subject to umask on POSIX. Windows 0700 creates
+   * protected current-user-only directories. Existing parents are not hardened.
    */
   dirMode?: number
 }
 
+function warnDurability(operation: string): void {
+  process.emitWarning(
+    'atomic-write: replacement committed, but ' + operation + ' failed; crash durability is unconfirmed (no rollback)',
+    { code: 'ATOMIC_WRITE_DURABILITY_UNCONFIRMED' },
+  )
+}
+
+function warnCleanup(): void {
+  process.emitWarning('atomic-write: staging cleanup failed; a private temporary file or handle may remain', {
+    code: 'ATOMIC_WRITE_CLEANUP_FAILED',
+  })
+}
+
+async function directoryExists(path: string): Promise<boolean> {
+  try {
+    if ((await stat(path)).isDirectory()) return true
+    throw Object.assign(new Error('atomic-write: parent is not a directory: ' + path), { code: 'ENOTDIR' })
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false
+    throw error
+  }
+}
+
+async function ensureDirectoryWin32(path: string, mode: number | undefined): Promise<void> {
+  if (await directoryExists(path)) return
+  const parent = dirname(path)
+  if (parent === path) {
+    throw Object.assign(new Error('atomic-write: filesystem root is unavailable: ' + path), { code: 'ENOENT' })
+  }
+  await ensureDirectoryWin32(parent, mode)
+  const staging = join(parent, '.arx-mkdir-' + randomBytes(12).toString('hex'))
+  await createDirectoryWin32(staging, mode === 0o700)
+  try {
+    await publishWin32(staging, path, false)
+  } catch (error) {
+    try {
+      await rmdir(staging)
+    } catch {
+      // A failed cleanup must not replace the publication error.
+      warnCleanup()
+    }
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST' && await directoryExists(path)) return
+    throw error
+  }
+}
+
+async function ensureDirectoryPosix(path: string, mode: number | undefined): Promise<void> {
+  const firstCreated = await mkdir(path, { recursive: true, ...mode === undefined ? {} : { mode } })
+  if (firstCreated === undefined) return
+  const stop = dirname(firstCreated)
+  // Every newly created ancestor entry must reach its own parent before commit.
+  for (let current = dirname(path); ; current = dirname(current)) {
+    const handle = await open(current, 'r')
+    try {
+      await handle.sync()
+    } finally {
+      await handle.close()
+    }
+    if (current === stop) return
+  }
+}
+
 /**
- * Replace `filename` with `content` in one atomic step, creating parent
- * directories. The content is first written to a random-suffix sibling opened
- * with exclusive create (`wx`): the open refuses to follow a symlink planted
- * at the temp path, and the fresh inode carries `options.mode` through the
- * rename, so replacing a wider-permission file narrows it without a chmod
- * race. The rename also replaces a symlinked target itself instead of writing
- * through to its referent, and the same-directory sibling keeps the rename on
- * one filesystem. On any failure the temp file is removed and the failure
- * rethrown. Crash durability (fsync) is out of scope.
- * @param filename - final path receiving the content.
+ * Publish complete UTF-8 content through an exclusive random sibling. POSIX
+ * syncs the file before rename and its open parent directory after rename;
+ * Windows flushes the file and uses same-volume write-through replacement.
+ * Mode 0600 on Windows requires persistent ACL support and grants only the
+ * current process user access, without inheriting a permissive parent DACL.
+ *
+ * Rejection before publication leaves the target unchanged and attempts staging
+ * cleanup. Once renamed, failures of parent sync or close emit the content-free
+ * ATOMIC_WRITE_DURABILITY_UNCONFIRMED process warning and resolve: callers must
+ * publish committed state, not report rollback. Fulfillment confirms visibility;
+ * crash durability additionally requires all flushes to succeed and filesystem
+ * support. Existing parents must be durable and trusted against hostile changes.
+ * @param filename - final path; a target symlink is replaced, never followed.
  * @param content - complete next file content.
- * @param options - permission bits for the replacement inode.
+ * @param options - explicit permissions for the replacement and new parents.
  */
 export async function writeFileAtomic(filename: string, content: string, options: WriteFileAtomicOptions): Promise<void> {
-  await mkdir(dirname(filename), {
-    recursive: true,
-    ...options.dirMode === undefined ? {} : { mode: options.dirMode },
-  })
-  // TODO(settings-atomic-durability): Use a replacement that fsyncs the file
-  // and parent directory and preserves owner-only permissions on Windows.
-  const temp = `${filename}.${randomBytes(6).toString('hex')}.tmp`
+  const target = resolve(filename)
+  const parent = dirname(target)
+  const windows = process.platform === 'win32'
+  if (windows) await ensureDirectoryWin32(parent, options.dirMode)
+  else await ensureDirectoryPosix(parent, options.dirMode)
+  const temp = join(parent, '.arx-write-' + randomBytes(12).toString('hex') + '.tmp')
+  let directory: FileHandle | undefined
+  let file: FileHandle | PrivateFileWin32 | undefined
+  let ownedTemp = false
+  let committed = false
   try {
-    await writeFile(temp, content, { mode: options.mode, flag: 'wx' })
-    await rename(temp, filename)
-  } catch (error) {
-    await rm(temp, { force: true })
-    throw error
+    if (!windows) {
+      directory = await open(parent, 'r')
+      await directory.sync() // Reject unsupported directory syncing before replacing the target.
+    }
+    file = windows && options.mode === 0o600
+      ? await openPrivateFileWin32(temp)
+      : await open(temp, 'wx', options.mode)
+    ownedTemp = true
+    await file.writeFile(content)
+    await file.sync()
+    await file.close()
+    file = undefined
+    if (windows) await publishWin32(temp, target, true)
+    else await rename(temp, target)
+    committed = true
+    if (directory !== undefined) {
+      try {
+        await directory.sync()
+      } catch {
+        // Publication already changed readers' state; a sync error cannot roll it back.
+        warnDurability('parent directory sync')
+      }
+    }
+  } finally {
+    if (file !== undefined) {
+      try {
+        await file.close()
+      } catch {
+        // Preserve the write, sync, or close failure that triggered cleanup.
+        warnCleanup()
+      }
+    }
+    if (ownedTemp && !committed) {
+      try {
+        await rm(temp, { force: true })
+      } catch {
+        // Keep the pre-commit error authoritative when staging removal also fails.
+        warnCleanup()
+      }
+    }
+    if (directory !== undefined) {
+      try {
+        await directory.close()
+      } catch {
+        // Never turn a published replacement into a rejected write.
+        if (committed) warnDurability('parent directory close')
+        else warnCleanup()
+      }
+    }
   }
 }
 

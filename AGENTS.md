@@ -41,7 +41,7 @@ packages/    @arx-ai/arx-<pkg> workspaces at packages/<group>/<pkg>/
   examples/    demo bundles (agent-spine + CLI/ACP/JSON-RPC bins)
   experimental/ private prototypes excluded from official releases
   support/     dev/test infrastructure
-  util/        zero-dependency utilities
+  util/        low-level shared utilities
 python/      Python SDK and bundled runtime (see python/README.md)
 native/      @arx-ai/node-addon-landlock-run source of record (see native/README.md)
 examples/    Runnable cordis.yml leaves over packages/examples bundles (see examples/AGENTS.md)

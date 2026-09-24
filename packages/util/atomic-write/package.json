@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-atomic-write",
-  "description": "Zero-dependency atomic file replacement: exclusive-create random-suffix temp + rename carrying the caller-stated permissions (writeFileAtomic)",
+  "description": "Atomic file replacement with durable publication and private Windows staging",
   "version": "1.0.20",
   "publishConfig": {
     "access": "public"
@@ -31,6 +31,9 @@
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
+  "dependencies": {
+    "koffi": "^3.1.0"
+  },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
