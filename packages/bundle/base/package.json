@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-base",
   "description": "The shared arx core as a profile bundle: every profile's first patch layer, inserting the base plugin rows over the empty profile root",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "publishConfig": {
     "access": "public"
   },
@@ -114,7 +114,9 @@
     "@arx-ai/arx-user-questions": "workspace:^",
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/arx-workflow-worker-thread": "workspace:^",
-    "@arx-ai/arx-agent-instructions": "workspace:^"
+    "@arx-ai/arx-agent-instructions": "workspace:^",
+    "@arx-ai/arx-native-accounts": "workspace:^",
+    "@arx-ai/arx-authorization": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",

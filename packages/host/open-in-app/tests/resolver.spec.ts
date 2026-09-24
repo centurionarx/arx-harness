@@ -5,7 +5,7 @@
  * classification. Filesystem-facing locators use real temp directories; no
  * host application is touched.
  */
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -758,7 +758,8 @@ describe('launchDetachedApp', () => {
   })
 
   it('starts the child in the requested working directory', async () => {
-    const root = await tempRoot()
+    // The child reports its cwd canonically; macOS temp roots sit behind /var -> /private/var.
+    const root = await realpath(await tempRoot())
     const workspace = join(root, "O'Neil's Project")
     await mkdir(workspace)
     await expect(launchDetachedApp(

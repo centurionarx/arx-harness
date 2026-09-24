@@ -7,7 +7,7 @@
  */
 
 import type {
-  ConfigurableProviderView, CredentialView, IApiClient, SettingsNamespaceView,
+  ConfigurableProviderView, CredentialView, IApiClient, RpcResponse, SettingsNamespaceView,
 } from '@arx-ai/arx-api-remotes/client'
 import type { SnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
@@ -62,6 +62,31 @@ export interface ModelsSettingsState {
  */
 export function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * The value of a unary wire reply, or its refusal as an error carrying the
+ * Host's message.
+ * @param reply - a pending unary reply.
+ * @returns the reply's value.
+ */
+export async function answered<T>(reply: Promise<RpcResponse<T>>): Promise<T> {
+  const response = await reply
+  if (!response.result.ok) throw new Error(response.result.error.message)
+  return response.result.value
+}
+
+/**
+ * Whether a settings namespace value configures one provider route under
+ * `providers`. Namespace values cross the wire untyped.
+ * @param value - the namespace value from the settings view.
+ * @param provider - provider route id.
+ * @returns whether `providers.<provider>` is present.
+ */
+export function configuresProvider(value: unknown, provider: string): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const rows = (value as { providers?: unknown }).providers
+  return typeof rows === 'object' && rows !== null && provider in rows
 }
 
 /**

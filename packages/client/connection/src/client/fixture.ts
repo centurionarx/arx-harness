@@ -3021,6 +3021,20 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         details: { ns: request.payload.ns },
       }),
     },
+    nativeAccounts: {
+      describe: request => ok(request, { accounts: [] }),
+      begin: request => err(request, { code: 'bad-request', message: 'Native login is unavailable in the fixture', details: { issues: [] } }),
+      poll: request => err(request, { code: 'bad-request', message: 'No fixture login attempt', details: { issues: [] } }),
+      submit: request => err(request, { code: 'bad-request', message: 'No fixture login attempt', details: { issues: [] } }),
+      cancel: request => err(request, { code: 'bad-request', message: 'No fixture login attempt', details: { issues: [] } }),
+    },
+    authorization: {
+      describe: request => ok(request, { flows: [] }),
+      begin: request => err(request, { code: 'bad-request', message: 'Authorization is unavailable in the fixture', details: { issues: [] } }),
+      poll: request => err(request, { code: 'bad-request', message: 'No fixture authorization attempt', details: { issues: [] } }),
+      submit: request => err(request, { code: 'bad-request', message: 'No fixture authorization attempt', details: { issues: [] } }),
+      cancel: request => err(request, { code: 'bad-request', message: 'No fixture authorization attempt', details: { issues: [] } }),
+    },
     credentials: {
       describe: request => ok(request, {
         credentials: Object.fromEntries(request.payload.refs.map(ref => [ref, {
@@ -3230,6 +3244,16 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'goal.complete': return this.api.goals.complete(request)
       case 'goal.clear': return this.api.goals.clear(request)
       case 'settings.describe': return this.api.settings.describe(request)
+      case 'nativeAccounts.describe': return this.api.nativeAccounts.describe(request)
+      case 'nativeAccounts.begin': return this.api.nativeAccounts.begin(request)
+      case 'nativeAccounts.poll': return this.api.nativeAccounts.poll(request)
+      case 'nativeAccounts.submit': return this.api.nativeAccounts.submit(request)
+      case 'nativeAccounts.cancel': return this.api.nativeAccounts.cancel(request)
+      case 'authorization.describe': return this.api.authorization.describe(request)
+      case 'authorization.begin': return this.api.authorization.begin(request)
+      case 'authorization.poll': return this.api.authorization.poll(request)
+      case 'authorization.submit': return this.api.authorization.submit(request)
+      case 'authorization.cancel': return this.api.authorization.cancel(request)
       case 'settings.openDocument': return this.api.settings.openDocument(request, signal)
       case 'settings.update': return this.api.settings.update(request)
       case 'settings.replace': return this.api.settings.replace(request)

@@ -7,10 +7,10 @@
  * cost is why nothing here runs at mount or at save — only when a surface
  * asks.
  *
- * What comes back is ids and display names. The rows are the vendor's aliases
- * and carry no context window, which is the whole reason a configured model
- * still states its own: automatic compaction refuses a route whose adapter
- * advertises no capacity.
+ * What comes back is ids and display names. The rows are the vendor's aliases,
+ * which carry no context window and are absent from the installed catalog a
+ * canonical id inherits one from, so a discovered model still states its own:
+ * automatic compaction refuses a route whose adapter advertises no capacity.
  * @module @arx-ai/arx-llm-agent-cli/discovery
  */
 

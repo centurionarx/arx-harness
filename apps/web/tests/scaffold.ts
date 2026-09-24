@@ -547,6 +547,10 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ] },
     { id: 'open-in-app', disabled: options.openInApp !== true },
     { id: 'ui-open-in-app', disabled: options.openInApp !== true },
+    // Account status runs the host's own Claude Code and Codex logins, which
+    // differ per machine and would reach every Models page golden. Unmounted,
+    // the card renders the same unavailable state on every host.
+    { id: 'native-accounts', disabled: true },
     ...options.agentPresets === undefined
       ? []
       // Never the derived harness-home root: a developer's own presets must not

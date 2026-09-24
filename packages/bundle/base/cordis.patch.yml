@@ -86,6 +86,17 @@
     - id: credentials
       name: '@arx-ai/arx-credentials-local'
 
+    # Sign-in flows: each adapter registers the flows that obtain its own
+    # credential, and a surface that can talk to a person carries one attempt.
+    # Idle until an attempt starts.
+    - id: authorization
+      name: '@arx-ai/arx-authorization'
+
+    # Status and sign-in of the official Claude Code and Codex tools through
+    # their own login. Nothing starts a tool until a surface asks for status.
+    - id: native-accounts
+      name: '@arx-ai/arx-native-accounts'
+
     # The pi-ai multi-provider twin, mounted dormant: zero routes (and no extra
     # models in the picker) until a `llm-pi-ai:` settings section supplies provider
     # profiles — then those routes register live, keys resolving per request

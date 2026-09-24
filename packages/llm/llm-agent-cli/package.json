@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-agent-cli",
   "description": "LLM adapter that drives a subscription-authenticated vendor CLI as an ordinary model route",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "publishConfig": {
     "access": "public"
   },
@@ -42,6 +42,7 @@
     "@anthropic-ai/claude-agent-sdk": "0.3.220",
     "@arx-ai/arx-claude-agent-sdk-process": "workspace:^",
     "@arx-ai/schemastery": "workspace:^",
+    "@earendil-works/pi-ai": "^0.82.1",
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "devDependencies": {

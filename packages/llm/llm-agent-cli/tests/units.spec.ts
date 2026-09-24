@@ -430,6 +430,25 @@ describe('resolveRoutes', () => {
     expect(routes.get('claude-subscription')?.displayName).toBe('Claude (subscription)')
   })
 
+  it('inherits a canonical model\'s context window, output cap, and image input from the installed catalog', () => {
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1' }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
+      id: 'claude-opus-4-1', contextWindow: 200_000, maxTokens: 32_000, acceptsImages: true,
+    })
+  })
+
+  it('keeps a stated context window, output cap, and image input over the catalog', () => {
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
+      id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false,
+    })
+  })
+
+  it('refuses a model the catalog does not list when it states no context window', () => {
+    expect(() => resolveRoutes({ claude: { models: [{ id: 'sonnet' }] } }))
+      .toThrow('llm-agent-cli: provider "claude" model "sonnet" is absent from the installed catalog; state its contextWindow')
+  })
+
   it('keeps what configuration stated', () => {
     const routes = resolveRoutes({ claude: { displayName: 'Claude', disposeGraceMs: 10 } })
     expect(routes.get('claude')).toMatchObject({ displayName: 'Claude', disposeGraceMs: 10 })

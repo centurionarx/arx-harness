@@ -210,6 +210,47 @@ abstract deleteRecord(key: CredentialKey): Promise<void>
 
 Source: [`packages/credentials/credentials/src/index.ts`](../../packages/credentials/credentials/src/index.ts)
 
+<a id="ctxnativeaccounts--nativeaccounts"></a>
+
+### `ctx.nativeAccounts` — `NativeAccounts`
+
+Account lifecycle service; official products remain the only writers of their credentials.
+
+```ts cordis-catalog
+/** Read sanitized account and native model metadata.
+ * @returns bounded native probes without token material or account identifiers.
+ */
+describe(): Promise<NativeAccountView[]>
+
+/** Begin user-authorized native login.
+ * @param provider - product selected by the human.
+ * @param mode - supported browser or device-code flow.
+ * @returns a private attempt capability and initial progress.
+ */
+begin(provider: NativeAccountProvider, mode?: NativeLoginMode): NativeAccountAttempt
+
+/** Read the initiating surface's attempt.
+ * @param id - private capability returned by begin.
+ * @returns sanitized progress.
+ */
+poll(id: NativeAccountAttemptId): NativeAccountAttempt
+
+/** Answer the official CLI's manual-code prompt.
+ * @param id - initiating surface's private capability.
+ * @param code - transient single-line authorization code.
+ * @returns progress without the submitted value.
+ */
+submit(id: NativeAccountAttemptId, code: string): NativeAccountAttempt
+
+/** Cancel one owned attempt and await native process cleanup.
+ * @param id - initiating surface's private capability.
+ * @returns terminal progress.
+ */
+cancel(id: NativeAccountAttemptId): Promise<NativeAccountAttempt>
+```
+
+Source: [`packages/credentials/native-accounts/src/index.ts`](../../packages/credentials/native-accounts/src/index.ts)
+
 <a id="authorization-events"></a>
 
 ### `authorization/*` events

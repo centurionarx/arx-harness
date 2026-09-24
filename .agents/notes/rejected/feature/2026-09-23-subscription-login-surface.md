@@ -1,6 +1,6 @@
 # Agent Note: sign in to a subscription provider from the Models page
 
-Status: proposed
+Status: rejected — superseded by the implemented native-account and chat sign-in note, which polls a private attempt capability instead of forwarding events and offers one chat card instead of a control per provider
 
 ## Problem
 

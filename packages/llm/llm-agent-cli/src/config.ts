@@ -5,6 +5,7 @@
  */
 
 import z from '@arx-ai/schemastery'
+import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 
 import { AGENT_CLI_PRESETS } from './presets.ts'
 
@@ -13,11 +14,12 @@ export interface AgentCliModel {
   /** Model id callers pass as `GenerateOptions.model`. */
   id: string
   /**
-   * Maximum combined request and response context. Required: automatic
-   * compaction refuses to run against a route whose adapter advertises no
-   * capacity, and the vendor CLI's own model rows carry none.
+   * Maximum combined request and response context. An exact canonical model id
+   * inherits it from the installed Anthropic catalog; an unknown id or alias
+   * must state it, because automatic compaction refuses to run against a route
+   * whose adapter advertises no capacity and the vendor CLI discloses none.
    */
-  contextWindow: number
+  contextWindow?: number
   /** Per-request output cap materialized when a caller omits one. */
   maxTokens?: number
   /** Human-readable name for selectors. */
@@ -86,7 +88,7 @@ const effort: z<AgentCliEffort> = z.union(AGENT_CLI_EFFORTS.map(level => z.const
 
 const model: z<AgentCliModel> = z.object({
   id: z.string().required(),
-  contextWindow: z.number().step(1).min(1).required(),
+  contextWindow: z.number().step(1).min(1),
   maxTokens: z.number().step(1).min(1),
   name: z.string(),
   acceptsImages: z.boolean(),
@@ -106,12 +108,15 @@ export const Config: z<Config> = z.object({
   cwd: z.string(),
 })
 
+/** Model metadata after explicit values and the installed catalog are resolved. */
+export type ResolvedAgentCliModel = Omit<AgentCliModel, 'contextWindow'> & { contextWindow: number }
+
 /** One route resolved from configuration, with every default materialized. */
 export interface ResolvedRoute {
   readonly provider: string
   readonly displayName: string
   readonly disposeGraceMs: number
-  readonly models: ReadonlyMap<string, AgentCliModel>
+  readonly models: ReadonlyMap<string, ResolvedAgentCliModel>
 }
 
 /**
@@ -133,6 +138,11 @@ export const DEFAULT_DISPOSE_GRACE_MS = 3_000
  * route under, and only a route the package does not offer falls back to its
  * id. Otherwise a surface that configures an offered route without renaming it
  * would see the route change name the moment it was saved.
+ *
+ * A model that states no context window inherits the installed Anthropic
+ * catalog's context window for its exact id, and with it the catalog's output
+ * cap and image input where the model states none. A model the catalog does
+ * not list must state its context window, or resolution throws.
  * @param providers - the `providers` section as configuration stored it, or
  *   `undefined` when the configuration carries no section.
  * @returns one resolved route per configured provider, keyed by route id.
@@ -141,8 +151,9 @@ export function resolveRoutes(
   providers: Readonly<Record<string, AgentCliProfile>> | undefined,
 ): ReadonlyMap<string, ResolvedRoute> {
   const routes = new Map<string, ResolvedRoute>()
+  const catalog = getBuiltinModels('anthropic')
   for (const [provider, configured] of Object.entries(providers ?? {})) {
-    const models = new Map<string, AgentCliModel>()
+    const models = new Map<string, ResolvedAgentCliModel>()
     for (const entry of configured.models ?? []) {
       if (entry.defaultEffort !== undefined && !(entry.efforts ?? []).includes(entry.defaultEffort)) {
         throw new Error(
@@ -150,7 +161,20 @@ export function resolveRoutes(
           + `"${entry.defaultEffort}", which is not among its declared efforts`,
         )
       }
-      models.set(entry.id, entry)
+      const known = catalog.find(row => row.id === entry.id)
+      const contextWindow = entry.contextWindow ?? known?.contextWindow
+      if (contextWindow === undefined) {
+        throw new Error(
+          `llm-agent-cli: provider "${provider}" model "${entry.id}" is absent from the installed catalog; `
+          + 'state its contextWindow',
+        )
+      }
+      models.set(entry.id, {
+        ...entry,
+        contextWindow,
+        ...entry.maxTokens === undefined && known !== undefined ? { maxTokens: known.maxTokens } : {},
+        ...entry.acceptsImages === undefined && known !== undefined ? { acceptsImages: known.input.includes('image') } : {},
+      })
     }
     routes.set(provider, {
       provider,

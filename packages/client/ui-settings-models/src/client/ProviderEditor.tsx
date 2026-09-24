@@ -30,7 +30,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CredentialView, IApiClient, SettingsNamespaceView, SettingsPathOpView } from '@arx-ai/arx-api-remotes/client'
-import { CATALOG_RULES, entryFormatOf, modelDrafts, validateModelCatalog } from './model-catalog.ts'
+import { entryFormatOf, modelDrafts, validateModelCatalog } from './model-catalog.ts'
 import type { ModelCatalogFailure, ModelEntryFormat } from './model-catalog.ts'
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
@@ -209,7 +209,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   // rather than by a blanket message. A namespace with no form has no rules to
   // judge its rows by, and its card cannot write them anyway.
   const rowFailure = (value: unknown): ModelCatalogFailure | undefined =>
-    layout === 'unknown' ? undefined : validateModelCatalog(value, CATALOG_RULES[layout])
+    layout === 'unknown' ? undefined : validateModelCatalog(value)
   const modelFailure = rowFailure(schema.getPath(draft, ['models']))
   const keyFailure = apiKeyFailure(keyDraft)
   // What a probe or a write must carry: the typed key with paste whitespace

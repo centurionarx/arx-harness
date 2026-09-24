@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-presets",
   "description": "Per-session agent composition from preset cordis.yml files for the arx Harness",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "publishConfig": {
     "access": "public"
   },

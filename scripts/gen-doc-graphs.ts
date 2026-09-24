@@ -195,8 +195,16 @@ const SERVICE_ROLES: ServiceRole[] = [
     title: 'Authorization flow registry',
     mode: 'seam',
     implementations: [],
-    consumers: ['llm-pi-ai'],
-    note: 'Flows are registered by the plugin that knows how to obtain one credential and keyed by the record they write; the seam owns the conversation and the one-attempt-per-key lifecycle, never the protocol.',
+    consumers: ['llm-pi-ai', 'apiproxy'],
+    note: 'Flows are registered by the plugin that knows how to obtain one credential and keyed by the record they write; the seam owns the conversation and the one-attempt-per-key lifecycle, never the protocol. The web gateway carries each attempt to the browser that started it.',
+  },
+  {
+    key: 'nativeAccounts',
+    pkg: 'native-accounts',
+    title: 'Native product accounts',
+    mode: 'core',
+    consumers: ['apiproxy'],
+    note: 'Status and sign-in of the official Claude Code and Codex tools through their own login; the tools remain the only writers of their credentials, and the web gateway carries each sign-in through a caller-private attempt id.',
   },
   {
     key: 'sessionTelemetry',
@@ -386,7 +394,7 @@ const SERVICE_ROLES: ServiceRole[] = [
     title: 'Subprocess seam',
     mode: 'seam',
     implementations: ['subprocess-local', 'subprocess-e2b'],
-    consumers: ['bash-local', 'bash-sandbox', 'terminal-bash', 'lsp-stdio', 'subagent-acp', 'subagent-codex', 'subagent-claude-code'],
+    consumers: ['bash-local', 'bash-sandbox', 'terminal-bash', 'lsp-stdio', 'subagent-acp', 'subagent-codex', 'subagent-claude-code', 'native-accounts'],
     note: 'The bash executors, the PTY shell backend, the LSP host, and the out-of-process ACP, Codex, and Claude Code subagent backends spawn through ctx.subprocess; the service owns process coordinates, tree/session lifetime, stdio dispositions, terminal mechanics, and kill escalation.',
   },
   {

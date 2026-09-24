@@ -118,6 +118,8 @@ function scriptedApi(overrides: {
       mutate: err,
       ...overrides.settings,
     },
+    authorization: { describe: err, begin: err, poll: err, submit: err, cancel: err },
+    nativeAccounts: { describe: err, begin: err, poll: err, submit: err, cancel: err },
     credentials: {
       describe: r => ok(r, { credentials: {} }),
       set: err,

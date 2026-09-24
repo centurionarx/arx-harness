@@ -16,6 +16,8 @@ import { ModelsSection } from '../src/client/ModelsSection.tsx'
 import { WelcomeNotice } from '../src/client/WelcomeNotice.tsx'
 import { HomeMigrationNotice } from '../src/client/HomeMigrationNotice.tsx'
 import { ProviderGuide } from '../src/client/ProviderGuide.tsx'
+import { NativeAccounts, type NativeAccountsInjected } from '../src/client/NativeAccounts.tsx'
+import { ChatAuthorization, type ChatAuthorizationInjected } from '../src/client/ChatAuthorization.tsx'
 
 // These specs assert the shipped English copy. The lane has no jsdom `window`,
 // so browser-language detection never runs and a fresh LocaleRuntime opens on
@@ -316,6 +318,66 @@ describe('ui-settings-models apply', () => {
 })
 
 describe('pushed invalidations', () => {
+  it('composes chat sign-in and native accounts under the Models page and reloads it after enabling a route', async () => {
+    const reply = <T>(value: T) => Promise.resolve({ rpcId: 'apply-accounts' as never, result: { ok: true as const, value } })
+    const namespace = (ns: string) => ({ ns, schema: {}, value: { providers: {} }, applies: 'live' as const, secrets: [], revision: 1 })
+    const settings = {
+      describe: vi.fn(() => reply({ writable: true, hasDocument: false, namespaces: [namespace('llm-agent-cli'), namespace('llm-pi-ai')] })),
+      mutate: vi.fn((request: { ns: string; ops: { path: string[] }[] }) =>
+        reply({ ...namespace(request.ns), revision: 2, value: { providers: { [request.ops[0]!.path[1]!]: {} } } })),
+    }
+    const settled = { id: 'settled' as never, provider: 'claude-code' as const, state: 'cancelled' as const, expiresAt: 0, pollAfterMs: 1000 }
+    const nativeAccounts = {
+      describe: vi.fn(() => reply({ accounts: [{ provider: 'claude-code', label: 'Claude Code', availability: 'available', status: 'connected',
+        authMode: 'subscription', loginModes: ['browser'], loginInFlight: false, models: [{ id: 'sonnet', name: 'Sonnet' }] }] })),
+      begin: vi.fn(() => reply({ attempt: settled })), poll: vi.fn(), submit: vi.fn(), cancel: vi.fn(),
+    }
+    const flow = { key: 'llm-pi-ai/openai-codex', label: 'OpenAI Codex', methods: [{ id: 'oauth', label: 'Sign in' }],
+      inFlight: false, configured: true, writable: true, kind: 'grant' }
+    const authorization = {
+      describe: vi.fn(() => reply({ flows: [flow] })),
+      begin: vi.fn(() => reply({ attempt: { id: 'settled' as never, key: flow.key, state: 'cancelled', expiresAt: 0, pollAfterMs: 1000 } })),
+      poll: vi.fn(), submit: vi.fn(), cancel: vi.fn(),
+    }
+    const llm = { providers: vi.fn(() => reply({ providers: [] })) }
+    const b = await bench(true, settings, { nativeAccounts, authorization, llm })
+    declare(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const nativeEntry = b.slots.entries('settings.models.nativeAccounts')[0]!
+    const chatEntry = b.slots.entries('settings.models.chatAuthorization')[0]!
+    expect([nativeEntry.component, chatEntry.component]).toEqual([NativeAccounts, ChatAuthorization])
+    const native = (nativeEntry.inject as unknown as () => NativeAccountsInjected)()
+    const chat = (chatEntry.inject as unknown as () => ChatAuthorizationInjected)()
+    expect([native.available, chat.available]).toEqual([true, true])
+
+    native.watch()()
+    native.reload()
+    await vi.waitFor(() => { expect(native.hooks.accounts.getSnapshot()).toMatchObject({ loading: false, accounts: [{ status: 'connected' }] }) })
+    expect(nativeAccounts.describe).toHaveBeenCalledTimes(2)
+    native.enable()
+    await vi.waitFor(() => { expect(llm.providers).toHaveBeenCalledOnce() })
+    expect(settings.mutate).toHaveBeenCalledWith(expect.objectContaining({ ns: 'llm-agent-cli' }))
+    native.begin('claude-code', 'browser')
+    await vi.waitFor(() => { expect(nativeAccounts.begin).toHaveBeenCalledWith({ provider: 'claude-code', mode: 'browser' }) })
+    native.submit('unrequested')
+    native.cancel()
+
+    chat.watch()()
+    chat.reload()
+    await vi.waitFor(() => { expect(authorization.describe).toHaveBeenCalledTimes(2) })
+    await vi.waitFor(() => { expect(chat.hooks.authorization.getSnapshot().flow?.key).toBe(flow.key) })
+    chat.begin()
+    await vi.waitFor(() => { expect(authorization.begin).toHaveBeenCalledWith({ key: flow.key, method: 'oauth' }) })
+    chat.submit('unrequested')
+    chat.cancel()
+    chat.enable()
+    await vi.waitFor(() => { expect(llm.providers).toHaveBeenCalledTimes(2) })
+    expect(settings.mutate).toHaveBeenCalledWith(expect.objectContaining({ ns: 'llm-pi-ai' }))
+    expect([nativeAccounts.submit, nativeAccounts.cancel, authorization.submit, authorization.cancel].map(fn => fn.mock.calls.length))
+      .toEqual([0, 0, 0, 0])
+    await b.ctx.fiber.dispose()
+  })
+
   it('ignores invalidations before the page ever loaded', async () => {
     const b = await bench()
     declare(b.slots)
