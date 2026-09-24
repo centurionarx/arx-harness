@@ -81,7 +81,8 @@ Each subscription roster now feeds its chat route through the Models page:
 - **Rosters.** The Claude account card lists Opus 5.5 and its long-context variant, and the Codex card lists the GPT-6 models the plan allows. One click brings either chat route up to its roster, and the chat picker's Codex group already shows the three GPT-6 models the catalog describes.
 - **Removed models.** A setting or session that selected `deepseek-v4-flash` on pi-ai's `deepseek` catalog route, `gpt-5.4` or `gpt-5.4-mini` on `openai-codex`, or `claude-opus-4-1` on `anthropic` no longer resolves and must select a model the catalog still ships. Hand-declared routes, such as the examples' `deepseek-official`, list their own models and are unaffected.
 - **Explicit Codex list.** After an update, the Codex route lists its models explicitly, so a later catalog addition reaches it only through its list, which the next update extends.
-- **Request changes.** The catalog now gives the `deepseek` entries `max_tokens` as their output-cap field and strict tool schemas, so requests on that catalog route change accordingly.
+- **Tool `strict` field.** pi-ai 0.87 sends a tool definition's `strict` field only when the catalog entry or the route sets `supportsStrictMode: true`, where 0.82 sent `"strict": false` on every `openai-completions` route except four named vendors. The examples' and the Python runtime's `deepseek-official` routes set neither, so their tool definitions drop the field, which OpenAI-compatible APIs read as `false`. The catalog's `deepseek` entries set it and keep the field.
+- **Output cap and affinity.** The `deepseek` provider and any base URL naming `deepseek.com` send the output cap as `max_tokens` in place of `max_completion_tokens`. OpenRouter routes send the session id the loop stamps on each request as an `x-session-id` header.
 - **Duplicate installs.** `@anthropic-ai/claude-agent-sdk@0.3.281` installs in two peer variants. `arx-subagent-claude-code` pins `@anthropic-ai/sdk` 0.93.0, while other importers resolve the peer to the 0.124.0 that pi-ai brings, and both variants share one platform payload. A Profile with the Codex subagent Bundle carries Codex 0.147.0 beside 0.156.1.
 
 ## Testing
@@ -98,5 +99,7 @@ Two probes support the Codex decision:
 - **Account status.** The opt-in native account smoke reads account status through the 0.156.1 app-server.
 
 The Claude Code real-product tests run the bundled 2.1.281 CLI against the loopback Messages fixture. Inside a cloud Claude Code container, that CLI prefers the container's own session credential over `ANTHROPIC_API_KEY` and refuses `bypassPermissions` for root. There they pass only with the container's `CLAUDE_*` and `ANTHROPIC_*` variables unset and `IS_SANDBOX=1`. CI runners have neither condition.
+
+The Python runtime's single-executable smoke records the `deepseek-official` tool definitions without `strict`; its advanced scenario is unchanged.
 
 The Models settings and first-run guide web goldens list the four new catalog providers, 41 in place of 37, and the native account card's introduction. The web lane unmounts native accounts because their status depends on the host, so the roster buttons have component coverage rather than an assembled golden.
