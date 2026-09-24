@@ -1963,7 +1963,8 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       }
       return err(request, {
         code: 'settings-rejected',
-        message: error instanceof Error ? error.message : String(error),
+        // Schema, owner-validator and provider failures can quote credentials.
+        message: 'settings write failed; check the registered schema and provider availability',
         details: { ns },
       })
     }
@@ -1975,14 +1976,27 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       // an unregistered one does.
       return rejected(error)
     }
+    if (!settings.writable) {
+      return err(request, { code: 'settings-rejected', message: 'settings provider is read-only', details: { ns } })
+    }
     try {
+      // Direct RPC callers must not write a namespace whose response cannot be
+      // redacted, even when they never requested the descriptor first.
+      if (!settings.describe({ redactSecrets: true }).some(candidate => candidate.ns === branded)) {
+        return err(request, { code: 'settings-rejected', message: `settings namespace "${ns}" is not registered`, details: { ns } })
+      }
       if (mode === 'update') await settings.update(branded, section, expectedRevision)
       else if (mode === 'replace') await settings.replace(branded, section, expectedRevision)
       else await settings.mutate(branded, section as SettingsPathOp[], expectedRevision)
     } catch (error: unknown) {
       return rejected(error)
     }
-    const descriptor = settings.describe({ redactSecrets: true }).find(candidate => candidate.ns === branded)
+    let descriptor: SettingsDescriptor | undefined
+    try {
+      descriptor = settings.describe({ redactSecrets: true }).find(candidate => candidate.ns === branded)
+    } catch {
+      return err(request, { code: 'internal', message: 'settings write committed but its result cannot be safely described', details: { ns } })
+    }
     if (descriptor === undefined) {
       // The write committed but the namespace vanished before this read: only
       // a concurrent registrant disposal can produce it.
@@ -3256,13 +3270,18 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       describe(request) {
         const settings = ctx.get('settings')
         if (settings === undefined) return Promise.resolve(err(request, settingsAbsent()))
-        return Promise.resolve(ok(request, {
-          writable: settings.writable,
-          hasDocument: settings.documentPath !== undefined,
-          ...settings.documentPath === undefined ? {} : { documentPath: settings.documentPath },
-          canOpen: canOpenDocuments(),
-          namespaces: settings.describe({ redactSecrets: true }).map(namespaceView),
-        }))
+        try {
+          return Promise.resolve(ok(request, {
+            writable: settings.writable,
+            hasDocument: settings.documentPath !== undefined,
+            ...settings.documentPath === undefined ? {} : { documentPath: settings.documentPath },
+            canOpen: canOpenDocuments(),
+            namespaces: settings.describe({ redactSecrets: true }).map(namespaceView),
+          }))
+        } catch {
+          // No schema text or values may escape in a serialization diagnostic.
+          return Promise.resolve(err(request, { code: 'internal', message: 'settings cannot be safely described; check the registered schemas and stored data', details: {} }))
+        }
       },
       async openDocument(request, signal) {
         const settings = ctx.get('settings')
@@ -3284,7 +3303,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         let path: string | undefined
         try {
           path = await settings.prepareDocument()
-        } catch (error: unknown) {
+        } catch {
           if (isAborted(signal)) {
             return err(request, {
               code: 'cancelled',
@@ -3294,7 +3313,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           }
           return err(request, {
             code: 'internal',
-            message: `settings document preparation failed: ${error instanceof Error ? error.message : String(error)}`,
+            message: 'settings document preparation failed; check provider availability',
             details: {},
           })
         }

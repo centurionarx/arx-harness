@@ -267,6 +267,115 @@ function forwardedSettings(ns: string): HostFrame {
   }
 }
 
+describe('settings wire secrecy', () => {
+  const fake = 'fixture-private-value'
+
+  it.each(['update', 'replace', 'mutate'] as const)('refuses an unsafe schema at the %s executor before persistence', async (mode) => {
+    const ctx = await harness()
+    const schema = z.object({ profiles: z.dict(z.union([
+      z.object({ token: z.string().role('secret'), kind: z.const('private') }),
+      z.object({ kind: z.const('public') }),
+    ])) })
+    ctx.settings.register(NS, schema)
+    const api = createApiProxy(ctx, DEFAULTS)
+    const section = { profiles: { sample: { token: fake, kind: 'private' } } }
+    const response = mode === 'update'
+      ? await api.settings.update(request({ ns: String(NS), patch: section }))
+      : mode === 'replace'
+        ? await api.settings.replace(request({ ns: String(NS), section }))
+        : await api.settings.mutate(request({ ns: String(NS), ops: [{ op: 'set', path: ['profiles'], value: section.profiles }] }))
+    expect(expectErr(response).code).toBe('settings-rejected')
+    expect(JSON.stringify(response)).not.toContain(fake)
+    expect((ctx.get('settings') as MemorySettings).doc).toEqual({})
+    const description = await api.settings.describe(request({}))
+    expect(expectErr(description).message).toContain('cannot be safely described')
+    expect(JSON.stringify(description)).not.toContain(fake)
+  })
+
+  it('redacts schema defaults and all response layers on describe and successful writes', async () => {
+    const ctx = await harness({ settings: { doc: { [String(NS)]: { token: fake } } } })
+    const schema = z.object({ token: z.string().role('secret').default(fake), visible: z.string() })
+      .default({ token: fake, visible: 'default' })
+    ctx.settings.register(NS, schema, { base: { token: fake, visible: 'base' } })
+    const api = createApiProxy(ctx, DEFAULTS)
+    for (const response of [
+      await api.settings.describe(request({})),
+      await api.settings.update(request({ ns: String(NS), patch: { visible: 'updated' } })),
+      await api.settings.replace(request({ ns: String(NS), section: { token: fake } })),
+      await api.settings.mutate(request({ ns: String(NS), ops: [{ op: 'set', path: ['token'], value: fake }] })),
+    ]) {
+      expect(response.result.ok).toBe(true)
+      expect(JSON.stringify(response)).not.toContain(fake)
+    }
+    expect(ctx.settings.get(NS)).toEqual({ token: fake, visible: 'base' })
+  })
+
+  it.each(['schema', 'validator', 'provider'] as const)('never echoes %s failure text into wire diagnostics', async (source) => {
+    const ctx = await harness()
+    ctx.settings.register(NS, z.object({ count: z.number(), token: z.string().role('secret') }), {
+      validate: (value) => { if (source === 'validator' && value.token) throw new Error(fake) },
+    })
+    if (source === 'provider') {
+      const provider = ctx.get('settings') as MemorySettings
+      // Inject storage failure rather than replacing the settings executor.
+      Object.defineProperty(provider, 'persist', { value: () => Promise.reject(new Error(fake)) })
+    }
+    const api = createApiProxy(ctx, DEFAULTS)
+    const response = await api.settings.update(request({ ns: String(NS), patch: source === 'schema' ? { count: fake } : { token: fake } }))
+    expect(expectErr(response).code).toBe('settings-rejected')
+    expect(JSON.stringify(response)).not.toContain(fake)
+  })
+
+  it('rechecks schema changes after a successful read and permits explicitly opaque fields', async () => {
+    const ctx = await harness()
+    const schema = z.object({ visible: z.string() })
+    ctx.settings.register(NS, schema)
+    const api = createApiProxy(ctx, DEFAULTS)
+    expectOk(await api.settings.describe(request({})))
+    schema.set('opaque', z.any())
+    const refused = await api.settings.update(request({ ns: String(NS), patch: { opaque: { token: fake } } }))
+    expect(expectErr(refused).code).toBe('settings-rejected')
+    expect((ctx.get('settings') as MemorySettings).doc).toEqual({})
+    schema.set('opaque', z.any().role('secret'))
+    const accepted = await api.settings.update(request({ ns: String(NS), patch: { opaque: { token: fake } } }))
+    expect(expectOk(accepted).secrets).toEqual([{ path: ['opaque'], set: true }])
+    expect(JSON.stringify(accepted)).not.toContain(fake)
+  })
+
+  it('reports a committed write safely when a listener invalidates its response schema', async () => {
+    const ctx = await harness()
+    const schema = z.object({ token: z.string().role('secret') })
+    ctx.settings.register(NS, schema)
+    ctx.on('settings/updated', () => { schema.set('output', z.any()) })
+    const api = createApiProxy(ctx, DEFAULTS)
+    const response = await api.settings.update(request({ ns: String(NS), patch: { token: fake } }))
+    expect(expectErr(response).message).toBe('settings write committed but its result cannot be safely described')
+    expect(JSON.stringify(response)).not.toContain(fake)
+    expect((ctx.get('settings') as MemorySettings).doc).toEqual({ [String(NS)]: { token: fake } })
+  })
+
+  it('never echoes settings-document preparation failures', async () => {
+    const ctx = await harness()
+    vi.spyOn(ctx.settings, 'prepareDocument').mockRejectedValue(new Error(fake))
+    const api = createApiProxy(ctx, { ...DEFAULTS, canOpenPath: () => true })
+    const response = await api.settings.openDocument(request({}), new AbortController().signal)
+    expect(expectErr(response).message).toBe('settings document preparation failed; check provider availability')
+    expect(JSON.stringify(response)).not.toContain(fake)
+  })
+
+  it('rejects recursive input through the direct executor without persisting or echoing values', async () => {
+    const ctx = await harness()
+    ctx.settings.register(NS, z.object({ token: z.string().role('secret') }))
+    const api = createApiProxy(ctx, DEFAULTS)
+    const recursive: Record<string, unknown> = { token: fake }
+    recursive.self = recursive
+    const response = await api.settings.update(request({ ns: String(NS), patch: recursive }))
+    expect(expectErr(response).code).toBe('settings-rejected')
+    expect(JSON.stringify(response)).not.toContain(fake)
+    expect((ctx.get('settings') as MemorySettings).doc).toEqual({})
+  })
+})
+
 describe('settings domain', () => {
   it('reports an actionable error when no settings provider is mounted', async () => {
     const ctx = await harness({ settings: false })

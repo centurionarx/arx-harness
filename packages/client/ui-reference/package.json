@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-reference",
   "description": "Unified Web @file and @session reference source",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "publishConfig": {
     "access": "public"
   },

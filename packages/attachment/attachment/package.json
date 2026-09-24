@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-attachment",
   "description": "Durable immutable attachment storage seam for the arx Harness",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "publishConfig": {
     "access": "public"
   },

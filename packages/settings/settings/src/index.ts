@@ -8,7 +8,7 @@
 
 import { Context, Service } from '@arx-ai/cordis'
 import type z from '@arx-ai/schemastery'
-import { redactSecrets } from './redact.ts'
+import { redactSchema, redactSecrets } from './redact.ts'
 import type { RedactedSecret } from './redact.ts'
 import type { SettingsNamespace, SettingsUpdateSource } from './types.ts'
 
@@ -67,7 +67,7 @@ export interface SettingsDescriptor {
   // public API, provider contract, implementations, tests, and consumers.
   /** The registered namespace. */
   ns: SettingsNamespace
-  /** Serialized schemastery schema (`schema.toJSON()`). */
+  /** Serialized Schemastery uid/refs envelope; defaults are sanitized under redaction. */
   schema: unknown
   /** Current resolved value. */
   value: unknown
@@ -92,9 +92,10 @@ export interface SettingsDescriptor {
 /** Options for {@link SettingsProvider.describe}. */
 export interface SettingsDescribeOptions {
   /**
-   * Strip `role('secret')` fields from `value`/`base`/`user` and enumerate
-   * them in each descriptor's `secrets`. Every wire surface MUST pass this;
-   * the verbatim default exists for same-process configuration UIs only.
+   * Strip secret fields and undeclared keys from every data layer, sanitize
+   * schema defaults, and enumerate secret slots. Unsupported schemas or
+   * incompatible data reject with value-free errors. Every wire consumer MUST
+   * enable this; verbatim descriptors are for trusted same-process callers only.
    */
   redactSecrets?: boolean
 }
@@ -473,6 +474,8 @@ export abstract class SettingsProvider extends Service {
    * Describe every registered namespace for configuration surfaces, including
    * the composition `base` and raw user layers so a form can mark which fields
    * the user overrode (presence in `user`) and what a reset returns to.
+   * Redacted reads reject unsupported schemas, recursive graphs and incompatible
+   * data without quoting schema text or values; they never run schema callbacks.
    * @param options - redaction switch; wire surfaces must redact.
    * @returns one descriptor per registered namespace, in registration order.
    */
@@ -487,26 +490,23 @@ export abstract class SettingsProvider extends Service {
         // and describing it as "no user layer" keeps this read total.
         user = undefined
       }
-      const base = registration.base === undefined ? undefined : structuredClone(registration.base)
-      const detachedUser = user === undefined ? undefined : structuredClone(user)
-      const descriptor: SettingsDescriptor = {
+      const schema = registration.schema as z<never>
+      const redacted = options?.redactSecrets === true ? redactSecrets(schema, registration.resolved) : undefined
+      const detach = (value: unknown): unknown => {
+        if (value === undefined) return undefined
+        return redacted === undefined ? structuredClone(value) : redactSecrets(schema, value).value
+      }
+      const base = detach(registration.base)
+      const detachedUser = detach(user)
+      return {
         ns: registration.ns,
-        schema: registration.schema.toJSON(),
-        value: registration.resolved,
+        schema: redacted === undefined ? registration.schema.toJSON() : redactSchema(schema),
+        value: redacted === undefined ? registration.resolved : redacted.value,
         revision: registration.revision,
         ...base === undefined ? {} : { base },
         ...detachedUser === undefined ? {} : { user: detachedUser },
         applies: registration.applies,
-      }
-      if (options?.redactSecrets !== true) return descriptor
-      const schema = registration.schema as z<never>
-      const redacted = redactSecrets(schema, registration.resolved)
-      return {
-        ...descriptor,
-        value: redacted.value,
-        ...base === undefined ? {} : { base: redactSecrets(schema, base).value },
-        ...detachedUser === undefined ? {} : { user: redactSecrets(schema, detachedUser).value },
-        secrets: redacted.secrets,
+        ...redacted === undefined ? {} : { secrets: redacted.secrets },
       }
     })
   }
@@ -673,9 +673,9 @@ export abstract class SettingsProvider extends Service {
       let next: unknown
       try {
         next = deepFreeze(this.resolve(registration.schema, registration.base, this.section(registration.ns), registration.validate))
-      } catch (error) {
+      } catch {
+        // Schema and owner validation errors may quote credentials.
         this.ctx.logger.warn('settings: keeping last good "%s" after invalid stored section', registration.ns)
-        this.ctx.logger.warn(error)
         continue
       }
       this.bumpRevision(registration, before.get(registration.ns), this.section(registration.ns))
@@ -730,8 +730,8 @@ export abstract class SettingsProvider extends Service {
       try {
         const returned = listener(ns, revision)
         if (returned != null && typeof (returned as PromiseLike<unknown>).then === 'function') {
-          void Promise.resolve(returned as PromiseLike<unknown>).then(undefined, (error: unknown) => {
-            this.warnListenerFailure(ns, error)
+          void Promise.resolve(returned as PromiseLike<unknown>).then(undefined, () => {
+            this.warnListenerFailure(ns)
           })
         }
       } catch (error) {
@@ -739,7 +739,7 @@ export abstract class SettingsProvider extends Service {
           invariantFailure ??= error
           continue
         }
-        this.warnListenerFailure(ns, error)
+        this.warnListenerFailure(ns)
       }
     }
     if (invariantFailure !== undefined) throw invariantFailure as Error
@@ -762,8 +762,8 @@ export abstract class SettingsProvider extends Service {
           if (!watcher.active || this.isStopped()) return
           return watcher.callback(next as never, prev as never)
         })
-        .then(() => undefined, (error: unknown) => {
-          this.warnWatcherFailure(registration.ns, error)
+        .then(() => undefined, () => {
+          this.warnWatcherFailure(registration.ns)
         })
       watcher.tail = segment
       this.pendingTails.add(segment)
@@ -783,8 +783,8 @@ export abstract class SettingsProvider extends Service {
           // An emit listener may still be an async function; its rejection
           // cannot reach the synchronous INVARIANT rethrow below, so it is
           // contained here instead of becoming an unhandled rejection.
-          void Promise.resolve(returned as PromiseLike<unknown>).then(undefined, (error: unknown) => {
-            this.warnListenerFailure(registration.ns, error)
+          void Promise.resolve(returned as PromiseLike<unknown>).then(undefined, () => {
+            this.warnListenerFailure(registration.ns)
           })
         }
       } catch (error) {
@@ -792,22 +792,21 @@ export abstract class SettingsProvider extends Service {
           invariantFailure ??= error
           continue
         }
-        this.warnListenerFailure(registration.ns, error)
+        this.warnListenerFailure(registration.ns)
       }
     }
     if (invariantFailure !== undefined) throw invariantFailure as Error
   }
 
   /** Contained-watcher diagnostic shared by the sync and async failure paths. */
-  private warnWatcherFailure(ns: SettingsNamespace, error: unknown): void {
+  private warnWatcherFailure(ns: SettingsNamespace): void {
+    // Callbacks receive unredacted values; their error text is not safe to log.
     this.ctx.logger.warn('settings: watcher for "%s" failed', ns)
-    this.ctx.logger.warn(error)
   }
 
   /** Contained-listener diagnostic shared by the sync and async failure paths. */
-  private warnListenerFailure(ns: SettingsNamespace, error: unknown): void {
+  private warnListenerFailure(ns: SettingsNamespace): void {
     this.ctx.logger.warn('settings: a settings/updated listener for "%s" failed', ns)
-    this.ctx.logger.warn(error)
   }
 }
 
