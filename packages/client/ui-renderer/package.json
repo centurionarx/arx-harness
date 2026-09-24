@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-renderer",
   "description": "Browser UI renderer: React slot bindings, ctx.uiRenderer, and the assembled application root",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "publishConfig": {
     "access": "public"
   },

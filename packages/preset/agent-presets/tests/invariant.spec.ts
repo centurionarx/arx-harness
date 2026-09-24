@@ -38,7 +38,7 @@ async function harness(roster: Partial<Config> = {}): Promise<Context> {
 }
 
 describe('agent-presets invariants', () => {
-  it('keeps the standing composition alive across the agents that joined it', async () => {
+  it('remounts a usable composition after the last agent releases it', async () => {
     const ctx = await harness()
     const handle = await ctx.agents.create({
       sessionId: SessionId('inv-live'),
@@ -47,19 +47,15 @@ describe('agent-presets invariants', () => {
 
     expect(livePresetMounts().map(mount => mount.presetId)).toContain('standard')
 
-    // A standing mount survives its agents: the composition a session joined
-    // is shared, so one session ending must not strip it from the next.
     await handle.dispose()
-    expect(livePresetMounts().map(mount => mount.presetId)).toContain('standard')
+    expect(livePresetMounts(ctx.fiber)).toEqual([])
 
-    // A second agent reuses the same mount rather than adding one.
     await ctx.agents.create({
       sessionId: SessionId('inv-live-2'),
       setup: async (agentCtx: Context) => void await ctx.agentPresets.mount(agentCtx, 'standard'),
     })
     expect(livePresetMounts().filter(mount => mount.presetId === 'standard')).toHaveLength(1)
 
-    // Whole-tree teardown is the boundary that does reclaim it.
     await ctx.fiber.dispose()
     expect(livePresetMounts().map(mount => mount.presetId)).not.toContain('standard')
   })

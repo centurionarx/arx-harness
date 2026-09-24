@@ -521,9 +521,9 @@ serviceFor<K extends string & keyof Context>(agent: { ctx: Context }, name: K): 
  * make. The CALLER owns that check — this method does not read session
  * history.
  *
- * The swap is a parent re-link, not an unmount: standing mounts are shared
- * and permanent, so the old composition stays for its other agents and the
- * new one is ensured BEFORE the link moves. An unknown or unusable preset
+ * The swap is a parent re-link: the old composition stays for its other
+ * owners and the new one is retained before the link moves. The old
+ * membership is released after the swap. An unknown or unusable preset
  * therefore throws with the agent exactly as it was — there is no torn-down
  * state to restore. The re-link runs through the binding this roster kept
  * from the agent's mount — arx-scope's only re-link authority. An agent
@@ -542,7 +542,9 @@ async recompose(agentCtx: Context, id: string): Promise<AgentPreset>
  * A cold transcript read resolves tool presenters against the composition
  * the session recorded, and the standing mount makes that possible without
  * resuming anything: ensuring the mount composes plugins but starts no
- * agent, no session, and no turn.
+ * agent, no session, and no turn. The calling context's fiber retains the
+ * returned generation until it unloads; repeated reads through that fiber
+ * share one retention. The key must not escape the caller's lifetime.
  * @param id - the preset id, or `undefined` for {@link defaultId}.
  * @returns the standing scope key readers pass as a registry view scope.
  * @throws when the preset is unknown or its composition is unusable.

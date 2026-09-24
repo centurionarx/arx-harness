@@ -35,7 +35,7 @@ async function harness(configPath: string, adapter: MockAdapter, opts: HarnessOp
   await ctx.plugin(AgentLoop, { agents: [] })
   await ctx.plugin(LocalSubprocessRuntime)
   await ctx.plugin(LocalBashExecutor, { timeoutMs: 10_000 })
-  await ctx.plugin(HooksCodex, { configPath, model: 'm', ...opts })
+  await ctx.plugin(HooksCodex, { configPath, model: 'm', sessionStartMode: 'detached', ...opts })
   ctx.llm.registerAdapter(['mock'], adapter)
   return ctx
 }

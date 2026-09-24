@@ -185,7 +185,7 @@ describe('hooks-codex bridge', () => {
     await ctx.plugin(AgentLoop, { agents: [] })
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalBashExecutor, { timeoutMs: 10_000 })
-    const fiber = await ctx.plugin(HooksCodex, { configPath: join(dir, 'hooks.json'), model: 'm' })
+    const fiber = await ctx.plugin(HooksCodex, { configPath: join(dir, 'hooks.json'), model: 'm', sessionStartMode: 'detached' })
     await fiber.dispose()
     ctx.llm.registerAdapter(['mock'], adapter)
     const agent = ctx.agentLoop.create(SessionId('a1'), { provider: 'mock', model: 'mock' })
@@ -208,7 +208,7 @@ describe('hooks-codex bridge', () => {
     await ctx.plugin(AgentLoop, { agents: [] })
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalBashExecutor, { timeoutMs: 10_000 })
-    const fiber = await ctx.plugin(HooksCodex, { configPath: join(dir, 'hooks.json'), model: 'm' })
+    const fiber = await ctx.plugin(HooksCodex, { configPath: join(dir, 'hooks.json'), model: 'm', sessionStartMode: 'detached' })
     ctx.llm.registerAdapter(['mock'], new MockAdapter([]))
     const warn = vi.fn()
     ctx.logger.warn = warn as never
