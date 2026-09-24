@@ -10,7 +10,7 @@ A conclusão de um agente filho em segundo plano pode abrir e fechar o segundo t
 
 ## Decisão
 
-O [harness de snapshots](../../../../packages/test-support/acp-snapshot/src/harness.ts) aceita `minimumTurn` em `waitForTurnEnd`. Ele exige tanto que o último turno esteja fechado quanto um registro persistido de fechamento do turno solicitado. A [fixture de herança continuável](../../../../examples/acp-agent/tests/snapshots/subagent-continuable-inheritance/input.json) espera diretamente o fechamento do turno 2. `waitForTurnStart` mantém sua semântica de turno aberto para sincronizar cancelamentos.
+O [harness de snapshots](../../../../packages/test-support/acp-snapshot/src/harness.ts) aceita `minimumTurn` em `waitForTurnEnd`. Ele exige tanto que o último turno esteja fechado quanto um registro persistido de fechamento do turno solicitado. A [fixture continuável](../../../../examples/acp-agent/tests/snapshots/subagent-continuable/input.json) e a [fixture de herança continuável](../../../../examples/acp-agent/tests/snapshots/subagent-continuable-inheritance/input.json) esperam diretamente o fechamento do turno 2. `waitForTurnStart` mantém sua semântica de turno aberto para sincronizar cancelamentos.
 
 ## Alternativas consideradas
 
@@ -20,4 +20,4 @@ O [harness de snapshots](../../../../packages/test-support/acp-snapshot/src/harn
 
 ## Consequências
 
-A fixture aceita uma conclusão já persistida e rejeita um turno anterior fechado. As comparações de transcrição, o prazo padrão de 30 segundos, a prontidão de cancelamento e o descarte em execução permanecem inalterados.
+As duas fixtures aceitam uma conclusão já persistida e rejeitam um turno anterior fechado. As comparações de transcrição, o prazo padrão de 30 segundos, a prontidão de cancelamento e o descarte em execução permanecem inalterados.

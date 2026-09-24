@@ -20,6 +20,7 @@ import type {
   BedrockCompat,
   ChatTemplateKwargValue,
   KnownApi,
+  MistralConversationsCompat,
   Model,
   ModelCost,
   ModelThinkingLevel,
@@ -92,8 +93,9 @@ export type PiAiThinkingFormat = NonNullable<OpenAICompletionsCompat['thinkingFo
  * key type is a drift gate: a pi-ai upgrade that adds a format (0.84 added
  * `baseten`) fails compilation here until the new format is named, so the
  * offer never silently lags the upstream set. The two `chat-template` variants
- * are nameable because {@link PiAiCompatProfile.chatTemplateKwargs} carries
- * the kwargs they dispatch through.
+ * and `baseten` are nameable because {@link PiAiCompatProfile.chatTemplateKwargs}
+ * and {@link PiAiCompatProfile.chatTemplateArgs} carry the values they
+ * dispatch through.
  */
 const THINKING_FORMAT_GATE: Record<PiAiThinkingFormat, true> = {
   'openai': true,
@@ -106,6 +108,7 @@ const THINKING_FORMAT_GATE: Record<PiAiThinkingFormat, true> = {
   'qwen-chat-template': true,
   'string-thinking': true,
   'ant-ling': true,
+  'baseten': true,
 }
 
 /** Reasoning-dispatch wire formats a profile may name, most-reached first. */
@@ -141,6 +144,7 @@ export type PiAiChatTemplateVar = Extract<ChatTemplateKwargValue, { $var: string
 const CHAT_TEMPLATE_VAR_GATE: Record<PiAiChatTemplateVar, true> = {
   'thinking.enabled': true,
   'thinking.effort': true,
+  'thinking.budget': true,
 }
 
 /** The request-state placeholders a profile may name. */
@@ -203,7 +207,10 @@ export type PiAiReasoningEfforts = Partial<Record<ModelThinkingLevel, string | n
  * `withhold` is the disposition for a field pi-ai's installed catalog already
  * sets for a named vendor. Reaching for one of those on a hand-declared route
  * means configuring a provider that should have been named as a catalog route
- * instead, where the installed entry carries the right value already.
+ * instead, where the installed entry carries the right value already. It is
+ * also the disposition for a switch pi-ai added that no deployment has needed
+ * yet: offering one is a decision with its own evidence, not a side effect of
+ * an upgrade.
  */
 type CompatDisposition = 'offer' | 'withhold'
 
@@ -224,6 +231,7 @@ const COMPLETIONS_COMPAT_GATE = {
   requiresReasoningContentOnAssistantMessages: 'offer',
   thinkingFormat: 'offer',
   chatTemplateKwargs: 'offer',
+  chatTemplateArgs: 'offer',
   supportsStrictMode: 'offer',
   cacheControlFormat: 'offer',
   supportsLongCacheRetention: 'offer',
@@ -232,8 +240,13 @@ const COMPLETIONS_COMPAT_GATE = {
   zaiToolStream: 'withhold',
   supportsOpenAIGrammarTools: 'withhold',
   sendSessionAffinityHeaders: 'withhold',
-  deferredToolsMode: 'withhold',
   sessionAffinityFormat: 'withhold',
+  supportsFinishReason: 'withhold',
+  thinkingTokenBudgetField: 'withhold',
+  supportsThinkingTokenBudget: 'withhold',
+  supportsMidConvoSystemMessages: 'withhold',
+  supportsMidConvoToolAdditions: 'withhold',
+  vllmPriority: 'withhold',
 } as const satisfies Record<keyof OpenAICompletionsCompat, CompatDisposition>
 
 /** Disposition of every `OpenAIResponsesCompat` field; a drift gate like the one above. */
@@ -245,6 +258,9 @@ const RESPONSES_COMPAT_GATE = {
   supportsOpenAIGrammarTools: 'withhold',
   supportsToolSearch: 'withhold',
   supportsExplicitPromptCacheMode: 'withhold',
+  supportsMidConvoSystemMessages: 'withhold',
+  supportsAdditionalTools: 'withhold',
+  supportsMaxOutputTokens: 'withhold',
 } as const satisfies Record<keyof OpenAIResponsesCompat, CompatDisposition>
 
 /** Disposition of every `AnthropicMessagesCompat` field; a drift gate like the one above. */
@@ -257,13 +273,22 @@ const ANTHROPIC_COMPAT_GATE = {
   allowEmptySignature: 'offer',
   supportsStrictTools: 'offer',
   sendSessionAffinityHeaders: 'withhold',
-  supportsToolReferences: 'withhold',
+  sessionAffinityFormat: 'withhold',
+  supportsMidConvoEffort: 'withhold',
+  supportsMidConvoSystemMessages: 'withhold',
+  supportsMidConvoToolChanges: 'withhold',
+  allowedFallbackModels: 'withhold',
 } as const satisfies Record<keyof AnthropicMessagesCompat, CompatDisposition>
 
 /** Disposition of every `BedrockCompat` field; a drift gate like the one above. */
 const BEDROCK_COMPAT_GATE = {
   supportsStrictMode: 'offer',
 } as const satisfies Record<keyof BedrockCompat, CompatDisposition>
+
+/** Disposition of every `MistralConversationsCompat` field; a drift gate like the one above. */
+const MISTRAL_CONVERSATIONS_COMPAT_GATE = {
+  supportsMidConvoSystemMessages: 'withhold',
+} as const satisfies Record<keyof MistralConversationsCompat, CompatDisposition>
 
 /**
  * Every wire protocol pi-ai gives a compat type. Derived from `Model.compat`'s
@@ -290,6 +315,7 @@ const COMPAT_GATES: Readonly<Record<ApiWithCompat, Readonly<Record<string, Compa
   'openai-codex-responses': RESPONSES_COMPAT_GATE,
   'anthropic-messages': ANTHROPIC_COMPAT_GATE,
   'bedrock-converse-stream': BEDROCK_COMPAT_GATE,
+  'mistral-conversations': MISTRAL_CONVERSATIONS_COMPAT_GATE,
 }
 
 /**
@@ -312,6 +338,9 @@ type OfferedCompatField =
   | OfferedIn<typeof RESPONSES_COMPAT_GATE>
   | OfferedIn<typeof ANTHROPIC_COMPAT_GATE>
   | OfferedIn<typeof BEDROCK_COMPAT_GATE>
+  // The Mistral gate offers nothing today; keeping it here lets a field flipped to `offer` reach the profile proofs.
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents -- see above
+  | OfferedIn<typeof MISTRAL_CONVERSATIONS_COMPAT_GATE>
 
 /**
  * pi-ai wire-compatibility switches, set on the route (its models' default) or
@@ -365,6 +394,12 @@ export interface PiAiCompatProfile {
    */
   chatTemplateKwargs?: NonNullable<OpenAICompletionsCompat['chatTemplateKwargs']>
   /**
+   * Arguments sent as `chat_template_args`, which pi-ai reads only under the
+   * `baseten` thinking format; `openai-completions`. Unchecked against the
+   * format in force for the same reason as {@link chatTemplateKwargs}.
+   */
+  chatTemplateArgs?: NonNullable<OpenAICompletionsCompat['chatTemplateArgs']>
+  /**
    * Whether the endpoint accepts `strict` in tool definitions;
    * `openai-completions`, the three Responses protocols, `bedrock-converse-stream`.
    */
@@ -411,6 +446,7 @@ type AssertTrue<T extends true> = T
 
 /** Every compat type a gate classifies, merged so one `Pick` reaches all offered fields. */
 type UpstreamCompat = OpenAICompletionsCompat & OpenAIResponsesCompat & AnthropicMessagesCompat & BedrockCompat
+  & MistralConversationsCompat
 
 /**
  * Proof that each documented field carries its upstream type, not a hand-copied

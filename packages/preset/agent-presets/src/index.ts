@@ -579,12 +579,9 @@ export class AgentPresets extends Service {
       generation.users++
       try {
         const mounted = await generation.ready
-        if (!fresh) {
-          const current = await compositionStamp(preset.path)
-          if (current !== undefined && !sameStamp(mounted.stamp, current)) {
-            if (this.standing.get(preset.id) === generation) this.standing.delete(preset.id)
-            continue
-          }
+        if (!fresh && await compositionChanged(preset.path, mounted.stamp)) {
+          if (this.standing.get(preset.id) === generation) this.standing.delete(preset.id)
+          continue
         }
         if (mounted.scope.ctx.fiber.uid === null) throw new Error('agent-presets: roster disposed during composition')
         this.generations.set(mounted.key, generation)
@@ -650,6 +647,12 @@ async function compositionStamp(path: string): Promise<CompositionStamp | undefi
 /** Whether two stamps name the same file state. */
 function sameStamp(a: CompositionStamp, b: CompositionStamp): boolean {
   return a.mtimeMs === b.mtimeMs && a.size === b.size
+}
+
+/** Whether a composition file changed after `mounted` was read; an unstattable file keeps the generation. */
+async function compositionChanged(path: string, mounted: CompositionStamp): Promise<boolean> {
+  const current = await compositionStamp(path)
+  return current !== undefined && !sameStamp(mounted, current)
 }
 
 /** One preset's standing composition. */

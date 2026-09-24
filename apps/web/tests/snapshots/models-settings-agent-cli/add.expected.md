@@ -30,7 +30,7 @@
     - button "Refresh account status"
   - region "Native product accounts":
     - heading "Native product accounts" [level=3]
-    - paragraph: Connect the native tools used by delegated agents. Claude Code can also provide chat models. Codex chat models use a separate OpenAI connection.
+    - paragraph: Connect the native tools used by delegated agents. A subscription account can also supply the chat models its plan offers; Codex chat models use a separate OpenAI connection.
     - alert: Native accounts are unavailable in this composition.
     - button "Refresh account status"
   - list
@@ -40,6 +40,7 @@
     - option "ant-ling"
     - option "anthropic"
     - option "azure-openai-responses"
+    - option "baseten"
     - option "cerebras"
     - option "Claude (subscription)" [selected]
     - option "cloudflare-ai-gateway"
@@ -52,6 +53,7 @@
     - option "groq"
     - option "huggingface"
     - option "kimi-coding"
+    - option "meta"
     - option "minimax"
     - option "minimax-cn"
     - option "mistral"
@@ -65,6 +67,8 @@
     - option "openrouter"
     - option "qwen-token-plan"
     - option "qwen-token-plan-cn"
+    - option "qwen-token-plan-individual"
+    - option "radius"
     - option "together"
     - option "vercel-ai-gateway"
     - option "xai"

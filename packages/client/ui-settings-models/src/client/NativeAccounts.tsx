@@ -13,7 +13,7 @@ export interface NativeAccountsInjected {
   begin: (provider: NativeAccountProvider, mode: NativeLoginMode) => void
   cancel: () => void
   submit: (code: string) => void
-  enable: () => void
+  enable: (provider: NativeAccountProvider) => void
 }
 
 type Props = InjectFace<NativeAccountsInjected> & PropsLocale<'settings.models'>
@@ -32,37 +32,41 @@ export function NativeAccounts({ available, useAccounts, watch, reload, begin, c
       <p className={styles.intro}>{t('native.intro')}</p>
       {state.error !== null && <p role="alert" className={styles.error}>{state.error}</p>}
       {state.loading && <p role="status">{t('native.loading')}</p>}
-      {state.accounts.map(account => (
-        <div key={account.provider} className={styles.rowCard}>
-          <span>{account.label}</span>
-          <span>{account.availability === 'unavailable' ? t('native.unavailable')
-            : account.status === 'connected' ? t('native.connected')
-              : account.status === 'disconnected' ? t('native.disconnected') : t('native.unknown')}</span>
-          {account.authMode !== undefined && <span>{account.authMode === 'subscription'
-            ? t('native.subscription') : t('native.apiKey')}</span>}
-          {account.status === 'connected' && account.models !== undefined && (
-            <span>{account.models.map(model => model.name).join(', ')}</span>
-          )}
-          {account.provider === 'claude-code' && account.status === 'connected' && account.authMode !== 'subscription'
-            && <p className={styles.notice}>{t('native.subscriptionRequired')}</p>}
-          <div className={styles.rowActions}>
-            {account.status === 'connected' && account.provider === 'claude-code' && (
-              <button type="button" className={styles.secondaryButton}
-                disabled={state.busy || account.authMode !== 'subscription' || state.routeEnabled || !account.models?.length}
-                onClick={enable}>
-                {state.routeEnabled ? t('native.enabled') : t('native.enable')}
-              </button>
+      {state.accounts.map((account) => {
+        const route = state.routes[account.provider]
+        return (
+          <div key={account.provider} className={styles.rowCard}>
+            <span>{account.label}</span>
+            <span>{account.availability === 'unavailable' ? t('native.unavailable')
+              : account.status === 'connected' ? t('native.connected')
+                : account.status === 'disconnected' ? t('native.disconnected') : t('native.unknown')}</span>
+            {account.authMode !== undefined && <span>{account.authMode === 'subscription'
+              ? t('native.subscription') : t('native.apiKey')}</span>}
+            {account.status === 'connected' && account.models !== undefined && (
+              <span>{account.models.map(model => model.name).join(', ')}</span>
             )}
-            {account.availability === 'available' && account.loginModes.map(mode => (
-              <button type="button" key={mode} className={styles.secondaryButton}
-                disabled={pending || state.busy || account.loginInFlight}
-                onClick={() => { setCode(''); begin(account.provider, mode) }}>
-                {mode === 'device-code' ? t('native.deviceLogin') : t('native.browserLogin')}
-              </button>
-            ))}
+            {account.provider === 'claude-code' && account.status === 'connected' && account.authMode !== 'subscription'
+              && <p className={styles.notice}>{t('native.subscriptionRequired')}</p>}
+            {account.provider === 'codex' && route === 'absent' && <p className={styles.notice}>{t('native.codexChatFirst')}</p>}
+            <div className={styles.rowActions}>
+              {account.status === 'connected' && (account.provider === 'claude-code' || account.authMode === 'subscription') && (
+                <button type="button" className={styles.secondaryButton}
+                  disabled={state.busy || route === undefined || route === 'current' || (account.provider === 'codex' && route === 'absent')}
+                  onClick={() => { enable(account.provider) }}>
+                  {route === 'current' ? t('native.enabled') : route === 'stale' ? t('native.update') : t('native.enable')}
+                </button>
+              )}
+              {account.availability === 'available' && account.loginModes.map(mode => (
+                <button type="button" key={mode} className={styles.secondaryButton}
+                  disabled={pending || state.busy || account.loginInFlight}
+                  onClick={() => { setCode(''); begin(account.provider, mode) }}>
+                  {mode === 'device-code' ? t('native.deviceLogin') : t('native.browserLogin')}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
       {attempt !== null && (
         <div role="status" aria-live="polite">
           <p>{t(`native.attempt.${attempt.state}`)}</p>

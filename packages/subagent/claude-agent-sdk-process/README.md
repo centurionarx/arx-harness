@@ -24,4 +24,4 @@ No invalidation; the consumer owns any request-prefix changes.
 
 ## Known Limitations and Deferred Work
 
-- **The SDK version is pinned exactly, not by range** — `0.3.220`. The custom-spawn interface this package projects is not covered by a stability promise, so a consumer must pin the same version the projection was written against.
+- **The SDK version is pinned exactly, not by range** — `0.3.281`. The custom-spawn interface this package projects is not covered by a stability promise, so a consumer must pin the same version the projection was written against.

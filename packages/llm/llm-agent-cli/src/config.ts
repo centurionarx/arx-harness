@@ -15,9 +15,11 @@ export interface AgentCliModel {
   id: string
   /**
    * Maximum combined request and response context. An exact canonical model id
-   * inherits it from the installed Anthropic catalog; an unknown id or alias
-   * must state it, because automatic compaction refuses to run against a route
-   * whose adapter advertises no capacity and the vendor CLI discloses none.
+   * inherits it from the installed Anthropic catalog, and an id carrying the
+   * CLI's `[1m]` suffix takes the 1,000,000-token window that suffix selects;
+   * any other unknown id or alias must state it, because automatic compaction
+   * refuses to run against a route whose adapter advertises no capacity and
+   * the vendor CLI discloses none.
    */
   contextWindow?: number
   /** Per-request output cap materialized when a caller omits one. */
@@ -120,6 +122,17 @@ export interface ResolvedRoute {
 }
 
 /**
+ * The suffix the vendor CLI appends to a model id to select its
+ * 1,000,000-token context window, as its own model roster spells it
+ * (`claude-opus-5-5[1m]`). The CLI accepts the suffixed id as the model it
+ * runs, so a route passes it through unchanged.
+ */
+const LONG_CONTEXT_SUFFIX = '[1m]'
+
+/** The context window {@link LONG_CONTEXT_SUFFIX} selects. */
+const LONG_CONTEXT_WINDOW = 1_000_000
+
+/**
  * Grace the provider allows between subprocess termination tiers when a route
  * configures none. It matches the shipped subagent provider's own default, so
  * one CLI does not linger longer than another for want of configuration.
@@ -141,8 +154,10 @@ export const DEFAULT_DISPOSE_GRACE_MS = 3_000
  *
  * A model that states no context window inherits the installed Anthropic
  * catalog's context window for its exact id, and with it the catalog's output
- * cap and image input where the model states none. A model the catalog does
- * not list must state its context window, or resolution throws.
+ * cap and image input where the model states none. An id carrying the CLI's
+ * `[1m]` suffix takes that suffix's 1,000,000-token window and inherits the
+ * output cap and image input of the catalog entry for the id without it. A
+ * model neither rule sizes must state its context window, or resolution throws.
  * @param providers - the `providers` section as configuration stored it, or
  *   `undefined` when the configuration carries no section.
  * @returns one resolved route per configured provider, keyed by route id.
@@ -161,8 +176,10 @@ export function resolveRoutes(
           + `"${entry.defaultEffort}", which is not among its declared efforts`,
         )
       }
-      const known = catalog.find(row => row.id === entry.id)
-      const contextWindow = entry.contextWindow ?? known?.contextWindow
+      const longContext = entry.id.endsWith(LONG_CONTEXT_SUFFIX)
+      const baseId = longContext ? entry.id.slice(0, -LONG_CONTEXT_SUFFIX.length) : entry.id
+      const known = catalog.find(row => row.id === baseId)
+      const contextWindow = entry.contextWindow ?? (longContext ? LONG_CONTEXT_WINDOW : known?.contextWindow)
       if (contextWindow === undefined) {
         throw new Error(
           `llm-agent-cli: provider "${provider}" model "${entry.id}" is absent from the installed catalog; `

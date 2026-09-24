@@ -227,7 +227,7 @@ const thinkingBudgets = z.object({
 })
 
 /**
- * One `chat_template_kwargs` value. The `$var` member is pi-ai's placeholder
+ * One `chat_template_kwargs` or `chat_template_args` value. The `$var` member is pi-ai's placeholder
  * for a value dispatch fills from the request's thinking state, which is what
  * makes a chat-template gateway configurable without restating its template.
  */
@@ -254,6 +254,7 @@ const compatProfile: z<PiAiCompatProfile> = z.object({
   requiresReasoningContentOnAssistantMessages: z.boolean(),
   thinkingFormat: z.union(SUPPORTED_THINKING_FORMATS),
   chatTemplateKwargs: z.dict(chatTemplateKwarg),
+  chatTemplateArgs: z.dict(chatTemplateKwarg),
   supportsStrictMode: z.boolean(),
   cacheControlFormat: z.union(CACHE_CONTROL_FORMATS),
   supportsLongCacheRetention: z.boolean(),

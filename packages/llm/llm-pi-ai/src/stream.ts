@@ -112,6 +112,14 @@ export function mapStopReason(message: AssistantMessage, contextWindow?: number)
       const text = message.errorMessage ?? 'pi-ai stream error'
       return { kind: 'error', failure: { message: text, code: classifyPiAiError(text) } }
     }
+    // The adapter never requests a deferred response, and `pending` belongs to
+    // partial messages only, so either one on a terminal event leaves a turn
+    // with no outcome to report; it fails instead of passing for a stop.
+    case 'pending':
+    case 'deferred': return {
+      kind: 'error',
+      failure: { message: `pi-ai ended the stream with stop reason "${message.stopReason}"`, code: 'PI_AI_ERROR' },
+    }
   }
 }
 

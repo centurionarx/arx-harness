@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-api-gateway",
   "description": "Typert Remote Host dispatcher and Client API endpoint",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "publishConfig": {
     "access": "public"
   },

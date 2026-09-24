@@ -7,6 +7,7 @@ import type { IApiClient, NativeAccountAttempt, NativeAccountView, RpcResponse, 
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import { NativeAccountsStore } from '../src/client/native-accounts-store.ts'
 import { NativeAccounts } from '../src/client/NativeAccounts.tsx'
+import { claudeRouteEntries, codexRouteEntries, entryId, storedModels, storedRoute } from '../src/client/chat-roster.ts'
 import { en } from '../src/client/locales.ts'
 
 const account: NativeAccountView = {
@@ -29,33 +30,64 @@ const refused = (message: string): RpcResponse<never> =>
 type Api = IApiClient['nativeAccounts']
 type Reply<M extends (...args: never[]) => Promise<unknown>> = Awaited<ReturnType<M>>
 
-function bench(view: { writable?: boolean; namespace?: boolean } = {}) {
-  let namespace: SettingsNamespaceView = {
-    ns: 'llm-agent-cli', schema: {}, value: { providers: {} }, revision: 3, secrets: [], applies: 'live',
-  }
+/** A connected Codex subscription whose plan offers one catalog model and one the catalog lacks. */
+const codex: NativeAccountView = {
+  provider: 'codex', label: 'OpenAI Codex', availability: 'available', status: 'connected', authMode: 'subscription',
+  loginModes: ['browser', 'device-code'], loginInFlight: false,
+  models: [
+    { id: 'gpt-6-astra', name: 'GPT-6-Astra', efforts: ['low', 'high'] },
+    { id: 'gpt-6-pro', name: 'GPT-6-Pro', efforts: ['none', 'low', 'high', 'ultra'] },
+  ],
+}
+
+/** Write `value` at `path` in a copy of `root`, the way a settings `set` op lands. */
+function withSet(root: unknown, path: readonly string[], value: unknown): unknown {
+  if (path.length === 0) return value
+  const [key, ...rest] = path as [string, ...string[]]
+  const node = typeof root === 'object' && root !== null ? root as Record<string, unknown> : {}
+  return { ...node, [key]: withSet(node[key], rest, value) }
+}
+
+function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unknown; accounts?: NativeAccountView[] } = {}) {
+  const namespaces = new Map<string, SettingsNamespaceView>([
+    ['llm-agent-cli', { ns: 'llm-agent-cli', schema: {}, value: { providers: {} }, revision: 3, secrets: [], applies: 'live' }],
+    ['llm-pi-ai', {
+      ns: 'llm-pi-ai', schema: {}, revision: 7, secrets: [], applies: 'live',
+      value: { providers: view.codexRoute === undefined ? {} : { 'openai-codex': view.codexRoute } },
+    }],
+  ])
   const nativeAccounts = {
-    describe: vi.fn<Api['describe']>(async () => ok({ accounts: [account] })),
+    describe: vi.fn<Api['describe']>(async () => ok({ accounts: view.accounts ?? [account] })),
     begin: vi.fn<Api['begin']>(async () => ok({ attempt })),
     poll: vi.fn<Api['poll']>(async () => ok({ attempt: { ...attempt, state: 'connected' } })),
     submit: vi.fn<Api['submit']>(async () => ok({ attempt: answered })),
     cancel: vi.fn<Api['cancel']>(async () => ok({ attempt: { ...attempt, state: 'cancelled' } })),
   }
-  const mutate = vi.fn<IApiClient['settings']['mutate']>(async () =>
-    ok({ ...namespace, revision: 4, value: { providers: { 'claude-subscription': {} } } }))
+  const mutate = vi.fn<IApiClient['settings']['mutate']>(async ({ ns, ops }) => {
+    const current = namespaces.get(ns)!
+    const op = ops[0] as { path: string[]; value: unknown }
+    return ok({ ...current, revision: current.revision + 1, value: withSet(current.value, op.path, op.value) })
+  })
+  const discoverModels = vi.fn<IApiClient['llm']['discoverModels']>(async () =>
+    ok({ models: [{ id: 'gpt-6-astra', name: 'GPT-6 Astra' }, { id: 'gpt-5.5', name: 'GPT-5.5' }] }))
   const settings = {
     ensure: async () => {},
-    getSnapshot: () => ({ view: { writable: view.writable ?? true, namespaces: view.namespace === false ? [] : [namespace] } }),
-    acceptView: (value: SettingsNamespaceView) => { namespace = value },
+    getSnapshot: () => ({
+      view: { writable: view.writable ?? true, namespaces: view.namespace === false ? [] : [...namespaces.values()] },
+    }),
+    acceptView: (value: SettingsNamespaceView) => { namespaces.set(value.ns, value) },
   } as unknown as SettingsDescribeFace
   const enabled = vi.fn()
-  const controller = new NativeAccountsStore({ nativeAccounts, settings: { mutate } } as unknown as IApiClient, settings, enabled)
+  const controller = new NativeAccountsStore(
+    { nativeAccounts, settings: { mutate }, llm: { discoverModels } } as unknown as IApiClient, settings, enabled,
+  )
   const props = {
     available: true, useAccounts: bindSnapshotSelector(controller.store), watch: () => controller.watch(),
     reload: () => { void controller.load() }, begin: controller.begin.bind(controller),
     cancel: () => { void controller.cancel() }, submit: (code: string) => { void controller.submit(code) },
-    enable: () => { void controller.enable() }, t: (key: string) => en[key as keyof typeof en],
+    enable: (provider: NativeAccountView['provider']) => { void controller.enable(provider) }, t: (key: string) => en[key as keyof typeof en],
   }
-  return { controller, nativeAccounts, mutate, enabled, props, settings }
+  return { controller, nativeAccounts, mutate, discoverModels, enabled, props, settings }
 }
 /** A reply the test delivers by hand. */
 function deferred<T>() {
@@ -70,18 +102,79 @@ describe('native product accounts', () => {
   it('loads sanitized metadata and enables the canonical Claude models under the route preset name', async () => {
     const b = bench()
     await b.controller.load()
-    expect(b.controller.store.getSnapshot().routeEnabled).toBe(false)
-    await b.controller.enable()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'absent' })
+    expect(b.discoverModels).not.toHaveBeenCalled()
+    await b.controller.enable('claude-code')
     expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-agent-cli', expectedRevision: 3, ops: [{
       op: 'set', path: ['providers', 'claude-subscription'], value: {
         models: [{ id: 'canonical-model', name: 'Model', efforts: ['high'] }, { id: 'fast', name: 'Fast' }],
       },
     }] })
     expect(b.enabled).toHaveBeenCalledOnce()
-    expect(b.controller.store.getSnapshot().routeEnabled).toBe(true)
-    await b.controller.enable()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'current' })
+    await b.controller.enable('claude-code')
     expect(b.mutate).toHaveBeenCalledOnce()
     b.controller.dispose()
+  })
+
+  it('adds the roster models an existing Claude route lacks and keeps what it already lists', async () => {
+    const b = bench()
+    const tuned = { id: 'fast', name: 'Fast', contextWindow: 64_000 }
+    b.settings.acceptView({ ns: 'llm-agent-cli', schema: {}, revision: 5, secrets: [], applies: 'live',
+      value: { providers: { 'claude-subscription': { displayName: 'Claude (Max)', models: [tuned] } } } })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'stale' })
+    await b.controller.enable('claude-code')
+    expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-agent-cli', expectedRevision: 5, ops: [{
+      op: 'set', path: ['providers', 'claude-subscription', 'models'],
+      value: [tuned, { id: 'canonical-model', name: 'Model', efforts: ['high'] }],
+    }] })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'current' })
+    b.controller.dispose()
+  })
+
+  it('waits for Codex chat before feeding its route, then adds the plan models the catalog route lacks', async () => {
+    const b = bench({ accounts: [codex] })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'absent' })
+    expect(b.discoverModels).not.toHaveBeenCalled()
+    await b.controller.enable('codex')
+    expect(b.mutate).not.toHaveBeenCalled()
+    b.settings.acceptView({ ns: 'llm-pi-ai', schema: {}, revision: 8, secrets: [], applies: 'live', value: { providers: { 'openai-codex': {} } } })
+    await b.controller.load()
+    expect(b.discoverModels).toHaveBeenCalledWith({ settingsNs: 'llm-pi-ai', provider: 'openai-codex' })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'stale' })
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-pi-ai', expectedRevision: 8, ops: [{
+      op: 'set', path: ['providers', 'openai-codex', 'models'], value: [
+        { id: 'gpt-6-astra' }, { id: 'gpt-5.5' },
+        { id: 'gpt-6-pro', name: 'GPT-6-Pro', reasoningEfforts: { off: 'none', low: 'low', high: 'high' } },
+      ],
+    }] })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledOnce()
+    b.controller.dispose()
+  })
+
+  it('keeps a Codex route that already lists the whole plan as it is', async () => {
+    const b = bench({ accounts: [codex], codexRoute: { models: [{ id: 'gpt-6-pro' }, { id: 'gpt-6-astra' }] } })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
+    await b.controller.enable('codex')
+    expect(b.mutate).not.toHaveBeenCalled()
+  })
+
+  it('shows the accounts, reports a refused Codex catalog read, and writes no Codex route without it', async () => {
+    const b = bench({ accounts: [account, codex], codexRoute: {} })
+    b.discoverModels.mockResolvedValueOnce(refused('discovery unavailable'))
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot()).toMatchObject({
+      error: 'discovery unavailable', loading: false, routes: { 'claude-code': 'absent' },
+    })
+    expect(b.controller.store.getSnapshot().accounts).toHaveLength(2)
+    await b.controller.enable('codex')
+    expect(b.mutate).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -93,7 +186,7 @@ describe('native product accounts', () => {
     const b = bench()
     b.nativeAccounts.describe.mockResolvedValue(ok({ accounts }))
     await b.controller.load()
-    await b.controller.enable()
+    await b.controller.enable('claude-code')
     expect(b.mutate).not.toHaveBeenCalled()
     expect(b.controller.store.getSnapshot().busy).toBe(false)
   })
@@ -104,7 +197,7 @@ describe('native product accounts', () => {
   ])('reports %s instead of writing the route', async (_case, view) => {
     const b = bench(view)
     await b.controller.load()
-    await b.controller.enable()
+    await b.controller.enable('claude-code')
     expect(b.mutate).not.toHaveBeenCalled()
     expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'Native model settings are unavailable or read-only', busy: false })
   })
@@ -113,8 +206,8 @@ describe('native product accounts', () => {
     const b = bench()
     b.mutate.mockResolvedValueOnce(refused('revision conflict'))
     await b.controller.load()
-    await b.controller.enable()
-    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'revision conflict', routeEnabled: false })
+    await b.controller.enable('claude-code')
+    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'revision conflict', routes: { 'claude-code': 'absent' } })
     expect(b.enabled).not.toHaveBeenCalled()
   })
 
@@ -123,7 +216,7 @@ describe('native product accounts', () => {
     await b.controller.load()
     const write = deferred<Reply<IApiClient['settings']['mutate']>>()
     b.mutate.mockReturnValueOnce(write.promise)
-    const enabling = b.controller.enable()
+    const enabling = b.controller.enable('claude-code')
     await vi.waitFor(() => { expect(b.mutate).toHaveBeenCalledOnce() })
     const status = deferred<Reply<Api['describe']>>()
     b.nativeAccounts.describe.mockReturnValueOnce(status.promise)
@@ -141,13 +234,13 @@ describe('native product accounts', () => {
     await b.controller.load()
     const write = deferred<Reply<IApiClient['settings']['mutate']>>()
     b.mutate.mockReturnValueOnce(write.promise)
-    const enabling = b.controller.enable()
+    const enabling = b.controller.enable('claude-code')
     await vi.waitFor(() => { expect(b.mutate).toHaveBeenCalledOnce() })
     b.controller.dispose()
     write.resolve(ok({ ns: 'llm-agent-cli', schema: {}, value: { providers: { 'claude-subscription': {} } }, revision: 4, secrets: [], applies: 'live' }))
     await enabling
     expect(b.enabled).not.toHaveBeenCalled()
-    expect(b.controller.store.getSnapshot().routeEnabled).toBe(false)
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'absent' })
   })
 
   it('keeps only the newest status read', async () => {
@@ -350,7 +443,7 @@ describe('native product account card', () => {
   type State = ReturnType<NativeAccountsStore['store']['getSnapshot']>
   function card(state: Partial<State>) {
     const store = createSnapshotStore<State>({
-      accounts: [], attempt: null, routeEnabled: false, loading: false, busy: false, error: null, ...state,
+      accounts: [], attempt: null, routes: {}, loading: false, busy: false, error: null, ...state,
     })
     const props = { available: true, useAccounts: bindSnapshotSelector(store), watch: () => () => {}, reload: vi.fn(),
       begin: vi.fn(), cancel: vi.fn(), submit: vi.fn(), enable: vi.fn(), t: (key: string) => en[key as keyof typeof en] }
@@ -385,14 +478,35 @@ describe('native product account card', () => {
     expect(screen.getByText('Connect a confirmed subscription account to enable Claude chat models.')).toBeTruthy()
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enable in chat' }).disabled).toBe(true)
     cleanup()
-    const ready = card({ accounts: [account] })
+    const ready = card({ accounts: [account], routes: { 'claude-code': 'absent' } })
     expect(screen.getByText('Model, Fast')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Enable in chat' }))
-    expect(ready.enable).toHaveBeenCalledOnce()
+    expect(ready.enable).toHaveBeenCalledWith('claude-code')
     expect(props.enable).not.toHaveBeenCalled()
     cleanup()
-    card({ accounts: [account], routeEnabled: true })
+    const stale = card({ accounts: [account], routes: { 'claude-code': 'stale' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Update chat models' }))
+    expect(stale.enable).toHaveBeenCalledWith('claude-code')
+    cleanup()
+    card({ accounts: [account], routes: { 'claude-code': 'current' } })
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enabled in chat' }).disabled).toBe(true)
+  })
+
+  it('offers the Codex plan to chat only once Codex chat is connected', () => {
+    card({ accounts: [codex], routes: { codex: 'absent' } })
+    expect(screen.getByText('Connect OpenAI for chat to add this plan\'s models to chat.')).toBeTruthy()
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enable in chat' }).disabled).toBe(true)
+    cleanup()
+    const stale = card({ accounts: [codex], routes: { codex: 'stale' } })
+    expect(screen.queryByText('Connect OpenAI for chat to add this plan\'s models to chat.')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Update chat models' }))
+    expect(stale.enable).toHaveBeenCalledWith('codex')
+    cleanup()
+    card({ accounts: [codex], routes: { codex: 'current' } })
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enabled in chat' }).disabled).toBe(true)
+    cleanup()
+    card({ accounts: [{ ...codex, authMode: 'api-key' }] })
+    expect(screen.queryByRole('button', { name: 'Enable in chat' })).toBeNull()
   })
 
   it('shows a device code and the product message while a sign-in runs', () => {
@@ -404,5 +518,43 @@ describe('native product account card', () => {
     expect(props.cancel).toHaveBeenCalledOnce()
     fireEvent.click(screen.getByRole('button', { name: 'Refresh account status' }))
     expect(props.reload).toHaveBeenCalledOnce()
+  })
+})
+
+describe('chat roster entries', () => {
+  it('names each Claude model once and lets a direct row name the model the default row recommends', () => {
+    expect(claudeRouteEntries([
+      { id: 'default', resolvedModel: 'claude-opus-5-5[1m]', name: 'Default (recommended)', efforts: ['low', 'max', 'ultra'] },
+      { id: 'opus[1m]', resolvedModel: 'claude-opus-5-5[1m]', name: 'Opus (1M context)', efforts: ['high'] },
+      { id: 'sonnet', resolvedModel: 'claude-sonnet-5', name: 'Sonnet' },
+      { id: 'default', resolvedModel: 'claude-sonnet-5', name: 'Default (recommended)' },
+      { id: 'haiku', name: 'Haiku' },
+    ])).toEqual([
+      { id: 'claude-opus-5-5[1m]', name: 'Opus (1M context)', efforts: ['high'] },
+      { id: 'claude-sonnet-5', name: 'Sonnet' },
+      { id: 'haiku', name: 'Haiku' },
+    ])
+  })
+
+  it('names catalog Codex models by id alone and declares only offerable efforts for the rest', () => {
+    expect(codexRouteEntries([
+      { id: 'gpt-6-astra', name: 'GPT-6-Astra', efforts: ['low'] },
+      { id: 'gpt-6-astra', name: 'Duplicate' },
+      { id: 'gpt-ultra-only', name: 'Ultra only', efforts: ['ultra'] },
+      { id: 'gpt-plain', name: 'Plain' },
+    ], new Set(['gpt-6-astra']))).toEqual([
+      { id: 'gpt-6-astra' },
+      { id: 'gpt-ultra-only', name: 'Ultra only' },
+      { id: 'gpt-plain', name: 'Plain' },
+    ])
+  })
+
+  it('reads only well-formed routes, model lists, and entry ids', () => {
+    expect(storedRoute(null, 'route')).toBeUndefined()
+    expect(storedRoute({}, 'route')).toBeUndefined()
+    expect(storedRoute({ providers: { route: 'text' } }, 'route')).toBeUndefined()
+    expect(storedRoute({ providers: { route: { models: [] } } }, 'route')).toEqual({ models: [] })
+    expect(storedModels({ models: 'none' })).toEqual([])
+    expect([{ id: 'kept' }, { id: 7 }, 'text', null].map(entryId)).toEqual(['kept', undefined, undefined, undefined])
   })
 })

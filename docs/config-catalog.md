@@ -1024,9 +1024,11 @@ export interface AgentCliModel {
   id: string
   /**
    * Maximum combined request and response context. An exact canonical model id
-   * inherits it from the installed Anthropic catalog; an unknown id or alias
-   * must state it, because automatic compaction refuses to run against a route
-   * whose adapter advertises no capacity and the vendor CLI discloses none.
+   * inherits it from the installed Anthropic catalog, and an id carrying the
+   * CLI's `[1m]` suffix takes the 1,000,000-token window that suffix selects;
+   * any other unknown id or alias must state it, because automatic compaction
+   * refuses to run against a route whose adapter advertises no capacity and
+   * the vendor CLI discloses none.
    */
   contextWindow?: number
   /** Per-request output cap materialized when a caller omits one. */
@@ -1059,7 +1061,7 @@ export interface AgentCliModel {
 export type AgentCliEffort = (typeof AGENT_CLI_EFFORTS)[number]
 ```
 
-Source: [`packages/llm/llm-agent-cli/src/config.ts:72`](../packages/llm/llm-agent-cli/src/config.ts)
+Source: [`packages/llm/llm-agent-cli/src/config.ts:74`](../packages/llm/llm-agent-cli/src/config.ts)
 
 <a id="arx-aiarx-llm-pi-ai"></a>
 
@@ -1268,6 +1270,12 @@ export interface PiAiCompatProfile {
    * can read, so kwargs set beside another format are sent nowhere.
    */
   chatTemplateKwargs?: NonNullable<OpenAICompletionsCompat['chatTemplateKwargs']>
+  /**
+   * Arguments sent as `chat_template_args`, which pi-ai reads only under the
+   * `baseten` thinking format; `openai-completions`. Unchecked against the
+   * format in force for the same reason as {@link chatTemplateKwargs}.
+   */
+  chatTemplateArgs?: NonNullable<OpenAICompletionsCompat['chatTemplateArgs']>
   /**
    * Whether the endpoint accepts `strict` in tool definitions;
    * `openai-completions`, the three Responses protocols, `bedrock-converse-stream`.

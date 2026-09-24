@@ -431,16 +431,35 @@ describe('resolveRoutes', () => {
   })
 
   it('inherits a canonical model\'s context window, output cap, and image input from the installed catalog', () => {
-    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1' }] } })
-    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
-      id: 'claude-opus-4-1', contextWindow: 200_000, maxTokens: 32_000, acceptsImages: true,
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5' }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5')).toEqual({
+      id: 'claude-opus-5-5', contextWindow: 1_000_000, maxTokens: 128_000, acceptsImages: true,
     })
   })
 
+  it('sizes a long-context id by its suffix and takes the rest from its base model', () => {
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5[1m]' }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5[1m]')).toEqual({
+      id: 'claude-opus-5-5[1m]', contextWindow: 1_000_000, maxTokens: 128_000, acceptsImages: true,
+    })
+  })
+
+  it('sizes a long-context id whose base the catalog lacks by its suffix alone', () => {
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-unlisted[1m]' }] } })
+    expect(routes.get('claude')?.models.get('claude-unlisted[1m]')).toEqual({
+      id: 'claude-unlisted[1m]', contextWindow: 1_000_000,
+    })
+  })
+
+  it('keeps a stated context window on a long-context id', () => {
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5[1m]', contextWindow: 500_000 }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5[1m]')?.contextWindow).toBe(500_000)
+  })
+
   it('keeps a stated context window, output cap, and image input over the catalog', () => {
-    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false }] } })
-    expect(routes.get('claude')?.models.get('claude-opus-4-1')).toEqual({
-      id: 'claude-opus-4-1', contextWindow: 1_000, maxTokens: 10, acceptsImages: false,
+    const routes = resolveRoutes({ claude: { models: [{ id: 'claude-opus-5-5', contextWindow: 1_000, maxTokens: 10, acceptsImages: false }] } })
+    expect(routes.get('claude')?.models.get('claude-opus-5-5')).toEqual({
+      id: 'claude-opus-5-5', contextWindow: 1_000, maxTokens: 10, acceptsImages: false,
     })
   })
 

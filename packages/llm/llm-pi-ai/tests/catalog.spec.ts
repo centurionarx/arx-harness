@@ -10,7 +10,7 @@ import { settingsNamespace } from '@arx-ai/arx-settings'
 import * as LlmPiAi from '@arx-ai/arx-llm-pi-ai'
 import { PiAiAdapter } from '@arx-ai/arx-llm-pi-ai'
 import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
-import { createModels, getSupportedThinkingLevels } from '@earendil-works/pi-ai'
+import { createModels, getSupportedThinkingLevels, normalizeContext } from '@earendil-works/pi-ai'
 import type { Api, Model, OpenAICompletionsCompat, Provider } from '@earendil-works/pi-ai'
 import { resolveProfiles } from '../src/config.ts'
 import { buildProvider, supportedProtocols } from '../src/provider.ts'
@@ -507,7 +507,7 @@ describe('catalog routes with per-model configuration', () => {
     if (built === undefined) throw new Error('the configured route built no provider')
     const [model] = built.getModels()
     if (model === undefined) throw new Error('the configured route resolved no models')
-    const context = { messages: [{ role: 'user' as const, content: 'hi', timestamp: 0 }] }
+    const context = normalizeContext({ messages: [{ role: 'user' as const, content: 'hi', timestamp: 0 }] })
 
     // `stream` is interface-required and unused by the harness adapter, which
     // only calls `streamSimple`; both must still reach the catalog provider.
@@ -637,7 +637,8 @@ describe('per-model reasoning efforts', () => {
   it('narrows a catalog model’s levels in place', () => {
     const [catalogModel] = getBuiltinModels('deepseek')
     if (catalogModel === undefined) throw new Error('the installed catalog ships no model for this route')
-    expect(getSupportedThinkingLevels(catalogModel as Model<Api>)).toEqual(['off', 'high', 'max'])
+    // The catalog offers more levels than the narrowed set, so narrowing is observable.
+    expect(getSupportedThinkingLevels(catalogModel as Model<Api>)).toEqual(expect.arrayContaining(['off', 'high', 'max']))
 
     const model = modelOf({
       deepseek: { models: [{ id: catalogModel.id, reasoningEfforts: { off: null, high: 'high' } }] },
@@ -796,19 +797,19 @@ describe('compat switches', () => {
   })
 
   it('skips models of other protocols on a mixed route instead of failing them', () => {
-    // xai ships both completions and responses models, so a route-level switch
-    // must land on the former without invalidating the latter.
-    const catalog = getBuiltinModels('xai') as readonly Model<Api>[]
+    // opencode-go ships both completions and responses models, so a route-level
+    // switch must land on the former without invalidating the latter.
+    const catalog = getBuiltinModels('opencode-go') as readonly Model<Api>[]
     const completions = catalog.find(model => model.api === 'openai-completions')
     const responses = catalog.find(model => model.api === 'openai-responses')
-    if (completions === undefined || responses === undefined) throw new Error('xai no longer ships a mixed catalog')
+    if (completions === undefined || responses === undefined) throw new Error('opencode-go no longer ships a mixed catalog')
 
     const models = modelsOf({
-      xai: {
+      'opencode-go': {
         compat: { supportsReasoningEffort: false },
         models: [{ id: completions.id }, { id: responses.id }],
       },
-    }, 'xai')
+    }, 'opencode-go')
 
     expect((models.get(completions.id)?.compat as OpenAICompletionsCompat).supportsReasoningEffort).toBe(false)
     expect(models.get(responses.id)?.compat).toEqual(responses.compat)
@@ -877,18 +878,18 @@ describe('compat switches', () => {
   })
 
   it('lands each route switch only on the models whose protocol declares it', () => {
-    const catalog = getBuiltinModels('xai') as readonly Model<Api>[]
+    const catalog = getBuiltinModels('opencode-go') as readonly Model<Api>[]
     const completions = catalog.find(model => model.api === 'openai-completions')
     const responses = catalog.find(model => model.api === 'openai-responses')
-    if (completions === undefined || responses === undefined) throw new Error('xai no longer ships a mixed catalog')
+    if (completions === undefined || responses === undefined) throw new Error('opencode-go no longer ships a mixed catalog')
 
     const models = modelsOf({
-      xai: {
+      'opencode-go': {
         // Both protocols take the first switch; only completions takes the second.
         compat: { supportsDeveloperRole: false, thinkingFormat: 'openai' },
         models: [{ id: completions.id }, { id: responses.id }],
       },
-    }, 'xai')
+    }, 'opencode-go')
 
     const onCompletions = models.get(completions.id)?.compat as OpenAICompletionsCompat
     expect(onCompletions.supportsDeveloperRole).toBe(false)
@@ -918,6 +919,38 @@ describe('compat switches', () => {
       thinkingFormat: 'qwen-chat-template',
       chatTemplateKwargs: { enable_thinking: { $var: 'thinking.enabled' } },
     })
+  })
+
+  it('carries chat-template args beside the baseten format that dispatches through them', () => {
+    const models = modelsOf({
+      'acme-baseten': {
+        api: 'openai-completions',
+        baseURL: 'https://acme.test',
+        models: [{
+          id: 'baseten-local',
+          reasoningEfforts: { off: null, high: 'high' },
+          compat: {
+            thinkingFormat: 'baseten',
+            chatTemplateArgs: { thinking_budget: { $var: 'thinking.budget', omitWhenOff: true } },
+          },
+        }],
+      },
+    }, 'acme-baseten')
+
+    expect(models.get('baseten-local')?.compat).toEqual({
+      thinkingFormat: 'baseten',
+      chatTemplateArgs: { thinking_budget: { $var: 'thinking.budget', omitWhenOff: true } },
+    })
+  })
+
+  it('refuses a switch pi-ai added that no deployment has needed yet', () => {
+    expect(() => resolveProfiles({
+      'acme-gateway': {
+        api: 'openai-completions',
+        baseURL: 'https://acme.test',
+        models: [{ id: 'acme-a', compat: { vllmPriority: 1 } as never }],
+      },
+    })).toThrow(/vllmPriority/)
   })
 
   it('rejects a model switch on an unrecognized protocol as having no configurable compat', () => {
@@ -1010,9 +1043,9 @@ describe('compat switches', () => {
   it('refuses a valueless compat key on a model entry too', () => {
     expect(() => resolveProfiles({
       deepseek: {
-        modelOverrides: { 'deepseek-v4-flash': { compat: { requiresReasoningContentOnAssistantMessages: null } } as never },
+        modelOverrides: { 'deepseek-v4-pro': { compat: { requiresReasoningContentOnAssistantMessages: null } } as never },
       },
-    })).toThrow(/model "deepseek-v4-flash" sets compat "requiresReasoningContentOnAssistantMessages" with no value/)
+    })).toThrow(/model "deepseek-v4-pro" sets compat "requiresReasoningContentOnAssistantMessages" with no value/)
   })
 
   it('serves the Responses compat type on every protocol pi-ai gives it to', () => {
@@ -1073,7 +1106,7 @@ describe('resolution snapshots', () => {
     const inFlight = (async () => {
       for await (const chunk of adapter.stream({
         provider: 'deepseek',
-        model: 'deepseek-v4-flash',
+        model: 'deepseek-v4-pro',
         messages: [],
       })) chunks.push(chunk)
     })()
@@ -1102,7 +1135,7 @@ describe('resolution snapshots', () => {
     })
     const drain = async (): Promise<void> => {
       for await (const _chunk of adapter.stream({
-        provider: 'deepseek', model: 'deepseek-v4-flash', messages: [],
+        provider: 'deepseek', model: 'deepseek-v4-pro', messages: [],
       })) { /* drain */ }
     }
 
