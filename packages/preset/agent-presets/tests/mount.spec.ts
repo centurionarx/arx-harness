@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -11,7 +11,7 @@ import SystemPrompt from '@arx-ai/arx-system-prompt'
 import ToolRuntime from '@arx-ai/arx-tools'
 import AgentRegistry, { assembleContextFor, type Agent } from '@arx-ai/arx-agent'
 import AgentLoop from '@arx-ai/arx-agent-loop'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AgentPresets, {
   COMPOSITION_FILE, leakedServices, livePresetMounts, mountPreset, PresetMountError, serviceForAgent,
 } from '@arx-ai/arx-agent-presets'
@@ -23,8 +23,12 @@ declare module '@arx-ai/cordis' {
   interface Context {
     /** Published by the `isolated` fixture preset behind an entry-local realm. */
     fixtureIsolatedSvc: { label: string }
+    /** Controlled nondeterministic startup and teardown of the Loader fixture. */
+    presetLifecycle: { start(tool: string): Promise<void>; stop(tool: string): Promise<void> }
   }
 }
+
+const contexts: Context[] = []
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
 const ROOTS = [
@@ -40,6 +44,7 @@ const ROOTS = [
  */
 async function harness(roster: Config = { default: 'standard', roots: ROOTS, includeUserRoot: false }): Promise<Context> {
   const ctx = new Context()
+  contexts.push(ctx)
   ctx.baseUrl = pathToFileURL(FIXTURES).href + '/'
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
@@ -82,6 +87,9 @@ function rootResolves(ctx: Context, name: string): boolean {
 let ctx: Context
 beforeEach(async () => {
   ctx = await harness()
+})
+afterEach(async () => {
+  await Promise.all(contexts.splice(0).map(context => context.fiber.dispose()))
 })
 
 describe('composing an agent from a preset', () => {
@@ -627,6 +635,195 @@ describe('editing a composition file', () => {
     return { scoped, path }
   }
 
+
+  it('releases a shared generation only after its final child leaves', async () => {
+    const parent = await ctx.agents.create({
+      sessionId: SessionId('lifecycle-parent'),
+      setup: async agentCtx => void await ctx.agentPresets.mount(agentCtx, 'standard'),
+    })
+    const child = await ctx.agents.create({
+      sessionId: SessionId('lifecycle-child'),
+      setup: agentCtx => void ctx.agentPresets.composeFrom(agentCtx, parent.agent.ctx),
+    })
+    const mount = livePresetMounts(ctx.fiber)[0]!
+    await parent.dispose()
+    expect(toolNames(ctx, child.agent)).toEqual(['alpha'])
+    expect(mount.fiber.uid).not.toBeNull()
+    await child.dispose()
+    expect(mount.fiber.uid).toBeNull()
+    expect(livePresetMounts(ctx.fiber)).toEqual([])
+    expect(toolNames(ctx, child.agent)).toEqual([])
+  })
+
+  it('reclaims superseded generations without changing a surviving generation', async () => {
+    const { scoped, path } = await editable('reclaim')
+    const first = await scoped.agents.create({
+      sessionId: SessionId('reclaim-first'),
+      setup: async agentCtx => void await scoped.agentPresets.mount(agentCtx),
+    })
+    const child = await scoped.agents.create({
+      sessionId: SessionId('reclaim-child'),
+      setup: agentCtx => void scoped.agentPresets.composeFrom(agentCtx, first.agent.ctx),
+    })
+    await writeFile(path, rowFor('afterwards'))
+    const second = await agentOn(scoped, 'reclaim-second')
+    await first.dispose()
+    expect(livePresetMounts(scoped.fiber)).toHaveLength(2)
+    expect(toolNames(scoped, child.agent)).toEqual(['before'])
+    await child.dispose()
+    expect(livePresetMounts(scoped.fiber)).toHaveLength(1)
+    expect(toolNames(scoped, second)).toEqual(['afterwards'])
+    expect(await readFile(path, 'utf8')).toBe(rowFor('afterwards'))
+  })
+
+  it('transfers ownership through repeated recompositions and rejects duplicate joins without leaking', async () => {
+    const agent = await ctx.agents.create({
+      sessionId: SessionId('recompose-owner'),
+      setup: async agentCtx => void await ctx.agentPresets.mount(agentCtx, 'standard'),
+    })
+    await ctx.agentPresets.recompose(agent.agent.ctx, 'minimal')
+    await ctx.agentPresets.recompose(agent.agent.ctx, 'minimal')
+    expect(livePresetMounts(ctx.fiber).map(mount => mount.presetId)).toEqual(['minimal'])
+    await expect(ctx.agentPresets.mount(agent.agent.ctx, 'standard')).rejects.toThrow(/already bound/)
+    expect(livePresetMounts(ctx.fiber).map(mount => mount.presetId)).toEqual(['minimal'])
+    await agent.dispose()
+    expect(livePresetMounts(ctx.fiber)).toEqual([])
+  })
+
+  it('refuses to compose a child from a parent another roster owns', async () => {
+    const { scoped: owner } = await editable('foreign-owner')
+    const { scoped: other } = await editable('foreign-other')
+    const parent = await owner.agents.create({
+      sessionId: SessionId('foreign-parent'),
+      setup: async agentCtx => void await owner.agentPresets.mount(agentCtx),
+    })
+    await expect(other.agents.create({
+      sessionId: SessionId('foreign-child'),
+      setup: agentCtx => void other.agentPresets.composeFrom(agentCtx, parent.agent.ctx),
+    })).rejects.toThrow(/not owned by this roster/)
+    await parent.dispose()
+  })
+
+  it('rejects an acquisition whose roster is disposed while it rechecks the composition', async () => {
+    const { scoped } = await editable('roster-disposed')
+    const agent = await scoped.agents.create({
+      sessionId: SessionId('roster-disposed-agent'),
+      setup: async agentCtx => void await scoped.agentPresets.mount(agentCtx),
+    })
+    const reading = scoped.agentPresets.standingKeyFor()
+    const rejected = expect(reading).rejects.toThrow(/roster disposed during composition/)
+    const [rosterFiber] = scoped.registry.get(AgentPresets)!.fibers
+    await rosterFiber!.dispose()
+    await rejected
+    await agent.dispose()
+  })
+
+  it('retains a cold key across refresh and agent disposal until its reader fiber unloads', async () => {
+    const { scoped, path } = await editable('cold-owner')
+    const reader = createScope(scoped, {})
+    const presets = reader.ctx.get('agentPresets')!
+    const first = await presets.standingKeyFor()
+    expect(await presets.standingKeyFor()).toBe(first)
+    expect(scoped.tools.schemas(first).map(tool => tool.name)).toEqual(['before'])
+    const oldMount = livePresetMounts(scoped.fiber)[0]!
+    await writeFile(path, rowFor('afterwards'))
+    const agent = await scoped.agents.create({
+      sessionId: SessionId('cold-owner-agent'),
+      setup: async agentCtx => void await scoped.agentPresets.mount(agentCtx),
+    })
+    await agent.dispose()
+    expect(livePresetMounts(scoped.fiber)).toEqual([oldMount])
+    expect(scoped.tools.schemas(first).map(tool => tool.name)).toEqual(['before'])
+    expect(oldMount.fiber.uid).not.toBeNull()
+    await reader.dispose()
+    expect(scoped.tools.schemas(first)).toEqual([])
+    expect(oldMount.fiber.uid).toBeNull()
+    expect(livePresetMounts(scoped.fiber)).toEqual([])
+  })
+
+  it('awaits asynchronous plugin teardown before final agent disposal settles', async () => {
+    const { scoped, path } = await editable('async-disposal')
+    const stopping = Promise.withResolvers<undefined>()
+    const stopped = Promise.withResolvers<undefined>()
+    scoped.provide('presetLifecycle', {
+      start: async () => {},
+      stop: async () => { stopping.resolve(undefined); await stopped.promise },
+    })
+    await writeFile(path, rowFor('before').replace('contribute.js', 'lifecycle.js'))
+    const agent = await scoped.agents.create({
+      sessionId: SessionId('async-disposal-agent'),
+      setup: async agentCtx => void await scoped.agentPresets.mount(agentCtx),
+    })
+    let done = false
+    const disposal = agent.dispose().then(() => { done = true })
+    await stopping.promise
+    expect(done).toBe(false)
+    stopped.resolve(undefined)
+    await disposal
+    expect(livePresetMounts(scoped.fiber)).toEqual([])
+  })
+
+  it('does not publish a cancelled mount or dispose the concurrent surviving acquisition', async () => {
+    const { scoped, path } = await editable('cancelled-acquisition')
+    const started = Promise.withResolvers<undefined>()
+    const ready = Promise.withResolvers<undefined>()
+    scoped.provide('presetLifecycle', {
+      start: async () => { started.resolve(undefined); await ready.promise },
+      stop: async () => {},
+    })
+    await writeFile(path, rowFor('before').replace('contribute.js', 'lifecycle.js'))
+    const controller = new AbortController()
+    const firstSetup = Promise.withResolvers<Promise<unknown>>()
+    const first = scoped.agents.create({
+      sessionId: SessionId('cancelled-acquisition-first'), signal: controller.signal,
+      setup: (agentCtx) => {
+        const mounting = scoped.agentPresets.mount(agentCtx)
+        firstSetup.resolve(mounting)
+        return mounting.then(() => {})
+      },
+    })
+    const rejected = expect(first).rejects.toThrow(/abort|cancel/i)
+    await started.promise
+    const second = scoped.agents.create({
+      sessionId: SessionId('cancelled-acquisition-second'),
+      setup: async agentCtx => void await scoped.agentPresets.mount(agentCtx),
+    })
+    controller.abort(new Error('cancel creation'))
+    await rejected
+    ready.resolve(undefined)
+    await expect(firstSetup.promise).rejects.toThrow()
+    const survivor = await second
+    expect(scoped.agents.get(SessionId('cancelled-acquisition-first'))).toBeUndefined()
+    expect(toolNames(scoped, survivor.agent)).toEqual(['before'])
+    expect(livePresetMounts(scoped.fiber)).toHaveLength(1)
+    await survivor.dispose()
+    expect(livePresetMounts(scoped.fiber)).toEqual([])
+  })
+
+  it('keeps the replacement cache when an invalidated pending generation fails', async () => {
+    const { scoped, path } = await editable('failed-generation')
+    const started = Promise.withResolvers<undefined>()
+    const fail = Promise.withResolvers<undefined>()
+    scoped.provide('presetLifecycle', {
+      start: async (tool) => { if (tool === 'before') { started.resolve(undefined); await fail.promise } },
+      stop: async () => {},
+    })
+    await writeFile(path, rowFor('before').replace('contribute.js', 'lifecycle.js'))
+    const pending = agentOn(scoped, 'failed-generation-first')
+    const rejected = expect(pending).rejects.toThrow(/old generation failed/)
+    await started.promise
+    await scoped.agentPresets.remove('failed-generation')
+    await mkdir(dirname(path))
+    await writeFile(path, rowFor('afterwards'))
+    const replacement = await agentOn(scoped, 'failed-generation-second')
+    fail.reject(new Error('old generation failed'))
+    await rejected
+    const follower = await agentOn(scoped, 'failed-generation-third')
+    expect(toolNames(scoped, replacement)).toEqual(['afterwards'])
+    expect(toolNames(scoped, follower)).toEqual(['afterwards'])
+    expect(livePresetMounts(scoped.fiber)).toHaveLength(1)
+  })
+
   it('starts a new generation for later sessions while joined ones keep theirs', async () => {
     const { scoped, path } = await editable('edited')
     const first = await agentOn(scoped, 'sess-gen-first', 'edited')
@@ -659,34 +856,6 @@ describe('editing a composition file', () => {
     expect(livePresetMounts().filter(mount => mount.presetId === 'raced')).toHaveLength(2)
   })
 
-  it('keeps a newer generation pointer when a stale refresh loses the swap race', async () => {
-    const { scoped, path } = await editable('guarded-refresh')
-    const preset = await scoped.agentPresets.resolve('guarded-refresh')
-    await agentOn(scoped, 'sess-guarded-refresh-seed', 'guarded-refresh')
-    const service = scoped.agentPresets as unknown as {
-      standing: Map<string, Promise<{
-        key: unknown
-        scope: unknown
-        stamp: { mtimeMs: number; size: number }
-      }>>
-      ensureStanding(current: typeof preset): Promise<unknown>
-    }
-    const stalePromise = service.standing.get(preset.id)!
-    const stale = await stalePromise
-    await writeFile(path, rowFor('afterwards'))
-    const { mtimeMs, size } = await stat(path)
-    const newer = { ...stale, stamp: { mtimeMs, size } }
-    const newerPromise = Promise.resolve(newer)
-
-    // `await pending` yields before the guarded delete, letting the winning
-    // refresher replace the pointer deterministically instead of by timing.
-    const refresh = service.ensureStanding(preset)
-    service.standing.set(preset.id, newerPromise)
-
-    expect(await refresh).toBe(newer)
-    expect(service.standing.get(preset.id)).toBe(newerPromise)
-  })
-
   it('hands a host reader the standing key without starting an agent', async () => {
     const { scoped } = await editable('cold-read')
 
@@ -708,9 +877,9 @@ describe('editing a composition file', () => {
     // before the deletion must get a mount failure, not an unstamped
     // generation that no later edit could ever refresh.
     const racer = scoped.agentPresets as unknown as {
-      ensureStanding(preset: { id: string; trust: 'user'; path: string }): Promise<unknown>
+      withStanding(preset: { id: string; trust: 'user'; path: string }, consume: () => void): Promise<void>
     }
-    await expect(racer.ensureStanding({ id: 'unstampable', trust: 'user', path }))
+    await expect(racer.withStanding({ id: 'unstampable', trust: 'user', path }, () => {}))
       .rejects.toThrow(PresetMountError)
     expect(livePresetMounts().filter(mount => mount.presetId === 'unstampable')).toHaveLength(0)
   })
@@ -727,9 +896,9 @@ describe('editing a composition file', () => {
     // before the deletion still can, and it must be served the standing
     // generation rather than failed over a stat.
     const racer = scoped.agentPresets as unknown as {
-      ensureStanding(preset: { id: string; trust: 'user'; path: string }): Promise<unknown>
+      withStanding(preset: { id: string; trust: 'user'; path: string }, consume: () => void): Promise<void>
     }
-    await racer.ensureStanding({ id: 'stale', trust: 'user', path })
+    await racer.withStanding({ id: 'stale', trust: 'user', path }, () => {})
 
     expect(livePresetMounts().filter(mount => mount.presetId === 'stale')).toHaveLength(1)
   })

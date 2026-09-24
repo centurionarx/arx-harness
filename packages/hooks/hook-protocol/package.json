@@ -35,12 +35,14 @@
     "@arx-ai/arx-shell": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-shell": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/schemastery": "workspace:^"
   }
 }

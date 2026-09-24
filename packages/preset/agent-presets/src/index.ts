@@ -1,6 +1,6 @@
 /**
  * Agent presets: each session composes its model-facing plugin set from one
- * preset `cordis.yml`, mounted ONCE per preset under a standing scope and
+ * preset `cordis.yml`, shared per live generation under a standing scope and
  * joined by every agent that names it.
  *
  * The standing mount is what makes a preset one composition rather than one
@@ -22,7 +22,7 @@
  */
 
 import { stat } from 'node:fs/promises'
-import { Context, Service } from '@arx-ai/cordis'
+import { Context, Service, type Fiber } from '@arx-ai/cordis'
 import { evaluate } from '@arx-ai/cordis-plugin-loader'
 import z from '@arx-ai/schemastery'
 import { bindScopeParent, createScope, scopeOf, type Scope, type ScopeKey, type ScopeParentBinding } from '@arx-ai/arx-scope'
@@ -285,12 +285,12 @@ export class AgentPresets extends Service {
    * removed so a later session retries a preset whose file has been fixed; a
    * settled success serves until the composition FILE visibly changes — each
    * generation records its file stamp, and a stale stamp starts the next
-   * generation for sessions created afterwards. Sessions already joined keep
-   * the generation they run on; a superseded one is never disposed while the
-   * process lives (reclaimed only by whole-tree teardown), so editing files
-   * is bounded by how often compositions change, not by session count.
+   * generation for sessions created afterwards. Agents, cold-reader fibers,
+   * and pending acquisitions retain their exact generation until released.
    */
-  private readonly standing = new Map<string, Promise<StandingMount>>()
+  private readonly standing = new Map<string, StandingGeneration>()
+
+  private readonly generations = new WeakMap<ScopeKey, StandingGeneration>()
 
   /**
    * Parent bindings of the agents this roster composed, keyed by the agent's
@@ -298,7 +298,7 @@ export class AgentPresets extends Service {
    * here makes this service the sole authority that can move an agent between
    * standing compositions. WeakMap: entries die with their agents.
    */
-  private readonly bindings = new WeakMap<ScopeKey, ScopeParentBinding>()
+  private readonly bindings = new WeakMap<ScopeKey, PresetMembership>()
 
   /**
    * Compose one agent from a preset: ensure the preset's standing mount, then
@@ -319,13 +319,10 @@ export class AgentPresets extends Service {
       throw new Error('agent-presets: refusing to compose an unscoped context; the scope key is what joins an agent to its preset')
     }
     const preset = await this.resolveMountable(id)
-    const standing = await this.ensureStanding(preset)
-    // The one bind of this agent's ancestry. The binding is the only re-link
-    // authority, held privately so nothing outside this roster can move a
-    // composed agent to another preset; a later recompose layer re-links
-    // through it under the caller-owned blank-session contract.
-    this.bindings.set(agentKey, bindScopeParent(agentKey, standing.key))
-    return preset
+    return this.withStanding(preset, (generation, mounted) => {
+      this.join(agentCtx, agentKey, generation, mounted)
+      return preset
+    })
   }
 
   /**
@@ -361,7 +358,9 @@ export class AgentPresets extends Service {
     }
     const standing = standingMountFor(parentCtx)
     if (standing === undefined) return undefined
-    this.bindings.set(agentKey, bindScopeParent(agentKey, standing.key))
+    const generation = this.generations.get(standing.key)
+    if (generation === undefined) throw new Error('agent-presets: parent composition is not owned by this roster')
+    this.join(agentCtx, agentKey, generation, standing)
     return standing.presetId
   }
 
@@ -483,9 +482,9 @@ export class AgentPresets extends Service {
    * make. The CALLER owns that check — this method does not read session
    * history.
    *
-   * The swap is a parent re-link, not an unmount: standing mounts are shared
-   * and permanent, so the old composition stays for its other agents and the
-   * new one is ensured BEFORE the link moves. An unknown or unusable preset
+   * The swap is a parent re-link: the old composition stays for its other
+   * owners and the new one is retained before the link moves. The old
+   * membership is released after the swap. An unknown or unusable preset
    * therefore throws with the agent exactly as it was — there is no torn-down
    * state to restore. The re-link runs through the binding this roster kept
    * from the agent's mount — arx-scope's only re-link authority. An agent
@@ -502,14 +501,19 @@ export class AgentPresets extends Service {
       throw new Error('agent-presets: refusing to recompose an unscoped context')
     }
     const preset = await this.resolveMountable(id)
-    const standing = await this.ensureStanding(preset)
-    const binding = this.bindings.get(agentKey)
-    if (binding === undefined) {
-      this.bindings.set(agentKey, bindScopeParent(agentKey, standing.key))
-    } else {
-      binding.rebind(standing.key)
-    }
-    return preset
+    return this.withStanding(preset, async (generation, mounted) => {
+      const membership = this.bindings.get(agentKey)
+      if (membership === undefined) {
+        this.join(agentCtx, agentKey, generation, mounted)
+      } else {
+        membership.binding.rebind(mounted.key)
+        const previous = membership.generation
+        generation.users++
+        membership.generation = generation
+        await this.release(previous)
+      }
+      return preset
+    })
   }
 
   /**
@@ -518,60 +522,108 @@ export class AgentPresets extends Service {
    * A cold transcript read resolves tool presenters against the composition
    * the session recorded, and the standing mount makes that possible without
    * resuming anything: ensuring the mount composes plugins but starts no
-   * agent, no session, and no turn.
+   * agent, no session, and no turn. The calling context's fiber retains the
+   * returned generation until it unloads; repeated reads through that fiber
+   * share one retention. The key must not escape the caller's lifetime.
    * @param id - the preset id, or `undefined` for {@link defaultId}.
    * @returns the standing scope key readers pass as a registry view scope.
    * @throws when the preset is unknown or its composition is unusable.
    */
   async standingKeyFor(id?: string): Promise<ScopeKey> {
+    const owner = this.ctx
     const preset = await this.resolveMountable(id)
-    return (await this.ensureStanding(preset)).key
+    return this.withStanding(preset, (generation, mounted) => {
+      if (!generation.readers.has(owner.fiber)) {
+        owner.effect(() => {
+          generation.readers.add(owner.fiber)
+          generation.users++
+          return () => this.release(generation)
+        }, 'agentPresets.coldReader()')
+      }
+      return mounted.key
+    })
   }
 
-  /** Resolve (or create, single-flight) the standing mount of one preset. */
-  private async ensureStanding(preset: AgentPreset): Promise<StandingMount> {
-    const pending = this.standing.get(preset.id)
-    if (pending !== undefined) {
-      const mounted = await pending
-      // Files are the only composition editor (authoring is copy/delete), so
-      // the stamp is what notices an edit: a changed file starts the next
-      // generation here, for this and later sessions. An unreadable stamp
-      // serves the current generation — a mount must survive its file
-      // disappearing, and failing the session over a stat would not.
-      const current = await compositionStamp(preset.path)
-      if (current === undefined || sameStamp(mounted.stamp, current)) return mounted
-      // TODO: reclaim the superseded generation once the last agent joined to
-      // it is gone. The subtree is not inert — `arx-skill-filesystem` watches its
-      // roots — and the settings-page authoring flow turns "a composition
-      // changed" into a per-save event. This needs a joined-agent count on
-      // StandingMount, incremented in `mount`/`composeFrom`/`recompose` and
-      // decremented when the agent's scope key dies.
-      // Guarded delete: a caller that raced this one may have already started
-      // the next generation, and dropping THAT pointer would fork a third.
-      if (this.standing.get(preset.id) === pending) this.standing.delete(preset.id)
-      return this.ensureStanding(preset)
-    }
-    const created = (async (): Promise<StandingMount> => {
-      const key: ScopeKey = { agentPreset: preset.id }
-      const scope = createScope(this.selfCtx, key)
-      try {
-        // Stamped before the file is read: an edit racing the mount makes the
-        // stamp stale rather than silently current, so the next session
-        // refreshes instead of trusting a composition older than its stamp.
-        const stamp = await compositionStamp(preset.path)
-        if (stamp === undefined) {
-          throw new PresetMountError(preset.id, `composition file is unreadable: ${preset.path}`)
-        }
-        await mountPreset(scope.ctx, preset)
-        return { key, scope, stamp }
-      } catch (error) {
-        this.standing.delete(preset.id)
-        await scope.dispose()
-        throw error
+  /** Bind one agent and release its current membership when its scope unloads. */
+  private join(agentCtx: Context, key: ScopeKey, generation: StandingGeneration, mounted: { key: ScopeKey }): void {
+    /* v8 ignore next -- a concurrent final release marks the generation disposed one microtask before it leaves the roster map. */
+    if (generation.disposal !== undefined) throw new Error('agent-presets: refusing to join a disposed generation')
+    const membership: PresetMembership = { binding: bindScopeParent(key, mounted.key), generation }
+    agentCtx.effect(() => {
+      generation.users++
+      this.bindings.set(key, membership)
+      return () => {
+        this.bindings.delete(key)
+        return this.release(membership.generation)
       }
-    })()
-    this.standing.set(preset.id, created)
-    return created
+    }, 'agentPresets.membership()')
+  }
+
+  /** Retain before every await so refresh and last-owner disposal cannot invalidate an acquisition. */
+  private async withStanding<T>(
+    preset: AgentPreset,
+    consume: (generation: StandingGeneration, mounted: StandingMount) => T | Promise<T>,
+  ): Promise<T> {
+    while (true) {
+      let generation = this.standing.get(preset.id)
+      const fresh = generation === undefined
+      if (generation === undefined) {
+        generation = {
+          id: preset.id,
+          ready: this.createStanding(preset),
+          users: 0,
+          readers: new WeakSet(),
+        }
+        this.standing.set(preset.id, generation)
+      }
+      generation.users++
+      try {
+        const mounted = await generation.ready
+        if (!fresh) {
+          const current = await compositionStamp(preset.path)
+          if (current !== undefined && !sameStamp(mounted.stamp, current)) {
+            if (this.standing.get(preset.id) === generation) this.standing.delete(preset.id)
+            continue
+          }
+        }
+        if (mounted.scope.ctx.fiber.uid === null) throw new Error('agent-presets: roster disposed during composition')
+        this.generations.set(mounted.key, generation)
+        return await consume(generation, mounted)
+      } finally {
+        await this.release(generation)
+      }
+    }
+  }
+
+  /** Remove only this generation's cache entry, then await its complete teardown. */
+  private async release(generation: StandingGeneration): Promise<void> {
+    if (--generation.users !== 0) return
+    if (this.standing.get(generation.id) === generation) this.standing.delete(generation.id)
+    generation.disposal = generation.ready.then(async (mounted) => {
+      this.generations.delete(mounted.key)
+      await mounted.scope.dispose()
+    }, () => {
+      // A failed mount already disposes its scope before rejecting.
+    })
+    await generation.disposal
+  }
+
+  /** Compose one generation; its acquisition owns cleanup on success. */
+  private async createStanding(preset: AgentPreset): Promise<StandingMount> {
+    const key: ScopeKey = { agentPreset: preset.id }
+    const scope = createScope(this.selfCtx, key)
+    try {
+      // Stamp before loading: a racing file edit must make this generation stale.
+      const stamp = await compositionStamp(preset.path)
+      if (stamp === undefined) {
+        throw new PresetMountError(preset.id, `composition file is unreadable: ${preset.path}`)
+      }
+      await mountPreset(scope.ctx, preset)
+      return { key, scope, stamp }
+    } catch (error) {
+      await scope.dispose()
+      throw error
+    }
   }
 }
 
@@ -604,10 +656,25 @@ function sameStamp(a: CompositionStamp, b: CompositionStamp): boolean {
 interface StandingMount {
   /** Scope key agents are parented to; also the mount's registration scope. */
   readonly key: ScopeKey
-  /** Disposal boundary; held for whole-tree teardown, never per-session. */
+  /** Shared subtree, disposed after its final owner releases it. */
   readonly scope: Scope
   /** Stamp of the composition file this generation was mounted from. */
   readonly stamp: CompositionStamp
+}
+
+/** Ownership covers loading, joined agents, and cold keys retained by caller fibers. */
+interface StandingGeneration {
+  readonly id: string
+  readonly ready: Promise<StandingMount>
+  readonly readers: WeakSet<Fiber>
+  users: number
+  disposal?: Promise<void>
+}
+
+/** One effect follows the agent through every successful recompose. */
+interface PresetMembership {
+  readonly binding: ScopeParentBinding
+  generation: StandingGeneration
 }
 
 export default AgentPresets

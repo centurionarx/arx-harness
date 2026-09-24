@@ -1,7 +1,7 @@
 /**
  * Shared, non-plugin hook protocol library: matching, command execution and
- * decoding, restrictive outcome merging, durable event helpers, and detached
- * run quiescence. Claude Code and Codex bridges own their distinct payloads,
+ * decoding, restrictive outcome merging, durable event helpers, shared bridge
+ * policy and execution quiescence. Claude Code and Codex bridges own their distinct payloads,
  * environment rules, matcher mode, and typed extension-point mappings.
  * @module @arx-ai/arx-hook-protocol
  */
@@ -23,3 +23,7 @@ export { appendHookInvoked, appendHookResult, DEFAULT_STDERR_SUMMARY_MAX_CHARS, 
 export type { HookInvocation, HookResultRecord } from './events.ts'
 export { createDetachedRuns } from './detached.ts'
 export type { DetachedRuns } from './detached.ts'
+export { createHookHandlerIds, createHookLifecycle, HOOK_POLICY_DEFAULTS, hookPolicyFields, resolveHookPolicy } from './policy.ts'
+export type { HookLifecycle, HookPolicy, HookPolicyConfig, StopHookActions } from './policy.ts'
+export { createHookPointRunner } from './point.ts'
+export type { HookPointRequest, HookPointRunnerOptions } from './point.ts'

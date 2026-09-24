@@ -444,6 +444,161 @@ export function apply(ctx: Context, config: Config): void {}
   })
 })
 
+describe('gen-config-catalog reusable schema fields', () => {
+  const fixture = (declaration: string, fields = '{ ...fields() }', config = DOCUMENTED_CONFIG): string => make({
+    'src/index.ts': `import z from '@arx-ai/schemastery'
+${declaration}
+${config}
+export const Config = z.object(${fields})
+export function apply(ctx: unknown, config: Config): void {}
+`,
+  })
+
+  it.each([
+    ['native constructor', '', 'String'],
+    ['plugin static Config', "import Runtime from '@external/plugin'", 'Runtime.Config'],
+    ['imported schema', "import { ConfigSchema } from '@external/schema'", 'ConfigSchema'],
+    ['shared schema member', "import { SharedFields } from '@external/schema'", 'SharedFields.knob'],
+    ['dynamic schema call', 'declare function makeSchema(): unknown', 'makeSchema()'],
+    ['dynamic object fields', 'declare const dynamicFields: object', 'z.object(dynamicFields)'],
+    ['schema value alias', 'const Opaque = z.object({ ghost: z.string() })', 'Opaque'],
+  ])('keeps %s opaque while checking its explicit field', (_name, declaration, value) => {
+    for (const key of ['knob', 'hidden']) {
+      const record = `{ ${key}: ${value} }`
+      for (const fields of [record, '{ ...fields() }']) {
+        const root = fixture(`${declaration}\nfunction fields() { return ${record} }`, fields)
+        if (key === 'knob') expect(collectConfigCatalog(root)[0]?.schemaKeys).toEqual(['knob'])
+        else expect(() => collectConfigCatalog(root)).toThrow(/schema validates key 'hidden'/)
+      }
+    }
+  })
+
+  it('keeps native-constructor shorthands enumerable without resolving their values', () => {
+    for (const fields of ['{ String }', '{ ...fields() }']) {
+      const declaration = 'function fields() { return { String } }'
+      const root = fixture(declaration, fields, `export interface Config {
+  /** Native shorthand field. */
+  String: string
+}`)
+      expect(collectConfigCatalog(root)[0]?.schemaKeys).toEqual(['String'])
+      expect(() => collectConfigCatalog(fixture(declaration, fields))).toThrow(/schema validates key 'String'/)
+    }
+  })
+
+  it('follows workspace re-exports, import aliases, and local factory aliases without executing modules', () => {
+    const root = makeRoot()
+    writePkg(root, 'group/shared', '@fix/shared', {
+      'src/index.ts': "export { policyFields as sharedFields } from './policy.ts'\n",
+      'src/policy.ts': `import z from '@arx-ai/schemastery'
+throw new Error('catalog must not execute this module')
+export function policyFields() {
+  return {
+    timeout: z.number().default(10),
+    summary: z.number().default(100),
+    continuations: z.number().default(8),
+    mode: z.union(['blocking', 'detached']).default('blocking'),
+  }
+}
+`,
+    })
+    writePkg(root, 'group/one', '@fix/one', {
+      'src/index.ts': `import z from '@arx-ai/schemastery'
+import { sharedFields as importedFields } from '@fix/shared'
+const localFields = importedFields
+export interface Config {
+  /** Config file. */
+  configPath: string
+  /** Command timeout. */
+  timeout: number
+  /** Summary bound. */
+  summary: number
+  /** Continuation bound. */
+  continuations: number
+  /** Startup mode. */
+  mode: string
+}
+export const Config = z.object({ configPath: z.string(), ...localFields() })
+export function apply(ctx: unknown, config: Config): void {}
+`,
+    })
+    expect(collectConfigCatalog(root).find(entry => entry.pkg === '@fix/one')?.schemaKeys)
+      .toEqual(['configPath', 'timeout', 'summary', 'continuations', 'mode'])
+  })
+
+  it.each([
+    ['literal spread', '', '{ ...({ knob: z.string() } as const) }'],
+    ['const aliases', 'const original = { knob: z.string() }; const fields = original', 'fields'],
+    ['arrow expression', 'const fields = () => ({ knob: z.string() } satisfies object)', '{ ...fields() }'],
+    ['function expression', 'const fields = function () { return { knob: z.string() } }', '{ ...fields() }'],
+    ['shorthand', 'const knob = z.string(); const fields = () => ({ knob })', '{ ...fields() }'],
+    ['repeated factory', 'function fields() { return { knob: z.string() } }', '{ ...fields(), ...fields() }'],
+  ])('accepts %s', (_name, declaration, fields) => {
+    expect(collectConfigCatalog(fixture(declaration, fields))[0]?.schemaKeys).toEqual(['knob'])
+  })
+
+  it.each([
+    '{ knob: z.object({ ghost: z.string() }), ...fields() }',
+    '{ ...fields(), knob: z.string() }',
+  ])('uses the final field definition before collecting nested paths: %s', (fields) => {
+    expect(collectConfigCatalog(fixture('const fields = () => ({ knob: z.string() })', fields))[0]?.schemaKeys).toEqual(['knob'])
+  })
+
+  it.each(['{ ...fields() }', '{ knob: z.string(), ...fields() }'])('checks imported nested fields after overrides: %s', (fields) => {
+    const root = fixture("import * as shared from './shared.ts'\nconst fields = shared.makeFields", fields, `export interface Config {
+  /** Entries. */
+  knob: {
+    /** Visible field. */
+    visible: string
+  }[]
+}`)
+    writeFileSync(join(root, 'packages/group/one/src/shared.ts'), `import z from '@arx-ai/schemastery'
+const child = { ghost: z.string() }
+export const makeFields = () => ({ knob: z.array(z.object({ ...child })) })
+`)
+    expect(() => collectConfigCatalog(root)).toThrow(/schema validates key 'knob\[\]\.ghost'/)
+  })
+
+  it('rejects an imported top-level field absent from Config', () => {
+    const root = fixture("import { fields } from './shared.ts'")
+    writeFileSync(join(root, 'packages/group/one/src/shared.ts'), `import z from '@arx-ai/schemastery'
+export function fields() { return { hidden: z.string() } }
+`)
+    expect(() => collectConfigCatalog(root)).toThrow(/schema validates key 'hidden'/)
+  })
+
+  it.each([
+    ['unresolved import', "import { fields } from '@external/unknown'", '{ ...fields() }', /synchronous zero-parameter factory/],
+    ['declaration only', 'declare function fields(): object', '{ ...fields() }', /synchronous zero-parameter factory/],
+    ['mutable binding', 'let fields = { knob: z.string() }', '{ ...fields }', /unresolved, mutable, or cyclic/],
+    ['mutated record', 'const fields = { knob: z.string() }; fields.hidden = z.string()', '{ ...fields }', /mutable/],
+    ['mutated alias', 'const fields = { knob: z.string() }; const alias = fields; alias.hidden = z.string()', '{ ...fields }', /mutable/],
+    ['escaping record', 'const fields = { knob: z.string() }; mutate(fields)', '{ ...fields }', /mutable/],
+    ['returned shared record', 'const shared = { knob: z.string() }; function fields() { return shared }', '{ ...fields() }', /mutable/],
+    ['reassigned factory', 'function fields() { return {} }; fields = other', '{ ...fields() }', /zero-parameter factory/],
+    ['conditional spread', 'const fields = process.env.FLAG ? { knob: z.string() } : {}', '{ ...fields }', /object literal/],
+    ['dynamic call', '', '{ ...Object.fromEntries([]) }', /zero-argument factory call/],
+    ['call argument', 'function fields() { return {} }', '{ ...fields(1) }', /zero-argument factory call/],
+    ['optional call', 'function fields() { return {} }', '{ ...fields?.() }', /zero-argument factory call/],
+    ['factory parameter', 'function fields(flag = true) { return {} }', '{ ...fields() }', /zero-parameter factory/],
+    ['async factory', 'async function fields() { return {} }', '{ ...fields() }', /synchronous zero-parameter factory/],
+    ['generator factory', 'function* fields() { return {} }', '{ ...fields() }', /synchronous zero-parameter factory/],
+    ['factory statements', 'function fields() { sideEffect(); return {} }', '{ ...fields() }', /single return expression/],
+    ['factory branch', 'function fields() { if (flag) return {}; return {} }', '{ ...fields() }', /single return expression/],
+    ['dynamic return', 'function fields() { return flag ? {} : {} }', '{ ...fields() }', /object literal/],
+    ['non-object return', 'function fields() { return [] }', '{ ...fields() }', /object literal/],
+    ['computed property', "function fields() { return { ['knob']: z.string() } }", '{ ...fields() }', /not a plain key/],
+    ['getter', 'function fields() { return { get knob() { return z.string() } } }', '{ ...fields() }', /not a plain key/],
+    ['prototype setter', 'const fields = () => ({ __proto__: {} })', '{ ...fields() }', /not a plain key/],
+    ['alias cycle', 'const fields = other; const other = fields', '{ ...fields }', /cyclic/],
+    ['spread cycle', 'const fields = { ...other }; const other = { ...fields }', '{ ...fields }', /cyclic/],
+    ['factory cycle', 'function fields() { return { ...fields() } }', '{ ...fields() }', /cyclic/],
+    ['nested cycle', 'const fields = { knob: z.object({ ...fields }) }', '{ ...fields }', /cyclic/],
+    ['nested dynamic spread', 'const fields = () => ({ knob: z.object({ ...unknownFields }) })', '{ ...fields() }', /unresolved/],
+  ])('rejects %s', (_name, declaration, fields, error) => {
+    expect(() => collectConfigCatalog(fixture(declaration, fields))).toThrow(error)
+  })
+})
+
 describe('gen-config-catalog render', () => {
   it('renders sections, fences, and the terse classification lists', () => {
     const root = makeRoot()

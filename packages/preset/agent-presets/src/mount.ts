@@ -1,16 +1,8 @@
 /**
- * Mount one preset composition under an agent's scope context, then prove the
- * result is usable before the agent is published.
- *
- * The scope context is what makes the composition per-session: entry contexts
- * chain to the context the subtree was plugged into, so every `ctx.tools`
- * and `ctx.systemPrompt` registration inside the preset files into that
- * agent's layer and unwinds with it. Two guards make that safe. A row that
- * never reached a usable state is rejected, because a directly-plugged subtree
- * is absent from `ctx.loader.entries()` and no boot audit covers it. A row that
- * published a service into the ROOT realm is rejected, because such a service
- * is process-global rather than per-session and the second session mounting the
- * same preset collides with the first.
+ * Load and audit a preset beneath its owning scope. Registrations and the mount
+ * inventory entry unwind with that scope; the roster owns shared generations.
+ * Rows waiting for missing injections or publishing root-realm services reject
+ * the mount before any agent can join it.
  * @module @arx-ai/arx-agent-presets/mount
  */
 
@@ -128,35 +120,11 @@ export interface PresetMount {
 const mounts = new Set<PresetMount>()
 
 /**
- * Drop every record whose subtree is gone.
- *
- * Records are pruned by observation rather than through a disposal hook
- * because a subtree can be torn down by its owning agent, by a failed mount, or
- * by the whole tree unloading, and a cleared `uid` is what all three share.
- *
- * Pruning therefore has to happen on a path this module owns. Reading is one
- * such path, but not a reliable one: the only production reader is the
- * invariant companion's service listener, and `arx-invariants` is a
- * development composition — a shipped host never loads it. Mounting is the
- * other, and it is the one every session takes, which bounds the set at one
- * generation of dead records rather than one per session ever composed. Each
- * record would otherwise retain its whole disposed subtree: the fiber holds
- * its config, and that config is the key its `EntryTree` is stored under.
- */
-function pruneDisposedMounts(): void {
-  for (const mount of mounts) {
-    if (mount.fiber.uid === null) mounts.delete(mount)
-  }
-}
-
-/**
- * Every preset composition still installed, pruning fibers disposed since the
- * last read.
+ * Every preset composition still installed; mount effects remove disposed records.
  * @param within - optional Fiber subtree used to restrict returned mounts.
  * @returns the live mounts.
  */
 export function livePresetMounts(within?: Fiber): PresetMount[] {
-  pruneDisposedMounts()
   const all = [...mounts]
   return within === undefined ? all : all.filter(mount => withinFiber(mount.fiber, within))
 }
@@ -328,9 +296,10 @@ function mountDetail(error: unknown): string {
 /**
  * Mount `preset` under `agentCtx` and return only once every row is usable.
  *
- * The subtree is owned by `agentCtx`'s fiber, so it unwinds with the agent and
- * the caller receives no disposer. A rejection leaves nothing mounted.
- * @param agentCtx - the agent's scope context, from the agent factory's `setup`.
+ * The subtree is owned by `agentCtx`'s fiber; the caller receives no disposer.
+ * The roster supplies a standing scope, while direct callers own their scope's
+ * lifetime. A rejection leaves nothing mounted.
+ * @param agentCtx - the scoped context that owns this composition.
  * @param preset - the resolved preset to compose the agent from.
  * @throws when `agentCtx` carries no scope, a row is unusable, or a row
  * published a service into the root realm.
@@ -349,10 +318,6 @@ export async function mountPreset(agentCtx: Context, preset: AgentPreset): Promi
   // harness and is therefore where a row's package name has to resolve from.
   /* v8 ignore next -- the Loader sets `baseUrl` on the root before any scoped context derives from it */
   if (agentCtx.baseUrl !== undefined) harnessBase.set(config, agentCtx.baseUrl)
-  // Before the record this mount is about to add: standing mounts are one per
-  // preset and live until whole-tree teardown, so pruning here only sweeps
-  // records of torn-down runtimes (tests; an HMR reload of the roster).
-  pruneDisposedMounts()
   const handle = agentCtx.plugin(PresetTree, config)
   try {
     await handle.await()
@@ -371,7 +336,11 @@ export async function mountPreset(agentCtx: Context, preset: AgentPreset): Promi
         + 'a preset service must sit behind an `isolate` realm or move to the host composition',
       )
     }
-    mounts.add({ presetId: preset.id, fiber, tree, key: scopeOf(agentCtx) })
+    const record = { presetId: preset.id, fiber, tree, key: scope }
+    fiber.ctx.effect(() => {
+      mounts.add(record)
+      return () => { mounts.delete(record) }
+    }, 'agentPresets.mountRecord()')
   } catch (error) {
     try {
       await handle.dispose()

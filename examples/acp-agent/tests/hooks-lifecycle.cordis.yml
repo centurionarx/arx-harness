@@ -1,0 +1,4 @@
+# Authored keyless lifecycle example; model responses come from the replay fixture.
+- name: '@arx-ai/cordis-plugin-include'
+  config:
+    path: ./hooks-lifecycle.cordis.snapshot.yml

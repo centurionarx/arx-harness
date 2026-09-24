@@ -21,7 +21,7 @@ Each bridge maps the neutral `MergedHookOutcome` from the shared lib onto each e
 
 | Extension point | CC | Codex |
 |---|---|---|
-| `agent/session-start` (emit) | additionalContext → `agent.inject()` | plain-stdout output → additionalContext → `agent.inject()` |
+| `agent/session-start` + first `agent/pre-step` | blocking startup awaits and adds context to an accepted claim; detached mode injects best-effort | same, including plain-stdout context |
 | `agent/pre-step` | `deny`→`reject`; context-only→delegate+fold into `enter` | `block`→`reject`; context-only→delegate+fold into `enter` |
 | `tools/pre-execute` | `deny`→`deny`; `ask`→`ask` | `block`→`deny` (no allow/ask) |
 | `tools/post-execute` | `deny`→`block`+feedback; context-only→delegate+fold | same |
@@ -47,7 +47,7 @@ Claude Code always exports `CLAUDE_PROJECT_DIR`, and common unmodified hooks ref
 
 ### Containment
 
-The config is parsed ONCE at load; a read/parse failure logs and registers nothing rather than crashing boot (a typo'd path must not take the agent down). Only shell-form `type: 'command'` hooks run for CC; `http`, `mcp_tool`, `prompt`, and `agent` handlers are parsed-and-skipped. Codex runs only synchronous command handlers and skips `async: true` or non-command entries. The emit-listener paths (`session-start`, `subagent/start`) run detached, with their `inject` contained in a `.catch` that logs (a throwing inject must not break session boot or the loop).
+The config is parsed ONCE at load; a read/parse failure logs and registers nothing rather than crashing boot (a typo'd path must not take the agent down). Only shell-form `type: 'command'` hooks run for CC; `http`, `mcp_tool`, `prompt`, and `agent` handlers are parsed-and-skipped. Codex runs only synchronous command handlers and skips `async: true` or non-command entries. Subagent-start and explicitly detached session-start injections contain failures. Every hook execution shares bridge cancellation and awaited disposal; default SessionStart execution belongs to the first attempted pre-step. [Preset and hook lifecycle ownership](../bug-fix/2026-09-21-preset-and-hook-lifecycle.md) records startup and continuation policy.
 
 ### Where hooks run, and where their config comes from
 
@@ -56,10 +56,10 @@ Hooks run in the agent's session workspace, so relative paths target the user's 
 ## Deferred compatibility gaps
 
 - **Tool-input rewrite.** A CC/Codex `updatedInput` is logged + warned, not honored — input rewrite is a deferred consistency-design problem ([the pre-tool-input-rewrite Agent Note](../../implemented/feature/2026-06-30-pre-tool-input-rewrite.md)), because the pre-execution args are read by `tool/call` audit + `assistant/message` history + tool presentation, so an honest rewrite is a design unit, not a field.
-- **Stop loop-guard** (`TODO(stop-loop-guard)`). Claude Code supplies `stop_hook_active` and overrides a hook after eight consecutive blocks; Codex supplies `stop_hook_active` but documents no equivalent cap. Both bridges always report `false`, so a Stop hook that unconditionally blocks force-continues every step — a hook author must self-limit until state tracking lands.
-- **Hook `continue:false` (hard halt).** A hook can ask to halt the whole run (CC/Codex `continue:false`); the shared merge folds it into `MergedHookOutcome.stop`/`stopReason`, but no bridge acts on it (`TODO(hook-continue-false)`) — the interception points have no "hard-halt the agent" primitive yet (a Decision blocks/steers a single point, not the run). Deferred with the loop-guard work; mid-turn requests record the halt in `hook/result`, and the hook keeps its per-point effect (decision/context) meanwhile.
+- **Stop compatibility.** The bridge caps forced steps with `maxStopContinuations` (default 8, following Claude Code's eight-block guard) and reports `stop_hook_active` after its first forced step. Codex documents no equivalent cap; the harness applies the same finite default to both bridges.
+- **Hook `continue:false` (hard halt).** Both bridges honor it at SessionStart and Stop through agent cancellation. The Claude Code bridge also honors it at UserPromptSubmit; other points retain their per-point decision semantics.
 - **Config discovery.** The path is explicit in `cordis.yml` and process-level (see above); the full multi-layer CC/Codex precedence walk, per-session project-local discovery, and the trust/hash model are not reimplemented (`TODO(per-session-hook-config)`).
-- **Session-start / subagent-start context is best-effort (`TODO(session-start-gating)`).** Both hooks run detached from startup, so their context is injected when ready but may miss the first request or a short-lived child. Guaranteeing first-request delivery requires an awaited startup extension point.
+- **Detached startup context remains best-effort.** Explicitly detached SessionStart and subagent-start injection can miss an early request. Default SessionStart waits at the first pre-step and logs accepted context before request derivation.
 
 ## Alternatives considered
 

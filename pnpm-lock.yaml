@@ -5392,6 +5392,10 @@ importers:
         version: link:../../../vendor/cordis
 
   packages/hooks/hook-protocol:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@arx-ai/arx-invariants':
         specifier: workspace:^
