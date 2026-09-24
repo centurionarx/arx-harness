@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-goal-round-driver",
   "description": "Race-fenced same-session goal-round driver",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "publishConfig": {
     "access": "public"
   },
