@@ -33,6 +33,18 @@
       - listitem:
         - text: Exa
         - img "Not usable"
+        - img "API key missing"
+        - text: API key for Exa
+        - textbox "API key for Exa":
+          - /placeholder: EXA_API_KEY
+        - text: Stored outside the settings document. Leave blank to keep the current key.
+        - button "Save" [disabled]
       - listitem:
         - text: Perplexity
         - img "Not usable"
+        - img "API key missing"
+        - text: API key for Perplexity
+        - textbox "API key for Perplexity":
+          - /placeholder: PERPLEXITY_API_KEY
+        - text: Stored outside the settings document. Leave blank to keep the current key.
+        - button "Save" [disabled]
