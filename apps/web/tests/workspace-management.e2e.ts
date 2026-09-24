@@ -67,7 +67,12 @@ describe('web e2e: workspace management (create / rename / flat view / hover aff
     await dialog.getByRole('button', { name: 'New folder' }).click()
     await page.getByLabel('Folder name').fill(name)
     await page.getByRole('button', { name: 'Create', exact: true }).click()
-    // Creating selects the new folder in the listing; Open adopts it.
+    // Creating selects the new folder in the listing; Open adopts the selection,
+    // so it waits until the created row is the selected one. The crumbs can name
+    // the same folder, so the row is the button that also carries aria-current.
+    await dialog.getByRole('button', { name, exact: true })
+      .and(dialog.locator('[aria-current="true"]'))
+      .waitFor({ timeout: 10_000 })
     await dialog.getByRole('button', { name: 'Open', exact: true }).click()
     await dialog.waitFor({ state: 'hidden', timeout: 10_000 })
     await expect.poll(
