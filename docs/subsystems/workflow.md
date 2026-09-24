@@ -277,10 +277,12 @@ Project aggregate authority and `projects/*` Remote namespace. Every write uses 
 @Remote async finalizePromptEvaluation( projectId: ProjectIdBrand, expectedVersion: number, request: FinalizePromptEvaluationRequest, ): Promise<ProjectRecord>
 
 /**
- * Attach an accepted child session to its already-committed running claim.
+ * Attach a direct child of the pinned parent to its committed running claim.
+ * The parent must remain attached to the project workspace; both session cwds
+ * must resolve to that workspace. Child sessions need no top-level membership.
  * @param projectId - Stable project identifier.
  * @param expectedVersion - Required aggregate CAS version.
- * @param request - Run, step, and workspace-owned child session identifiers.
+ * @param request - Run, step, and direct child session identifiers.
  * @returns The committed aggregate snapshot.
  */
 @Remote async attachWorkflowStepSession( projectId: ProjectIdBrand, expectedVersion: number, request: AttachWorkflowStepSessionRequest, ): Promise<ProjectRecord>

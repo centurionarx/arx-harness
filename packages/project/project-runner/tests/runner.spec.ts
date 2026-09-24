@@ -72,7 +72,6 @@ async function harness(existing?: string) {
       origin: 'subagent',
     }
     headers.push(header)
-    sessionIds.push(id)
     const localAgent = { session: { id, header, events: [] } } as unknown as Agent
     return {
       id,

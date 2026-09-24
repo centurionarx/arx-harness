@@ -49,7 +49,7 @@ it('executes a prompt evaluation through a real project runner child and finaliz
     start: vi.fn(async (_provider, _request) => {
       const id = SessionId('evaluation-child')
       const header: SessionHeader = { version: 0, id, createdAt: 2, cwd: root as string, parentSession: parentId, origin: 'subagent', seedLength: 0 }
-      headers.push(header); sessionIds.push(id)
+      headers.push(header)
       return {
         id,
         localAgent: { session: { id, header, events: [{ type: 'assistant/message', data: { usage: { inputTokens: 3, outputTokens: 4 } } }] } } as unknown as Agent,

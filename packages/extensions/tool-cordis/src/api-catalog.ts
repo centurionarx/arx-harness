@@ -1251,8 +1251,8 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: '@Remote async attachWorkflowStepSession( projectId: ProjectIdBrand, expectedVersion: number, request: AttachWorkflowStepSessionRequest, ): Promise<ProjectRecord>',
-        description: 'Attach an accepted child session to its already-committed running claim.',
-        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Run, step, and workspace-owned child session identifiers.' }],
+        description: 'Attach a direct child of the pinned parent to its committed running claim. The parent must remain attached to the project workspace; both session cwds must resolve to that workspace. Child sessions need no top-level membership.',
+        parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Run, step, and direct child session identifiers.' }],
         returns: 'The committed aggregate snapshot.',
       },
       {

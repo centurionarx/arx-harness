@@ -4,11 +4,11 @@ The optional `projectRunner` service executes immutable project workflow steps t
 
 A runnable definition names an exact prompt revision and typed variable values for every step. Starting a driven run binds an approved plan revision and its original parent session. Calls from another parent are refused. Children inherit that parent's preset and permission policy.
 
-Each claim commits before child launch; the published child session is attached before settlement. Completed steps retain their result and are skipped on continuation. Concurrent drivers for the same project/run are refused. Holder unload aborts and awaits all owned children. A crash or ambiguous provider outcome makes the run uncertain until an operator explicitly reconciles it. Retry releases only pending or uncertain work and never reruns confirmed steps.
+Each claim commits before child launch; the published child session is attached before settlement. Attachment verifies direct parent lineage and the canonical workspace directory, not top-level child membership. The pinned parent must remain attached to the workspace. Completed steps retain their result and are skipped on continuation. Concurrent drivers for the same project/run are refused. Holder unload aborts and awaits all owned children. A crash or ambiguous provider outcome makes the run uncertain until an operator explicitly reconciles it. Retry releases only pending or uncertain work and never reruns confirmed steps.
 
 ## Validation
 
-Real JSON storage tests cover persisted restart after a budget stop, pending-only continuation, duplicate drivers, cancellation and uncertainty, expired deadlines, parent binding, and disposal quiescence.
+Real JSON storage tests cover persisted restart after a budget stop, pending-only continuation, duplicate drivers, cancellation and uncertainty, expired deadlines, parent binding, and disposal quiescence. [Headless application snapshots](../../../examples/headless-agent/tests/project-workflow.snapshot.ts) boot the Loader composition, use the real in-process spawn provider, and preserve parent and child transcripts for automatic and manual execution; only the model responses and wall clock are controlled.
 
 ## Model Experience
 
