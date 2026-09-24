@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-loop-testkit",
   "description": "Shared prerequisite mounting for tests that exercise the concrete agent loop",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "publishConfig": {
     "access": "public"
   },

@@ -239,13 +239,16 @@ cat "$scratch/logs/smoke.log"
 grep -q '^smoke: win32 x64' "$scratch/logs/smoke.log" || { echo 'wine-windows-gates: Windows Node smoke did not report win32 x64' >&2; exit 1; }
 
 # ---- the two blocking surfaces, concurrently ------------------------------
-# The build preserves the face order from package.json: compile and bundle the
-# Host face before compiling and bundling the Client face.
+# The build preserves the face order and the tsc heap from package.json: compile
+# and bundle the Host face before compiling and bundling the Client face, and
+# run each tsc phase with the 4 GB heap the build:lib scripts give it, because
+# a cold Host build outgrows V8's default heap.
 # Both statuses are captured so one failure cannot hide the other's result.
+tsc_heap='--max-old-space-size=4096'
 build_gate() {
-  wine_node "$scratch/logs/host-tsc.log" "$tsc_js" -b tsconfig.host.json --pretty false || return $?
+  wine_node "$scratch/logs/host-tsc.log" "$tsc_heap" "$tsc_js" -b tsconfig.host.json --pretty false || return $?
   wine_node "$scratch/logs/host-tsdown.log" "$tsdown_js" --env.ARX_BUILD_FACE host || return $?
-  wine_node "$scratch/logs/client-tsc.log" "$tsc_js" -b tsconfig.client.json --pretty false || return $?
+  wine_node "$scratch/logs/client-tsc.log" "$tsc_heap" "$tsc_js" -b tsconfig.client.json --pretty false || return $?
   wine_node "$scratch/logs/client-tsdown.log" "$tsdown_js" --env.ARX_BUILD_FACE client
 }
 site_gate() {

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tools",
   "description": "Tool registry and execution pipeline for the arx Harness",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "publishConfig": {
     "access": "public"
   },
