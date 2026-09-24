@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-tool-presentation",
   "description": "Agent-plane presentation selector: composes one agent's tools as Code Mode, native, or both",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "publishConfig": {
     "access": "public"
   },
