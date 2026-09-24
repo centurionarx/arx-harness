@@ -354,7 +354,7 @@ describe('pushed invalidations', () => {
     native.reload()
     await vi.waitFor(() => { expect(native.hooks.accounts.getSnapshot()).toMatchObject({ loading: false, accounts: [{ status: 'connected' }] }) })
     expect(nativeAccounts.describe).toHaveBeenCalledTimes(2)
-    native.enable()
+    native.enable('claude-code')
     await vi.waitFor(() => { expect(llm.providers).toHaveBeenCalledOnce() })
     expect(settings.mutate).toHaveBeenCalledWith(expect.objectContaining({ ns: 'llm-agent-cli' }))
     native.begin('claude-code', 'browser')
@@ -370,9 +370,12 @@ describe('pushed invalidations', () => {
     await vi.waitFor(() => { expect(authorization.begin).toHaveBeenCalledWith({ key: flow.key, method: 'oauth' }) })
     chat.submit('unrequested')
     chat.cancel()
+    const accountReads = nativeAccounts.describe.mock.calls.length
     chat.enable()
     await vi.waitFor(() => { expect(llm.providers).toHaveBeenCalledTimes(2) })
     expect(settings.mutate).toHaveBeenCalledWith(expect.objectContaining({ ns: 'llm-pi-ai' }))
+    // The route chat authorization just created is the one the Codex roster feeds, so the account card re-reads it.
+    await vi.waitFor(() => { expect(nativeAccounts.describe).toHaveBeenCalledTimes(accountReads + 1) })
     expect([nativeAccounts.submit, nativeAccounts.cancel, authorization.submit, authorization.cancel].map(fn => fn.mock.calls.length))
       .toEqual([0, 0, 0, 0])
     await b.ctx.fiber.dispose()

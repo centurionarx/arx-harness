@@ -102,7 +102,11 @@ export function apply(ctx: ClientContext): void {
   const controller = new ModelsSettingsStore(connection.api, schema, ctx.settingsScope.describe())
   const accounts = new NativeAccountsStore(connection.api, ctx.settingsScope.describe(), () => { void controller.load() })
   ctx.effect(() => () => { accounts.dispose() }, 'ui-settings-models: native accounts')
-  const chatAuthorization = new ChatAuthorizationStore(connection.api, ctx.settingsScope.describe(), () => { void controller.load() })
+  // Enabling Codex chat creates the route the native Codex roster feeds, so the account card re-reads how that route serves it.
+  const chatAuthorization = new ChatAuthorizationStore(connection.api, ctx.settingsScope.describe(), () => {
+    void controller.load()
+    void accounts.load()
+  })
   ctx.effect(() => () => { chatAuthorization.dispose() }, 'ui-settings-models: chat authorization')
   // Registration-time text (the nav label thunk) and the inject faces share
   // one bound translate; copy freshness rides the locale revision.
@@ -212,7 +216,7 @@ export function apply(ctx: ClientContext): void {
       begin: (provider, mode) => { void accounts.begin(provider, mode) },
       cancel: () => { void accounts.cancel() },
       submit: (code) => { void accounts.submit(code) },
-      enable: () => { void accounts.enable() },
+      enable: (provider) => { void accounts.enable(provider) },
     }),
   }, NativeAccounts))
   ctx.slots.inject('settings.models.chatAuthorization', () => ctx.slots.register({
