@@ -1,15 +1,46 @@
 /**
  * The bundle's substance is its patch file: the `arx.bundle.patch` manifest
- * field must name a real, parseable patch list.
+ * field must name a real, parseable patch list. The provider-exclusion test
+ * also reads `pnpm-workspace.yaml` and every member manifest to walk the
+ * default `@arx-ai/arx` install.
  */
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, globSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import * as yaml from 'js-yaml'
 import { entryListSchema } from '@arx-ai/cordis-plugin-include'
 import { evaluate } from '@arx-ai/cordis-plugin-loader'
+
+/** Dependency fields that a production install of one workspace manifest follows. */
+interface ProductionManifest {
+  dependencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
+  peerDependencies?: Record<string, string>
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>
+}
+
+/**
+ * Names of the workspace packages reachable from `start`, including `start`,
+ * through `dependencies`, `optionalDependencies`, and non-optional
+ * `peerDependencies`: npm and pnpm install all three by default. A name without
+ * a workspace manifest is an external package and is not expanded: no external
+ * package names a workspace package as a dependency or peer.
+ */
+function productionClosure(manifests: ReadonlyMap<string, ProductionManifest>, start: string): Set<string> {
+  const closure = new Set([start])
+  for (const name of closure) {
+    const manifest = manifests.get(name)
+    const peers = Object.keys(manifest?.peerDependencies ?? {})
+      .filter(peer => manifest?.peerDependenciesMeta?.[peer]?.optional !== true)
+    const dependencies = { ...manifest?.dependencies, ...manifest?.optionalDependencies }
+    for (const dependency of [...Object.keys(dependencies), ...peers]) {
+      if (manifests.has(dependency)) closure.add(dependency)
+    }
+  }
+  return closure
+}
 
 describe('arx-base bundle', () => {
   it('declares a parseable patch list through the arx.bundle.patch manifest field', () => {
@@ -39,6 +70,27 @@ describe('arx-base bundle', () => {
     expect(rows.filter(row => row.id === 'subagent-claude-code')).toHaveLength(0)
     expect(manifest.dependencies).not.toHaveProperty('@arx-ai/arx-subagent-codex')
     expect(manifest.dependencies).not.toHaveProperty('@arx-ai/arx-subagent-claude-code')
+  })
+
+  it('keeps both product subagent providers out of the transitive @arx-ai/arx production closure', () => {
+    const repo = fileURLToPath(new URL('../../../..', import.meta.url))
+    const { packages } = yaml.load(readFileSync(resolve(repo, 'pnpm-workspace.yaml'), 'utf8')) as { packages: string[] }
+    const manifests = new Map(globSync(packages.map(member => `${member}/package.json`), { cwd: repo }).map((path) => {
+      const manifest = JSON.parse(readFileSync(resolve(repo, path), 'utf8')) as ProductionManifest & { name: string }
+      return [manifest.name, manifest] as const
+    }))
+    const closure = productionClosure(manifests, '@arx-ai/arx')
+    expect(closure).toContain('@arx-ai/arx-base')
+    expect(closure).not.toContain('@arx-ai/arx-subagent-codex')
+    expect(closure).not.toContain('@arx-ai/arx-subagent-claude-code')
+    // The arx-base anchor proves `dependencies` edges; an optional dependency or a required peer of arx-base must also count.
+    const base = manifests.get('@arx-ai/arx-base')!
+    const regressed = (edges: ProductionManifest): Set<string> =>
+      productionClosure(new Map(manifests).set(base.name, { ...base, ...edges }), '@arx-ai/arx')
+    expect(regressed({ optionalDependencies: { '@arx-ai/arx-subagent-codex': 'workspace:^' } }))
+      .toContain('@arx-ai/arx-subagent-codex')
+    expect(regressed({ peerDependencies: { '@arx-ai/arx-subagent-claude-code': 'workspace:^' } }))
+      .toContain('@arx-ai/arx-subagent-claude-code')
   })
 
   it('gates each shell stack by platform with a symmetric disabled expression', () => {
