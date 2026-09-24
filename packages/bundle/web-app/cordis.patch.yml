@@ -465,17 +465,20 @@
 # one surface with a settings page, so it mounts both shipped providers and
 # lets the user pick between them.
 #
-# Both are dormant until a key reaches them — `available()` is false without
-# one — so a portal nobody configured resolves exactly as it did with neither
-# mounted. Configure one key and that provider auto-selects. Configure both and
-# `web.searchProvider` decides; leave it unset there and the seam fails loud as
-# WEB_PROVIDER_AMBIGUOUS rather than letting composition order pick.
+# Explicit references let Settings store keys through the credentials provider;
+# the composition contains no secret values. Both providers remain unavailable
+# without a key. One usable provider auto-selects; two require web.searchProvider
+# or fail with WEB_PROVIDER_AMBIGUOUS rather than choosing by composition order.
 - insert:
     - id: web-search-exa
       name: '@arx-ai/arx-web-search-exa'
+      config:
+        apiKeyEnv: EXA_API_KEY
 
     - id: web-search-perplexity
       name: '@arx-ai/arx-web-search-perplexity'
+      config:
+        apiKeyEnv: PERPLEXITY_API_KEY
 
 # The preset roster. `config/agent-presets/` ships with the deployment and is
 # read-only (its entries carry `system` trust); `$ARX_HOME/.agent-presets` is

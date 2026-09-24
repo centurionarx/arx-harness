@@ -1,5 +1,7 @@
 # Configure models
 
+English | [Português](providers.pt-BR.md)
+
 This guide assumes you started the Web UI through the [root README](../../../README.md#run). Model changes take effect on the next request without restarting the server.
 
 ## Add a catalog provider

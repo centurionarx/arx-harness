@@ -294,7 +294,17 @@ it('checks exact driver child ownership and rejects duplicate session attachment
   await expect(f.projects.attachWorkflowStepSession(project.id, project.version, { ...attach, stepId: 'missing' as ProjectWorkflowStepId })).rejects.toThrow('step is not running')
   await expect(f.projects.attachWorkflowStepSession(project.id, project.version, { ...attach, stepId: 'b' as ProjectWorkflowStepId })).rejects.toThrow('step is not running')
   await expect(f.projects.settleWorkflowStep(project.id, project.version, { ...attach, state: 'completed', result: 'done' })).rejects.toThrow('requires attached child')
+  const childHeader = f.headers[1]!
+  f.headers[1] = { ...childHeader, parentSession: SessionId('unrelated-parent') }
+  await expect(f.projects.attachWorkflowStepSession(project.id, project.version, attach)).rejects.toThrow('not a child')
+  f.headers[1] = { ...childHeader, cwd: join(f.root, 'data') }
+  await expect(f.projects.attachWorkflowStepSession(project.id, project.version, attach)).rejects.toThrow('cwd does not match')
+  f.headers[1] = childHeader
+  f.workspace.sessionIds = []
+  await expect(f.projects.attachWorkflowStepSession(project.id, project.version, attach)).rejects.toThrow('not attached')
+  f.workspace.sessionIds = [f.parent]
   project = await f.projects.attachWorkflowStepSession(project.id, project.version, attach)
+  expect(f.workspace.sessionIds).toEqual([f.parent])
   await expect(f.projects.attachWorkflowStepSession(project.id, project.version, attach)).rejects.toThrow('already attached')
   project = await f.projects.settleWorkflowStep(project.id, project.version, { ...attach, state: 'completed', result: null })
   const next = await f.projects.claimWorkflowStep(project.id, project.version, attach.runId)

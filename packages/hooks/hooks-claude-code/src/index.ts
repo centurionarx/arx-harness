@@ -12,24 +12,20 @@
 import { readFileSync } from 'node:fs'
 import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
-import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import type { Agent, PreStepDecision, SessionStartSource } from '@arx-ai/arx-agent'
 import { createUserMessage } from '@arx-ai/arx-llm'
 import type { ContentBlock, MessageSource } from '@arx-ai/arx-llm'
 import type { UserMessage } from '@arx-ai/arx-session'
 import type {} from '@arx-ai/arx-session-persistence'
 import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@arx-ai/arx-tools'
 import {
-  appendHookInvoked,
-  appendHookResult,
   createDetachedRuns,
-  DEFAULT_HOOK_TIMEOUT_MS,
-  DEFAULT_STDERR_SUMMARY_MAX_CHARS,
-  matchesMatcher,
-  mergeHookOutputs,
+  createHookHandlerIds,
+  createHookLifecycle,
+  createHookPointRunner,
+  resolveHookPolicy,
+  hookPolicyFields,
   preToolDenial,
-  runHook,
-  type HookOutput,
-  type MatcherGroup,
   type MergedHookOutcome,
 } from '@arx-ai/arx-hook-protocol'
 // Pulls in the declaration-merged subagent events and the identity pairing their
@@ -68,37 +64,27 @@ export interface Config {
   defaultTimeoutMs?: number
   /** Character cap for the `hook/result` event's persisted stderr summary. */
   stderrSummaryMaxChars?: number
+  /** Maximum Stop-forced steps per agent turn; zero observes without continuing (default: 8). */
+  maxStopContinuations?: number
+  /** Await SessionStart in the first pre-step, or inject eagerly without a first-request guarantee. */
+  sessionStartMode?: 'blocking' | 'detached'
 }
 
 export const Config: z<Config> = z.object({
   configPath: z.string().required(),
   pluginRoot: z.string(),
   projectDir: z.string(),
-  defaultTimeoutMs: z.number().default(DEFAULT_HOOK_TIMEOUT_MS),
-  stderrSummaryMaxChars: z.number().default(DEFAULT_STDERR_SUMMARY_MAX_CHARS),
+  ...hookPolicyFields(),
 })
 
 /** A stable per-handler id so an invoked/result pair correlates in the log. */
-let handlerCounter = 0
-function nextHandlerId(point: string): string {
-  return `claude-code:${point}:${++handlerCounter}`
-}
+const nextHandlerId = createHookHandlerIds('claude-code')
 
 /** The `{kind:'plugin'}` source stamped on every context this bridge injects. */
 const PLUGIN_SOURCE: MessageSource = { kind: 'plugin', plugin: 'hooks-claude-code' }
 
-/** The summary cap bounds a persisted event field — a positive integer or the slice misbehaves silently. */
-function assertPositiveInteger(name: string, value: number): void {
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error(`hooks-claude-code: ${name} must be a positive integer`)
-  }
-}
-
 export function apply(ctx: Context, config: Config): void {
-  // Validate before config parsing so a bad value cannot be hidden by its early return.
-  const stderrSummaryMaxChars = config.stderrSummaryMaxChars ?? DEFAULT_STDERR_SUMMARY_MAX_CHARS
-  assertPositiveInteger('stderrSummaryMaxChars', stderrSummaryMaxChars)
-  const defaultTimeoutMs = config.defaultTimeoutMs ?? DEFAULT_HOOK_TIMEOUT_MS
+  const policy = resolveHookPolicy(config, name)
   // Parse once at load. A read or parse failure logs and registers nothing.
   let parsed: ClaudeCodeHookConfig = {}
   try {
@@ -116,9 +102,9 @@ export function apply(ctx: Context, config: Config): void {
     return
   }
 
-  // Emit-shaped points run detached, so track their chains; disposal aborts
-  // active hooks and drains continuations before resolving.
-  const detached = createDetachedRuns()
+  const lifecycle = createHookLifecycle<Agent, SessionStartSource>(policy)
+  const detached = lifecycle.runs
+  ctx.on('agent/disposed', ({ agent }) => { lifecycle.forget(agent) })
   // Only the start edge guarantees registry access. Retain each local child
   // through its paired end so stop hooks keep the session workspace after the
   // handle unregisters the agent. Every retained entry relies on that paired
@@ -126,65 +112,32 @@ export function apply(ctx: Context, config: Config): void {
   const subagentChildren = new Map<SubagentRunId, Agent>()
   ctx.effect(() => () => detached.drain(), 'hooks-claude-code: drain detached hook runs')
 
-  /**
-   * Run every command hook configured for `point` whose matcher selects
-   * `matchQuery`, with the per-event `payload` on stdin, and fold the results.
-   * Writes a `hook/invoked`/`hook/result` pair per hook when `opts.turn` names
-   * an open turn. Detached lifecycle points omit the pair. Returns the merged outcome (a neutral,
-   * already-most-restrictive view) for the caller to map onto its extension point
-   * decision. `matchQuery` is the event's matcher subject (tool name, session
-   * source, …); `''` for events that ignore matchers.
-   */
-  async function runPoint(
+  const executePoint = createHookPointRunner(ctx.shell, {
+    groups: parsed, dialect: 'claude-code', policy, runs: detached, nextHandlerId,
+    trailingNewline: true,
+    now: () => performance.now(),
+    observeOutput(point, output) {
+      if (output.updatedInput !== undefined) {
+        ctx.logger.warn(`hooks-claude-code: ${point} hook requested updatedInput, which is not yet honored (ignored)`)
+      }
+      if (output.systemMessage !== undefined) {
+        ctx.logger.warn(`hooks-claude-code: ${point} hook emitted a systemMessage, which is not yet surfaced (ignored)`)
+      }
+    },
+  })
+
+  /** Supply Claude project environment and session ownership. */
+  function runPoint(
     point: string,
     matchQuery: string,
     payload: unknown,
     opts: { agent?: Agent; turn?: number; readonly signal: AbortSignal },
   ): Promise<MergedHookOutcome> {
-    const groups: MatcherGroup[] = parsed[point] ?? []
-    const outputs: HookOutput[] = []
-    // Run the hook in the agent's session workspace (the `session/new` cwd on the session
-    // header), not the executor or entry-point process's launch dir.
-    const workdir = opts.agent?.session.header.cwd
-    // CLAUDE_PROJECT_DIR: an explicit config value wins; otherwise default it to the session
-    // workspace (the same dir the hook runs in).
-    const projectDir = config.projectDir ?? workdir
-    const hookEnv = projectDir !== undefined ? { CLAUDE_PROJECT_DIR: projectDir } : undefined
-    for (const group of groups) {
-      if (!matchesMatcher(group.matcher, matchQuery, 'claude-code')) continue
-      for (const hook of group.hooks) {
-        const handlerId = nextHandlerId(point)
-        const session = opts.agent?.session
-        if (session && opts.turn !== undefined) {
-          appendHookInvoked(session, {
-            turn: opts.turn, point, dialect: 'claude-code', handlerId,
-            ...group.matcher !== undefined ? { matcher: group.matcher } : {},
-          })
-        }
-        const { output, durationMs } = await runHook(ctx.shell, hook, {
-          payload,
-          defaultTimeoutMs,
-          ...hookEnv ? { env: hookEnv } : {},
-          ...workdir !== undefined ? { cwd: workdir } : {},
-          signal: opts.signal,
-          trailingNewline: true,
-          // Discard a `hookSpecificOutput` block whose `hookEventName` names a
-          // different event than the one firing (the schemas key it by event).
-          expectedEventName: point,
-        }, () => performance.now())
-        outputs.push(output)
-        if (output.updatedInput !== undefined) {
-          ctx.logger.warn(`hooks-claude-code: ${point} hook requested updatedInput, which is not yet honored (ignored)`)
-        }
-        if (output.systemMessage !== undefined) {
-          ctx.logger.warn(`hooks-claude-code: ${point} hook emitted a systemMessage, which is not yet surfaced (ignored)`)
-        }
-        if (session && opts.turn !== undefined) {
-          appendHookResult(session, { turn: opts.turn, point, handlerId, output, stderrSummaryMaxChars, durationMs })
-        }
-      }
-    }
-    return mergeHookOutputs(outputs)
+    const projectDir = config.projectDir ?? opts.agent?.session.header.cwd
+    return executePoint({
+      point, matchQuery, payload, session: opts.agent?.session, turn: opts.turn, signal: opts.signal,
+      ...projectDir !== undefined ? { env: { CLAUDE_PROJECT_DIR: projectDir } } : {},
+    })
   }
 
   /** Build additional model context from hook output, or return undefined when empty. */
@@ -199,12 +152,18 @@ export function apply(ctx: Context, config: Config): void {
     return [ours, ...theirs ?? []]
   }
 
-  // SessionStart injects context when its detached hook resolves; a slow hook
-  // may miss the first request.
-  // TODO(session-start-gating): add a startup gate before promising first-turn delivery.
+  // Blocking startup belongs to the first claimed turn, including resumed sessions.
+  // Context enters only through the accepted pre-step decision, which the driver logs.
   ctx.on('agent/session-start', ({ agent, source }) => {
-    detached.track(runPoint('SessionStart', source, sessionStartPayload(ctx, agent, source), { agent, signal: detached.signal })
+    if (policy.sessionStartMode === 'blocking') {
+      lifecycle.start(agent, source)
+      return
+    }
+    const owned = createDetachedRuns()
+    agent.ctx.effect(() => () => owned.drain(), 'hooks-claude-code: drain agent startup')
+    const run = runPoint('SessionStart', source, sessionStartPayload(ctx, agent, source), { agent, signal: owned.signal })
       .then((merged) => {
+        if (owned.signal.aborted || detached.signal.aborted) return
         if (merged.stop) {
           agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by SessionStart hook' })
           return
@@ -213,8 +172,27 @@ export function apply(ctx: Context, config: Config): void {
         if (context) agent.inject(context)
       })
       .catch((error: unknown) => {
-        ctx.logger.warn(`hooks-claude-code: SessionStart hook failed: ${String(error)}`)
-      }))
+        if (!owned.signal.aborted && !detached.signal.aborted) {
+          ctx.logger.warn(`hooks-claude-code: SessionStart hook failed: ${String(error)}`)
+        }
+      })
+    owned.track(run)
+    detached.track(run)
+  })
+
+  ctx.on('agent/pre-step', async ({ agent, turn, signal }, next): Promise<PreStepDecision> => {
+    const source = lifecycle.takeStart(agent)
+    if (source === undefined) return next()
+    const merged = await runPoint('SessionStart', source, sessionStartPayload(ctx, agent, source), { agent, turn, signal })
+    if (merged.stop) {
+      agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by SessionStart hook' })
+      return { kind: 'reject' }
+    }
+    const downstream = await next()
+    if (signal.aborted || detached.signal.aborted) return { kind: 'reject' }
+    const context = contextFrom(merged)
+    if (!context || downstream.kind !== 'enter') return downstream
+    return { kind: 'enter', messages: [context, ...downstream.messages] }
   })
 
   // --- UserPromptSubmit → PreStepDecision. The prompt text is the payload; no
@@ -276,18 +254,16 @@ export function apply(ctx: Context, config: Config): void {
     }
   })
 
-  // A blocking Stop hook steers at the stopping boundary, which makes the
-  // machine observe pending input and run another step.
-  // TODO(stop-loop-guard): cap consecutive forced continuations; hooks must self-limit meanwhile.
+  // The limit applies to steering, not hook execution: exhausted hooks still observe Stop.
   ctx.on('agent/turn-stopping', async ({ agent, turn, signal }): Promise<void> => {
-    const merged = await runPoint('Stop', '', stopPayload(ctx, agent), { agent, turn, signal })
-    if (merged.decision === 'deny') {
-      // A blocking Stop hook forces continuation.
-      const text = merged.reason ?? 'continue: blocked by Stop hook'
-      agent.steer(createUserMessage({ content: [{ type: 'text', text }], source: PLUGIN_SOURCE }))
-    }
+    const active = lifecycle.stopActive(agent, turn)
+    const merged = await runPoint('Stop', '', stopPayload(ctx, agent, active), { agent, turn, signal })
+    lifecycle.settleStop(agent, turn, signal, merged, {
+      halt(reason) { agent.cancel({ kind: 'hook', reason }) },
+      steer(text) { agent.steer(createUserMessage({ content: [{ type: 'text', text }], source: PLUGIN_SOURCE })) },
+      limit() { ctx.logger.warn(`hooks-claude-code: Stop continuation limit (${policy.maxStopContinuations}) reached for agent ${agent.id}, turn ${turn}`) },
+    })
   })
-
   // SubagentStart may inject child context; SubagentStop only observes. Both
   // use the live child's workspace and the generic agent-type matcher subject.
   ctx.on('subagent/start', (info) => {
@@ -296,9 +272,11 @@ export function apply(ctx: Context, config: Config): void {
     detached.track(runPoint('SubagentStart', SUBAGENT_TYPE, subagentPayload(ctx, 'SubagentStart', info, child), { ...child ? { agent: child } : {}, signal: detached.signal })
       .then((merged) => {
         const context = contextFrom(merged)
-        if (context && child) child.inject(context)
+        if (context && child && !detached.signal.aborted) child.inject(context)
       })
-      .catch((error: unknown) => { ctx.logger.warn(`hooks-claude-code: SubagentStart hook failed: ${String(error)}`) }))
+      .catch((error: unknown) => {
+        if (!detached.signal.aborted) ctx.logger.warn(`hooks-claude-code: SubagentStart hook failed: ${String(error)}`)
+      }))
   })
   ctx.on('subagent/end', (info) => {
     const child = subagentChildren.get(info.runId) ?? ctx.get('agents')?.get(info.id)
@@ -354,8 +332,8 @@ function preToolPayload(ctx: Context, exec: ToolExecution): Record<string, unkno
 function postToolPayload(ctx: Context, exec: ToolExecution, result: ToolExecutionResult): Record<string, unknown> {
   return { ...base(ctx, exec.agent, 'PostToolUse'), tool_name: exec.name, tool_input: exec.arguments, tool_use_id: exec.callId, tool_response: blocksToText(result.content) }
 }
-function stopPayload(ctx: Context, agent: Agent): Record<string, unknown> {
-  return { ...base(ctx, agent, 'Stop'), stop_hook_active: false }
+function stopPayload(ctx: Context, agent: Agent, active: boolean): Record<string, unknown> {
+  return { ...base(ctx, agent, 'Stop'), stop_hook_active: active }
 }
 /**
  * Build a SubagentStart/SubagentStop payload from the CC base (the child's

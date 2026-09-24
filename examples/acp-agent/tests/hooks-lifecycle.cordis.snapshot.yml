@@ -1,0 +1,39 @@
+- id: llm-replay
+  name: '@arx-ai/arx-llm-replay'
+  config:
+    providers:
+      - id: deepseek-official
+        name: DeepSeek
+        models:
+          - id: deepseek-v4-flash
+- id: subprocess
+  name: '@arx-ai/arx-subprocess-local'
+- id: shell
+  name: '@arx-ai/arx-pwsh-local'
+- id: shell-env
+  name: '@arx-ai/arx-shell-env'
+- id: acp-agent
+  name: '@arx-ai/arx-acp-demo'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash
+    persistenceRoot: !!js process.env.ARX_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+    persistenceCompression: none
+    workspaceContext: false
+    skills:
+      enabled: false
+    goals: false
+    toolBash: false
+    persona: You are a concise snapshot agent working in {{cwd}}.
+- id: hooks-claude-code
+  name: '@arx-ai/arx-hooks-claude-code'
+  disabled: !!js '!process.env.ARX_CC_HOOKS'
+  config:
+    configPath: !!js process.env.ARX_CC_HOOKS
+    maxStopContinuations: 1
+- id: hooks-codex
+  name: '@arx-ai/arx-hooks-codex'
+  disabled: !!js '!process.env.ARX_CODEX_HOOKS'
+  config:
+    configPath: !!js process.env.ARX_CODEX_HOOKS
+    maxStopContinuations: 1

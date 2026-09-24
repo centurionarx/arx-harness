@@ -553,6 +553,9 @@ importers:
       '@arx-ai/arx-project':
         specifier: workspace:^
         version: link:../packages/project/project
+      '@arx-ai/arx-project-runner':
+        specifier: workspace:^
+        version: link:../packages/project/project-runner
       '@arx-ai/arx-pwsh-local':
         specifier: workspace:*
         version: link:../packages/shell/pwsh-local
@@ -5338,6 +5341,10 @@ importers:
         version: link:../../../vendor/cordis
 
   packages/hooks/hook-protocol:
+    dependencies:
+      '@arx-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@arx-ai/arx-invariants':
         specifier: workspace:^
@@ -6445,9 +6452,18 @@ importers:
       '@arx-ai/arx-agent':
         specifier: workspace:^
         version: link:../../core/agent
+      '@arx-ai/arx-app-boot':
+        specifier: workspace:^
+        version: link:../../boot/app-boot
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-loader-smoke':
+        specifier: workspace:^
+        version: link:../../test-support/loader-smoke
       '@arx-ai/arx-project':
         specifier: workspace:^
         version: link:../project
@@ -8959,6 +8975,10 @@ importers:
         version: link:../../../vendor/cordis
 
   packages/util/atomic-write:
+    dependencies:
+      koffi:
+        specifier: ^3.1.0
+        version: 3.1.1
     devDependencies:
       '@arx-ai/arx-invariants':
         specifier: workspace:^

@@ -14,7 +14,7 @@ The web seam reports its own topology, and the portal renders it the way the Mod
 
 Exa and Perplexity each install a settings section over their own `Config`, read their options at every search, resolve the key through `apiKeyEnv` — an inlined `apiKey`, then the managed credential store, then the launch environment, re-reading the store when that reference changes — and declare themselves in the directory. `apiproxy` serves `web.providers`: registered providers joined with the directory, plus the selection the next search would resolve. `ui-settings-web` is the browser half: one row per provider with its usability and key state, a select that pins a provider or hands the choice back to the seam's rules, and a key control writing through the credentials domain under the reference the provider's section names.
 
-`arx-web-app` mounts both shipped providers. The base layer keeps mounting none: a provider is a deployment's decision, and base is not a deployment. The portal is, and it is the one surface with a settings page to resolve the ambiguity its own composition creates.
+`arx-web-app` mounts both shipped providers with explicit credential references, as specified by the [credential onboarding decision](../bug-fix/2026-09-21-web-search-credential-onboarding.md). The base layer keeps mounting none: a provider is a deployment's decision, and base is not a deployment. The portal is, and it is the one surface with a settings page to resolve the ambiguity its own composition creates.
 
 ## Consequences
 
@@ -22,7 +22,7 @@ Both providers are dormant without a key — `available()` is false — so a por
 
 A key saved through the portal reaches the provider that resolves it, which it never did before: the providers read the launch environment alone. The `web-search-deepseek` card in `ui-settings-plugins` is gone with the namespace it named; that package ships the shell and agent-loop cards only.
 
-`arx-web` depends on `@arx-ai/arx-settings`, matching `arx-shell`, and exposes a `./types` subpath the remotes assembly reads event merges from, the way `arx-llm` does. Fetch publishes none of this; its directory follows when a second fetch provider needs configuring. The web e2e lane still stages the retired second locale, so the section's assembled-application transcript waits on that migration.
+`arx-web` depends on `@arx-ai/arx-settings`, matching `arx-shell`, and exposes a `./types` subpath the remotes assembly reads event merges from, the way `arx-llm` does. Fetch publishes none of this; its directory follows when a second fetch provider needs configuring. The [browser onboarding scenario](../../../../apps/web/tests/web-search-settings.e2e.ts) covers the shipped settings section through the real composition.
 
 ## Alternatives considered
 

@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "Start-Sleep -Milliseconds 30; [Console]::Out.WriteLine('{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Startup guidance arrived before the first request.\"}}')"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[Console]::Error.WriteLine('Also reply with the single word SECOND, then stop.'); exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}

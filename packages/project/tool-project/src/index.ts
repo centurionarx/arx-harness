@@ -63,6 +63,7 @@ const ACTIONS = [
   'start_workflow',
   'execute_workflow',
   'claim_workflow_step',
+  'attach_workflow_step_session',
   'settle_workflow_step',
   'reconcile_workflow',
 ] as const
@@ -74,7 +75,7 @@ const DESCRIPTION = `Manage durable projects linked to registered workspaces. Re
 
 Prompts retain purpose, tags, examples, and small deterministic evaluation cases across immutable revisions. start_prompt_evaluation creates an ordinary bounded driver run over real child sessions; execute it, then finalize_prompt_evaluation records substring/JSON acceptance, latency, and only known token usage. Truncated output remains explicitly inconclusive. snapshot_skills reads exact files from a 40-hex Git commit through the optional skill-git service and returns logged provenance. save_prompt snapshots the template, variable schema, and each selected skill's repository, commit, path, and full content. render_prompt returns the effective rendered prompt together with those skill snapshots in this tool result, making the actual model-visible material reconstructable from the session log.
 
-Workflows are immutable revisions of explicitly named dependency steps. start_workflow reserves a bounded driver run pinned to the current exact approved plan and the actual calling agent; it never accepts a caller-supplied parent session. execute_workflow asks the optional project runner to drive that run through owned child agents. claim_workflow_step persists one deterministic ready-step claim, attempt, and inputs before returning it; the claim action does not launch a session or continue automatically. After executing that step, call settle_workflow_step, then claim again. A restart changes running work to uncertain; reconcile_workflow must explicitly retry or fail it.`
+Workflows are immutable revisions of explicitly named dependency steps. start_workflow reserves a bounded driver run pinned to the current exact approved plan and the actual calling agent; it never accepts a caller-supplied parent session. execute_workflow asks the optional project runner to drive that run through owned child agents. claim_workflow_step persists one deterministic ready-step claim, attempt, and inputs before returning it; the claim action does not launch a session or continue automatically. For manual execution, claim_workflow_step takes input {run_id}; launch a direct child from this same parent, then attach_workflow_step_session with input {run_id, step_id, session_id}. The child must use the project workspace. After the child finishes, settle_workflow_step takes input {run_id, step_id, state: "completed", result} or {run_id, step_id, state: "failed", error}; then claim again. Manual claims, attachments, settlements, and reconciliation require the original parent session. A restart changes running work to uncertain; reconcile_workflow must explicitly retry or fail it.`
 
 function fail(subject: string): never {
   throw new TypeError(`project tool: ${subject}`)
@@ -289,7 +290,7 @@ export function apply(ctx: Context, config: Config): void {
   ctx.systemPrompt.section({
     name: `tool:${toolName}`,
     order: 116,
-    text: `Use ${toolName} for durable work that the user organizes as a project: read the current record before mutations, preserve stable item and step ids across revisions, wait for exact revision approval through the trusted project UI before executing a plan, and attach evidence before marking a task verified. Render a saved prompt before using it so its effective text and selected skill sources are recorded in the tool result. Workflow claims reserve work only; execute the returned step explicitly, settle it, then claim again. Never assume an uncertain run is safe to retry.`,
+    text: `Use ${toolName} for durable work that the user organizes as a project: read the current record before mutations, preserve stable item and step ids across revisions, wait for exact revision approval through the trusted project UI before executing a plan, and attach evidence before marking a task verified. Render a saved prompt before using it so its effective text and selected skill sources are recorded in the tool result. Workflow claims reserve work only; launch the returned step in a direct child, attach its session with attach_workflow_step_session, settle its result, then claim again from the original parent. Never assume an uncertain run is safe to retry.`,
   })
   ctx.tools.register(defineTool({
     name: toolName,
@@ -357,6 +358,15 @@ export function apply(ctx: Context, config: Config): void {
         ))
       }
       const { projectId, expectedVersion } = projectArgs(args.project_id, args.expected_version)
+      const ownedRunId = async () => {
+        if (exec.agent === undefined) fail(`${action} requires an agent-owned tool call`)
+        const runId = ProjectWorkflowRunId(stringField(input, 'run_id'))
+        const project = await ctx.projects.get(projectId)
+        if (project?.runs.find(run => run.id === runId)?.parentSessionId !== exec.agent.session.id) {
+          fail(`${action} requires the original parent session of an existing workflow run`)
+        }
+        return runId
+      }
       switch (action) {
         case 'save_plan':
           return json(await ctx.projects.savePlan(projectId, expectedVersion, decodePlan(input)))
@@ -404,14 +414,20 @@ export function apply(ctx: Context, config: Config): void {
           return json(await ctx.projects.claimWorkflowStep(
             projectId,
             expectedVersion,
-            ProjectWorkflowRunId(stringField(input, 'run_id')),
+            await ownedRunId(),
           ))
+        case 'attach_workflow_step_session':
+          return json(await ctx.projects.attachWorkflowStepSession(projectId, expectedVersion, {
+            runId: await ownedRunId(),
+            stepId: stringField(input, 'step_id') as ProjectWorkflowStepId,
+            sessionId: SessionId(stringField(input, 'session_id')),
+          }))
         case 'settle_workflow_step': {
           const state = stringField(input, 'state')
           if (state !== 'completed' && state !== 'failed') fail('workflow step state must be completed or failed')
           const error = optionalString(input, 'error')
           const request: SettleWorkflowStepRequest = {
-            runId: ProjectWorkflowRunId(stringField(input, 'run_id')),
+            runId: await ownedRunId(),
             stepId: stringField(input, 'step_id') as ProjectWorkflowStepId,
             state,
             ...input['result'] === undefined ? {} : { result: input['result'] },
@@ -424,7 +440,7 @@ export function apply(ctx: Context, config: Config): void {
           if (state !== 'pending' && state !== 'failed') fail('reconciled workflow state must be pending or failed')
           const error = optionalString(input, 'error')
           return json(await ctx.projects.reconcileWorkflowRun(projectId, expectedVersion, {
-            runId: ProjectWorkflowRunId(stringField(input, 'run_id')),
+            runId: await ownedRunId(),
             state,
             ...error === undefined ? {} : { error },
           }))

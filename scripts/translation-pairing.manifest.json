@@ -1,6 +1,12 @@
 {
   "included": [
     "README.md",
+    "docs/user/index.md",
+    "docs/user/guide/index.md",
+    "docs/user/guide/providers.md",
+    "docs/user/guide/platforms.md",
+    "docs/user/guide/security.md",
+    "docs/user/guide/python-sdk.md",
     "docs/i18n/README.md",
     "docs/i18n/translation-rules.md",
     ".agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md"

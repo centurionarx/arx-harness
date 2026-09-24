@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-project-runner",
   "description": "Resume saved project steps through owned subagents and durable checkpoints",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "publishConfig": {
     "access": "public"
   },
@@ -49,6 +49,9 @@
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-app-boot": "workspace:^",
+    "@arx-ai/arx-loader-smoke": "workspace:^",
+    "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-storage": "workspace:^",
     "@arx-ai/arx-storage-domain": "workspace:^",
     "@arx-ai/arx-storage-json": "workspace:^",

@@ -7,12 +7,13 @@
  * the committed artifact.
  */
 
-import { globSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve, sep } from 'node:path'
+import { existsSync, globSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, relative, resolve, sep } from 'node:path'
 import ts from 'typescript'
 import { LINK_MAP } from './gen-cordis-catalog.ts'
 import { parseJsDoc, pointer, rawJsDoc } from './jsdoc.ts'
 import { githubSlug } from './verify-md-links.ts'
+import { repositoryConfigHost } from './ts-project.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const OUT = 'docs/config-catalog.md'
@@ -100,11 +101,11 @@ function report(violations: string[]): void {
 }
 
 /** Parse a source file and index its import declarations. */
-function loadFile(abs: string, rel: string, cache: Map<string, FileCtx>): FileCtx {
+function loadFile(abs: string, rel: string, cache: Map<string, FileCtx>, sourceFile?: ts.SourceFile): FileCtx {
   const cached = cache.get(abs)
   if (cached) return cached
-  const text = readFileSync(abs, 'utf8')
-  const sf = ts.createSourceFile(abs, text, ts.ScriptTarget.Latest, true)
+  const text = sourceFile?.text ?? readFileSync(abs, 'utf8')
+  const sf = sourceFile ?? ts.createSourceFile(abs, text, ts.ScriptTarget.Latest, true)
   const imports = new Map<string, { imported: string; specifier: string }>()
   for (const stmt of sf.statements) {
     if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier)) continue
@@ -218,6 +219,85 @@ interface World {
   cache: Map<string, FileCtx>
   /** Workspace package name → repo-relative package dir. */
   pkgDirByName: Map<string, string>
+}
+
+interface SchemaResolver {
+  checker: ts.TypeChecker
+  /** Reject field bindings that can be reassigned, mutated, or escape construction. */
+  stableBinding(symbol: ts.Symbol, seen?: Set<ts.Symbol>): boolean
+}
+
+/** Bind catalog sources with workspace imports pointing at source, never built exports. */
+function createSchemaResolver(world: World): SchemaResolver {
+  const configPath = resolve(world.scanRoot, 'tsconfig.host.json')
+  const parsed = existsSync(configPath)
+    ? ts.getParsedCommandLineOfConfigFile(configPath, {}, repositoryConfigHost)
+    : undefined
+  if (parsed?.errors.length) report(parsed.errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')))
+  const paths = Object.fromEntries([...world.pkgDirByName].map(([pkg, dir]) => [pkg, [resolve(world.scanRoot, dir, 'src/index.ts')]]))
+  const program = ts.createProgram(Object.values(paths).flat(), {
+    ...parsed?.options,
+    paths: { ...parsed?.options.paths, ...paths },
+    noEmit: true,
+    noLib: true,
+    types: [],
+  })
+  for (const sf of program.getSourceFiles()) {
+    const abs = resolve(sf.fileName)
+    const rel = relative(world.scanRoot, abs).split(sep).join('/')
+    if (rel.startsWith('packages/')) loadFile(abs, rel, world.cache, sf)
+  }
+  const checker = program.getTypeChecker()
+  let references: Map<ts.Symbol, ts.Identifier[]> | undefined
+  const stableBinding = (symbol: ts.Symbol, seen = new Set<ts.Symbol>()): boolean => {
+    if (seen.has(symbol)) return true
+    seen.add(symbol)
+    if (!references) {
+      const index = new Map<ts.Symbol, ts.Identifier[]>()
+      references = index
+      const visit = (node: ts.Node): void => {
+        if (ts.isIdentifier(node)) {
+          const local = ts.isShorthandPropertyAssignment(node.parent)
+            ? checker.getShorthandAssignmentValueSymbol(node.parent)
+            : checker.getSymbolAtLocation(node)
+          const target = local && (local.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(local) : local)
+          if (target) {
+            const uses = index.get(target) ?? []
+            uses.push(node)
+            index.set(target, uses)
+          }
+        }
+        ts.forEachChild(node, visit)
+      }
+      for (const sf of program.getSourceFiles()) if (!sf.isDeclarationFile) visit(sf)
+    }
+    return (references.get(symbol) ?? []).every((name) => {
+      let use: ts.Node = name
+      let parent = use.parent
+      if (ts.isImportSpecifier(parent) || ts.isExportSpecifier(parent) || ts.isImportClause(parent)
+        || ts.isNamespaceImport(parent) || ts.isTypeQueryNode(parent)) return true
+      if ((ts.isVariableDeclaration(parent) || ts.isFunctionDeclaration(parent)) && parent.name === use) return true
+      if (ts.isPropertyAccessExpression(parent) && parent.name === use) { use = parent; parent = use.parent }
+      while (ts.isAsExpression(parent) || ts.isSatisfiesExpression(parent) || ts.isParenthesizedExpression(parent)) {
+        use = parent
+        parent = use.parent
+      }
+      if (ts.isExportAssignment(parent)) return true
+      if (ts.isSpreadAssignment(parent)) return true
+      if (ts.isCallExpression(parent)) {
+        if (parent.expression === use) return !parent.questionDotToken && parent.arguments.length === 0
+        return parent.arguments[0] === use && ts.isPropertyAccessExpression(parent.expression)
+          && parent.expression.name.text === 'object'
+      }
+      if (ts.isVariableDeclaration(parent) && parent.initializer === use && ts.isIdentifier(parent.name)
+        && ts.isVariableDeclarationList(parent.parent) && (parent.parent.flags & ts.NodeFlags.Const)) {
+        const alias = checker.getSymbolAtLocation(parent.name)
+        return alias !== undefined && stableBinding(alias, seen)
+      }
+      return false
+    })
+  }
+  return { checker, stableBinding }
 }
 
 /** How a schema key path fared against the declared config type: definitely
@@ -409,19 +489,90 @@ function unwrapExpr(expr: ts.Expression): ts.Expression {
   return e
 }
 
+/** Follow value imports and const aliases without evaluating their initializers. */
+function staticValue(resolver: SchemaResolver, expr: ts.Expression, seen: Set<ts.Node>): ts.Node | undefined {
+  const { checker } = resolver
+  const value = unwrapExpr(expr)
+  if (seen.has(value)) return undefined
+  seen.add(value)
+  if (!ts.isIdentifier(value) && !ts.isPropertyAccessExpression(value)) return value
+  const local = ts.isShorthandPropertyAssignment(value.parent)
+    ? checker.getShorthandAssignmentValueSymbol(value.parent)
+    : checker.getSymbolAtLocation(value)
+  const symbol = local && (local.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(local) : local)
+  const decl = symbol?.valueDeclaration
+  if (!decl || decl.getSourceFile().isDeclarationFile || !resolver.stableBinding(symbol)) return undefined
+  if (ts.isFunctionDeclaration(decl)) return decl
+  if (ts.isVariableDeclaration(decl) && ts.isVariableDeclarationList(decl.parent)
+    && (decl.parent.flags & ts.NodeFlags.Const) && decl.initializer) {
+    return staticValue(resolver, decl.initializer, seen)
+  }
+  return undefined
+}
+
+/** Resolve literal field records and synchronous zero-argument, single-return factories. */
+function schemaFields(
+  resolver: SchemaResolver,
+  expr: ts.Expression,
+  where: string,
+  violations: string[],
+  seen = new Set<ts.Node>(),
+): Map<string, ts.Expression> {
+  const fields = new Map<string, ts.Expression>()
+  const fail = (reason: string): Map<string, ts.Expression> => {
+    violations.push(`${where}: schema fields '${expr.getText()}' ${reason}.`)
+    return fields
+  }
+  const value = staticValue(resolver, expr, seen)
+  if (!value) return fail('are unresolved, mutable, or cyclic')
+  if (ts.isCallExpression(value)) {
+    if (value.arguments.length || value.questionDotToken) return fail('require a non-optional zero-argument factory call')
+    const factory = staticValue(resolver, value.expression, seen)
+    if (!factory || !(ts.isFunctionDeclaration(factory) || ts.isFunctionExpression(factory) || ts.isArrowFunction(factory))
+      || factory.parameters.length || factory.asteriskToken
+      || factory.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword) || !factory.body) {
+      return fail('require a synchronous zero-parameter factory')
+    }
+    const body = factory.body
+    const statement = ts.isBlock(body) && body.statements.length === 1 ? body.statements[0] : undefined
+    const result = ts.isBlock(body) ? statement && ts.isReturnStatement(statement) ? statement.expression : undefined : body
+    if (!result) return fail('require a single return expression without other statements')
+    return schemaFields(resolver, result, where, violations, seen)
+  }
+  if (!ts.isObjectLiteralExpression(value)) return fail('must resolve to an object literal')
+  for (const prop of value.properties) {
+    if (ts.isSpreadAssignment(prop)) {
+      for (const [key, initializer] of schemaFields(resolver, prop.expression, where, violations, new Set(seen))) {
+        fields.set(key, initializer)
+      }
+    } else if ((ts.isPropertyAssignment(prop) || ts.isShorthandPropertyAssignment(prop))
+      && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name) || ts.isNumericLiteral(prop.name))
+      && prop.name.text !== '__proto__') {
+      fields.set(prop.name.text, ts.isPropertyAssignment(prop) ? prop.initializer : prop.name)
+    } else {
+      violations.push(`${where}: schema object property '${prop.getText()}' is not a plain key.`)
+    }
+  }
+  return fields
+}
+
 /**
  * Statically walk a schemastery schema expression to its key paths plus the
  * packages whose schemas an intersect composes. A key path is the top-level
  * key or a nested path through object/array compositions (`agents[].id`).
  * Handles the declaration forms the repo uses — `z.object({…})` (possibly behind
- * chained calls) and `z.intersect([X.Config, …])` — and hard-errors on
+ * chained calls), literal/const/factory object fields (with last-key-wins
+ * spreads), and `z.intersect([X.Config, …])` — and hard-errors on
  * anything else, so a schema the walk cannot see fails the gate instead of
  * silently thinning it. Nested values that are neither `object` nor `array`
  * compositions (primitives, unions, dynamic-key dicts) contribute no paths.
+ * Named field values remain opaque unless they contain inline object/array
+ * compositions; only field-record expansion resolves bindings and factories.
  */
 function walkSchemaExpr(
   ctx: FileCtx,
   expr: ts.Expression,
+  resolver: SchemaResolver,
   where: string,
   violations: string[],
 ): { keys: string[]; composes: string[] } {
@@ -429,25 +580,33 @@ function walkSchemaExpr(
   const composes: string[] = []
   // Nested paths under one object property's VALUE expression: recurse through
   // chained refinements toward the base call, descending into object/array.
-  const collectValuePaths = (value: ts.Expression, base: string): void => {
+  const collectValuePaths = (value: ts.Expression, base: string, seen = new Set<ts.Node>()): void => {
     const call = unwrapExpr(value)
     if (!ts.isCallExpression(call) || !ts.isPropertyAccessExpression(call.expression)) return
+    if (seen.has(call)) {
+      violations.push(`${where}: schema object/array composition at '${base}' is cyclic.`)
+      return
+    }
+    seen.add(call)
     const method = call.expression.name.text
-    if (method === 'object' && call.arguments[0] && ts.isObjectLiteralExpression(call.arguments[0])) {
-      for (const prop of call.arguments[0].properties) {
-        if (!ts.isPropertyAssignment(prop)) continue
-        const key = ts.isStringLiteral(prop.name) ? prop.name.text : prop.name.getText(ctx.sf)
-        keys.push(`${base}.${key}`)
-        collectValuePaths(prop.initializer, `${base}.${key}`)
-      }
+    if (method === 'object' && call.arguments[0]) {
+      const fields = unwrapExpr(call.arguments[0])
+      if (ts.isObjectLiteralExpression(fields)) collectObjectPaths(fields, base, seen)
       return
     }
     if (method === 'array' && call.arguments[0]) {
-      collectValuePaths(call.arguments[0], `${base}[]`)
+      collectValuePaths(call.arguments[0], `${base}[]`, seen)
       return
     }
     const inner = unwrapExpr(call.expression.expression)
-    if (ts.isCallExpression(inner)) collectValuePaths(inner, base)
+    if (ts.isCallExpression(inner)) collectValuePaths(inner, base, seen)
+  }
+  const collectObjectPaths = (fields: ts.Expression, base: string, seen = new Set<ts.Node>()): void => {
+    for (const [key, value] of schemaFields(resolver, fields, where, violations, new Set(seen))) {
+      const path = base ? `${base}.${key}` : key
+      keys.push(path)
+      collectValuePaths(value, path, new Set(seen))
+    }
   }
   const visit = (e: ts.Expression): void => {
     const call = unwrapExpr(e)
@@ -456,16 +615,8 @@ function walkSchemaExpr(
       return
     }
     const method = call.expression.name.text
-    if (method === 'object' && call.arguments[0] && ts.isObjectLiteralExpression(call.arguments[0])) {
-      for (const prop of call.arguments[0].properties) {
-        if (ts.isPropertyAssignment(prop) || ts.isShorthandPropertyAssignment(prop)) {
-          const key = ts.isStringLiteral(prop.name) ? prop.name.text : prop.name.getText(ctx.sf)
-          keys.push(key)
-          if (ts.isPropertyAssignment(prop)) collectValuePaths(prop.initializer, key)
-        } else {
-          violations.push(`${where}: schema object property '${prop.getText(ctx.sf)}' is not a plain key.`)
-        }
-      }
+    if (method === 'object' && call.arguments[0]) {
+      collectObjectPaths(call.arguments[0], '')
       return
     }
     if (method === 'intersect' && call.arguments[0] && ts.isArrayLiteralExpression(call.arguments[0])) {
@@ -600,6 +751,7 @@ export function collectConfigCatalog(scanRoot: string = root): CatalogEntry[] {
     manifests.push({ dir, pkg })
   }
   const world: World = { scanRoot, cache, pkgDirByName }
+  const resolver = createSchemaResolver(world)
 
   for (const { dir, pkg } of manifests) {
     const entryRel = `${dir}/src/index.ts`
@@ -719,7 +871,7 @@ export function collectConfigCatalog(scanRoot: string = root): CatalogEntry[] {
     // Statically walk the runtime schema (when one exists) for the subset check.
     const schemaExpr = findSchemaExpr(ctx, pluginClass)
     if (schemaExpr) {
-      const { keys, composes } = walkSchemaExpr(ctx, unwrapExpr(schemaExpr), `${pkg} (${entryRel})`, violations)
+      const { keys, composes } = walkSchemaExpr(ctx, unwrapExpr(schemaExpr), resolver, `${pkg} (${entryRel})`, violations)
       entry.schemaKeys = keys
       entry.schemaComposes = composes
     } else {

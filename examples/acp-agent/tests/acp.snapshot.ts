@@ -66,6 +66,7 @@ const WEB_CONFIG = fileURLToPath(new URL('../web.cordis.yml', import.meta.url))
 const FS_SEARCH_CONFIG = fileURLToPath(new URL('./fs-search.cordis.yml', import.meta.url))
 const PARTIAL_LANDLOCK_CONFIG = fileURLToPath(new URL('../partial-landlock.cordis.yml', import.meta.url))
 const PWSH_CONFIG = fileURLToPath(new URL('./pwsh.cordis.yml', import.meta.url))
+const HOOK_LIFECYCLE_CONFIG = fileURLToPath(new URL('./hooks-lifecycle.cordis.yml', import.meta.url))
 const PERSISTENT_PWSH_CONFIG = fileURLToPath(new URL('./persistent-pwsh.cordis.yml', import.meta.url))
 const BACKGROUND_TASK_ADMISSION_CONFIG = fileURLToPath(
   new URL('../background-job-admission.cordis.yml', import.meta.url),
@@ -574,15 +575,16 @@ const SCENARIOS: Scenario[] = [
   { name: 'hook-codex-invalid-matcher', hasModelTurn: true, recorded: false },
   // The mid-turn interception points fire during a real model turn, so each is recorded with its hook active
   // (the model's reaction to a deny/block/force-continue is part of the captured transcript).
-  // SessionStart/SubagentStart are excluded because detached injection races log
-  // order; SubagentStop writes no transcript, so an expected output could not prove it ran.
-  // Unit tests cover those points; the hook-snapshot-matrix Agent Note owns the rationale.
+  // Detached subagent injection remains best-effort. The authored lifecycle cases
+  // use real PowerShell hooks to pin first-attempt startup and unconditional Stop caps.
   { name: 'hook-cc-promptsubmit-context', hasModelTurn: true, recorded: true },
   { name: 'hook-cc-pretool-deny', hasModelTurn: true, recorded: true },
   { name: 'hook-cc-pretool-ask', hasModelTurn: true, recorded: true },
   { name: 'hook-cc-posttool-block', hasModelTurn: true, recorded: true },
   { name: 'hook-cc-posttool-context', hasModelTurn: true, recorded: true },
   { name: 'hook-cc-stop-continue', hasModelTurn: true, recorded: true },
+  { name: 'hook-cc-lifecycle', hasModelTurn: true, recorded: false, pwshOnly: true, pinsHeader: true, headerClass: 'hook-lifecycle', configPath: HOOK_LIFECYCLE_CONFIG, env: { ARX_CC_HOOKS: './hooks.json' } },
+  { name: 'hook-codex-lifecycle', hasModelTurn: true, recorded: false, pwshOnly: true, headerClass: 'hook-lifecycle', configPath: HOOK_LIFECYCLE_CONFIG, env: { ARX_CODEX_HOOKS: './hooks.json' } },
   { name: 'hook-codex-promptsubmit-context', hasModelTurn: true, recorded: true },
   { name: 'hook-codex-pretool-block', hasModelTurn: true, recorded: true },
   { name: 'hook-codex-posttool-block', hasModelTurn: true, recorded: true },

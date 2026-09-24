@@ -61,7 +61,7 @@ async function harnessWithFiber(
   await ctx.plugin(LocalSubprocessRuntime)
   await ctx.plugin(LocalBashExecutor, { timeoutMs: 10_000 })
   beforeHooks?.(ctx)
-  const hooks = await ctx.plugin(HooksClaude, { configPath: join(configDir, 'hooks.json') })
+  const hooks = await ctx.plugin(HooksClaude, { configPath: join(configDir, 'hooks.json'), sessionStartMode: 'detached' })
   ctx.llm.registerAdapter(['mock'], adapter)
   return { ctx, hooks }
 }

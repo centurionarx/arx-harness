@@ -15,24 +15,20 @@
 import { readFileSync } from 'node:fs'
 import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
-import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
+import type { Agent, PreStepDecision, SessionStartSource } from '@arx-ai/arx-agent'
 import { createUserMessage } from '@arx-ai/arx-llm'
 import type { ContentBlock, MessageSource } from '@arx-ai/arx-llm'
 import type { UserMessage } from '@arx-ai/arx-session'
 import type {} from '@arx-ai/arx-session-persistence'
 import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@arx-ai/arx-tools'
 import {
-  appendHookInvoked,
-  appendHookResult,
   createDetachedRuns,
-  DEFAULT_HOOK_TIMEOUT_MS,
-  DEFAULT_STDERR_SUMMARY_MAX_CHARS,
-  matchesMatcher,
-  mergeHookOutputs,
+  createHookHandlerIds,
+  createHookLifecycle,
+  createHookPointRunner,
+  resolveHookPolicy,
+  hookPolicyFields,
   preToolDenial,
-  runHook,
-  type HookOutput,
-  type MatcherGroup,
   type MergedHookOutcome,
 } from '@arx-ai/arx-hook-protocol'
 import { parseCodexConfig, type CodexHookConfig } from './config.ts'
@@ -56,34 +52,24 @@ export interface Config {
   defaultTimeoutMs?: number
   /** Character cap for the `hook/result` event's persisted stderr summary. */
   stderrSummaryMaxChars?: number
+  /** Maximum Stop-forced steps per agent turn; zero observes without continuing (default: 8). */
+  maxStopContinuations?: number
+  /** Await SessionStart in the first pre-step, or inject eagerly without a first-request guarantee. */
+  sessionStartMode?: 'blocking' | 'detached'
 }
 
 export const Config: z<Config> = z.object({
   configPath: z.string().required(),
   model: z.string().default(''),
-  defaultTimeoutMs: z.number().default(DEFAULT_HOOK_TIMEOUT_MS),
-  stderrSummaryMaxChars: z.number().default(DEFAULT_STDERR_SUMMARY_MAX_CHARS),
+  ...hookPolicyFields(),
 })
 
-let handlerCounter = 0
-function nextHandlerId(point: string): string {
-  return `codex:${point}:${++handlerCounter}`
-}
+const nextHandlerId = createHookHandlerIds('codex')
 
 const PLUGIN_SOURCE: MessageSource = { kind: 'plugin', plugin: 'hooks-codex' }
 
-/** The summary cap bounds a persisted event field — a positive integer or the slice misbehaves silently. */
-function assertPositiveInteger(name: string, value: number): void {
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error(`hooks-codex: ${name} must be a positive integer`)
-  }
-}
-
 export function apply(ctx: Context, config: Config): void {
-  // Validate before config parsing so a bad value cannot be hidden by its early return.
-  const stderrSummaryMaxChars = config.stderrSummaryMaxChars ?? DEFAULT_STDERR_SUMMARY_MAX_CHARS
-  assertPositiveInteger('stderrSummaryMaxChars', stderrSummaryMaxChars)
-  const defaultTimeoutMs = config.defaultTimeoutMs ?? DEFAULT_HOOK_TIMEOUT_MS
+  const policy = resolveHookPolicy(config, name)
   let parsed: CodexHookConfig = {}
   try {
     const raw: unknown = JSON.parse(readFileSync(config.configPath, 'utf8'))
@@ -99,77 +85,34 @@ export function apply(ctx: Context, config: Config): void {
 
   const model = config.model ?? ''
 
-  // SessionStart is the one emit-shaped (detached) point Codex has: track its
-  // run chains so disposal aborts a still-running hook process and drains the
-  // continuation (docs/defensive-patterns.md: dispose must reach quiescence).
-  const detached = createDetachedRuns()
+  const lifecycle = createHookLifecycle<Agent, SessionStartSource>(policy)
+  const detached = lifecycle.runs
+  ctx.on('agent/disposed', ({ agent }) => { lifecycle.forget(agent) })
   ctx.effect(() => () => detached.drain(), 'hooks-codex: drain detached hook runs')
 
-  /**
-   * Run and fold one configured Codex hook point.
-   *
-   * A supplied turn records the hook invocation/result pair inside that open turn.
-   * Detached lifecycle points omit it.
-   */
-  async function runPoint(
+  const executePoint = createHookPointRunner(ctx.shell, {
+    groups: parsed, dialect: 'codex', policy, runs: detached, nextHandlerId,
+    trailingNewline: false,
+    now: () => performance.now(),
+    observeOutput(point, output) {
+      if (output.systemMessage !== undefined) {
+        ctx.logger.warn(`hooks-codex: ${point} hook emitted a systemMessage, which is not yet surfaced (ignored)`)
+      }
+    },
+  })
+
+  /** Supply Codex plain-stdout context policy and session ownership. */
+  function runPoint(
     point: string,
     matchQuery: string,
     payload: unknown,
-    opts: {
-      agent?: Agent
-      turn?: number
-      readonly signal: AbortSignal
-      plainStdoutAsContext?: boolean
-    },
+    opts: { agent?: Agent; turn?: number; readonly signal: AbortSignal; plainStdoutAsContext?: boolean },
   ): Promise<MergedHookOutcome> {
-    const groups: MatcherGroup[] = parsed[point] ?? []
-    const outputs: HookOutput[] = []
-    // Run hooks in the agent's session workspace so relative paths address the
-    // user's project rather than the server launch directory.
-    const workdir = opts.agent?.session.header.cwd
-    for (const group of groups) {
-      // Codex always interprets matchers as regexes; it has no literal fast path.
-      if (!matchesMatcher(group.matcher, matchQuery, 'codex')) continue
-      for (const hook of group.hooks) {
-        const handlerId = nextHandlerId(point)
-        const session = opts.agent?.session
-        if (session && opts.turn !== undefined) {
-          appendHookInvoked(session, {
-            turn: opts.turn, point, dialect: 'codex', handlerId,
-            ...group.matcher !== undefined ? { matcher: group.matcher } : {},
-          })
-        }
-        const { output, durationMs } = await runHook(ctx.shell, hook, {
-          payload,
-          defaultTimeoutMs,
-          ...workdir !== undefined ? { cwd: workdir } : {},
-          signal: opts.signal,
-          trailingNewline: false, // Codex writes stdin without a trailing newline.
-          // Discard a `hookSpecificOutput` block naming a different event.
-          expectedEventName: point,
-        }, () => performance.now())
-        // Clean plain stdout becomes context only when no structured context
-        // exists; nonzero output and raw JSON never leak as prose.
-        if (opts.plainStdoutAsContext === true && output.exitCode === 0
-          && output.additionalContext === undefined
-          && output.stdout.length > 0 && !output.stdout.startsWith('{')) {
-          output.additionalContext = output.stdout
-        }
-        outputs.push(output)
-        // Execution and decision mapping remain in each bridge so dialect
-        // differences stay explicit at their owning extension point.
-        /* jscpd:ignore-start */
-        if (output.systemMessage !== undefined) {
-          ctx.logger.warn(`hooks-codex: ${point} hook emitted a systemMessage, which is not yet surfaced (ignored)`)
-        }
-        if (session && opts.turn !== undefined) {
-          appendHookResult(session, { turn: opts.turn, point, handlerId, output, stderrSummaryMaxChars, durationMs })
-        }
-      }
-    }
-    return mergeHookOutputs(outputs)
+    const { agent, ...execution } = opts
+    return executePoint({ ...execution, point, matchQuery, payload, session: agent?.session })
   }
 
+  /* jscpd:ignore-start */
   function contextFrom(merged: MergedHookOutcome): UserMessage | undefined {
     if (merged.additionalContext.length === 0) return undefined
     const content: ContentBlock[] = merged.additionalContext.map(text => ({ type: 'text', text }))
@@ -181,12 +124,18 @@ export function apply(ctx: Context, config: Config): void {
     return [ours, ...theirs ?? []]
   }
 
-  // SessionStart injects plain stdout when its detached hook resolves; a slow
-  // hook may miss the first request.
-  // TODO(session-start-gating): add a startup gate before promising first-turn delivery.
+  // Blocking startup belongs to the first claimed turn, including resumed sessions.
+  // Context enters only through the accepted pre-step decision, which the driver logs.
   ctx.on('agent/session-start', ({ agent, source }) => {
-    detached.track(runPoint('SessionStart', source, { ...base(ctx, agent, 'SessionStart', model), source }, { agent, plainStdoutAsContext: true, signal: detached.signal })
+    if (policy.sessionStartMode === 'blocking') {
+      lifecycle.start(agent, source)
+      return
+    }
+    const owned = createDetachedRuns()
+    agent.ctx.effect(() => () => owned.drain(), 'hooks-codex: drain agent startup')
+    const run = runPoint('SessionStart', source, { ...base(ctx, agent, 'SessionStart', model), source }, { agent, plainStdoutAsContext: true, signal: owned.signal })
       .then((merged) => {
+        if (owned.signal.aborted || detached.signal.aborted) return
         if (merged.stop) {
           agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by SessionStart hook' })
           return
@@ -194,9 +143,30 @@ export function apply(ctx: Context, config: Config): void {
         const context = contextFrom(merged)
         if (context) agent.inject(context)
       })
-      .catch((error: unknown) => { ctx.logger.warn(`hooks-codex: SessionStart hook failed: ${String(error)}`) }))
-    /* jscpd:ignore-end */
+      .catch((error: unknown) => {
+        if (!owned.signal.aborted && !detached.signal.aborted) {
+          ctx.logger.warn(`hooks-codex: SessionStart hook failed: ${String(error)}`)
+        }
+      })
+    owned.track(run)
+    detached.track(run)
   })
+
+  ctx.on('agent/pre-step', async ({ agent, turn, signal }, next): Promise<PreStepDecision> => {
+    const source = lifecycle.takeStart(agent)
+    if (source === undefined) return next()
+    const merged = await runPoint('SessionStart', source, { ...base(ctx, agent, 'SessionStart', model), source }, { agent, turn, plainStdoutAsContext: true, signal })
+    if (merged.stop) {
+      agent.cancel({ kind: 'hook', reason: merged.stopReason ?? 'halted by SessionStart hook' })
+      return { kind: 'reject' }
+    }
+    const downstream = await next()
+    if (signal.aborted || detached.signal.aborted) return { kind: 'reject' }
+    const context = contextFrom(merged)
+    if (!context || downstream.kind !== 'enter') return downstream
+    return { kind: 'enter', messages: [context, ...downstream.messages] }
+  })
+  /* jscpd:ignore-end */
 
   // UserPromptSubmit → PreStepDecision. Codex supports reject, not rewrite or ask.
   ctx.on('agent/pre-step', async ({ agent, messages, turn, signal }, next): Promise<PreStepDecision> => {
@@ -264,21 +234,16 @@ export function apply(ctx: Context, config: Config): void {
     }
   })
 
-  // A blocking Stop hook steers at the stopping boundary, which makes the
-  // machine observe pending input and run another step.
-  // TODO(stop-loop-guard): Codex supplies `stop_hook_active` so a Stop hook can
-  // avoid continuing the same turn indefinitely. It is always false here, so an
-  // unconditionally blocking hook force-continues every step until it self-limits.
+  // The limit applies to steering, not hook execution: exhausted hooks still observe Stop.
   ctx.on('agent/turn-stopping', async ({ agent, turn, signal }): Promise<void> => {
-    const merged = await runPoint('Stop', '', { ...turnBase(ctx, agent, 'Stop', model), stop_hook_active: false, last_assistant_message: null }, { agent, turn, signal })
+    const active = lifecycle.stopActive(agent, turn)
+    const merged = await runPoint('Stop', '', { ...turnBase(ctx, agent, 'Stop', model), stop_hook_active: active, last_assistant_message: null }, { agent, turn, signal })
     /* jscpd:ignore-end */
-    if (merged.decision === 'deny') {
-      // A blocking Stop hook forces continuation; a block with no reason (exit 2,
-      // empty stderr) still forces it — fall back to a generic steering line
-      // rather than letting the turn stop.
-      const text = merged.reason ?? 'continue: blocked by Stop hook'
-      agent.steer(createUserMessage({ content: [{ type: 'text', text }], source: PLUGIN_SOURCE }))
-    }
+    lifecycle.settleStop(agent, turn, signal, merged, {
+      halt(reason) { agent.cancel({ kind: 'hook', reason }) },
+      steer(text) { agent.steer(createUserMessage({ content: [{ type: 'text', text }], source: PLUGIN_SOURCE })) },
+      limit() { ctx.logger.warn(`hooks-codex: Stop continuation limit (${policy.maxStopContinuations}) reached for agent ${agent.id}, turn ${turn}`) },
+    })
   })
 }
 

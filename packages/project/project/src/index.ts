@@ -961,10 +961,12 @@ export class ProjectService extends TypertRemoteService {
     })
   }
   /**
- * Attach an accepted child session to its already-committed running claim.
+ * Attach a direct child of the pinned parent to its committed running claim.
+ * The parent must remain attached to the project workspace; both session cwds
+ * must resolve to that workspace. Child sessions need no top-level membership.
  * @param projectId - Stable project identifier.
  * @param expectedVersion - Required aggregate CAS version.
- * @param request - Run, step, and workspace-owned child session identifiers.
+ * @param request - Run, step, and direct child session identifiers.
  * @returns The committed aggregate snapshot.
  */
   @Remote
@@ -976,7 +978,8 @@ export class ProjectService extends TypertRemoteService {
     const before = this.requireProject(projectId)
     const beforeRun = before.runs.find(run => run.id === request.runId)
     if (beforeRun?.parentSessionId === undefined) throw new ProjectValidationError('workflow run has no pinned parent session')
-    const header = await this.requireTaskSession(before, request.sessionId)
+    await this.requireTaskSession(before, beforeRun.parentSessionId)
+    const { header } = await this.requireSessionWorkspace(before, request.sessionId)
     if (header.parentSession !== beforeRun.parentSessionId) throw new ProjectValidationError('workflow step session is not a child of the pinned parent session')
     return await this.mutate(projectId, expectedVersion, (current) => {
       const runIndex = current.runs.findIndex(run => run.id === request.runId)
@@ -1248,14 +1251,22 @@ export class ProjectService extends TypertRemoteService {
   }
 
   private async requireTaskSession(project: ProjectRecord, sessionId: SessionId): Promise<SessionHeader> {
+    const { workspace, header } = await this.requireSessionWorkspace(project, sessionId)
+    if (!workspace.sessionIds.includes(sessionId)) {
+      throw new ProjectValidationError(`task session '${sessionId}' is not attached to workspace '${workspace.id}'`)
+    }
+    return header
+  }
+
+  private async requireSessionWorkspace(
+    project: ProjectRecord,
+    sessionId: SessionId,
+  ): Promise<{ workspace: Workspace; header: SessionHeader }> {
     const workspace = this.ctx.workspaceRegistry.get(project.workspaceId)
     if (workspace === undefined) throw new ProjectValidationError(`project workspace '${project.workspaceId}' is no longer registered`)
     const live = this.ctx.get('sessions')?.get(sessionId)
     const header = live?.header ?? (await this.ctx.sessionPersistence.list()).find(candidate => candidate.id === sessionId)
     if (header === undefined) throw new ProjectValidationError(`unknown task session '${sessionId}'`)
-    if (!workspace.sessionIds.includes(sessionId)) {
-      throw new ProjectValidationError(`task session '${sessionId}' is not attached to workspace '${workspace.id}'`)
-    }
     if (header.cwd === undefined) throw new ProjectValidationError(`task session '${sessionId}' has no cwd`)
     let canonicalCwd: string
     try { canonicalCwd = await realpathNormalize(header.cwd) } catch {
@@ -1264,7 +1275,7 @@ export class ProjectService extends TypertRemoteService {
     if (canonicalCwd !== workspace.path) {
       throw new ProjectValidationError(`task session '${sessionId}' cwd does not match workspace '${workspace.id}'`)
     }
-    return header
+    return { workspace, header }
   }
   private validateTaskTransition(task: ProjectTask, next: ProjectTask['state']): void {
     const permitted: Record<ProjectTask['state'], readonly ProjectTask['state'][]> = {

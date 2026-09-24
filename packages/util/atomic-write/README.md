@@ -1,6 +1,6 @@
 # arx-atomic-write
 
-Zero-dependency atomic file replacement shared by file-backed stores that must never leave partial, symlink-hijacked, or wider-than-intended content on disk — the user-settings document (`arx-settings-file`) and the credentials store (`arx-credentials-local`).
+Atomic file replacement with pre-publication flushing, shared by the settings, credentials, and preset-metadata stores. Windows private writes use lazily loaded Koffi bindings to create protected current-user-only files before writing content.
 
 ## Surface
 
@@ -20,11 +20,11 @@ await withFileLock('/home/u/.arx/settings.yaml', async () => {
 
 `writeFileAtomic` commits one already-rendered string. The contract, in the order failures would exploit it:
 
-- **Exclusive-create temp** (`wx`, random suffix): the open refuses to follow a symlink planted at a guessable temp path.
-- **The fresh inode carries `mode` through the rename**: replacing a wider-permission file narrows it without a chmod race. `mode` is required so the permission decision stays visible at every call site (subject to the process umask, like every fresh inode).
-- **`rename` replaces a symlinked target itself**, never writing through to its referent.
-- **Same-directory sibling** keeps the rename on one filesystem, so the swap stays atomic.
-- Parent directories are created; on any failure the temp is removed and the failure rethrown; readers observe either the old or the new complete content.
+- **Exclusive-create staging** uses a random sibling pathname and refuses an existing file or symlink. POSIX permissions are subject to umask. On Windows, mode `0600` creates a protected DACL granting only the current user full access, before any content is written; volumes without persistent ACLs reject private writes. Other Windows modes retain Node's permission semantics.
+- **Content is flushed before publication.** POSIX writes use a file handle and `sync()`; Windows private writes use `FlushFileBuffers`. A failed write, flush, or pre-publication close leaves the destination unchanged and attempts staging cleanup.
+- **Same-directory replacement** replaces a symlink itself rather than its referent. POSIX publication uses `rename`; Windows uses same-volume `MoveFileExW` with write-through. Cross-volume copying is never permitted. Windows access/sharing denials receive at most 500 ms of retry delay for short-lived readers or scanners; permissions are not changed and a persistent denial still rejects.
+- New parent directories are created. `dirMode: 0700` requests protected current-user-only directories on Windows; existing directory access policies are not changed. POSIX creation flushes parent entries, and replacement flushes the destination's parent directory.
+- Once replacement commits, a later directory flush or close failure cannot mean rollback. The operation resolves so callers publish the committed value, and emits `ATOMIC_WRITE_DURABILITY_UNCONFIRMED` without content. Pre-commit failures reject; failed staging cleanup additionally emits `ATOMIC_WRITE_CLEANUP_FAILED`.
 
 `withFileLock` serializes the writers of one file across processes, for the read-render-commit cycles a bare atomic commit cannot make safe on its own. The lock is a `wx`-created `<filename>.lock` sibling, so readers never contend; waiters back off exponentially and fail with a timeout rather than block forever. `EEXIST` identifies contention directly; `EPERM` does so only when a fresh `lstat` confirms that the lock path exists, covering Windows exclusive-create behavior without hiding an unrelated permission failure. A contender never removes the existing lock: age cannot distinguish a crashed owner from a paused live writer.
 
@@ -40,6 +40,6 @@ None; nothing here enters a request prefix.
 
 ## Known Limitations and Deferred Work
 
-- **Atomic, not durable** — no `fsync` of the file or its directory, so after a crash the rename may be observed unwound. The file-backed stores here re-read and republish on boot, keeping durability the caller's policy.
+- **Post-commit durability can remain unconfirmed** — a successful return confirms publication, not an unconditional power-loss guarantee. Operators must investigate durability warnings; filesystem, storage hardware, and remote-volume guarantees still apply. Existing parents and operating-system administrators are outside the private-file policy; restrict the store directory as well.
 - **String content only** — no `Buffer` or stream form until a consumer needs one.
 - **Orphaned locks require operator recovery** — a process that exits while holding the lock can leave the sibling behind. Later writers time out without deleting it; an operator removes it only after verifying that no writer still owns it. File age alone is not safe evidence of abandonment.

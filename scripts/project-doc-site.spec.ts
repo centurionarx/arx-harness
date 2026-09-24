@@ -256,14 +256,14 @@ describe('rewriteMarkdown', () => {
       repoRoot: root,
       repositoryRef: 'abc123',
     })).toBe('[English](../en/guide/a.md) [B](../reference-root/b.md)\n')
-    expect(rewriteMarkdown('[中文](a.pt-BR.md) [B](b.md)\n', {
+    expect(rewriteMarkdown('[Português](a.pt-BR.md) [B](b.md)\n', {
       locale: 'en',
       sourcePath: 'docs/a.md',
       route: 'en/guide/a.md',
       pages: paired,
       repoRoot: root,
       repositoryRef: 'abc123',
-    })).toBe('[中文](../../guide/a.md) [B](../reference/b.md)\n')
+    })).toBe('[Português](../../guide/a.md) [B](../reference/b.md)\n')
   })
 
   it('fails loud when a relative target is missing', () => {
@@ -280,6 +280,30 @@ describe('rewriteMarkdown', () => {
 })
 
 describe('docsPages locale routes', () => {
+  it('publishes the reviewed entry and usage guides in Portuguese', () => {
+    for (const [source, route] of [
+      ['docs/user/index', 'index'],
+      ['docs/user/guide/index', 'guide/quickstart'],
+      ['docs/user/guide/providers', 'guide/providers'],
+      ['docs/user/guide/platforms', 'guide/platforms'],
+      ['docs/user/guide/python-sdk', 'guide/python-sdk'],
+      ['docs/user/guide/security', 'guide/security'],
+    ] as const) {
+      expect(docsPages.find(page => page.route === route + '.md')).toMatchObject({
+        contentLocale: 'pt-BR', source: source + '.pt-BR.md',
+      })
+      expect(docsPages.find(page => page.route === 'en/' + route + '.md')).toMatchObject({
+        contentLocale: 'en-US', source: source + '.md',
+      })
+    }
+  })
+
+  it('keeps root navigation free of the retired Chinese locale', () => {
+    for (const page of docsPages.filter(page => page.locale === 'root')) {
+      expect(page.label + page.section, page.route).not.toMatch(/\p{Script=Han}/u)
+    }
+  })
+
   it('redirects both locale roots to their locale-relative quick-start page', () => {
     const homes = docsPages.filter(page => page.sidebar === null)
     expect(homes.map(page => page.route).sort()).toEqual(['en/index.md', 'index.md'])
@@ -334,14 +358,15 @@ describe('docsPages locale routes', () => {
 
     for (const [englishSource, englishTarget] of entries) {
       for (const locale of ['en', 'root'] as const) {
-        // The tutorial pages are outside the active corpus, so both locale
-        // routes project the English source and its authored English links.
-        const page = docsPages.find(candidate => candidate.locale === locale && candidate.source === englishSource)
+        // The target tutorials stay outside the active corpus even when the
+        // referring quickstart uses its reviewed Portuguese source.
+        const page = docsPages.find(candidate => candidate.locale === locale
+          && candidate.source.replace(/\.pt-BR\.md$/, '.md') === englishSource)
         expect(page, `${locale}:${englishSource}`).toBeDefined()
-        expect(readFileSync(resolve(repositoryRoot, englishSource), 'utf8')).toContain(`](${englishTarget})`)
+        expect(readFileSync(resolve(repositoryRoot, page!.source), 'utf8')).toContain(`](${englishTarget})`)
         expect(rewriteMarkdown(`[Entry](${englishTarget})\n`, {
           locale,
-          sourcePath: englishSource,
+          sourcePath: page!.source,
           route: page!.route,
           pages: docsPages,
           repoRoot: repositoryRoot,
@@ -459,16 +484,16 @@ describe('sidebar ordering', () => {
   })
 
   it('refuses a section with no declared placement', () => {
-    expect(() => sectionSpec('root', '数据结构'))
-      .toThrow('Sidebar section "数据结构" has no placement in the root locale.')
+    expect(() => sectionSpec('root', 'Seção não declarada'))
+      .toThrow('Sidebar section "Seção não declarada" has no placement in the root locale.')
   })
 
   it('declares placements per locale rather than in one shared list', () => {
     // `SDK` labels a group in both locales, so one shared list would have to
-    // rank it against `入门` and against `Guide` at the same position.
-    expect(sectionSpec('root', 'SDK').index).toBeGreaterThan(sectionSpec('root', '入门').index)
+    // rank it against `Primeiros passos` and against `Guide` at the same position.
+    expect(sectionSpec('root', 'SDK').index).toBeGreaterThan(sectionSpec('root', 'Primeiros passos').index)
     expect(sectionSpec('en', 'SDK').index).toBeGreaterThan(sectionSpec('en', 'Guide').index)
-    expect(() => sectionSpec('en', '入门')).toThrow()
+    expect(() => sectionSpec('en', 'Primeiros passos')).toThrow()
     expect(() => sectionSpec('root', 'Guide')).toThrow()
   })
 
@@ -486,9 +511,9 @@ describe('sidebar ordering', () => {
   })
 
   it('collapses the subsystem groups and leaves the smaller ones open', () => {
-    expect(sectionSpec('root', '执行与工具').collapsed).toBe(true)
+    expect(sectionSpec('root', 'Execução e ferramentas').collapsed).toBe(true)
     expect(sectionSpec('en', 'Execution and tools').collapsed).toBe(true)
-    expect(sectionSpec('root', '概念').collapsed).toBeUndefined()
+    expect(sectionSpec('root', 'Conceitos').collapsed).toBeUndefined()
   })
 
   it('gives each page its own position within a section', () => {
@@ -544,7 +569,7 @@ describe('projectedPageContent', () => {
 
   it('omits the source-only body from locale home pages', () => {
     expect(projectedPageContent(
-      '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\n[English](index.md) | 中文\n',
+      '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\n[English](index.md) | Português\n',
       page(null),
     )).toBe('---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n')
   })
@@ -555,10 +580,10 @@ describe('projectedPageContent', () => {
   })
 
   it('drops the language switcher the navigation bar already offers', () => {
-    expect(projectedPageContent('# Guide\n\nEnglish | [中文](./en/guide)\n\nBody.\n', page('pt-br-guide')))
+    expect(projectedPageContent('# Guide\n\nEnglish | [Português](./en/guide)\n\nBody.\n', page('pt-br-guide')))
       .toBe('# Guide\n\nBody.\n')
-    expect(projectedPageContent('# 指南\n\n[English](./en/guide) | 中文\n\n正文。\n', page('pt-br-guide')))
-      .toBe('# 指南\n\n正文。\n')
+    expect(projectedPageContent('# Guia\n\n[English](./en/guide) | Português\n\nConteúdo.\n', page('pt-br-guide')))
+      .toBe('# Guia\n\nConteúdo.\n')
   })
 
   it('drops the repository badge every page links from its footer', () => {
@@ -569,7 +594,7 @@ describe('projectedPageContent', () => {
 
   it('keeps a switcher-shaped line that is not the page header', () => {
     // A tutorial showing the convention must still render the example.
-    const sample = '# Guide\n\nA\n\nB\n\nC\n\nD\n\nE\n\nEnglish | [中文](./x)\n'
+    const sample = '# Guide\n\nA\n\nB\n\nC\n\nD\n\nE\n\nEnglish | [Português](./x)\n'
     expect(projectedPageContent(sample, page('pt-br-guide'))).toBe(sample)
   })
 
@@ -582,14 +607,14 @@ describe('projectedPageContent', () => {
 describe('rawMarkdownPageContent', () => {
   it('keeps the home body the rendered site omits and drops the VitePress frontmatter', () => {
     expect(rawMarkdownPageContent(
-      '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\nEnglish | [中文](./index.md)\n\nBody.\n',
+      '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\nEnglish | [Português](./index.md)\n\nBody.\n',
       'docs/user/index.pt-BR.md',
     )).toBe('# Harness\n\nBody.\n')
   })
 
   it('drops the language switcher and repository badge like the rendered site', () => {
     const badge = '[![](https://img.shields.io/badge/powered_by-arx-4D6BFE?style=flat-square)](https://github.com/centurionarx/arx-harness)'
-    expect(rawMarkdownPageContent(`# Guide\n\nEnglish | [中文](./x)\n\nBody.\n\n${badge}\n`, 'docs/guide.md'))
+    expect(rawMarkdownPageContent(`# Guide\n\nEnglish | [Português](./x)\n\nBody.\n\n${badge}\n`, 'docs/guide.md'))
       .toBe('# Guide\n\nBody.\n')
   })
 
@@ -744,7 +769,7 @@ function relativeTargets(markdown: string): string[] {
 }
 
 describe('llmsTxt', () => {
-  const site = { base: '/x/', title: 'arx Harness', description: '插件化 SDK' }
+  const site = { base: '/x/', title: 'arx Harness', description: 'Agent harness baseado em plugins' }
 
   it('lists every sidebar page as a base-prefixed raw-Markdown link', () => {
     const text = llmsTxt(site)
@@ -756,14 +781,14 @@ describe('llmsTxt', () => {
 
   it('groups the two locale trees under their own headings', () => {
     const text = llmsTxt(site)
-    expect(text.indexOf('## 简体中文')).toBeGreaterThan(-1)
-    expect(text.indexOf('## English')).toBeGreaterThan(text.indexOf('## 简体中文'))
+    expect(text.indexOf('## Português (Brasil)')).toBeGreaterThan(-1)
+    expect(text.indexOf('## English')).toBeGreaterThan(text.indexOf('## Português (Brasil)'))
   })
 
   it('carries the site identity and the raw-Markdown convention', () => {
     const text = llmsTxt(site)
     expect(text.startsWith('# arx Harness\n')).toBe(true)
-    expect(text).toContain('> 插件化 SDK')
+    expect(text).toContain('> Agent harness baseado em plugins')
     expect(text).toMatch(/`\.md`/)
   })
 })

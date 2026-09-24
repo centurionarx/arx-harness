@@ -783,10 +783,14 @@ export interface Config {
   defaultTimeoutMs?: number
   /** Character cap for the `hook/result` event's persisted stderr summary. */
   stderrSummaryMaxChars?: number
+  /** Maximum Stop-forced steps per agent turn; zero observes without continuing (default: 8). */
+  maxStopContinuations?: number
+  /** Await SessionStart in the first pre-step, or inject eagerly without a first-request guarantee. */
+  sessionStartMode?: 'blocking' | 'detached'
 }
 ```
 
-Source: [`packages/hooks/hooks-claude-code/src/index.ts:46`](../packages/hooks/hooks-claude-code/src/index.ts)
+Source: [`packages/hooks/hooks-claude-code/src/index.ts:42`](../packages/hooks/hooks-claude-code/src/index.ts)
 
 <a id="arx-aiarx-hooks-codex"></a>
 
@@ -810,10 +814,14 @@ export interface Config {
   defaultTimeoutMs?: number
   /** Character cap for the `hook/result` event's persisted stderr summary. */
   stderrSummaryMaxChars?: number
+  /** Maximum Stop-forced steps per agent turn; zero observes without continuing (default: 8). */
+  maxStopContinuations?: number
+  /** Await SessionStart in the first pre-step, or inject eagerly without a first-request guarantee. */
+  sessionStartMode?: 'blocking' | 'detached'
 }
 ```
 
-Source: [`packages/hooks/hooks-codex/src/index.ts:45`](../packages/hooks/hooks-codex/src/index.ts)
+Source: [`packages/hooks/hooks-codex/src/index.ts:41`](../packages/hooks/hooks-codex/src/index.ts)
 
 <a id="arx-aiarx-host-apiproxy"></a>
 

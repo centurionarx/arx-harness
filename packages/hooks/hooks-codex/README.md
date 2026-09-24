@@ -20,6 +20,8 @@ const config: Config = {
   configPath: '/path/to/.codex/hooks.json', // required
   model: 'deepseek-v4',                      // optional: stamped on every payload (Codex includes `model`)
   defaultTimeoutMs: 600_000,                 // optional: per-hook timeout when a hook sets none
+  maxStopContinuations: 8,         // optional: maximum Stop-forced steps per agent turn; 0 observes only
+  sessionStartMode: 'blocking',    // optional: first-attempt startup; 'detached' is eager best-effort
   stderrSummaryMaxChars: 500,                // optional: char cap on the hook/result event's persisted stderr summary
 }
 ```
@@ -40,21 +42,27 @@ The hooks themselves run in the agent's session workspace: for the agent-scoped 
 
 | Codex hook | Harness point | Mapping |
 |---|---|---|
-| `SessionStart` | `agent/session-start` (emit) | a plain-stdout hook's output → additionalContext → `agent.inject()` |
+| `SessionStart` | `agent/session-start` + first `agent/pre-step` | default blocking mode awaits startup, then prepends source-attributed context to the accepted decision; detached mode injects best-effort |
 | `UserPromptSubmit` | `agent/pre-step` (waterfall) | `block` (exit 2) → `PreStepDecision.reject`; additionalContext-only → delegate via `next()` then append a separately sourced message to a downstream `enter` decision |
 | `PreToolUse` | `tools/pre-execute` (waterfall) | `block` → `PreToolDecision.deny` (no `allow`/`ask`) |
 | `PostToolUse` | `tools/post-execute` (waterfall) | `block` → `block` with feedback; additionalContext-only → delegate via `next()` then prepend a separately sourced context to the downstream decision; Code Mode defers sub-call contexts until the outer `run_code` result |
-| `Stop` | `agent/turn-stopping` (serial) | a blocking Stop hook feeds its reason through `steer()`, forcing another step |
+| `Stop` | `agent/turn-stopping` (serial) | a blocking hook steers another step within `maxStopContinuations`; `continue: false` cancels the turn |
 
 A tool call's payload carries the real `tool_name` (the same value the matcher tests) and Codex's `tool_input: { command }` shape (the `command` arg when present, else `''`). The matcher subject is the tool name (`PreToolUse`/`PostToolUse`) or the session source (`SessionStart`); `UserPromptSubmit`/`Stop` ignore matchers.
 
 Every agent-scoped stdin payload carries `session_id` and `transcript_path`. The bridge resolves the latter through `ctx.sessionPersistence.locate(session.header)` when available and otherwise sends `null`, preserving the Codex `string | null` shape. Lookup does not create or flush the artifact, so a path can be absent before the first turn-end checkpoint or omit the current open turn.
 
-`SessionStart` — the one emit point — runs detached; each run chain is tracked, and disposing the bridge aborts a still-running hook process, then drains the continuation before the dispose resolves (`createDetachedRuns` in `arx-hook-protocol`).
+`sessionStartMode: blocking` reserves startup for the agent's first attempted turn, including a resumed session. Startup runs before the first model request; its hook invocation/result and accepted context are durable. A cancelled or rejected attempt discards its startup context without repeating hook side effects on the next turn. `detached` starts eagerly at session-start and may miss the first request. Every hook execution is aborted and drained on bridge disposal; detached startup also belongs to its agent's disposal. Subagent emit points, where supported, remain detached.
+
+`maxStopContinuations` is a non-negative safe integer (default 8). Its counter belongs to one agent and turn; later turns reset it. `stop_hook_active` becomes true after the bridge forces a step. Hooks still execute and log at the limit, but their blocking outcome cannot enqueue another step. A `continue: false` halt takes precedence over blocking. These options are enforced by the bridge, so an unconditional blocking hook cannot bypass the limit.
 
 ## Context source
 
 Injected context carries an explicit `{ kind: 'plugin', plugin: 'hooks-codex' }` source so the durable message is never mistaken for a user prompt.
+
+## Lifecycle validation
+
+The [shared lifecycle test command](../hooks-claude-code/README.md#lifecycle-validation) exercises both bridges on Windows or POSIX; real Bash cases retain their Windows skip, and the ACP lifecycle snapshots use real PowerShell hooks.
 
 ## Model Experience
 
@@ -80,7 +88,7 @@ Provider-supplied reasons pass through verbatim. When absent, a blocked prompt u
 
 #### Token effect
 
-Blocking a prompt removes its request tokens; denial or feedback adds the retained fallback or provider text; forced continuation pays another full request.
+Blocking a prompt removes its request tokens; denial or feedback adds the retained fallback or provider text; each permitted forced continuation pays another full request, bounded per turn by `maxStopContinuations`. The cap adds no model-visible message.
 
 #### KV Cache effect
 
@@ -89,10 +97,9 @@ A blocked prompt sends no request and invalidates nothing. Denial, feedback, and
 ## Known Limitations and Deferred Work
 
 - **Unsupported hook events (5 of Codex's current 10):** `PermissionRequest`, `PreCompact`, `PostCompact`, `SubagentStart`, and `SubagentStop`. Config for these events is silently dropped during parsing. The comparison baseline is Codex's [official hook reference](https://learn.chatgpt.com/docs/hooks).
-- **`SessionStart` is partial:** plain stdout and JSON `additionalContext` work, but the hook runs detached, so context can miss the first request (`TODO(session-start-gating)`).
 - **`UserPromptSubmit` is partial:** blocking plus plain-stdout or JSON context work, but the common `systemMessage` and `{"continue": false}` controls are not enforced.
 - **`PreToolUse` is partial:** blocking works, but `additionalContext`, `permissionDecision: "allow"`, and `updatedInput` are ignored. Every tool is represented as `tool_input: { command }`, so non-shell tool arguments are not faithfully exposed to the hook.
 - **`PostToolUse` is partial:** blocking feedback and JSON `additionalContext` work, but `{"continue": false}` is not enforced, non-shell tool arguments are reduced to `{ command }`, and structured tool output is flattened to text in `tool_response`.
-- **`Stop` is partial:** blocking forces another model turn, but `stop_hook_active` is always `false`, `last_assistant_message` is always `null`, and `{"continue": false}` is not enforced. An unconditionally blocking hook therefore force-continues every step unless it self-limits (`TODO(stop-loop-guard)`).
+- **`Stop` is partial:** `last_assistant_message` is always `null`.
 - **Common payload and output fields are partial:** every mapped event reports the statically configured `model` and `permission_mode: "default"` instead of current Codex runtime values. `systemMessage` is logged + warned but not surfaced.
 - **Config loading and execution are partial:** one process-level `configPath` is parsed at load; Codex's active user, project, session, system/managed, and plugin layers, trust controls, and inline `config.toml` hook form are not implemented (`TODO(per-session-hook-config)`). Only synchronous `command` handlers run, current metadata such as `statusMessage` and `commandWindows` is ignored, and matching handlers run serially rather than with Codex's concurrent launch semantics.

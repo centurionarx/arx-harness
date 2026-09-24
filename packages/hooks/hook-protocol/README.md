@@ -13,8 +13,9 @@ Codex deliberately reimplements a *subset* of the Claude Code hook protocol — 
 | Decode output | `parseHookOutput(exit, stdout, stderr)` → neutral `HookOutput` | maps the neutral `HookOutput` onto an extension-point-specific typed Decision |
 | Merge N hooks | `mergeHookOutputs(outputs)` → most-restrictive `MergedHookOutcome` | — |
 | Veto a tool call | `preToolDenial(merged, halt)` → the `deny` a halting or denying outcome earns, or `undefined` | — |
-| Durable record | `appendHookInvoked` / `appendHookResult` (`hook/*` session events; the result's `decision`/`stderrSummary` derive from the `HookOutput` here) | calls them around each invocation |
-| Detached-run quiescence | `createDetachedRuns()` — track fire-and-forget run chains; `drain()` aborts, then awaits them | passes `signal` to each detached `runHook`, registers `drain` as its effect disposer |
+| Durable record + serial point execution | `createHookPointRunner` selects groups, awaits commands, records `hook/*` pairs and folds outcomes | supplies payloads, environment and unsupported-field warnings |
+| Execution quiescence | `createDetachedRuns()` — tracks executions and post-processing; `drain()` aborts and awaits them | registers `drain` as its effect disposer |
+| Shared policy | `hookPolicyFields` / `resolveHookPolicy` expose the same defaults and validation; `createHookLifecycle` owns startup consumption and Stop limits | connects owner disposal and performs permitted cancellation/steering effects |
 
 ## Primitives
 
@@ -25,11 +26,13 @@ Codex deliberately reimplements a *subset* of the Claude Code hook protocol — 
 - **`preToolDenial(merged, halt)`** — the PreToolUse veto every bridge applies before its own dialect handling: a halting outcome calls `halt` with the stop reason and denies with the hooks' reason, a denying outcome denies, and anything else returns `undefined` so the bridge decides (`ask` for Claude Code, delegate for Codex).
 - **`createDetachedRuns()`** — quiescence tracking for the emit-shaped points, which run detached (no extension point awaits them). The bridge tracks each run chain — the hook run PLUS its continuation — and registers `drain()` as its effect disposer: drain fires the tracker's abort `signal` (so a still-running hook process is killed via `runHook`, not awaited out to its timeout), then resolves once every tracked chain has settled. `fiber.dispose()` resolving therefore means no detached hook work is left to fire into a disposed context ([defensive patterns](../../../docs/defensive-patterns.md): dispose must reach quiescence).
 
+The [hook subsystem reference](../../../docs/subsystems/hooks.md) documents shared policy, owner state, and point-runner inputs. These helpers depend on opaque owner objects and explicit sessions rather than on the agent driver; dialects retain typed interception decisions and model-message construction.
+
 ## `hook/*` session events
 
 Declaration-merged into `SessionEventMap` (log-only, like `compaction/*` — NOT a `SurfaceEventType`, no `surfaceOp`): `hook/invoked` (a hook command ran) and `hook/result` (its outcome, paired by `handlerId`, with `appendHookResult` owning the decision rule). Payloads and per-event JSDoc are in the generated [persistence log event catalog](../../../docs/persistence-catalog.md); `stderrSummary` is truncated to the record's `stderrSummaryMaxChars` (the bridge's config, reference default `DEFAULT_STDERR_SUMMARY_MAX_CHARS` = 500; omitted when empty).
 
-Hook invocation/result records must sit inside an open turn. `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, and `Stop` satisfy that owner-defined relation by construction. `SessionStart` runs before turn 1 and gets no `hook/*` record; its allowed context remains pending in the inbox until a waking delivery opens a turn — see the hooks Agent Note.
+Hook invocation/result records must sit inside an open turn. `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, and blocking-mode `SessionStart` satisfy that relation. Detached `SessionStart` omits the hook pair and leaves accepted context pending until a waking delivery opens a turn. Cancellation after a command settles records its result before rejecting the point, preserving its audit pair.
 
 ## Model Experience
 

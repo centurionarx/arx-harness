@@ -93,14 +93,14 @@ interface SettingsScope<T> {
 
 ## Descriptors
 
-`describe()` serializes every registered namespace for configuration surfaces: the schemastery `toJSON()` envelope drives schema-rendered forms, the resolved value fills them, and the detached `base`/`user` layers let a form mark user-overridden fields by presence. `describe({ redactSecrets: true })` — mandatory on every wire surface — strips `role('secret')` fields from all three layers and enumerates their `{path, set}` slots so a page can render write-only inputs without ever receiving a secret.
+`describe()` returns a Schemastery uid/refs envelope, the resolved value, and detached `base`/`user` layers for each registered namespace. Every wire consumer must request `describe({ redactSecrets: true })`: it removes secret fields and undeclared keys from all three layers, sanitizes schema defaults and metadata without serializing callbacks, and enumerates `{path, set}` slots for write-only inputs. Unsupported schemas or incompatible data reject with value-free errors rather than returning a partial unsafe descriptor. Verbatim descriptors are reserved for trusted same-process callers.
 
 ```ts type-equiv
 /** One registered namespace as surfaced to configuration UIs. */
 interface SettingsDescriptor {
   /** The registered namespace. */
   ns: SettingsNamespace
-  /** Serialized schemastery schema (`schema.toJSON()`). */
+  /** Serialized Schemastery uid/refs envelope; defaults are sanitized under redaction. */
   schema: unknown
   /** Current resolved value. */
   value: unknown
@@ -142,9 +142,10 @@ type SettingsPathOp =
 /** Options for {@link SettingsProvider.describe}. */
 interface SettingsDescribeOptions {
   /**
-   * Strip `role('secret')` fields from `value`/`base`/`user` and enumerate
-   * them in each descriptor's `secrets`. Every wire surface MUST pass this;
-   * the verbatim default exists for same-process configuration UIs only.
+   * Strip secret fields and undeclared keys from every data layer, sanitize
+   * schema defaults, and enumerate secret slots. Unsupported schemas or
+   * incompatible data reject with value-free errors. Every wire consumer MUST
+   * enable this; verbatim descriptors are for trusted same-process callers only.
    */
   redactSecrets?: boolean
 }
@@ -198,6 +199,8 @@ register<T>(ns: SettingsNamespace, schema: z<T>, options?: SettingsRegisterOptio
  * Describe every registered namespace for configuration surfaces, including
  * the composition `base` and raw user layers so a form can mark which fields
  * the user overrode (presence in `user`) and what a reset returns to.
+ * Redacted reads reject unsupported schemas, recursive graphs and incompatible
+ * data without quoting schema text or values; they never run schema callbacks.
  * @param options - redaction switch; wire surfaces must redact.
  * @returns one descriptor per registered namespace, in registration order.
  */

@@ -1,8 +1,8 @@
 /**
  * Append helpers for durable, log-only hook events. They carry no surface
  * intent and must remain turn-enclosed and invoked/result paired. Mid-turn hook
- * points satisfy that boundary; SessionStart records injected context instead
- * and does not append `hook/*` outside a turn.
+ * points and blocking SessionStart satisfy that boundary; detached SessionStart
+ * omits the pair rather than appending `hook/*` outside a turn.
  * @module @arx-ai/arx-hook-protocol/events
  */
 
