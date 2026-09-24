@@ -553,6 +553,9 @@ importers:
       '@arx-ai/arx-project':
         specifier: workspace:^
         version: link:../packages/project/project
+      '@arx-ai/arx-project-runner':
+        specifier: workspace:^
+        version: link:../packages/project/project-runner
       '@arx-ai/arx-pwsh-local':
         specifier: workspace:*
         version: link:../packages/shell/pwsh-local
@@ -6543,9 +6546,18 @@ importers:
       '@arx-ai/arx-agent':
         specifier: workspace:^
         version: link:../../core/agent
+      '@arx-ai/arx-app-boot':
+        specifier: workspace:^
+        version: link:../../boot/app-boot
       '@arx-ai/arx-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@arx-ai/arx-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@arx-ai/arx-loader-smoke':
+        specifier: workspace:^
+        version: link:../../test-support/loader-smoke
       '@arx-ai/arx-project':
         specifier: workspace:^
         version: link:../project

@@ -21,10 +21,12 @@ afterEach(async () => {
 async function fixture(direct = false) {
   const ctx = new Context()
   contexts.push(ctx)
-  const project = { id: 'project', version: 7, approvedPlan: { revision: 3 } } as unknown as ProjectRecord
+  const project = { id: 'project', version: 7, approvedPlan: { revision: 3 },
+    runs: [{ id: 'run', parentSessionId: 'parent' }],
+  } as unknown as ProjectRecord
   const names = [
     'create', 'savePlan', 'updateTask', 'savePrompt', 'renderPrompt', 'saveWorkflow', 'startWorkflowRun',
-    'claimWorkflowStep', 'settleWorkflowStep', 'reconcileWorkflowRun', 'startPromptEvaluation',
+    'claimWorkflowStep', 'attachWorkflowStepSession', 'settleWorkflowStep', 'reconcileWorkflowRun', 'startPromptEvaluation',
     'finalizePromptEvaluation',
   ] as const
   const mutations = Object.fromEntries(names.map(name => [name, vi.fn(async () => project)])) as
@@ -164,12 +166,14 @@ it('pins driver operations to the actual caller and forwards durable ledger comm
   expect(f.service.startPromptEvaluation).toHaveBeenLastCalledWith('project', 7, { promptId: 'prompt', promptRevision: 2, maxDurationMs: 50, planRevision: 3, parentSessionId: 'parent' })
   await f.ok('finalize_prompt_evaluation', { evaluation_id: 'evaluation' })
   expect(f.service.finalizePromptEvaluation).toHaveBeenLastCalledWith('project', 7, { evaluationId: 'evaluation' })
-  await f.ok('claim_workflow_step', { run_id: 'run' })
-  await f.ok('settle_workflow_step', { run_id: 'run', step_id: 'step', state: 'completed', result: { answer: 42 } })
+  await f.ok('claim_workflow_step', { run_id: 'run' }, { agent: f.agent })
+  await f.ok('attach_workflow_step_session', { run_id: 'run', step_id: 'step', session_id: 'child' }, { agent: f.agent })
+  expect(f.service.attachWorkflowStepSession).toHaveBeenLastCalledWith('project', 7, { runId: 'run', stepId: 'step', sessionId: 'child' })
+  await f.ok('settle_workflow_step', { run_id: 'run', step_id: 'step', state: 'completed', result: { answer: 42 } }, { agent: f.agent })
   expect(f.service.settleWorkflowStep).toHaveBeenLastCalledWith('project', 7, { runId: 'run', stepId: 'step', state: 'completed', result: { answer: 42 } })
-  await f.ok('settle_workflow_step', { run_id: 'run', step_id: 'step', state: 'failed', error: 'Provider failed' })
-  await f.ok('reconcile_workflow', { run_id: 'run', state: 'pending' })
-  await f.ok('reconcile_workflow', { run_id: 'run', state: 'failed', error: 'Stopped' })
+  await f.ok('settle_workflow_step', { run_id: 'run', step_id: 'step', state: 'failed', error: 'Provider failed' }, { agent: f.agent })
+  await f.ok('reconcile_workflow', { run_id: 'run', state: 'pending' }, { agent: f.agent })
+  await f.ok('reconcile_workflow', { run_id: 'run', state: 'failed', error: 'Stopped' }, { agent: f.agent })
   expect(f.service.reconcileWorkflowRun).toHaveBeenLastCalledWith('project', 7, { runId: 'run', state: 'failed', error: 'Stopped' })
   const snapshots = [{ repository: 'repo', commit: 'sha', path: 'SKILL.md', content: 'Text', contentHash: 'sha256:digest' }]
   const snapshot = vi.fn(async () => snapshots)
@@ -182,6 +186,19 @@ it('pins driver operations to the actual caller and forwards durable ledger comm
   await f.ok('execute_workflow', { run_id: 'run' }, { agent: f.agent })
   expect(execute).toHaveBeenCalledWith(f.agent, 'project', 'run', f.signal)
 })
+
+it.each(['claim_workflow_step', 'attach_workflow_step_session', 'settle_workflow_step', 'reconcile_workflow'])(
+  'refuses %s without the original calling agent before mutation', async (action) => {
+    const f = await fixture()
+    const input = { run_id: 'run', step_id: 'step', session_id: 'child', state: 'completed', result: 'done' }
+    await f.bad(action, input)
+    await f.bad(action, input, { agent: { session: { id: SessionId('other-parent') } } as Agent })
+    await f.bad(action, { ...input, run_id: 'missing' }, { agent: f.agent })
+    for (const mutation of Object.values(f.service).filter(value => value !== f.service.get)) {
+      expect(mutation).not.toHaveBeenCalled()
+    }
+  },
+)
 
 it('presents list/read and mutation calls and rejects blank configured tool names', async () => {
   const f = await fixture()

@@ -97,7 +97,7 @@ Manage durable projects linked to registered workspaces. Read before mutating an
 
 Prompts retain purpose, tags, examples, and small deterministic evaluation cases across immutable revisions. start_prompt_evaluation creates an ordinary bounded driver run over real child sessions; execute it, then finalize_prompt_evaluation records substring/JSON acceptance, latency, and only known token usage. Truncated output remains explicitly inconclusive. snapshot_skills reads exact files from a 40-hex Git commit through the optional skill-git service and returns logged provenance. save_prompt snapshots the template, variable schema, and each selected skill's repository, commit, path, and full content. render_prompt returns the effective rendered prompt together with those skill snapshots in this tool result, making the actual model-visible material reconstructable from the session log.
 
-Workflows are immutable revisions of explicitly named dependency steps. start_workflow reserves a bounded driver run pinned to the current exact approved plan and the actual calling agent; it never accepts a caller-supplied parent session. execute_workflow asks the optional project runner to drive that run through owned child agents. claim_workflow_step persists one deterministic ready-step claim, attempt, and inputs before returning it; the claim action does not launch a session or continue automatically. After executing that step, call settle_workflow_step, then claim again. A restart changes running work to uncertain; reconcile_workflow must explicitly retry or fail it.
+Workflows are immutable revisions of explicitly named dependency steps. start_workflow reserves a bounded driver run pinned to the current exact approved plan and the actual calling agent; it never accepts a caller-supplied parent session. execute_workflow asks the optional project runner to drive that run through owned child agents. claim_workflow_step persists one deterministic ready-step claim, attempt, and inputs before returning it; the claim action does not launch a session or continue automatically. For manual execution, claim_workflow_step takes input {run_id}; launch a direct child from this same parent, then attach_workflow_step_session with input {run_id, step_id, session_id}. The child must use the project workspace. After the child finishes, settle_workflow_step takes input {run_id, step_id, state: "completed", result} or {run_id, step_id, state: "failed", error}; then claim again. Manual claims, attachments, settlements, and reconciliation require the original parent session. A restart changes running work to uncertain; reconcile_workflow must explicitly retry or fail it.
 
 ```json
 {
@@ -121,6 +121,7 @@ Workflows are immutable revisions of explicitly named dependency steps. start_wo
         "start_workflow",
         "execute_workflow",
         "claim_workflow_step",
+        "attach_workflow_step_session",
         "settle_workflow_step",
         "reconcile_workflow"
       ]

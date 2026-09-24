@@ -118,6 +118,7 @@
     "@arx-ai/arx-workflow-worker-thread": "workspace:*",
     "@arx-ai/arx-tool-present": "workspace:^",
     "@arx-ai/arx-project": "workspace:^",
+    "@arx-ai/arx-project-runner": "workspace:^",
     "@arx-ai/arx-tool-project": "workspace:^",
     "@arx-ai/arx-client-ui-schedule": "workspace:^",
     "@arx-ai/arx-experimental-client-ui-agent-team": "workspace:^",
