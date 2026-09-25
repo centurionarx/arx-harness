@@ -1136,7 +1136,7 @@ describe('opt-in indexed /name lookup', () => {
     ctx.skills.registerProvider(() => ({
       name: 'listed-without-body',
       async list() {
-        return [{ name: 'dormant-skill', description: 'Unavailable winner', source: 'runtime', provider: 'listed-without-body', rank: 1000, invocation: { modelInvocable: true, userInvocable: true } }]
+        return [{ name: 'dormant-skill', description: 'Unavailable winner', source: 'runtime', provider: 'listed-without-body', rank: 1000, locator: 'dormant-skill', invocation: { modelInvocable: true, userInvocable: true } }]
       },
       async get() {
         return undefined
@@ -1205,7 +1205,7 @@ describe('opt-in indexed /name lookup', () => {
     ctx.skills.registerProvider(() => ({
       name: 'abort-after-get',
       async list() {
-        return [{ name: 'dormant-skill', description: 'Cancel after body lookup', source: 'runtime', provider: 'abort-after-get', rank: 1000 }]
+        return [{ name: 'dormant-skill', description: 'Cancel after body lookup', source: 'runtime', provider: 'abort-after-get', rank: 1000, locator: 'dormant-skill', invocation: { modelInvocable: true, userInvocable: true } }]
       },
       async get() {
         controller.abort()
