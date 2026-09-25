@@ -3,8 +3,8 @@
  * external dependency named by a workspace `package.json`, the vendored-package
  * manifest in `vendor/README.md`, the Python `pyproject.toml` files, and the
  * pnpm patch list. License and repository metadata come from the installed
- * store, so the tree must be installed. `--check` verifies the committed
- * artifact. Tier policy and ownership live in
+ * store, read at the versions `pnpm-lock.yaml` resolves, so the tree must be
+ * installed. `--check` verifies the committed artifact. Tier policy and ownership live in
  * `.agents/notes/implemented/process/2026-07-30-generated-third-party-notices.md`.
  */
 
@@ -244,49 +244,88 @@ export function claudeDistributionFromManifest(
 }
 
 /**
- * Resolve one package's manifest inside a pnpm virtual store. The prefix scan
- * matches ordinary `@scope+name@version` directory names; pnpm 11 truncates
+ * Read the versions `pnpm-lock.yaml` resolves for each external package from
+ * its `packages` keys (`name@version`). Workspace links and vendored overrides
+ * never appear there.
+ *
+ * @param text - the lockfile content.
+ * @returns every resolved version, keyed by package name.
+ */
+export function parseLockedVersions(text: string): Map<string, Set<string>> {
+  const packages = (yaml.load(text) as { packages?: unknown }).packages
+  if (packages === undefined) return new Map()
+  if (typeof packages !== 'object' || packages === null || Array.isArray(packages)) {
+    throw new Error('gen-third-party-notices: pnpm-lock.yaml has a malformed packages map.')
+  }
+  const locked = new Map<string, Set<string>>()
+  for (const key of Object.keys(packages)) {
+    const at = key.indexOf('@', 1)
+    if (at < 0 || at === key.length - 1) {
+      throw new Error(`gen-third-party-notices: pnpm-lock.yaml package key ${JSON.stringify(key)} is not name@version.`)
+    }
+    const name = key.slice(0, at)
+    const versions = locked.get(name) ?? new Set<string>()
+    versions.add(key.slice(at + 1))
+    locked.set(name, versions)
+  }
+  return locked
+}
+
+let lockedVersionsCache: Map<string, Set<string>> | undefined
+
+function lockedVersions(): Map<string, Set<string>> {
+  lockedVersionsCache ??= parseLockedVersions(readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8'))
+  return lockedVersionsCache
+}
+
+/**
+ * Resolve one package's manifest inside a pnpm virtual store at a version the
+ * lockfile resolves. A store keeps directories of versions an earlier lockfile
+ * resolved, so directory order cannot choose the version. Directories named
+ * with the ordinary `@scope+name@` prefix are read first; pnpm 11 truncates
  * long names (a peer-suffixed name past the length limit becomes
- * `<prefix>_<hash>`), so a content scan falls back over the whole store when
- * the prefix misses.
+ * `<prefix>_<hash>`), so the rest of the store is scanned after them.
  *
  * @param virtual - the `.pnpm` virtual store directory to scan.
  * @param name - the external package name, exactly as `node_modules` spells it.
- * @returns the parsed manifest, or `undefined` when neither the prefix match
- *   nor the content scan finds the package's `package.json`.
+ * @param versions - the versions the lockfile resolves for `name`.
+ * @returns the first manifest found at a resolved version, or `undefined` when
+ *   the store holds `name` at none of them.
  */
-export function virtualManifest(virtual: string, name: string): VirtualManifest | undefined {
+export function virtualManifest(virtual: string, name: string, versions: ReadonlySet<string>): VirtualManifest | undefined {
   const prefix = `${name.replace('/', '+')}@`
-  const entry = readdirSync(virtual).find(dir => dir.startsWith(prefix))
-  if (entry !== undefined) {
-    return JSON.parse(readFileSync(resolve(virtual, entry, 'node_modules', name, 'package.json'), 'utf8')) as VirtualManifest
-  }
-  for (const dir of readdirSync(virtual)) {
+  const dirs = readdirSync(virtual)
+  const ordered = [...dirs.filter(dir => dir.startsWith(prefix)), ...dirs.filter(dir => !dir.startsWith(prefix))]
+  for (const dir of ordered) {
     const candidate = resolve(virtual, dir, 'node_modules', name, 'package.json')
-    if (existsSync(candidate)) {
-      return JSON.parse(readFileSync(candidate, 'utf8')) as VirtualManifest
-    }
+    if (!existsSync(candidate)) continue
+    const manifest = JSON.parse(readFileSync(candidate, 'utf8')) as VirtualManifest
+    if (manifest.version !== undefined && versions.has(manifest.version)) return manifest
   }
   return undefined
 }
 
-/** Resolve one installed external package manifest from either pnpm store. */
+/**
+ * Resolve one installed external package manifest from either pnpm store, at
+ * a version the lockfile resolves.
+ */
 function installedManifest(name: string): VirtualManifest | undefined {
-  let manifest: (Manifest & { license?: string; repository?: string | { url?: string }; homepage?: string }) | undefined
+  const versions = lockedVersions().get(name)
+  if (versions === undefined) return undefined
   // Workspace-local link farms can expose a dependency that is not linked at
   // the repository root; both are backed by the root workspace's lockfile.
   for (const store of ['node_modules', 'native/landlock-run/node_modules']) {
     const direct = resolve(root, store, name, 'package.json')
     if (existsSync(direct)) {
-      manifest = JSON.parse(readFileSync(direct, 'utf8')) as typeof manifest
-      break
+      const manifest = JSON.parse(readFileSync(direct, 'utf8')) as VirtualManifest
+      if (manifest.version !== undefined && versions.has(manifest.version)) return manifest
     }
     const virtual = resolve(root, store, '.pnpm')
     if (!existsSync(virtual)) continue
-    manifest = virtualManifest(virtual, name)
-    if (manifest !== undefined) break
+    const manifest = virtualManifest(virtual, name, versions)
+    if (manifest !== undefined) return manifest
   }
-  return manifest
+  return undefined
 }
 
 /** License and repository URL for an installed external package, from the pnpm store. */
@@ -302,11 +341,29 @@ function installedMetadata(name: string): { license: string; repo: string } {
   return { license, repo }
 }
 
+/**
+ * The single version the lockfile resolves for the official Claude Agent SDK;
+ * the notices describe one installed SDK and its platform payloads.
+ * @param locked - lockfile versions keyed by package name.
+ * @returns the resolved SDK version.
+ */
+export function lockedClaudeSdkVersion(locked: ReadonlyMap<string, ReadonlySet<string>>): string {
+  const versions = [...locked.get(CLAUDE_AGENT_SDK_PACKAGE) ?? []].sort()
+  const [version] = versions
+  if (versions.length !== 1 || version === undefined) {
+    throw new Error(
+      `gen-third-party-notices: pnpm-lock.yaml must resolve exactly one ${CLAUDE_AGENT_SDK_PACKAGE} version, found ${versions.length === 0 ? 'none' : versions.join(', ')}.`,
+    )
+  }
+  return version
+}
+
 function collectClaudeDistribution(): ClaudeDistribution {
+  const version = lockedClaudeSdkVersion(lockedVersions())
   const manifest = installedManifest(CLAUDE_AGENT_SDK_PACKAGE)
   if (manifest === undefined) {
     throw new Error(
-      `gen-third-party-notices: cannot resolve ${CLAUDE_AGENT_SDK_PACKAGE}; run \`pnpm install\`.`,
+      `gen-third-party-notices: cannot resolve ${CLAUDE_AGENT_SDK_PACKAGE}@${version}; run \`pnpm install\`.`,
     )
   }
   const distribution = claudeDistributionFromManifest(manifest)

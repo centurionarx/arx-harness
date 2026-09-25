@@ -8,8 +8,10 @@ import {
   collectPythonDependencies,
   isOwnerAuthorizedRuntime,
   isPermissive,
+  lockedClaudeSdkVersion,
   type Manifest,
   manifestPatterns,
+  parseLockedVersions,
   parsePyprojectRequirements,
   parseVendoredRows,
   render,
@@ -90,7 +92,7 @@ describe('virtualManifest', () => {
       mkdirSync(manifestDir, { recursive: true })
       writeFileSync(join(manifestDir, 'package.json'), JSON.stringify({ name, version, license: 'MIT' }))
 
-      expect(virtualManifest(store, name)).toMatchObject({ name, version, license: 'MIT' })
+      expect(virtualManifest(store, name, new Set([version]))).toMatchObject({ name, version, license: 'MIT' })
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
@@ -108,7 +110,7 @@ describe('virtualManifest', () => {
       mkdirSync(manifestDir, { recursive: true })
       writeFileSync(join(manifestDir, 'package.json'), JSON.stringify({ name, version, license: 'Apache-2.0' }))
 
-      expect(virtualManifest(store, name)).toMatchObject({ name, version, license: 'Apache-2.0' })
+      expect(virtualManifest(store, name, new Set([version]))).toMatchObject({ name, version, license: 'Apache-2.0' })
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
@@ -122,10 +124,75 @@ describe('virtualManifest', () => {
       mkdirSync(other, { recursive: true })
       writeFileSync(join(other, 'package.json'), JSON.stringify({ name: 'other-pkg', version: '1.0.0' }))
 
-      expect(virtualManifest(store, '@scope/missing')).toBeUndefined()
+      expect(virtualManifest(store, '@scope/missing', new Set(['1.0.0']))).toBeUndefined()
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+
+  it('reads the version the lockfile resolves, not a directory an earlier lockfile left behind', () => {
+    const root = mkdtempSync(join(tmpdir(), 'arx-notices-stale-'))
+    try {
+      const name = '@scope/pkg'
+      const store = join(root, 'store')
+      for (const version of ['1.0.0', '2.0.0']) {
+        const manifestDir = join(store, `${name.replace('/', '+')}@${version}`, 'node_modules', name)
+        mkdirSync(manifestDir, { recursive: true })
+        writeFileSync(join(manifestDir, 'package.json'), JSON.stringify({ name, version, license: 'MIT' }))
+      }
+
+      expect(virtualManifest(store, name, new Set(['2.0.0']))).toMatchObject({ version: '2.0.0' })
+      expect(virtualManifest(store, name, new Set(['1.0.0']))).toMatchObject({ version: '1.0.0' })
+      expect(virtualManifest(store, name, new Set(['3.0.0']))).toBeUndefined()
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('parseLockedVersions', () => {
+  it('groups the packages keys by name, including scoped and prerelease versions', () => {
+    const locked = parseLockedVersions([
+      "lockfileVersion: '9.0'",
+      'packages:',
+      "  '@scope/pkg@1.0.0':",
+      '    resolution: {integrity: sha512-a}',
+      "  '@scope/pkg@2.0.0-beta.1':",
+      '    resolution: {integrity: sha512-b}',
+      '  plain@3.1.4:',
+      '    resolution: {integrity: sha512-c}',
+      'snapshots:',
+      "  '@scope/pkg@1.0.0(peer@1.0.0)': {}",
+    ].join('\n'))
+
+    expect(locked).toEqual(new Map([
+      ['@scope/pkg', new Set(['1.0.0', '2.0.0-beta.1'])],
+      ['plain', new Set(['3.1.4'])],
+    ]))
+  })
+
+  it('reads a lockfile without external packages as empty and rejects malformed entries', () => {
+    expect(parseLockedVersions("lockfileVersion: '9.0'\n")).toEqual(new Map())
+    expect(() => parseLockedVersions('packages: []\n')).toThrow('malformed packages map')
+    expect(() => parseLockedVersions('packages:\n  unversioned: {}\n')).toThrow('is not name@version')
+    expect(() => parseLockedVersions("packages:\n  '@scope/pkg@': {}\n")).toThrow('is not name@version')
+  })
+
+  it('reads the committed lockfile', () => {
+    const locked = parseLockedVersions(readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8'))
+    expect(locked.get(CLAUDE_AGENT_SDK_PACKAGE)?.size).toBe(1)
+  })
+})
+
+describe('lockedClaudeSdkVersion', () => {
+  it('returns the one SDK version the lockfile resolves', () => {
+    expect(lockedClaudeSdkVersion(new Map([[CLAUDE_AGENT_SDK_PACKAGE, new Set(['0.3.281'])]]))).toBe('0.3.281')
+  })
+
+  it('fails when the lockfile resolves no SDK or more than one', () => {
+    expect(() => lockedClaudeSdkVersion(new Map())).toThrow('found none')
+    expect(() => lockedClaudeSdkVersion(new Map([[CLAUDE_AGENT_SDK_PACKAGE, new Set(['0.3.281', '0.3.220'])]])))
+      .toThrow('found 0.3.220, 0.3.281')
   })
 })
 
