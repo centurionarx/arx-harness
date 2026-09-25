@@ -10,13 +10,13 @@ Status: implemented
 
 The generator parses `pnpm-lock.yaml` once and accepts an installed manifest only at a version that the lockfile's `packages` map resolves for that name. `virtualManifest` reads prefix-named directories first and the rest of the store after them, because pnpm 11 truncates long directory names, and returns the first manifest at a resolved version. Directories left by earlier lockfiles are skipped.
 
-The Claude distribution section describes one installed SDK and its platform payloads, so `lockedClaudeSdkVersion` requires the lockfile to resolve exactly one `@anthropic-ai/claude-agent-sdk` version and fails when it resolves none or several. A package that the lockfile does not resolve, or that the store holds only at other versions, fails with the existing error that asks for `pnpm install`.
+The Claude distribution section describes one installed SDK and its platform payloads, so the generator fails when the lockfile resolves several `@anthropic-ai/claude-agent-sdk` versions. A package without a complete `OVERRIDES` entry that the lockfile does not resolve, or that the store holds only at other versions, fails with the existing error that asks for `pnpm install`. A Claude platform payload that the store lacks at its resolved version is skipped like any payload for another host, and the generator fails only when no SDK-declared payload is installed.
 
 This note refines how [the generated notices](2026-07-30-generated-third-party-notices.md) read installed metadata; the tier policy and ownership recorded there are unchanged.
 
 ## Alternatives considered
 
-**Prune the store before regenerating.** Deleting stale directories or running `pnpm store prune` repairs one clone at a time, and the output would still depend on the state of each contributor's store.
+**Clean the virtual store before regenerating.** Deleting the stale directories from `node_modules/.pnpm`, or removing `node_modules` and reinstalling, repairs one clone at a time, and the output would still depend on the state of each contributor's store. `pnpm store prune` does not help: it prunes the content-addressable store, not a project's `node_modules/.pnpm`.
 
 **Take the highest version in the store.** A store can hold a version newer than the lockfile, for example after a branch returns to an older lockfile, so the highest version is not the resolved one.
 

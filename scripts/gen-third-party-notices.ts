@@ -359,11 +359,11 @@ export function lockedClaudeSdkVersion(locked: ReadonlyMap<string, ReadonlySet<s
 }
 
 function collectClaudeDistribution(): ClaudeDistribution {
-  const version = lockedClaudeSdkVersion(lockedVersions())
+  lockedClaudeSdkVersion(lockedVersions())
   const manifest = installedManifest(CLAUDE_AGENT_SDK_PACKAGE)
   if (manifest === undefined) {
     throw new Error(
-      `gen-third-party-notices: cannot resolve ${CLAUDE_AGENT_SDK_PACKAGE}@${version}; run \`pnpm install\`.`,
+      `gen-third-party-notices: cannot resolve ${CLAUDE_AGENT_SDK_PACKAGE}; run \`pnpm install\`.`,
     )
   }
   const distribution = claudeDistributionFromManifest(manifest)
