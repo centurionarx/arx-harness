@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mkdir, readdir, readFile, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Context } from '@arx-ai/cordis'
@@ -169,7 +169,8 @@ describe('arx-skill-filesystem plugin exports', () => {
 
 describe('loadIndexedSkill', () => {
   it('loads only a matching user-invocable directory skill and preserves optional fields', async () => {
-    const root = await tempDir('skill-indexed-valid')
+    // The loader reports canonical paths; a Windows temp dir can be an 8.3 short name.
+    const root = await realpath(await tempDir('skill-indexed-valid'))
     const ctx = new Context()
     await writeSkill(root, 'plain-skill', 'Plain indexed skill', 'Plain body.')
     const richFile = join(root, 'rich-skill/SKILL.md')
