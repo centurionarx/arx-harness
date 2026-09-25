@@ -50,7 +50,6 @@
     "@arx-ai/arx-scope": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-skill": "workspace:^",
-    "@arx-ai/arx-skill-filesystem": "workspace:^",
     "@arx-ai/arx-tools": "workspace:^",
     "@arx-ai/cordis": "workspace:^"
   }
