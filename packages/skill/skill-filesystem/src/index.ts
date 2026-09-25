@@ -12,6 +12,7 @@
 import { access, lstat, readdir, readFile, stat } from 'node:fs/promises'
 import { unwatchFile, watchFile, type Stats } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { realpath } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import type { Context } from '@arx-ai/cordis'
 import chokidar from 'chokidar'
@@ -788,6 +789,51 @@ async function listSkillRootEntriesFromNode(root: SkillRoot, ctx: Context): Prom
     result.push({ name: entry.name, type: type ?? 'other', path })
   }
   return result
+}
+
+/**
+ * Load one user-explicit, index-addressed local skill without catalog discovery.
+ * The index supplies only a name: the actual SKILL.md and its policy remain authoritative.
+ * Canonical containment rejects symlink escapes before the workspace filesystem reads it.
+ * @param ctx Context whose filesystem policy reads the selected body.
+ * @param root Absolute catalog root configured by the host.
+ * @param name Validated skill directory name.
+ * @param signal Cancellation of the current turn.
+ * @returns The authoritative loaded skill or undefined when unavailable.
+ */
+export async function loadIndexedSkill(
+  ctx: Context,
+  root: string,
+  name: string,
+  signal?: AbortSignal,
+): Promise<SkillDefinition | undefined> {
+  if (!isSkillName(name)) return undefined
+  signal?.throwIfAborted()
+  try {
+    const canonicalRoot = await realpath(root)
+    const canonicalFile = await realpath(join(canonicalRoot, name, 'SKILL.md'))
+    const child = relative(canonicalRoot, canonicalFile)
+    if (child === '..' || child.startsWith(`..${sep}`) || isAbsolute(child) || child === '') return undefined
+    const parsed = await parseSkillFile(canonicalFile, ctx, signal)
+    signal?.throwIfAborted()
+    if (parsed === undefined || parsed.name !== name || !parsed.invocation.userInvocable) return undefined
+    return {
+      name: parsed.name,
+      description: parsed.description,
+      ...parsed.whenToUse !== undefined ? { whenToUse: parsed.whenToUse } : {},
+      invocation: parsed.invocation,
+      source: 'custom',
+      provider: 'filesystem-indexed',
+      resourceBase: { kind: 'directory', path: dirname(canonicalFile) },
+      path: canonicalFile,
+      ...parsed.metadata !== undefined ? { metadata: parsed.metadata } : {},
+      content: parsed.content,
+    }
+  } catch (error) {
+    signal?.throwIfAborted()
+    if (isAbsentSkillPathError(error)) return undefined
+    throw error
+  }
 }
 
 async function parseSkillFile(path: string, ctx: Context, signal?: AbortSignal, trustedHost = false): Promise<ParsedSkill | undefined> {

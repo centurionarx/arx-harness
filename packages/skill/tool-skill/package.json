@@ -40,6 +40,7 @@
     "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
+    "@arx-ai/arx-skill-filesystem": "workspace:^",
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {

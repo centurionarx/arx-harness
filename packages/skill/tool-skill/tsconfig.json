@@ -28,6 +28,9 @@
       "path": "../skill"
     },
     {
+      "path": "../skill-filesystem"
+    },
+    {
       "path": "../../core/tools"
     },
     {
