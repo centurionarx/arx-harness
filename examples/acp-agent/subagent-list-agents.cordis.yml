@@ -1,0 +1,10 @@
+# Snapshot-only overlay holding the background child until its parent is idle
+# after the spawn turn, so the child's settlement notice opens the parent's next
+# turn instead of steering into the spawn turn.
+- id: base
+  name: '@arx-ai/cordis-plugin-include'
+  config:
+    path: ./cordis.yml
+
+- id: spawn-turn-fence
+  name: './tests/fixtures/subagent-spawn-turn-fence.ts'

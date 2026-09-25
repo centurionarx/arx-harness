@@ -1,0 +1,10 @@
+# Keyless counterpart to subagent-list-agents.cordis.yml: the shared snapshot
+# config supplies replay and the settlement marker, and the fence holds the
+# child behind its parent's spawn turn.
+- id: base
+  name: '@arx-ai/cordis-plugin-include'
+  config:
+    path: ./cordis.snapshot.yml
+
+- id: spawn-turn-fence
+  name: './tests/fixtures/subagent-spawn-turn-fence.ts'

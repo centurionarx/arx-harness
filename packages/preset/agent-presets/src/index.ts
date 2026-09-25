@@ -580,7 +580,7 @@ export class AgentPresets extends Service {
       try {
         const mounted = await generation.ready
         if (!fresh && await compositionChanged(preset.path, mounted.stamp)) {
-          if (this.standing.get(preset.id) === generation) this.standing.delete(preset.id)
+          this.forget(generation)
           continue
         }
         if (mounted.scope.ctx.fiber.uid === null) throw new Error('agent-presets: roster disposed during composition')
@@ -595,7 +595,7 @@ export class AgentPresets extends Service {
   /** Remove only this generation's cache entry, then await its complete teardown. */
   private async release(generation: StandingGeneration): Promise<void> {
     if (--generation.users !== 0) return
-    if (this.standing.get(generation.id) === generation) this.standing.delete(generation.id)
+    this.forget(generation)
     generation.disposal = generation.ready.then(async (mounted) => {
       this.generations.delete(mounted.key)
       await mounted.scope.dispose()
@@ -603,6 +603,11 @@ export class AgentPresets extends Service {
       // A failed mount already disposes its scope before rejecting.
     })
     await generation.disposal
+  }
+
+  /** Drop the cache entry only while it still names this generation; a replaced entry stays. */
+  private forget(generation: StandingGeneration): void {
+    if (this.standing.get(generation.id) === generation) this.standing.delete(generation.id)
   }
 
   /** Compose one generation; its acquisition owns cleanup on success. */
