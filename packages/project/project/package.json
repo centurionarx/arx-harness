@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-project",
   "description": "Durable project, plan, prompt, task, and bounded workflow orchestration aggregates",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "publishConfig": {
     "access": "public"
   },
