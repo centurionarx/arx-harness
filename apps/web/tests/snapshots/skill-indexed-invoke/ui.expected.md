@@ -1,0 +1,50 @@
+- banner:
+  - navigation "Session hierarchy":
+    - button "/indexed-invoke-demo please use the inde" [disabled]
+  - button "Standard mode":
+    - img
+    - text: Standard mode
+    - img
+  - button "Session log":
+    - text: Session log
+    - img
+  - tablist:
+    - tab "Chat" [selected]
+    - tab "Trajectory"
+    - tab "Turn outline"
+- text: /indexed-invoke-demo please use the indexed instructions {{clock}}
+- button "Copy":
+  - img
+- button "Context injection @arx-ai/arx-system-prompt":
+  - img
+  - img
+  - text: Context injection @arx-ai/arx-system-prompt
+- button "Context injection indexed-invoke-demo":
+  - img
+  - img
+  - text: Context injection indexed-invoke-demo
+- paragraph: INDEXED_INVOKE_REPLY acknowledged; indexed body received.
+- button "Copy":
+  - img
+- button "Good response":
+  - img
+- button "Bad response":
+  - img
+- button "Branch into a new conversation":
+  - img
+- text: {{clock}} Ran for {{duration}} TTFT {{duration}} {{throughput}} tok/s
+- textbox "Message the agent"
+- button "Commands":
+  - img
+- 'button "Access mode, current: Workspace Write"': Workspace Write
+- button "Select model, current DeepSeek-V4-Flash":
+  - text: DeepSeek-V4-Flash
+  - img
+- button "Send message" [disabled]
+- button "1 turns 1 steps · {{throughput}} tok/s":
+  - img
+  - text: 1 turns 1 steps{{throughput}} tok/s
+- button "272 tok · Cache hit 0%":
+  - img
+  - text: 272 tokCache hit 0%
+- button "0% of context used": 0%

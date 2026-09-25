@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, symlink, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Context } from '@arx-ai/cordis'
@@ -1081,5 +1081,68 @@ describe('user-explicit invocation injection', () => {
       .filter(message => (message.source as { kind?: string }).kind === 'skill-invocation')
       .map(message => (message.source as { name: string }).name)
     expect(invoked).toEqual(['shared-skill'])
+  })
+})
+
+describe('opt-in indexed /name lookup', () => {
+  async function fixture(): Promise<{ root: string; home: string; ctx: Context; agent: Agent }> {
+    const root = await tempDir('indexed-clone')
+    const home = await tempDir('indexed-session')
+    await mkdir(join(root, 'catalogo'), { recursive: true })
+    await writeFile(join(root, 'catalogo', 'indice-skills.tsv'), [
+      '# generated index',
+      '  dormant-skill\tmeta\tDiscover without registering',
+      '  forbidden-skill\tmeta\tBlocked in actual body',
+      '  mismatch-skill\tmeta\tName mismatch',
+      '  escaping-skill\tmeta\tSymlink escape',
+      '  missing-skill\tmeta\tMissing body',
+    ].join('\n'))
+    await writeSkill(root, 'dormant-skill', 'Dormant', 'INDEXED_BODY_ON_DEMAND')
+    await mkdir(join(root, 'forbidden-skill'), { recursive: true })
+    await writeFile(join(root, 'forbidden-skill', 'SKILL.md'), '---\nname: forbidden-skill\ndescription: Forbidden\nuser-invocable: false\n---\nNO_ACCESS')
+    await mkdir(join(root, 'mismatch-skill'), { recursive: true })
+    await writeFile(join(root, 'mismatch-skill', 'SKILL.md'), '---\nname: different-skill\ndescription: Mismatch\n---\nNO_ACCESS')
+    const ctx = await setup(home, { indexedSkillRoot: root })
+    return { root, home, ctx, agent: agentForCwd(home) }
+  }
+
+  it('loads only on a user gesture and never adds indexed names to the model catalog', async () => {
+    const { ctx, agent } = await fixture()
+    const idle = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } })])
+    expect(idle.kind).toBe('enter')
+    expect(JSON.stringify(idle)).not.toContain('INDEXED_BODY_ON_DEMAND')
+    expect(JSON.stringify(idle)).not.toContain('dormant-skill')
+    const result = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: '/dormant-skill please' }], source: { kind: 'user' } })])
+    if (result.kind !== 'enter') throw new Error('expected enter')
+    expect(result.messages.at(-1)?.source).toMatchObject({ kind: 'skill-invocation', name: 'dormant-skill' })
+    expect(JSON.stringify(result.messages.at(-1))).toContain('INDEXED_BODY_ON_DEMAND')
+    expect(result.messages.some(message => message.source.kind === 'skill-catalog')).toBe(false)
+  })
+
+  it('does not bypass a registry winner that forbids user invocation', async () => {
+    const { ctx, agent } = await fixture()
+    ctx.skills.register({
+      name: 'dormant-skill', description: 'Blocked winner', source: 'runtime', content: 'WINNER',
+      invocation: { userInvocable: false, modelInvocable: true },
+    })
+    const result = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: '/dormant-skill' }], source: { kind: 'user' } })])
+    if (result.kind !== 'enter') throw new Error('expected enter')
+    expect(result.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
+  })
+
+  it('fails closed for absent, user-disabled, mismatched and escaping definitions', async () => {
+    const { root, ctx, agent } = await fixture()
+    const outside = await tempDir('indexed-outside')
+    await writeSkill(outside, 'escaping-skill', 'Escapes', 'ESCAPE_BODY')
+    await symlink(join(outside, 'escaping-skill'), join(root, 'escaping-skill'))
+    for (const name of ['missing-skill', 'forbidden-skill', 'mismatch-skill', 'escaping-skill']) {
+      const result = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: `/${name} go` }], source: { kind: 'user' } })])
+      if (result.kind !== 'enter') throw new Error('expected enter')
+      expect(result.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
+    }
+    await rm(join(root, 'catalogo', 'indice-skills.tsv'))
+    const result = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: '/dormant-skill' }], source: { kind: 'user' } })])
+    if (result.kind !== 'enter') throw new Error('expected enter')
+    expect(result.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
   })
 })

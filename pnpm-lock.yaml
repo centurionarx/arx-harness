@@ -7989,6 +7989,9 @@ importers:
 
   packages/skill/tool-skill:
     dependencies:
+      '@arx-ai/arx-skill-filesystem':
+        specifier: workspace:^
+        version: link:../skill-filesystem
       '@arx-ai/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
@@ -8011,9 +8014,6 @@ importers:
       '@arx-ai/arx-skill':
         specifier: workspace:^
         version: link:../skill
-      '@arx-ai/arx-skill-filesystem':
-        specifier: workspace:^
-        version: link:../skill-filesystem
       '@arx-ai/arx-tools':
         specifier: workspace:^
         version: link:../../core/tools

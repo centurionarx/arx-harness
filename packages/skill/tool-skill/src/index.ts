@@ -11,6 +11,7 @@ import type { Agent, PreStepDecision } from '@arx-ai/arx-agent'
 import { defineTool } from '@arx-ai/arx-tools'
 import { createUserMessage } from '@arx-ai/arx-llm'
 import type { UserMessage } from '@arx-ai/arx-session'
+import { lookupIndexedSkill } from './indexed.js'
 import {
   escapeText,
   isModelInvocable,
@@ -61,11 +62,14 @@ function catalogSourceEntries(
 export interface Config {
   /** Maximum normalized description length rendered in the session catalog; minimum 3. */
   catalogDescriptionMaxLength?: number
+  /** Opt-in local skills-globais root. The TSV is consulted only for explicit /name gestures. */
+  indexedSkillRoot?: string
 }
 
 /** Validate and default the model-facing skill catalog configuration. */
 export const Config: z<Config> = z.object({
   catalogDescriptionMaxLength: z.number().default(DEFAULT_CATALOG_DESCRIPTION_MAX_LENGTH),
+  indexedSkillRoot: z.string().min(1),
 })
 
 /**
@@ -76,6 +80,8 @@ export const Config: z<Config> = z.object({
  */
 export function apply(ctx: Context, config: Config = {}): void {
   const catalogDescriptionMaxLength = config.catalogDescriptionMaxLength ?? DEFAULT_CATALOG_DESCRIPTION_MAX_LENGTH
+  // Explicit config takes precedence; environment opt-in supports the shipped agent presets.
+  const indexedSkillRoot = config.indexedSkillRoot ?? process.env.ARX_INDEXED_SKILL_ROOT
   assertPositiveInteger('catalogDescriptionMaxLength', catalogDescriptionMaxLength, 3)
 
   const skillTool = defineTool({
@@ -160,8 +166,8 @@ export function apply(ctx: Context, config: Config = {}): void {
   })
   ctx.tools.register(skillTool)
 
-  // User-explicit skill invocation: a claimed user message whose first line
-  // starts with `/<name>` naming a user-invocable skill is a deterministic
+  // User-explicit skill invocation: a whitespace-bounded `/<name>` token
+  // in a claimed user message naming a user-invocable skill is a deterministic
   // load gesture. The rendered body enters this step as injected
   // instructions context appended after every other injection — background
   // first (workspace rules, runtime policy, the catalog), the material the
@@ -186,7 +192,16 @@ export function apply(ctx: Context, config: Config = {}): void {
     const lookup = { cwd: agent.session.header.cwd, signal, scope: agent }
     const injections: UserMessage[] = []
     for (const name of names) {
-      const skill = await ctx.skills.get(name, lookup)
+      let skill = await ctx.skills.get(name, lookup)
+      if (skill === undefined && indexedSkillRoot !== undefined
+        && !(await ctx.skills.list(lookup)).some(entry => entry.name === name)) {
+        try {
+          skill = await lookupIndexedSkill(ctx, indexedSkillRoot, name, signal)
+        } catch (error) {
+          signal.throwIfAborted()
+          ctx.logger.warn(`indexed skill "${name}" unavailable: ${String(error)}`)
+        }
+      }
       signal.throwIfAborted()
       // Unknown names and user-disabled skills stay plain prose: the
       // gesture was never a claim this boundary recognizes. The check sits

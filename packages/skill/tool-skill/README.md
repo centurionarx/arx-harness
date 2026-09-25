@@ -28,6 +28,10 @@ An unresolved name reports that the skill is unknown or no longer available. Inv
 
 Tool execution does not add a synthetic context message. Its freshly loaded result is already recorded as the tool result and becomes available to the next model step without duplicating the body. Only the catalog projection adds replacement summaries.
 
+## Optional indexed user invocation
+
+Set `ARX_INDEXED_SKILL_ROOT=/absolute/path/to/skills-globais` in the **host process environment before starting it**, or set this plugin's `indexedSkillRoot` config. This opt-in fallback reads `catalogo/indice-skills.tsv` only when a direct user `/name` names no registered skill. It addresses only `<root>/<name>/SKILL.md`; names are never added to the model skill catalog, the model-facing loader, or the Web slash menu. An index hit does not confer permission: the actual file is reread via the workspace filesystem service, its name and user-invocation policy are checked, and symlinks escaping the canonical root are rejected. Missing index/bodies, invalid frontmatter, and disabled user invocation inject nothing. Registry winners (including user-disabled ones) take precedence. The TSV is bounded at 2 MiB and reread for every fallback; this trades small per-invocation I/O for freshness without a cache/watch lifecycle. It assumes directory name matches frontmatter name and cannot discover a skill whose directory has a different name. The opt-in cannot update an already-running host's inherited environment; restart the existing host with the variable to activate it.
+
 ## Model Experience
 
 ### Session catalog

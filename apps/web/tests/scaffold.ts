@@ -268,6 +268,8 @@ export interface LaunchOptions {
    * the shared normal default's five backed-off retries; replay/refresh only.
    */
   replayRetryPolicy?: RetryPolicyConfig
+  /** Explicit local root for indexed user-only /name test invocations. */
+  indexedSkillRoot?: string
   /** Per-chunk replay pacing (ms) so the browser observes genuinely incremental SSE; replay/refresh only. */
   paceMs?: number
   /** Synthetic model capacity for UI scenarios whose seeded history must remain uncompacted. */
@@ -413,6 +415,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ARX_HOME: harnessHome,
     ARX_AGENTS_HOME: join(workspaceCwd, '.agents-home'),
     ARX_BUNDLED_SKILL_DIR: join(workspaceCwd, '.bundled-skills'),
+    ARX_INDEXED_SKILL_ROOT: options.indexedSkillRoot ?? '',
   }
   const originalSkillRootEnvironment = Object.fromEntries(
     Object.keys(skillRootEnvironment).map(key => [key, process.env[key]]),
