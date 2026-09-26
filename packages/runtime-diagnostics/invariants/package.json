@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-invariants",
   "description": "Registry service for package-owned arx Harness runtime invariants",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "publishConfig": {
     "access": "public"
   },

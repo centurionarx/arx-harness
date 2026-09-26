@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-skill",
   "description": "Web skill references and the dedicated skill tool row",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "publishConfig": {
     "access": "public"
   },
