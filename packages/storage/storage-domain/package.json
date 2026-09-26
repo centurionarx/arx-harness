@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-storage-domain",
   "description": "Domain data form (ctx.storage.domain): schema-validated, event-emitting KV domains over storage backends for the arx Harness",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "publishConfig": {
     "access": "public"
   },

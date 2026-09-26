@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-experimental-tool-agent-team",
   "description": "Scoped model-facing Agent Teams tools over ctx.agentTeams",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "private": true,
   "repository": {
     "type": "git",

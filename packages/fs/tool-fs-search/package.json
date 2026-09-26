@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-fs-search",
   "description": "Model-facing filesystem discovery tools (glob, grep) backed by the packaged ripgrep binary (@vscode/ripgrep)",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "publishConfig": {
     "access": "public"
   },
