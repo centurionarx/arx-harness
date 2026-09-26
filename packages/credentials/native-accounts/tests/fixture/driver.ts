@@ -13,4 +13,12 @@ try {
   ctx.nativeAccounts.submit(attempt.id, 'fixture-code')
   while (ctx.nativeAccounts.poll(attempt.id).state !== 'connected') await new Promise(resolve => setTimeout(resolve, 5))
   console.log('Claude Code: connected')
+  const codex = ctx.nativeAccounts.begin('codex', 'browser')
+  while (ctx.nativeAccounts.poll(codex.id).input !== 'redirect-url') await new Promise(resolve => setTimeout(resolve, 5))
+  console.log('OpenAI Codex: browser link and return-address prompt')
+  // What a browser on another machine shows after sign-in: the return address it could not open.
+  const redirect = new URL(ctx.nativeAccounts.poll(codex.id).url!).searchParams.get('redirect_uri')!
+  ctx.nativeAccounts.submit(codex.id, `${redirect}?code=fixture-callback&state=fixture`)
+  while (ctx.nativeAccounts.poll(codex.id).state !== 'connected') await new Promise(resolve => setTimeout(resolve, 5))
+  console.log('OpenAI Codex: connected')
 } finally { await ctx.fiber.dispose() }

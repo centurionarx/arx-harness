@@ -31,7 +31,7 @@ describe('private native account attempts', () => {
     let answer = ''
     const manager = setup(async (_mode, _signal, notice, prompt) => {
       notice('https://claude.com/oauth/authorize?state=example')
-      answer = await prompt()
+      answer = await prompt('code')
     })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('code') })
@@ -42,6 +42,21 @@ describe('private native account attempts', () => {
     expect(JSON.stringify(manager.poll(attempt.id))).not.toContain('authorization-secret')
     expect(manager.poll(attempt.id).url).toBeUndefined()
     expect(() => manager.submit(attempt.id, 'again')).toThrow('No sign-in code')
+  })
+  it('publishes which line each prompt asks for and accepts the next prompt once one is answered', async () => {
+    const answers: string[] = []
+    const manager = setup(async (_mode, _signal, _notice, prompt) => {
+      answers.push(await prompt('redirect-url'))
+      answers.push(await prompt('code'))
+    })
+    const attempt = manager.begin('claude-code')
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('redirect-url') })
+    manager.submit(attempt.id, 'http://localhost:1455/auth/callback?code=secret')
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('code') })
+    manager.submit(attempt.id, 'second')
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).state).toBe('connected') })
+    expect(answers).toEqual(['http://localhost:1455/auth/callback?code=secret', 'second'])
+    expect(JSON.stringify(manager.poll(attempt.id))).not.toContain('secret')
   })
   it.each(['http://claude.com/oauth', 'https://evil.test/oauth', 'https://claude.com.evil.test/oauth', 'https://user:pass@claude.com/oauth'])('refuses an unsafe authorization address %s', async (url) => {
     const manager = setup(async (_mode, _signal, notice) => { notice(url) })
@@ -86,7 +101,7 @@ describe('private native account attempts', () => {
     expect(await describing).toEqual([{ provider: 'claude-code', label: 'Claude', loginModes: ['browser'], loginInFlight: false, availability: 'available', status: 'unknown' }])
   })
   it('withdraws pending manual prompts on disposal and rejects future operations', async () => {
-    const manager = setup(async (_mode, _signal, _notice, prompt) => { await prompt() })
+    const manager = setup(async (_mode, _signal, _notice, prompt) => { await prompt('code') })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('code') })
     await manager.dispose()
@@ -144,8 +159,8 @@ describe('private native account attempts', () => {
   })
   it('fails an attempt whose product asks for a second code while one is pending', async () => {
     const manager = setup(async (_mode, _signal, _notice, prompt) => {
-      prompt().catch(() => { /* The first prompt is withdrawn when the attempt settles. */ })
-      await prompt()
+      prompt('code').catch(() => { /* The first prompt is withdrawn when the attempt settles. */ })
+      await prompt('code')
     })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).state).toBe('failed') })

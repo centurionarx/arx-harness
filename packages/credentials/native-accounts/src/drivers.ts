@@ -7,7 +7,7 @@ import { query } from '@anthropic-ai/claude-agent-sdk'
 import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@arx-ai/arx-claude-agent-sdk-process'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 import type { NativeAccountDriver } from './manager.ts'
-import type { NativeAccountModel, NativeAccountView } from './types.ts'
+import type { NativeAccountModel, NativeAccountView, NativeLoginInput } from './types.ts'
 import { openCodexConnection } from './codex.ts'
 
 /** Resolved deployment inputs shared with native model and subagent processes. */
@@ -30,6 +30,8 @@ function text(value: unknown): string {
 const CLAUDE_AUTHORIZATION_HOSTS = ['claude.com', 'claude.ai', 'console.anthropic.com', 'platform.claude.com'] as const
 /** Host of the ChatGPT sign-in pages the Codex app-server returns. */
 const CODEX_AUTHORIZATION_HOSTS = ['auth.openai.com'] as const
+/** Hosts a Codex browser sign-in may name as its return address; both denote this host's loopback. */
+const CODEX_CALLBACK_HOSTS: readonly string[] = ['localhost', '127.0.0.1']
 /** Operating-system facts that select the Claude Agent SDK's platform package. */
 export interface ClaudePlatform {
   platform: NodeJS.Platform
@@ -148,7 +150,7 @@ export function claudeAccountDriver(spec: NativeDriverSpec): NativeAccountDriver
           }
           if (!prompting && tail.includes('Paste code here if prompted >')) {
             prompting = true
-            answer = prompt().then((code) => { if (!signal.aborted) stdin.write(`${code}\n`) })
+            answer = prompt('code').then((code) => { if (!signal.aborted) stdin.write(`${code}\n`) })
             void answer.catch(() => { /* Cancellation is awaited through process cleanup below. */ })
           }
         } catch (error) { parseError = error; child.terminate() }
@@ -168,7 +170,67 @@ export function claudeAccountDriver(spec: NativeDriverSpec): NativeAccountDriver
     },
   }
 }
-/** Native Codex driver using only the pinned app-server's account and model methods.
+/**
+ * The return address of a Codex browser sign-in: the `redirect_uri` of its
+ * authorization address, which the app-server serves on this host's loopback.
+ * The port is read from the address because the app-server moves to a
+ * fallback port when its default one is taken.
+ * @param authUrl - the authorization address the app-server returned.
+ * @returns the loopback HTTP return address, or `undefined` when the address names none.
+ */
+function codexCallback(authUrl: string): URL | undefined {
+  const value = new URL(authUrl).searchParams.get('redirect_uri')
+  if (value === null || !URL.canParse(value)) return undefined
+  const callback = new URL(value)
+  return callback.protocol === 'http:' && CODEX_CALLBACK_HOSTS.includes(callback.hostname) && callback.port !== ''
+    ? callback : undefined
+}
+/**
+ * The query of an address the person pasted, when it is this sign-in's return address.
+ * @param answer - one pasted line.
+ * @param callback - the sign-in's return address.
+ * @returns the query to forward, or `undefined` for any other address or text.
+ */
+function pastedCallbackQuery(answer: string, callback: URL): string | undefined {
+  const trimmed = answer.trim()
+  if (!URL.canParse(trimmed)) return undefined
+  const pasted = new URL(trimmed)
+  return pasted.protocol === callback.protocol && pasted.hostname === callback.hostname && pasted.port === callback.port
+    && pasted.pathname === callback.pathname && pasted.search !== '' ? pasted.search : undefined
+}
+/**
+ * Forward pasted return addresses to the app-server's own callback listener
+ * until one is accepted. A browser on another machine cannot reach this host's
+ * loopback, so the sign-in page's final address arrives through the person
+ * instead; only its query leaves the prompt, and only toward the port the
+ * sign-in named. The app-server then completes the sign-in as if the browser
+ * had reached it.
+ * @param callback - the sign-in's return address.
+ * @param prompt - asks the person for one pasted line; rejects when the attempt ends.
+ * @param signal - the attempt's lifetime.
+ */
+async function relayPastedCallbacks(
+  callback: URL, prompt: (input: NativeLoginInput) => Promise<string>, signal: AbortSignal,
+): Promise<void> {
+  for (;;) {
+    const query = pastedCallbackQuery(await prompt('redirect-url'), callback)
+    if (query === undefined) continue
+    let response: Response
+    try {
+      // The listener binds the IPv4 loopback address, while `localhost` may resolve to `::1` first.
+      response = await fetch(`http://127.0.0.1:${callback.port}${callback.pathname}${query}`, { redirect: 'manual', signal })
+    } catch {
+      // Swallowed: a listener that is gone has settled the sign-in or will fail it through
+      // the app-server, and an aborted attempt rejects the next prompt; asking again is the only step left.
+      continue
+    }
+    await response.body?.cancel()
+    // A refused answer, such as an address from an earlier attempt, leaves the listener waiting.
+    if (response.status < 400) return
+  }
+}
+/** Native Codex driver using only the pinned app-server's account and model methods. A browser
+ * sign-in also accepts the pasted address of its return page, for a browser on another machine.
  * @param spec - owning process service and deployment settings.
  * @returns native driver, without starting any process.
  */
@@ -204,7 +266,7 @@ export function codexAccountDriver(spec: NativeDriverSpec): NativeAccountDriver 
         return { availability: 'available', status: 'connected', ...authMode === undefined ? {} : { authMode }, models } satisfies Omit<NativeAccountView, 'provider' | 'label' | 'loginModes' | 'loginInFlight'>
       } finally { await connection.close() }
     },
-    async login(mode, signal, notice) {
+    async login(mode, signal, notice, prompt) {
       const connection = await openCodexConnection({ ...spec, signal })
       try {
         // Completions can arrive before the start request answers with its id.
@@ -221,8 +283,14 @@ export function codexAccountDriver(spec: NativeDriverSpec): NativeAccountDriver 
         const loginId = text(response.loginId)
         login.id = loginId
         for (const event of early) if (event.loginId === loginId) resolveCompletion(event)
-        notice(text(mode === 'device-code' ? response.verificationUrl : response.authUrl),
-          mode === 'device-code' ? text(response.userCode) : undefined)
+        const url = text(mode === 'device-code' ? response.verificationUrl : response.authUrl)
+        notice(url, mode === 'device-code' ? text(response.userCode) : undefined)
+        const callback = mode === 'browser' ? codexCallback(url) : undefined
+        if (callback !== undefined) {
+          void relayPastedCallbacks(callback, prompt, signal).catch(() => {
+            // Swallowed: the prompt rejects once the attempt settles, which is how the relay ends.
+          })
+        }
         const abort = new Promise<never>((_resolve, reject) => {
           if (signal.aborted) reject(new Error('Sign-in cancelled'))
           else signal.addEventListener('abort', () => { reject(new Error('Sign-in cancelled')) }, { once: true })
