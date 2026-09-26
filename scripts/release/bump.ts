@@ -12,12 +12,15 @@
  * repository state.
  *
  * The version lands in the manifests, the lockfile follows, and a human creates
- * the tag after the commit merges. CI never writes to the repository.
+ * the tag after the commit merges. CI never writes to the repository. The bump
+ * runs under `pnpm run release:*` on every platform, and a failed lockfile step
+ * restores the manifests it rewrote.
  */
 
 import { globSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, matchesGlob } from 'node:path'
 import { parseArgs } from 'node:util'
+import { pnpmInvocation } from '../pnpm-invocation.ts'
 import { releaseFamily, type ReleaseFamily, type ReleaseMember } from './families.ts'
 import { capture, isEntry } from './process.ts'
 
@@ -235,6 +238,36 @@ function writeVersion(root: string, manifestPath: string, from: string, to: stri
 }
 
 /**
+ * Write the planned versions, then refresh the lockfile through the pnpm that
+ * launched the bump.
+ *
+ * pnpm re-enters through `npm_execpath` rather than a `PATH` lookup, because
+ * Windows installs pnpm as a `.cmd` shim that a shell-free spawn cannot start
+ * ([re-entry rule](../../.agents/notes/implemented/process/2026-06-16-pnpm-over-yarn.md)).
+ * The invocation resolves before the first write, so a launch outside
+ * `pnpm run` changes nothing. A failure after that rewrites every manifest this
+ * call changed back to its previous version; the lockfile and other
+ * working-tree changes stay as they are.
+ * @param root - repository root.
+ * @param planned - the manifests to rewrite.
+ * @param environment - lifecycle environment carrying `npm_execpath`.
+ */
+export function applyVersions(root: string, planned: readonly PlannedVersion[], environment: NodeJS.ProcessEnv): void {
+  const lockfile = pnpmInvocation(['install', '--lockfile-only'], environment)
+  const written: PlannedVersion[] = []
+  try {
+    for (const entry of planned) {
+      writeVersion(root, entry.manifestPath, entry.from, entry.to)
+      written.push(entry)
+    }
+    capture(lockfile.command, lockfile.args, { cwd: root, env: environment })
+  } catch (error) {
+    for (const entry of written) writeVersion(root, entry.manifestPath, entry.to, entry.from)
+    throw error
+  }
+}
+
+/**
  * Read the workspace root version.
  * @param root - repository root.
  * @returns The root manifest version.
@@ -394,10 +427,7 @@ function main(): void {
   }
 
   const dryRun = values['dry-run']
-  if (!dryRun) {
-    for (const entry of planned) writeVersion(root, entry.manifestPath, entry.from, entry.to)
-    capture('pnpm', ['install', '--lockfile-only'])
-  }
+  if (!dryRun) applyVersions(root, planned, process.env)
 
   const summary = sharedVersion
     ?? planned.map(entry => `${entry.label.replace('vendor/', '')} ${entry.to}`).join(', ')

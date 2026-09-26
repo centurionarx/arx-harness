@@ -1,6 +1,9 @@
 /**
  * Process helpers shared by the release scripts: the release steps drive `git`,
  * `pnpm`, `npm`, and `tar`, and each needs one of three failure behaviours.
+ *
+ * Commands spawn without a shell, so on Windows a bare name resolves only to a
+ * `.exe` or `.com`; callers that start pnpm resolve it with `pnpmInvocation`.
  */
 
 import { spawnSync } from 'node:child_process'
