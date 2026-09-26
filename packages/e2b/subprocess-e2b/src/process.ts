@@ -640,11 +640,19 @@ export class E2BSubprocessHandle implements SubprocessHandle {
     throw new Error(`subprocess-e2b: remote process group ${processGroupId} remained live after force termination`)
   }
 
+  /**
+   * Poll until the group has no live member. Survival is reported only from a
+   * probe that follows a poll tick and began after `graceMs` elapsed, so a
+   * probe slower than the grace cannot condemn a group that exits during it.
+   * The wait ends within `graceMs` plus one poll tick and two probes.
+   */
   private async waitForGroupExit(sandbox: Sandbox, processGroupId: number): Promise<boolean> {
     const deadline = Date.now() + this.spec.graceMs
+    let expired = false
     while (await this.groupAlive(sandbox, processGroupId)) {
-      if (Date.now() >= deadline) return false
+      if (expired) return false
       await waitTick(this.pollMs)
+      expired = Date.now() >= deadline
     }
     return true
   }
