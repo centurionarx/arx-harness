@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import sharp from 'sharp'
 import { hasLowColourCount, canPassThroughNormalization, normalizeImage } from '../src/normalization.ts'
 import type { NormalizationPolicy } from '../src/normalization.ts'
@@ -278,6 +278,13 @@ describe('normalizeImage', () => {
 })
 
 describe('hasLowColourCount', () => {
+  // The first SVG <text> render in a process waits while fontconfig indexes the installed fonts;
+  // on a Windows runner without a font cache that takes tens of seconds, so it runs once here
+  // under its own budget instead of inside one case's timeout.
+  beforeAll(async () => {
+    await sharp(Buffer.from('<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg"><text y="12">a</text></svg>')).png().toBuffer()
+  }, 120_000)
+
   it('distinguishes photographic rasters from low-colour graphics without averaged sampling', async () => {
     const side = 512
     const highFrequency = sharp(noisePixels(side, side), { raw: { width: side, height: side, channels: 3 } })
