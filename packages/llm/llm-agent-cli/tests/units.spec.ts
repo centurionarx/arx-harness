@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_DISPOSE_GRACE_MS, resolveRoutes } from '../src/config.ts'
 import { TRANSCRIPT_PREAMBLE, collectImageRefs, renderTranscript } from '../src/prompt.ts'
 import { degenerateTail, translate } from '../src/stream.ts'
-import { createToolServer, harnessToolName, toolAlias } from '../src/tools.ts'
+import { createToolServer, harnessToolName } from '../src/tools.ts'
 
 /** Feed a fixed message list to the translator. */
 async function chunks(messages: readonly unknown[], served?: ReadonlySet<string>): Promise<StreamChunk[]> {
@@ -22,8 +22,7 @@ function event(body: Record<string, unknown>): Record<string, unknown> {
 }
 
 describe('tool naming', () => {
-  it('namespaces a harness tool the way the CLI presents it', () => {
-    expect(toolAlias('bash')).toBe('mcp__arx__bash')
+  it('recovers the harness name from the alias the CLI presents', () => {
     expect(harnessToolName('mcp__arx__bash')).toBe('bash')
   })
 

@@ -205,7 +205,9 @@ describe('stream', () => {
     expect(options['systemPrompt']).toBe('harness prompt')
     expect(options['includePartialMessages']).toBe(true)
     expect(options['persistSession']).toBe(false)
-    expect(options['allowedTools']).toEqual(['mcp__arx__bash'])
+    // The SDK approves an `allowedTools` entry before `canUseTool` is asked,
+    // so listing a harness tool there would let the CLI run it.
+    expect(options).not.toHaveProperty('allowedTools')
     expect(options['disallowedTools']).toContain('Bash')
     expect(options['disallowedTools']).toContain('Skill')
     expect(options['disallowedTools']).toContain('ToolSearch')
