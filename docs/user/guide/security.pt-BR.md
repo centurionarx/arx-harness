@@ -22,13 +22,15 @@ ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 user@host
 
 Abra `http://127.0.0.1:13080` localmente. A escuta local do túnel também fica restrita ao loopback; encerre o processo SSH quando não precisar mais do acesso. Se o harness remoto usar outra porta, substitua o último `3080` por ela.
 
-Um login do Codex pelo navegador, feito pelo cartão **Native product accounts** ou pelo cartão **OpenAI Codex chat models** da página Models, retorna para `http://localhost:1455/auth/callback`, e o processo que faz o login atende esse endereço no host remoto. Encaminhe a porta 1455 no mesmo túnel antes de iniciar um desses logins e mantenha essa porta livre na sua máquina:
+Em um host sem sessão gráfica para abrir um navegador, os dois cartões de login do Codex na página Models — **Native product accounts** e **OpenAI Codex chat models** — oferecem primeiro o login por código de dispositivo, que dispensa o encaminhamento de porta. Um login do Codex pelo navegador ainda funciona nesse host: quando o navegador termina em uma página que o host do harness não alcança, cole o endereço dessa página no campo de endereço de retorno que o cartão de login mostra.
+
+Encaminhar a porta do callback também funciona, como alternativa a colar o endereço. O Codex atende seu callback do navegador em `http://localhost:1455/auth/callback`, e passa para `http://localhost:1457/auth/callback` quando a porta 1455 já está em uso no host remoto, então um túnel que encaminhe o callback deve incluir as duas portas:
 
 ```sh
-ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 user@host
+ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 -L 1457:127.0.0.1:1457 user@host
 ```
 
-O segundo encaminhamento não indica endereço local, então escuta em todos os endereços de loopback para os quais `localhost` pode resolver no seu navegador. O host remoto atende um retorno desses por vez. O login do Codex por código de dispositivo e o login do Claude Code, que recebe um código colado, dispensam o encaminhamento.
+Esses encaminhamentos não indicam endereço local, então cada um escuta em todos os endereços de loopback para os quais `localhost` pode resolver no seu navegador. O login do Claude Code, que recebe um código colado, também dispensa o encaminhamento.
 
 ## Requisitos de deploy em rede
 

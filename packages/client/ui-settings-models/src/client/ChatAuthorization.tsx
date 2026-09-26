@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react'
 import type { AuthorizationAttemptView } from '@arx-ai/arx-api-remotes/client'
 import type { InjectFace, PropsLocale } from '@arx-ai/arx-client-ui-slots'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { ChatAuthorizationStore } from './chat-authorization-store.ts'
 import styles from './ModelsSection.module.css'
 
 export interface ChatAuthorizationInjected {
   available: boolean
-  hooks: { authorization: ChatAuthorizationStore['store'] }
+  /** `hostDescription` reports `canOpenPath: false` on a host without a desktop session. */
+  hooks: { authorization: ChatAuthorizationStore['store']; hostDescription: HostDescriptionSource }
   watch: () => () => void
   begin: () => void
   cancel: () => void
@@ -27,9 +29,10 @@ function phase(attempt: AuthorizationAttemptView): 'connected' | 'starting' | Ex
 
 /** Registered as an independent child of the Models settings page. */
 export function ChatAuthorization({
-  available, useAuthorization, watch, begin, cancel, submit, enable, reload, t,
+  available, useAuthorization, useHostDescription, watch, begin, cancel, submit, enable, reload, t,
 }: InjectFace<ChatAuthorizationInjected> & PropsLocale<'settings.models'>) {
   const state = useAuthorization(value => value)
+  const headless = useHostDescription(description => description?.canOpenPath === false)
   const [answer, setAnswer] = useState('')
   useEffect(() => available ? watch() : undefined, [available, watch])
   if (!available) return null
@@ -40,6 +43,7 @@ export function ChatAuthorization({
     <section className={styles.rowCard} aria-label={t('chatAuth.title')}>
       <h3 className={styles.title}>{t('chatAuth.title')}</h3>
       <p className={styles.intro}>{t('chatAuth.intro')}</p>
+      {flow !== null && headless && <p className={styles.notice}>{t('chatAuth.remoteSignIn')}</p>}
       {state.error !== null && <p role="alert" className={styles.error}>{state.error}</p>}
       {flow === null ? <p>{t('chatAuth.unavailable')}</p> : (
         <>

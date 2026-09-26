@@ -124,12 +124,13 @@ export class NativeAccountsStore {
   }
 
   /**
-   * Answer the code the tool requested; the store never retains it.
-   * @param code - the one-line code the person pasted.
+   * Answer the line the attempt requested, a code or the browser's return
+   * address; the store never retains it.
+   * @param code - the one line the person pasted.
    */
   async submit(code: string): Promise<void> {
     const attempt = this.store.getSnapshot().attempt
-    if (!pending(attempt) || attempt.input !== 'code') return
+    if (!pending(attempt) || attempt.input === undefined) return
     await this.advance(() => this.api.nativeAccounts.submit({ attemptId: attempt.id, code }))
   }
 

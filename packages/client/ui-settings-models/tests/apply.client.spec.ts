@@ -349,6 +349,8 @@ describe('pushed invalidations', () => {
     const native = (nativeEntry.inject as unknown as () => NativeAccountsInjected)()
     const chat = (chatEntry.inject as unknown as () => ChatAuthorizationInjected)()
     expect([native.available, chat.available]).toEqual([true, true])
+    // Both sign-in cards read the connection's host facts to tell a host without a desktop session.
+    expect(native.hooks.hostDescription).toBe(chat.hooks.hostDescription)
 
     native.watch()()
     native.reload()

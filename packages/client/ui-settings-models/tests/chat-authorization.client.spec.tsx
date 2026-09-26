@@ -5,6 +5,7 @@ import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import type {
   AuthorizationAttemptView, AuthorizationFlowView, IApiClient, RpcResponse, SettingsNamespaceView,
 } from '@arx-ai/arx-api-remotes/client'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import { ChatAuthorizationStore } from '../src/client/chat-authorization-store.ts'
@@ -26,6 +27,12 @@ function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((settle) => { resolve = settle })
   return { promise, resolve }
+}
+/** The host description the card reads; `undefined` is a connection that is not up yet. */
+function host(canOpenPath?: boolean): HostDescriptionSource {
+  const description = canOpenPath === undefined ? undefined
+    : { version: 'test', cwd: '/workspace', attachedSessions: 1, home: '/h', canOpenPath }
+  return { getSnapshot: () => description, subscribe: () => () => {} }
 }
 function bench(view: { writable?: boolean; namespace?: boolean } = {}) {
   let configured = false
@@ -50,8 +57,8 @@ function bench(view: { writable?: boolean; namespace?: boolean } = {}) {
   const onEnabled = vi.fn()
   const controller = new ChatAuthorizationStore({ authorization, settings: { mutate } } as unknown as IApiClient, mirror, onEnabled)
   const props = {
-    available: true, useAuthorization: bindSnapshotSelector(controller.store), watch: () => controller.watch(),
-    begin: () => { controller.begin() }, cancel: () => { void controller.cancel() },
+    available: true, useAuthorization: bindSnapshotSelector(controller.store), useHostDescription: bindSnapshotSelector(host()),
+    watch: () => controller.watch(), begin: () => { controller.begin() }, cancel: () => { void controller.cancel() },
     submit: (answer: string) => { controller.submit(answer) }, enable: () => { void controller.enable() },
     reload: () => { void controller.load() }, t: (key: string) => en[key as keyof typeof en],
   }
@@ -303,13 +310,30 @@ describe('chat authorization card', () => {
   const flow: AuthorizationFlowView = {
     key: attempt.key, label: 'OpenAI Codex', methods: [{ id: 'oauth', label: 'OAuth' }], inFlight: false, configured: false, writable: true,
   }
-  function card(state: Partial<State>) {
+  function card(state: Partial<State>, canOpenPath?: boolean) {
     const store = createSnapshotStore<State>({ flow: null, attempt: null, enabled: false, busy: false, error: null, ...state })
-    const props = { available: true, useAuthorization: bindSnapshotSelector(store), watch: () => () => {}, begin: vi.fn(),
-      cancel: vi.fn(), submit: vi.fn(), enable: vi.fn(), reload: vi.fn(), t: (key: string) => en[key as keyof typeof en] }
+    const props = {
+      available: true, useAuthorization: bindSnapshotSelector(store), useHostDescription: bindSnapshotSelector(host(canOpenPath)),
+      watch: () => () => {}, begin: vi.fn(), cancel: vi.fn(), submit: vi.fn(), enable: vi.fn(), reload: vi.fn(),
+      t: (key: string) => en[key as keyof typeof en],
+    }
     render(<ChatAuthorization {...props} />)
     return props
   }
+
+  it('explains remote sign-in only on a host without a desktop that offers the flow', () => {
+    card({ flow }, false)
+    expect(screen.getByText(en['chatAuth.remoteSignIn'])).toBeTruthy()
+    cleanup()
+    card({ flow: null }, false)
+    expect(screen.queryByText(en['chatAuth.remoteSignIn'])).toBeNull()
+    cleanup()
+    card({ flow }, true)
+    expect(screen.queryByText(en['chatAuth.remoteSignIn'])).toBeNull()
+    cleanup()
+    card({ flow })
+    expect(screen.queryByText(en['chatAuth.remoteSignIn'])).toBeNull()
+  })
 
   it('shows the carrier error, the product message, and the flow status', () => {
     card({ flow, error: 'directory offline', attempt: { ...attempt, state: 'failed', notice: undefined, prompt: undefined, message: 'Authorization failed. Please retry.' } as never })
