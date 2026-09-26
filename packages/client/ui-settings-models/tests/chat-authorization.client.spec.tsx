@@ -76,7 +76,8 @@ describe('OpenAI Codex chat authorization', () => {
     const input = await screen.findByLabelText('Paste the callback code') as HTMLInputElement
     expect(screen.getByRole('link', { name: 'Open sign-in page' }).getAttribute('href')).toBe('https://example.com/oauth')
     fireEvent.change(input, { target: { value: 'private-one-time-code' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Submit code' }))
+    // The prompt may ask for a code or an address, so its submit button names neither.
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
     await screen.findByText('Enabled in chat')
     expect(b.authorization.submit).toHaveBeenCalledWith({ attemptId: attempt.id, promptId: 'prompt-1', answer: 'private-one-time-code' })
     expect(input.value).toBe('')

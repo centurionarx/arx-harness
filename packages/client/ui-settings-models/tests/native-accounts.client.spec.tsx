@@ -363,9 +363,9 @@ describe('native product accounts', () => {
     await b.controller.submit('not-requested-yet')
     expect(b.nativeAccounts.submit).not.toHaveBeenCalled()
     await b.controller.begin('claude-code', 'browser')
-    b.nativeAccounts.submit.mockResolvedValueOnce(refused('Enter one authorization code.'))
+    b.nativeAccounts.submit.mockResolvedValueOnce(refused('Enter a single line.'))
     await b.controller.submit('bad\ncode')
-    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'Enter one authorization code.', busy: false })
+    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'Enter a single line.', busy: false })
     await b.controller.begin('claude-code', 'browser')
     const late = deferred<Reply<Api['submit']>>()
     b.nativeAccounts.submit.mockReturnValueOnce(late.promise)
@@ -471,6 +471,9 @@ describe('native product account card', () => {
   /** Sign-in button labels in the order the card renders them. */
   const loginButtons = () => screen.getAllByRole('button').map(button => button.textContent)
     .filter(name => name === en['native.deviceLogin'] || name === en['native.browserLogin'])
+  /** The texts a screen reader reads with `input`, in the order the field names them. */
+  const readWith = (input: HTMLElement) => input.getAttribute('aria-describedby')?.split(' ')
+    .map(id => document.getElementById(id)?.textContent)
 
   it('describes every account status and authentication kind', () => {
     const props = card({ loading: true, accounts: [
@@ -530,13 +533,17 @@ describe('native product account card', () => {
     expect(screen.queryByRole('button', { name: 'Enable in chat' })).toBeNull()
   })
 
-  it('puts the device code first and says why on a host without a desktop', () => {
+  it('puts the device code first on a host without a desktop and weighs it against the browser only where both are offered', () => {
     card({ accounts: [codex] }, false)
     expect(loginButtons()).toEqual(['Connect with device code', 'Connect in browser'])
     expect(screen.getByText(en['native.remoteSignIn'])).toBeTruthy()
     cleanup()
     card({ accounts: [account, { ...codex, availability: 'unavailable' }] }, false)
     expect(loginButtons()).toEqual(['Connect in browser'])
+    expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
+    cleanup()
+    card({ accounts: [{ ...codex, loginModes: ['device-code'] }] }, false)
+    expect(loginButtons()).toEqual(['Connect with device code'])
     expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
   })
 
@@ -549,19 +556,30 @@ describe('native product account card', () => {
     expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
   })
 
-  it('asks for the address the browser ended on when the sign-in requests it, and for a code otherwise', () => {
+  it('asks for the address the browser ended on, with what to paste, when the sign-in requests it, and for a code alone otherwise', () => {
     const props = card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'redirect-url' } }, false)
     const input = screen.getByLabelText('Address of the page your browser ended on') as HTMLInputElement
     expect(input.type).toBe('password')
+    expect(readWith(input)).toEqual([en['native.returnAddressHint']])
+    expect(screen.queryByText(en['native.returnAddressRejected'])).toBeNull()
     fireEvent.change(input, { target: { value: '  http://localhost:1455/auth/callback?code=one  ' } })
     fireEvent.click(screen.getByRole('button', { name: 'Submit address' }))
     expect(props.submit).toHaveBeenCalledWith('http://localhost:1455/auth/callback?code=one')
     expect(input.value).toBe('')
     cleanup()
-    card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'code' } })
-    expect(screen.getByLabelText('Authorization code')).toBeTruthy()
+    card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'code', rejected: true } })
+    expect(readWith(screen.getByLabelText('Authorization code'))).toBeUndefined()
     expect(screen.getByRole('button', { name: 'Submit code' })).toBeTruthy()
     expect(screen.queryByLabelText('Address of the page your browser ended on')).toBeNull()
+    expect(screen.queryByText(en['native.returnAddressHint'])).toBeNull()
+    expect(screen.queryByText(en['native.returnAddressRejected'])).toBeNull()
+  })
+
+  it('says a refused paste was not this sign-in\'s return page, where a screen reader hears it', () => {
+    card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'redirect-url', rejected: true } }, false)
+    const input = screen.getByLabelText('Address of the page your browser ended on')
+    expect(readWith(input)).toEqual([en['native.returnAddressRejected'], en['native.returnAddressHint']])
+    expect(screen.getByRole('status').textContent).toContain(en['native.returnAddressRejected'])
   })
 
   it('shows a device code and the product message while a sign-in runs', () => {

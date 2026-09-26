@@ -72,7 +72,7 @@ export function ChatAuthorization({
           : <form onSubmit={(event) => { event.preventDefault(); submit(answer); setAnswer('') }}>
             <label>{prompt.message}<input type="password" autoComplete="off" value={answer}
               placeholder={prompt.placeholder} onChange={(event) => { setAnswer(event.target.value) }} /></label>
-            <button type="submit" className={styles.secondaryButton} disabled={state.busy || answer === ''}>{t('native.submitCode')}</button>
+            <button type="submit" className={styles.secondaryButton} disabled={state.busy || answer === ''}>{t('chatAuth.submit')}</button>
           </form>)}
         {attempt.message !== undefined && <p>{attempt.message}</p>}
         {pending && <button type="button" className={styles.secondaryButton} onClick={cancel}>{t('cancel')}</button>}
