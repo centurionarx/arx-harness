@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mkdir, writeFile, symlink, rm } from 'node:fs/promises'
 import { join } from 'node:path'
+import { lookupIndexedSkill } from '../src/indexed.ts'
 import { tmpdir } from 'node:os'
 import { Context } from '@arx-ai/cordis'
 import { createUserMessage, CallId, type Message } from '@arx-ai/arx-llm'
@@ -1128,6 +1129,100 @@ describe('opt-in indexed /name lookup', () => {
     const result = await proposeStep(ctx, agent, [createUserMessage({ content: [{ type: 'text', text: '/dormant-skill' }], source: { kind: 'user' } })])
     if (result.kind !== 'enter') throw new Error('expected enter')
     expect(result.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
+  })
+
+  it('does not fall through a listed registry winner whose body is unavailable', async () => {
+    const { ctx, agent } = await fixture()
+    ctx.skills.registerProvider(() => ({
+      name: 'listed-without-body',
+      async list() {
+        return [{ name: 'dormant-skill', description: 'Unavailable winner', source: 'runtime', provider: 'listed-without-body', rank: 1000, locator: 'dormant-skill', invocation: { modelInvocable: true, userInvocable: true } }]
+      },
+      async get() {
+        return undefined
+      },
+    }))
+    const decision = await proposeStep(ctx, agent, [createUserMessage({
+      content: [{ type: 'text', text: '/dormant-skill please' }], source: { kind: 'user' },
+    })])
+    if (decision.kind !== 'enter') throw new Error('expected enter')
+    expect(decision.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
+    expect(JSON.stringify(decision)).not.toContain('INDEXED_BODY_ON_DEMAND')
+  })
+
+  it('rejects invalid roots and names before reading the index', async () => {
+    const { root, ctx } = await fixture()
+    expect(await lookupIndexedSkill(ctx, 'relative/root', 'dormant-skill')).toBeUndefined()
+    expect(await lookupIndexedSkill(ctx, root, 'Invalid_Name')).toBeUndefined()
+  })
+
+  it('rejects directory, oversized, malformed and duplicate indexes', async () => {
+    const { root, ctx } = await fixture()
+    const index = join(root, 'catalogo', 'indice-skills.tsv')
+    await rm(index)
+    await mkdir(index)
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+    await rm(index, { recursive: true })
+    await writeFile(index, Buffer.alloc(2 * 1024 * 1024 + 1))
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+    await writeFile(index, '# comment\ninvalid row\nother-skill\tmeta\tother\n')
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+    await writeFile(index, 'dormant-skill\tmeta\tfirst\n*dormant-skill\tmeta\tsecond\n')
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+  })
+
+  it('treats missing index parents and non-directory parents as misses', async () => {
+    const { root, ctx } = await fixture()
+    await rm(join(root, 'catalogo'), { recursive: true })
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+    await writeFile(join(root, 'catalogo'), 'not a directory')
+    expect(await lookupIndexedSkill(ctx, root, 'dormant-skill')).toBeUndefined()
+  })
+
+  it('logs unexpected index errors without injecting a body', async () => {
+    const { root, ctx, agent } = await fixture()
+    await rm(join(root, 'catalogo', 'indice-skills.tsv'))
+    await symlink('indice-skills.tsv', join(root, 'catalogo', 'indice-skills.tsv'))
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    try {
+      const gesture = createUserMessage({ content: [{ type: 'text', text: '/dormant-skill' }], source: { kind: 'user' } })
+      // A symlink loop produces ELOOP, not an absent index.
+      const result = await proposeStep(ctx, agent, [gesture])
+      if (result.kind !== 'enter') throw new Error('expected enter')
+      expect(result.messages.some(message => message.source.kind === 'skill-invocation')).toBe(false)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('indexed skill "dormant-skill" unavailable:'))
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('propagates cancellation rather than logging an index lookup error', async () => {
+    const { root, ctx, agent } = await fixture()
+    await rm(join(root, 'catalogo', 'indice-skills.tsv'))
+    await symlink('indice-skills.tsv', join(root, 'catalogo', 'indice-skills.tsv'))
+    const controller = new AbortController()
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    ctx.skills.registerProvider(() => ({
+      name: 'abort-after-get',
+      async list() {
+        return [{ name: 'dormant-skill', description: 'Cancel after body lookup', source: 'runtime', provider: 'abort-after-get', rank: 1000, locator: 'dormant-skill', invocation: { modelInvocable: true, userInvocable: true } }]
+      },
+      async get() {
+        controller.abort()
+        return undefined
+      },
+    }))
+    const gesture = createUserMessage({ content: [{ type: 'text', text: '/dormant-skill' }], source: { kind: 'user' } })
+    try {
+      await expect(agentEvents(ctx, agent).waterfall(
+        'agent/pre-step',
+        { messages: [gesture], turn: 1, step: 1, signal: controller.signal },
+        () => Promise.resolve({ kind: 'enter' as const, messages: [gesture] }),
+      )).rejects.toThrow()
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('fails closed for absent, user-disabled, mismatched and escaping definitions', async () => {

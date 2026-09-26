@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mkdir, readdir, readFile, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Context } from '@arx-ai/cordis'
@@ -164,6 +164,81 @@ describe('arx-skill-filesystem plugin exports', () => {
   it('declares stable plugin metadata', () => {
     expect(SkillFileSystem.name).toBe('skill-filesystem')
     expect(SkillFileSystem.inject).toEqual(['skills'])
+  })
+})
+
+describe('loadIndexedSkill', () => {
+  it('loads only a matching user-invocable directory skill and preserves optional fields', async () => {
+    // The loader reports canonical paths; a Windows temp dir can be an 8.3 short name.
+    const root = await realpath(await tempDir('skill-indexed-valid'))
+    const ctx = new Context()
+    await writeSkill(root, 'plain-skill', 'Plain indexed skill', 'Plain body.')
+    const richFile = join(root, 'rich-skill/SKILL.md')
+    await mkdir(dirname(richFile), { recursive: true })
+    await writeFile(richFile, [
+      '---',
+      'name: rich-skill',
+      'description: Rich indexed skill',
+      'whenToUse: When rich lookup is needed',
+      'disable-model-invocation: true',
+      'metadata:',
+      '  owner: indexed-tests',
+      '---',
+      '',
+      'Rich body.',
+    ].join('\n'))
+
+    expect(await SkillFileSystem.loadIndexedSkill(ctx, root, 'plain-skill')).toEqual({
+      name: 'plain-skill',
+      description: 'Plain indexed skill',
+      invocation: { modelInvocable: true, userInvocable: true },
+      source: 'custom',
+      provider: 'filesystem-indexed',
+      resourceBase: { kind: 'directory', path: join(root, 'plain-skill') },
+      path: join(root, 'plain-skill/SKILL.md'),
+      content: 'Plain body.',
+    })
+    expect(await SkillFileSystem.loadIndexedSkill(ctx, root, 'rich-skill')).toEqual({
+      name: 'rich-skill',
+      description: 'Rich indexed skill',
+      whenToUse: 'When rich lookup is needed',
+      invocation: { modelInvocable: false, userInvocable: true },
+      source: 'custom',
+      provider: 'filesystem-indexed',
+      resourceBase: { kind: 'directory', path: dirname(richFile) },
+      path: richFile,
+      metadata: { owner: 'indexed-tests' },
+      content: 'Rich body.',
+    })
+  })
+
+  it('rejects invalid names, escapes, mismatched names, and non-user-invocable skills', async () => {
+    const root = await tempDir('skill-indexed-rejected')
+    const outside = await tempDir('skill-indexed-outside')
+    const ctx = new Context()
+    await writeSkill(outside, 'escaped-skill', 'Escaped skill')
+    await symlink(join(outside, 'escaped-skill'), join(root, 'escaped-skill'))
+    await writeSkill(root, 'wrong-name', 'Wrong name')
+    await writeFile(join(root, 'wrong-name/SKILL.md'),
+      '---\nname: different-name\ndescription: Mismatched name\n---\n\nWrong body.\n')
+    await writeSkill(root, 'model-only', 'Model only')
+    await writeFile(join(root, 'model-only/SKILL.md'),
+      '---\nname: model-only\ndescription: Model only\nuser-invocable: false\n---\n\nModel body.\n')
+
+    for (const name of ['../escaped-skill', 'escaped-skill', 'missing-skill', 'wrong-name', 'model-only']) {
+      expect(await SkillFileSystem.loadIndexedSkill(ctx, root, name)).toBeUndefined()
+    }
+  })
+
+  it('distinguishes absent indexed paths from unexpected filesystem failures', async () => {
+    const root = await tempDir('skill-indexed-errors')
+    const ctx = new Context()
+    await mkdir(join(root, 'unreadable-skill/SKILL.md'), { recursive: true })
+
+    expect(await SkillFileSystem.loadIndexedSkill(ctx, join(root, 'missing-root'), 'unreadable-skill'))
+      .toBeUndefined()
+    await expect(SkillFileSystem.loadIndexedSkill(ctx, root, 'unreadable-skill'))
+      .rejects.toMatchObject({ code: 'EISDIR' })
   })
 })
 
