@@ -10,6 +10,8 @@ O perfil Web escuta em `127.0.0.1:3080` por padrão. Mantenha esse endereço de 
 
 O [servidor HTTP](../../../packages/host/webserver/README.md#known-limitations-and-deferred-work) não oferece autenticação, TLS nem política de origem integrados. Mudar o endereço de escuta para `0.0.0.0` permite que clientes de rede alcancem essas rotas sem autenticação. Uma seleção de workspace ou um diálogo de aprovação não autentica um cliente de navegador.
 
+<a id="remote-access-through-ssh"></a>
+
 ## Acesso remoto por SSH
 
 Para um host remoto pessoal, mantenha o harness escutando no loopback e use um túnel SSH autenticado em vez de expor a porta Web. Inicie o harness no host remoto com `arx web --no-open` e execute este comando na sua máquina, substituindo `user@host` pelo destino SSH:
@@ -19,6 +21,14 @@ ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 user@host
 ```
 
 Abra `http://127.0.0.1:13080` localmente. A escuta local do túnel também fica restrita ao loopback; encerre o processo SSH quando não precisar mais do acesso. Se o harness remoto usar outra porta, substitua o último `3080` por ela.
+
+Um login do Codex pelo navegador, feito pelo cartão **Native product accounts** ou pelo cartão **OpenAI Codex chat models** da página Models, retorna para `http://localhost:1455/auth/callback`, e o processo que faz o login atende esse endereço no host remoto. Encaminhe a porta 1455 no mesmo túnel antes de iniciar um desses logins e mantenha essa porta livre na sua máquina:
+
+```sh
+ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 user@host
+```
+
+O segundo encaminhamento não indica endereço local, então escuta em todos os endereços de loopback para os quais `localhost` pode resolver no seu navegador. O host remoto atende um retorno desses por vez. O login do Codex por código de dispositivo e o login do Claude Code, que recebe um código colado, dispensam o encaminhamento.
 
 ## Requisitos de deploy em rede
 
