@@ -9,6 +9,7 @@ import AgentLoop from '@arx-ai/arx-agent-loop'
 import { mountAgentLoopTestDependencies } from '@arx-ai/arx-agent-loop-testkit'
 import { createUserMessage } from '@arx-ai/arx-llm'
 import { SessionId } from '@arx-ai/arx-session'
+import type { SessionEvent } from '@arx-ai/arx-session'
 import JsonlSessionPersistence from '@arx-ai/arx-session-persistence-jsonl'
 import SqliteSessionPersistence from '@arx-ai/arx-session-persistence-sqlite'
 import SubagentService, { seedDescriptorTurn, snapshotSubagentDescriptor } from '@arx-ai/arx-subagent'
@@ -143,6 +144,51 @@ function persistedChild(
   return child
 }
 
+interface FlushGate {
+  /** Let the held flush proceed. */
+  readonly release: () => void
+  /** Settles once the held flush has completed. */
+  readonly flushed: Promise<void>
+}
+
+interface HeldFlush {
+  readonly sessionId: SessionId
+  readonly holds: (event: SessionEvent) => boolean
+  readonly opened: Promise<void>
+  readonly done: () => void
+  used: boolean
+}
+
+/**
+ * Let a test hold chosen Session flushes: each gate holds the first flush of
+ * its Session whose newest event matches, until the test releases it.
+ */
+function gateFlushes(ctx: Context): { hold(sessionId: SessionId, holds: (event: SessionEvent) => boolean): FlushGate } {
+  const gates: HeldFlush[] = []
+  const flush = ctx.sessions.flush.bind(ctx.sessions)
+  vi.spyOn(ctx.sessions, 'flush').mockImplementation(async (session) => {
+    const newest = session.events.at(-1)
+    const gate = gates.find(candidate => !candidate.used && candidate.sessionId === session.id
+      && newest !== undefined && candidate.holds(newest))
+    if (gate === undefined) return await flush(session)
+    gate.used = true
+    await gate.opened
+    const flushed = await flush(session)
+    gate.done()
+    return flushed
+  })
+  return {
+    hold(sessionId, holds) {
+      let release!: () => void
+      let done!: () => void
+      const opened = new Promise<void>((resolve) => { release = resolve })
+      const flushed = new Promise<void>((resolve) => { done = resolve })
+      gates.push({ sessionId, holds, opened, done, used: false })
+      return { release, flushed }
+    },
+  }
+}
+
 for (const backend of backends) {
   describe(`${backend.name} Agent Teams recovery`, () => {
     it('reconciles a persisted child to active and a missing child to durable failed', {
@@ -218,6 +264,83 @@ for (const backend of backends) {
 
       await activeHandle.dispose()
       await failedHandle.dispose()
+      await second.dispose()
+    })
+
+    it('reports a message that Lead recovery dispatches before its sender as accepted', {
+      timeout: PERSISTENCE_TEST_TIMEOUT_MS,
+    }, async () => {
+      const storageRoot = mkdtempSync(join(tmpdir(), `arx-team-claim-${backend.name.toLowerCase()}-`))
+      roots.push(storageRoot)
+      const rootId = SessionId(`${backend.name.toLowerCase()}-claim-root`)
+      const childId = SessionId(`${backend.name.toLowerCase()}-claim-child`)
+      const first = await stack(backend, storageRoot, [textResponse('initial child answer')])
+      const root = first.ctx.agentLoop.create(rootId, { provider: 'mock', model: 'mock' })
+      await Promise.resolve()
+      await Promise.resolve()
+      root.session.append('team/member', {
+        version: 1,
+        teamId: TeamId(root.id),
+        member: provisioning(childId, 'recoverable'),
+      })
+      await first.ctx.sessions.flush(root.session)
+      await first.ctx.subagents.startContinuable({
+        childId,
+        provider: 'spawn',
+        label: 'claimed recovery',
+        request: {
+          prompt: [{ type: 'text', text: 'persist before active edge' }],
+          parent: root,
+        },
+        signal: SIGNAL,
+      })
+      await vi.waitFor(() => { expect(first.ctx.agents.get(childId)).toBeUndefined() }, { timeout: 5_000 })
+      await first.dispose()
+
+      const second = await stack(backend, storageRoot, [textResponse('cold resumed answer')])
+      const flushes = gateFlushes(second.ctx)
+      const reconcile = flushes.hold(rootId, event => event.type === 'team/member' && event.data.member.phase === 'active')
+      const queued = flushes.hold(rootId, event => event.type === 'team/message/queued')
+      const deliver = second.ctx.subagents.followup.bind(second.ctx.subagents)
+      let releaseDelivery!: () => void
+      const deliveryHeld = new Promise<void>((resolve) => { releaseDelivery = resolve })
+      const followup = vi.spyOn(second.ctx.subagents, 'followup').mockImplementation(async (...args) => {
+        await deliveryHeld
+        return await deliver(...args)
+      })
+      const handle = await second.ctx.agents.resume({
+        resumeSessionId: rootId,
+        agentOptions: { provider: 'mock', model: 'mock' },
+      })
+      await vi.waitFor(() => { expect(durable(handle.agent).members[0]?.phase).toBe('active') }, { timeout: 5_000 })
+
+      // The send waits behind the held active-edge commit. Once that commit
+      // lands, the send's queued edge is held while the Lead's startup
+      // recovery finds the message pending and starts delivering it.
+      const receipt = second.ctx.agentTeams.sendMessage(handle.agent, {
+        target: 'recoverable',
+        content: [{ type: 'text', text: 'claimed by recovery' }],
+        delivery: 'wakeup',
+        signal: SIGNAL,
+      })
+      let earlyStatus: string | undefined
+      void receipt.then((result) => { earlyStatus = result.status })
+      reconcile.release()
+      await vi.waitFor(() => { expect(followup).toHaveBeenCalledTimes(1) }, { timeout: 5_000 })
+      // The send's own dispatch attempt follows its flush within the same
+      // microtask chain, so one macrotask later it has joined the delivery
+      // in progress rather than settling on its own.
+      queued.release()
+      await queued.flushed
+      await new Promise<void>((resolve) => { setTimeout(resolve, 0) })
+      expect(earlyStatus).toBeUndefined()
+      releaseDelivery()
+      expect((await receipt).status).toBe('accepted')
+      expect(followup).toHaveBeenCalledTimes(1)
+      await vi.waitFor(() => { expect(durable(handle.agent).pendingMessages).toEqual([]) }, { timeout: 5_000 })
+      await vi.waitFor(() => { expect(second.ctx.agents.get(childId)).toBeUndefined() }, { timeout: 5_000 })
+
+      await handle.dispose()
       await second.dispose()
     })
 
