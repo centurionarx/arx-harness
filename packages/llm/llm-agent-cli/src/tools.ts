@@ -18,15 +18,6 @@ export const MCP_SERVER_NAME = 'arx'
 const ALIAS_PREFIX = `mcp__${MCP_SERVER_NAME}__`
 
 /**
- * Render one harness tool name as the CLI presents it to the model.
- * @param name - tool name as the harness registered it.
- * @returns the namespaced name the model will emit in a tool call.
- */
-export function toolAlias(name: string): string {
-  return `${ALIAS_PREFIX}${name}`
-}
-
-/**
  * Recover the harness tool name from what the model emitted. A name without
  * the prefix is returned unchanged: the CLI's own built-ins are refused by
  * name elsewhere, and silently rewriting an unexpected name would hide which

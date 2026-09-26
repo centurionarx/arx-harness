@@ -12,7 +12,7 @@ The vendor CLI is an agent with a tool loop of its own. Four settings reduce it 
 |---|---|
 | `systemPrompt` ← the request's `system` | The harness prompt replaces the CLI's own, so what the model sees is what the session log holds. |
 | `mcpServers` ← one in-process server | The only supported way for the model to see the harness tool schemas. |
-| `disallowedTools` ← the CLI's built-ins, `canUseTool` ← deny | A tool the model asks for cannot run inside the CLI, where the harness would see neither the call nor its result. |
+| `disallowedTools` ← the CLI's built-ins, `canUseTool` ← deny | A tool the model asks for cannot run inside the CLI, where the harness would see neither the call nor its result. No harness tool is listed in `allowedTools`, because the SDK approves an entry there before `canUseTool` is asked. |
 | translation ends at the assistant turn | Reading further would consume a turn this call never asked for. The CLI's own `maxTurns` cannot express this: reaching it makes the SDK throw an error result, so the cap would turn every ordinary tool-calling turn into a failure. |
 | `_meta['anthropic/alwaysLoad']` on every tool | Without it the CLI defers MCP tools behind its own tool-search tool, and the model spends its turn searching for a tool the harness already put in the request. |
 | `skills: []` | Omitting it is not "skills off": the SDK documents that the CLI's own defaults still apply, so the host's skill directories would reach the model through a tool the harness never registered. Skills reach a harness model through `ctx.skills` instead, where loading is a logged tool call. |

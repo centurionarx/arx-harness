@@ -25,7 +25,7 @@ import type { SubprocessHandle, SubprocessSpawnSpec } from '@arx-ai/arx-subproce
 import type { AgentCliEffort, AgentCliModel, ResolvedRoute } from './config.ts'
 import { collectImageRefs, renderTranscript, type VendorContent } from './prompt.ts'
 import { translate } from './stream.ts'
-import { createToolServer, MCP_SERVER_NAME, toolAlias } from './tools.ts'
+import { createToolServer, MCP_SERVER_NAME } from './tools.ts'
 
 /** What the adapter needs from the composition it runs in. */
 export interface AgentCliAdapterSpec {
@@ -172,11 +172,12 @@ export class AgentCliAdapter extends LlmAdapter {
       // the session records.
       skills: [],
       mcpServers: { [MCP_SERVER_NAME]: { type: 'sdk', name: MCP_SERVER_NAME, instance: createToolServer(tools) } },
-      allowedTools: tools.map(tool => toolAlias(tool.name)),
       disallowedTools: [...VENDOR_TOOLS],
       // The harness runs every tool itself. Denying here keeps a tool the
       // model asked for from executing inside the CLI, where the harness
-      // would neither see the call nor log its result.
+      // would neither see the call nor log its result. No harness tool is
+      // listed in `allowedTools`: the SDK approves an entry there before this
+      // callback is consulted.
       canUseTool: () => Promise.resolve({
         behavior: 'deny' as const,
         message: 'This adapter returns tool calls to the harness; the CLI never executes them.',
