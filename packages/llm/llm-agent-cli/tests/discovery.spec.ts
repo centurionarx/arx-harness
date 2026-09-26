@@ -62,6 +62,39 @@ describe('discoverModels', () => {
     ])
   })
 
+  it('reports each alias under the canonical id it resolves to', async () => {
+    runWith([
+      { value: 'default', resolvedModel: 'claude-opus-5-5[1m]', displayName: 'Default (recommended)' },
+      { value: 'opus[1m]', resolvedModel: 'claude-opus-5-5[1m]', displayName: 'Opus (1M context)' },
+      { value: 'sonnet', resolvedModel: 'claude-sonnet-5', displayName: 'Sonnet' },
+      { value: 'opus', resolvedModel: 'claude-opus-5-5', displayName: 'Opus' },
+      // An empty resolution names no model; the alias is all the row offers.
+      { value: 'haiku', resolvedModel: '', displayName: 'Haiku' },
+    ])
+    const { spawn } = recordingSpawn()
+
+    await expect(discoverModels({ spawn, cwd: () => '/workspace' })).resolves.toEqual([
+      // The recommendation's slot, named by the row that runs the same model.
+      { id: 'claude-opus-5-5[1m]', name: 'Opus (1M context)' },
+      { id: 'claude-sonnet-5', name: 'Sonnet' },
+      { id: 'claude-opus-5-5', name: 'Opus' },
+      { id: 'haiku', name: 'Haiku' },
+    ])
+  })
+
+  it('keeps the first direct row when several resolve to the same model', async () => {
+    runWith([
+      { value: 'sonnet', resolvedModel: 'claude-sonnet-5', displayName: 'Sonnet' },
+      { value: 'claude-sonnet-5', resolvedModel: 'claude-sonnet-5', displayName: 'Sonnet 5' },
+      { value: 'default', resolvedModel: 'claude-sonnet-5', displayName: 'Default (recommended)' },
+    ])
+    const { spawn } = recordingSpawn()
+
+    await expect(discoverModels({ spawn, cwd: () => '/workspace' })).resolves.toEqual([
+      { id: 'claude-sonnet-5', name: 'Sonnet' },
+    ])
+  })
+
   it('discloses no capacity, because the vendor rows carry none', async () => {
     runWith([{ value: 'sonnet', displayName: 'Claude Sonnet 5' }])
     const { spawn } = recordingSpawn()
