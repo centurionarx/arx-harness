@@ -4,7 +4,7 @@ Status: implemented
 
 ## Problem
 
-`pnpm run release:arx patch` failed on a Windows workstation after it had rewritten every family manifest. [`bump.ts`](../../../../scripts/release/bump.ts) wrote the versions and then called `capture('pnpm', ['install', '--lockfile-only'])`, and [`process.ts`](../../../../scripts/release/process.ts) spawns without a shell. On Windows a shell-free spawn resolves a bare name only to a `.exe` or `.com`, while pnpm installed through npm or Corepack is a `.cmd` shim, so the lockfile step threw before the commit and left about 249 modified `package.json` files. [`pack.ts`](../../../../scripts/release/pack.ts) starts `pnpm pack` the same way; it runs on Linux CI, where the defect does not appear.
+`pnpm run release:arx patch` failed on a Windows workstation after it had rewritten every family manifest. [`bump.ts`](../../../../scripts/release/bump.ts) wrote the versions and then called `capture('pnpm', ['install', '--lockfile-only'])`, and [`process.ts`](../../../../scripts/release/process.ts) spawns without a shell. On Windows a shell-free spawn resolves a bare name only to a `.exe` or `.com`, while pnpm installed through npm or Corepack is a `.cmd` shim, so the lockfile step threw before the commit and left about 249 modified `package.json` files. [`pack.ts`](../../../../scripts/release/pack.ts) starts `pnpm pack` the same way; the release workflow runs it on Linux, where a bare `pnpm` resolves.
 
 ## Decision
 
@@ -22,4 +22,4 @@ Both release steps start pnpm with [`pnpmInvocation`](../../../../scripts/pnpm-i
 
 ## Consequences
 
-The release scripts fail loudly with `npm_execpath is unavailable` when started directly with Node instead of through `pnpm run`; the documented commands are all `pnpm run release:*`. A failure in the later `git add` or `git commit` step still leaves the rewritten manifests staged, as before. `publish.ts` and `verify-packed-install.ts` still spawn a bare `npm`; they run only on Linux CI, and `npm_execpath` names pnpm rather than npm.
+The release scripts fail loudly with `npm_execpath is unavailable` when started directly with Node instead of through `pnpm run`; the documented commands are all `pnpm run release:*`. A failure in the later `git add` or `git commit` step still leaves the rewritten manifests staged, as before. `publish.ts` and `verify-packed-install.ts` still spawn a bare `npm`, which `npm_execpath` cannot resolve because it names pnpm; the release workflows run both on Linux.
