@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-str-replace-editor",
   "description": "Model-facing view, create, literal replace, and line insert tool over the Harness filesystem service",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-hooks-claude-code",
   "description": "Bridge plugin: run a Claude Code hooks.json / settings hook config on the arx Harness interception seams",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "publishConfig": {
     "access": "public"
   },
