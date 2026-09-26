@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-fs-e2b",
   "description": "E2B filesystem implementation for arx Harness",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "publishConfig": {
     "access": "public"
   },
