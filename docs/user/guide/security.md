@@ -20,6 +20,14 @@ ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 user@host
 
 Open `http://127.0.0.1:13080` locally. The tunnel's local listener is also loopback-only; close the SSH process when access is no longer needed. If the remote harness uses another port, replace the final `3080` with that port.
 
+A Codex browser sign-in, from either the **Native product accounts** card or the **OpenAI Codex chat models** card on the Models page, returns to `http://localhost:1455/auth/callback`, and the process signing in serves that address on the remote host. Forward port 1455 in the same tunnel before you start one, and keep that port free on your machine:
+
+```sh
+ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 user@host
+```
+
+The second forward names no local address, so it listens on every loopback address that `localhost` can resolve to in your browser. The remote host serves one such callback at a time. The Codex device-code sign-in and the Claude Code sign-in, which takes a pasted code, need no forwarded port.
+
 ## Network deployment requirements
 
 A deployment that cannot use a tunnel needs a separately operated access layer. Before making it reachable by other machines:
