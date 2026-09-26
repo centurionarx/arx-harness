@@ -1378,9 +1378,20 @@ describe('E2BSubprocessHandle', () => {
     invalidGroup.processGroupId = 'not-a-pid\n'
     invalidGroup.delaysKill = true
     invalidGroup.sdkKillStops = false
-    invalidGroup.afterProbe = () => { invalidGroup.alive = false }
+    // The first liveness probe outlasts graceMs and observes the group live;
+    // survival is decided only by a probe that begins after the grace.
+    const realNow = Date.now.bind(Date)
+    const clock = vi.spyOn(Date, 'now')
+    invalidGroup.afterProbe = () => {
+      invalidGroup.alive = false
+      clock.mockImplementation(() => realNow() + 60_000)
+    }
     const invalid = testHandle(runtime(invalidGroup), spec(), '/runtime/invalid-group')
-    await expect(invalid.done).rejects.toThrow(/invalid process-group id/)
+    try {
+      await expect(invalid.done).rejects.toThrow(/invalid process-group id/)
+    } finally {
+      clock.mockRestore()
+    }
     expect(invalidGroup.handle.kills).toBe(1)
     expect(invalidGroup.commandsSeen).toContain('kill -KILL -- -4242')
     await expect(invalid.waitForExit()).resolves.toBe(true)
