@@ -42,4 +42,6 @@ export interface NativeAccountAttempt {
   code?: string
   message?: string
   input?: NativeLoginInput
+  /** Set while a prompt is pending because the previous answer to it was not accepted. */
+  rejected?: boolean
 }

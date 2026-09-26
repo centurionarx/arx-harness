@@ -62,7 +62,7 @@ const authorize = (redirect: string): string =>
   `https://auth.openai.com/oauth/authorize?client_id=app&redirect_uri=${encodeURIComponent(redirect)}`
 /** A prompt answering with `lines` in order and then waiting until the attempt ends. */
 function pasting(lines: string[], signal: AbortSignal) {
-  return vi.fn(async (_input: string) => {
+  return vi.fn(async (_input: string, _rejected?: boolean) => {
     const line = lines.shift()
     if (line !== undefined) return line
     return await new Promise<string>((_resolve, reject) => {
@@ -228,6 +228,8 @@ describe('native Codex account protocol', () => {
     expect(listener.paths).toEqual(['/auth/callback?code=old&state=stale', '/auth/callback?code=new&state=live'])
     expect(prompt).toHaveBeenCalledTimes(6)
     expect(prompt.mock.calls.every(([input]) => input === 'redirect-url')).toBe(true)
+    // Only the first prompt is asked fresh; each later one follows a paste that was not accepted.
+    expect(prompt.mock.calls.map(([, rejected]) => rejected)).toEqual([false, true, true, true, true, true])
   })
   it('asks again when the return listener cannot be reached, until the attempt ends', async () => {
     const listener = await callbackListener(() => 204)

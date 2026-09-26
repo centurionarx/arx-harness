@@ -200,7 +200,8 @@ function pastedCallbackQuery(answer: string, callback: URL): string | undefined 
 }
 /**
  * Forward pasted return addresses to the app-server's own callback listener
- * until one is accepted. A browser on another machine cannot reach this host's
+ * until one is accepted; each prompt after the first says the previous paste
+ * was not accepted. A browser on another machine cannot reach this host's
  * loopback, so the sign-in page's final address arrives through the person
  * instead; only its query leaves the prompt, and only toward the port the
  * sign-in named. The app-server then completes the sign-in as if the browser
@@ -210,10 +211,12 @@ function pastedCallbackQuery(answer: string, callback: URL): string | undefined 
  * @param signal - the attempt's lifetime.
  */
 async function relayPastedCallbacks(
-  callback: URL, prompt: (input: NativeLoginInput) => Promise<string>, signal: AbortSignal,
+  callback: URL, prompt: (input: NativeLoginInput, rejected?: boolean) => Promise<string>, signal: AbortSignal,
 ): Promise<void> {
+  let rejected = false
   for (;;) {
-    const query = pastedCallbackQuery(await prompt('redirect-url'), callback)
+    const query = pastedCallbackQuery(await prompt('redirect-url', rejected), callback)
+    rejected = true
     if (query === undefined) continue
     let response: Response
     try {

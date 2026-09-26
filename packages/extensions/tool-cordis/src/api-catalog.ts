@@ -4165,7 +4165,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'NativeAccountAttempt',
-    declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: NativeLoginInput;\n}',
+    declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: NativeLoginInput;\n    rejected?: boolean;\n}',
   },
   {
     name: 'NativeAccountAttemptId',
