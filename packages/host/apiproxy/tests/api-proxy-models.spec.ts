@@ -7,7 +7,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
-import AgentRegistry, { agentEvents } from '@arx-ai/arx-agent'
+import AgentRegistry, { agentEvents, loggedModelSelection } from '@arx-ai/arx-agent'
 import type { Agent } from '@arx-ai/arx-agent'
 import AttachmentStore from '@arx-ai/arx-attachment'
 import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@arx-ai/arx-llm'
@@ -492,6 +492,33 @@ describe('Web session model selection', () => {
       sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
     })))
     expect(picks()).toHaveLength(2)
+    await ctx.fiber.dispose()
+  })
+
+  it('logs a blank session\'s explicit pick of the default it was following, once', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    let stored = { provider: 'deepseek-official', model: 'deepseek-chat' }
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => stored,
+      saveDefaultModelSelection: (selection) => { stored = selection; return Promise.resolve() },
+      cwd: '/tmp',
+    })
+    const picks = (): unknown[] => agent.session.events.flatMap(event => event.type === 'model/selection' ? [event.data] : [])
+    const chat = { provider: 'deepseek-official', model: 'deepseek-chat', reasoningEffort: 'high' }
+
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
+    })))
+    expect(picks()).toEqual([chat])
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
+    })))
+    expect(picks()).toEqual([chat])
+
+    // The log, which a later Agent for this session reads, keeps the pick
+    // after another session moves the shared default.
+    stored = { provider: 'duplicate', model: 'same' }
+    expect(loggedModelSelection(agent.session)).toEqual(chat)
     await ctx.fiber.dispose()
   })
 

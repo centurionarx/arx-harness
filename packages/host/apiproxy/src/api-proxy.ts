@@ -125,8 +125,13 @@ const SESSION_SEARCH_PROVIDER_CALL_LIMIT = 100
 
 /** Bound cold-log stat fan-out and settle each started batch before cancellation returns. */
 const COLD_SUMMARY_BATCH_SIZE = 16
-/** Default maximum artifact size eligible for one cold blankness read. */
-export const DEFAULT_COLD_BLANK_PROBE_MAX_BYTES = 1024
+/**
+ * Default maximum artifact size eligible for one cold blankness read. A blank
+ * Session still grows by a `session/end-seed` on each open and a
+ * `model/selection` on each changed pick, each one Zstandard frame of about
+ * 100 to 150 bytes, so the default leaves room for dozens of them.
+ */
+export const DEFAULT_COLD_BLANK_PROBE_MAX_BYTES = 8192
 
 /**
  * The version `host.describe` reports when the composition names no launcher
@@ -2334,18 +2339,16 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
                 ? {}
                 : { reasoningEffort: resolved.reasoningEffort },
             }
-            const ref = selectionFor(found.agent)
-            // Skip logging a pick equal to the session's current effective
-            // selection: an identical reselect (the client re-confirming the
-            // model already in force) would otherwise grow the session's
-            // artifact for no semantic change, which on a still-blank session
-            // risks crossing the cold blank-probe's byte ceiling and making it
-            // misreport as non-blank after a restart (see
-            // DEFAULT_COLD_BLANK_PROBE_MAX_BYTES).
-            if (!modelSelectionEquals(ref.current, selected)) {
+            // The log records every pick that differs from the selection it
+            // already records, including a pick of the default a blank
+            // session was only following, so a later Agent for this session
+            // restores it. A pick the log already records appends nothing,
+            // which keeps a blank session's artifact within the cold blank
+            // probe's size limit (DEFAULT_COLD_BLANK_PROBE_MAX_BYTES).
+            if (!modelSelectionEquals(loggedModelSelection(found.agent.session), selected)) {
               found.agent.session.append('model/selection', selected)
             }
-            ref.current = selected
+            selectionFor(found.agent).current = selected
             try {
               await defaults.saveDefaultModelSelection?.(selected)
             } catch (error: unknown) {

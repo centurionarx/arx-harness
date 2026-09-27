@@ -163,6 +163,16 @@ describe('web e2e: the composer model switch is the default for later sessions',
 
     expect(await currentOf(pickedId)).toEqual({ provider: START_ROUTE, model: START_MODEL })
     expect(await currentOf(otherPickedId)).toEqual({ provider: ROUTE, model: MODEL })
+
+    // The next scenario removes the route this page's session was on, so the
+    // session goes back to it.
+    await trigger.click()
+    await page.getByRole('menuitem', { name: /Model/ }).click()
+    await page.getByRole('menuitemradio', { name: 'Acme Large' }).click()
+    await expect.poll(
+      async () => readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8'),
+      { timeout: 10_000 },
+    ).toContain(`model: ${MODEL}`)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
