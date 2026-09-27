@@ -401,9 +401,9 @@ describe('web e2e: settings modal and General preferences', () => {
     // The document language follows the active locale in the assembled app,
     // not only on a directly-mounted plugin.
     expect(await page.evaluate(() => document.documentElement.lang)).toBe('en')
-    // The Language selector pill shows the active locale's own name. One
-    // locale ships, so the menu offers exactly it; picking it is still the
-    // gesture that writes the preference the Host then owns.
+    // The Language selector pill shows the active locale's own name. Picking
+    // the locale already on screen is still the gesture that writes the
+    // preference the Host then owns.
     const selector = dialog.getByRole('button', { name: 'English' })
     expect(await selector.getAttribute('aria-haspopup')).toBe('menu')
     await selector.click()
@@ -470,9 +470,9 @@ describe('web e2e: settings modal and General preferences', () => {
 
   it('opens an English browser in English without any stored preference', async () => {
     // A fresh Host home has no locale preference, so its surface follows the
-    // browser. One locale ships and it is also FALLBACK_LOCALE, so detection
-    // and the default are indistinguishable by construction; what this pins is
-    // that a browser naming the shipped language resolves it and stores nothing.
+    // browser. English is also FALLBACK_LOCALE, so detection and the default
+    // are indistinguishable here; what this pins is that a browser naming a
+    // shipped language resolves it and stores nothing.
     const fresh = await launchWebScaffold({})
     const enPage = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: 'en-US' })
     const enTripwire = watchConsole(enPage)

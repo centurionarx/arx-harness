@@ -275,10 +275,34 @@ describe('LocaleRuntime', () => {
     expect(svc.bind('ns2')('onlyEn')).toBe('onlyEn')
   })
 
-  it('exposes the shipped locale with its self-described label', () => {
+  it('exposes the shipped locales with their self-described labels', () => {
     const { svc } = make()
     expect(svc.getLocale().locales).toEqual([
       { id: 'en', label: 'English' },
+      { id: 'pt', label: 'Português (Brasil)' },
     ])
+  })
+
+  it('renders a namespace in the active locale and in English where it ships no dictionary for it', () => {
+    const { svc } = make()
+    svc.register('common', 'en', { retry: 'Retry' })
+    svc.register('common', 'pt', { retry: 'Tentar novamente' })
+    svc.register('translated', 'en', { title: 'Title' })
+    svc.register('translated', 'pt', { title: 'Título' })
+    svc.register('englishOnly', 'en', { title: 'Title' })
+    svc.setLocale('pt')
+    expect(svc.bind('translated')('title')).toBe('Título')
+    expect(svc.bind('englishOnly')('title')).toBe('Title')
+    // The shared vocabulary follows the active locale from any namespace.
+    expect(svc.bind('englishOnly')('retry')).toBe('Tentar novamente')
+    svc.setLocale('en')
+    expect(svc.bind('translated')('title')).toBe('Title')
+  })
+
+  it('opens in Portuguese for a browser asking for any Portuguese variant', () => {
+    stubLanguages('pt-PT', 'en-US')
+    expect(make().svc.getLocale().active).toBe('pt')
+    stubLanguages('fr-FR', 'pt-BR')
+    expect(make().svc.getLocale().active).toBe('pt')
   })
 })

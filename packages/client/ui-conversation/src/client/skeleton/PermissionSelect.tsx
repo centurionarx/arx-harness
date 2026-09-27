@@ -8,6 +8,19 @@ import type { ComposerBarProps } from '../contract/slots.ts'
 import css from './PermissionSelect.module.css'
 
 const FULL_ACCESS = 'danger-full-access'
+/** The Host's value for sandbox and approval settings that match no preset. */
+const CUSTOM = 'custom'
+
+type PresetLabelKey =
+  | 'access.preset.readOnly' | 'access.preset.workspaceWrite' | 'access.preset.fullAccess' | 'access.preset.custom'
+
+/** Locale keys for the presets the product ships and the Host's `custom` state. */
+const PRESET_LABEL_KEYS: Readonly<Partial<Record<string, PresetLabelKey>>> = {
+  'read-only': 'access.preset.readOnly',
+  'workspace-write': 'access.preset.workspaceWrite',
+  [FULL_ACCESS]: 'access.preset.fullAccess',
+  [CUSTOM]: 'access.preset.custom',
+}
 
 /* Shield glyphs (design set 1556): check = read-only, pencil = workspace
    write, exclamation = full access. currentColor so the trigger and menu
@@ -48,17 +61,39 @@ function permissionGlyph(value: string): ReactNode | undefined {
 /**
  * Display transform: kebab-case machine names render as title-case labels
  * (`workspace-write` → `Workspace Write`); non-kebab host-configured names
- * pass through. Full access intentionally overrides the machine-name
- * transform so both permission surfaces use the product label `Full access`;
- * the warning body remains locale-aware.
+ * pass through.
  */
 function displayName(name: string): string {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name)) return name
   return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-function optionLabel(option: PermissionSelectValue['options'][number]): string {
-  return option.value === FULL_ACCESS ? 'Full access' : displayName(option.name)
+/**
+ * Label one preset in the active locale. Full access and `custom` always use
+ * the product label, so every permission surface names them the same way. The
+ * other shipped presets use it while the Host reports no operator-given name
+ * (the Host then falls back to the value); an operator's name is shown as
+ * written.
+ * @param value - preset machine value.
+ * @param name - Host-reported preset name.
+ * @param t - the owning bar's locale seat.
+ * @returns the label to render.
+ */
+function presetLabel(value: string, name: string, t: ComposerBarProps['t']): string {
+  const key = PRESET_LABEL_KEYS[value]
+  if (key !== undefined && (value === FULL_ACCESS || value === CUSTOM || name === value)) return t(key)
+  return displayName(name)
+}
+
+/**
+ * Tooltip copy for one preset: the Host description, except for `custom`,
+ * whose Host description is fixed English and has a locale key here.
+ * @param option - the preset option.
+ * @param t - the owning bar's locale seat.
+ * @returns the description, or undefined when the Host gives none.
+ */
+function presetDescription(option: PermissionSelectValue['options'][number], t: ComposerBarProps['t']): string | undefined {
+  return option.value === CUSTOM ? t('access.presetDesc.custom') : option.description
 }
 
 export interface PermissionSelectProps {
@@ -86,13 +121,16 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
 
   const currentValue = pick ?? value.currentValue
   const current = value.options.find(option => option.value === currentValue)
+  const currentLabel = current === undefined
+    ? presetLabel(currentValue, currentValue, t)
+    : presetLabel(current.value, current.name, t)
   const busy = pick !== null || confirmation !== null
 
   const items: MenuEntry[] = value.options
-    .filter(o => o.value !== 'custom')
+    .filter(o => o.value !== CUSTOM)
     .map((option) => {
       const icon = permissionGlyph(option.value)
-      return { id: option.value, label: optionLabel(option), ...icon === undefined ? {} : { icon } }
+      return { id: option.value, label: presetLabel(option.value, option.name, t), ...icon === undefined ? {} : { icon } }
     })
 
   const submit = (id: string): void => {
@@ -138,15 +176,15 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
           <button
             type="button"
             className={css.trigger}
-            aria-label={t('input.accessMode', { name: current === undefined ? displayName(currentValue) : optionLabel(current) })}
-            title={current?.description}
+            aria-label={t('input.accessMode', { name: currentLabel })}
+            title={current === undefined ? undefined : presetDescription(current, t)}
             disabled={locked || busy}
             onClick={() => { setOpen(!open) }}
           >
             {permissionGlyph(currentValue) !== undefined && (
               <span className={css.triggerIcon} aria-hidden>{permissionGlyph(currentValue)}</span>
             )}
-            <span className={css.triggerLabel}>{current === undefined ? displayName(currentValue) : optionLabel(current)}</span>
+            <span className={css.triggerLabel}>{currentLabel}</span>
             {/* Same glyph + open rotation as the sibling ModelSelect trigger. */}
             <span className={clsx(css.chevron, open && css.chevronOpen)} aria-hidden>
               <IconChevronDownOutline14 />

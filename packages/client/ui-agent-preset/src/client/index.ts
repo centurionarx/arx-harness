@@ -32,7 +32,7 @@ import type { AgentPresetSectionInjected } from './AgentPresetSection.tsx'
 import { AgentPresetSeatController } from './seat-store.ts'
 import type { SeatSessionSummary } from './seat-store.ts'
 import { AgentPresetSectionController } from './section-store.ts'
-import { en } from './locales.ts'
+import { en, pt } from './locales.ts'
 import { AGENT_PRESET_SETTINGS_NS, AgentPresetSettingsController } from './settings-store.ts'
 
 export type { AgentPresetLabelInjected, AgentPresetLabelProps } from './AgentPresetLabel.tsx'
@@ -64,7 +64,7 @@ export function apply(ctx: ClientContext): void {
     for (const read of rosterReaders) read()
   })
 
-  ctx.effect(() => ctx.locale.register('settings.agentPreset', { en }), 'ui-agent-preset: settings row dictionaries')
+  ctx.effect(() => ctx.locale.register('settings.agentPreset', { en, pt }), 'ui-agent-preset: settings row dictionaries')
 
   const injected = (): AgentPresetRowInjected => ({
     hooks: { agentPreset: controller.store },

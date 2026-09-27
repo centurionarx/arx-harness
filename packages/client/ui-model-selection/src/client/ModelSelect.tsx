@@ -7,9 +7,11 @@
  * ToggleButton) shows both: model name + effort in the caption tone.
  * Data and submission ride the SAME per-session ModelDirectory as the
  * /model popup; exact-model reasoning metadata and the selected effort come
- * from the Host rather than a client-owned vocabulary. A rejected selection
- * announces through the shared transient Toast anchored to the composer
- * card; the in-menu strip with Retry remains the catalog-load surface.
+ * from the Host. The client only labels the effort ids the model routes
+ * share (see `effort-labels.ts`); any other id shows the Host's name. A
+ * rejected selection announces through the shared transient Toast anchored
+ * to the composer card; the in-menu strip with Retry remains the
+ * catalog-load surface.
  */
 import {
   useEffect, useId, useMemo, useRef, useState, useSyncExternalStore,
@@ -22,6 +24,7 @@ import {
   IconWarningOutline16, Toast,
 } from '@arx-ai/arx-client-ui-primitives'
 import type { PropsLocale } from '@arx-ai/arx-client-ui-slots'
+import { effortLevelLabel } from './effort-labels.ts'
 import type { ModelSelectInjected } from './slots.ts'
 import css from './ModelSelect.module.css'
 
@@ -86,7 +89,7 @@ export function ModelSelect(
     ? undefined
     : effectiveEffort === undefined
       ? t('effort.providerDefault')
-      : reasoning.efforts.find(level => level.id === effectiveEffort)?.name ?? effectiveEffort
+      : effortLevelLabel(effectiveEffort, reasoning.efforts.find(level => level.id === effectiveEffort)?.name, t)
   const effortChoices = useMemo<readonly EffortChoice[]>(() => reasoning === undefined
     ? []
     : [
@@ -96,7 +99,7 @@ export function ModelSelect(
       ...reasoning.efforts.map((effort: ModelReasoningEffort) => ({
         key: `effort:${effort.id}`,
         effort: effort.id,
-        label: effort.name,
+        label: effortLevelLabel(effort.id, effort.name, t),
         ...effort.description === undefined ? {} : { description: effort.description },
       })),
     ], [reasoning, t])

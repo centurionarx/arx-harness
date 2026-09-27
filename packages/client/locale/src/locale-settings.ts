@@ -8,8 +8,12 @@ export const LOCALE_SETTINGS_NAMESPACE = 'locale'
 /** Field carrying an explicit locale selection; absence delegates to the browser. */
 export const LOCALE_PREFERENCE_FIELD = 'preference'
 
-/** Locale identifiers shipped by the browser client. */
-export const LOCALE_IDS = ['en'] as const
+/**
+ * Locale identifiers shipped by the browser client: the primary language
+ * subtag, with the regional variant each one stands for kept in the client's
+ * `<html lang>` table (`pt` is Brazilian Portuguese).
+ */
+export const LOCALE_IDS = ['en', 'pt'] as const
 
 /** Shipped locale identifier. */
 export type LocaleId = typeof LOCALE_IDS[number]

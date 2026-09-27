@@ -1,7 +1,7 @@
 /** Web-localized copy for the four shipped presets and file copy for every other row. */
 
 import { describe, expect, it } from 'vitest'
-import { en, presetDisplayText } from '../src/client/locales.ts'
+import { en, presetDisplayText, pt } from '../src/client/locales.ts'
 
 const translate = (bundle: typeof en) => (key: keyof typeof en): string => bundle[key]
 
@@ -11,15 +11,23 @@ describe('preset display copy', () => {
     ['code', 'presetCodeName', 'presetCodeDescription'],
     ['minimal', 'presetMinimalName', 'presetMinimalDescription'],
     ['cordis', 'presetCordisName', 'presetCordisDescription'],
-  ] as const)('localizes the shipped %s preset in English', (id, nameKey, descriptionKey) => {
+  ] as const)('localizes the shipped %s preset in English and Portuguese', (id, nameKey, descriptionKey) => {
     const preset = { id, trust: 'system' as const, name: 'file name', description: 'file description' }
 
     expect(presetDisplayText(preset, translate(en)))
       .toEqual({ name: en[nameKey], description: en[descriptionKey] })
+    expect(presetDisplayText(preset, translate(pt)))
+      .toEqual({ name: pt[nameKey], description: pt[descriptionKey] })
+  })
+
+  it('names the shipped modes in Portuguese', () => {
+    expect(['standard', 'code', 'minimal', 'cordis']
+      .map(id => presetDisplayText({ id, trust: 'system' }, translate(pt)).name))
+      .toEqual(['Modo padrão', 'Modo PTC', 'Modo mínimo', 'Modo criador'])
   })
 
   it('keeps file metadata for user and unknown system presets', () => {
-    const fileCopy = { name: '我的标准', description: '团队自己的 preset。' }
+    const fileCopy = { name: 'Meu padrão', description: 'O preset da própria equipe.' }
 
     expect(presetDisplayText({ id: 'standard', trust: 'user', ...fileCopy }, translate(en)))
       .toEqual(fileCopy)

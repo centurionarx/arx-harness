@@ -6,7 +6,7 @@ import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import type { SettingsNamespaceView } from '@arx-ai/arx-api-remotes/client'
 import { SettingsSchemaService } from '@arx-ai/arx-client-ui-settings/src/client/schema.ts'
 import { PermissionRow, type PermissionRowProps } from '../src/client/PermissionRow.tsx'
-import { en } from '../src/client/locales.ts'
+import { en, pt } from '../src/client/locales.ts'
 import { SettingsDescribeMirror } from '@arx-ai/arx-client-ui-settings/src/client/settings-mirror.ts'
 import { PermissionPresetSettingsController } from '../src/client/settings-store.ts'
 
@@ -54,14 +54,14 @@ const runtime = {
   useWorkspaces: (() => { throw new Error('unused') }) as never,
 }
 
-function mount(controller: PermissionPresetSettingsController) {
+function mount(controller: PermissionPresetSettingsController, translate: PermissionRowProps['t'] = t) {
   return render(
     <PermissionRow
       {...runtime}
       load={() => controller.load()}
       select={preset => controller.select(preset)}
       usePermission={bindSnapshotSelector(controller.store)}
-      t={t}
+      t={translate}
     />,
   )
 }
@@ -92,6 +92,26 @@ describe('PermissionRow', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Workspace Write' }))
     await screen.findByRole('button', { name: 'Workspace Write' })
     expect(mutate).toHaveBeenCalledOnce()
+  })
+
+  it('names the shipped presets in the active locale and keeps an operator-given name', async () => {
+    const described = {
+      ...SCHEMA,
+      refs: { ...SCHEMA.refs, 2: { type: 'const', value: 'workspace-write', meta: { description: 'Team workspace' } } },
+    }
+    const controller = derivedController({
+      settings: {
+        describe: () => Promise.resolve(ok({
+          writable: true, hasDocument: false, namespaces: [{ ...view('read-only'), schema: described }],
+        })),
+        mutate: vi.fn(),
+      },
+    })
+    const translatePt: PermissionRowProps['t'] = key => (pt as Record<string, string>)[key] ?? key
+    mount(controller, translatePt)
+    fireEvent.click(await screen.findByRole('button', { name: 'Somente leitura' }))
+    expect(screen.getAllByRole('menuitem').map(item => item.textContent))
+      .toEqual(['Somente leitura', 'Team workspace', 'Acesso total'])
   })
 
   it('requires explicit acknowledgement before saving Full access', async () => {

@@ -12,6 +12,7 @@ import {
 } from '@arx-ai/arx-client-runtime/client'
 import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
 import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
+import { pt as commonPt } from '@arx-ai/arx-client-locale/src/locales/pt.ts'
 import type { ClientContext, ConversationSnapshot, SessionId } from '@arx-ai/arx-client-runtime/client'
 import type { SubmitOutcome } from '@arx-ai/arx-client-ui-input-trigger/client'
 import { SessionInputShell } from '../src/client/input/facade.ts'
@@ -21,7 +22,7 @@ import type {
 import type { DraftAttachmentId } from '../src/client/input/contract.ts'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'
 import type { InputBarProps } from '../src/client/skeleton/InputBar.tsx'
-import { en } from '../src/client/locales.ts'
+import { en, pt } from '../src/client/locales.ts'
 
 afterEach(cleanup)
 
@@ -247,11 +248,11 @@ describe('image draft rail', () => {
           { kind: 'string', type: 'text/plain', getAsFile: () => null },
           { kind: 'file', type: 'image/png', getAsFile: () => image },
         ],
-        getData: () => '同时粘贴的文字',
+        getData: () => 'texto colado junto',
       },
     })
     expect(addImages).toHaveBeenCalledWith([image])
-    expect(shell.snapshot.draft).toBe('同时粘贴的文字')
+    expect(shell.snapshot.draft).toBe('texto colado junto')
   })
 
   it('pre-checks projected limits at intake: whole-batch refusal with product copy, none added', () => {
@@ -296,7 +297,7 @@ describe('image draft rail', () => {
   })
 
   it('announces the format problem before any limit when the batch holds a non-image', () => {
-    const addImages = vi.fn(() => '仅支持 PNG、JPG、WebP、GIF 格式的图片')
+    const addImages = vi.fn(() => 'Só são aceitas imagens PNG, JPG, WebP e GIF')
     const result = bench({
       addImages,
       imageLimits: {
@@ -315,7 +316,7 @@ describe('image draft rail', () => {
     ]
     act(() => { attachmentOwner(result.slotCalls).onAddImages(files) })
     expect(addImages).toHaveBeenCalledWith(files)
-    expect(result.view.getByRole('alert').textContent).toContain('仅支持 PNG、JPG、WebP、GIF 格式的图片')
+    expect(result.view.getByRole('alert').textContent).toContain('Só são aceitas imagens PNG, JPG, WebP e GIF')
   })
 
   it('projects display-ready limits into the attachment slot', () => {
@@ -382,7 +383,7 @@ describe('image draft rail', () => {
   it('announces an image-intake rejection as a fading toast, repeatable for the same reason', () => {
     vi.useFakeTimers()
     try {
-      const addImages = vi.fn(() => '仅支持 PNG、JPG、WebP、GIF 格式的图片')
+      const addImages = vi.fn(() => 'Só são aceitas imagens PNG, JPG, WebP e GIF')
       const { view, textarea } = bench({ addImages })
       const paste = () => {
         fireEvent.paste(textarea, {
@@ -393,26 +394,26 @@ describe('image draft rail', () => {
         })
       }
       paste()
-      expect(view.getByRole('alert').textContent).toContain('仅支持 PNG、JPG、WebP、GIF 格式的图片')
+      expect(view.getByRole('alert').textContent).toContain('Só são aceitas imagens PNG, JPG, WebP e GIF')
       act(() => { vi.advanceTimersByTime(4000) })
       expect(view.queryByRole('alert')).toBeNull()
       // The identical rejection re-announces: the toast is keyed per show.
       paste()
-      expect(view.getByRole('alert').textContent).toContain('仅支持 PNG、JPG、WebP、GIF 格式的图片')
+      expect(view.getByRole('alert').textContent).toContain('Só são aceitas imagens PNG, JPG, WebP e GIF')
     } finally {
       vi.useRealTimers()
     }
   })
 
   it('announces a rejected attachment-slot intake through the same toast', () => {
-    const addImages = vi.fn(() => '图片读取服务不可用')
+    const addImages = vi.fn(() => 'Serviço de leitura de imagens indisponível')
     const result = bench({ addImages })
     act(() => {
       attachmentOwner(result.slotCalls).onAddImages([
         new File([Uint8Array.of(1)], 'x.png', { type: 'image/png' }),
       ])
     })
-    expect(result.view.getByRole('alert').textContent).toContain('图片读取服务不可用')
+    expect(result.view.getByRole('alert').textContent).toContain('Serviço de leitura de imagens indisponível')
   })
 })
 
@@ -425,7 +426,7 @@ describe('Enter semantics', () => {
   it('keeps the owning placeholder or ordinary guidance when whole-queue steering is unavailable', () => {
     expect(bench({ running: true }).textarea.placeholder).toBe('Message the agent')
     expect(bench({ queue: [row('q-1')] }).textarea.placeholder).toBe('Message the agent')
-    expect(bench({ running: true, queue: [row('q-1')], draft: '消息' }).textarea.placeholder).toBe('Message the agent')
+    expect(bench({ running: true, queue: [row('q-1')], draft: 'mensagem' }).textarea.placeholder).toBe('Message the agent')
     expect(bench({
       running: true,
       queue: [row('q-1')],
@@ -437,8 +438,8 @@ describe('Enter semantics', () => {
     expect(bench({
       running: true,
       queue: [row('q-1')],
-      placeholder: '上层指定提示',
-    }).textarea.placeholder).toBe('上层指定提示')
+      placeholder: 'dica definida pelo chamador',
+    }).textarea.placeholder).toBe('dica definida pelo chamador')
     // The command menu owns Enter while open: neither the hint nor the
     // gesture may claim the chord.
     expect(bench({
@@ -570,9 +571,9 @@ describe('Enter semantics', () => {
 
   it('draft content outranks the queue: accelerated Enter steers the draft only', () => {
     const steerQueue = vi.fn()
-    const { textarea, sink } = bench({ running: true, queue: [row('q-1')], draft: '插话', steerQueue })
+    const { textarea, sink } = bench({ running: true, queue: [row('q-1')], draft: 'direcionamento', steerQueue })
     fireEvent.keyDown(textarea, { key: 'Enter', ctrlKey: true })
-    expect(sink).toHaveBeenCalledWith('插话', [], 'steer', expect.any(AbortSignal))
+    expect(sink).toHaveBeenCalledWith('direcionamento', [], 'steer', expect.any(AbortSignal))
     expect(steerQueue).not.toHaveBeenCalled()
   })
 
@@ -616,26 +617,26 @@ describe('Enter semantics', () => {
 
 describe('running and lock semantics', () => {
   it('running keeps the input free (typing + Enter queue) while the primary turns stop', () => {
-    const { textarea, button, stop, sink } = bench({ running: true, draft: '排队消息' })
+    const { textarea, button, stop, sink } = bench({ running: true, draft: 'mensagem na fila' })
     expect(textarea.disabled).toBe(false)
-    fireEvent.change(textarea, { target: { value: '排队消息2' } })
+    fireEvent.change(textarea, { target: { value: 'mensagem na fila 2' } })
     fireEvent.keyDown(textarea, { key: 'Enter' })
-    expect(sink).toHaveBeenCalledWith('排队消息2', [], 'queue', expect.any(AbortSignal))
+    expect(sink).toHaveBeenCalledWith('mensagem na fila 2', [], 'queue', expect.any(AbortSignal))
     expect(button.getAttribute('aria-label')).toBe('Stop generating')
     fireEvent.click(button)
     expect(stop).toHaveBeenCalledTimes(1)
   })
 
   it('running plain Enter follows the busy-state Steer preference', () => {
-    const { textarea, sink } = bench({ running: true, busyEnter: 'steer', draft: '直接插话' })
+    const { textarea, sink } = bench({ running: true, busyEnter: 'steer', draft: 'direcionamento direto' })
     fireEvent.keyDown(textarea, { key: 'Enter' })
-    expect(sink).toHaveBeenCalledWith('直接插话', [], 'steer', expect.any(AbortSignal))
+    expect(sink).toHaveBeenCalledWith('direcionamento direto', [], 'steer', expect.any(AbortSignal))
   })
 
   it('running Cmd/Ctrl+Enter uses the opposite of the busy-state Enter preference', () => {
-    const meta = bench({ running: true, busyEnter: 'steer', draft: '排到下一轮' })
+    const meta = bench({ running: true, busyEnter: 'steer', draft: 'para o próximo turno' })
     fireEvent.keyDown(meta.textarea, { key: 'Enter', metaKey: true })
-    expect(meta.sink).toHaveBeenCalledWith('排到下一轮', [], 'queue', expect.any(AbortSignal))
+    expect(meta.sink).toHaveBeenCalledWith('para o próximo turno', [], 'queue', expect.any(AbortSignal))
 
     const ctrl = bench({ running: true, busyEnter: 'steer', draft: 'also queue' })
     fireEvent.keyDown(ctrl.textarea, { key: 'Enter', ctrlKey: true })
@@ -645,7 +646,7 @@ describe('running and lock semantics', () => {
   it('running continuable subagent keeps Send beside an independent Stop', () => {
     const { button, interruptButton, textarea, sink, stop } = bench({
       running: true,
-      draft: '后续消息',
+      draft: 'mensagem seguinte',
       subagent: {
         address: {
           parentSessionId: 'parent' as SessionId,
@@ -659,7 +660,7 @@ describe('running and lock semantics', () => {
     expect(interruptButton).not.toBeNull()
     expect(textarea.disabled).toBe(false)
     fireEvent.click(button)
-    expect(sink).toHaveBeenCalledWith('后续消息', [], 'queue', expect.any(AbortSignal))
+    expect(sink).toHaveBeenCalledWith('mensagem seguinte', [], 'queue', expect.any(AbortSignal))
     fireEvent.click(interruptButton!)
     expect(stop).toHaveBeenCalledTimes(1)
   })
@@ -690,7 +691,7 @@ describe('running and lock semantics', () => {
   it('running one-shot subagent never exposes Stop', () => {
     const { button, interruptButton, stop } = bench({
       running: true,
-      draft: '不可停止',
+      draft: 'não interrompível',
       subagent: {
         address: {
           parentSessionId: 'parent' as SessionId,
@@ -1192,15 +1193,15 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('/goal ')
       shell.beginCommand(
-        { token: '/goal ', hint: '目标内容', submit: () => Promise.resolve({ kind: 'success' as const }) },
+        { token: '/goal ', hint: 'conteúdo da meta', submit: () => Promise.resolve({ kind: 'success' as const }) },
         { start: 0, end: 6, draftRev: shell.snapshot.draftRev },
       )
     })
     const token = view.container.querySelector('[data-decoration="token"]')
     expect(token?.textContent).toBe('/goal ')
-    expect(view.container.querySelector('[data-decoration="hint"]')?.textContent).toBe('目标内容')
+    expect(view.container.querySelector('[data-decoration="hint"]')?.textContent).toBe('conteúdo da meta')
     // Args typed: the hint disappears, the token highlight stays.
-    act(() => { shell.setDraft('/goal 发布') })
+    act(() => { shell.setDraft('/goal publicar') })
     expect(view.container.querySelector('[data-decoration="hint"]')).toBeNull()
     expect(view.container.querySelector('[data-decoration="token"]')).not.toBeNull()
   })
@@ -1220,21 +1221,21 @@ describe('decorations', () => {
   it('an inserted reference decorates its complete inline display range', () => {
     const { view, shell } = bench()
     const reference = {
-      source: 'reference', ref: 'w1', label: '会话一', appearance: 'session' as const, clipboardText: '@w1',
+      source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session' as const, clipboardText: '@w1',
     }
     act(() => {
-      shell.setDraft('参考 @w1 内容')
+      shell.setDraft('vê @w1 ok')
       shell.insertReference(
         reference,
         { start: 3, end: 6, draftRev: shell.snapshot.draftRev },
       )
     })
     const chip = view.container.querySelector('[data-decoration="chip"]')
-    expect(chip?.textContent).toBe('@会话一')
+    expect(chip?.textContent).toBe('@Ana')
     expect(chip?.getAttribute('data-reference-appearance')).toBe('session')
     expect(chip?.querySelector('svg')).not.toBeNull()
     expect(shell.snapshot.occurrences).toHaveLength(1)
-    expect(shell.snapshot.draft).toBe('参考 @会话一 内容')
+    expect(shell.snapshot.draft).toBe('vê @Ana ok')
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 3, length: 4 })
   })
 
@@ -1243,7 +1244,7 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('@w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 0, end: 3, draftRev: shell.snapshot.draftRev })
       session.set(snapshotOf({ removed: true }))
     })
@@ -1255,11 +1256,11 @@ describe('decorations', () => {
 
   it('Backspace and Delete remove a reference as one range at its boundaries', () => {
     const reference = {
-      source: 'reference', ref: 'w1', label: '会话一', appearance: 'session' as const, clipboardText: '@w1',
+      source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session' as const, clipboardText: '@w1',
     }
     const backspace = bench()
     act(() => {
-      backspace.shell.setDraft('前 @w1 后')
+      backspace.shell.setDraft('a @w1 b')
       backspace.shell.insertReference(
         reference,
         { start: 2, end: 5, draftRev: backspace.shell.snapshot.draftRev },
@@ -1267,11 +1268,11 @@ describe('decorations', () => {
     })
     backspace.textarea.setSelectionRange(6, 6)
     fireEvent.keyDown(backspace.textarea, { key: 'Backspace' })
-    expect(backspace.shell.snapshot).toMatchObject({ draft: '前  后', occurrences: [] })
+    expect(backspace.shell.snapshot).toMatchObject({ draft: 'a  b', occurrences: [] })
 
     const forwardDelete = bench()
     act(() => {
-      forwardDelete.shell.setDraft('前 @w1 后')
+      forwardDelete.shell.setDraft('a @w1 b')
       forwardDelete.shell.insertReference(
         reference,
         { start: 2, end: 5, draftRev: forwardDelete.shell.snapshot.draftRev },
@@ -1279,7 +1280,7 @@ describe('decorations', () => {
     })
     forwardDelete.textarea.setSelectionRange(2, 2)
     fireEvent.keyDown(forwardDelete.textarea, { key: 'Delete' })
-    expect(forwardDelete.shell.snapshot).toMatchObject({ draft: '前  后', occurrences: [] })
+    expect(forwardDelete.shell.snapshot).toMatchObject({ draft: 'a  b', occurrences: [] })
   })
 
   it('typing the trigger char immediately before a reference keeps it structured', () => {
@@ -1287,18 +1288,18 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('@w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 0, end: 3, draftRev: shell.snapshot.draftRev })
     })
-    expect(shell.snapshot.draft).toBe('@会话一 ')
+    expect(shell.snapshot.draft).toBe('@Ana ')
     // The inserted char equals the reference's own leading trigger, so the two
     // drafts alone cannot say whether it landed before or after that trigger.
     textarea.setSelectionRange(0, 0)
     act(() => {
       beforeInput(textarea)
-      fireEvent.change(textarea, { target: { value: '@@会话一 ' } })
+      fireEvent.change(textarea, { target: { value: '@@Ana ' } })
     })
-    expect(shell.snapshot.draft).toBe('@@会话一 ')
+    expect(shell.snapshot.draft).toBe('@@Ana ')
     expect(shell.snapshot.occurrences).toHaveLength(1)
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 1, length: 4 })
   })
@@ -1308,16 +1309,16 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('@@w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 1, end: 4, draftRev: shell.snapshot.draftRev })
     })
-    expect(shell.snapshot.draft).toBe('@@会话一 ')
+    expect(shell.snapshot.draft).toBe('@@Ana ')
     textarea.setSelectionRange(0, 1)
     act(() => {
       beforeInput(textarea, 'deleteContentBackward')
-      fireEvent.change(textarea, { target: { value: '@会话一 ' } })
+      fireEvent.change(textarea, { target: { value: '@Ana ' } })
     })
-    expect(shell.snapshot.draft).toBe('@会话一 ')
+    expect(shell.snapshot.draft).toBe('@Ana ')
     expect(shell.snapshot.occurrences).toHaveLength(1)
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 0, length: 4 })
   })
@@ -1327,17 +1328,17 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('@@w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 1, end: 4, draftRev: shell.snapshot.draftRev })
     })
-    expect(shell.snapshot.draft).toBe('@@会话一 ')
+    expect(shell.snapshot.draft).toBe('@@Ana ')
     // A caret delete reports the bare caret, never the character it removes.
     textarea.setSelectionRange(1, 1)
     act(() => {
       beforeInput(textarea, 'deleteContentBackward')
-      fireEvent.change(textarea, { target: { value: '@会话一 ' } })
+      fireEvent.change(textarea, { target: { value: '@Ana ' } })
     })
-    expect(shell.snapshot.draft).toBe('@会话一 ')
+    expect(shell.snapshot.draft).toBe('@Ana ')
     expect(shell.snapshot.occurrences).toHaveLength(1)
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 0, length: 4 })
   })
@@ -1347,15 +1348,15 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('@@w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 1, end: 4, draftRev: shell.snapshot.draftRev })
     })
     textarea.setSelectionRange(0, 0)
     act(() => {
       beforeInput(textarea, 'deleteContentForward')
-      fireEvent.change(textarea, { target: { value: '@会话一 ' } })
+      fireEvent.change(textarea, { target: { value: '@Ana ' } })
     })
-    expect(shell.snapshot.draft).toBe('@会话一 ')
+    expect(shell.snapshot.draft).toBe('@Ana ')
     expect(shell.snapshot.occurrences).toHaveLength(1)
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 0, length: 4 })
   })
@@ -1365,18 +1366,18 @@ describe('decorations', () => {
     act(() => {
       shell.setDraft('word @w1')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 5, end: 8, draftRev: shell.snapshot.draftRev })
     })
-    expect(shell.snapshot.draft).toBe('word @会话一 ')
+    expect(shell.snapshot.draft).toBe('word @Ana ')
     // One caret gesture can remove more than one character; the deleted span
     // is whatever the draft lost, never a fixed step.
     textarea.setSelectionRange(5, 5)
     act(() => {
       beforeInput(textarea, 'deleteWordBackward')
-      fireEvent.change(textarea, { target: { value: '@会话一 ' } })
+      fireEvent.change(textarea, { target: { value: '@Ana ' } })
     })
-    expect(shell.snapshot.draft).toBe('@会话一 ')
+    expect(shell.snapshot.draft).toBe('@Ana ')
     expect(shell.snapshot.occurrences).toHaveLength(1)
     expect(shell.snapshot.occurrences[0]).toMatchObject({ offset: 0, length: 4 })
   })
@@ -1384,21 +1385,21 @@ describe('decorations', () => {
   it('copy and cut expand a partial reference selection to its structured range', () => {
     const { shell, textarea } = bench()
     act(() => {
-      shell.setDraft('前 @w1 后')
+      shell.setDraft('a @w1 b')
       shell.insertReference({
-        source: 'reference', ref: 'w1', label: '会话一', appearance: 'session', clipboardText: '@w1',
+        source: 'reference', ref: 'w1', label: 'Ana', appearance: 'session', clipboardText: '@w1',
       }, { start: 2, end: 5, draftRev: shell.snapshot.draftRev })
     })
     const setData = vi.fn()
     textarea.setSelectionRange(3, 4)
     fireEvent.copy(textarea, { clipboardData: { setData } })
     expect(setData).toHaveBeenCalledWith('text/plain', '@w1')
-    expect(shell.snapshot.draft).toBe('前 @会话一 后')
+    expect(shell.snapshot.draft).toBe('a @Ana b')
 
     textarea.setSelectionRange(3, 4)
     fireEvent.cut(textarea, { clipboardData: { setData } })
     expect(setData).toHaveBeenLastCalledWith('text/plain', '@w1')
-    expect(shell.snapshot).toMatchObject({ draft: '前  后', occurrences: [] })
+    expect(shell.snapshot).toMatchObject({ draft: 'a  b', occurrences: [] })
   })
 
   it('a lexicon-matched plain token renders the text-ref mark', () => {
@@ -1478,8 +1479,8 @@ describe('strips and variants', () => {
     vi.useFakeTimers()
     try {
       const { view, shell } = bench()
-      act(() => { shell.notify('error', '命令失败了') })
-      expect(view.getByRole('alert').textContent).toContain('命令失败了')
+      act(() => { shell.notify('error', 'o comando falhou') })
+      expect(view.getByRole('alert').textContent).toContain('o comando falhou')
       expect(view.queryByRole('status')).toBeNull()
       act(() => { vi.advanceTimersByTime(4000) })
       expect(view.queryByRole('alert')).toBeNull()
@@ -1490,8 +1491,8 @@ describe('strips and variants', () => {
 
   it('renders an information notice from the machine store as a status strip', () => {
     const { view, shell } = bench()
-    act(() => { shell.notify('info', '命令完成了') })
-    expect(view.getByRole('status').textContent).toBe('命令完成了')
+    act(() => { shell.notify('info', 'o comando terminou') })
+    expect(view.getByRole('status').textContent).toBe('o comando terminou')
     expect(view.queryByRole('alert')).toBeNull()
   })
 
@@ -1566,6 +1567,47 @@ describe('command launcher chrome and control seats', () => {
     expect(command).toHaveBeenCalledWith('/permission workspace-write')
     await act(async () => {})
     expect((view.getByLabelText(/^Access mode/) as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('names the shipped presets in the active locale and keeps an operator-given name', () => {
+    const permissions = {
+      options: [
+        { value: 'read-only', name: 'read-only' },
+        { value: 'workspace-write', name: 'Team workspace' },
+        { value: 'danger-full-access', name: 'danger-full-access' },
+        { value: 'locked-down', name: 'locked-down' },
+      ],
+      currentValue: 'read-only',
+    }
+    const { view } = bench({ permissions, t: makeTranslate(pt, commonPt) })
+    const trigger = view.getByLabelText('Modo de acesso, atual: Somente leitura') as HTMLButtonElement
+    expect(trigger.textContent).toBe('Somente leitura')
+    fireEvent.click(trigger)
+    expect(view.getAllByRole('menuitem').map(o => o.textContent))
+      .toEqual(['Somente leitura', 'Team workspace', 'Acesso total', 'Locked Down'])
+  })
+
+  it('names the custom state and a current value outside the options in the active locale', () => {
+    const custom = {
+      options: [
+        { value: 'read-only', name: 'read-only' },
+        { value: 'custom', name: 'Custom', description: 'Current sandbox and approval settings do not match a preset.' },
+      ],
+      currentValue: 'custom',
+    }
+    const { view } = bench({ permissions: custom, t: makeTranslate(pt, commonPt) })
+    const trigger = view.getByLabelText(/^Modo de acesso/) as HTMLButtonElement
+    expect(trigger.textContent).toBe('Personalizado')
+    expect(trigger.title).toBe(pt['access.presetDesc.custom'])
+    fireEvent.click(trigger)
+    // `custom` is display state, never a menu target.
+    expect(view.getAllByRole('menuitem').map(o => o.textContent)).toEqual(['Somente leitura'])
+    cleanup()
+    const stale = { options: [{ value: 'read-only', name: 'read-only', description: 'Reads only.' }], currentValue: 'workspace-write' }
+    const rendered = bench({ permissions: stale })
+    const staleTrigger = rendered.view.getByLabelText('Access mode, current: Workspace Write') as HTMLButtonElement
+    expect(staleTrigger.textContent).toBe('Workspace Write')
+    expect(staleTrigger.title).toBe('')
   })
 
   it('requires explicit risk acknowledgement before submitting Full access', async () => {

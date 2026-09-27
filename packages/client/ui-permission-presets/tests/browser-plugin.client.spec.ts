@@ -20,7 +20,7 @@ import {
   PermissionRow, type PermissionRowInjected,
 } from '../src/client/PermissionRow.tsx'
 import { apply, inject } from '../src/client/index.ts'
-import { accessEn } from '../src/client/locales.ts'
+import { accessEn, accessPt } from '../src/client/locales.ts'
 
 const sid = (k: string): SessionId => k as SessionId
 
@@ -143,6 +143,21 @@ describe('ui-permission browser plugin', () => {
     // A projection that vanished between availability and open throws.
     expect(() => c.ui.options({ sessionId: sid('ghost') }, new AbortController().signal))
       .toThrow(/not available on this host/)
+  })
+
+  it('labels the popup options and the Full access gate in the active locale', async () => {
+    const b = await bench()
+    b.ctx.locale.setLocale('pt')
+    b.values.set(sid('s1'), SELECT)
+    const options = await b.decoration()!.ui.options({ sessionId: sid('s1') }, new AbortController().signal)
+    expect(options.map(option => option.label)).toEqual(['Somente leitura', 'Gravação no workspace', 'Acesso total'])
+    expect(options.find(option => option.id === 'danger-full-access')?.confirmation).toEqual({
+      title: accessPt['confirm.title'],
+      description: accessPt['confirm.description'],
+      acknowledgeLabel: accessPt['confirm.acknowledge'],
+      cancelLabel: accessPt['confirm.cancel'],
+      confirmLabel: accessPt['confirm.enable'],
+    })
   })
 
   it('a pick submits the /permission line; rejection and unmatched throw', async () => {

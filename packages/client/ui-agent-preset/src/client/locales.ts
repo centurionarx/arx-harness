@@ -84,6 +84,72 @@ export const en: Record<AgentPresetSettingsKey, string> = {
   deleteConfirm: 'Delete',
   deleting: 'Deleting…',
 }
+/** Brazilian Portuguese copy. */
+export const pt: Record<AgentPresetSettingsKey, string> = {
+  title: 'Agent preset',
+  description: 'Vale para as sessões que você iniciar a partir de agora. As sessões em andamento mantêm o preset com que começaram.',
+  loading: 'Carregando presets…',
+  error: 'Não foi possível carregar os agent presets.',
+  userTrust: 'Personalizado',
+  seatHint: 'Agent preset da sessão que você vai iniciar',
+  headerHint: 'O agent preset desta sessão, fixado quando ela começou',
+  headerNewSession: 'Inicia uma nova sessão neste modo',
+  nav: 'Agent presets',
+  sectionIntro:
+    'Um preset é a composição de plugins que o agent de uma sessão executa: as ferramentas, o prompt e as capacidades dele. '
+    + 'Duplique um preset existente e adapte-o, ou peça ao agent que crie um rascunho para você no Modo criador.',
+  builtIn: 'Integrado',
+  setDefault: 'Definir como padrão',
+  view: 'Ver',
+  presetStandardName: 'Modo padrão',
+  presetStandardDescription:
+    'Coding agent completo, com edição de arquivos, shell, busca em arquivos e na web, skills, planejamento, metas, subagents e workflows.',
+  presetCodeName: 'Modo PTC',
+  presetCodeDescription:
+    'Todas as capacidades do Modo padrão, com as ferramentas expostas pelo SDK do Code Mode para que o modelo combine operações de várias etapas em um único programa TypeScript.',
+  presetMinimalName: 'Modo mínimo',
+  presetMinimalDescription:
+    'Coding agent com duas ferramentas: bash persistente e str_replace_editor.',
+  presetCordisName: 'Modo criador',
+  presetCordisDescription:
+    'Feito para criar agent presets personalizados, com todas as capacidades do Modo padrão, além de inspeção do runtime, experimentos com plugins e orientação para criar presets.',
+  duplicate: 'Duplicar',
+  duplicateUnavailable: 'Este deploy não tem um diretório de presets gravável',
+  delete: 'Excluir',
+  presetId: 'Identificador',
+  presetIdPlaceholder: 'meu-agent',
+  displayName: 'Nome',
+  displayNamePlaceholder: 'Exibido no seletor; sem nome, aparece o identificador',
+  inUse: 'Em uso',
+  builtInGroup: 'Integrados',
+  customGroup: 'Personalizados',
+  noDescription: 'Sem descrição.',
+  brokenBadge: 'Falha ao carregar',
+  brokenNoCopy: 'Um preset que falhou ao carregar não pode ser duplicado',
+  copyOf: 'Copiado de',
+  composition: 'Composição (agent.cordis.yml)',
+  cancel: 'Cancelar',
+  close: 'Fechar',
+  retry: 'Tentar novamente',
+  copyTitle: 'Duplicar preset',
+  copyIntro:
+    'O preset inteiro é copiado nesta máquina. O identificador vira o nome do diretório e não pode ser alterado '
+    + 'depois; todo o resto é editado nos próprios arquivos do preset.',
+  create: 'Criar',
+  creating: 'Criando…',
+  creatorDraft: 'Criar o rascunho de um preset personalizado com o Modo criador',
+  openLocation: 'Abrir pasta',
+  showLocation: 'Mostrar local',
+  revealedPathLabel: 'Arquivos do preset:',
+  idRequired: 'Dê um identificador ao preset.',
+  idInvalid: 'Use letras minúsculas, dígitos e hifens, começando por uma letra ou um dígito.',
+  idTaken: 'Já existe um preset com este identificador.',
+  deleteTitle: 'Excluir este preset?',
+  deleteDescription:
+    'O diretório do preset é excluído. As sessões que já estão rodando com ele continuam funcionando; novas sessões não podem selecioná-lo.',
+  deleteConfirm: 'Excluir',
+  deleting: 'Excluindo…',
+}
 /** Preset roster fields needed to resolve Web display copy. */
 export interface PresetDisplaySource {
   /** Stable preset id. */
