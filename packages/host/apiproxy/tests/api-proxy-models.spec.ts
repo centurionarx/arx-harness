@@ -7,7 +7,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
-import AgentRegistry, { agentEvents } from '@arx-ai/arx-agent'
+import AgentRegistry, { agentEvents, loggedModelSelection } from '@arx-ai/arx-agent'
 import type { Agent } from '@arx-ai/arx-agent'
 import AttachmentStore from '@arx-ai/arx-attachment'
 import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@arx-ai/arx-llm'
@@ -17,7 +17,7 @@ import type {
   UserMessage,
 } from '@arx-ai/arx-llm'
 import SessionStore from '@arx-ai/arx-session'
-import type { SessionId } from '@arx-ai/arx-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@arx-ai/arx-session'
 import SystemPrompt from '@arx-ai/arx-system-prompt'
 import UserQuestionService from '@arx-ai/arx-user-questions'
 import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
@@ -114,6 +114,22 @@ async function harness(logged?: {
   } as unknown as Agent
   ctx.agents.register(agent)
   return { ctx, agent, sessionId: session.id }
+}
+
+/** Register a second bare live session/agent on an existing harness's ctx. */
+function registerSession(ctx: Context): { agent: Agent; sessionId: SessionId } {
+  // cwd matches every harness()'s `defaults.cwd` below: a cold-resolved
+  // session (the restart describe block) is only ever found with one set.
+  const session = ctx.sessions.create(undefined, { meta: { cwd: '/tmp' } })
+  const agent = {
+    id: session.id,
+    session,
+    status: 'running',
+    ctx,
+    inbox: { nextTurn: [], nextStep: [] },
+  } as unknown as Agent
+  ctx.agents.register(agent)
+  return { agent, sessionId: session.id }
 }
 
 function expectValue<T>(response: { result: { ok: true; value: T } | { ok: false } }): T {
@@ -221,8 +237,12 @@ describe('Web session model selection', () => {
       id: 'summary', role: 'user', source: { kind: 'plugin', plugin: 'compact' },
       content: [{ type: 'text', text: 'image summarized' }],
     } as never, {
-      surfaceOp: { op: 'replace', start: 0, end: agent.session.events.length - 1 },
-      sourceEventSeqs: agent.session.events.map(event => event.seq),
+      // Replaces the sole prior surface node (the image message at seq 0) by
+      // its own seq rather than the log's current length: an accepted pick
+      // logs its own non-surface `model/selection` event in between, which
+      // must not shift which surface node this replace targets.
+      surfaceOp: { op: 'replace', start: 0, end: 0 },
+      sourceEventSeqs: [0],
     })
     ;(agent.inbox.nextTurn as UserMessage[]).push({
       id: 'pending-image', role: 'user', source: { kind: 'user' }, content: [image],
@@ -412,6 +432,127 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
+  it('keeps each session on its own pick, and the shared default follows the last accepted one', async () => {
+    const { ctx, sessionId: sessionA } = await harness()
+    const { sessionId: sessionB } = registerSession(ctx)
+    let stored = { provider: 'deepseek-official', model: 'deepseek-chat' }
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => stored,
+      saveDefaultModelSelection: (selection) => { stored = selection; return Promise.resolve() },
+      cwd: '/tmp',
+    })
+
+    expectValue(await api.sessions.selectModel(request({
+      sessionId: sessionA, provider: 'deepseek-official', model: 'deepseek-reasoner',
+    })))
+    expectValue(await api.sessions.selectModel(request({
+      sessionId: sessionB, provider: 'duplicate', model: 'same',
+    })))
+
+    // Picking a different model in B never moved A's own selection.
+    expect(expectValue(await api.sessions.models(request({ sessionId: sessionA }))).current)
+      .toEqual({ provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'high' })
+    expect(expectValue(await api.sessions.models(request({ sessionId: sessionB }))).current)
+      .toEqual({ provider: 'duplicate', model: 'same' })
+    // The shared default (what a NEW session seeds from) equals the last
+    // accepted pick from either session, not a fixed "session A's" value.
+    expect(stored).toEqual({ provider: 'duplicate', model: 'same' })
+    await ctx.fiber.dispose()
+  })
+
+  it('appends exactly one model/selection event per accepted pick, none on rejection or an identical reselect', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+    const picks = (): unknown[] => agent.session.events.filter(event => event.type === 'model/selection')
+
+    expect(picks()).toHaveLength(0)
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-reasoner',
+    })))
+    expect(picks()).toHaveLength(1)
+
+    // A rejected pick (no adapter for "missing") writes nothing.
+    await api.sessions.selectModel(request({ sessionId, provider: 'missing', model: 'model' }))
+    expect(picks()).toHaveLength(1)
+
+    // Reselecting the SAME model already in force writes nothing further: a
+    // blank session repeatedly re-confirmed in the picker must not grow its
+    // artifact past the cold blank-probe's byte ceiling for no semantic
+    // change (see DEFAULT_COLD_BLANK_PROBE_MAX_BYTES).
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-reasoner',
+    })))
+    expect(picks()).toHaveLength(1)
+
+    // A genuinely different pick appends a second event.
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
+    })))
+    expect(picks()).toHaveLength(2)
+    await ctx.fiber.dispose()
+  })
+
+  it('logs a blank session\'s explicit pick of the default it was following, once', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    let stored = { provider: 'deepseek-official', model: 'deepseek-chat' }
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => stored,
+      saveDefaultModelSelection: (selection) => { stored = selection; return Promise.resolve() },
+      cwd: '/tmp',
+    })
+    const picks = (): unknown[] => agent.session.events.flatMap(event => event.type === 'model/selection' ? [event.data] : [])
+    const chat = { provider: 'deepseek-official', model: 'deepseek-chat', reasoningEffort: 'high' }
+
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
+    })))
+    expect(picks()).toEqual([chat])
+    expectValue(await api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat',
+    })))
+    expect(picks()).toEqual([chat])
+
+    // The log, which a later Agent for this session reads, keeps the pick
+    // after another session moves the shared default.
+    stored = { provider: 'duplicate', model: 'same' }
+    expect(loggedModelSelection(agent.session)).toEqual(chat)
+    await ctx.fiber.dispose()
+  })
+
+  it('is superseded by a later logged request, and then ignores default changes', async () => {
+    // Both events pre-exist the Agent this test reads through (neither goes
+    // through selectModel), so the first `.current` read has no in-process
+    // pick to short-circuit its fold and genuinely exercises log order — an
+    // in-process pick always stays authoritative for THIS Agent's remaining
+    // lifetime once made (the "switches only after the next assembly" test
+    // above), the same way a live pick already outranks any later default.
+    const { ctx, agent, sessionId } = await harness()
+    agent.session.append('model/selection', { provider: 'deepseek-official', model: 'deepseek-reasoner' })
+    // A request actually sent under a third config (e.g. resolved by a
+    // process that restarted between the pick and its first consumed step)
+    // supersedes the unconsumed pick: the log order, not the event type,
+    // decides which is effective.
+    agent.session.append('request/header', {
+      header: { config: { provider: 'duplicate', model: 'same' } },
+      reason: 'initial',
+    })
+    let stored = { provider: 'deepseek-official', model: 'deepseek-chat' }
+    const api = createApiProxy(ctx, { defaultModelSelection: () => stored, cwd: '/tmp' })
+
+    expect(expectValue(await api.sessions.models(request({ sessionId }))).current)
+      .toEqual({ provider: 'duplicate', model: 'same' })
+
+    // The superseding request also outranks a later default change, exactly
+    // like an ordinary logged request already does.
+    stored = { provider: 'empty', model: 'anything' }
+    expect(expectValue(await api.sessions.models(request({ sessionId }))).current)
+      .toEqual({ provider: 'duplicate', model: 'same' })
+    await ctx.fiber.dispose()
+  })
+
   it('saves an accepted selection as the default and survives a storage failure', async () => {
     const { ctx, sessionId } = await harness()
     const saved: unknown[] = []
@@ -495,5 +636,85 @@ describe('Web session model selection', () => {
     expect(catalog.groups.flatMap(group => group.models.map(model => `${group.id}/${model.id}`)))
       .not.toContain('deleted-gateway/deleted-model')
     await ctx.fiber.dispose()
+  })
+})
+
+/**
+ * A restart loses every in-process WeakMap (the gateway's own `selections`
+ * cache and `ctx.agents`' live registry alike): only what reached the session
+ * log survives. Each boot below is an independent ApiProxy over a shared
+ * plain-object store standing in for a real persistence backend — sufficient
+ * to prove the cold-resume derivation reads the restored log, without
+ * pulling a concrete agent-loop or on-disk backend into this package's tests.
+ */
+describe('session model selection survives an ApiProxy restart', () => {
+  interface StoredSession { meta: SessionHeader; events: SessionEvent[] }
+
+  /** Boot one ApiProxy generation over a shared store, resuming what an earlier generation left. */
+  async function boot(store: Map<SessionId, StoredSession>): Promise<{ ctx: Context; api: ReturnType<typeof createApiProxy> }> {
+    const ctx = new Context()
+    await ctx.plugin(SessionStore)
+    await ctx.plugin(SystemPrompt, { persona: '' })
+    await ctx.plugin(LlmRuntime)
+    await ctx.plugin(UserQuestionService)
+    await ctx.plugin(AgentRegistry)
+    ctx.llm.registerAdapter(['deepseek-official'], new CatalogAdapter('DeepSeek', [
+      { provider: 'deepseek-official', id: 'deepseek-chat', name: 'DeepSeek Chat' },
+      { provider: 'deepseek-official', id: 'deepseek-reasoner', name: 'DeepSeek Reasoner' },
+    ]))
+    ctx.provide('sessionPersistence', {
+      list: () => Promise.resolve([...store.values()].map(entry => entry.meta)),
+      inspect: (id: SessionId) => {
+        const entry = store.get(id)
+        if (entry === undefined) throw new Error(`no stored session "${id}"`)
+        return Promise.resolve({ meta: entry.meta, events: entry.events })
+      },
+      locate: () => undefined,
+    } as never)
+    ctx.agents.setFactory({
+      createAgent: () => Promise.reject(new Error('this generation only resumes stored sessions')),
+      resume: async (ownerCtx, options) => {
+        const entry = store.get(options.resumeSessionId)
+        if (entry === undefined) throw new Error(`no stored session "${options.resumeSessionId}"`)
+        const session: Session = ctx.sessions.create(options.resumeSessionId, { seed: entry.events, meta: entry.meta })
+        const agent = {} as Agent
+        const agentCtx = ownerCtx.extend({ agent })
+        Object.assign(agent, {
+          id: session.id, session, status: 'idle', ctx: agentCtx, options: options.agentOptions ?? {},
+        })
+        await options.setup?.(agentCtx)
+        ctx.agents.register(agent)
+        return { agent, dispose: () => Promise.resolve() }
+      },
+    })
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+    return { ctx, api }
+  }
+
+  it("a blank session's pick survives a restart over the same store", async () => {
+    const store = new Map<SessionId, StoredSession>()
+    const before = await boot(store)
+    const { sessionId } = registerSession(before.ctx)
+    expectValue(await before.api.sessions.selectModel(request({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-reasoner',
+    })))
+    // Simulates the backend's own flush, which real persistence performs on
+    // every append; this test's subject is the cold-resume derivation, not
+    // the flush mechanism itself.
+    const session = before.ctx.sessions.get(sessionId)
+    if (session === undefined) throw new Error('unreachable')
+    store.set(sessionId, { meta: session.header, events: [...session.events] })
+    // Dispose the whole gateway fiber: SessionStore, AgentRegistry, and every
+    // WeakMap `createApiProxy` closed over for this generation are all gone.
+    await before.ctx.fiber.dispose()
+
+    const after = await boot(store)
+    expect(after.ctx.agents.get(sessionId)).toBeUndefined()
+    expect(expectValue(await after.api.sessions.models(request({ sessionId }))).current)
+      .toEqual({ provider: 'deepseek-official', model: 'deepseek-reasoner' })
+    await after.ctx.fiber.dispose()
   })
 })

@@ -19,5 +19,5 @@ Changing the default affects only Agents that subsequently resolve from it. An e
 
 ## Known Limitations and Deferred Work
 
-- The service owns one process-wide default; per-session selection remains the entry point's responsibility.
+- The service owns one process-wide default; per-session selection remains the entry point's responsibility. The Web gateway logs each session's pick as a `model/selection` event in that session's log ([`@arx-ai/arx-host-apiproxy`](../../host/apiproxy/README.md)), so a later saved default does not replace it.
 - Without a settings provider, `saveSelection()` cannot retain a selection for a later Agent.
