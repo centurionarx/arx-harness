@@ -18,7 +18,7 @@ import {
   type KeyboardEvent, type FocusEvent,
 } from 'react'
 import clsx from 'clsx'
-import type { ModelReasoningEffort, ModelSelection } from '@arx-ai/arx-api-remotes/client'
+import type { ModelProviderGroup, ModelReasoningEffort, ModelSelection } from '@arx-ai/arx-api-remotes/client'
 import {
   IconCheckOutline16, IconChevronDownOutline14, IconChevronRightOutline14,
   IconWarningOutline16, Toast,
@@ -39,6 +39,40 @@ interface EffortChoice {
   description?: string
 }
 
+/** One advertised model, as the directory's provider groups carry it. */
+type CatalogModel = ModelProviderGroup['models'][number]
+
+/** The model whose effort pane opened right after it was picked. */
+interface PickedModel {
+  provider: string
+  model: CatalogModel
+}
+
+/**
+ * The effort rows one model offers: a provider-default row when the model
+ * names no default level, then its levels in Host order.
+ * @param reasoning - the model's reasoning metadata, when it has any.
+ * @param t - the `model` namespace translate function.
+ * @returns the rows; empty for a model without reasoning metadata.
+ */
+function effortChoicesOf(
+  reasoning: CatalogModel['reasoning'],
+  t: PropsLocale<'model'>['t'],
+): readonly EffortChoice[] {
+  if (reasoning === undefined) return []
+  return [
+    ...reasoning.defaultEffort === undefined
+      ? [{ key: 'provider-default', effort: undefined, label: t('effort.providerDefault') }]
+      : [],
+    ...reasoning.efforts.map((effort: ModelReasoningEffort) => ({
+      key: `effort:${effort.id}`,
+      effort: effort.id,
+      label: effortLevelLabel(effort.id, effort.name, t),
+      ...effort.description === undefined ? {} : { description: effort.description },
+    })),
+  ]
+}
+
 /**
  * Render the composer model seat.
  * @param props - owner share (locked) + injected face (shared directory
@@ -55,6 +89,9 @@ export function ModelSelect(
   )
   const [open, setOpen] = useState(false)
   const [pane, setPane] = useState<Pane>('root')
+  // Set only while the effort pane follows a model pick: the pane then
+  // describes the picked model, even before the directory reports it current.
+  const [picked, setPicked] = useState<PickedModel | null>(null)
   // The in-menu error strip serves catalog loads (its Retry re-runs the
   // load); a rejected SELECTION announces through the transient toast
   // instead, so the strip renders only while the latest failure-capable
@@ -90,19 +127,13 @@ export function ModelSelect(
     : effectiveEffort === undefined
       ? t('effort.providerDefault')
       : effortLevelLabel(effectiveEffort, reasoning.efforts.find(level => level.id === effectiveEffort)?.name, t)
-  const effortChoices = useMemo<readonly EffortChoice[]>(() => reasoning === undefined
-    ? []
-    : [
-      ...reasoning.defaultEffort === undefined
-        ? [{ key: 'provider-default', effort: undefined, label: t('effort.providerDefault') }]
-        : [],
-      ...reasoning.efforts.map((effort: ModelReasoningEffort) => ({
-        key: `effort:${effort.id}`,
-        effort: effort.id,
-        label: effortLevelLabel(effort.id, effort.name, t),
-        ...effort.description === undefined ? {} : { description: effort.description },
-      })),
-    ], [reasoning, t])
+  const pickedIsCurrent = picked !== null
+    && state.current?.provider === picked.provider && state.current.model === picked.model.id
+  const paneReasoning = picked === null ? reasoning : picked.model.reasoning
+  const paneEffort = picked === null || pickedIsCurrent
+    ? state.current?.reasoningEffort ?? paneReasoning?.defaultEffort
+    : paneReasoning?.defaultEffort
+  const effortChoices = useMemo(() => effortChoicesOf(paneReasoning, t), [paneReasoning, t])
   const busy = state.status === 'selecting'
 
   const reload = (): void => {
@@ -117,6 +148,13 @@ export function ModelSelect(
       load()
     }
   }, [available, load])
+
+  // A pick that drills into its effort pane moves focus to the level that
+  // will apply, so the keyboard continues where the pointer went.
+  useEffect(() => {
+    if (pane !== 'effort' || picked === null) return
+    itemRefs.current.find(item => item?.getAttribute('aria-checked') === 'true')?.focus()
+  }, [pane, picked])
 
   useEffect(() => {
     if (!open) return
@@ -138,6 +176,7 @@ export function ModelSelect(
   const close = (restoreFocus = false): void => {
     setOpen(false)
     setPane('root')
+    setPicked(null)
     if (restoreFocus) queueMicrotask(() => { triggerRef.current?.focus() })
   }
 
@@ -153,8 +192,10 @@ export function ModelSelect(
     if (event.key === 'Escape' && open) {
       event.preventDefault()
       // Escape backs out of a drilled pane first, then closes.
-      if (pane !== 'root') setPane('root')
-      else close(true)
+      if (pane !== 'root') {
+        setPane('root')
+        setPicked(null)
+      } else close(true)
       return
     }
     if (!open) return
@@ -181,24 +222,45 @@ export function ModelSelect(
     }
   }
 
-  const choose = (selection: ModelSelection): void => {
-    if (state.current?.provider === selection.provider && state.current.model === selection.model) {
+  /**
+   * Pick a model, then continue in the same menu: a model offering more than
+   * one effort row opens its effort pane, any other model closes the menu.
+   */
+  const choose = (provider: string, model: CatalogModel): void => {
+    const next = (): void => {
+      if (effortChoicesOf(model.reasoning, t).length > 1) {
+        setPicked({ provider, model })
+        setPane('effort')
+        return
+      }
       close(true)
+    }
+    if (state.current?.provider === provider && state.current.model === model.id) {
+      next()
       return
     }
     lastActionRef.current = 'select'
-    void select(selection).then(settleSelection)
+    void select({ provider, model: model.id }).then((accepted) => {
+      if (!accepted) {
+        settleSelection(false)
+        return
+      }
+      if (rootRef.current !== null) next()
+    })
   }
 
   const chooseEffort = (effort: string | undefined): void => {
-    if (state.current === null) return
-    if (effectiveEffort === effort) {
+    const target = picked === null
+      ? state.current
+      : { provider: picked.provider, model: picked.model.id }
+    if (target === null) return
+    if (paneEffort === effort) {
       close(true)
       return
     }
     const selection: ModelSelection = {
-      provider: state.current.provider,
-      model: state.current.model,
+      provider: target.provider,
+      model: target.model,
       ...effort === undefined ? {} : { reasoningEffort: effort },
     }
     lastActionRef.current = 'select'
@@ -304,7 +366,7 @@ export function ModelSelect(
                             key={model.id}
                             title={model.name}
                             disabled={busy}
-                            onClick={() => { choose({ provider: group.id, model: model.id }) }}
+                            onClick={() => { choose(group.id, model) }}
                           >
                             <span className={css.optionCopy}>
                               <span className={css.modelName}>{model.name}</span>
@@ -343,8 +405,8 @@ export function ModelSelect(
                     ref={itemRef()}
                     type="button"
                     role="menuitemradio"
-                    aria-checked={effectiveEffort === level.effort}
-                    className={clsx(css.option, effectiveEffort === level.effort && css.selected)}
+                    aria-checked={paneEffort === level.effort}
+                    className={clsx(css.option, paneEffort === level.effort && css.selected)}
                     key={level.key}
                     disabled={busy}
                     onClick={() => { chooseEffort(level.effort) }}
@@ -356,7 +418,7 @@ export function ModelSelect(
                       )}
                     </span>
                     <span className={css.check}>
-                      {effectiveEffort === level.effort ? <IconCheckOutline16 /> : null}
+                      {paneEffort === level.effort ? <IconCheckOutline16 /> : null}
                     </span>
                   </button>
                 ))}

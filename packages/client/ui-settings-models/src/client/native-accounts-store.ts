@@ -6,8 +6,8 @@ import type {
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import {
-  CHAT_ROUTES, claudeRouteEntries, codexRouteEntries, entryId, storedModels, storedRoute,
-  type ChatRouteState, type RouteModelEntry,
+  CHAT_ROUTES, claudeRouteEntries, codexRouteEntries, pinnedCatalog, reconciledModels, staleOverrides, storedModels,
+  storedRoute, type ChatRouteState,
 } from './chat-roster.ts'
 import { answered, messageOf } from './store.ts'
 
@@ -23,11 +23,8 @@ interface State {
   error: string | null
 }
 
-/** One settings write that brings a chat route up to its account's roster. */
-interface RouteWrite {
-  readonly path: string[]
-  readonly value: unknown
-}
+/** The ordered settings path edits that bring a chat route up to its account's roster. */
+type RouteWrite = Parameters<IApiClient['settings']['mutate']>[0]['ops']
 
 const pending = (attempt: NativeAccountAttempt | null): attempt is NativeAccountAttempt =>
   attempt?.state === 'starting' || attempt?.state === 'waiting'
@@ -152,10 +149,11 @@ export class NativeAccountsStore {
   /**
    * Bring one product's chat route up to the signed-in account's roster. A
    * missing Claude route is created with the whole roster under its preset
-   * name. An existing route keeps every model it lists, and every field an
-   * operator wrote, and gains the roster models it lacks. A Codex route must
-   * already exist, because its credential is the separate OpenAI chat
-   * authorization, not the native Codex sign-in.
+   * name. An existing route keeps every model it lists and every field an
+   * operator wrote, except that a roster model's effort levels follow the
+   * roster, and gains the roster models it lacks. A Codex route must already
+   * exist, because its credential is the separate OpenAI chat authorization,
+   * not the native Codex sign-in.
    * @param provider - the native product whose roster feeds the route.
    */
   async enable(provider: NativeAccountProvider): Promise<void> {
@@ -167,12 +165,9 @@ export class NativeAccountsStore {
       const mirror = this.settings.getSnapshot()
       const namespace = this.namespaceOf(provider)
       if (!mirror.view?.writable || namespace === undefined) throw new Error('Native model settings are unavailable or read-only')
-      const write = this.routeWrite(provider, roster, namespace)
-      if (write === undefined) return
-      const view = await answered(this.api.settings.mutate({
-        ns: namespace.ns, expectedRevision: namespace.revision,
-        ops: [{ op: 'set', path: write.path, value: write.value }],
-      }))
+      const ops = this.routeWrite(provider, roster, namespace)
+      if (ops === undefined) return
+      const view = await answered(this.api.settings.mutate({ ns: namespace.ns, expectedRevision: namespace.revision, ops }))
       if (this.disposed) return
       this.settings.acceptView(view)
       await this.load()
@@ -194,15 +189,19 @@ export class NativeAccountsStore {
   }
 
   /**
-   * The write that adds an account's missing roster models to its chat route.
-   * A Codex route that lists no models serves pi-ai's installed catalog, so
-   * that catalog is what it already serves, and a write that must add a model
-   * lists the catalog explicitly beside it.
+   * The path edits that bring an account's chat route up to its roster:
+   * missing roster models are added, and a model the roster names takes the
+   * effort levels the roster reports for it. The edits name only the fields
+   * they change, because the settings view omits secret fields. A Codex route
+   * that lists no models serves pi-ai's installed catalog and takes the
+   * levels as `modelOverrides`; only a roster model outside the catalog makes
+   * the edits list the catalog explicitly, with the overrides folded into the
+   * list, because the route refuses overrides beside a list.
    * @param provider - the native product.
    * @param models - its connected subscription account's roster.
    * @param namespace - the namespace holding the route, when the mirror carries it.
-   * @returns the write, or `undefined` when the route serves the whole roster or,
-   *   for Codex, does not exist or the last load could not read the catalog.
+   * @returns the edits, or `undefined` when the route already serves the roster
+   *   or, for Codex, does not exist or the last load could not read the catalog.
    */
   private routeWrite(
     provider: NativeAccountProvider, models: readonly NativeAccountModel[], namespace: SettingsNamespaceView | undefined,
@@ -211,14 +210,26 @@ export class NativeAccountsStore {
     const stored = storedRoute(namespace?.value, route)
     if (provider === 'claude-code') {
       const entries = claudeRouteEntries(models)
-      if (stored === undefined) return { path: ['providers', route], value: { models: entries } }
-      return appended(storedModels(stored), entries, route)
+      if (stored === undefined) return [{ op: 'set', path: ['providers', route], value: { models: entries } }]
+      const listed = storedModels(stored)
+      return listWrite(listed, reconciledModels(listed, entries, 'efforts'), route)
     }
     const catalog = this.codexCatalog
     if (stored === undefined || catalog === undefined) return undefined
     const entries = codexRouteEntries(models, catalog)
     const listed = storedModels(stored)
-    return appended(listed.length > 0 ? listed : [...catalog].map(id => ({ id })), entries, route)
+    if (listed.length > 0) return listWrite(listed, reconciledModels(listed, entries, 'reasoningEfforts'), route)
+    if (entries.every(entry => catalog.has(entry.id))) {
+      const stale = staleOverrides(stored.modelOverrides, entries)
+      return stale.length === 0 ? undefined : stale.map(entry => ({
+        op: 'set', path: ['providers', route, 'modelOverrides', entry.id, 'reasoningEfforts'], value: entry.reasoningEfforts,
+      }))
+    }
+    const pin: RouteWrite = [{
+      op: 'set', path: ['providers', route, 'models'],
+      value: reconciledModels(pinnedCatalog(catalog, stored.modelOverrides), entries, 'reasoningEfforts'),
+    }]
+    return stored.modelOverrides === undefined ? pin : [{ op: 'unset', path: ['providers', route, 'modelOverrides'] }, ...pin]
   }
 
   /**
@@ -292,14 +303,13 @@ export class NativeAccountsStore {
 }
 
 /**
- * The write that appends the roster entries a route's list lacks.
- * @param listed - the entries the route lists, kept as stored.
- * @param entries - the roster's entries.
+ * The edit that stores a route's reconciled model list.
+ * @param listed - the list the route stores.
+ * @param list - the reconciled list, holding each unchanged entry as the stored object.
  * @param route - the route id.
- * @returns the write, or `undefined` when the list already holds every roster model.
+ * @returns the edit, or `undefined` when the reconciled list holds exactly the stored entries.
  */
-function appended(listed: readonly unknown[], entries: readonly RouteModelEntry[], route: string): RouteWrite | undefined {
-  const served = new Set(listed.map(entryId))
-  const missing = entries.filter(entry => !served.has(entry.id))
-  return missing.length === 0 ? undefined : { path: ['providers', route, 'models'], value: [...listed, ...missing] }
+function listWrite(listed: readonly unknown[], list: readonly unknown[], route: string): RouteWrite | undefined {
+  const unchanged = list.length === listed.length && list.every((entry, index) => entry === listed[index])
+  return unchanged ? undefined : [{ op: 'set', path: ['providers', route, 'models'], value: list }]
 }

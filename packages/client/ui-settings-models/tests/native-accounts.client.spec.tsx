@@ -8,7 +8,9 @@ import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import { NativeAccountsStore } from '../src/client/native-accounts-store.ts'
 import { NativeAccounts } from '../src/client/NativeAccounts.tsx'
-import { claudeRouteEntries, codexRouteEntries, entryId, storedModels, storedRoute } from '../src/client/chat-roster.ts'
+import {
+  claudeRouteEntries, codexRouteEntries, entryId, pinnedCatalog, reconciledModels, staleOverrides, storedModels, storedRoute,
+} from '../src/client/chat-roster.ts'
 import { en } from '../src/client/locales.ts'
 
 const account: NativeAccountView = {
@@ -48,12 +50,16 @@ function host(canOpenPath?: boolean): HostDescriptionSource {
   return { getSnapshot: () => description, subscribe: () => () => {} }
 }
 
-/** Write `value` at `path` in a copy of `root`, the way a settings `set` op lands. */
-function withSet(root: unknown, path: readonly string[], value: unknown): unknown {
-  if (path.length === 0) return value
-  const [key, ...rest] = path as [string, ...string[]]
+type PathOp = Parameters<IApiClient['settings']['mutate']>[0]['ops'][number]
+
+/** Apply one path op to a copy of `root`, the way a settings `mutate` op lands. */
+function applied(root: unknown, op: PathOp): unknown {
+  const [key, ...rest] = op.path as [string, ...string[]]
   const node = typeof root === 'object' && root !== null ? root as Record<string, unknown> : {}
-  return { ...node, [key]: withSet(node[key], rest, value) }
+  if (rest.length > 0) return { ...node, [key]: applied(node[key], { ...op, path: rest }) }
+  if (op.op === 'set') return { ...node, [key]: op.value }
+  const { [key]: _removed, ...kept } = node
+  return kept
 }
 
 function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unknown; accounts?: NativeAccountView[] } = {}) {
@@ -73,8 +79,7 @@ function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unk
   }
   const mutate = vi.fn<IApiClient['settings']['mutate']>(async ({ ns, ops }) => {
     const current = namespaces.get(ns)!
-    const op = ops[0] as { path: string[]; value: unknown }
-    return ok({ ...current, revision: current.revision + 1, value: withSet(current.value, op.path, op.value) })
+    return ok({ ...current, revision: current.revision + 1, value: ops.reduce(applied, current.value) })
   })
   const discoverModels = vi.fn<IApiClient['llm']['discoverModels']>(async () =>
     ok({ models: [{ id: 'gpt-6-astra', name: 'GPT-6 Astra' }, { id: 'gpt-5.5', name: 'GPT-5.5' }] }))
@@ -96,6 +101,10 @@ function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unk
     enable: (provider: NativeAccountView['provider']) => { void controller.enable(provider) }, t: (key: string) => en[key as keyof typeof en],
   }
   return { controller, nativeAccounts, mutate, discoverModels, enabled, props, settings }
+}
+/** The `llm-pi-ai` namespace value the settings mirror holds now. */
+function piAiValue(settings: SettingsDescribeFace): unknown {
+  return settings.getSnapshot().view?.namespaces.find(row => row.ns === 'llm-pi-ai')?.value
 }
 /** A reply the test delivers by hand. */
 function deferred<T>() {
@@ -141,7 +150,7 @@ describe('native product accounts', () => {
     b.controller.dispose()
   })
 
-  it('waits for Codex chat before feeding its route, then adds the plan models the catalog route lacks', async () => {
+  it('waits for Codex chat before feeding its route, then pins the catalog at the plan levels beside the plan models it lacks', async () => {
     const b = bench({ accounts: [codex] })
     await b.controller.load()
     expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'absent' })
@@ -155,7 +164,7 @@ describe('native product accounts', () => {
     await b.controller.enable('codex')
     expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-pi-ai', expectedRevision: 8, ops: [{
       op: 'set', path: ['providers', 'openai-codex', 'models'], value: [
-        { id: 'gpt-6-astra' }, { id: 'gpt-5.5' },
+        { id: 'gpt-6-astra', reasoningEfforts: { low: 'low', high: 'high' } }, { id: 'gpt-5.5' },
         { id: 'gpt-6-pro', name: 'GPT-6-Pro', reasoningEfforts: { off: 'none', low: 'low', high: 'high' } },
       ],
     }] })
@@ -165,12 +174,71 @@ describe('native product accounts', () => {
     b.controller.dispose()
   })
 
-  it('keeps a Codex route that already lists the whole plan as it is', async () => {
-    const b = bench({ accounts: [codex], codexRoute: { models: [{ id: 'gpt-6-pro' }, { id: 'gpt-6-astra' }] } })
+  it('gives a Codex route that lists the whole plan the plan levels and keeps its other fields', async () => {
+    const b = bench({ accounts: [codex], codexRoute: { models: [{ id: 'gpt-6-pro', contextWindow: 64_000 }, { id: 'gpt-6-astra' }] } })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'stale' })
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-pi-ai', expectedRevision: 7, ops: [{
+      op: 'set', path: ['providers', 'openai-codex', 'models'], value: [
+        { id: 'gpt-6-pro', contextWindow: 64_000, reasoningEfforts: { off: 'none', low: 'low', high: 'high' } },
+        { id: 'gpt-6-astra', reasoningEfforts: { low: 'low', high: 'high' } },
+      ],
+    }] })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
+  })
+
+  it('keeps a Codex route whose list already offers the plan levels, in any key order', async () => {
+    const b = bench({ accounts: [codex], codexRoute: { models: [
+      { id: 'gpt-6-pro', reasoningEfforts: { high: 'high', off: 'none', low: 'low' } },
+      { id: 'gpt-6-astra', reasoningEfforts: { low: 'low', high: 'high' } },
+    ] } })
     await b.controller.load()
     expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
     await b.controller.enable('codex')
     expect(b.mutate).not.toHaveBeenCalled()
+  })
+
+  it('sets only the plan levels as overrides on a catalog Codex route whose plan the catalog covers', async () => {
+    const b = bench({
+      accounts: [{ ...codex, models: [
+        { id: 'gpt-6-astra', name: 'GPT-6-Astra', efforts: ['low', 'high'] }, { id: 'gpt-5.5', name: 'GPT-5.5' },
+      ] }],
+      codexRoute: { modelOverrides: { 'gpt-6-astra': { contextWindow: 96_000 } } },
+    })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'stale' })
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-pi-ai', expectedRevision: 7, ops: [{
+      op: 'set', path: ['providers', 'openai-codex', 'modelOverrides', 'gpt-6-astra', 'reasoningEfforts'],
+      value: { low: 'low', high: 'high' },
+    }] })
+    expect(piAiValue(b.settings)).toEqual({ providers: {
+      'openai-codex': { modelOverrides: { 'gpt-6-astra': { contextWindow: 96_000, reasoningEfforts: { low: 'low', high: 'high' } } } },
+    } })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledOnce()
+  })
+
+  it('folds a catalog Codex route\'s overrides into the pinned list when the plan adds a model', async () => {
+    const b = bench({ accounts: [codex], codexRoute: {
+      displayName: 'Codex', modelOverrides: { 'gpt-5.5': { contextWindow: 200_000 }, 'gpt-6-astra': { name: 'Astra' } },
+    } })
+    await b.controller.load()
+    await b.controller.enable('codex')
+    expect(b.mutate).toHaveBeenCalledWith({ ns: 'llm-pi-ai', expectedRevision: 7, ops: [
+      { op: 'unset', path: ['providers', 'openai-codex', 'modelOverrides'] },
+      { op: 'set', path: ['providers', 'openai-codex', 'models'], value: [
+        { id: 'gpt-6-astra', name: 'Astra', reasoningEfforts: { low: 'low', high: 'high' } },
+        { id: 'gpt-5.5', contextWindow: 200_000 },
+        { id: 'gpt-6-pro', name: 'GPT-6-Pro', reasoningEfforts: { off: 'none', low: 'low', high: 'high' } },
+      ] },
+    ] })
+    expect(piAiValue(b.settings)).toMatchObject({
+      providers: { 'openai-codex': { displayName: 'Codex' } },
+    })
+    expect(b.controller.store.getSnapshot().routes).toEqual({ codex: 'current' })
   })
 
   it('shows the accounts, reports a refused Codex catalog read, and writes no Codex route without it', async () => {
@@ -609,17 +677,53 @@ describe('chat roster entries', () => {
     ])
   })
 
-  it('names catalog Codex models by id alone and declares only offerable efforts for the rest', () => {
+  it('leaves catalog Codex models the catalog name and declares only the efforts pi-ai can offer', () => {
     expect(codexRouteEntries([
       { id: 'gpt-6-astra', name: 'GPT-6-Astra', efforts: ['low'] },
       { id: 'gpt-6-astra', name: 'Duplicate' },
       { id: 'gpt-ultra-only', name: 'Ultra only', efforts: ['ultra'] },
       { id: 'gpt-plain', name: 'Plain' },
     ], new Set(['gpt-6-astra']))).toEqual([
-      { id: 'gpt-6-astra' },
+      { id: 'gpt-6-astra', reasoningEfforts: { low: 'low' } },
       { id: 'gpt-ultra-only', name: 'Ultra only' },
       { id: 'gpt-plain', name: 'Plain' },
     ])
+  })
+
+  it('gives listed models the roster levels, drops a Claude default the new levels lack, and appends the rest', () => {
+    const listed = [
+      { id: 'kept-default', name: 'Mine', efforts: ['low', 'high'], defaultEffort: 'high' },
+      { id: 'lost-default', efforts: ['low'], defaultEffort: 'low' },
+      { id: 'same', efforts: ['high'] },
+      { id: 'unreported', efforts: ['low'] },
+      'text',
+    ]
+    const reconciled = reconciledModels(listed, [
+      { id: 'kept-default', efforts: ['high', 'max'] },
+      { id: 'lost-default', efforts: ['high'] },
+      { id: 'same', efforts: ['high'] },
+      { id: 'unreported', name: 'Unreported' },
+      { id: 'new', name: 'New', efforts: ['low'] },
+    ], 'efforts')
+    expect(reconciled).toEqual([
+      { id: 'kept-default', name: 'Mine', efforts: ['high', 'max'], defaultEffort: 'high' },
+      { id: 'lost-default', efforts: ['high'] },
+      ...listed.slice(2),
+      { id: 'new', name: 'New', efforts: ['low'] },
+    ])
+    expect(reconciled.slice(2, 5).every((entry, index) => entry === listed[index + 2])).toBe(true)
+  })
+
+  it('reports the overrides that lack the roster levels and pins the catalog with its overrides', () => {
+    expect(staleOverrides({ same: { reasoningEfforts: { high: 'high', low: 'low' } }, other: { contextWindow: 8 } }, [
+      { id: 'same', reasoningEfforts: { low: 'low', high: 'high' } },
+      { id: 'other', reasoningEfforts: { low: 'low' } },
+      { id: 'fresh', reasoningEfforts: { high: 'high' } },
+      { id: 'plain' },
+    ])).toEqual([{ id: 'other', reasoningEfforts: { low: 'low' } }, { id: 'fresh', reasoningEfforts: { high: 'high' } }])
+    expect(staleOverrides(undefined, [{ id: 'plain' }])).toEqual([])
+    expect(pinnedCatalog(new Set(['a', 'b']), { a: { name: 'A' }, b: 'text' })).toEqual([{ id: 'a', name: 'A' }, { id: 'b' }])
+    expect(pinnedCatalog(new Set(['a']), undefined)).toEqual([{ id: 'a' }])
   })
 
   it('reads only well-formed routes, model lists, and entry ids', () => {
