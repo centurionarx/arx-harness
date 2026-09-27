@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-fs",
   "description": "Model-facing filesystem tools (read, write, edit) over the arx Harness filesystem seam (ctx.fs)",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "publishConfig": {
     "access": "public"
   },
