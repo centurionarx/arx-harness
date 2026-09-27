@@ -1,0 +1,6 @@
+- menu "Model and reasoning effort":
+  - menuitemradio "Default" [checked]:
+    - text: Default
+    - img
+  - menuitemradio "Low"
+  - menuitemradio "High"

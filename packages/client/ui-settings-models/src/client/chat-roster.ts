@@ -28,7 +28,8 @@ export const CHAT_ROUTES: Readonly<Record<NativeAccountProvider, ChatRouteTarget
 
 /**
  * Whether a chat route serves an account's roster: `absent` has no route,
- * `stale` lacks at least one roster model, and `current` serves them all.
+ * `stale` lacks a roster model or offers a model other effort levels than the
+ * roster reports, and `current` serves every roster model at its levels.
  */
 export type ChatRouteState = 'absent' | 'stale' | 'current'
 
@@ -74,10 +75,10 @@ export function claudeRouteEntries(models: readonly NativeAccountModel[]): Route
 
 /**
  * The model entries of a Codex roster for the pi-ai `openai-codex` route. A
- * model the installed catalog describes is named by id alone, so it keeps the
- * catalog's name, capacities, and reasoning levels. Any other model carries
- * the roster's name and the efforts pi-ai can offer, and takes the route's
- * default capacities.
+ * model the installed catalog describes keeps the catalog's name and
+ * capacities; any other model carries the roster's name and takes the route's
+ * default capacities. Either one carries the efforts the roster reports that
+ * pi-ai can offer, which replace the catalog's levels for that model.
  * @param models - the account's roster, in the product's order.
  * @param catalog - the model ids pi-ai's installed `openai-codex` catalog describes.
  * @returns the entries in roster order, one per model id.
@@ -86,21 +87,100 @@ export function codexRouteEntries(models: readonly NativeAccountModel[], catalog
   const rows = new Map<string, RouteModelEntry>()
   for (const model of models) {
     if (rows.has(model.id)) continue
-    if (catalog.has(model.id)) {
-      rows.set(model.id, { id: model.id })
-      continue
-    }
     const levels = (model.efforts ?? []).flatMap((effort) => {
       const level = PI_AI_LEVEL_OF[effort]
       return level === undefined ? [] : [[level, effort] as const]
     })
     rows.set(model.id, {
       id: model.id,
-      name: model.name,
+      ...catalog.has(model.id) ? {} : { name: model.name },
       ...levels.length === 0 ? {} : { reasoningEfforts: Object.fromEntries(levels) },
     })
   }
   return [...rows.values()]
+}
+
+/** The entry field that carries a route's effort levels: `efforts` for Claude, `reasoningEfforts` for Codex. */
+export type EffortField = 'efforts' | 'reasoningEfforts'
+
+/**
+ * Stored model entries brought up to a roster. An entry the roster names
+ * takes the roster's effort levels when the roster reports any, and keeps
+ * every other field an operator wrote; a Claude entry's `defaultEffort` that
+ * its new `efforts` no longer offer is dropped, because the route refuses it.
+ * Roster models the list lacks are appended in roster order.
+ * @param listed - the entries the route lists, as stored.
+ * @param entries - the roster's entries for the route.
+ * @param field - the entry field that carries the route's effort levels.
+ * @returns the reconciled list; each entry it leaves unchanged is the stored
+ *   object itself, so an unchanged list holds exactly the `listed` objects.
+ */
+export function reconciledModels(
+  listed: readonly unknown[], entries: readonly RouteModelEntry[], field: EffortField,
+): unknown[] {
+  const roster = new Map<string | undefined, RouteModelEntry>(entries.map(entry => [entry.id, entry]))
+  const kept = listed.map((stored) => {
+    const levels = roster.get(entryId(stored))?.[field]
+    const { defaultEffort, ...rest } = recordOf(stored)
+    if (levels === undefined || sameLevels(rest[field], levels)) return stored
+    const offered = defaultEffort !== undefined && (!Array.isArray(levels) || levels.includes(defaultEffort))
+    return { ...rest, [field]: levels, ...offered ? { defaultEffort } : {} }
+  })
+  const served = new Set(listed.map(entryId))
+  return [...kept, ...entries.filter(entry => !served.has(entry.id))]
+}
+
+/**
+ * The roster entries whose effort levels a Codex route without a `models`
+ * list lacks in its `modelOverrides`. Such a route serves the installed
+ * catalog, and an override for a model reshapes only the fields it sets.
+ * @param overrides - the route's stored `modelOverrides` value.
+ * @param entries - the roster's entries, every one of them a catalog model.
+ * @returns the entries whose `reasoningEfforts` the stored overrides do not
+ *   already carry, in roster order; an entry without levels is never stale.
+ */
+export function staleOverrides(overrides: unknown, entries: readonly RouteModelEntry[]): RouteModelEntry[] {
+  const stored = recordOf(overrides)
+  return entries.filter(entry =>
+    entry.reasoningEfforts !== undefined && !sameLevels(recordOf(stored[entry.id]).reasoningEfforts, entry.reasoningEfforts))
+}
+
+/**
+ * A Codex route's installed catalog written out as a `models` list. Each
+ * catalog model carries the fields its stored override sets, because the
+ * route refuses `modelOverrides` beside a list.
+ * @param catalog - the model ids pi-ai's installed `openai-codex` catalog describes.
+ * @param overrides - the route's stored `modelOverrides` value.
+ * @returns one entry per catalog model, in catalog order.
+ */
+export function pinnedCatalog(catalog: ReadonlySet<string>, overrides: unknown): RouteModelEntry[] {
+  const stored = recordOf(overrides)
+  return [...catalog].map(id => ({ ...recordOf(stored[id]), id }))
+}
+
+/**
+ * One settings value read as an object.
+ * @param value - a settings value, untyped as settings values are.
+ * @returns the value when it is an object, otherwise an empty object.
+ */
+function recordOf(value: unknown): Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null ? value as Readonly<Record<string, unknown>> : {}
+}
+
+/**
+ * Whether stored levels equal the roster's: the same list in the same order,
+ * or the same level-to-effort pairs in any key order.
+ * @param stored - the stored levels, untyped as settings values are.
+ * @param roster - the roster's levels.
+ * @returns true when writing the roster's levels would change nothing.
+ */
+function sameLevels(stored: unknown, roster: unknown): boolean {
+  const canonical = (value: unknown): string => JSON.stringify(
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+      ? Object.entries(value).sort(([left], [right]) => left.localeCompare(right))
+      : value,
+  )
+  return canonical(stored) === canonical(roster)
 }
 
 /**
@@ -110,10 +190,7 @@ export function codexRouteEntries(models: readonly NativeAccountModel[], catalog
  * @returns the stored route, or `undefined` when the namespace configures none.
  */
 export function storedRoute(value: unknown, route: string): Readonly<Record<string, unknown>> | undefined {
-  if (typeof value !== 'object' || value === null) return undefined
-  const providers = (value as { providers?: unknown }).providers
-  if (typeof providers !== 'object' || providers === null) return undefined
-  const stored = (providers as Record<string, unknown>)[route]
+  const stored = recordOf(recordOf(value).providers)[route]
   return typeof stored === 'object' && stored !== null ? stored as Readonly<Record<string, unknown>> : undefined
 }
 

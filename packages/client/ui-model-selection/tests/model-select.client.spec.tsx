@@ -176,6 +176,92 @@ describe('ModelSelect reasoning effort', () => {
     expect(screen.getByRole('button', { name: 'Select model, current Model, reasoning effort turbo' })).toBeTruthy()
   })
 
+  describe('effort in the same menu as the model', () => {
+    const routes = (current: ModelSelection | null): ModelDirectoryState => state({
+      current,
+      groups: [{
+        id: 'route',
+        name: 'Route',
+        models: [
+          { id: 'plain', name: 'Plain' },
+          { id: 'thinker', name: 'Thinker', reasoning: { efforts: [{ id: 'low', name: 'Low' }, { id: 'high', name: 'High' }], defaultEffort: 'high' } },
+          { id: 'single', name: 'Single', reasoning: { efforts: [{ id: 'high', name: 'High' }], defaultEffort: 'high' } },
+        ],
+      }],
+    })
+
+    function mount(
+      directory: ReturnType<typeof createSnapshotStore<ModelDirectoryState>>,
+      select: (selection: ModelSelection) => Promise<boolean>,
+    ) {
+      render(<ModelSelect locked={false} available directory={directory} load={vi.fn()} select={select} t={t} />)
+      fireEvent.click(screen.getByRole('button', { name: /^Select model/ }))
+      fireEvent.click(screen.getByRole('menuitem', { name: /Model/ }))
+    }
+
+    it('opens the picked model\'s effort pane and submits the level for that model', async () => {
+      const directory = createSnapshotStore<ModelDirectoryState>(routes({ provider: 'route', model: 'plain' }))
+      const select = vi.fn(async (selection: ModelSelection) => {
+        directory.set(routes({ ...selection, ...selection.reasoningEffort === undefined ? { reasoningEffort: 'high' } : {} }))
+        return true
+      })
+      mount(directory, select)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Thinker' }))
+      await waitFor(() => {
+        expect(screen.getAllByRole('menuitemradio').map(item => item.textContent)).toEqual(['Low', 'High'])
+      })
+      expect(select).toHaveBeenCalledWith({ provider: 'route', model: 'thinker' })
+      const high = screen.getByRole('menuitemradio', { name: 'High' })
+      expect(high.getAttribute('aria-checked')).toBe('true')
+      expect(document.activeElement).toBe(high)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Low' }))
+      await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
+      expect(select).toHaveBeenLastCalledWith({ provider: 'route', model: 'thinker', reasoningEffort: 'low' })
+    })
+
+    it('describes the picked model while the directory still reports the previous one', async () => {
+      const directory = createSnapshotStore<ModelDirectoryState>(routes({ provider: 'route', model: 'plain' }))
+      const select = vi.fn(async () => true)
+      mount(directory, select)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Thinker' }))
+      await waitFor(() => {
+        expect(screen.getByRole('menuitemradio', { name: 'High' }).getAttribute('aria-checked')).toBe('true')
+      })
+      // Choosing the default level again only closes: it is the level the pick applied.
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'High' }))
+      await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
+      expect(select).toHaveBeenCalledTimes(1)
+    })
+
+    it('closes after picking a model with at most one effort row', async () => {
+      const directory = createSnapshotStore<ModelDirectoryState>(routes({ provider: 'route', model: 'thinker' }))
+      const select = vi.fn(async (selection: ModelSelection) => {
+        directory.set(routes(selection))
+        return true
+      })
+      mount(directory, select)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Single' }))
+      await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
+      cleanup()
+      mount(directory, select)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Plain' }))
+      await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
+    })
+
+    it('re-picking the current model opens its pane, and Escape returns to the root pane', async () => {
+      const directory = createSnapshotStore<ModelDirectoryState>(routes({ provider: 'route', model: 'thinker', reasoningEffort: 'low' }))
+      const select = vi.fn(async () => true)
+      mount(directory, select)
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Thinker' }))
+      await waitFor(() => {
+        expect(screen.getByRole('menuitemradio', { name: 'Low' }).getAttribute('aria-checked')).toBe('true')
+      })
+      expect(select).not.toHaveBeenCalled()
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
+      expect(screen.getByRole('menuitem', { name: /Effort/ })).toBeTruthy()
+    })
+  })
+
   it('prompts for a selection when the current model is no longer advertised', () => {
     const directory = createSnapshotStore(state({
       current: { provider: 'deepseek-official', model: 'removed-model' },

@@ -1,6 +1,7 @@
 // Web e2e scenario: a hand-declared model's `reasoningEfforts` reaches the
 // composer's effort pane — the levels a settings profile declares are exactly
 // what the picker offers, and picking one records it with the Agent default.
+// Picking another model continues in the same menu on that model's levels.
 // Zero model calls: declaring, describing, and switching are settings/llm
 // traffic only, so there is no fixture and a stray stream would fail loud.
 import { readFile } from 'node:fs/promises'
@@ -20,6 +21,7 @@ import { connectFreshWorkspace, newEnglishPage, saveFailureShot } from './suppor
 const OVERLAY = fileURLToPath(new URL('./declared-reasoning.overlay.yml', import.meta.url))
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/declared-reasoning', import.meta.url))
 const UI_EXPECTED = fileURLToPath(new URL('./snapshots/declared-reasoning/ui.expected.md', import.meta.url))
+const PICKED_EXPECTED = fileURLToPath(new URL('./snapshots/declared-reasoning/picked.expected.md', import.meta.url))
 const MODE = webSnapshotMode()
 
 describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach the composer', () => {
@@ -44,6 +46,10 @@ describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach th
             id: 'acme-think',
             name: 'Acme Think',
             reasoningEfforts: { off: null, high: 'high', max: 'ultra' },
+          }, {
+            id: 'acme-swift',
+            name: 'Acme Swift',
+            reasoningEfforts: { low: 'low', high: 'high' },
           }],
         },
       },
@@ -93,7 +99,34 @@ describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach th
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
+  it('continues from a model pick to that model\'s levels in the same menu', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-declared-reasoning-pick'))
+    const trigger = page.getByRole('button', { name: /^Select model/ })
+    await trigger.click()
+    await page.getByRole('menuitem', { name: /Model/ }).click()
+    await page.getByRole('menuitemradio', { name: 'Acme Swift', exact: true }).click()
+
+    // The pick lands as a selection of its own, then the menu stays open on the
+    // picked model's levels: its provider-default entry, then Low/High.
+    await expect.poll(() => trigger.getAttribute('aria-label'), { timeout: 10_000 })
+      .toBe('Select model, current Acme Swift, reasoning effort Default')
+    const levels = page.getByRole('menuitemradio')
+    await expect.poll(async () => levels.allTextContents(), { timeout: 10_000 })
+      .toEqual(['Default', 'Low', 'High'])
+    const snapshot = await captureStableAria(page, '[role="menu"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(PICKED_EXPECTED, snapshot, MODE)
+
+    await page.getByRole('menuitemradio', { name: 'Low' }).click()
+    await expect.poll(() => trigger.getAttribute('aria-label'), { timeout: 10_000 })
+      .toBe('Select model, current Acme Swift, reasoning effort Low')
+    await expect.poll(() => page.getByRole('menu').count(), { timeout: 10_000 }).toBe(0)
+    const document = await readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8')
+    expect(document).toContain('model: acme-swift')
+    expect(document).toContain('reasoningEffort: low')
+    expect(tripwire.pageErrors).toEqual([])
+  }, 60_000)
+
   it('keeps its snapshot inventory closed', async () => {
-    await assertFixtureInventory(SNAPSHOT_DIR, ['ui.expected.md'])
+    await assertFixtureInventory(SNAPSHOT_DIR, ['picked.expected.md', 'ui.expected.md'])
   })
 })
