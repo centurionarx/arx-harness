@@ -27,9 +27,9 @@ import type { ClientSessionContext } from '@arx-ai/arx-client-ui-input-trigger/c
 import type { PermissionSelect } from '@arx-ai/arx-permission-presets/client'
 import { PermissionRow } from './PermissionRow.tsx'
 import type { PermissionRowInjected } from './PermissionRow.tsx'
-import { accessEn, en } from './locales.ts'
+import { accessEn, accessPt, en, pt } from './locales.ts'
 import {
-  displayPermissionPreset, FULL_ACCESS_PRESET,
+  FULL_ACCESS_PRESET, localizedPermissionPreset,
 } from './presentation.ts'
 import { PermissionPresetSettingsController } from './settings-store.ts'
 
@@ -54,7 +54,7 @@ function optionsOf(value: PermissionSelect, t: (key: string) => string): SelectO
     .filter(option => option.value !== 'custom')
     .map(option => ({
       id: option.value,
-      label: displayPermissionPreset(option.value, option.name),
+      label: localizedPermissionPreset(option.value, option.name, t),
       ...(option.description !== undefined ? { detail: option.description } : {}),
       ...(option.value === value.currentValue ? { active: true } : {}),
       ...(option.value === FULL_ACCESS_PRESET
@@ -90,6 +90,21 @@ export function apply(ctx: ClientContext): void {
         'confirm.acknowledge': accessEn['confirm.acknowledge'],
         'confirm.cancel': accessEn['confirm.cancel'],
         'confirm.enable': accessEn['confirm.enable'],
+        'preset.readOnly': accessEn['preset.readOnly'],
+        'preset.workspaceWrite': accessEn['preset.workspaceWrite'],
+        'preset.fullAccess': accessEn['preset.fullAccess'],
+        'preset.custom': accessEn['preset.custom'],
+      }),
+      ctx.locale.register(ACCESS_NS, 'pt', {
+        'confirm.title': accessPt['confirm.title'],
+        'confirm.description': accessPt['confirm.description'],
+        'confirm.acknowledge': accessPt['confirm.acknowledge'],
+        'confirm.cancel': accessPt['confirm.cancel'],
+        'confirm.enable': accessPt['confirm.enable'],
+        'preset.readOnly': accessPt['preset.readOnly'],
+        'preset.workspaceWrite': accessPt['preset.workspaceWrite'],
+        'preset.fullAccess': accessPt['preset.fullAccess'],
+        'preset.custom': accessPt['preset.custom'],
       }),
     ]
     return () => { for (const dispose of disposers) dispose() }
@@ -99,7 +114,7 @@ export function apply(ctx: ClientContext): void {
   const sessionFor = (session: ClientSessionContext): SessionFace | undefined =>
     sessions.binding(session.sessionId)?.session
 
-  ctx.effect(() => ctx.locale.register('settings.permission', { en }), 'ui-permission: settings row dictionaries')
+  ctx.effect(() => ctx.locale.register('settings.permission', { en, pt }), 'ui-permission: settings row dictionaries')
 
   const connection = ctx.get('connection') as ConnectionHandle
   // The row follows the shared describe mirror, whose owning plugin already

@@ -6,19 +6,15 @@ import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { ComponentProps } from 'react'
 import type { ModelDirectoryState } from '../src/client/directory.ts'
 import { ModelSelect } from '../src/client/ModelSelect.tsx'
-import { en } from '../src/client/locales.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
+import { en, pt } from '../src/client/locales.ts'
 import { en as commonEn } from '@arx-ai/arx-client-locale/src/locales/en.ts'
+import { pt as commonPt } from '@arx-ai/arx-client-locale/src/locales/pt.ts'
 
 // The seat's key domain is model ∪ common; the stub mirrors the real lookup
 // chain: package dictionary, then common vocabulary, then the key.
-const t: ComponentProps<typeof ModelSelect>['t'] = (key, params) => {
-  const template = (en as Record<string, string>)[key]
-    ?? (commonEn as Record<string, string>)[key]
-    ?? key
-  return params === undefined
-    ? template
-    : template.replace(/\{(\w+)\}/g, (match, name: string) => name in params ? String(params[name]) : match)
-}
+const t: ComponentProps<typeof ModelSelect>['t'] = makeTranslate(en, commonEn)
+const tPt: ComponentProps<typeof ModelSelect>['t'] = makeTranslate(pt, commonPt)
 
 const reasoning = {
   efforts: [
@@ -110,6 +106,74 @@ describe('ModelSelect reasoning effort', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /Effort/ }))
     expect(screen.getAllByRole('menuitemradio').map(item => item.textContent))
       .toEqual(['Default', 'Standard'])
+  })
+
+  it('labels the shared effort ids in the active locale and keeps the Host name for any other id', () => {
+    const directory = createSnapshotStore(state({
+      groups: [{
+        id: 'provider',
+        name: 'Provider',
+        models: [{
+          id: 'model',
+          name: 'Model',
+          reasoning: {
+            efforts: [
+              { id: 'low', name: 'Low' },
+              { id: 'xhigh', name: 'Xhigh' },
+              { id: 'max', name: 'Max' },
+              { id: 'turbo', name: 'Turbo', description: 'Vendor level' },
+            ],
+          },
+        }],
+      }],
+      current: { provider: 'provider', model: 'model', reasoningEffort: 'xhigh' },
+    }))
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue(true)}
+      t={tPt}
+    />)
+
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Selecionar modelo, atual: Model, esforço de raciocínio Extra',
+    }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /Esforço/ }))
+    expect(screen.getAllByRole('menuitemradio').map(item => item.textContent))
+      .toEqual(['Padrão', 'Baixo', 'Extra', 'Máx', 'TurboVendor level'])
+  })
+
+  it('labels an effort the model no longer lists: a shared id in the locale, any other id as reported', () => {
+    const models = [{ id: 'model', name: 'Model', reasoning: { efforts: [{ id: 'low', name: 'Low' }] } }]
+    const directory = createSnapshotStore(state({
+      groups: [{ id: 'provider', name: 'Provider', models }],
+      current: { provider: 'provider', model: 'model', reasoningEffort: 'medium' },
+    }))
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue(true)}
+      t={t}
+    />)
+    expect(screen.getByRole('button', { name: 'Select model, current Model, reasoning effort Medium' })).toBeTruthy()
+    cleanup()
+    directory.set(state({
+      groups: [{ id: 'provider', name: 'Provider', models }],
+      current: { provider: 'provider', model: 'model', reasoningEffort: 'turbo' },
+    }))
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={directory}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue(true)}
+      t={t}
+    />)
+    expect(screen.getByRole('button', { name: 'Select model, current Model, reasoning effort turbo' })).toBeTruthy()
   })
 
   it('prompts for a selection when the current model is no longer advertised', () => {

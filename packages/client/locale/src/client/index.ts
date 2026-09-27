@@ -21,8 +21,8 @@ import type {} from '@arx-ai/arx-client-ui-settings/client'
 import {
   LOCALE_PREFERENCE_FIELD, LOCALE_SETTINGS_NAMESPACE, type LocaleId, type LocaleSettings,
 } from '../locale-settings.ts'
-import { en, type CommonKey } from '../locales/index.ts'
-import { en as settingsEn, type SettingsLocaleKey } from '../locales/settings.ts'
+import { en, pt, type CommonKey } from '../locales/index.ts'
+import { en as settingsEn, pt as settingsPt, type SettingsLocaleKey } from '../locales/settings.ts'
 import type { LanguageRowInjected } from './LanguageRow.tsx'
 import { LanguageRow } from './LanguageRow.tsx'
 import { createLanguageRowStore } from './settings-store.ts'
@@ -49,11 +49,21 @@ declare module '@arx-ai/arx-client-ui-slots' {
 /** Locale dictionary: flat key to template string ({name} placeholders). */
 export type LocaleDict = Record<string, string>
 
+/**
+ * Dictionaries one typed registration supplies for a declared namespace. The
+ * English dictionary is required and complete; every other shipped locale is
+ * optional, and a dictionary that is present carries exactly the English key
+ * set. A namespace without a dictionary for the active locale renders its
+ * English text.
+ */
+export type LocaleDictionaries<N extends Extract<keyof LocaleNamespaceMap, string>> =
+  { readonly en: LocaleDictOf<N> } & { readonly [L in Exclude<LocaleId, 'en'>]?: LocaleDictOf<N> }
+
 /** One selectable locale: id plus its self-described display name. */
 export interface LocaleDefinition {
   /** Locale id (persisted; the setLocale argument). */
   id: LocaleId
-  /** Display name in its own language (中文 / English). */
+  /** Display name in its own language (Português (Brasil) / English). */
   label: string
 }
 
@@ -89,9 +99,9 @@ declare module '@arx-ai/cordis' {
 /**
  * English is both the locale the UI opens in when the browser names no shipped
  * language (and for non-browser runs), and the dictionary consulted after the
- * active locale misses a key. One constant serves both, and while English is
- * the only shipped locale the second role never resolves anything the first
- * did not already supply.
+ * active locale misses a key. The second role resolves every key of a
+ * namespace that ships no dictionary for the active locale: registrations
+ * require English and leave the other locales optional.
  */
 export const FALLBACK_LOCALE: LocaleId = 'en'
 
@@ -101,9 +111,10 @@ export const COMMON_NS = 'common'
 /** Namespace owning this feature's settings-row copy. */
 export const SETTINGS_NS = 'settings.locale'
 
-/** The shipped locale. */
+/** The shipped locales, in the Language row's display order. */
 const LOCALES: readonly LocaleDefinition[] = Object.freeze([
   { id: 'en', label: 'English' },
+  { id: 'pt', label: 'Português (Brasil)' },
 ])
 
 /**
@@ -114,7 +125,7 @@ const LOCALES: readonly LocaleDefinition[] = Object.freeze([
  * behavior. A locale whose script or region is ambiguous names the variant it
  * actually is; `en` needs no such qualification.
  */
-const DOCUMENT_LANGUAGE: Record<LocaleId, string> = { en: 'en' }
+const DOCUMENT_LANGUAGE: Record<LocaleId, string> = { en: 'en', pt: 'pt-BR' }
 
 /**
  * Point `<html lang>` at the active locale. Called on every locale change,
@@ -244,15 +255,17 @@ export class LocaleRuntime {
    * Register a declared namespace's dictionaries, all locales in one call —
    * the typed form: each dictionary is checked against the namespace's
    * {@link LocaleNamespaceMap} key union (a missing or extra key is a
-   * compile error), and every shipped locale is required (bilingual balance
-   * enforced at registration). Duplicate (ns, locale) throws (single occupant; a
+   * compile error). English is required; each other shipped locale is
+   * optional, and a namespace registered without it renders English in that
+   * locale (see {@link LocaleDictionaries}). The namespaces that still ship
+   * English only are listed by `scripts/locale-dictionary-parity.spec.ts`. Duplicate (ns, locale) throws (single occupant; a
    * namespace's texts have one owner). Registration bumps the revision so
    * mounted outlets pick up late-arriving dictionaries.
    * @param ns - a namespace merged into LocaleNamespaceMap.
    * @param dicts - complete dictionaries keyed by locale id.
    * @returns disposer removing every locale registered by this call (idempotent).
    */
-  register<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
+  register<N extends Extract<keyof LocaleNamespaceMap, string>>(ns: N, dicts: LocaleDictionaries<N>): () => void
   /**
    * Single-locale untyped form for namespaces outside the merge table
    * (dynamic composition, tests).
@@ -262,7 +275,7 @@ export class LocaleRuntime {
    * @returns disposer (idempotent).
    */
   register(ns: string, locale: string, dict: LocaleDict): () => void
-  register(ns: string, localeOrDicts: string | Record<string, LocaleDict>, dict?: LocaleDict): () => void {
+  register(ns: string, localeOrDicts: string | Readonly<Record<string, LocaleDict>>, dict?: LocaleDict): () => void {
     const pairs: [string, LocaleDict][] = typeof localeOrDicts === 'string'
       // Overload guarantees dict on the single-locale arm.
       ? [[localeOrDicts, dict as LocaleDict]]
@@ -369,7 +382,8 @@ function resolveInitialLocale(): LocaleId {
 
 /**
  * The first shipped locale the browser asks for, matched on the primary
- * subtag so every regional variant lands on its language (`en-GB` -> en).
+ * subtag so every regional variant lands on its language (`en-GB` -> en,
+ * `pt-PT` -> pt, which renders Brazilian Portuguese).
  * `window` is the browser test, not `navigator`: Node exposes
  * a global `navigator` reporting the machine's own language, which would
  * otherwise decide the locale for non-browser runs (node e2e booting the
@@ -403,8 +417,8 @@ export const inject = ['slots', 'connection', 'remote', 'settingsScope']
 export function apply(ctx: ClientContext): void {
   const host = ctx.settingsScope.bind<LocaleSettings>({ namespace: LOCALE_SETTINGS_NAMESPACE })
   const locale = new LocaleRuntime(ctx, host)
-  locale.register(COMMON_NS, { en })
-  locale.register(SETTINGS_NS, { en: settingsEn })
+  locale.register(COMMON_NS, { en, pt })
+  locale.register(SETTINGS_NS, { en: settingsEn, pt: settingsPt })
   ctx.provide('locale', locale)
   // The service IS the LocaleFace (bind + getSnapshot/subscribe): install it
   // so the render machinery can synthesize the `t` standard seat.

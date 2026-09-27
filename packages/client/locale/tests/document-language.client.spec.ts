@@ -53,9 +53,9 @@ describe('document language', () => {
   beforeEach(() => {
     // A stale tag stands in the served markup, so every assertion below fails
     // unless the plugin states the resolved locale itself.
-    document.documentElement.lang = 'zh-CN'
-    Object.defineProperty(navigator, 'languages', { value: ['zh-CN'], configurable: true })
-    Object.defineProperty(navigator, 'language', { value: 'zh-CN', configurable: true })
+    document.documentElement.lang = 'de-DE'
+    Object.defineProperty(navigator, 'languages', { value: ['de-DE'], configurable: true })
+    Object.defineProperty(navigator, 'language', { value: 'de-DE', configurable: true })
   })
 
   afterEach(() => {
@@ -67,7 +67,7 @@ describe('document language', () => {
   })
 
   it('states the resolved locale at activation, not the value the markup shipped', async () => {
-    // A Chinese browser names no shipped language, so resolution lands on the
+    // A German browser names no shipped language, so resolution lands on the
     // English fallback and the markup tag is replaced rather than trusted.
     const { locale } = await bench()
     expect(locale.getLocale().active).toBe('en')
@@ -77,18 +77,20 @@ describe('document language', () => {
   it('holds the BCP 47 tag across locale selections', async () => {
     const { locale } = await bench()
     expect(langOf()).toBe('en')
-    // `en` needs no region subtag.
+    // `pt` names the variant it is; `en` needs no region subtag.
+    locale.setLocale('pt')
+    expect(langOf()).toBe('pt-BR')
     locale.setLocale('en')
     expect(langOf()).toBe('en')
-    // A retired id is rejected outright, so no selection can point the
-    // attribute at a language the client no longer ships.
-    expect(() => { locale.setLocale('zh') }).toThrow('not registered')
+    // An id the client does not ship is rejected outright, so no selection
+    // can point the attribute at a language without dictionaries.
+    expect(() => { locale.setLocale('de') }).toThrow('not registered')
     expect(langOf()).toBe('en')
   })
 
   it('follows an explicit Host preference adopted after activation', async () => {
-    const { locale } = await bench('en')
-    await vi.waitFor(() => { expect(locale.getLocale().active).toBe('en') })
-    await vi.waitFor(() => { expect(langOf()).toBe('en') })
+    const { locale } = await bench('pt')
+    await vi.waitFor(() => { expect(locale.getLocale().active).toBe('pt') })
+    await vi.waitFor(() => { expect(langOf()).toBe('pt-BR') })
   })
 })

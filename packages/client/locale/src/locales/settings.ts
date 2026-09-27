@@ -6,3 +6,8 @@ export type SettingsLocaleKey = keyof typeof en
 export const en = {
   'language.title': 'Language',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'language.title': 'Idioma',
+} satisfies Record<SettingsLocaleKey, string>
