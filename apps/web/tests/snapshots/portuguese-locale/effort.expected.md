@@ -1,0 +1,9 @@
+- menu "Modelo e esforço de raciocínio":
+  - menuitemradio "Padrão" [checked]:
+    - text: Padrão
+    - img
+  - menuitemradio "Baixo"
+  - menuitemradio "Médio"
+  - menuitemradio "Alto"
+  - menuitemradio "Extra"
+  - menuitemradio "Máx"

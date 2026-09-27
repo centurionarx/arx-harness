@@ -46,6 +46,7 @@
     "tests/web-search-settings.e2e.ts",
     "tests/default-model.e2e.ts",
     "tests/declared-reasoning.e2e.ts",
+    "tests/portuguese-locale.e2e.ts",
     "tests/remote-welcome.e2e.ts",
     "tests/home-migration-notice.e2e.ts",
     "tests/first-run-provider-guide.e2e.ts",

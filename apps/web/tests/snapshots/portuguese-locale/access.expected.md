@@ -1,0 +1,6 @@
+- menu:
+  - menuitem "Somente leitura"
+  - menuitem "Gravação no workspace":
+    - text: Gravação no workspace
+    - img
+  - menuitem "Acesso total"

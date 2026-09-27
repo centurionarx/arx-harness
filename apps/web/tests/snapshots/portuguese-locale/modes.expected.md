@@ -1,0 +1,7 @@
+- menu:
+  - menuitem "Modo padrão Coding agent completo, com edição de arquivos, shell, busca em arquivos e na web, skills, planejamento, metas, subagents e workflows.":
+    - text: Modo padrão Coding agent completo, com edição de arquivos, shell, busca em arquivos e na web, skills, planejamento, metas, subagents e workflows.
+    - img
+  - menuitem "Modo PTC Todas as capacidades do Modo padrão, com as ferramentas expostas pelo SDK do Code Mode para que o modelo combine operações de várias etapas em um único programa TypeScript."
+  - 'menuitem "Modo mínimo Coding agent com duas ferramentas: bash persistente e str_replace_editor."'
+  - menuitem "Modo criador Feito para criar agent presets personalizados, com todas as capacidades do Modo padrão, além de inspeção do runtime, experimentos com plugins e orientação para criar presets."

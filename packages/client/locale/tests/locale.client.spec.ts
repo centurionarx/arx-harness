@@ -285,9 +285,11 @@ describe('LocaleRuntime', () => {
 
   it('renders a namespace in the active locale and in English where it ships no dictionary for it', () => {
     const { svc } = make()
-    svc.register('common', { en: { retry: 'Retry' }, pt: { retry: 'Tentar novamente' } } as never)
-    svc.register('translated', { en: { title: 'Title' }, pt: { title: 'Título' } } as never)
-    svc.register('englishOnly', { en: { title: 'Title' } } as never)
+    svc.register('common', 'en', { retry: 'Retry' })
+    svc.register('common', 'pt', { retry: 'Tentar novamente' })
+    svc.register('translated', 'en', { title: 'Title' })
+    svc.register('translated', 'pt', { title: 'Título' })
+    svc.register('englishOnly', 'en', { title: 'Title' })
     svc.setLocale('pt')
     expect(svc.bind('translated')('title')).toBe('Título')
     expect(svc.bind('englishOnly')('title')).toBe('Title')
