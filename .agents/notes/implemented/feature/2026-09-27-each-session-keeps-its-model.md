@@ -41,4 +41,3 @@ Subagent delegation had the same gap: `resolveChildAgentOptions` seeded a child 
 - A subagent runs on the model its parent session selected, at any delegation depth.
 - A cold list reads a possibly blank artifact of up to 8 KiB instead of 1 KiB; artifacts above the limit still stay visible.
 - A blank session whose picks and opens exceed 8 KiB still shows in the sidebar after a restart.
-- The 1 KiB default stated in [bounded cold blank verification](../bug-fix/2026-08-13-bounded-cold-blank-verification.md) is now 8 KiB; that note is left unedited.
