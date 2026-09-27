@@ -286,4 +286,33 @@ describe('sessions.fork', () => {
     })
     await ctx.fiber.dispose()
   })
+
+  it('installs an unconsumed logged model pick before the child can run', async () => {
+    const ctx = await composed()
+    const source = liveAgent(ctx, 'session-picked', 1)
+    // Never consumed by a request/header on the source: durable only because
+    // the pick itself was logged, the gap this whole change closes.
+    source.append('model/selection', {
+      provider: 'picked-provider', model: 'picked-model', reasoningEffort: ReasoningEffortId('max'),
+    })
+    const response = await api(ctx).sessions.fork(request({ sessionId: source.id }))
+    expect(response.result.ok).toBe(true)
+    if (!response.result.ok) return
+    const child = ctx.agents.get(response.result.value.sessionId)
+    if (child === undefined) throw new Error('fork did not publish the child agent')
+    const assembly = await child.ctx.systemPrompt.assemble()
+    expect(assembly.variables).toMatchObject({
+      provider: 'picked-provider',
+      model: 'picked-model',
+    })
+    const fallback: LlmCallConfig = { provider: 'default-provider', model: 'default-model' }
+    await expect(agentEvents(child.ctx, child).waterfall(
+      'agent/request', { turn: 1, step: 0, signal: new AbortController().signal }, () => Promise.resolve(fallback),
+    )).resolves.toMatchObject({
+      provider: 'picked-provider',
+      model: 'picked-model',
+      reasoningEffort: 'max',
+    })
+    await ctx.fiber.dispose()
+  })
 })

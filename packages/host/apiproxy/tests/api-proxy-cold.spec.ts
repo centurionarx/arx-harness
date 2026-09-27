@@ -26,6 +26,7 @@ import {
 import type { RpcRequest } from '@arx-ai/arx-host-apiproxy/api/rpc'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api/rpc'
 import { createApiProxy } from '@arx-ai/arx-host-apiproxy'
+import { DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from '../src/api-proxy.ts'
 
 const sid = (id: string): SessionId => id as SessionId
 
@@ -46,8 +47,8 @@ describe('sessions.list cold merge', () => {
     const root = mkdtempSync(join(tmpdir(), 'arx-cold-'))
     const smallPath = join(root, 'small.log')
     const largePath = join(root, 'large.log')
-    writeFileSync(smallPath, 'x'.repeat(1024))
-    writeFileSync(largePath, 'x'.repeat(1025))
+    writeFileSync(smallPath, 'x'.repeat(DEFAULT_COLD_BLANK_PROBE_MAX_BYTES))
+    writeFileSync(largePath, 'x'.repeat(DEFAULT_COLD_BLANK_PROBE_MAX_BYTES + 1))
     const metas = [
       header('small-blank', 100),
       header('small-conversation', 200),

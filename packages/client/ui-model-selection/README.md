@@ -14,7 +14,7 @@ The `/client` exports are the plugin body (`apply`/`inject`), `ModelDirectoryRes
 
 ## Model Experience
 
-Indirectly, through the `session.selectModel` RPC available to ordinary sessions, both entries submit the complete `ModelSelection` that the Host snapshots at the next prompt-assembly boundary, so the following request uses the selected provider, model, and effort while a running step keeps its assembled selection; the selection becomes durable only when the existing request header records a request that consumes it, and menu interaction adds no prompt content.
+Indirectly, through the `session.selectModel` RPC available to ordinary sessions, both entries submit the complete `ModelSelection` that the Host snapshots at the next prompt-assembly boundary, so the following request uses the selected provider, model, and effort while a running step keeps its assembled selection; an accepted selection is durable for that session as soon as the Host logs it, whether or not a request ever consumes it, and menu interaction adds no prompt content.
 
 #### KV Cache effect
 

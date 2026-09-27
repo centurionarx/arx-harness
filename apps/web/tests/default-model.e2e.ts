@@ -128,6 +128,54 @@ describe('web e2e: the composer model switch is the default for later sessions',
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
+  it('keeps two sessions on their own picked models, independent of each other and of the composer switch', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-default-model-per-session'))
+    // Neither ran a turn (no request/header): only a pick was ever made on
+    // each, through the same `model/selection` session event the composer's
+    // own switch below appends — the gap a Host restart or ApiProxy reload
+    // used to lose for a session that never consumed its pick.
+    const pickedId = await createSession('default-model-picked')
+    scaffold.ctx.sessions.get(SessionId(pickedId))?.append('model/selection', {
+      provider: START_ROUTE, model: START_MODEL,
+    })
+    const otherPickedId = await createSession('default-model-other-picked')
+    scaffold.ctx.sessions.get(SessionId(otherPickedId))?.append('model/selection', {
+      provider: ROUTE, model: MODEL,
+    })
+    expect(await currentOf(pickedId)).toEqual({ provider: START_ROUTE, model: START_MODEL })
+    expect(await currentOf(otherPickedId)).toEqual({ provider: ROUTE, model: MODEL })
+
+    // Switching the model on the page's own open (third) session, through the
+    // same composer gesture the earlier test drove, must not move either.
+    // The prior test already switched that session to Acme Large, so this
+    // switches it back to Origin Large — the opposite of both picks above.
+    const trigger = page.getByRole('button', { name: /^Select model/ })
+    await trigger.waitFor({ timeout: 15_000 })
+    await trigger.click()
+    await page.getByRole('menuitem', { name: /Model/ }).click()
+    await page.getByRole('menuitemradio', { name: 'Origin Large' }).click()
+    // Same settled-write wait test 1 already relies on, toward the opposite
+    // route: only once this lands is the switch's side effect complete.
+    await expect.poll(
+      async () => readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8'),
+      { timeout: 10_000 },
+    ).toContain(`model: ${START_MODEL}`)
+
+    expect(await currentOf(pickedId)).toEqual({ provider: START_ROUTE, model: START_MODEL })
+    expect(await currentOf(otherPickedId)).toEqual({ provider: ROUTE, model: MODEL })
+
+    // The next scenario removes the route this page's session was on, so the
+    // session goes back to it.
+    await trigger.click()
+    await page.getByRole('menuitem', { name: /Model/ }).click()
+    await page.getByRole('menuitemradio', { name: 'Acme Large' }).click()
+    await expect.poll(
+      async () => readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8'),
+      { timeout: 10_000 },
+    ).toContain(`model: ${MODEL}`)
+    expect(tripwire.pageErrors).toEqual([])
+  }, 60_000)
+
   it('goes inert when the route the default names stops being served', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-default-model-blocked'))
     const box = page.locator('textarea[data-input-phase], textarea').first()
