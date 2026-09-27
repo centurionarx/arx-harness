@@ -19,5 +19,5 @@ Changing the default affects only Agents that subsequently resolve from it. An e
 
 ## Known Limitations and Deferred Work
 
-- The service owns one process-wide default; per-session selection remains the entry point's responsibility.
+- The service owns one process-wide default; per-session selection remains the entry point's responsibility. ApiProxy's is durable — appended to that session's own log as `model/selection` (`@arx-ai/arx-host-apiproxy` README) — independently of whatever this service's default is saved as.
 - Without a settings provider, `saveSelection()` cannot retain a selection for a later Agent.

@@ -56,6 +56,9 @@ function appendStandalone(session: Session): void {
   session.append('permission/preset', { preset: 'danger-full-access' })
   session.append('sandbox/mode', { mode: 'danger-full-access' })
   session.append('approval/policy', { policy: 'never' })
+  // A model picked before the first prompt (trying models on a fresh session
+  // before sending anything, or the Composer seat's own default pick).
+  session.append('model/selection', { provider: 'deepseek-official', model: 'deepseek-reasoner' })
 }
 
 async function listBlank(api: ApiProxy, id: string): Promise<boolean | undefined> {

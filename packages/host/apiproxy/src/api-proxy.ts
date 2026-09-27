@@ -14,7 +14,7 @@ import { homedir } from 'node:os'
 import { dirname } from 'node:path'
 import { z as zod } from 'zod'
 import type { Context } from '@arx-ai/cordis'
-import { installModelSelection } from '@arx-ai/arx-agent'
+import { installModelSelection, loggedModelSelection, modelSelectionEquals } from '@arx-ai/arx-agent'
 import type { Agent, ModelSelection, ModelSelectionRef, AgentOptions, AgentStatus } from '@arx-ai/arx-agent'
 import type {} from '@arx-ai/arx-agent-presets/types'
 import { AttachmentError, admitEncodedImages } from '@arx-ai/arx-attachment'
@@ -1166,13 +1166,17 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
    * Install or return the session-local model selection that prompt assembly snapshots.
    *
    * Precedence, resolved on EVERY read rather than seeded once: a selection
-   * made in this process, else the session's own latest logged request/header,
-   * else the live Agent default. Re-reading keeps the two tiers exact in both
-   * directions: a session with a recorded request derives its selection from
-   * its log, while a blank session (New Session reuses one rather than minting
-   * another) reads any default saved after it was created. There is no create-time
-   * per-session override tier on this wire — if one returns (a create-options
-   * contribution), it must fold in between the selection and the log.
+   * made in this process, else the session's own latest logged `model/selection`
+   * not superseded by a later `request/header` (else the latest `request/header`),
+   * else the live Agent default. Re-reading keeps the tiers exact in both
+   * directions: a session with a recorded pick or request derives its
+   * selection from its log — durable across a Host restart or an ApiProxy
+   * reload, since a fresh Agent for the same session starts with `picked`
+   * unset and falls through to the log — while a blank session (New Session
+   * reuses one rather than minting another) reads any default saved after it
+   * was created. There is no create-time per-session override tier on this
+   * wire — if one returns (a create-options contribution), it must fold in
+   * between the selection and the log.
    */
   function selectionFor(agent: Agent): ModelSelectionRef {
     const installed = selections.get(agent)
@@ -1183,15 +1187,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         if (picked !== undefined) return picked
         // Incrementally folded by the session, so a per-step read costs
         // O(new events) rather than a rescan.
-        const logged = agent.session.requestHeader()?.config
-        if (logged === undefined) return defaults.defaultModelSelection()
-        return {
-          provider: logged.provider,
-          model: logged.model,
-          ...logged.reasoningEffort === undefined
-            ? {}
-            : { reasoningEffort: logged.reasoningEffort },
-        }
+        return loggedModelSelection(agent.session) ?? defaults.defaultModelSelection()
       },
       set current(next: ModelSelection | undefined) {
         picked = next
@@ -2338,7 +2334,18 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
                 ? {}
                 : { reasoningEffort: resolved.reasoningEffort },
             }
-            selectionFor(found.agent).current = selected
+            const ref = selectionFor(found.agent)
+            // Skip logging a pick equal to the session's current effective
+            // selection: an identical reselect (the client re-confirming the
+            // model already in force) would otherwise grow the session's
+            // artifact for no semantic change, which on a still-blank session
+            // risks crossing the cold blank-probe's byte ceiling and making it
+            // misreport as non-blank after a restart (see
+            // DEFAULT_COLD_BLANK_PROBE_MAX_BYTES).
+            if (!modelSelectionEquals(ref.current, selected)) {
+              found.agent.session.append('model/selection', selected)
+            }
+            ref.current = selected
             try {
               await defaults.saveDefaultModelSelection?.(selected)
             } catch (error: unknown) {

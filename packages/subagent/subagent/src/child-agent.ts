@@ -9,6 +9,7 @@
  */
 
 import type { Context } from '@arx-ai/cordis'
+import { installedModelSelection } from '@arx-ai/arx-agent'
 import type { Agent, AgentOptions, CreateAgentOptions } from '@arx-ai/arx-agent'
 import type { SandboxMode } from '@arx-ai/arx-sandbox'
 import type { Session, SessionId } from '@arx-ai/arx-session'
@@ -57,9 +58,14 @@ export function resolveChildDepth(parent: Agent, maxDepth: number | undefined): 
 }
 
 /**
- * Resolve the child's `AgentOptions`: the parent's provider/model/maxTokens
- * route unless the request overrides it, stamped with the child's own
- * delegation depth.
+ * Resolve the child's `AgentOptions`: the parent's route unless the request
+ * overrides it, stamped with the child's own delegation depth. Provider and
+ * model come from the parent's LIVE model selection when one is installed
+ * (a web session's own pick, which may have changed since the parent Agent
+ * was constructed) and fall back to the parent's fixed `options` otherwise
+ * (every subagent child, which installs no live selection of its own);
+ * `maxTokens` has no live-selection counterpart and always comes from the
+ * parent's fixed `options`.
  * @param parent - the delegating parent whose route the child inherits.
  * @param requested - per-child overrides, if any.
  * @param childDepth - the resolved delegation depth to stamp.
@@ -70,8 +76,9 @@ export function resolveChildAgentOptions(
   requested: AgentOptions | undefined,
   childDepth: number,
 ): AgentOptions {
-  const parentProvider = parent.options.provider
-  const parentModel = parent.options.model
+  const live = installedModelSelection(parent)
+  const parentProvider = live?.provider ?? parent.options.provider
+  const parentModel = live?.model ?? parent.options.model
   const parentMaxTokens = parent.options.maxTokens
   return {
     ...parentProvider !== undefined ? { provider: parentProvider } : {},

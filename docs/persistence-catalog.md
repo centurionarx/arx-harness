@@ -514,6 +514,28 @@ Source: [`packages/llm/llm-retry/src/types.ts:9`](../packages/llm/llm-retry/src/
 
 Source: [`packages/llm/llm-retry/src/types.ts:11`](../packages/llm/llm-retry/src/types.ts)
 
+### `model/*`
+
+<a id="modelselection--log-only"></a>
+
+#### `model/selection` — log-only
+
+```ts persistence-catalog
+/**
+ * A provider, model, and optional reasoning effort accepted for this
+ * session (validated against the live route before this event is
+ * appended). Log-only: it never enters the derived model transcript, and
+ * the config a step actually sent stays recorded by `request/header`. The
+ * session's effective selection is whichever of this event and
+ * `request/header` was logged last, so a request built under a different
+ * config supersedes an unconsumed pick, and a later pick supersedes an
+ * earlier request.
+ */
+'model/selection': ModelSelection
+```
+
+Source: [`packages/core/agent/src/model-selection.ts:33`](../packages/core/agent/src/model-selection.ts)
+
 ### `permission/*`
 
 <a id="permissionpreset--log-only"></a>
