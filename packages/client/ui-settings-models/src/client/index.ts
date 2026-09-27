@@ -210,7 +210,7 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     inject: (): NativeAccountsInjected => ({
       available: connection.isLoopback,
-      hooks: { accounts: accounts.store },
+      hooks: { accounts: accounts.store, hostDescription: connection.hostDescription },
       watch: () => accounts.watch(),
       reload: () => { void accounts.load() },
       begin: (provider, mode) => { void accounts.begin(provider, mode) },
@@ -222,7 +222,8 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('settings.models.chatAuthorization', () => ctx.slots.register({
     name: 'settings.models.chatAuthorization', locale: NS,
     inject: (): ChatAuthorizationInjected => ({
-      available: connection.isLoopback, hooks: { authorization: chatAuthorization.store },
+      available: connection.isLoopback,
+      hooks: { authorization: chatAuthorization.store, hostDescription: connection.hostDescription },
       watch: () => chatAuthorization.watch(),
       begin: () => { chatAuthorization.begin() },
       cancel: () => { void chatAuthorization.cancel() },

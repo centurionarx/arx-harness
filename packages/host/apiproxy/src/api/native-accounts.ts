@@ -12,7 +12,7 @@ export interface NativeAccountsApi {
   ): Promise<RpcResponse<{ attempt: NativeAccountAttempt }>>
   /** Read progress using only the initiating surface's private capability. */
   poll(request: RpcRequest<{ attemptId: NativeAccountAttemptId }>): Promise<RpcResponse<{ attempt: NativeAccountAttempt }>>
-  /** Answer the native CLI's pending code prompt; the value is never returned. */
+  /** Answer the attempt's pending prompt (a code or the browser's return address); the value is never returned. */
   submit(request: RpcRequest<{ attemptId: NativeAccountAttemptId; code: string }>): Promise<RpcResponse<{ attempt: NativeAccountAttempt }>>
   /** Cancel and wait for the owned native process tree to exit. */
   cancel(request: RpcRequest<{ attemptId: NativeAccountAttemptId }>): Promise<RpcResponse<{ attempt: NativeAccountAttempt }>>

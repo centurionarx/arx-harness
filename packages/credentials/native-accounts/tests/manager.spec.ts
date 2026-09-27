@@ -31,17 +31,33 @@ describe('private native account attempts', () => {
     let answer = ''
     const manager = setup(async (_mode, _signal, notice, prompt) => {
       notice('https://claude.com/oauth/authorize?state=example')
-      answer = await prompt()
+      answer = await prompt('code')
     })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('code') })
-    expect(() => manager.submit(attempt.id, 'first\nsecond')).toThrow('one authorization code')
+    expect(() => manager.submit(attempt.id, 'first\nsecond')).toThrow('Enter a single line')
     expect(manager.submit(attempt.id, 'authorization-secret').input).toBeUndefined()
     await vi.waitFor(() => { expect(manager.poll(attempt.id).state).toBe('connected') })
     expect(answer).toBe('authorization-secret')
     expect(JSON.stringify(manager.poll(attempt.id))).not.toContain('authorization-secret')
     expect(manager.poll(attempt.id).url).toBeUndefined()
-    expect(() => manager.submit(attempt.id, 'again')).toThrow('No sign-in code')
+    expect(() => manager.submit(attempt.id, 'again')).toThrow('No sign-in answer')
+  })
+  it('publishes which line each prompt asks for and whether the previous answer was refused', async () => {
+    const answers: string[] = []
+    const manager = setup(async (_mode, _signal, _notice, prompt) => {
+      answers.push(await prompt('redirect-url'))
+      answers.push(await prompt('redirect-url', true))
+    })
+    const attempt = manager.begin('claude-code')
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('redirect-url') })
+    expect(manager.poll(attempt.id).rejected).toBeUndefined()
+    expect(manager.submit(attempt.id, 'http://localhost:1455/auth/callback?code=secret').rejected).toBeUndefined()
+    await vi.waitFor(() => { expect(manager.poll(attempt.id)).toMatchObject({ input: 'redirect-url', rejected: true }) })
+    expect(manager.submit(attempt.id, 'second').rejected).toBeUndefined()
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).state).toBe('connected') })
+    expect(answers).toEqual(['http://localhost:1455/auth/callback?code=secret', 'second'])
+    expect(JSON.stringify(manager.poll(attempt.id))).not.toContain('secret')
   })
   it.each(['http://claude.com/oauth', 'https://evil.test/oauth', 'https://claude.com.evil.test/oauth', 'https://user:pass@claude.com/oauth'])('refuses an unsafe authorization address %s', async (url) => {
     const manager = setup(async (_mode, _signal, notice) => { notice(url) })
@@ -85,8 +101,16 @@ describe('private native account attempts', () => {
     await vi.advanceTimersByTimeAsync(100)
     expect(await describing).toEqual([{ provider: 'claude-code', label: 'Claude', loginModes: ['browser'], loginInFlight: false, availability: 'available', status: 'unknown' }])
   })
+  it('clears a refused prompt when the attempt is cancelled', async () => {
+    const manager = setup(async (_mode, _signal, _notice, prompt) => { await prompt('redirect-url', true) })
+    const attempt = manager.begin('claude-code')
+    await vi.waitFor(() => { expect(manager.poll(attempt.id).rejected).toBe(true) })
+    const cancelled = await manager.cancel(attempt.id)
+    expect(cancelled.rejected).toBeUndefined()
+    expect(cancelled.input).toBeUndefined()
+  })
   it('withdraws pending manual prompts on disposal and rejects future operations', async () => {
-    const manager = setup(async (_mode, _signal, _notice, prompt) => { await prompt() })
+    const manager = setup(async (_mode, _signal, _notice, prompt) => { await prompt('code') })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).input).toBe('code') })
     await manager.dispose()
@@ -144,8 +168,8 @@ describe('private native account attempts', () => {
   })
   it('fails an attempt whose product asks for a second code while one is pending', async () => {
     const manager = setup(async (_mode, _signal, _notice, prompt) => {
-      prompt().catch(() => { /* The first prompt is withdrawn when the attempt settles. */ })
-      await prompt()
+      prompt('code').catch(() => { /* The first prompt is withdrawn when the attempt settles. */ })
+      await prompt('code')
     })
     const attempt = manager.begin('claude-code')
     await vi.waitFor(() => { expect(manager.poll(attempt.id).state).toBe('failed') })

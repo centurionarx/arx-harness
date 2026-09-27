@@ -5,7 +5,7 @@ import type {} from '@arx-ai/arx-subprocess'
 import { NativeAccountManager } from './manager.ts'
 import { claudeAccountDriver, codexAccountDriver } from './drivers.ts'
 import type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode } from './types.ts'
-export type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode, NativeAccountModel } from './types.ts'
+export type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginInput, NativeLoginMode, NativeAccountModel } from './types.ts'
 export { NativeAccountError } from './manager.ts'
 
 declare module '@arx-ai/cordis' { interface Context { nativeAccounts: NativeAccounts } }

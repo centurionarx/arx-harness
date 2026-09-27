@@ -1,6 +1,8 @@
 /** Owns bounded native login attempts independently of browser request lifetimes. */
 import { randomUUID } from 'node:crypto'
-import type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode } from './types.ts'
+import type {
+  NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginInput, NativeLoginMode,
+} from './types.ts'
 
 /** Provider-owned protocol; the manager never handles native token storage. */
 export interface NativeAccountDriver {
@@ -10,9 +12,14 @@ export interface NativeAccountDriver {
   /** Exact HTTPS hosts the product may send a person to; any other address fails the attempt. */
   authorizationHosts: readonly string[]
   describe(signal: AbortSignal): Promise<Omit<NativeAccountView, 'provider' | 'label' | 'loginModes' | 'loginInFlight'>>
+  /**
+   * Run one sign-in. `prompt` asks the person for one pasted line of the given
+   * kind and rejects when the attempt ends; one prompt is pending at a time.
+   * Passing `rejected` says the previous answer to the same prompt was not accepted.
+   */
   login(
     mode: NativeLoginMode, signal: AbortSignal,
-    notice: (url: string, code?: string) => void, prompt: () => Promise<string>,
+    notice: (url: string, code?: string) => void, prompt: (input: NativeLoginInput, rejected?: boolean) => Promise<string>,
   ): Promise<void>
 }
 /** Deployment-owned limits for attempts and read-only probes. */
@@ -91,15 +98,18 @@ export class NativeAccountManager {
           }
           view.state = 'waiting'; view.url = url
           if (code !== undefined) view.code = code
-        }, () => new Promise<string>((resolve, reject) => {
+        }, (input, rejected = false) => new Promise<string>((resolve, reject) => {
           controller.signal.throwIfAborted()
           if (attempt.answer !== undefined) throw new NativeAccountError('A sign-in prompt is already pending.')
-          view.input = 'code'; view.state = 'waiting'
-          const abort = (): void => { delete attempt.answer; delete view.input; reject(new NativeAccountError('Sign-in cancelled.')) }
+          view.input = input; view.state = 'waiting'
+          if (rejected) view.rejected = true
+          const abort = (): void => {
+            delete attempt.answer; delete view.input; delete view.rejected; reject(new NativeAccountError('Sign-in cancelled.'))
+          }
           controller.signal.addEventListener('abort', abort, { once: true })
           attempt.answer = (code) => {
             controller.signal.removeEventListener('abort', abort)
-            delete attempt.answer; delete view.input; resolve(code)
+            delete attempt.answer; delete view.input; delete view.rejected; resolve(code)
           }
         }))
         if (!controller.signal.aborted) view.state = 'connected'
@@ -109,7 +119,7 @@ export class NativeAccountManager {
         controller.abort()
         clearTimeout(attempt.timer)
         this.active.delete(provider)
-        delete view.url; delete view.code; delete view.input
+        delete view.url; delete view.code; delete view.input; delete view.rejected
         if (!this.disposed) attempt.timer = setTimeout(() => { this.attempts.delete(id) }, this.limits.resultRetentionMs)
       }
     })
@@ -120,15 +130,15 @@ export class NativeAccountManager {
    * @returns the latest safe progress.
    */
   poll(id: NativeAccountAttemptId): NativeAccountAttempt { return { ...this.attempt(id).view } }
-  /** Answer the native CLI's current code prompt; the answer is never retained in progress.
+  /** Answer the attempt's current prompt; the answer is never retained in progress.
    * @param id - initiating caller's private capability.
-   * @param code - single-line authorization code supplied by the human.
+   * @param code - single line supplied by the human: an authorization code or the browser's return address.
    * @returns updated progress without the submitted value.
    */
   submit(id: NativeAccountAttemptId, code: string): NativeAccountAttempt {
     const attempt = this.attempt(id)
-    if (!attempt.answer || attempt.controller.signal.aborted) throw new NativeAccountError('No sign-in code is requested.')
-    if (!code || /[\r\n]/.test(code) || code.length > 8192) throw new NativeAccountError('Enter one authorization code.')
+    if (!attempt.answer || attempt.controller.signal.aborted) throw new NativeAccountError('No sign-in answer is requested.')
+    if (!code || /[\r\n]/.test(code) || code.length > 8192) throw new NativeAccountError('Enter a single line.')
     attempt.answer(code)
     return { ...attempt.view }
   }

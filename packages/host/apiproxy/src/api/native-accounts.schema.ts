@@ -13,7 +13,7 @@ const mode = z.enum(['browser', 'device-code'])
 const attempt = z.object({ id: attemptId, provider,
   state: z.enum(['starting', 'waiting', 'connected', 'cancelled', 'expired', 'failed']),
   expiresAt: z.number(), pollAfterMs: z.number(), url: z.string().optional(), code: z.string().optional(),
-  message: z.string().optional(), input: z.literal('code').optional() })
+  message: z.string().optional(), input: z.enum(['code', 'redirect-url']).optional(), rejected: z.boolean().optional() })
 const view = z.object({ provider, label: z.string(), availability: z.enum(['available', 'unavailable']),
   status: z.enum(['connected', 'disconnected', 'unknown']), authMode: z.enum(['subscription', 'api-key']).optional(),
   loginModes: z.array(mode), loginInFlight: z.boolean(),

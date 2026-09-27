@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { bindSnapshotSelector } from '@arx-ai/arx-client-test-runtime'
 import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { IApiClient, NativeAccountAttempt, NativeAccountView, RpcResponse, SettingsNamespaceView } from '@arx-ai/arx-api-remotes/client'
+import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import { NativeAccountsStore } from '../src/client/native-accounts-store.ts'
 import { NativeAccounts } from '../src/client/NativeAccounts.tsx'
@@ -38,6 +39,13 @@ const codex: NativeAccountView = {
     { id: 'gpt-6-astra', name: 'GPT-6-Astra', efforts: ['low', 'high'] },
     { id: 'gpt-6-pro', name: 'GPT-6-Pro', efforts: ['none', 'low', 'high', 'ultra'] },
   ],
+}
+
+/** The host description the card reads; `undefined` is a connection that is not up yet. */
+function host(canOpenPath?: boolean): HostDescriptionSource {
+  const description = canOpenPath === undefined ? undefined
+    : { version: 'test', cwd: '/workspace', attachedSessions: 1, home: '/h', canOpenPath }
+  return { getSnapshot: () => description, subscribe: () => () => {} }
 }
 
 /** Write `value` at `path` in a copy of `root`, the way a settings `set` op lands. */
@@ -82,8 +90,8 @@ function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unk
     { nativeAccounts, settings: { mutate }, llm: { discoverModels } } as unknown as IApiClient, settings, enabled,
   )
   const props = {
-    available: true, useAccounts: bindSnapshotSelector(controller.store), watch: () => controller.watch(),
-    reload: () => { void controller.load() }, begin: controller.begin.bind(controller),
+    available: true, useAccounts: bindSnapshotSelector(controller.store), useHostDescription: bindSnapshotSelector(host()),
+    watch: () => controller.watch(), reload: () => { void controller.load() }, begin: controller.begin.bind(controller),
     cancel: () => { void controller.cancel() }, submit: (code: string) => { void controller.submit(code) },
     enable: (provider: NativeAccountView['provider']) => { void controller.enable(provider) }, t: (key: string) => en[key as keyof typeof en],
   }
@@ -355,9 +363,9 @@ describe('native product accounts', () => {
     await b.controller.submit('not-requested-yet')
     expect(b.nativeAccounts.submit).not.toHaveBeenCalled()
     await b.controller.begin('claude-code', 'browser')
-    b.nativeAccounts.submit.mockResolvedValueOnce(refused('Enter one authorization code.'))
+    b.nativeAccounts.submit.mockResolvedValueOnce(refused('Enter a single line.'))
     await b.controller.submit('bad\ncode')
-    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'Enter one authorization code.', busy: false })
+    expect(b.controller.store.getSnapshot()).toMatchObject({ error: 'Enter a single line.', busy: false })
     await b.controller.begin('claude-code', 'browser')
     const late = deferred<Reply<Api['submit']>>()
     b.nativeAccounts.submit.mockReturnValueOnce(late.promise)
@@ -374,6 +382,15 @@ describe('native product accounts', () => {
     replaced.resolve(ok({ attempt: { ...answered, state: 'connected' } }))
     await replacing
     expect(b.controller.store.getSnapshot().attempt?.state).toBe('cancelled')
+    b.controller.dispose()
+  })
+
+  it('submits a requested return address the way it submits a code', async () => {
+    const b = bench()
+    b.nativeAccounts.begin.mockResolvedValueOnce(ok({ attempt: { ...answered, input: 'redirect-url' } }))
+    await b.controller.begin('codex', 'browser')
+    await b.controller.submit('http://localhost:1455/auth/callback?code=one')
+    expect(b.nativeAccounts.submit).toHaveBeenCalledWith({ attemptId: attempt.id, code: 'http://localhost:1455/auth/callback?code=one' })
     b.controller.dispose()
   })
 
@@ -441,15 +458,22 @@ describe('native product accounts', () => {
 
 describe('native product account card', () => {
   type State = ReturnType<NativeAccountsStore['store']['getSnapshot']>
-  function card(state: Partial<State>) {
+  function card(state: Partial<State>, canOpenPath?: boolean) {
     const store = createSnapshotStore<State>({
       accounts: [], attempt: null, routes: {}, loading: false, busy: false, error: null, ...state,
     })
-    const props = { available: true, useAccounts: bindSnapshotSelector(store), watch: () => () => {}, reload: vi.fn(),
-      begin: vi.fn(), cancel: vi.fn(), submit: vi.fn(), enable: vi.fn(), t: (key: string) => en[key as keyof typeof en] }
+    const props = { available: true, useAccounts: bindSnapshotSelector(store), useHostDescription: bindSnapshotSelector(host(canOpenPath)),
+      watch: () => () => {}, reload: vi.fn(), begin: vi.fn(), cancel: vi.fn(), submit: vi.fn(), enable: vi.fn(),
+      t: (key: string) => en[key as keyof typeof en] }
     render(<NativeAccounts {...props} />)
     return props
   }
+  /** Sign-in button labels in the order the card renders them. */
+  const loginButtons = () => screen.getAllByRole('button').map(button => button.textContent)
+    .filter(name => name === en['native.deviceLogin'] || name === en['native.browserLogin'])
+  /** The texts a screen reader reads with `input`, in the order the field names them. */
+  const readWith = (input: HTMLElement) => input.getAttribute('aria-describedby')?.split(' ')
+    .map(id => document.getElementById(id)?.textContent)
 
   it('describes every account status and authentication kind', () => {
     const props = card({ loading: true, accounts: [
@@ -507,6 +531,55 @@ describe('native product account card', () => {
     cleanup()
     card({ accounts: [{ ...codex, authMode: 'api-key' }] })
     expect(screen.queryByRole('button', { name: 'Enable in chat' })).toBeNull()
+  })
+
+  it('puts the device code first on a host without a desktop and weighs it against the browser only where both are offered', () => {
+    card({ accounts: [codex] }, false)
+    expect(loginButtons()).toEqual(['Connect with device code', 'Connect in browser'])
+    expect(screen.getByText(en['native.remoteSignIn'])).toBeTruthy()
+    cleanup()
+    card({ accounts: [account, { ...codex, availability: 'unavailable' }] }, false)
+    expect(loginButtons()).toEqual(['Connect in browser'])
+    expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
+    cleanup()
+    card({ accounts: [{ ...codex, loginModes: ['device-code'] }] }, false)
+    expect(loginButtons()).toEqual(['Connect with device code'])
+    expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
+  })
+
+  it.each([
+    ['a host with a desktop', true],
+    ['a connection that is not up yet', undefined],
+  ])('keeps the offered order and stays quiet on %s', (_case, canOpenPath) => {
+    card({ accounts: [codex] }, canOpenPath)
+    expect(loginButtons()).toEqual(['Connect in browser', 'Connect with device code'])
+    expect(screen.queryByText(en['native.remoteSignIn'])).toBeNull()
+  })
+
+  it('asks for the address the browser ended on, with what to paste, when the sign-in requests it, and for a code alone otherwise', () => {
+    const props = card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'redirect-url' } }, false)
+    const input = screen.getByLabelText('Address of the page your browser ended on') as HTMLInputElement
+    expect(input.type).toBe('password')
+    expect(readWith(input)).toEqual([en['native.returnAddressHint']])
+    expect(screen.queryByText(en['native.returnAddressRejected'])).toBeNull()
+    fireEvent.change(input, { target: { value: '  http://localhost:1455/auth/callback?code=one  ' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Submit address' }))
+    expect(props.submit).toHaveBeenCalledWith('http://localhost:1455/auth/callback?code=one')
+    expect(input.value).toBe('')
+    cleanup()
+    card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'code', rejected: true } })
+    expect(readWith(screen.getByLabelText('Authorization code'))).toBeUndefined()
+    expect(screen.getByRole('button', { name: 'Submit code' })).toBeTruthy()
+    expect(screen.queryByLabelText('Address of the page your browser ended on')).toBeNull()
+    expect(screen.queryByText(en['native.returnAddressHint'])).toBeNull()
+    expect(screen.queryByText(en['native.returnAddressRejected'])).toBeNull()
+  })
+
+  it('says a refused paste was not this sign-in\'s return page, where a screen reader hears it', () => {
+    card({ accounts: [codex], attempt: { ...answered, provider: 'codex', input: 'redirect-url', rejected: true } }, false)
+    const input = screen.getByLabelText('Address of the page your browser ended on')
+    expect(readWith(input)).toEqual([en['native.returnAddressRejected'], en['native.returnAddressHint']])
+    expect(screen.getByRole('status').textContent).toContain(en['native.returnAddressRejected'])
   })
 
   it('shows a device code and the product message while a sign-in runs', () => {

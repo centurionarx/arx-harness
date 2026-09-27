@@ -4165,7 +4165,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'NativeAccountAttempt',
-    declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: \'code\';\n}',
+    declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: NativeLoginInput;\n    rejected?: boolean;\n}',
   },
   {
     name: 'NativeAccountAttemptId',
@@ -4182,6 +4182,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'NativeAccountView',
     declaration: 'export interface NativeAccountView {\n    provider: NativeAccountProvider;\n    label: string;\n    availability: \'available\' | \'unavailable\';\n    status: \'connected\' | \'disconnected\' | \'unknown\';\n    authMode?: \'subscription\' | \'api-key\';\n    models?: NativeAccountModel[];\n    loginModes: NativeLoginMode[];\n    loginInFlight: boolean;\n}',
+  },
+  {
+    name: 'NativeLoginInput',
+    declaration: 'export type NativeLoginInput = \'code\' | \'redirect-url\';',
   },
   {
     name: 'NativeLoginMode',

@@ -20,13 +20,15 @@ ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 user@host
 
 Open `http://127.0.0.1:13080` locally. The tunnel's local listener is also loopback-only; close the SSH process when access is no longer needed. If the remote harness uses another port, replace the final `3080` with that port.
 
-A Codex browser sign-in, from either the **Native product accounts** card or the **OpenAI Codex chat models** card on the Models page, returns to `http://localhost:1455/auth/callback`, and the process signing in serves that address on the remote host. Forward port 1455 in the same tunnel before you start one, and keep that port free on your machine:
+On a host with no desktop session to open a browser, the **Native product accounts** card on the Models page lists device-code sign-in before browser sign-in for Codex — Claude Code offers only browser sign-in — and shows a notice; device-code sign-in needs no forwarded port. The **OpenAI Codex chat models** card does not reorder: its flow asks which login method to use, browser or device code, and shows a notice recommending the device code; its browser method already offers its own paste field for the code or the return address. Either card's browser sign-in still works on such a host: after signing in, your browser is redirected to a localhost address that does not load on your computer. Copy that page's full address from the address bar — including everything after `?` — and paste it into the return-address field the sign-in card shows.
+
+Forwarding the callback port also works, as an alternative to pasting. The Codex tool serves its browser callback at `http://localhost:1455/auth/callback`, and moves to `http://localhost:1457/auth/callback` when port 1455 is already taken on the remote host, so a tunnel that forwards the callback should include both ports:
 
 ```sh
-ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 user@host
+ssh -N -L 127.0.0.1:13080:127.0.0.1:3080 -L 1455:127.0.0.1:1455 -L 1457:127.0.0.1:1457 user@host
 ```
 
-The second forward names no local address, so it listens on every loopback address that `localhost` can resolve to in your browser. The remote host serves one such callback at a time. The Codex device-code sign-in and the Claude Code sign-in, which takes a pasted code, need no forwarded port.
+These forwards name no local address, so each listens on every loopback address that `localhost` can resolve to in your browser. The Claude Code sign-in, which takes a pasted code, needs no forwarded port either.
 
 ## Network deployment requirements
 
