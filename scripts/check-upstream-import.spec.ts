@@ -55,7 +55,7 @@ const diff = [
 describe('findImportProblems', () => {
   it('fails drop-listed files, CJK text, and unmapped identifiers, and lists forbidden words for review', () => {
     expect(findImportProblems(diff, manifest)).toEqual([
-      { file: 'packages/x/src/a.ts', line: 3, severity: 'fail', problem: 'CJK text; translate it to English' },
+      { file: 'packages/x/src/a.ts', line: 3, severity: 'fail', problem: 'CJK text; translate it to Brazilian Portuguese' },
       { file: 'packages/x/src/a.ts', line: 12, severity: 'fail', problem: 'unmapped identifier @up/up-; map it to @arx-ai/arx-' },
       { file: 'packages/llm/presets/src/models.ts', line: 1, severity: 'review', problem: 'acme: keep only in model-access configuration' },
       { file: 'docs/guide.zh.md', line: 0, severity: 'fail', problem: 'drop-listed path; remove it from the import' },
