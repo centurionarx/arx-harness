@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-user-questions",
   "description": "Abstract user-questions seam (ctx.userQuestions) for asking the human during agent runs",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "publishConfig": {
     "access": "public"
   },

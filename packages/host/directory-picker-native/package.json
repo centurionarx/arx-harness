@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-directory-picker-native",
   "description": "Native-OS-chooser backend of the directory-picker seam for the arx Harness web GUI host",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "publishConfig": {
     "access": "public"
   },
@@ -39,7 +39,7 @@
   "dependencies": {
     "@arx-ai/arx-host-directory-picker": "workspace:^",
     "@arx-ai/arx-native-command": "workspace:^",
-    "koffi": "^3.1.0"
+    "koffi": "^3.1.0 <3.3.2 || ^3.3.3"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",

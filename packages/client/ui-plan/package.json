@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-plan",
   "description": "Plan-mode composer control: the conversation.input.plan seat over the plan projection and the /plan command channel",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "publishConfig": {
     "access": "public"
   },
