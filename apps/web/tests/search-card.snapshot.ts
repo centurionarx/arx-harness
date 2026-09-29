@@ -3,7 +3,8 @@
 // through AppWebEntry's ModuleLoader path against the keyless
 // FixtureApiClient transport (no API key, no model round), opens the fixture
 // session, and pins the search card the `grep` turn (fixture turn 67) renders in
-// the assembled application. The built-boot smoke proves the graph boots but
+// the assembled application, once in English and once for a browser that asks
+// for Brazilian Portuguese. The built-boot smoke proves the graph boots but
 // intentionally carries no behavior assertions; this is the assembled-output check
 // that a broken SearchRow registration or a dropped card would fail — the
 // per-package suites bench over src and cannot see the bundled wiring.
@@ -21,6 +22,7 @@ import { describe, expect, it } from 'vitest'
 import { hasClass, installAssembledBootEnv, mountAssembledApp, REFRESHING_GOLDEN } from './assembled-boot.ts'
 
 const EXPECTED = join(process.cwd(), 'apps/web/tests/snapshots/search-card/grep-card.expected.txt')
+const EXPECTED_PT = join(process.cwd(), 'apps/web/tests/snapshots/search-card/grep-card.pt-BR.expected.txt')
 
 installAssembledBootEnv()
 
@@ -44,37 +46,60 @@ function cardShape(root: Element): string {
   return lines.join('\n')
 }
 
+/**
+ * Open the fixture session, expand the grep turn's collapsed row, and return
+ * the row once its search card has mounted.
+ * @returns the grep tool row, holding the card and its recovery footer.
+ */
+async function openGrepCard(): Promise<Element> {
+  mountAssembledApp()
+
+  const tree = await screen.findByRole('tree', { name: 'Sessions' }, { timeout: 10_000 })
+  fireEvent.click(await within(tree).findByText('Fixture 历史会话'))
+  // Wait for chat content to reach the fixture's later turns (the bash sample
+  // is turn 66, the grep card turn 67).
+  await waitFor(() => {
+    expect(document.querySelector('[data-sample="bash"]')).not.toBeNull()
+  }, { timeout: 10_000 })
+  // The grep turn's keyed SearchRow composes ToolRow: the card is collapsed
+  // by default, so wait for the summary row, then expand it to reach the card.
+  await waitFor(() => {
+    const tools = [...document.querySelectorAll('[data-tool]')].map(el => el.getAttribute('data-tool'))
+    expect(tools, `tools present: ${tools.join(', ')}`).toContain('grep')
+  }, { timeout: 10_000 })
+
+  // `data-tool` sits on the ToolRow root; the collapsed row is the expand
+  // toggle. Click it so the card and its recovery footer mount, then serialize the
+  // whole row (the card lives inside ToolRow's body wrapper).
+  const grepRow = document.querySelector('[data-tool="grep"]')!
+  act(() => { fireEvent.click(grepRow.querySelector('[data-expandable]') ?? grepRow) })
+  await waitFor(() => {
+    expect(grepRow.querySelector('[data-search]')).not.toBeNull()
+  }, { timeout: 10_000 })
+  return grepRow
+}
+
+/**
+ * Pin a card shape to its golden, rewriting the golden first when refreshing.
+ * @param shape - the serialized card.
+ * @param expected - the golden path.
+ */
+async function pinShape(shape: string, expected: string): Promise<void> {
+  if (REFRESHING_GOLDEN) {
+    mkdirSync(dirname(expected), { recursive: true })
+    writeFileSync(expected, shape)
+  }
+  await expect(shape).toMatchFileSnapshot(expected)
+}
+
 describe('assembled search card', () => {
   it('renders the grep card, its truncation summary, and its capped head/tail slice from the built bundles', async () => {
-    mountAssembledApp()
+    await pinShape(cardShape(await openGrepCard()), EXPECTED)
+  })
 
-    const tree = await screen.findByRole('tree', { name: 'Sessions' }, { timeout: 10_000 })
-    fireEvent.click(await within(tree).findByText('Fixture 历史会话'))
-    // Wait for chat content to reach the fixture's later turns (the bash sample
-    // is turn 66, the grep card turn 67).
-    await waitFor(() => {
-      expect(document.querySelector('[data-sample="bash"]')).not.toBeNull()
-    }, { timeout: 10_000 })
-    // The grep turn's keyed SearchRow composes ToolRow: the card is collapsed
-    // by default, so wait for the summary row, then expand it to reach the card.
-    await waitFor(() => {
-      const tools = [...document.querySelectorAll('[data-tool]')].map(el => el.getAttribute('data-tool'))
-      expect(tools, `tools present: ${tools.join(', ')}`).toContain('grep')
-    }, { timeout: 10_000 })
-
-    // `data-tool` sits on the ToolRow root; the collapsed row is the expand
-    // toggle. Click it so the card and its recovery footer mount, then serialize the
-    // whole row (the card lives inside ToolRow's body wrapper).
-    const grepRow = document.querySelector('[data-tool="grep"]')!
-    act(() => { fireEvent.click(grepRow.querySelector('[data-expandable]') ?? grepRow) })
-    await waitFor(() => {
-      expect(grepRow.querySelector('[data-search]')).not.toBeNull()
-    }, { timeout: 10_000 })
-    const shape = cardShape(grepRow)
-    if (REFRESHING_GOLDEN) {
-      mkdirSync(dirname(EXPECTED), { recursive: true })
-      writeFileSync(EXPECTED, shape)
-    }
-    await expect(shape).toMatchFileSnapshot(EXPECTED)
+  it('renders the card chrome in Brazilian Portuguese for a browser that asks for it', async () => {
+    Object.defineProperty(navigator, 'languages', { value: ['pt-BR'], configurable: true })
+    Object.defineProperty(navigator, 'language', { value: 'pt-BR', configurable: true })
+    await pinShape(cardShape(await openGrepCard()), EXPECTED_PT)
   })
 })

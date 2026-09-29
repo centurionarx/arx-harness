@@ -14,7 +14,7 @@ import {
   ScheduleCatalogAction,
   type ScheduleCatalogActionProps,
 } from '../src/client/ScheduleCatalogAction.tsx'
-import { en, zh } from '../src/client/locales.ts'
+import { en, pt } from '../src/client/locales.ts'
 
 const SESSION = 'schedule-session' as SessionId
 const START = Date.parse('2026-08-25T12:00:00.000Z')
@@ -71,7 +71,7 @@ function sessionSnapshot(openState: ConversationSnapshot['openState']): Conversa
 function props(
   records: readonly ScheduleRecord[] | undefined,
   openState: ConversationSnapshot['openState'] = 'open',
-  dictionary: typeof zh | typeof en = en,
+  dictionary: typeof pt | typeof en = en,
 ): ScheduleCatalogActionProps {
   const snapshot = sessionSnapshot(openState)
   const useSession = <T,>(select: (value: ConversationSnapshot) => T): T => select(snapshot)
@@ -184,23 +184,23 @@ describe('ScheduleCatalogAction rows', () => {
 
   it('renders exact recurring units without rounding and localizes both dictionaries', () => {
     const tEn = makeTranslate(en)
-    const tZh = makeTranslate(zh)
+    const tPt = makeTranslate(pt)
     const samples = [
-      [86_400, 'Every 1 day', '1天一次'],
-      [172_800, 'Every 2 days', '2天一次'],
-      [3_600, 'Every 1 hour', '1小时一次'],
-      [7_200, 'Every 2 hours', '2小时一次'],
-      [300, 'Every 5 minutes', '5分钟一次'],
-      [301, 'Every 301 seconds', '301秒一次'],
+      [86_400, 'Every 1 day', 'A cada 1 dia'],
+      [172_800, 'Every 2 days', 'A cada 2 dias'],
+      [3_600, 'Every 1 hour', 'A cada 1 hora'],
+      [7_200, 'Every 2 hours', 'A cada 2 horas'],
+      [300, 'Every 5 minutes', 'A cada 5 minutos'],
+      [301, 'Every 301 seconds', 'A cada 301 segundos'],
     ] as const
-    for (const [seconds, english, chinese] of samples) {
+    for (const [seconds, english, portuguese] of samples) {
       const item = record(String(seconds), 'every', START + 1_000, { everySeconds: seconds })
       expect(formatScheduleFrequency(item, tEn)).toBe(english)
-      expect(formatScheduleFrequency(item, tZh)).toBe(chinese)
+      expect(formatScheduleFrequency(item, tPt)).toBe(portuguese)
     }
-    expect(formatScheduleFrequency(record('once', 'at', START + 1_000), tZh)).toBe('单次')
-    expect(tZh('status.scheduled')).toBe('等待中')
-    expect(tZh('status.overdue')).toBe('已逾期')
+    expect(formatScheduleFrequency(record('once', 'at', START + 1_000), tPt)).toBe('Uma vez')
+    expect(tPt('status.scheduled')).toBe('Agendado')
+    expect(tPt('status.overdue')).toBe('Atrasado')
   })
 
   it('formats absolute time with the active document locale instead of the runtime default', () => {

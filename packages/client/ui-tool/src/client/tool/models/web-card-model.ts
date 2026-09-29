@@ -12,8 +12,23 @@
  * a running call always takes the generic path.
  * @module
  */
-import type { WebBlockProps } from '@arx-ai/arx-client-ui-primitives'
+import type { WebBlockLabels, WebBlockProps } from '@arx-ai/arx-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallBlock } from './tool-call-model.ts'
+
+/**
+ * Build the WebBlock display copy from the conversation locale seat, shared by
+ * both web render sites (chat row and details panel).
+ * @param t - the render site's conversation locale seat.
+ * @returns the full label set for {@link WebBlockProps}'s `labels`.
+ */
+export function webBlockLabels(t: TranslateNS<'conversation'>): WebBlockLabels {
+  return {
+    empty: t('web.empty'),
+    sourcesTruncated: t('web.sourcesTruncated'),
+    contentTruncated: t('web.contentTruncated'),
+  }
+}
 
 /**
  * Derive the web-card props for a tool call, or null when this call is not a

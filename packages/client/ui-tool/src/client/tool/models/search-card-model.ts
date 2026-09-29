@@ -21,8 +21,33 @@
  * lost.
  * @module
  */
-import type { SearchBlockProps, SearchFileGroup } from '@arx-ai/arx-client-ui-primitives'
+import type { SearchBlockLabels, SearchBlockProps, SearchFileGroup } from '@arx-ai/arx-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallBlock } from './tool-call-model.ts'
+
+/**
+ * Build the SearchBlock display copy from the conversation locale seat, shared
+ * by both search render sites (chat row and details panel). The dictionary
+ * interpolates without plural rules, so each count picks its singular or plural
+ * key here.
+ * @param t - the render site's conversation locale seat.
+ * @returns the full label set for {@link SearchBlockProps}'s `labels`.
+ */
+export function searchBlockLabels(t: TranslateNS<'conversation'>): SearchBlockLabels {
+  return {
+    shownOfTotal: (shown, total) => t('search.shownOfTotal', { shown, total }),
+    paths: (count, results) => t(results === 1 ? 'search.path' : 'search.paths', { count }),
+    matches: (count, results, files) =>
+      `${t(results === 1 ? 'search.match' : 'search.matches', { count })} · ${t(files === 1 ? 'search.file' : 'search.files', { n: files })}`,
+    copy: t('copy'),
+    copied: t('copied'),
+    empty: t('search.empty'),
+    collapseAria: t('search.collapseAria'),
+    collapse: t('collapse'),
+    expandAria: hidden => t('search.expandAria', { n: hidden }),
+    expand: hidden => t('card.expandRest', { n: hidden }),
+  }
+}
 
 /**
  * Distributive `Omit`: a plain `Omit<A | B, K>` keeps only the keys common to

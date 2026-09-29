@@ -7,12 +7,12 @@
  * session-aware occupants render in fixed column positions; strict entries
  * gate themselves on current-session availability while session-maybe
  * entries retain identity. Pure component: everything arrives
- * through the three framework shares — zero cordis or framework imports,
+ * through the four framework shares — zero cordis or framework imports,
  * zero self-made hooks.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { PropsRenderSlots, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
+import type { PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore } from '@arx-ai/arx-client-ui-slots'
 import {
   computeColumns,
   DETAILS_MAX,
@@ -25,11 +25,12 @@ import {
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'
 
-/** Full composed props: runtime share + child-slot render share + store share. */
+/** Full composed props: runtime share + child-slot render share + store share + locale seat. */
 export type AppFrameProps =
   & PropsRuntime<'root'>
   & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'shell.overlay'>
   & PropsStore<ReturnType<typeof createLayoutStore>>
+  & PropsLocale<'layout'>
 
 /** Center column grid item (session-body building block). */
 function CenterColumn(props: { children?: ReactNode }) {
@@ -154,6 +155,7 @@ export function AppFrame({
   useSessions,
   actions,
   renderSlot,
+  t,
 }: AppFrameProps) {
   const panels = useStore(s => s)
   const detailsSession = useSessions((s) => {
@@ -262,7 +264,7 @@ export function AppFrame({
       {!sidebarCollapsed && (
         <DragHandle
           side="sidebar"
-          label="调整侧边栏宽度"
+          label={t('resize.sidebar')}
           left={cols.sidebar}
           value={cols.sidebar}
           min={SIDEBAR_MIN}
@@ -275,7 +277,7 @@ export function AppFrame({
       {cols.details > 0 && (
         <DragHandle
           side="details"
-          label="调整详情栏宽度"
+          label={t('resize.details')}
           left={viewport - cols.details}
           value={cols.details}
           min={DETAILS_MIN}

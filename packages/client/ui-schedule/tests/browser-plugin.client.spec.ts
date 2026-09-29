@@ -5,7 +5,7 @@ import { stubSettingsScope } from '@arx-ai/arx-client-test-runtime'
 import { apply as applyLocale, inject as localeInject } from '@arx-ai/arx-client-locale/client'
 import { apply, inject } from '../src/client/index.ts'
 import { apply as applyNode } from '../src/index.ts'
-import { en, NS, zh } from '../src/client/locales.ts'
+import { en, NS, pt } from '../src/client/locales.ts'
 
 const Empty = () => null
 
@@ -68,7 +68,7 @@ describe('ui-schedule browser half', () => {
     await fiber.await()
     const translate = ctx.locale.bind(NS)
     expect(translate('list.aria')).toBe(en['list.aria'])
-    expect(Object.keys(en).sort()).toEqual(Object.keys(zh).sort())
+    expect(Object.keys(pt).sort()).toEqual(Object.keys(en).sort())
 
     await fiber.dispose()
     expect(translate('list.aria')).not.toBe(en['list.aria'])

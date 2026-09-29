@@ -5,7 +5,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type {} from '@arx-ai/arx-experimental-agent-team'
 import { TeamAction, type TeamActionInjected } from './TeamAction.tsx'
-import { en, NS, type TeamKey } from './locales.ts'
+import { en, NS, pt, type TeamKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -21,7 +21,7 @@ export const inject = ['sessions', 'slots', 'locale']
 
 export function apply(ctx: ClientContext): void {
   const sessions = ctx.sessions as unknown as ISessions
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-agent-team: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-agent-team: dictionaries')
   const injected = (): TeamActionInjected => ({
     openMember: async (leadId, memberId) => {
       if (leadId === memberId) {

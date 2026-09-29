@@ -14,8 +14,27 @@
  * @module
  */
 import { abbreviateHomePath } from '@arx-ai/arx-client-runtime/client'
-import type { ReadBlockLine, ReadBlockProps } from '@arx-ai/arx-client-ui-primitives'
+import type { ReadBlockLabels, ReadBlockLine, ReadBlockProps } from '@arx-ai/arx-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import { relativizeToCwd, type ToolCallBlock } from './tool-call-model.ts'
+
+/**
+ * Build the ReadBlock display copy from the conversation locale seat, shared by
+ * both read render sites (chat row and details panel).
+ * @param t - the render site's conversation locale seat.
+ * @returns the full label set for {@link ReadBlockProps}'s `labels`.
+ */
+export function readBlockLabels(t: TranslateNS<'conversation'>): ReadBlockLabels {
+  return {
+    window: (shown, total) => t('read.window', { shown, total }),
+    copy: t('copy'),
+    copied: t('copied'),
+    collapseAria: t('read.collapseAria'),
+    collapse: t('collapse'),
+    expandAria: hidden => t('read.expandAria', { n: hidden }),
+    expand: hidden => t('card.expandRest', { n: hidden }),
+  }
+}
 
 /**
  * Content lines the chat row's resident read body shows before collapsing the

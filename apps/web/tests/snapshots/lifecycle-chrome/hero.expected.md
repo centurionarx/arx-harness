@@ -44,4 +44,4 @@
 - text: Details
 - button "Close details"
 - text: Click a tool row in the message flow to view its details
-- separator "调整侧边栏宽度"
+- separator "Resize sidebar"

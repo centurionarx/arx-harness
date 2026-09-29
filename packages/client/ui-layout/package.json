@@ -32,6 +32,7 @@
   "arx": {
     "client": {
       "inject": [
+        "@arx-ai/arx-client-locale",
         "@arx-ai/arx-client-runtime",
         "@arx-ai/arx-client-ui-theme"
       ],
@@ -44,6 +45,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@arx-ai/arx-client-locale": "workspace:^",
     "@arx-ai/arx-client-runtime": "workspace:^",
     "@arx-ai/arx-client-ui-theme": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",

@@ -5,7 +5,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import type {} from '@arx-ai/arx-schedule'
 import { ScheduleCatalogAction } from './ScheduleCatalogAction.tsx'
-import { en, NS, type ScheduleCatalogKey } from './locales.ts'
+import { en, NS, pt, type ScheduleCatalogKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -19,7 +19,7 @@ export const inject = ['slots', 'locale']
 
 /** Register the dictionaries and Session-header catalog action. */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-schedule: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-schedule: dictionaries')
   ctx.slots.inject(
     'conversation.session.header.actions',
     () => ctx.slots.register({

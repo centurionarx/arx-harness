@@ -39,6 +39,35 @@ export interface WebSourceView {
   publishedAt?: string | undefined
 }
 
+/**
+ * Display copy for the web surface; the owner passes localized labels (this
+ * package is cordis-free, so copy arrives via props). An omitted field falls
+ * back to the built-in English copy.
+ */
+export interface WebBlockLabels {
+  /** Placeholder for a search that returned neither an answer nor a source. */
+  empty: string
+  /** Note under a search card whose source list the tool cut to its result cap. */
+  sourcesTruncated: string
+  /** Note beside a fetch card's status when the provider or the output cap cut the content. */
+  contentTruncated: string
+}
+
+const DEFAULT_LABELS: WebBlockLabels = {
+  empty: 'No results found',
+  sourcesTruncated: 'Source list truncated',
+  contentTruncated: 'Content truncated',
+}
+
+/**
+ * Resolve the display copy a card draws with.
+ * @param labels - the owner's localized copy, possibly partial.
+ * @returns the complete copy, with omitted fields taken from the English defaults.
+ */
+function resolvedLabels(labels: Partial<WebBlockLabels> | undefined): WebBlockLabels {
+  return labels === undefined ? DEFAULT_LABELS : { ...DEFAULT_LABELS, ...labels }
+}
+
 /** A `web_search` card: an optional answer over a capped citation list. */
 export interface WebSearchBlockProps {
   kind: 'search'
@@ -50,6 +79,8 @@ export interface WebSearchBlockProps {
   truncated: boolean
   /** Extra class merged onto the wrapper (callers position; this component draws). */
   className?: string | undefined
+  /** Localized display copy; omitted fields keep the built-in English copy. */
+  labels?: Partial<WebBlockLabels> | undefined
 }
 
 /** A `web_fetch` card: the retrieval summary for one fetched URL. */
@@ -63,6 +94,8 @@ export interface WebFetchBlockProps {
   truncated: boolean
   /** Extra class merged onto the wrapper (callers position; this component draws). */
   className?: string | undefined
+  /** Localized display copy; omitted fields keep the built-in English copy. */
+  labels?: Partial<WebBlockLabels> | undefined
 }
 
 /** A completed web retrieval card, discriminated by `kind`. */
@@ -153,7 +186,8 @@ function SourceItem({ source, ordinal }: { source: WebSourceView; ordinal: numbe
  * @param props - see {@link WebSearchBlockProps}.
  * @returns the search card element.
  */
-function WebSearchBlock({ answer, sources, truncated, className }: WebSearchBlockProps) {
+function WebSearchBlock({ answer, sources, truncated, className, labels }: WebSearchBlockProps) {
+  const copy = resolvedLabels(labels)
   // A provider may legitimately return no answer and no sources; the chat WebRow
   // does not show the raw result content, so without this the user would see an
   // empty card. Mirror the backend's `No results found.` render text.
@@ -164,13 +198,13 @@ function WebSearchBlock({ answer, sources, truncated, className }: WebSearchBloc
         <div className={css.answer}><MarkdownText text={answer} /></div>
       )}
       {empty ? (
-        <div className={css.empty}>未找到结果</div>
+        <div className={css.empty}>{copy.empty}</div>
       ) : (
         <ol className={css.sources}>
           {sources.map((source, index) => <SourceItem key={index} source={source} ordinal={index + 1} />)}
         </ol>
       )}
-      {truncated && <div className={css.truncated}>来源列表已截断</div>}
+      {truncated && <div className={css.truncated}>{copy.sourcesTruncated}</div>}
     </div>
   )
 }
@@ -180,13 +214,14 @@ function WebSearchBlock({ answer, sources, truncated, className }: WebSearchBloc
  * @param props - see {@link WebFetchBlockProps}.
  * @returns the fetch card element.
  */
-function WebFetchBlock({ url, statusCode, truncated, className }: WebFetchBlockProps) {
+function WebFetchBlock({ url, statusCode, truncated, className, labels }: WebFetchBlockProps) {
+  const copy = resolvedLabels(labels)
   return (
     <div className={clsx(css.block, css.fetch, className)} data-web="fetch">
       <SafeLink url={url} label={url} className={css.fetchUrl} />
       <div className={css.fetchMeta}>
         <span className={css.status}>HTTP {statusCode}</span>
-        {truncated && <span className={css.truncated}>内容已截断</span>}
+        {truncated && <span className={css.truncated}>{copy.contentTruncated}</span>}
       </div>
     </div>
   )

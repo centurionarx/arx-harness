@@ -7,8 +7,26 @@
  * call this, so the hunks they show are derived once.
  * @module
  */
-import type { DiffBlockProps, DiffHunk } from '@arx-ai/arx-client-ui-primitives'
+import type { DiffBlockLabels, DiffBlockProps, DiffHunk } from '@arx-ai/arx-client-ui-primitives'
+import type { TranslateNS } from '@arx-ai/arx-client-ui-slots'
 import type { ToolCallBlock } from './tool-call-model.ts'
+
+/**
+ * Build the DiffBlock display copy from the conversation locale seat, shared by
+ * both diff render sites (chat row and details panel).
+ * @param t - the render site's conversation locale seat.
+ * @returns the full label set for {@link DiffBlockProps}'s `labels`.
+ */
+export function diffBlockLabels(t: TranslateNS<'conversation'>): DiffBlockLabels {
+  return {
+    copy: t('copy'),
+    copied: t('copied'),
+    collapseAria: t('diff.collapseAria'),
+    collapse: t('collapse'),
+    expandAria: hidden => t('diff.expandAria', { n: hidden }),
+    expand: hidden => t('card.expandRest', { n: hidden }),
+  }
+}
 
 /**
  * Diff-body lines the chat row shows before collapsing the middle — half the
