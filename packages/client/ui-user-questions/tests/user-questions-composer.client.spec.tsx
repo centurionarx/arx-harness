@@ -384,8 +384,12 @@ describe('PendingQuestion domain face', () => {
 })
 
 describe('parseRecommendedLabel', () => {
-  it('recognizes English and Chinese suffixes without changing ordinary labels', () => {
+  it('recognizes English, Portuguese, and Chinese suffixes without changing ordinary labels', () => {
     expect(parseRecommendedLabel('Fast (Recommended)')).toEqual({ label: 'Fast', recommended: true })
+    expect(parseRecommendedLabel('Rápido (Recomendado)')).toEqual({ label: 'Rápido', recommended: true })
+    expect(parseRecommendedLabel('Opção curta (recomendada)')).toEqual({ label: 'Opção curta', recommended: true })
+    expect(parseRecommendedLabel('Seguro（RECOMENDADO）')).toEqual({ label: 'Seguro', recommended: true })
+    expect(parseRecommendedLabel('Recomendado para iniciantes')).toEqual({ label: 'Recomendado para iniciantes', recommended: false })
     expect(parseRecommendedLabel('稳妥（推荐）')).toEqual({ label: '稳妥', recommended: true })
     expect(parseRecommendedLabel('稳妥 (推荐)')).toEqual({ label: '稳妥', recommended: true })
     expect(parseRecommendedLabel('Plain')).toEqual({ label: 'Plain', recommended: false })
