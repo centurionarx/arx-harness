@@ -62,7 +62,6 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-theme/src/client/locales.ts::en',
   'packages/client/ui-trajectory/src/client/locales.ts::en',
   'packages/client/ui-turn-outline/src/client/locales.ts::en',
-  'packages/client/ui-user-questions/src/client/locales.ts::en',
   'packages/client/ui-workflow-run/src/client/locales.ts::en',
   'packages/client/ui-workspace/src/client/locales.ts::en',
   'packages/extensions/ui-cordis/src/client/locales.ts::en',
