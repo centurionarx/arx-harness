@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-command-feedback",
   "description": "Log-only session feedback producer and human-facing slash command",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "publishConfig": {
     "access": "public"
   },

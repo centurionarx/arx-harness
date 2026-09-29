@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-default-model",
   "description": "Default model selection shared by Agent entry points",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "publishConfig": {
     "access": "public"
   },
