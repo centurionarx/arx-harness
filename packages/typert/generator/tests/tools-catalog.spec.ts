@@ -17,7 +17,10 @@ afterEach(() => {
 })
 
 describe('model-driven arx-tools generation', () => {
-  it('round-trips the complete service and event structure through the runtime registry', { timeout: 30_000 }, async () => {
+  // The workspace analysis takes seconds alone and several times that on a CI
+  // runner shared with the coverage partitions; the budget matches the other
+  // WorkspaceAnalyzer suites.
+  it('round-trips the complete service and event structure through the runtime registry', { timeout: 60_000 }, async () => {
     const workspace = new WorkspaceAnalyzer({
       root: workspaceRoot,
       faces: ['host'],
