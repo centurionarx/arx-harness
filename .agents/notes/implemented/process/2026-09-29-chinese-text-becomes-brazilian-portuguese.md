@@ -4,7 +4,7 @@ Status: implemented
 
 ## Problem
 
-The product and this repository came from a Chinese-language upstream. The UI dictionaries and the documentation pairing moved to Brazilian Portuguese ([translation language](2026-08-31-translation-language-brazilian-portuguese.md)), yet 437 tracked files still held Chinese text: the GitHub issue and pull-request templates, the issue policy's messages (the policy also requires a Chinese character in every issue title), Agent Notes, test data, recorded transcripts, and the Chinese counterparts frozen in `.agents/notes/archived/`. The upstream import procedure translated imported strings to English, and nothing stopped a change from adding Chinese text.
+The product and this repository came from a Chinese-language upstream. The UI dictionaries and the documentation pairing moved to Brazilian Portuguese ([translation language](2026-08-31-translation-language-brazilian-portuguese.md)), yet 429 tracked files still held Chinese text: the GitHub issue and pull-request templates, the issue policy's messages (the policy also requires a Chinese character in every issue title), Agent Notes, test data, recorded transcripts, and the Chinese counterparts frozen in `.agents/notes/archived/`. The upstream import procedure translated imported strings to English, and nothing stopped a change from adding Chinese text.
 
 ## Decision
 
@@ -24,7 +24,7 @@ The product and this repository came from a Chinese-language upstream. The UI di
 
 ## Consequences
 
-- The backlog starts at 425 files: 286 archived-note files (143 Chinese counterparts and their frozen siblings), 37 active Agent Notes, 88 test and golden files, 8 GitHub templates and issue-policy files, the keyless fixture, the `arx-trim-cot-leakage` skill, the terminal README, and one translation script. Recorded transcripts among the goldens change only by re-recording with a model key.
+- The backlog starts at 416 files: 286 archived-note files (143 Chinese counterparts and their frozen siblings), 37 active Agent Notes, 80 test and golden files, 8 GitHub templates and issue-policy files, the three files of the `arx-trim-cot-leakage` skill, the terminal README, and one translation script. Recorded transcripts among the goldens change only by re-recording with a model key.
 - The issue policy's title rule contradicts this rule and changes with the templates.
 - [The translation-language decision](2026-08-31-translation-language-brazilian-portuguese.md) kept the archived Chinese counterparts frozen; translating or deleting them needs the owner's decision and a change to `verify-archived-agent-notes`.
 - A change that translates a file removes its manifest entry in the same change.
