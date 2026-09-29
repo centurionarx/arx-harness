@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-message-feedback",
   "description": "Lifecycle-bound per-message rating and note sidecar for the arx Harness",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "publishConfig": {
     "access": "public"
   },

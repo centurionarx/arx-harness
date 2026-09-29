@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-spill-local",
   "description": "Local-filesystem implementation of the arx Harness spill storage seam (private session-scoped files)",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "publishConfig": {
     "access": "public"
   },

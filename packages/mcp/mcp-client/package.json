@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-mcp-client",
   "description": "MCP client bridge: connects to MCP servers and registers their tools on ctx.tools",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "publishConfig": {
     "access": "public"
   },
