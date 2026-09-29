@@ -1,27 +1,8 @@
 /** Agent Team roster and task graph copy. */
 export const NS = 'agentTeam'
 
-/** Simplified Chinese strings retained from the upstream Team overlay. */
-export const zh = {
-  'trigger': '团队：{members} 名成员，{tasks} 个任务',
-  'members': '团队成员',
-  'tasks': '任务依赖',
-  'lead': '负责人',
-  'status.running': '运行中',
-  'status.idle': '空闲',
-  'status.inactive': '未运行',
-  'status.provisioning': '创建中',
-  'status.failed': '失败',
-  'task.pending': '待处理',
-  'task.in_progress': '进行中',
-  'task.completed': '已完成',
-  'blockedBy': '依赖：{tasks}',
-  'ready': '可开始',
-  'open': '打开 {name} 的会话',
-} as const
-
-/** English strings registered by the current client composition. */
-export const en: Record<TeamKey, string> = {
+/** English strings (the key-set source of truth). */
+export const en = {
   'trigger': 'Team: {members} members, {tasks} tasks',
   'members': 'Team members',
   'tasks': 'Task dependencies',
@@ -37,7 +18,26 @@ export const en: Record<TeamKey, string> = {
   'blockedBy': 'Blocked by: {tasks}',
   'ready': 'Ready',
   'open': 'Open {name} session',
-}
+} satisfies Record<string, string>
 
 /** Translation keys shared by the Team overlay dictionaries. */
-export type TeamKey = keyof typeof zh
+export type TeamKey = keyof typeof en
+
+/** Brazilian Portuguese strings. */
+export const pt = {
+  'trigger': 'Equipe: {members} membros, {tasks} tarefas',
+  'members': 'Membros da equipe',
+  'tasks': 'Dependências das tarefas',
+  'lead': 'Líder',
+  'status.running': 'executando',
+  'status.idle': 'ocioso',
+  'status.inactive': 'inativo',
+  'status.provisioning': 'provisionando',
+  'status.failed': 'falhou',
+  'task.pending': 'pendente',
+  'task.in_progress': 'em andamento',
+  'task.completed': 'concluída',
+  'blockedBy': 'Bloqueada por: {tasks}',
+  'ready': 'Pronta',
+  'open': 'Abrir a sessão de {name}',
+} satisfies Record<TeamKey, string>

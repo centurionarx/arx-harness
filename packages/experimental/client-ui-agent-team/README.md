@@ -2,7 +2,7 @@
 
 Optional read-only Web overlay for `@arx-ai/arx-experimental-agent-team`. It contributes one conversation-header action when the current Session is the Team lead or a member and the optional `agentTeam` projection contains roster or task data. Compositions without the experimental backend retain the existing header unchanged.
 
-The roster distinguishes the lead from teammates and combines durable provisioning or failure phase with current Session presence. The task view shows owner, dependency ids, blockers, and readiness from the durable task DAG. It excludes deleted task tombstones and offers no mutation controls.
+The roster distinguishes the lead from teammates and combines durable provisioning or failure phase with current Session presence. The task view shows owner, dependency ids, blockers, and readiness from the durable task DAG. It excludes deleted task tombstones and offers no mutation controls. Its copy comes from the `agentTeam` dictionaries in English and Brazilian Portuguese.
 
 Selecting the lead opens its Session through the public client Session store. Selecting a teammate refreshes the lead's subagent catalog, opens the public subagent address when available, and falls back to the teammate Session id when the child is not currently represented in that catalog.
 

@@ -17,6 +17,8 @@ import { AppFrame } from '@arx-ai/arx-client-ui-layout/src/client/AppFrame.tsx'
 import type { AppFrameProps } from '@arx-ai/arx-client-ui-layout/src/client/AppFrame.tsx'
 import { SIDEBAR_COLLAPSED } from '@arx-ai/arx-client-ui-layout/src/client/columns.ts'
 import { createLayoutStore } from '@arx-ai/arx-client-ui-layout/src/client/stores.ts'
+import { en, pt } from '@arx-ai/arx-client-ui-layout/src/client/locales.ts'
+import { makeTranslate } from '@arx-ai/arx-client-test-runtime'
 import type {
   SessionId, SessionListState, WorkspaceListState,
 } from '@arx-ai/arx-client-runtime/client'
@@ -52,7 +54,7 @@ function hookOf<T>(inst: { subscribe: (fn: () => void) => () => void; getSnapsho
   return function useSelector<S>(sel: (s: T) => S): S { return sel(useSyncExternalStore(inst.subscribe, inst.getSnapshot)) }
 }
 
-function mountFrame() {
+function mountFrame(dictionary: typeof en = en) {
   window.innerWidth = frameWidth // first-render viewport source before the observer fires
   const instance = createLayoutStore().create()
   const slotCalls: { key: string; props: unknown }[] = []
@@ -88,6 +90,7 @@ function mountFrame() {
       useSessions={useSessions}
       useWorkspaces={((sel: (s: WorkspaceListState) => unknown) => sel(workspaceState)) as never}
       SessionProvider={SessionProviderStub}
+      t={makeTranslate(dictionary)}
     />
   )
   const utils = render(element())
@@ -228,7 +231,7 @@ describe('AppFrame', () => {
 
   it('exposes both open boundaries as keyboard-focusable value separators', () => {
     const { frame, instance, getByRole, getAllByRole } = mountFrame()
-    const sidebar = getByRole('separator', { name: '调整侧边栏宽度' })
+    const sidebar = getByRole('separator', { name: 'Resize sidebar' })
     expect(sidebar.tabIndex).toBe(0)
     expect(sidebar.getAttribute('aria-orientation')).toBe('vertical')
     expect(sidebar.getAttribute('aria-valuemin')).toBe('264')
@@ -237,7 +240,7 @@ describe('AppFrame', () => {
 
     act(() => { instance.actions.openDetails() })
     expect(getAllByRole('separator')).toHaveLength(2)
-    const details = getByRole('separator', { name: '调整详情栏宽度' })
+    const details = getByRole('separator', { name: 'Resize details panel' })
     expect(details.tabIndex).toBe(0)
     expect(details.getAttribute('aria-valuemin')).toBe('300')
     expect(details.getAttribute('aria-valuemax')).toBe('520')
@@ -245,15 +248,22 @@ describe('AppFrame', () => {
     expect(frame.querySelectorAll('[class*="handle"]')).toHaveLength(2)
   })
 
+  it('names both separators in the active locale', () => {
+    const { instance, getByRole } = mountFrame(pt)
+    expect(getByRole('separator', { name: 'Redimensionar a barra lateral' })).toBeTruthy()
+    act(() => { instance.actions.openDetails() })
+    expect(getByRole('separator', { name: 'Redimensionar o painel de detalhes' })).toBeTruthy()
+  })
+
   it('resizes each panel in the separator movement direction with Arrow keys', () => {
     const { frame, instance, getByRole } = mountFrame()
-    const sidebar = getByRole('separator', { name: '调整侧边栏宽度' })
+    const sidebar = getByRole('separator', { name: 'Resize sidebar' })
     act(() => { sidebar.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })) })
     expect(tracks(frame)[0]).toBe(296)
     expect(sidebar.getAttribute('aria-valuenow')).toBe('296')
 
     act(() => { instance.actions.openDetails() })
-    const details = getByRole('separator', { name: '调整详情栏宽度' })
+    const details = getByRole('separator', { name: 'Resize details panel' })
     act(() => { details.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })) })
     expect(tracks(frame)[1]).toBe(376)
     expect(details.getAttribute('aria-valuenow')).toBe('376')

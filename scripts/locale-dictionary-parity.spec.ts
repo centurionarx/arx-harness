@@ -51,7 +51,6 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-plan/src/client/locales.ts::en',
   'packages/client/ui-projects/src/client/locales.ts::en',
   'packages/client/ui-reference/src/client/locales.ts::en',
-  'packages/client/ui-schedule/src/client/locales.ts::en',
   'packages/client/ui-settings-general/src/client/locales.ts::en',
   'packages/client/ui-settings-models/src/client/locales.ts::en',
   'packages/client/ui-settings-plugin-inventory/src/client/locales.ts::en',
@@ -66,7 +65,6 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-user-questions/src/client/locales.ts::en',
   'packages/client/ui-workflow-run/src/client/locales.ts::en',
   'packages/client/ui-workspace/src/client/locales.ts::en',
-  'packages/experimental/client-ui-agent-team/src/client/locales.ts::en',
   'packages/extensions/ui-cordis/src/client/locales.ts::en',
   'packages/session-query/session-log-export/src/client/locales.ts::en',
 ])

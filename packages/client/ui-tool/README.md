@@ -44,4 +44,4 @@ None. The package is client-only presentation.
 
 - The Host excludes `run_code` from Code Mode program bindings, so production events produce one dispatch level; the recursive Runtime/UI contract supports nesting.
 - First-party Tool views are colocated here and can move to their owning business packages independently through the keyed slot.
-- Tool copy reuses the `ui-conversation` locale namespace.
+- Tool copy reuses the `ui-conversation` locale namespace. Each card model module builds its primitive's `labels` from that namespace (`terminalBlockLabels`, `readBlockLabels`, `diffBlockLabels`, `searchBlockLabels`, `webBlockLabels`), and both render sites, the chat row and the details panel, pass them.

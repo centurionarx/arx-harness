@@ -1,7 +1,7 @@
 body {
   --arx-linear-gradient-think: linear-gradient(180deg, #fff 20.19%, rgba(255, 255, 255, 0) 100%);
   --arx-linear-think-select: linear-gradient(180deg, #f5f6f7 20.19%, rgba(245, 246, 247, 0) 100%);
-  /* 阴影 */
+  /* Shadows */
   --arx-shadow-lv1: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
   --arx-shadow-lv1-blur: 0 4px 12px 0 rgba(0, 0, 0, 0.02);
   --arx-shadow-lv2: 0 4px 12px 0 rgba(0, 0, 0, 0.02), 0 2px 8px 0 rgba(0, 0, 0, 0.04);
@@ -16,8 +16,8 @@ body[data-ds-dark-theme] {
   --arx-linear-think-select: linear-gradient(180deg, #232325 20.19%, rgba(35, 35, 37, 0) 100%);
 }
 
-/* ---------- 字体 ---------- */
-/* 由 Figma 自定义变量名插件导出 */
+/* ---------- Fonts ---------- */
+/* Exported by the Figma custom variable-name plugin */
 body {
   --arx-font-markdown-h1: 700 24px/34px var(--arx-font-family);
   --arx-font-markdown-h1-font-family: var(--arx-font-family);
@@ -131,7 +131,7 @@ body {
   --arx-font-markdown-code-block-font-size: 13px;
   --arx-font-markdown-code-block-font-style: normal;
 
-  /* 手工补充（非插件导出）：tool row 展开卡片内的小号 code 字体。 */
+  /* Added by hand (not exported by the plugin): the small code font inside an expanded tool row card. */
   --arx-font-markdown-code-block-small: 12px/18px var(--ds-font-family-code);
   --arx-font-markdown-code-block-small-font-family: var(--ds-font-family-code);
   --arx-font-markdown-code-block-small-font-weight: 400;

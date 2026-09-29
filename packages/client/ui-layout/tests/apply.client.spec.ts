@@ -37,7 +37,7 @@ async function bench() {
 
 describe('ui-layout client apply', () => {
   it('declares its service dependencies', () => {
-    expect(inject).toEqual(['slots', 'theme'])
+    expect(inject).toEqual(['slots', 'theme', 'locale'])
   })
 
   it('provides ctx.layout and registers AppFrame into root with the three child declarations', async () => {
@@ -51,6 +51,21 @@ describe('ui-layout client apply', () => {
     expect(slots.spec('sidebar')).toEqual({ kind: 'single', scope: 'root' })
     expect(slots.spec('conversation')).toEqual({ kind: 'single', scope: 'session-maybe' })
     expect(slots.spec('details')).toEqual({ kind: 'single', scope: 'session' })
+  })
+
+  it('registers its dictionaries in both locales, seats them on AppFrame, and releases them with its fiber', async () => {
+    const { ctx, slots } = await bench()
+    const fiber = ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    const locale = ctx.get('locale') as LocaleRuntime
+    expect(slots.entries('root')[0]!.locale).toBe('layout')
+    const translate = locale.bind('layout')
+    locale.setLocale('en')
+    expect(translate('resize.sidebar')).toBe('Resize sidebar')
+    locale.setLocale('pt')
+    expect(translate('resize.details')).toBe('Redimensionar o painel de detalhes')
+    await fiber.dispose()
+    expect(translate('resize.details')).toBe('resize.details')
   })
 
   it('injects no business face and attaches the layout actions', async () => {

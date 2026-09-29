@@ -4,13 +4,16 @@
  * four child slots (declaration = exclusive render authority), seats the
  * layout store (panel geometry), and wires the panel-action service face.
  * ctx.layout is the cross-plugin panel-action contract; navigation state lives
- * with the runtime sessions service. A second effect seats the theme
+ * with the runtime sessions service. The `layout` dictionaries name the resize
+ * handles for assistive technology. A separate effect seats the theme
  * presenter, which projects ctx.theme snapshots onto document.body.
  */
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
+import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-theme/client'
 import type { PanelActions } from './service.ts'
 import { AppFrame } from './AppFrame.tsx'
+import { en, NS, pt, type LayoutKey } from './locales.ts'
 import { createLayoutStore } from './stores.ts'
 import { LayoutController } from './service.ts'
 import { ThemePresenter } from './theme-presenter.ts'
@@ -31,6 +34,10 @@ declare module '@arx-ai/cordis' {
 }
 
 declare module '@arx-ai/arx-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    /** Frame chrome copy: the column resize handles' accessible names. */
+    layout: LayoutKey
+  }
   interface SlotMap {
     // The 'root' entry itself is the runtime's built-in slot (declared
     // there); these four are the frame's children, declared by the same
@@ -105,16 +112,18 @@ export interface ConvOwnerProps {}
 export interface DetailsOwnerProps {}
 
 /** Required services (cordis fiber inject — the loader passes all module exports as an object plugin). */
-export const inject = ['slots', 'theme']
+export const inject = ['slots', 'theme', 'locale']
 
 /**
- * Client plugin body: provide ctx.layout, then one register() call — AppFrame
- * into 'root' with the four child-slot declarations, the layout store seat,
- * and the inject hook that hands the store's bound actions to the service.
+ * Client plugin body: register the `layout` dictionaries, provide ctx.layout,
+ * then one register() call — AppFrame into 'root' with the four child-slot
+ * declarations, the layout store seat, the locale seat, and the inject hook
+ * that hands the store's bound actions to the service.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
   const layout = new LayoutController()
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-layout: dictionaries')
   ctx.effect(() => {
     const disposeService = ctx.reflect.provide('layout', layout)
     const disposeRegistration = ctx.slots.register({
@@ -128,6 +137,7 @@ export function apply(ctx: ClientContext): void {
       // Exclusive store: the factory itself — the framework instantiates per
       // entry and delivers useStore/actions to AppFrame as standard props.
       store: createLayoutStore,
+      locale: NS,
       // The hook's only side effect connects the root store to ctx.layout;
       // conversation business actions belong to their registrants.
       inject: (actions: PanelActions) => {

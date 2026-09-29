@@ -34,6 +34,35 @@ export interface DiffHunk {
   newText: string
 }
 
+/**
+ * Display copy for the diff surface; the owner passes localized labels (this
+ * package is cordis-free, so copy arrives via props). An omitted field falls
+ * back to the built-in English copy.
+ */
+export interface DiffBlockLabels {
+  /** Copy-button idle label. */
+  copy: string
+  /** Copy-button label during the post-copy confirmation window. */
+  copied: string
+  /** Collapse-toggle aria label while expanded. */
+  collapseAria: string
+  /** Collapse-toggle text while expanded. */
+  collapse: string
+  /** Expand-toggle aria label while capped, given the hidden line count. */
+  expandAria: (hidden: number) => string
+  /** Expand-toggle text while capped, given the hidden line count. */
+  expand: (hidden: number) => string
+}
+
+const DEFAULT_LABELS: DiffBlockLabels = {
+  copy: 'Copy',
+  copied: 'Copied',
+  collapseAria: 'Collapse diff',
+  collapse: 'Collapse',
+  expandAria: hidden => `Expand the remaining ${hidden} diff lines`,
+  expand: hidden => `… ${hidden} more lines`,
+}
+
 export interface DiffBlockProps {
   /** One entry per applied hunk, in file order; empty renders nothing. */
   diffs: DiffHunk[]
@@ -41,6 +70,8 @@ export interface DiffBlockProps {
   maxLines?: number | undefined
   /** Extra class merged onto the wrapper (callers position; this component draws). */
   className?: string | undefined
+  /** Localized display copy; omitted fields keep the built-in English copy. */
+  labels?: Partial<DiffBlockLabels> | undefined
 }
 
 /** A single rendered body line and its role, so the height cap slices a flat list. */
@@ -138,7 +169,11 @@ function copyText(rows: DiffRow[]): string {
  * @param props - see {@link DiffBlockProps}.
  * @returns the diff block element.
  */
-export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className }: DiffBlockProps) {
+export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className, labels }: DiffBlockProps) {
+  const copy = useMemo<DiffBlockLabels>(
+    () => (labels === undefined ? DEFAULT_LABELS : { ...DEFAULT_LABELS, ...labels }),
+    [labels],
+  )
   const { rows, added, removed, files } = useMemo(() => buildRows(diffs), [diffs])
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -168,7 +203,7 @@ export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className 
   return (
     <div className={clsx(css.block, className)} data-diff="">
       <button type="button" className={css.copyButton} onClick={onCopy}>
-        {copied ? '复制成功' : '复制'}
+        {copied ? copy.copied : copy.copy}
       </button>
       <div className={css.body}>
         {head.map((row, index) => (
@@ -179,10 +214,10 @@ export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className 
             type="button"
             className={css.expand}
             aria-expanded={expanded}
-            aria-label={expanded ? '收起差异' : `展开其余 ${hidden} 行差异`}
+            aria-label={expanded ? copy.collapseAria : copy.expandAria(hidden)}
             onClick={onToggle}
           >
-            {expanded ? '收起' : `… 其余 ${hidden} 行`}
+            {expanded ? copy.collapse : copy.expand(hidden)}
           </button>
         )}
         {tail.map((row, index) => (
