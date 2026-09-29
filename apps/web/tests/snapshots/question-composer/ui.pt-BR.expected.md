@@ -1,0 +1,19 @@
+- region "Como devo continuar?":
+  - text: Próximo passo
+  - heading "Como devo continuar?" [level=2]
+  - button "Recolher o cartão de perguntas" [expanded]:
+    - img
+  - button "Dispensar todas as perguntas":
+    - img
+  - radiogroup:
+    - radio "Revisar antes de aplicar": 1 Revisar antes de aplicar Recomendado Mostra as mudanças antes de gravar.
+    - radio "Aplicar direto": 2 Aplicar direto Grava as mudanças sem revisão.
+    - textbox "Digite sua resposta"
+  - button "Pergunta anterior" [disabled]:
+    - img
+  - text: 1 / 1
+  - button "Próxima pergunta" [disabled]:
+    - img
+  - status
+  - button "Pular esta pergunta"
+  - button "Enviar" [disabled]
