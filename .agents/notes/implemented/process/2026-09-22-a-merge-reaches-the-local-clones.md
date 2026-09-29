@@ -4,7 +4,7 @@ Status: implemented
 
 ## Problem
 
-The owner runs the harness from two long-lived clones: a notebook at `C:\DESENVOLVIMENTO\Projeto-arx-ai\arx-harness` and an Azure VM at `azureuser@dev-01:~/dev/arx-harness`. A merge lands on GitHub and nowhere else. Nothing in the process says who brings those clones forward, so after a merge the owner can keep running, testing, and reporting against a tree that no longer matches `master` — a fix merged but never pulled reads as a fix that did not work.
+The owner runs the harness from two long-lived clones: a notebook at `C:\DESENVOLVIMENTO\projetos-centurionarx\Projeto-arx-ai\arx-harness` and an Azure VM at `azureuser@dev-01:~/dev/arx-harness`. A merge lands on GitHub and nowhere else. Nothing in the process says who brings those clones forward, so after a merge the owner can keep running, testing, and reporting against a tree that no longer matches `master` — a fix merged but never pulled reads as a fix that did not work.
 
 ## Decision
 
