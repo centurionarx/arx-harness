@@ -29,6 +29,9 @@ const COMPOSED_EXPECTED = join(SNAPSHOT_DIR, 'composed.expected.md')
 // Final golden: the answered transcript — the question resolved into its tool
 // round trip and the final reply, the state the composer goldens cannot see.
 const ANSWERED_EXPECTED = join(SNAPSHOT_DIR, 'answered.expected.md')
+// The same card on a page asking for Brazilian Portuguese: the `pt` chrome copy
+// and the badge a trailing Portuguese recommendation suffix earns.
+const UI_PT_EXPECTED = join(SNAPSHOT_DIR, 'ui.pt-BR.expected.md')
 const MODE = webSnapshotMode()
 
 // The composer's own growth cap, in text lines (QuestionComposer.module.css
@@ -276,10 +279,52 @@ describe('web e2e: resident question composer round trip', () => {
     await expect.poll(() => page.locator('[data-question-key]').count(), { timeout: 10_000 }).toBe(0)
   }, 60_000)
 
+  // A second page asks for Brazilian Portuguese and opens the answered session;
+  // a question asked straight through the user-questions seam (no model round)
+  // renders there with the `pt` chrome, and its option's `(Recomendado)`
+  // suffix becomes the Portuguese badge.
+  it.skipIf(MODE === 'record')('renders the card chrome in Brazilian Portuguese', async () => {
+    const ptPage = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: 'pt-BR' })
+    onTestFailed(() => saveFailureShot(ptPage, 'web-e2e-question-pt'))
+    try {
+      const sessionId = answeredSession
+      expect(sessionId).toBeDefined()
+      const agent = scaffold.ctx.agents.get(sessionId as SessionId)
+      expect(agent).toBeDefined()
+      await ptPage.goto(scaffold.baseUrl, { waitUntil: 'load' })
+      await ptPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+      await ptPage.getByRole('treeitem', { name: /Use the ask_user_question tool/ }).click()
+      const asked = scaffold.ctx.userQuestions.ask({
+        agent: agent as NonNullable<typeof agent>,
+        questions: [{
+          id: 'next-step', header: 'Próximo passo', question: 'Como devo continuar?',
+          options: [
+            { label: 'Revisar antes de aplicar (Recomendado)', description: 'Mostra as mudanças antes de gravar.' },
+            { label: 'Aplicar direto', description: 'Grava as mudanças sem revisão.' },
+          ],
+        }],
+      })
+      const composer = ptPage.locator('[data-question-key]')
+      await composer.waitFor({ timeout: 30_000 })
+      await expect.poll(() => composer.getByText('Como devo continuar?').count(), { timeout: 10_000 }).toBeGreaterThan(0)
+      const snapshot = await captureStableAria(ptPage, '[data-question-key]', scaffold.workspaceCwd)
+      await compareOrRefreshGolden(UI_PT_EXPECTED, snapshot, MODE)
+      expect(snapshot).toContain('Recomendado')
+
+      // Settle the wait so teardown is not racing a pending question.
+      await composer.getByRole('button', { name: 'Pular esta pergunta' }).click()
+      expect(await asked).toEqual({ answers: [{ id: 'next-step', selected: [] }] })
+      await expect.poll(() => ptPage.locator('[data-question-key]').count(), { timeout: 10_000 }).toBe(0)
+    } finally {
+      await ptPage.close()
+    }
+  }, 60_000)
+
   it.skipIf(MODE === 'record')('keeps the fixture inventory closed', async () => {
     await assertFixtureInventory(SNAPSHOT_DIR, [
       'session.jsonl',
       'ui.expected.md',
+      'ui.pt-BR.expected.md',
       'sidebar.expected.md',
       'composed.expected.md',
       'answered.expected.md',

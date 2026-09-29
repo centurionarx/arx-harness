@@ -20,3 +20,22 @@ export const en = {
   'plan.decline': 'Refuse',
   'plan.discuss': 'Chat about it',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'error.incomplete': 'Responda esta pergunta primeiro.',
+  'error.unanswered': 'Selecione uma opção ou digite uma resposta.',
+  'nav.prev': 'Pergunta anterior',
+  'nav.next': 'Próxima pergunta',
+  'nav.minimize': 'Recolher o cartão de perguntas',
+  'nav.maximize': 'Expandir o cartão de perguntas',
+  'nav.cancel': 'Dispensar todas as perguntas',
+  'option.recommended': 'Recomendado',
+  'custom.placeholder': 'Digite sua resposta',
+  'action.skip': 'Pular esta pergunta',
+  'action.next': 'Próxima',
+  'plan.header': 'Revisão do plano',
+  'plan.approve': 'Aprovar',
+  'plan.decline': 'Recusar',
+  'plan.discuss': 'Conversar sobre o plano',
+} satisfies Record<QuestionKey, string>

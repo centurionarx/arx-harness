@@ -62,7 +62,6 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-theme/src/client/locales.ts::en',
   'packages/client/ui-trajectory/src/client/locales.ts::en',
   'packages/client/ui-turn-outline/src/client/locales.ts::en',
-  'packages/client/ui-user-questions/src/client/locales.ts::en',
   'packages/client/ui-workflow-run/src/client/locales.ts::en',
   'packages/client/ui-workspace/src/client/locales.ts::en',
   'packages/extensions/ui-cordis/src/client/locales.ts::en',
@@ -107,11 +106,19 @@ function readEntries(dir: string): Dirent[] {
   }
 }
 
+/**
+ * Probe sources `scripts/oxlint-contract.spec.ts` writes into package `src`
+ * directories and deletes again while other specs share the checkout. They are
+ * never shipped, and one deleted between listing and reading would fail the
+ * sweep with `ENOENT`, so it skips them as the coverage configuration does.
+ */
+const LINT_CONTRACT_PROBE = /^oxlint-contract-.*\.tsx?$/
+
 function walk(dir: string, out: string[]): void {
   for (const entry of readEntries(dir)) {
     const full = resolve(dir, entry.name)
     if (entry.isDirectory()) walk(full, out)
-    else if (/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts')) out.push(full)
+    else if (/\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts') && !LINT_CONTRACT_PROBE.test(entry.name)) out.push(full)
   }
 }
 

@@ -18,7 +18,7 @@ import type { ComposerChainProps } from '@arx-ai/arx-client-ui-conversation/clie
 import type {} from '@arx-ai/arx-client-locale/client'
 import type { QuestionWait } from './contract/slots.ts'
 import { QuestionComposer } from './QuestionComposer.tsx'
-import { en, type QuestionKey } from './locales.ts'
+import { en, pt, type QuestionKey } from './locales.ts'
 
 export { PendingQuestion } from './contract/slots.ts'
 export type {
@@ -51,7 +51,7 @@ function selectQuestion({ interactions }: ComposerChainProps): QuestionWait | nu
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-user-questions: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-user-questions: dictionaries')
 
   ctx.slots.inject('conversation.composer', () => ctx.slots.register(
     { name: 'conversation.composer', select: selectQuestion, locale: NS },
