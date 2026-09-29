@@ -13,7 +13,7 @@ The owner's rule is that Chinese text inherited by the product is translated. Th
 
 ## Decision
 
-**Every tool card takes its copy as labels.** `ReadBlockLabels`, `DiffBlockLabels`, `SearchBlockLabels`, and `WebBlockLabels` follow `TerminalBlockLabels`: an optional, partial `labels` prop whose omitted fields fall back to English. A count reaches its label as a number, so the owner selects the grammatical number; the dictionaries interpolate without plural rules, so `searchBlockLabels` picks `search.match` or `search.matches` by count.
+**Every tool card takes its copy as labels.** `ReadBlockLabels`, `DiffBlockLabels`, `SearchBlockLabels`, and `WebBlockLabels` follow `TerminalBlockLabels`: an optional, partial `labels` prop whose omitted fields fall back to English. A count reaches its label as a number, so the owner selects the grammatical number; the dictionaries interpolate without plural rules, so `searchBlockLabels` picks `search.match` or `search.matches` by count. The terminal, read, diff, and search cards render one shared toggle, `CapToggle`, and their labels extend its `CapToggleLabels`.
 
 **`arx-client-ui-tool` builds the labels from the `conversation` namespace.** Each card model module exports its builder beside `terminalBlockLabels`, and both render sites, the chat row and the details panel, pass it. New keys cover the read window note, each card's collapse and expand names, the search summary nouns, and the web notes, in English and Portuguese. `card.expandRest` replaces `terminal.expandRest` as the "… N more lines" text all four capped cards share.
 

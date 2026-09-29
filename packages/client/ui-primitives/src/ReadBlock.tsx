@@ -18,6 +18,7 @@ import {
   subscribeGrammarLoaded,
   type HighlightSpan,
 } from './markdown/highlight.ts'
+import { CapToggle, type CapToggleLabels } from './cap-toggle.tsx'
 import css from './ReadBlock.module.css'
 
 /**
@@ -40,21 +41,13 @@ export interface ReadBlockLine {
  * package is cordis-free, so copy arrives via props). An omitted field falls
  * back to the built-in English copy.
  */
-export interface ReadBlockLabels {
+export interface ReadBlockLabels extends CapToggleLabels {
   /** Banner note for a windowed read, given the returned and the total line counts. */
   window: (shown: number, total: number) => string
   /** Copy-button idle label. */
   copy: string
   /** Copy-button label during the post-copy confirmation window. */
   copied: string
-  /** Collapse-toggle aria label while expanded. */
-  collapseAria: string
-  /** Collapse-toggle text while expanded. */
-  collapse: string
-  /** Expand-toggle aria label while capped, given the hidden line count. */
-  expandAria: (hidden: number) => string
-  /** Expand-toggle text while capped, given the hidden line count. */
-  expand: (hidden: number) => string
 }
 
 const DEFAULT_LABELS: ReadBlockLabels = {
@@ -194,15 +187,7 @@ export function ReadBlock({
       <div className={css.body}>
         {rows(capped ? paired.slice(0, headLines) : paired)}
         {hidden > 0 && (
-          <button
-            type="button"
-            className={css.expand}
-            aria-expanded={expanded}
-            aria-label={expanded ? copy.collapseAria : copy.expandAria(hidden)}
-            onClick={onToggle}
-          >
-            {expanded ? copy.collapse : copy.expand(hidden)}
-          </button>
+          <CapToggle className={css.expand} expanded={expanded} hidden={hidden} labels={copy} onToggle={onToggle} />
         )}
         {capped && rows(paired.slice(paired.length - tailLines))}
       </div>

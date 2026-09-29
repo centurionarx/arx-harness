@@ -12,6 +12,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
 import { headTailCap } from './head-tail-cap.ts'
 import { useCopyFeedback } from './use-copy-feedback.ts'
+import { CapToggle, type CapToggleLabels } from './cap-toggle.tsx'
 import css from './SearchBlock.module.css'
 
 /**
@@ -42,7 +43,7 @@ export interface SearchFileGroup {
  * package is cordis-free, so copy arrives via props). An omitted field falls
  * back to the built-in English copy.
  */
-export interface SearchBlockLabels {
+export interface SearchBlockLabels extends CapToggleLabels {
   /** Count clause of a capped search, given the retained count and the pre-cap total. */
   shownOfTotal: (shown: number, total: number) => string
   /**
@@ -61,14 +62,6 @@ export interface SearchBlockLabels {
   copied: string
   /** Placeholder for a search that found nothing. */
   empty: string
-  /** Collapse-toggle aria label while expanded. */
-  collapseAria: string
-  /** Collapse-toggle text while expanded. */
-  collapse: string
-  /** Expand-toggle aria label while capped, given the hidden row count. */
-  expandAria: (hidden: number) => string
-  /** Expand-toggle text while capped, given the hidden row count. */
-  expand: (hidden: number) => string
 }
 
 const DEFAULT_LABELS: SearchBlockLabels = {
@@ -317,15 +310,7 @@ export function SearchBlock(props: SearchBlockProps) {
               <div key={rowKey(row)}>{renderRow(row)}</div>
             ))}
             {hidden > 0 && (
-              <button
-                type="button"
-                className={css.expand}
-                aria-expanded={expanded}
-                aria-label={expanded ? copy.collapseAria : copy.expandAria(hidden)}
-                onClick={onToggle}
-              >
-                {expanded ? copy.collapse : copy.expand(hidden)}
-              </button>
+              <CapToggle className={css.expand} expanded={expanded} hidden={hidden} labels={copy} onToggle={onToggle} />
             )}
             {tailHeader !== undefined && (
               <div key={`tailHeader:${rowKey(tailHeader)}`}>{renderRow(tailHeader)}</div>

@@ -12,6 +12,7 @@ import { headTailCap } from './head-tail-cap.ts'
 import { useCopyFeedback } from './use-copy-feedback.ts'
 import { Pill } from './Pill.tsx'
 import { StateDot, type StateDotState } from './StateDot.tsx'
+import { CapToggle, type CapToggleLabels } from './cap-toggle.tsx'
 import css from './TerminalBlock.module.css'
 
 /**
@@ -26,7 +27,7 @@ export const DEFAULT_TERMINAL_MAX_LINES = 16
  * (this package is cordis-free, so copy arrives via props). An omitted field
  * falls back to the built-in English copy.
  */
-export interface TerminalBlockLabels {
+export interface TerminalBlockLabels extends CapToggleLabels {
   /** Status pill text for a signal-terminated command. */
   signal: (signal: string) => string
   /** Status pill text for a non-zero exit code. */
@@ -43,14 +44,6 @@ export interface TerminalBlockLabels {
   copied: string
   /** Placeholder when a settled command produced no visible output. */
   noOutput: string
-  /** Collapse-toggle aria label while expanded. */
-  collapseAria: string
-  /** Collapse-toggle text while expanded. */
-  collapse: string
-  /** Expand-toggle aria label while capped, given the hidden line count. */
-  expandAria: (hidden: number) => string
-  /** Expand-toggle text while capped, given the hidden line count. */
-  expand: (hidden: number) => string
 }
 
 const DEFAULT_LABELS: TerminalBlockLabels = {
@@ -265,15 +258,7 @@ export function TerminalBlock({
               <div key={index} className={css.line}>{renderLine(line)}</div>
             ))}
             {hidden > 0 && (
-              <button
-                type="button"
-                className={css.expand}
-                aria-expanded={expanded}
-                aria-label={expanded ? copy.collapseAria : copy.expandAria(hidden)}
-                onClick={onToggle}
-              >
-                {expanded ? copy.collapse : copy.expand(hidden)}
-              </button>
+              <CapToggle className={css.expand} expanded={expanded} hidden={hidden} labels={copy} onToggle={onToggle} />
             )}
             {capped && lines.slice(lines.length - tailLines).map((line, index) => (
               <div key={index} className={css.line}>{renderLine(line)}</div>

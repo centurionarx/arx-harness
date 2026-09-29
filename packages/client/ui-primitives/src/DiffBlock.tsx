@@ -11,6 +11,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { writeClipboard } from './clipboard.ts'
+import { CapToggle, type CapToggleLabels } from './cap-toggle.tsx'
 import css from './DiffBlock.module.css'
 
 /**
@@ -39,19 +40,11 @@ export interface DiffHunk {
  * package is cordis-free, so copy arrives via props). An omitted field falls
  * back to the built-in English copy.
  */
-export interface DiffBlockLabels {
+export interface DiffBlockLabels extends CapToggleLabels {
   /** Copy-button idle label. */
   copy: string
   /** Copy-button label during the post-copy confirmation window. */
   copied: string
-  /** Collapse-toggle aria label while expanded. */
-  collapseAria: string
-  /** Collapse-toggle text while expanded. */
-  collapse: string
-  /** Expand-toggle aria label while capped, given the hidden line count. */
-  expandAria: (hidden: number) => string
-  /** Expand-toggle text while capped, given the hidden line count. */
-  expand: (hidden: number) => string
 }
 
 const DEFAULT_LABELS: DiffBlockLabels = {
@@ -210,15 +203,7 @@ export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className,
           <div key={index} className={clsx(css.line, ROW_CLASS[row.kind])}>{row.text}</div>
         ))}
         {hidden > 0 && (
-          <button
-            type="button"
-            className={css.expand}
-            aria-expanded={expanded}
-            aria-label={expanded ? copy.collapseAria : copy.expandAria(hidden)}
-            onClick={onToggle}
-          >
-            {expanded ? copy.collapse : copy.expand(hidden)}
-          </button>
+          <CapToggle className={css.expand} expanded={expanded} hidden={hidden} labels={copy} onToggle={onToggle} />
         )}
         {tail.map((row, index) => (
           <div key={index} className={clsx(css.line, ROW_CLASS[row.kind])}>{row.text}</div>
