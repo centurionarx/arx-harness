@@ -1,20 +1,20 @@
 ---
 name: Idea
-about: 记录尚未承诺实施、但具有行动可能的想法
+about: Registra uma ideia ainda sem compromisso de implementação, mas que pode virar trabalho
 title: ''
 labels: ''
 assignees: ''
 type: Idea
 ---
 
-<!-- 标题写中文行动或结果句；外露正文不超过 50 单位。 -->
-一句话说明价值假设。
+<!-- Título: uma frase de ação ou resultado, em português; o corpo visível tem no máximo 50 palavras. -->
+Uma frase com a hipótese de valor.
 
 <details>
-<summary>价值与细节</summary>
+<summary>Valor e detalhes</summary>
 
-- 价值假设：
-- 需要验证：
-- 可能的后续工作：
+- Hipótese de valor:
+- O que precisa ser validado:
+- Possíveis trabalhos seguintes:
 
 </details>

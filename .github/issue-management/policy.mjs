@@ -47,10 +47,10 @@ const IMPLEMENTATION_PULL_REQUEST_ACTIONS = new Set([
 ])
 
 for (const status of ['In progress', 'In review']) {
-  if (!ACTIVE_STATUS_ORDER.includes(status)) throw new Error(`config.statuses 缺少 ${status}`)
+  if (!ACTIVE_STATUS_ORDER.includes(status)) throw new Error(`config.statuses não tem ${status}`)
 }
 if (typeof config.lifecycleActor !== 'string' || !config.lifecycleActor) {
-  throw new Error('config.lifecycleActor 未设置')
+  throw new Error('config.lifecycleActor não está definido')
 }
 
 /**
@@ -134,22 +134,22 @@ export function validateBody({
   const owner = firstNonblankLine(body)?.match(OWNER_LINE)?.[1] ?? null
   const normalized = [...new Set(assignees.map((login) => login.toLowerCase()))]
 
-  if (!count.balanced) errors.push('details 标签必须成对闭合')
-  if (count.detailsCount === 0) errors.push('正文必须包含默认收起的 <details> 区域')
-  if (!count.allCollapsed) errors.push('details 必须默认收起，不得设置 open')
+  if (!count.balanced) errors.push('toda tag details precisa ser fechada')
+  if (count.detailsCount === 0) errors.push('o corpo precisa ter uma seção <details> recolhida por padrão')
+  if (!count.allCollapsed) errors.push('details precisa vir recolhido por padrão, sem o atributo open')
   if (count.units > BODY_LIMIT) {
-    errors.push(`正文外露部分为 ${count.units} 单位，超过 50 单位`)
+    errors.push(`a parte visível do corpo tem ${count.units} palavras, acima do limite de 50`)
   }
   if (normalized.length >= 2 && !owner) {
-    errors.push('多个 Assignees 时首个非空行必须是 Owner: @login')
+    errors.push('com várias Assignees, a primeira linha não vazia precisa ser Owner: @login')
   } else if (normalized.length >= 2 && !normalized.includes(owner.toLowerCase())) {
-    errors.push('Owner 必须属于 Assignees')
+    errors.push('o Owner precisa estar entre as Assignees')
   } else if (
     normalized.length < 2 &&
     owner &&
     !(normalized.length === 0 && allowUnassignedOwner)
   ) {
-    errors.push('零或一个 Assignee 时不得写 Owner 行')
+    errors.push('com zero ou uma Assignee, não escreva a linha Owner')
   }
   return errors
 }
@@ -201,7 +201,7 @@ export function nextResolvingIssueStatus(currentStatus, command, currentStatusAc
   let target
   if (command === 'review-requested') target = 'In review'
   else if (command === 'implementation' || command === 'changes-requested') target = 'In progress'
-  else throw new Error(`未知 lifecycle command：${command}`)
+  else throw new Error(`lifecycle command desconhecido: ${command}`)
 
   const currentIndex = ACTIVE_STATUS_ORDER.indexOf(currentStatus)
   const targetIndex = ACTIVE_STATUS_ORDER.indexOf(target)
@@ -292,33 +292,33 @@ export function validateIssue(issue) {
     (label) => label.startsWith('kind/') || LEGACY_LABELS.has(label),
   )
 
-  if (!/\p{Script=Han}/u.test(issue.title)) errors.push('Issue 标题必须包含中文')
+  if (/\p{Script=Han}/u.test(issue.title)) errors.push('o título da Issue não pode ter texto em chinês')
   if (invalidLabels.length > 0) {
-    errors.push(`Issue 不得使用 PR kind 或旧版标签：${invalidLabels.join(', ')}`)
+    errors.push(`a Issue não pode usar kind de PR nem rótulos antigos: ${invalidLabels.join(', ')}`)
   }
   if (
     /^\s*(?:\[(?:Idea|Feature|Bug|Research|Task|P[0-3]|Inbox|Backlog|Ready|In progress|In review|Done|No action|Owner|area\/[^\]]+)[^\]]*\]|(?:Idea|Feature|Bug|Research|Task|P[0-3]|Inbox|Backlog|Ready|In progress|In review|Done|No action|Owner|area\/[^:： ]+)\s*[:：-])/iu.test(
       issue.title,
     )
   ) {
-    errors.push('Issue 标题不得带 Type、Priority、Status、area 或 Owner 前缀')
+    errors.push('o título da Issue não pode ter prefixo de Type, Priority, Status, area ou Owner')
   }
-  if (!TYPES.has(issue.type ?? '')) errors.push('Type 必须是五种原生英文 Type 之一')
-  if (!status || !config.statuses.includes(status)) errors.push('Issue 必须在 Project 中且具有合法 Status')
+  if (!TYPES.has(issue.type ?? '')) errors.push('o Type precisa ser um dos cinco Types nativos em inglês')
+  if (!status || !config.statuses.includes(status)) errors.push('a Issue precisa estar no Project com um Status válido')
   if (issue.priority !== null && !PRIORITIES.includes(issue.priority.toLowerCase())) {
-    errors.push('Priority 必须为空或为 P0–P3')
+    errors.push('a Priority precisa estar vazia ou ser P0–P3')
   }
   if (status === 'Done' && (issue.state !== 'closed' || issue.stateReason !== 'completed')) {
-    errors.push('Done 必须对应 Completed 关闭原因')
+    errors.push('Done exige o motivo de fechamento Completed')
   }
   if (
     status === 'No action' &&
     (issue.state !== 'closed' || issue.stateReason !== 'not_planned')
   ) {
-    errors.push('No action 必须对应 Not planned 关闭原因')
+    errors.push('No action exige o motivo de fechamento Not planned')
   }
   if (!['Done', 'No action'].includes(status ?? '') && issue.state !== 'open') {
-    errors.push(`${status} 必须对应开放 Issue`)
+    errors.push(`${status} exige uma Issue aberta`)
   }
   return errors
 }
@@ -340,19 +340,19 @@ export function validatePullRequest(input) {
   const priorities = input.labels.filter((label) => PRIORITIES.includes(label))
   const areas = input.labels.filter((label) => label.startsWith('area/'))
 
-  if (input.references.all.length === 0) errors.push('PR 正文必须引用至少一个同仓库 Issue')
+  if (input.references.all.length === 0) errors.push('o corpo do PR precisa citar pelo menos uma Issue deste repositório')
   if (kinds.length !== 1) {
-    errors.push(`PR 必须恰好有一个允许的 kind/*，当前为 ${kinds.length}`)
+    errors.push(`o PR precisa ter exatamente um kind/* permitido; tem ${kinds.length}`)
   }
   if (unknownKinds.length > 0) {
-    errors.push(`PR 含不支持的 kind/*：${unknownKinds.join(', ')}`)
+    errors.push(`o PR tem kind/* não suportado: ${unknownKinds.join(', ')}`)
   }
-  if (legacyLabels.length > 0) errors.push(`PR 含旧版标签：${legacyLabels.join(', ')}`)
-  if (sourceLabels.length > 0) errors.push(`source/* 仅用于 Issue：${sourceLabels.join(', ')}`)
-  if (priorities.length > 1) errors.push(`PR 最多有一个 p0–p3，当前为 ${priorities.length}`)
-  if (areas.length === 0) errors.push('PR 必须至少有一个 area/*')
+  if (legacyLabels.length > 0) errors.push(`o PR tem rótulos antigos: ${legacyLabels.join(', ')}`)
+  if (sourceLabels.length > 0) errors.push(`source/* é só para Issues: ${sourceLabels.join(', ')}`)
+  if (priorities.length > 1) errors.push(`o PR pode ter no máximo um p0–p3; tem ${priorities.length}`)
+  if (areas.length === 0) errors.push('o PR precisa ter pelo menos um area/*')
   for (const number of input.references.all) {
-    if (!input.issues.has(number)) errors.push(`#${number} 不是同仓库 Issue`)
+    if (!input.issues.has(number)) errors.push(`#${number} não é uma Issue deste repositório`)
   }
 
   const resolving = input.references.resolving
@@ -367,21 +367,21 @@ export function validatePullRequest(input) {
     const highest = issuePriorities.sort(
       (left, right) => PRIORITIES.indexOf(left) - PRIORITIES.indexOf(right),
     )[0]
-    errors.push(`PR Priority 应为 ${highest}`)
+    errors.push(`a Priority do PR deveria ser ${highest}`)
   } else if (priorities.length === 1 && issuePriorities.length !== resolving.length) {
-    errors.push('有 Priority 的解决型 PR 要求每个被解决 Issue 都设置 Priority')
+    errors.push('um PR com Priority que resolve Issues exige Priority em cada Issue resolvida')
   } else if (priorities.length === 1) {
     const highest = issuePriorities.sort(
       (left, right) => PRIORITIES.indexOf(left) - PRIORITIES.indexOf(right),
     )[0]
-    if (priorities[0] !== highest) errors.push(`PR Priority 应为 ${highest}`)
+    if (priorities[0] !== highest) errors.push(`a Priority do PR deveria ser ${highest}`)
   }
   return errors
 }
 
 function token() {
   const value = process.env.GH_TOKEN || process.env.GITHUB_TOKEN
-  if (!value) throw new Error('GH_TOKEN 或 GITHUB_TOKEN 未设置')
+  if (!value) throw new Error('GH_TOKEN ou GITHUB_TOKEN não está definido')
   return value
 }
 
@@ -492,10 +492,10 @@ async function projectContext(number, includeStatusActor = false) {
   )
   const project = data.organization?.projectV2
   const issue = data.repository?.issue
-  if (!project || project.title !== config.projectTitle) throw new Error('目标 Project 不存在或标题不匹配')
-  if (!issue) throw new Error(`#${number} 不存在`)
+  if (!project || project.title !== config.projectTitle) throw new Error('o Project de destino não existe ou tem outro título')
+  if (!issue) throw new Error(`#${number} não existe`)
   const statusField = project.fields.nodes.find((field) => field?.name === 'Status')
-  if (!statusField) throw new Error('Project 缺少 Status 字段')
+  if (!statusField) throw new Error('o Project não tem o campo Status')
   const item = issue.projectItems.nodes.find((candidate) => candidate.project.id === project.id)
   const latestStatusEvent = issue.timelineItems?.nodes
     ?.filter((event) => event?.project?.id === project.id)
@@ -531,7 +531,7 @@ async function ensureProjectItem(number) {
 
 async function updateStatus(context, status) {
   const option = context.statusField.options.find((candidate) => candidate.name === status)
-  if (!option) throw new Error(`Status 不存在：${status}`)
+  if (!option) throw new Error(`o Status não existe: ${status}`)
   if (context.item.fieldValueByName?.name === status) return
   await graphql(
     `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
@@ -570,7 +570,7 @@ async function upsertAudit(number, errors) {
     }
     return
   }
-  const body = `${AUDIT_MARKER}\n⚠️ Issue policy 未通过：\n\n${errors.map((error) => `- ${error}`).join('\n')}`
+  const body = `${AUDIT_MARKER}\n⚠️ A Issue policy não passou:\n\n${errors.map((error) => `- ${error}`).join('\n')}`
   if (existing) {
     if (existing.body === body) return
     await api(`/repos/${config.organization}/${config.repository}/issues/comments/${existing.id}`, {
@@ -655,10 +655,10 @@ async function runPullRequestCheck(event) {
   const errors = validatePullRequest(pull)
   if (errors.length > 0) {
     for (const error of errors) process.stdout.write(`::error::${error}\n`)
-    throw new Error(`Issue policy 未通过，共 ${errors.length} 项`)
+    throw new Error(`a Issue policy não passou: ${errors.length} problema(s)`)
   }
   process.stdout.write(
-    requiresPullRequestPolicy(pull) ? 'Issue policy 通过。\n' : 'PR 尚未进入 Issue policy 强制范围。\n',
+    requiresPullRequestPolicy(pull) ? 'A Issue policy passou.\n' : 'O PR ainda não está no escopo obrigatório da Issue policy.\n',
   )
 }
 
@@ -687,7 +687,7 @@ async function runLifecycle(eventName, event) {
 }
 
 function readEvent() {
-  if (!process.env.GITHUB_EVENT_PATH) throw new Error('GITHUB_EVENT_PATH 未设置')
+  if (!process.env.GITHUB_EVENT_PATH) throw new Error('GITHUB_EVENT_PATH não está definido')
   return JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'))
 }
 
@@ -695,7 +695,7 @@ async function main(argv) {
   const [command] = argv
   if (command === 'pr') await runPullRequestCheck(readEvent())
   else if (command === 'lifecycle') await runLifecycle(process.env.GITHUB_EVENT_NAME, readEvent())
-  else throw new Error('用法：policy.mjs pr|lifecycle')
+  else throw new Error('uso: policy.mjs pr|lifecycle')
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
