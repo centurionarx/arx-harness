@@ -13,3 +13,15 @@ export const en = {
   'openDocument.copied': 'Copied',
   'general.nav': 'General',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'trigger': 'Configurações',
+  'title': 'Configurações',
+  'close': 'Fechar',
+  'openDocument': 'Abrir o arquivo de configuração',
+  'openDocument.error': 'Não foi possível abrir o arquivo de configuração',
+  'openDocument.copy': 'Copiar o caminho',
+  'openDocument.copied': 'Copiado',
+  'general.nav': 'Geral',
+} satisfies Record<SettingsKey, string>

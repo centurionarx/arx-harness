@@ -33,7 +33,7 @@ import type { ProviderGuideInjected } from './ProviderGuide.tsx'
 import { decodeNoticeSection, AcknowledgedNoticeStore } from './notice-store.ts'
 import { ModelsSettingsStore } from './store.ts'
 import { createSettingsSchemaOperations } from './schema-operations.ts'
-import { en, type ModelsKey } from './locales.ts'
+import { en, pt, type ModelsKey } from './locales.ts'
 import {
   HOME_MIGRATION_ACK_FIELD, PROVIDER_GUIDE_ACK_FIELD, PROVIDER_GUIDE_VERSION,
   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE, WELCOME_NOTICE_VERSION,
@@ -95,7 +95,7 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-settings-models: copy dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-settings-models: copy dictionaries')
 
   const connection = ctx.get('connection') as ConnectionHandle
   const schema = createSettingsSchemaOperations(ctx.settingsSchema)

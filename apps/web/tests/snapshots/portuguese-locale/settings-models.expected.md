@@ -1,0 +1,49 @@
+- dialog "Configurações":
+  - navigation:
+    - text: Configurações
+    - button "Geral":
+      - img
+      - text: Geral
+    - button "Modelos":
+      - img
+      - text: Modelos
+    - button "Busca na web":
+      - img
+      - text: Busca na web
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Abrir o arquivo de configuração"
+  - button "Fechar":
+    - img
+    - text: Fechar
+  - heading "Modelos" [level=2]
+  - paragraph: Configure os provedores cujos modelos você quer usar.
+  - region "Modelos de chat do OpenAI Codex":
+    - heading "Modelos de chat do OpenAI Codex" [level=3]
+    - paragraph: Autorize sua assinatura da OpenAI para este chat. Isso é separado da ferramenta nativa do Codex usada pelos agentes delegados.
+    - paragraph: Não conectada
+    - button "Conectar a OpenAI para o chat"
+    - button "Atualizar o status da conta"
+  - region "Contas nativas dos produtos":
+    - heading "Contas nativas dos produtos" [level=3]
+    - paragraph: Conecte as ferramentas nativas usadas pelos agentes delegados. Uma conta de assinatura também pode fornecer os modelos de chat que o plano oferece; os modelos de chat do Codex usam uma conexão separada com a OpenAI.
+    - alert: Native accounts are unavailable in this composition.
+    - button "Atualizar o status da conta"
+  - list:
+    - listitem:
+      - text: Acme Gateway Personalizado
+      - button "Editar Acme Gateway (acme-gateway)": Editar
+      - button "Excluir Acme Gateway (acme-gateway)": Excluir
+  - button "Adicionar provedor":
+    - img
+    - text: Adicionar provedor
+  - button "Adicionar compatível com OpenAI":
+    - img
+    - text: Adicionar compatível com OpenAI
+  - button "Adicionar um provedor personalizado":
+    - img
+    - text: Adicionar um provedor personalizado
