@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-fs",
   "description": "Abstract filesystem capability seam (ctx.fs) for the arx Harness — vocabulary types, the FileSystem service (text IO + optional version-guarded atomic mutations), and the fs/* policy event vocabulary",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "publishConfig": {
     "access": "public"
   },
