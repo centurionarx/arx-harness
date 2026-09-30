@@ -1,0 +1,5 @@
+- tree "Sessões":
+  - treeitem "workspace" [expanded]:
+    - img
+    - text: workspace
+  - treeitem "Nova sessão" [selected]

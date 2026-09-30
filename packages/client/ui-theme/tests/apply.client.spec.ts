@@ -14,7 +14,7 @@ import { AppearanceRow } from '../src/client/AppearanceRow.tsx'
 import type { createAppearanceRowStore } from '../src/client/settings-store.ts'
 
 // The lane has no jsdom `window`, so browser-language detection never runs and
-// a fresh LocaleRuntime opens on FALLBACK_LOCALE (en), the only shipped locale.
+// a fresh LocaleRuntime opens on FALLBACK_LOCALE (en).
 
 const SLOT = 'settings.general.item'
 

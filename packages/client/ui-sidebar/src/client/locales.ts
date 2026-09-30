@@ -9,3 +9,11 @@ export const en = {
   'toggle.open': 'Open sidebar',
   'toggle.collapse': 'Collapse sidebar',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'session.new': 'Nova sessão',
+  'session.new.label': 'Nova sessão',
+  'toggle.open': 'Abrir a barra lateral',
+  'toggle.collapse': 'Recolher a barra lateral',
+} satisfies Record<SidebarKey, string>
