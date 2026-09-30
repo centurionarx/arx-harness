@@ -56,6 +56,9 @@ export const pt = {
   'open.more': 'Outras formas de abrir',
   'open.default': '{app} (padrão)',
   'open.error': 'Não foi possível abrir. Tente de novo.',
+  // The parity gate needs every key in both dictionaries, so the brand names
+  // the vendors do not translate repeat the English ones.
+  /* jscpd:ignore-start */
   'app.finder': 'Finder',
   'app.explorer': 'Explorador de Arquivos',
   'app.filemanager': 'Arquivos',
@@ -92,6 +95,7 @@ export const pt = {
   'app.gitbash': 'Git Bash',
   'app.gnometerminal': 'Terminal do GNOME',
   'app.konsole': 'Konsole',
+  /* jscpd:ignore-end */
 } satisfies Record<OpenInAppKey, string>
 
 /**
