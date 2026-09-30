@@ -36,8 +36,8 @@ The effort labels were not client copy at all. Adapters name each level by capit
 
 ## Consequences
 
-- Under `pt`, every namespace in `ENGLISH_ONLY` (settings pages other than the Language and Permission rows, tool rows) still renders English, so the Portuguese UI is mixed until those namespaces are translated.
-- The plugin inventory tab shows the preset names the files publish, in English, because its namespace ships English only.
+- Under `pt`, every namespace in `ENGLISH_ONLY` (the subagent, trajectory, and workflow-run rows, the Open-in-app menu, and the Cordis panel) still renders English, so the Portuguese UI is mixed until those namespaces are translated.
+- The plugin inventory tab shows each preset's name as its file publishes it, in English.
 - Text captured at registration time outside the slot render path, such as the `/model` command description, keeps the language it was registered under until it registers again.
 - The English label for `xhigh` reads "Extra high" instead of the adapter's "Xhigh".
 - A later namespace translation is a local change: add `pt` beside `en`, register both, and remove the entry from `ENGLISH_ONLY`.

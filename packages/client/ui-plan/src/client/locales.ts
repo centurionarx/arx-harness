@@ -9,3 +9,11 @@ export const en = {
   'chip.off.aria': 'Plan mode off, press to turn on',
   'chip.off.title': 'Plan mode off — click to turn on (/plan)',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'chip.on.aria': 'Modo de plano ativado; pressione para desativar',
+  'chip.on.title': 'Modo de plano ativado — clique para desativar (/plan off)',
+  'chip.off.aria': 'Modo de plano desativado; pressione para ativar',
+  'chip.off.title': 'Modo de plano desativado — clique para ativar (/plan)',
+} satisfies Record<PlanKey, string>

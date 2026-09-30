@@ -13,3 +13,12 @@ export const en = {
   'row.instructions': 'Instructions',
   'menu.userOnly': 'user-only',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'row.running': 'Carregando a skill',
+  'row.failed': 'Falha ao carregar a skill',
+  'row.stopped': 'Carregamento da skill interrompido',
+  'row.instructions': 'Instruções',
+  'menu.userOnly': 'só do usuário',
+} satisfies Record<SkillKey, string>

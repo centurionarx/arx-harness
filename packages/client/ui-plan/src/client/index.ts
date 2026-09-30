@@ -16,7 +16,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 // Type-only: pulls the `plan` SessionProjectionMap merge for useProjection.
 import type {} from '@arx-ai/arx-plan-mode/client'
 import { PlanChip } from './PlanModeControl.tsx'
-import { en, type PlanKey } from './locales.ts'
+import { en, pt, type PlanKey } from './locales.ts'
 
 export type { PlanKey } from './locales.ts'
 
@@ -47,7 +47,7 @@ export const inject = ['slots', 'remote', 'remote.commands', 'locale']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-plan: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-plan: dictionaries')
 
   ctx.slots.inject('conversation.input.plan', () => ctx.slots.register({
     name: 'conversation.input.plan',

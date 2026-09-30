@@ -4,7 +4,9 @@
 // access menu names the shipped permission presets, all from the `pt`
 // dictionaries; `<html lang>` names the regional variant. Connecting a
 // workspace goes through the Portuguese directory dialog, and the sidebar
-// names its controls, sessions, and view options in Portuguese.
+// names its controls, sessions, and view options in Portuguese. The command
+// menu, the exit confirmation, the Settings dialog, and its Models page read
+// Portuguese too.
 // Zero model calls: no replay fixture mounts, so a stray stream fails loud.
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -144,9 +146,46 @@ describe.skipIf(MODE === 'record')('web e2e: the composer and its pickers in Bra
     expect(tripwire.warnings).toEqual([])
   })
 
+  it('opens the command menu and the exit confirmation in Portuguese', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-portuguese-commands'))
+    await page.getByRole('button', { name: 'Comandos' }).click()
+    await page.getByRole('listbox', { name: 'Sugestões' }).waitFor({ timeout: 10_000 })
+    const menu = await captureStableAria(page, '[role="listbox"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'command-menu.expected.md'), menu, MODE)
+    expect(menu).toContain('text: Comandos')
+    await page.locator('textarea').first().press('Escape')
+    await page.getByRole('button', { name: 'Sair', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Sair do arx Harness?' })
+    await dialog.waitFor({ timeout: 10_000 })
+    const confirm = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'exit-confirm.expected.md'), confirm, MODE)
+    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    await expect.poll(() => dialog.count()).toBe(0)
+    expect(tripwire.pageErrors).toEqual([])
+    expect(tripwire.warnings).toEqual([])
+  })
+
+  it('names the Settings dialog and the Models page in Portuguese', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-portuguese-settings'))
+    await page.getByRole('button', { name: 'Configurações', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Configurações' })
+    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.getByRole('button', { name: 'Modelos' }).click()
+    await dialog.getByText('Configure os provedores cujos modelos você quer usar.').waitFor({ timeout: 10_000 })
+    const add = dialog.getByRole('button', { name: 'Adicionar provedor' })
+    await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
+    const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'settings-models.expected.md'), snapshot, MODE)
+    await page.keyboard.press('Escape')
+    await expect.poll(() => dialog.count()).toBe(0)
+    expect(tripwire.pageErrors).toEqual([])
+    expect(tripwire.warnings).toEqual([])
+  })
+
   it('keeps its snapshot inventory closed', async () => {
     await assertFixtureInventory(SNAPSHOT_DIR, [
-      'access.expected.md', 'effort.expected.md', 'modes.expected.md', 'sidebar.expected.md', 'view-options.expected.md',
+      'access.expected.md', 'command-menu.expected.md', 'effort.expected.md', 'exit-confirm.expected.md',
+      'modes.expected.md', 'settings-models.expected.md', 'sidebar.expected.md', 'view-options.expected.md',
     ])
   })
 })

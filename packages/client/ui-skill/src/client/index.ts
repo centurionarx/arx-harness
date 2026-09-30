@@ -36,7 +36,7 @@ import type { InputTriggerServiceContract, InputTriggerSource } from '@arx-ai/ar
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@arx-ai/arx-client-locale/client'
 import { SkillRow } from './SkillRow.tsx'
-import { en, NS, type SkillKey } from './locales.ts'
+import { en, NS, pt, type SkillKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -61,7 +61,7 @@ export const inject = ['inputTriggers', 'connection', 'sessions', 'slots', 'loca
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-skill: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-skill: dictionaries')
   ctx.slots.inject('tool.call.toolview', () => ctx.slots.register(
     { name: 'tool.call.toolview', key: 'skill', locale: NS },
     SkillRow,

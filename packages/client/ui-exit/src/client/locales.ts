@@ -13,3 +13,15 @@ export const en = {
   'stopping': 'Stopping…',
   'unavailable': 'This deployment offers no way to exit',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'trigger': 'Sair',
+  'confirm.title': 'Sair do arx Harness?',
+  'confirm.description': 'O servidor para e todas as sessões conectadas se desconectam. Os logs das sessões ficam salvos, então elas continuam quando o servidor reiniciar.',
+  'confirm.cancel': 'Cancelar',
+  'confirm.stop': 'Parar o servidor',
+  'close': 'Fechar',
+  'stopping': 'Parando…',
+  'unavailable': 'Esta implantação não oferece uma forma de sair',
+} satisfies Record<ExitKey, string>
