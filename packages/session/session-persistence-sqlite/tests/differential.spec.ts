@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { CallId, type StreamChunk } from '@arx-ai/arx-llm'
-import SessionStore, { type SessionEvent } from '@arx-ai/arx-session'
+import SessionStore, { type SessionEvent, type SessionHeader } from '@arx-ai/arx-session'
 import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import SessionPersistenceJsonl from '@arx-ai/arx-session-persistence-jsonl'
 import SessionPersistenceSqlite from '@arx-ai/arx-session-persistence-sqlite'
@@ -137,6 +137,38 @@ function batches(events: readonly SessionEvent[], sizes: readonly number[]): Ses
   return result
 }
 
+async function writeLog(
+  persistence: SessionPersistence,
+  header: SessionHeader,
+  events: readonly SessionEvent[],
+  sizes: readonly number[],
+): Promise<void> {
+  await persistence.create(header)
+  for (const batch of batches(events, sizes)) {
+    await persistence.append(header.id, batch)
+  }
+}
+
+async function verifyReads(
+  name: BackendName,
+  persistence: SessionPersistence,
+  header: SessionHeader,
+  events: readonly SessionEvent[],
+  label: string = name,
+): Promise<void> {
+  expect(await persistence.inspect(header.id), label).toEqual({ meta: header, events })
+  // SQLite seeks each suffix through packed rows, so every start is a
+  // distinct read. JSONL has no seek read: every start re-reads the whole
+  // log and slices it, so its first and past-the-end starts cover it.
+  const fromSeqs = name === 'sqlite'
+    ? Array.from({ length: events.length + 2 }, (_, fromSeq) => fromSeq)
+    : [0, events.length + 1]
+  for (const fromSeq of fromSeqs) {
+    expect((await persistence.readFrom(header.id, fromSeq)).events, `${label} seq ${fromSeq}`)
+      .toEqual(events.slice(fromSeq))
+  }
+}
+
 async function verifyBackend(
   name: BackendName,
   root: string,
@@ -146,23 +178,10 @@ async function verifyBackend(
   const header = { ...meta('differential', '/work'), delegationDepth: 0 }
   let mounted = await mount(name, root)
   try {
-    await mounted.persistence.create(header)
-    for (const batch of batches(events, sizes)) {
-      await mounted.persistence.append(header.id, batch)
-    }
-    expect(await mounted.persistence.inspect(header.id), name).toEqual({ meta: header, events })
+    await writeLog(mounted.persistence, header, events, sizes)
     expect(await mounted.persistence.list(), name).toEqual([header])
     const revision = (await mounted.persistence.listSnapshots())[0]?.revision
-    // SQLite seeks each suffix through packed rows, so every start is a
-    // distinct read. JSONL has no seek read: every start re-reads the whole
-    // log and slices it, so its first and past-the-end starts cover it.
-    const fromSeqs = name === 'sqlite'
-      ? Array.from({ length: events.length + 2 }, (_, fromSeq) => fromSeq)
-      : [0, events.length + 1]
-    for (const fromSeq of fromSeqs) {
-      expect((await mounted.persistence.readFrom(header.id, fromSeq)).events, `${name} seq ${fromSeq}`)
-        .toEqual(events.slice(fromSeq))
-    }
+    await verifyReads(name, mounted.persistence, header, events)
     expect((await mounted.persistence.listSnapshots())[0]?.revision, name).toBe(revision)
   } finally {
     await mounted.dispose()
@@ -268,12 +287,46 @@ describe('SQLite cross-backend differential behavior', () => {
   }, 30_000)
 
   it('matches JSONL/Zstandard across randomized logical logs and append partitions', async () => {
-    await fc.assert(fc.asyncProperty(randomWorkload, async ({ events, batchSizes }) => {
-      const directory = await freshDirectory('arx-sqlite-property-')
-      for (const name of ['jsonl-zstd', 'sqlite'] as const) {
-        await verifyBackend(name, join(directory, name), events, batchSizes)
+    // One store per backend holds every case as its own session, so a case
+    // pays for its writes and reads rather than for four plugin mounts.
+    // Listing, revisions, and reopening run once over all sessions because a
+    // JSONL listing reads the header of, and stats, every stored log.
+    const directory = await freshDirectory('arx-sqlite-property-')
+    const names = ['jsonl-zstd', 'sqlite'] as const
+    const written: { readonly header: SessionHeader; readonly events: readonly SessionEvent[] }[] = []
+    const mounted: MountedBackend[] = []
+    try {
+      for (const name of names) mounted.push(await mount(name, join(directory, name)))
+      let run = 0
+      await fc.assert(fc.asyncProperty(randomWorkload, async ({ events, batchSizes }) => {
+        const header = { ...meta(`differential-${run++}`, '/work'), delegationDepth: 0 }
+        for (const [index, name] of names.entries()) {
+          await writeLog(mounted[index]!.persistence, header, events, batchSizes)
+          await verifyReads(name, mounted[index]!.persistence, header, events)
+        }
+        written.push({ header, events })
+      }), { numRuns: 100, seed: 0x5A17E })
+    } finally {
+      for (const backend of mounted.splice(0)) await backend.dispose()
+    }
+
+    const byId = (a: { readonly id: string }, b: { readonly id: string }): number => a.id.localeCompare(b.id)
+    const headers = written.map(({ header }) => header).sort(byId)
+    for (const name of names) {
+      const reopened = await mount(name, join(directory, name))
+      try {
+        const revisions = async (): Promise<unknown[]> => (await reopened.persistence.listSnapshots())
+          .map(({ header, revision }) => ({ id: header.id, revision })).sort(byId)
+        const before = await revisions()
+        expect((await reopened.persistence.list()).sort(byId), `${name} reopen`).toEqual(headers)
+        for (const { header, events } of written) {
+          await verifyReads(name, reopened.persistence, header, events, `${name} reopen ${header.id}`)
+        }
+        expect(await revisions(), `${name} reopen revisions`).toEqual(before)
+      } finally {
+        await reopened.dispose()
       }
-    }), { numRuns: 100, seed: 0x5A17E })
+    }
   }, 60_000)
 
 })
