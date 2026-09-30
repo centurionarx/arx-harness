@@ -1,20 +1,20 @@
 ---
 name: Task
-about: 明确的非 Feature、非 Bug 工作
+about: Trabalho definido que não é Feature nem Bug
 title: ''
 labels: ''
 assignees: ''
 type: Task
 ---
 
-<!-- 标题写中文行动或结果句；外露正文不超过 50 单位。 -->
-一句话说明要完成的工作。
+<!-- Título: uma frase de ação ou resultado, em português; o corpo visível tem no máximo 50 palavras. -->
+Uma frase sobre o trabalho a concluir.
 
 <details>
-<summary>验收与细节</summary>
+<summary>Aceite e detalhes</summary>
 
-- 验收条件：
-- 交付物：
-- 测试证据：
+- Critérios de aceite:
+- Entregas:
+- Evidência de teste:
 
 </details>

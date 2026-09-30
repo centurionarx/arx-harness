@@ -13,12 +13,15 @@ import {
   validatePullRequest,
 } from './policy.mjs'
 
+/** Two Han characters, built from code points so this spec holds no Chinese text itself. */
+const han = String.fromCodePoint(0x4e2d, 0x6587)
+
 const withDetails = (summary) =>
-  `${summary}\n\n<details><summary>验收与细节</summary>待补充。</details>`
+  `${summary}\n\n<details><summary>Aceite e detalhes</summary>A preencher.</details>`
 
 const legalIssue = {
-  title: '完成议题管理校验',
-  body: withDetails('完成议题管理校验。'),
+  title: 'Concluir a validação da gestão de Issues',
+  body: withDetails('Concluir a validação da gestão de Issues.'),
   assignees: [],
   labels: [],
   type: 'Idea',
@@ -64,7 +67,7 @@ const reviewedPull = (labels) => ({
 })
 
 test('counts only text outside details', () => {
-  assert.deepEqual(countVisibleUnits('支持 GitHub Project。<details>隐藏文字</details>'), {
+  assert.deepEqual(countVisibleUnits(`${han} GitHub Project.<details>texto oculto</details>`), {
     units: 4,
     balanced: true,
     detailsCount: 1,
@@ -73,46 +76,46 @@ test('counts only text outside details', () => {
 })
 
 test('requires a balanced default-collapsed details region', () => {
-  assert.deepEqual(validateBody({ body: '完成工作。', assignees: [] }), [
-    '正文必须包含默认收起的 <details> 区域',
+  assert.deepEqual(validateBody({ body: 'Trabalho concluído.', assignees: [] }), [
+    'o corpo precisa ter uma seção <details> recolhida por padrão',
   ])
   assert.deepEqual(
     validateBody({
-      body: '完成工作。\n\n<details open><summary>细节</summary>待补充。</details>',
+      body: 'Trabalho concluído.\n\n<details open><summary>Detalhes</summary>A preencher.</details>',
       assignees: [],
     }),
-    ['details 必须默认收起，不得设置 open'],
+    ['details precisa vir recolhido por padrão, sem o atributo open'],
   )
   assert.deepEqual(
-    validateBody({ body: '完成工作。\n\n<details><summary>细节</summary>', assignees: [] }),
-    ['details 标签必须成对闭合'],
+    validateBody({ body: 'Trabalho concluído.\n\n<details><summary>Detalhes</summary>', assignees: [] }),
+    ['toda tag details precisa ser fechada'],
   )
 })
 
 test('requires Owner for multiple assignees', () => {
   assert.deepEqual(
     validateBody({
-      body: withDetails('完成工作。'),
+      body: withDetails('Trabalho concluído.'),
       assignees: ['tianyicui', 'tianyicui-bot'],
     }),
-    ['多个 Assignees 时首个非空行必须是 Owner: @login'],
+    ['com várias Assignees, a primeira linha não vazia precisa ser Owner: @login'],
   )
 })
 
 test('accepts an intended Owner while assignment permission is pending', () => {
   assert.deepEqual(
     validateBody({
-      body: withDetails('Owner: @octocat\n\n完成工作。'),
+      body: withDetails('Owner: @octocat\n\nTrabalho concluído.'),
       assignees: [],
     }),
     [],
   )
   assert.deepEqual(
     validateBody({
-      body: withDetails('Owner: @octocat\n\n完成工作。'),
+      body: withDetails('Owner: @octocat\n\nTrabalho concluído.'),
       assignees: ['hubot'],
     }),
-    ['零或一个 Assignee 时不得写 Owner 行'],
+    ['com zero ou uma Assignee, não escreva a linha Owner'],
   )
 })
 
@@ -124,8 +127,13 @@ test('allows optional metadata in every open Status', () => {
 })
 
 test('rejects metadata prefixes in an Issue title', () => {
-  const errors = validateIssue({ ...legalIssue, title: '[Bug] 修复恢复错误' })
-  assert.ok(errors.includes('Issue 标题不得带 Type、Priority、Status、area 或 Owner 前缀'))
+  const errors = validateIssue({ ...legalIssue, title: '[Bug] Corrigir o erro de recuperação' })
+  assert.ok(errors.includes('o título da Issue não pode ter prefixo de Type, Priority, Status, area ou Owner'))
+})
+
+test('rejects Chinese text in an Issue title', () => {
+  const errors = validateIssue({ ...legalIssue, title: `Corrigir o rótulo ${han}` })
+  assert.deepEqual(errors, ['o título da Issue não pode ter texto em chinês'])
 })
 
 test('reserves PR kind and legacy labels for pull requests', () => {
@@ -136,7 +144,7 @@ test('reserves PR kind and legacy labels for pull requests', () => {
   ]) {
     assert.ok(
       validateIssue({ ...legalIssue, labels: [label] }).some((error) =>
-        error.startsWith('Issue 不得使用 PR kind 或旧版标签：'),
+        error.startsWith('a Issue não pode usar kind de PR nem rótulos antigos: '),
       ),
       label,
     )
@@ -158,7 +166,7 @@ test('keeps terminal Status aligned with the native close reason', () => {
     }),
     [],
   )
-  assert.ok(validateIssue({ ...legalIssue, status: 'Done' }).includes('Done 必须对应 Completed 关闭原因'))
+  assert.ok(validateIssue({ ...legalIssue, status: 'Done' }).includes('Done exige o motivo de fechamento Completed'))
 })
 
 test('separates resolving and informational references', () => {
@@ -218,7 +226,7 @@ test('enforces highest resolving Priority without Type or area synchronization',
   assert.deepEqual(validatePullRequest(pull), [])
   assert.ok(
     validatePullRequest({ ...pull, labels: ['kind/cleanup', 'p2', 'area/web'] }).includes(
-      'PR Priority 应为 p0',
+      'a Priority do PR deveria ser p0',
     ),
   )
 })
@@ -353,8 +361,8 @@ test('requires repository PR labels in the enforcement scope', () => {
     references: { all: [2], resolving: [], related: [2] },
     issues: new Map([[2, { priority: null }]]),
   })
-  assert.ok(errors.includes('PR 必须恰好有一个允许的 kind/*，当前为 0'))
-  assert.ok(errors.includes('PR 必须至少有一个 area/*'))
+  assert.ok(errors.includes('o PR precisa ter exatamente um kind/* permitido; tem 0'))
+  assert.ok(errors.includes('o PR precisa ter pelo menos um area/*'))
 })
 
 test('accepts exactly the canonical kinds with extensible areas', () => {
@@ -367,17 +375,17 @@ test('rejects multiple, unknown, legacy, and Issue-source PR labels', () => {
   assert.ok(
     validatePullRequest(
       reviewedPull(['kind/feature', 'kind/doc', 'area/web']),
-    ).includes('PR 必须恰好有一个允许的 kind/*，当前为 2'),
+    ).includes('o PR precisa ter exatamente um kind/* permitido; tem 2'),
   )
   assert.ok(
     validatePullRequest(reviewedPull(['kind/experimental', 'area/web'])).includes(
-      'PR 含不支持的 kind/*：kind/experimental',
+      'o PR tem kind/* não suportado: kind/experimental',
     ),
   )
   for (const label of legacyLabels) {
     assert.ok(
       validatePullRequest(reviewedPull(['kind/feature', 'area/web', label])).some((error) =>
-        error.startsWith('PR 含旧版标签：'),
+        error.startsWith('o PR tem rótulos antigos: '),
       ),
       label,
     )
@@ -385,7 +393,7 @@ test('rejects multiple, unknown, legacy, and Issue-source PR labels', () => {
   assert.ok(
     validatePullRequest(
       reviewedPull(['kind/feature', 'area/web', 'source/internal-pr']),
-    ).includes('source/* 仅用于 Issue：source/internal-pr'),
+    ).includes('source/* é só para Issues: source/internal-pr'),
   )
 })
 
@@ -402,12 +410,12 @@ test('allows missing Priority only when resolving Issues are also unprioritized'
   assert.deepEqual(validatePullRequest(pull), [])
   assert.ok(
     validatePullRequest({ ...pull, issues: new Map([[2, { priority: 'P2' }]]) }).includes(
-      'PR Priority 应为 p2',
+      'a Priority do PR deveria ser p2',
     ),
   )
   assert.ok(
     validatePullRequest({ ...pull, labels: [...pull.labels, 'p2'] }).includes(
-      '有 Priority 的解决型 PR 要求每个被解决 Issue 都设置 Priority',
+      'um PR com Priority que resolve Issues exige Priority em cada Issue resolvida',
     ),
   )
 })

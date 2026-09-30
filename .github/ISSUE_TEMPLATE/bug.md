@@ -1,22 +1,22 @@
 ---
 name: Bug
-about: 记录现有预期行为的失效
+about: Registra a falha de um comportamento esperado que já existe
 title: ''
 labels: ''
 assignees: ''
 type: Bug
 ---
 
-<!-- 标题写中文行动或结果句；外露正文不超过 50 单位。 -->
-一句话说明错误结果。
+<!-- Título: uma frase de ação ou resultado, em português; o corpo visível tem no máximo 50 palavras. -->
+Uma frase sobre o resultado errado.
 
 <details>
-<summary>复现、预期与验收</summary>
+<summary>Reprodução, resultado esperado e aceite</summary>
 
-- 复现步骤：
-- 实际结果：
-- 预期结果：
-- 环境：
-- 验收条件：
+- Passos para reproduzir:
+- Resultado atual:
+- Resultado esperado:
+- Ambiente:
+- Critérios de aceite:
 
 </details>
