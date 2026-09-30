@@ -38,29 +38,11 @@ const LOCALES: readonly Locale[] = ['en', 'pt']
  * dictionary fails the gate.
  */
 const ENGLISH_ONLY: ReadonlySet<string> = new Set([
-  'packages/client/ui-commands/src/client/locales.ts::en',
-  'packages/client/ui-deliverables/src/client/locales.ts::en',
-  'packages/client/ui-directory-picker-browse/src/client/index.ts::en@register:LOCALE_NS',
-  'packages/client/ui-exit/src/client/locales.ts::en',
-  'packages/client/ui-file-preview/src/client/locales.ts::en',
-  'packages/client/ui-goal/src/client/locales.ts::en',
-  'packages/client/ui-input-trigger/src/client/locales.ts::en',
-  'packages/client/ui-jobs/src/client/locales.ts::en',
-  'packages/client/ui-message-feedback/src/client/locales.ts::en',
   'packages/client/ui-open-in-app/src/client/locales.ts::en',
-  'packages/client/ui-plan/src/client/locales.ts::en',
-  'packages/client/ui-projects/src/client/locales.ts::en',
-  'packages/client/ui-reference/src/client/locales.ts::en',
-  'packages/client/ui-sidebar/src/client/locales.ts::en',
-  'packages/client/ui-skill/src/client/locales.ts::en',
   'packages/client/ui-subagent/src/client/locales.ts::en',
-  'packages/client/ui-theme/src/client/locales.ts::en',
   'packages/client/ui-trajectory/src/client/locales.ts::en',
-  'packages/client/ui-turn-outline/src/client/locales.ts::en',
   'packages/client/ui-workflow-run/src/client/locales.ts::en',
-  'packages/client/ui-workspace/src/client/locales.ts::en',
   'packages/extensions/ui-cordis/src/client/locales.ts::en',
-  'packages/session-query/session-log-export/src/client/locales.ts::en',
 ])
 
 /** Repo-relative path with `/` separators, so messages and suffix tests match on every OS. */

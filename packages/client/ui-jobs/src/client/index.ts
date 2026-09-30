@@ -7,7 +7,7 @@
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import { JobListAction } from './JobListAction.tsx'
 import type {} from '@arx-ai/arx-client-locale/client'
-import { en, NS, type JobKey } from './locales.ts'
+import { en, NS, pt, type JobKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -26,7 +26,7 @@ export const inject = ['sessions', 'slots', 'locale']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-job: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-job: dictionaries')
   ctx.slots.inject(
     'conversation.session.header.actions',
     () => ctx.slots.register({

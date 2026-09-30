@@ -4,7 +4,7 @@ import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { TurnOutline, type OutlineInjected } from './TurnOutline.tsx'
-import { en, type OutlineKey } from './locales.ts'
+import { en, pt, type OutlineKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap { /** Whole-session turn navigation copy. */ turnOutline: OutlineKey }
@@ -13,7 +13,7 @@ declare module '@arx-ai/arx-client-ui-slots' {
 export const inject = ['slots', 'locale', 'remote', 'remote.turnOutlines']
 /** Register into the existing view seat independently of owner load order. */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register('turnOutline', { en }), 'turn outline: dictionaries')
+  ctx.effect(() => ctx.locale.register('turnOutline', { en, pt }), 'turn outline: dictionaries')
   const t = ctx.locale.bind('turnOutline')
   ctx.slots.inject('conversation.view', () => ctx.slots.register({
     name: 'conversation.view', id: 'turn-outline', order: 20, locale: 'turnOutline',
