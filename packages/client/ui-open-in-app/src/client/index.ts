@@ -10,7 +10,7 @@ import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type {} from '@arx-ai/arx-client-locale/client'
 import { OpenInAppController } from './controller.ts'
 import { OpenInAppAction, type OpenInAppActionInjected } from './OpenInAppAction.tsx'
-import { en, NS, type OpenInAppKey } from './locales.ts'
+import { en, NS, pt, type OpenInAppKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -32,7 +32,7 @@ export const inject = ['slots', 'locale', 'connection']
 export function apply(ctx: ClientContext): void {
   const controller = new OpenInAppController(ctx.get('connection') as ConnectionHandle)
   void controller.load()
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'open-in-app: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'open-in-app: dictionaries')
   ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
     name: 'conversation.session.header.utilities',
     id: 'open-in-app',

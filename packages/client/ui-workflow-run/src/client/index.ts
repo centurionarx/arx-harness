@@ -4,7 +4,7 @@ import type { ClientContext, SessionId } from '@arx-ai/arx-client-runtime/client
 import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-conversation/client'
 import { WorkflowRunPanel, type WorkflowRunInjected } from './WorkflowRunPanel.tsx'
-import { en, NS, type WorkflowRunKey } from './locales.ts'
+import { en, NS, pt, type WorkflowRunKey } from './locales.ts'
 import { workflowRunDefinition } from './workflow-definition.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
@@ -20,7 +20,7 @@ export const inject = ['conversationEvents', 'slots', 'sessions', 'locale']
 /** Register the workflow Definition, dictionary, and keyed Chat renderer. */
 export function apply(ctx: ClientContext): void {
   ctx.conversationEvents.register(workflowRunDefinition)
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-workflow-run: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-workflow-run: dictionaries')
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'workflow-run',

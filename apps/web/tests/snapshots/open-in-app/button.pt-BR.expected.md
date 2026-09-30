@@ -1,0 +1,4 @@
+- button "Abrir em Arquivos":
+  - img
+- button "Outras formas de abrir":
+  - img

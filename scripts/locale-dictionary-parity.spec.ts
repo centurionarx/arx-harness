@@ -37,13 +37,7 @@ const LOCALES: readonly Locale[] = ['en', 'pt']
  * requires removing the entry; an entry that no longer names an English-only
  * dictionary fails the gate.
  */
-const ENGLISH_ONLY: ReadonlySet<string> = new Set([
-  'packages/client/ui-open-in-app/src/client/locales.ts::en',
-  'packages/client/ui-subagent/src/client/locales.ts::en',
-  'packages/client/ui-trajectory/src/client/locales.ts::en',
-  'packages/client/ui-workflow-run/src/client/locales.ts::en',
-  'packages/extensions/ui-cordis/src/client/locales.ts::en',
-])
+const ENGLISH_ONLY: ReadonlySet<string> = new Set([])
 
 /** Repo-relative path with `/` separators, so messages and suffix tests match on every OS. */
 function relative(file: string): string {
