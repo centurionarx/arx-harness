@@ -326,7 +326,7 @@ it('rejects uninitialized service access and applies the same default limits in 
 })
 
 it('checks prompt evaluation admission and deterministically scores missing or failed child output', async () => {
-  const f = await setup({ maxActiveRuns: 4 })
+  const f = await setup({ maxActiveRuns: 100 })
   let project = await f.projects.create({ workspaceId: f.workspaceId, name: 'Evaluation contracts' })
   project = await f.projects.savePrompt(project.id, project.version, {
     ...prompt, evaluationCases: [evaluationCase, { ...evaluationCase, id: 'second' as never, checks: { validJson: false } }],
@@ -343,7 +343,7 @@ it('checks prompt evaluation admission and deterministically scores missing or f
   await expect(f.projects.startPromptEvaluation(project.id, project.version, start)).rejects.toThrow('step ceiling')
   project = await f.projects.configureBudget(project.id, project.version, { ...project.budget, maxStepsPerRun: 100, maxActiveRuns: 1 })
   project = await f.projects.startPromptEvaluation(project.id, project.version, { ...start, maxDurationMs: 30_000 })
-  let evaluation = project.evaluations[0]!
+  const evaluation = project.evaluations[0]!
   await expect(f.projects.startPromptEvaluation(project.id, project.version, start)).rejects.toThrow('project active')
   await expect(f.projects.finalizePromptEvaluation(project.id, project.version, { evaluationId: ProjectPromptEvaluationId('unknown') })).rejects.toThrow('unknown prompt evaluation')
   await expect(f.projects.finalizePromptEvaluation(project.id, project.version, { evaluationId: evaluation.id })).rejects.toThrow('must be terminal')
@@ -364,15 +364,11 @@ it('checks prompt evaluation admission and deterministically scores missing or f
     name: 'No cases', template: 'Fixed', variablesSchema: {}, sourceSkills: [],
   })
   await expect(f.projects.startPromptEvaluation(project.id, project.version, { ...start, promptId: project.prompts.at(-1)!.id })).rejects.toThrow('no evaluation cases')
+  // The evaluation limit is checked before the active-run ceilings, so the
+  // filler evaluations stay active: one durable write each instead of three.
+  project = await f.projects.configureBudget(project.id, project.version, { ...project.budget, maxActiveRuns: 100 })
   for (let index = 1; index < 100; index++) {
     project = await f.projects.startPromptEvaluation(project.id, project.version, start)
-    evaluation = project.evaluations.at(-1)!
-    project = await f.projects.interruptWorkflowRun(project.id, project.version, {
-      runId: evaluation.runId, reason: 'Operator ended evaluation',
-    })
-    project = await f.projects.reconcileWorkflowRun(project.id, project.version, {
-      runId: evaluation.runId, state: 'failed', error: 'Confirmed no model invocation',
-    })
   }
   await expect(f.projects.startPromptEvaluation(project.id, project.version, start)).rejects.toThrow('evaluation limit')
 }, 30_000)

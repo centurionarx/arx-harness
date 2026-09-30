@@ -1,0 +1,12 @@
+- menu:
+  - text: Agrupar por
+  - menuitem "Workspace":
+    - text: Workspace
+    - img
+  - menuitem "Em uma lista"
+  - separator
+  - text: Ordenar por
+  - menuitem "Manual"
+  - menuitem "Última atualização":
+    - text: Última atualização
+    - img
