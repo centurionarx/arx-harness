@@ -19,7 +19,7 @@ This repository is a fork of an upstream harness. Its first commit reproduces on
 
 ## The import unit
 
-One upstream Agent Note with the change that implemented it is one import: the pull request that added the note, plus the later upstream changes that amend the same decision. An import is a cherry-pick of those changes, reduced by the drop list, rewritten through the identifier map, and translated to English. A merge of upstream `master` is never an import.
+One upstream Agent Note with the change that implemented it is one import: the pull request that added the note, plus the later upstream changes that amend the same decision. An import is a cherry-pick of those changes, reduced by the drop list, rewritten through the identifier map, and translated to Brazilian Portuguese. A merge of upstream `master` is never an import.
 
 The imported note keeps its date and its name through `slugRenames`, loses its language switcher, and cites its origin as `upstream PR #N`; the manifest's `repository` resolves the number. Its documents enter the corpus under the `included` rule of [the translation pairing manifest](../scripts/translation-pairing.manifest.json), so the English side lands first and the Portuguese side comes from it, never from an upstream translation.
 
@@ -49,7 +49,7 @@ A change to a `corePaths` source path or to a `SessionEventMap` declaration is i
 
 An import maps every upstream identifier prefix through `identifierMap`: the package scope, the product prefix, the environment-variable prefix, and the design-token namespaces. An identifier the map does not cover fails the import instead of landing, and the fix is a new map entry. The single exception is the vendor note's: a string that is model-access configuration — a model id, an endpoint, a credential variable — stays byte-identical.
 
-No CJK character survives an import. Strings in code, comments, tests, and locale dictionaries are translated to English before the import lands. [`scripts/check-upstream-import.ts`](../scripts/check-upstream-import.ts) enforces both rules on the staged change: it fails on a drop-listed path, a CJK character, or an unmapped identifier prefix, and lists every line holding a `forbidden` word for a person to confirm as model-access configuration.
+No CJK character survives an import. Strings in code, comments, tests, and locale dictionaries are translated to Brazilian Portuguese before the import lands, as the [Chinese text rule](../.agents/notes/implemented/process/2026-09-29-chinese-text-becomes-brazilian-portuguese.md) requires. [`scripts/check-upstream-import.ts`](../scripts/check-upstream-import.ts) enforces both rules on the staged change: it fails on a drop-listed path, a CJK character, or an unmapped identifier prefix, and lists every line holding a `forbidden` word for a person to confirm as model-access configuration.
 
 ## Triage
 

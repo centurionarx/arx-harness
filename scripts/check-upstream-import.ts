@@ -70,7 +70,7 @@ export function findImportProblems(diff: string, manifest: UpstreamSyncManifest)
     if (!text.startsWith('+')) continue
     const added = text.slice(1)
     if (file !== undefined && file !== UPSTREAM_SYNC_MANIFEST_PATH) {
-      if (CJK_CHARACTER.test(added)) findings.push({ file, line, severity: 'fail', problem: 'CJK text; translate it to English' })
+      if (CJK_CHARACTER.test(added)) findings.push({ file, line, severity: 'fail', problem: 'CJK text; translate it to Brazilian Portuguese' })
       const identifier = manifest.identifierMap.find(([upstream]) => added.includes(upstream))
       if (identifier !== undefined) {
         findings.push({ file, line, severity: 'fail', problem: `unmapped identifier ${identifier[0]}; map it to ${identifier[1]}` })

@@ -61,7 +61,7 @@ Verify: `git status --short` lists no `.rej` file.
 
 1. Remove every path the manifest's `dropPaths` covers; step 6 names any that remain.
 2. Map each upstream identifier through the manifest's `identifierMap`; a string that is model-access configuration stays byte-identical.
-3. Translate every CJK string in code, comments, tests, and locale dictionaries to English.
+3. Translate every CJK string in code, comments, tests, and locale dictionaries to Brazilian Portuguese; an upstream `zh` dictionary becomes the `pt` dictionary.
 4. Rename the Agent Note file when a segment of its name is in `slugRenames`, delete its language-switcher line, and cite its origin as `upstream PR #N`.
 5. Rewrite each relative link to a path that exists here; drop links to translation sides and to dropped packages.
 6. Delete the decision's entry from the manifest's `verdicts`.
