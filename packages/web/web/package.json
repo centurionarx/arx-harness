@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web",
   "description": "Abstract web access capability seam (ctx.web) for the arx Harness — search/fetch provider registry, registration-order-independent selection, request/result vocabulary, and the WebError taxonomy",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "publishConfig": {
     "access": "public"
   },

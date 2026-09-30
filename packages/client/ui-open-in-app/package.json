@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-open-in-app",
   "description": "Web session-header split button that opens the workspace directory in a host application: editors, Git GUIs, terminals and shells, and the file manager",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "publishConfig": {
     "access": "public"
   },
