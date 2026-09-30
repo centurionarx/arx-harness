@@ -4,7 +4,7 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type {} from '@arx-ai/arx-client-ui-settings/client'
 import { PluginInventorySettingsTab, type PluginInventorySettingsTabInjected } from './PluginInventorySettingsTab.tsx'
-import { en, type PluginInventoryLocaleKey } from './locales.ts'
+import { en, pt, type PluginInventoryLocaleKey } from './locales.ts'
 
 export type { PluginInventorySettingsTabInjected, PluginInventorySettingsTabProps } from './PluginInventorySettingsTab.tsx'
 export type { PluginInventoryLocaleKey } from './locales.ts'
@@ -24,7 +24,7 @@ export const inject = ['slots', 'locale', 'remote', 'remote.pluginInventory']
 
 /** Contribute the lazy inventory tab to the Plugins settings section. */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-settings-plugin-inventory: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-settings-plugin-inventory: dictionaries')
 
   const t = ctx.locale.bind(NS)
   const list: PluginInventorySettingsTabInjected['list'] = async () => {

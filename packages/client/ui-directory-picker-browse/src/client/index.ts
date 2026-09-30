@@ -26,24 +26,52 @@ export const inject = ['slots', 'workspaces', 'locale']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  // A rival owner of the namespace makes `register` throw having stored
-  // nothing, so a failed activation squats no locale and this effect has no
-  // partial registration of its own to unwind.
-  ctx.effect(() => ctx.locale.register(LOCALE_NS, 'en', {
-    'browser.title': 'Select Workspace Directory',
-    'browser.home': 'Home',
-    'browser.newFolder': 'New folder',
-    'browser.folderName': 'Folder name',
-    'browser.createIn': 'New folder in "{name}"',
-    'browser.untitledFolder': 'Untitled folder',
-    'browser.create': 'Create',
-    'browser.cancel': 'Cancel',
-    'browser.open': 'Open',
-    'browser.editPath': 'Edit path',
-    'browser.loading': 'Loading…',
-    'browser.truncated': 'Too many folders to list; only the beginning is shown.',
-    'browser.showHidden': 'Show hidden files',
-  }), 'directory-picker-browse: dialog dictionary')
+  // Each `register` call throws having stored nothing when a rival already
+  // owns that locale of the namespace. A failed Portuguese registration
+  // removes the English one before rethrowing, so a failed activation squats
+  // no locale.
+  ctx.effect(() => {
+    const disposeEn = ctx.locale.register(LOCALE_NS, 'en', {
+      'browser.title': 'Select Workspace Directory',
+      'browser.home': 'Home',
+      'browser.newFolder': 'New folder',
+      'browser.folderName': 'Folder name',
+      'browser.createIn': 'New folder in "{name}"',
+      'browser.untitledFolder': 'Untitled folder',
+      'browser.create': 'Create',
+      'browser.cancel': 'Cancel',
+      'browser.open': 'Open',
+      'browser.editPath': 'Edit path',
+      'browser.loading': 'Loading…',
+      'browser.truncated': 'Too many folders to list; only the beginning is shown.',
+      'browser.showHidden': 'Show hidden files',
+    })
+    let disposePt: () => void
+    try {
+      disposePt = ctx.locale.register(LOCALE_NS, 'pt', {
+        'browser.title': 'Selecionar a pasta do workspace',
+        'browser.home': 'Pasta pessoal',
+        'browser.newFolder': 'Nova pasta',
+        'browser.folderName': 'Nome da pasta',
+        'browser.createIn': 'Nova pasta em "{name}"',
+        'browser.untitledFolder': 'Pasta sem título',
+        'browser.create': 'Criar',
+        'browser.cancel': 'Cancelar',
+        'browser.open': 'Abrir',
+        'browser.editPath': 'Editar o caminho',
+        'browser.loading': 'Carregando…',
+        'browser.truncated': 'Há pastas demais para listar; só o início aparece.',
+        'browser.showHidden': 'Mostrar arquivos ocultos',
+      })
+    } catch (error) {
+      disposeEn()
+      throw error
+    }
+    return () => {
+      disposePt()
+      disposeEn()
+    }
+  }, 'directory-picker-browse: dialog dictionaries')
 
   const injected = (): BrowseFlowInjected => ({
     listDirectory: (path, signal) => ctx.workspaces.listDirectory(path, signal),

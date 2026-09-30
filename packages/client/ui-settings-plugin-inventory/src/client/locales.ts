@@ -2,7 +2,7 @@
 /** Plugin inventory locale key union. */
 export type PluginInventoryLocaleKey = keyof typeof en
 
-/** English dictionary checked against the Chinese key set. */
+/** English dictionary, the source of the key set. */
 export const en = {
   tab: 'Plugin list',
   loading: 'Reading plugins…',
@@ -31,3 +31,33 @@ export const en = {
   failed: 'Mount failed',
   unloading: 'Unloading',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  tab: 'Lista de plugins',
+  loading: 'Lendo os plugins…',
+  error: 'Os plugins estão indisponíveis no momento.',
+  retry: 'Tentar de novo',
+  search: 'Pesquisar plugins',
+  catalog: 'Lista de plugins',
+  scope: 'Composição',
+  globalScope: 'Plugins globais do host',
+  systemPreset: 'Preset incluído',
+  userPreset: 'Preset do usuário',
+  defaultPreset: 'Padrão',
+  brokenPreset: 'Não foi possível ler a composição deste preset.',
+  empty: 'Nenhum plugin disponível.',
+  emptySearch: 'Nenhum plugin encontrado.',
+  enabledTag: 'Ativado',
+  disabledTag: 'Desativado',
+  conditionalTag: 'Condicional',
+  configuration: 'Configuração',
+  condition: 'Condição',
+  cordis: 'Status no Cordis',
+  unobserved: 'Não montado',
+  pending: 'Aguardando dependências',
+  loadingPhase: 'Carregando',
+  active: 'Montado',
+  failed: 'Falha ao montar',
+  unloading: 'Descarregando',
+} satisfies Record<PluginInventoryLocaleKey, string>

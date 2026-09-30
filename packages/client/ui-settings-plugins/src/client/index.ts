@@ -27,7 +27,7 @@ import type { PluginsSettingsSectionInjected, PluginsSettingsTabEntry } from './
 import { AGENT_LOOP_NS, AgentLoopCardController } from './agent-loop-card-controller.ts'
 import { SHELL_NS, BashCardController } from './bash-card-controller.ts'
 import { ConfigurablePluginsTabController } from './tab-store.ts'
-import { en } from './locales.ts'
+import { en, pt } from './locales.ts'
 
 export type { PluginsSettingsSectionInjected, PluginsSettingsSectionProps } from './PluginsSettingsSection.tsx'
 export type { ConfigurablePluginsTabProps } from './ConfigurablePluginsTab.tsx'
@@ -53,7 +53,7 @@ export const inject = ['slots', 'locale', 'remote', 'settingsScope']
  */
 export function apply(ctx: ClientContext): void {
   const t = ctx.locale.bind(NS)
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-settings-plugins: section dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-settings-plugins: section dictionaries')
 
   const bash = new BashCardController(ctx.settingsScope.bind({ namespace: SHELL_NS }))
   const agentLoop = new AgentLoopCardController(ctx.settingsScope.bind({ namespace: AGENT_LOOP_NS }))

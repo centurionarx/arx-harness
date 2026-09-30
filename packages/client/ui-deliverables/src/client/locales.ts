@@ -13,3 +13,12 @@ export const en = {
 
 /** Union of this namespace's dictionary keys. */
 export type DeliverablesKey = keyof typeof en
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'produced.label': 'Produzidos',
+  'produced.moreOne': '+ 1 arquivo',
+  'produced.more': '+ {count} arquivos',
+  'produced.open': 'Abrir {name}',
+  'produced.showInFolder': 'Mostrar na pasta',
+} satisfies Record<DeliverablesKey, string>

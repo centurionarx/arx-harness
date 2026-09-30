@@ -49,12 +49,13 @@ function cardShape(root: Element): string {
 /**
  * Open the fixture session, expand the grep turn's collapsed row, and return
  * the row once its search card has mounted.
+ * @param sessionsTree - the session tree's accessible name in the page's locale.
  * @returns the grep tool row, holding the card and its recovery footer.
  */
-async function openGrepCard(): Promise<Element> {
+async function openGrepCard(sessionsTree: string): Promise<Element> {
   mountAssembledApp()
 
-  const tree = await screen.findByRole('tree', { name: 'Sessions' }, { timeout: 10_000 })
+  const tree = await screen.findByRole('tree', { name: sessionsTree }, { timeout: 10_000 })
   fireEvent.click(await within(tree).findByText('Fixture history session'))
   // Wait for chat content to reach the fixture's later turns (the bash sample
   // is turn 66, the grep card turn 67).
@@ -94,12 +95,12 @@ async function pinShape(shape: string, expected: string): Promise<void> {
 
 describe('assembled search card', () => {
   it('renders the grep card, its truncation summary, and its capped head/tail slice from the built bundles', async () => {
-    await pinShape(cardShape(await openGrepCard()), EXPECTED)
+    await pinShape(cardShape(await openGrepCard('Sessions')), EXPECTED)
   })
 
   it('renders the card chrome in Brazilian Portuguese for a browser that asks for it', async () => {
     Object.defineProperty(navigator, 'languages', { value: ['pt-BR'], configurable: true })
     Object.defineProperty(navigator, 'language', { value: 'pt-BR', configurable: true })
-    await pinShape(cardShape(await openGrepCard()), EXPECTED_PT)
+    await pinShape(cardShape(await openGrepCard('Sessões')), EXPECTED_PT)
   })
 })

@@ -16,3 +16,19 @@ export const en = {
 } satisfies Record<string, string>
 /** Project dictionary key vocabulary. */
 export type ProjectLocaleKey = keyof typeof en
+/** Brazilian Portuguese copy of the project workspace. */
+export const pt = {
+  title: 'Projetos', close: 'Fechar', refresh: 'Atualizar', loading: 'Carregando…',
+  empty: 'Crie um projeto para organizar planos, prompts e evidências de execução.',
+  name: 'Nome do projeto', workspace: 'Workspace', create: 'Criar projeto',
+  select: 'Escolha um projeto', plan: 'Plano', summary: 'Resumo do plano',
+  items: 'Título da tarefa', criteria: 'Critérios de aceite (um por linha)',
+  addTask: 'Adicionar tarefa', removeTask: 'Remover tarefa', dependencies: 'Depende de',
+  savePlan: 'Salvar nova revisão do plano', approve: 'Aprovar esta revisão',
+  saveBeforeApproval: 'Salve suas alterações como uma nova revisão antes de aprovar este plano.',
+  approved: 'Revisão aprovada', revision: 'Revisão', prompts: 'Biblioteca de prompts',
+  promptName: 'Nome do prompt', template: 'Conteúdo do prompt', savePrompt: 'Salvar revisão do prompt',
+  newPrompt: 'Novo prompt', tasks: 'Evidências de execução', noTasks: 'Nenhuma execução de tarefa registrada.',
+  openSession: 'Abrir execução', workflows: 'Execuções de workflow', noRuns: 'Nenhuma execução de workflow registrada.',
+  history: 'Histórico do plano', pending: 'Aguardando aprovação', stale: 'Recarregue o projeto antes de repetir uma alteração conflitante.',
+} satisfies Record<ProjectLocaleKey, string>

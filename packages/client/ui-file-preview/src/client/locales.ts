@@ -7,3 +7,10 @@ export const en = {
 }
 /** Localized file-preview copy keys. */
 export type PreviewKey = keyof typeof en
+/** Brazilian Portuguese document preview strings. */
+export const pt = {
+  pdfLimited: 'Mostrando as 10 primeiras páginas. Abra no aplicativo do sistema para ver o documento inteiro.',
+  pdfFailed: 'Não foi possível renderizar este PDF. Abra-o no aplicativo do sistema para examiná-lo.',
+  loading: 'Carregando a prévia…', failed: 'Não foi possível carregar a prévia.', current: 'Conteúdo atual do arquivo',
+  native: 'Abrir no aplicativo do sistema', refresh: 'Atualizar', pdf: 'Prévia do PDF', html: 'Prévia do HTML',
+} satisfies Record<PreviewKey, string>

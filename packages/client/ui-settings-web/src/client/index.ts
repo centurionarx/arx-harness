@@ -17,7 +17,7 @@ import type {} from '@arx-ai/arx-api-remotes/client'
 import { WebSection } from './WebSection.tsx'
 import type { WebSectionInjected } from './WebSection.tsx'
 import { WebSettingsStore } from './store.ts'
-import { en, type WebKey } from './locales.ts'
+import { en, pt, type WebKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -57,7 +57,7 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-settings-web: copy dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-settings-web: copy dictionaries')
 
   const connection = ctx.get('connection') as ConnectionHandle
   const controller = new WebSettingsStore(connection.api, ctx.settingsScope.describe())
