@@ -99,7 +99,9 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
       '    disposeGraceMs: 500',
       "- name: '@arx-ai/arx-tool-pwsh-persistent'",
       '  config:',
-      '    timeoutMs: 20000',
+      // Streaming 12,050 lines through ConPTY can take over 20 s on a Windows
+      // runner shared with the coverage partitions.
+      '    timeoutMs: 60000',
       '',
     ].join('\n'))
 
@@ -165,5 +167,5 @@ describe.skipIf(!hasPwsh)('persistent pwsh through a real cordis.yml Loader comp
     const exited = text(await execute('exit', 'exit'))
     expect(exited).toContain('next pwsh call starts from the workspace')
     expect(text(await execute('after-exit', 'Write-Output "$PWD"'))).toBe(root)
-  }, 60_000)
+  }, 120_000)
 })
