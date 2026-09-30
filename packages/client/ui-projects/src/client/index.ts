@@ -4,7 +4,7 @@ import type {} from '@arx-ai/arx-api-remotes/client'
 import type {} from '@arx-ai/arx-client-locale/client'
 import type {} from '@arx-ai/arx-client-ui-sidebar/client'
 import { ProjectsEntry, type ProjectsInjected } from './ProjectsEntry.tsx'
-import { en, type ProjectLocaleKey } from './locales.ts'
+import { en, pt, type ProjectLocaleKey } from './locales.ts'
 
 declare module '@arx-ai/arx-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -18,7 +18,7 @@ export const inject = ['slots', 'locale', 'remote', 'remote.projects', 'sessions
 
 /** Mount the project action when the sidebar declares its action seat. */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register('projects', { en }), 'ui-projects: dictionaries')
+  ctx.effect(() => ctx.locale.register('projects', { en, pt }), 'ui-projects: dictionaries')
   const unwrap = async <T>(pending: Promise<{ ok: true; value: T } | { ok: false; error: { message: string } }>): Promise<T> => {
     const result = await pending
     if (!result.ok) throw new Error(result.error.message)

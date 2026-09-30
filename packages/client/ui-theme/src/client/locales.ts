@@ -9,3 +9,11 @@ export const en = {
   'appearance.dark': 'Dark',
   'appearance.system': 'System',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'appearance.title': 'Aparência',
+  'appearance.light': 'Claro',
+  'appearance.dark': 'Escuro',
+  'appearance.system': 'Sistema',
+} satisfies Record<ThemeKey, string>

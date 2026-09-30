@@ -156,16 +156,54 @@ describe('directory-picker-browse client half', () => {
     }
   })
 
-  it('registers the dialog dictionary and binds this package namespace', async () => {
+  it('fails loudly and squats nothing when a rival already owns the namespace pt slot', async () => {
+    const b = await bench()
+    b.declare()
+    const locale = b.ctx.get('locale') as LocaleRuntime
+    const disposeRival = locale.register('directory-browser', 'pt', { 'browser.title': 'rival' })
+    const rejections: unknown[] = []
+    const onUnhandled = (reason: unknown): void => { rejections.push(reason) }
+    // cordis re-raises the apply throw as a late rejection (installFailLoud's contract).
+    process.on('unhandledRejection', onUnhandled)
+    try {
+      const fiber = b.ctx.plugin({ inject: [...inject], apply })
+      await expect(fiber.await()).rejects.toThrow(/already has locale/)
+      // The English registration was removed before the rethrow: a fresh
+      // registrant owns it (a squatted slot throws).
+      const disposeFresh = locale.register('directory-browser', 'en', { 'browser.title': 'idle' })
+      disposeFresh()
+      disposeRival()
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 0))
+      process.off('unhandledRejection', onUnhandled)
+    }
+  })
+
+  it('registers the dialog dictionaries and binds this package namespace', async () => {
     const b = await bench()
     b.declare()
     await b.ctx.plugin({ inject: [...inject], apply }).await()
     const entry = b.slots.entries(HOLES[0])[0]!
     const injected = (entry.inject as () => { t: (key: string) => string })()
-    // en is the only shipped locale.
     expect(injected.t('browser.title')).toBe('Select Workspace Directory')
     expect(injected.t('browser.newFolder')).toBe('New folder')
     expect(injected.t('browser.showHidden')).toBe('Show hidden files')
+    ;(b.ctx.get('locale') as LocaleRuntime).setLocale('pt')
+    expect(injected.t('browser.title')).toBe('Selecionar a pasta do workspace')
+    expect(injected.t('browser.newFolder')).toBe('Nova pasta')
+    expect(injected.t('browser.showHidden')).toBe('Mostrar arquivos ocultos')
+  })
+
+  it('removes both dictionaries when the plugin is disposed', async () => {
+    const b = await bench()
+    b.declare()
+    const fiber = b.ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    await fiber.dispose()
+    const locale = b.ctx.get('locale') as LocaleRuntime
+    // Free slots: registering either locale again does not throw.
+    locale.register('directory-browser', 'en', { 'browser.title': 'next' })()
+    locale.register('directory-browser', 'pt', { 'browser.title': 'next' })()
   })
 
   it('drives the injected browse calls through the hole entry', async () => {
