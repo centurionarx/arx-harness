@@ -8,7 +8,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { credentialRef } from '@arx-ai/arx-credentials'
-import { withFileLock } from '@arx-ai/arx-atomic-write'
+import { withFileLock, writeFileAtomic } from '@arx-ai/arx-atomic-write'
 import { LocalCredentialProvider, renderFlatLayoutMigration } from '../src/index.ts'
 
 /** Credential documents are seeded owner-only, exactly as the provider creates them. */
@@ -106,9 +106,11 @@ describe('flat-layout boot migration', () => {
     })
     await holding
     // The boot sees the flat text, then waits for the lock; the "other
-    // process" completes the migration in the meantime.
+    // process" completes the migration in the meantime. It writes atomically,
+    // as the provider's own migration does, so the boot's unlocked first read
+    // finds the flat text or the winner and never a truncated document.
     const booting = boot({ path, watch: false })
-    await writeCredentials(path, winner)
+    await writeFileAtomic(path, winner, { mode: 0o600, dirMode: 0o700 })
     release()
     await holder
     const ctx = await booting
