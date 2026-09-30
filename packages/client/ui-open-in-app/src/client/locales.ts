@@ -50,6 +50,50 @@ export const en = {
 /** Key domain of the `open-in-app` namespace. */
 export type OpenInAppKey = keyof typeof en
 
+/** Brazilian Portuguese copy; application brand names stay as their vendors write them. */
+export const pt = {
+  'open.title': 'Abrir em {app}',
+  'open.more': 'Outras formas de abrir',
+  'open.default': '{app} (padrão)',
+  'open.error': 'Não foi possível abrir. Tente de novo.',
+  'app.finder': 'Finder',
+  'app.explorer': 'Explorador de Arquivos',
+  'app.filemanager': 'Arquivos',
+  'app.cursor': 'Cursor',
+  'app.vscode': 'VS Code',
+  'app.vscodeinsiders': 'VS Code Insiders',
+  'app.windsurf': 'Windsurf',
+  'app.zed': 'Zed',
+  'app.sublimetext': 'Sublime Text',
+  'app.xcode': 'Xcode',
+  'app.androidstudio': 'Android Studio',
+  'app.intellij': 'IntelliJ IDEA',
+  'app.pycharm': 'PyCharm',
+  'app.webstorm': 'WebStorm',
+  'app.phpstorm': 'PhpStorm',
+  'app.goland': 'GoLand',
+  'app.rider': 'Rider',
+  'app.rustrover': 'RustRover',
+  'app.fork': 'Fork',
+  'app.sourcetree': 'Sourcetree',
+  'app.github': 'GitHub Desktop',
+  'app.tower': 'Tower',
+  'app.gitkraken': 'GitKraken',
+  'app.smartgit': 'SmartGit',
+  'app.sublimemerge': 'Sublime Merge',
+  'app.ghostty': 'Ghostty',
+  'app.warp': 'Warp',
+  'app.iterm': 'iTerm2',
+  'app.kitty': 'kitty',
+  'app.terminal': 'Terminal',
+  'app.windowsterminal': 'Terminal do Windows',
+  'app.powershell': 'Windows PowerShell',
+  'app.pwsh': 'PowerShell 7',
+  'app.gitbash': 'Git Bash',
+  'app.gnometerminal': 'Terminal do GNOME',
+  'app.konsole': 'Konsole',
+} satisfies Record<OpenInAppKey, string>
+
 /**
  * The dictionary key naming one host catalog id.
  * @param id - catalog id from the host's application list.

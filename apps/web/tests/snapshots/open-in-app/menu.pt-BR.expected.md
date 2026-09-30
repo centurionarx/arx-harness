@@ -1,0 +1,7 @@
+- menu:
+  - menuitem "Arquivos (padrão)":
+    - img
+    - text: Arquivos (padrão)
+  - menuitem "VS Code":
+    - img
+    - text: VS Code

@@ -25,6 +25,8 @@ import { newEnglishPage, saveFailureShot } from './support.ts'
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/open-in-app', import.meta.url))
 const BUTTON_EXPECTED = join(SNAPSHOT_DIR, 'button.expected.md')
 const MENU_EXPECTED = join(SNAPSHOT_DIR, 'menu.expected.md')
+const BUTTON_PT_EXPECTED = join(SNAPSHOT_DIR, 'button.pt-BR.expected.md')
+const MENU_PT_EXPECTED = join(SNAPSHOT_DIR, 'menu.pt-BR.expected.md')
 const MODE = webSnapshotMode()
 const SEED_ID = 'open-in-app-web-e2e'
 
@@ -53,6 +55,23 @@ async function standIn(bin: string, name: string): Promise<void> {
     '',
   ].join('\n'))
   await chmod(path, 0o755)
+}
+
+/**
+ * Load the app in a page and open the seeded session, so its header renders.
+ * The sidebar tree collapses workspace groups by default: expand the group
+ * row, then open the session.
+ * @param target - a page on a fresh browser context.
+ */
+async function openSeededSession(target: Page): Promise<void> {
+  await target.goto(scaffold.baseUrl, { waitUntil: 'load' })
+  await target.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+  const groupRow = target.locator('[role="treeitem"]').first()
+  await groupRow.waitFor({ timeout: 30_000 })
+  await groupRow.click()
+  const sessionRow = target.locator('[role="treeitem"]').nth(1)
+  await sessionRow.waitFor({ timeout: 30_000 })
+  await sessionRow.click()
 }
 
 /** The launches recorded so far, oldest first. */
@@ -92,16 +111,7 @@ describe.skipIf(process.platform === 'win32')('web e2e: open-in-app split button
     }).log, SEED_ID)
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
-    await page.goto(scaffold.baseUrl, { waitUntil: 'load' })
-    await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-    // The sidebar tree collapses workspace groups by default: expand the group
-    // row, then open the seeded session so its header renders.
-    const groupRow = page.locator('[role="treeitem"]').first()
-    await groupRow.waitFor({ timeout: 30_000 })
-    await groupRow.click()
-    const sessionRow = page.locator('[role="treeitem"]').nth(1)
-    await sessionRow.waitFor({ timeout: 30_000 })
-    await sessionRow.click()
+    await openSeededSession(page)
   }, 120_000)
 
   afterAll(async () => {
@@ -147,6 +157,26 @@ describe.skipIf(process.platform === 'win32')('web e2e: open-in-app split button
     } catch (error) {
       await saveFailureShot(page, 'web-e2e-open-in-app')
       throw error
+    }
+  })
+
+  it('names the split button and its applications in Portuguese for a Portuguese page', async () => {
+    const ptPage = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: 'pt-BR' })
+    try {
+      await openSeededSession(ptPage)
+      // The previous case's last pick, the file manager, is the default the main half opens.
+      await ptPage.getByRole('button', { name: 'Abrir em Arquivos', exact: true }).waitFor({ timeout: 60_000 })
+      await compareOrRefreshGolden(
+        BUTTON_PT_EXPECTED, await captureStableAria(ptPage, '[data-open-in-app]', scaffold.workspaceCwd), MODE)
+      await ptPage.getByRole('button', { name: 'Outras formas de abrir', exact: true }).click()
+      await ptPage.getByRole('menu').waitFor()
+      await compareOrRefreshGolden(
+        MENU_PT_EXPECTED, await captureStableAria(ptPage, '[role="menu"]', scaffold.workspaceCwd), MODE)
+    } catch (error) {
+      await saveFailureShot(ptPage, 'web-e2e-open-in-app-pt')
+      throw error
+    } finally {
+      await ptPage.close()
     }
   })
 })

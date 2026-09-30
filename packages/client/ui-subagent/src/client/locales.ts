@@ -2,7 +2,7 @@
 
 /** Dictionary namespace owned by this plugin. */
 export const NS = 'subagent'
-/** English dictionary, key-identical to the Chinese source of truth. */
+/** English dictionary, the source of the namespace's key set. */
 export const en = {
   'diagnostic.corrupt': 'corrupted session record',
   'diagnostic.unsupported': 'unsupported subagent record version',
@@ -42,3 +42,41 @@ export const en = {
 
 /** Key domain of the `subagent` namespace (en is the source of truth). */
 export type SubagentKey = keyof typeof en
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'diagnostic.corrupt': 'registro de sessão corrompido',
+  'diagnostic.unsupported': 'versão de registro de subagent não suportada',
+  'diagnostic.unavailable': 'registro de sessão indisponível no momento',
+  'duration.seconds': '{seconds}s',
+  'duration.minutes': '{minutes}min {seconds}s',
+  'duration.hours': '{hours}h {minutes}min {seconds}s',
+  'duration.days': '{days}d',
+  'duration.daysHours': '{days}d {hours}h',
+  'duration.months': '~{months}m',
+  'duration.monthsDays': '~{months}m {days}d',
+  'duration.years': '~{years}a',
+  'duration.yearsMonths': '~{years}a {months}m',
+  'duration.exactDays': '{days}d {hours}h {minutes}min {seconds}s',
+  'duration.exactTitle': 'Duração ativa total: {duration}',
+  'loading.label': 'Carregando os subagents…',
+  'loading.aria': 'Carregando os subagents',
+  'load.error': 'Não foi possível carregar os subagents',
+  'retry': 'Tentar de novo',
+  'mode.oneShot': 'execução única',
+  'mode.continuable': 'continuável',
+  'activity.running': 'em execução',
+  'activity.inactive': 'parado',
+  'branch.collapse': 'Recolher os descendentes de {label}',
+  'branch.expand': 'Expandir os descendentes de {label}',
+  'count.total.one': '{count} subagent',
+  'count.total.other': '{count} subagents',
+  'count.running.one': '{count} subagent em execução',
+  'count.running.other': '{count} subagents em execução',
+  'switcher.aria': 'Trocar de subagent: {title}',
+  'tree.aria': 'Sessões dos subagents',
+  'readonly.oneShot.title': 'Registro de subagent de execução única',
+  'readonly.title': 'Este subagent está somente leitura por enquanto',
+  'readonly.oneShot.body': 'Tarefas de execução única não aceitam continuações; revise aqui o registro completo da execução.',
+  'readonly.body': 'A sessão pai está offline; abra-a de novo para continuar enviando mensagens.',
+} satisfies Record<SubagentKey, string>

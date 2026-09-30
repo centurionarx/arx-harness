@@ -47,7 +47,6 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-input-trigger/src/client/locales.ts::en',
   'packages/client/ui-jobs/src/client/locales.ts::en',
   'packages/client/ui-message-feedback/src/client/locales.ts::en',
-  'packages/client/ui-open-in-app/src/client/locales.ts::en',
   'packages/client/ui-plan/src/client/locales.ts::en',
   'packages/client/ui-projects/src/client/locales.ts::en',
   'packages/client/ui-reference/src/client/locales.ts::en',
@@ -58,13 +57,9 @@ const ENGLISH_ONLY: ReadonlySet<string> = new Set([
   'packages/client/ui-settings-web/src/client/locales.ts::en',
   'packages/client/ui-sidebar/src/client/locales.ts::en',
   'packages/client/ui-skill/src/client/locales.ts::en',
-  'packages/client/ui-subagent/src/client/locales.ts::en',
   'packages/client/ui-theme/src/client/locales.ts::en',
-  'packages/client/ui-trajectory/src/client/locales.ts::en',
   'packages/client/ui-turn-outline/src/client/locales.ts::en',
-  'packages/client/ui-workflow-run/src/client/locales.ts::en',
   'packages/client/ui-workspace/src/client/locales.ts::en',
-  'packages/extensions/ui-cordis/src/client/locales.ts::en',
   'packages/session-query/session-log-export/src/client/locales.ts::en',
 ])
 
