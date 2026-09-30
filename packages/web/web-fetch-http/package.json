@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-fetch-http",
   "description": "Anonymous public HTTP(S) fetch provider for the arx Harness web capability seam (ctx.web)",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "publishConfig": {
     "access": "public"
   },
