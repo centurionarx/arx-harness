@@ -1,6 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process'
 import {
-  chmodSync,
   existsSync,
   linkSync,
   mkdirSync,
@@ -22,6 +21,11 @@ const installer = fileURLToPath(new URL('./install-lefthook.mjs', import.meta.ur
 const pairingMergeDriver = 'scripts/merge-translation-pairing-driver.sh %O %A %B %P'
 const scriptsDirectory = fileURLToPath(new URL('.', import.meta.url))
 const tsxPackageDirectory = dirname(fileURLToPath(import.meta.resolve('tsx/package.json')))
+// The installer runs the entry its own `lefthook` dependency declares, so the
+// fake lefthook is installed at that path inside each fixture checkout.
+const lefthookEntry = (JSON.parse(
+  readFileSync(fileURLToPath(import.meta.resolve('lefthook/package.json')), 'utf8'),
+) as { bin: { lefthook: string } }).bin.lefthook
 const fixtures: string[] = []
 // Multi-worktree cases spawn several Git and Node subprocesses; native Windows
 // coverage concurrency can delay them without changing installer behavior.
@@ -96,7 +100,7 @@ const delay = Number(process.env.ARX_TEST_LEFTHOOK_DELAY_MS ?? 0)
 if (delay > 0) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delay)
 const shouldFail = process.env.ARX_TEST_LEFTHOOK_FAIL === '1'
 if (!shouldFail) {
-  const binary = join(root, 'node_modules', '.bin', process.platform === 'win32' ? 'lefthook.cmd' : 'lefthook')
+  const binary = process.argv[1]
   const config = readFileSync(join(root, 'lefthook.yml'), 'utf8').trim()
   const hook = \`#!/bin/sh\\n# root=\${root}\\n# binary=\${binary}\\n# config=\${config}\\nexit 0\\n\`
   for (const name of ['pre-commit', 'pre-merge-commit', 'pre-push']) writeFileSync(join(hooksPath, name), hook, { mode: 0o755 })
@@ -111,19 +115,9 @@ if (shouldFail) process.exit(77)
 }
 
 function installFakeLefthook(root: string): void {
-  const binDirectory = join(root, 'node_modules/.bin')
-  mkdirSync(binDirectory, { recursive: true })
-  writeFileSync(join(binDirectory, 'fake-lefthook.mjs'), fakeLefthookSource())
-  if (process.platform === 'win32') {
-    writeFileSync(
-      join(binDirectory, 'lefthook.cmd'),
-      `@echo off\r\n"${process.execPath}" "%~dp0\\fake-lefthook.mjs" %*\r\n`,
-    )
-    return
-  }
-  const shim = join(binDirectory, 'lefthook')
-  writeFileSync(shim, `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-lefthook.mjs" "$@"\n`)
-  chmodSync(shim, 0o755)
+  const packageDirectory = join(root, 'node_modules/lefthook')
+  write(join(packageDirectory, 'package.json'), '{ "type": "module" }\n')
+  write(join(packageDirectory, lefthookEntry), fakeLefthookSource())
 }
 
 function installPairingProbeFixture(root: string): void {
@@ -252,6 +246,8 @@ describe('worktree-local Lefthook installer', { timeout: 30_000 }, () => {
     const linkedInstall = await runInstaller(fixture, fixture.linked)
     expect(mainInstall.status, mainInstall.stderr).toBe(0)
     expect(linkedInstall.status, linkedInstall.stderr).toBe(0)
+    // Node 24 and later report an argument list spawned through a shell.
+    expect(`${mainInstall.stderr}${linkedInstall.stderr}`).not.toContain('DEP0190')
 
     const mainHooks = hooksPath(fixture, fixture.main)
     const linkedHooks = hooksPath(fixture, fixture.linked)

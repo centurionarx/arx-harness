@@ -552,14 +552,13 @@ function environmentWithoutCommandGitConfig() {
 }
 
 function runLefthook(root, lefthook) {
-  const args = ['install', '--force']
+  // Lefthook's JS entry runs under the current node on every platform: Windows
+  // spawns the `.cmd` shim only with shell:true, which concatenates the
+  // arguments unescaped and is deprecated for argument lists (DEP0190).
+  const args = [lefthook, 'install', '--force']
   const env = environmentWithoutCommandGitConfig()
-  // Node refuses to spawn Windows `.cmd` shims directly; the quoted path is
-  // re-parsed by cmd.exe, while POSIX can execute its extensionless shim.
-  const result = process.platform === 'win32'
-    ? spawnSync(`"${lefthook}"`, args, { cwd: root, env, stdio: 'inherit', shell: true })
-    : spawnSync(lefthook, args, { cwd: root, env, stdio: 'inherit' })
-  if (result.status !== 0) throw commandFailure(lefthook, args, result)
+  const result = spawnSync(process.execPath, args, { cwd: root, env, stdio: 'inherit' })
+  if (result.status !== 0) throw commandFailure(process.execPath, args, result)
 }
 
 function configSource(entry) {
@@ -694,8 +693,7 @@ async function main() {
   const probe = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
   if (probe.status !== 0) return
   const root = stripGitLineTerminator(probe.stdout)
-  const isWindows = process.platform === 'win32'
-  const lefthook = join(root, 'node_modules', '.bin', isWindows ? 'lefthook.cmd' : 'lefthook')
+  const lefthook = join(root, 'node_modules', 'lefthook', lefthookPackage.bin.lefthook)
   if (!existsSync(lefthook)) return
 
   assertSupportedGit(root)
