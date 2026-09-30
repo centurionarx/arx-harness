@@ -23,3 +23,13 @@ export const en = {
   'candidate.session': 'Session',
   'candidate.noCwd': '(no cwd)',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'section.files': 'Arquivos e pastas',
+  'section.sessions': 'Conversas das sessões',
+  'candidate.file': 'Arquivo',
+  'candidate.folder': 'Pasta',
+  'candidate.session': 'Sessão',
+  'candidate.noCwd': '(sem cwd)',
+} satisfies Record<ReferenceKey, string>

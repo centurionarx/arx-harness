@@ -14,3 +14,12 @@ export const en = {
   'loading': 'Loading…',
   'suggestions.aria': 'Trigger suggestions',
 } satisfies Record<string, string>
+
+/** Brazilian Portuguese dictionary. */
+export const pt = {
+  'command': 'Comandos',
+  'skill': 'Skills',
+  'subagent': 'Subagents',
+  'loading': 'Carregando…',
+  'suggestions.aria': 'Sugestões',
+} satisfies Record<MenuKey, string>

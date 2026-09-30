@@ -1,0 +1,7 @@
+- dialog "Sair do arx Harness?":
+  - heading "Sair do arx Harness?" [level=2]
+  - button "Fechar":
+    - img
+  - paragraph: O servidor para e todas as sessões conectadas se desconectam. Os logs das sessões ficam salvos, então elas continuam quando o servidor reiniciar.
+  - button "Cancelar"
+  - button "Parar o servidor"

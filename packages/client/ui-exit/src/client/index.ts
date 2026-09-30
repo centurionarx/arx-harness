@@ -13,7 +13,7 @@ import type {} from '@arx-ai/arx-client-ui-sidebar/client'
 import type {} from '@arx-ai/arx-client-locale/client'
 import type { ExitRowInjected } from './ExitRow.tsx'
 import { ExitRow } from './ExitRow.tsx'
-import { en, type ExitKey } from './locales.ts'
+import { en, pt, type ExitKey } from './locales.ts'
 
 export type { ExitRowInjected, ExitRowProps } from './ExitRow.tsx'
 export type { ExitKey } from './locales.ts'
@@ -37,7 +37,7 @@ export const inject = ['slots', 'locale', 'connection']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { en }), 'ui-exit: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { en, pt }), 'ui-exit: dictionaries')
   const connection = ctx.get('connection') as ConnectionHandle
   const injected = (): ExitRowInjected => ({
     stop: async () => {

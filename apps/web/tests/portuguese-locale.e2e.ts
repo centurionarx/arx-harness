@@ -2,8 +2,9 @@
 // composer and its pickers in Portuguese. The mode menu names the shipped
 // presets, the model menu labels the effort levels the model declares, and the
 // access menu names the shipped permission presets, all from the `pt`
-// dictionaries; `<html lang>` names the regional variant. The workspace dialog
-// ships English only, so connecting a workspace uses its English labels.
+// dictionaries; `<html lang>` names the regional variant. The command menu
+// and the exit confirmation read Portuguese too. The workspace dialog ships
+// English only, so connecting a workspace uses its English labels.
 // Zero model calls: no replay fixture mounts, so a stray stream fails loud.
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -129,7 +130,28 @@ describe.skipIf(MODE === 'record')('web e2e: the composer and its pickers in Bra
     expect(tripwire.warnings).toEqual([])
   })
 
+  it('opens the command menu and the exit confirmation in Portuguese', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-portuguese-commands'))
+    await page.getByRole('button', { name: 'Comandos' }).click()
+    await page.getByRole('listbox', { name: 'Sugestões' }).waitFor({ timeout: 10_000 })
+    const menu = await captureStableAria(page, '[role="listbox"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'command-menu.expected.md'), menu, MODE)
+    expect(menu).toContain('text: Comandos')
+    await page.locator('textarea').first().press('Escape')
+    await page.getByRole('button', { name: 'Sair', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: 'Sair do arx Harness?' })
+    await dialog.waitFor({ timeout: 10_000 })
+    const confirm = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
+    await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'exit-confirm.expected.md'), confirm, MODE)
+    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    await expect.poll(() => dialog.count()).toBe(0)
+    expect(tripwire.pageErrors).toEqual([])
+    expect(tripwire.warnings).toEqual([])
+  })
+
   it('keeps its snapshot inventory closed', async () => {
-    await assertFixtureInventory(SNAPSHOT_DIR, ['access.expected.md', 'effort.expected.md', 'modes.expected.md'])
+    await assertFixtureInventory(SNAPSHOT_DIR, [
+      'access.expected.md', 'command-menu.expected.md', 'effort.expected.md', 'exit-confirm.expected.md', 'modes.expected.md',
+    ])
   })
 })
