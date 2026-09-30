@@ -510,8 +510,10 @@ describe('real @openai/codex 0.147.0 product', () => {
     const sideEffect = 'bypass-side-effect'
     const { harness, fixture } = await realHarness((workspace): readonly ResponsesBehavior[] => {
       const target = join(workspace, sideEffect)
+      // Codex already runs the command through PowerShell on Windows; a nested
+      // powershell.exe would pay a second interpreter start.
       const command = process.platform === 'win32'
-        ? `powershell.exe -NoLogo -NoProfile -NonInteractive -Command "Set-Content -LiteralPath '${target.replaceAll("'", "''")}' -Value 'bypass' -NoNewline"`
+        ? `Set-Content -LiteralPath '${target.replaceAll("'", "''")}' -Value 'bypass' -NoNewline`
         : `printf bypass > ${JSON.stringify(target)}`
       const commandCalls = [
         {
