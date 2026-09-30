@@ -714,81 +714,52 @@ describe('runScenario', () => {
     expect(result.sessionLogs[0]?.content).toContain('"turn":3')
   })
 
-  it('waitForTurnStart rejects missing, earlier, and malformed durable turns', { timeout: 20_000 }, async () => {
-    const missing = await scenario({})
-    await expect(runScenario(
-      { steps: [...boot, { op: 'waitForTurnStart', timeoutMs: 200 }] },
-      { agent: AGENT, mode: 'replay', fixtureFile: missing.fixtureFile },
-    )).rejects.toThrow(/did not persist turn\/start within 200ms/)
-
-    const earlier = await scenario({
+  const sessionHeaderLine = { type: 'session', version: 0, id: '{{SID}}', createdAt: 1, delegationDepth: 0 }
+  // One scenario process per case, like the neighboring waits, so each case
+  // owns its budget on a contended runner.
+  it.each<{ name: string; turns?: object[]; wait: InputStep; error: RegExp | string }>([
+    {
+      name: 'a missing log',
+      wait: { op: 'waitForTurnStart', timeoutMs: 200 },
+      error: /did not persist turn\/start within 200ms/,
+    },
+    {
+      name: 'an earlier open turn',
+      turns: [{ type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } }],
+      wait: { op: 'waitForTurnStart', minimumTurn: 3, timeoutMs: 200 },
+      error: /turn\/start at or beyond turn 3 within 200ms/,
+    },
+    {
+      name: 'a closed turn',
+      turns: [
+        { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
+        { type: 'turn/end', seq: 1, time: 2, data: { turn: 1, reason: { kind: 'stop' } } },
+      ],
+      wait: { op: 'waitForTurnStart', timeoutMs: 200 },
+      error: /did not persist turn\/start within 200ms/,
+    },
+    {
+      name: 'a turn/start without a turn number',
+      turns: [{ type: 'turn/start', seq: 0, time: 1, data: {} }],
+      wait: { op: 'waitForTurnStart' },
+      error: 'invalid persisted turn/start record',
+    },
+    {
+      name: 'a turn/start with turn 0',
+      turns: [{ type: 'turn/start', seq: 0, time: 1, data: { turn: 0 } }],
+      wait: { op: 'waitForTurnStart' },
+      error: 'invalid persisted turn/start record',
+    },
+  ])('waitForTurnStart rejects $name', { timeout: 20_000 }, async ({ turns, wait, error }) => {
+    const { fixtureFile } = await scenario(turns === undefined ? {} : {
       prompt: 'hang-until-cancel',
       persistLogsOnCancel: true,
-      logs: [{
-        file: 'project/main/session.jsonl',
-        lines: [
-          { type: 'session', version: 0, id: '{{SID}}', createdAt: 1, delegationDepth: 0 },
-          { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
-        ],
-      }],
+      logs: [{ file: 'project/main/session.jsonl', lines: [sessionHeaderLine, ...turns] }],
     })
     await expect(runScenario(
-      {
-        steps: [
-          ...boot,
-          { op: 'promptAndCancel', text: 'hang' },
-          { op: 'waitForTurnStart', minimumTurn: 3, timeoutMs: 200 },
-        ],
-      },
-      { agent: AGENT, mode: 'replay', fixtureFile: earlier.fixtureFile },
-    )).rejects.toThrow(/turn\/start at or beyond turn 3 within 200ms/)
-
-    const closed = await scenario({
-      prompt: 'hang-until-cancel',
-      persistLogsOnCancel: true,
-      logs: [{
-        file: 'project/main/session.jsonl',
-        lines: [
-          { type: 'session', version: 0, id: '{{SID}}', createdAt: 1, delegationDepth: 0 },
-          { type: 'turn/start', seq: 0, time: 1, data: { turn: 1 } },
-          { type: 'turn/end', seq: 1, time: 2, data: { turn: 1, reason: { kind: 'stop' } } },
-        ],
-      }],
-    })
-    await expect(runScenario(
-      {
-        steps: [
-          ...boot,
-          { op: 'promptAndCancel', text: 'hang' },
-          { op: 'waitForTurnStart', timeoutMs: 200 },
-        ],
-      },
-      { agent: AGENT, mode: 'replay', fixtureFile: closed.fixtureFile },
-    )).rejects.toThrow(/did not persist turn\/start within 200ms/)
-
-    for (const turn of [undefined, 0]) {
-      const malformed = await scenario({
-        prompt: 'hang-until-cancel',
-        persistLogsOnCancel: true,
-        logs: [{
-          file: 'project/main/session.jsonl',
-          lines: [
-            { type: 'session', version: 0, id: '{{SID}}', createdAt: 1, delegationDepth: 0 },
-            { type: 'turn/start', seq: 0, time: 1, data: turn === undefined ? {} : { turn } },
-          ],
-        }],
-      })
-      await expect(runScenario(
-        {
-          steps: [
-            ...boot,
-            { op: 'promptAndCancel', text: 'hang' },
-            { op: 'waitForTurnStart' },
-          ],
-        },
-        { agent: AGENT, mode: 'replay', fixtureFile: malformed.fixtureFile },
-      )).rejects.toThrow('invalid persisted turn/start record')
-    }
+      { steps: [...boot, ...turns === undefined ? [] : [{ op: 'promptAndCancel', text: 'hang' } as const], wait] },
+      { agent: AGENT, mode: 'replay', fixtureFile },
+    )).rejects.toThrow(error)
   })
 
   it.each([1, 2])('waitForTurnEnd requires durable turn 2 even when turn %i already closed', { timeout: 20_000 }, async (turn) => {
