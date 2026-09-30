@@ -153,7 +153,13 @@ async function verifyBackend(
     expect(await mounted.persistence.inspect(header.id), name).toEqual({ meta: header, events })
     expect(await mounted.persistence.list(), name).toEqual([header])
     const revision = (await mounted.persistence.listSnapshots())[0]?.revision
-    for (let fromSeq = 0; fromSeq <= events.length + 1; fromSeq += 1) {
+    // SQLite seeks each suffix through packed rows, so every start is a
+    // distinct read. JSONL has no seek read: every start re-reads the whole
+    // log and slices it, so its first and past-the-end starts cover it.
+    const fromSeqs = name === 'sqlite'
+      ? Array.from({ length: events.length + 2 }, (_, fromSeq) => fromSeq)
+      : [0, events.length + 1]
+    for (const fromSeq of fromSeqs) {
       expect((await mounted.persistence.readFrom(header.id, fromSeq)).events, `${name} seq ${fromSeq}`)
         .toEqual(events.slice(fromSeq))
     }
