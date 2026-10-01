@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-jobs",
   "description": "Background job registry (ctx.jobs) for the arx Harness — shared ids, owner isolation, polling, cancellation, and completion listeners for long-running tool work",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "publishConfig": {
     "access": "public"
   },
