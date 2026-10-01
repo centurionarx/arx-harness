@@ -48,7 +48,7 @@ A standalone driver reproduces it outside Vitest. It spawns the engine's unbuilt
 
 From Node 24.19, `cjs_lexer::Parse` skips an export name it cannot convert instead of calling `ToLocalChecked`, so the lexer abort recorded in [native Windows CI](../process/2026-08-08-native-windows-pull-request-ci.md) is not this crash, and on Node 24 tsx installs in-thread hooks through `module.registerHooks`, so no loader-hooks thread is nested in the worker. The crash needs a worker whose modules tsx loaded and a termination shortly after loading finished; tsx's disk cache and in-flight file I/O do not explain it. The same drivers, about 2 900 terminations, and 32 spec runs on Linux with Node 22 and 24 never crashed.
 
-Every test in the spec ends in `dispose()`, which terminates the worker soon after a short script settles, inside that window. No test can wait on the internal work that closes it, and termination belongs to the engine, so the remedy is outside this change; see Deferred.
+Every test in the spec ends in `dispose()`, which terminates the worker soon after a short script settles, inside that window. No test can wait on the internal work that closes it, and termination belongs to the engine, so the remedy is outside this change; see Related.
 
 ## Alternatives considered
 
@@ -68,6 +68,6 @@ The randomized property no longer checks `list()` or revision stability inside e
 
 The measurement branch `claude/diag-windows-flakes` carried the temporary workflow and scripts; nothing from it is part of this change.
 
-## Deferred
+## Related
 
-The worker-thread spec can still lose its Vitest fork on Windows at the rate measured above, and a source-mode workflow run on Windows can crash its host process the same way. Removing it requires the engine not to terminate a just-loaded unbuilt worker, or the unbuilt worker to load without tsx hooks; both change `packages/workflow/workflow-worker-thread/src/host.ts` and wait on a separate decision.
+[The source-mode workflow worker runs a bundle](../architecture/2026-10-01-source-workflow-worker-runs-a-bundle.md): the engine spawns an esbuild bundle without tsx hooks, which removes the fork exit measured here. The bundle crashed in none of 6 000 terminations and none of 226 looped spec runs on `windows-2025`.
