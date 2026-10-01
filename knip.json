@@ -456,7 +456,9 @@
     "packages/workflow/workflow-worker-thread": {
       "entry": [
         "tests/**/*.spec.ts",
-        "tests/**/*.e2e.ts"
+        "tests/**/*.e2e.ts",
+        "tests/fixtures/entry/reports-url.ts",
+        "tests/fixtures/entry/reads-dirname.ts"
       ],
       "project": [
         "src/**/*.ts",
