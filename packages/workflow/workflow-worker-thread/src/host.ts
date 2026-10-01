@@ -6,10 +6,7 @@
  * @module @arx-ai/arx-workflow-worker-thread/host
  */
 
-import { tmpdir } from 'node:os'
 import { Worker } from 'node:worker_threads'
-import type { WorkerOptions } from 'node:worker_threads'
-import { fileURLToPath } from 'node:url'
 import type { Context } from '@arx-ai/cordis'
 import type { Agent } from '@arx-ai/arx-agent'
 import { assertNever } from '@arx-ai/arx-llm'
@@ -17,6 +14,7 @@ import { snapshotJsonValue } from '@arx-ai/arx-session'
 import type SubagentRuntime from '@arx-ai/arx-subagent'
 import type { SubagentRun } from '@arx-ai/arx-subagent'
 import type { WorkflowAgentEndInfo, WorkflowAgentInfo, WorkflowMeta, WorkflowResult, WorkflowRun, WorkflowRunId } from '@arx-ai/arx-workflow'
+import type { WorkerEntry } from './entry.ts'
 import { renderThrown } from './realm.ts'
 import type { ExecutionObserver } from './runtime.ts'
 import { HostToWorkerType, WorkerToHostType } from './protocol.ts'
@@ -27,67 +25,6 @@ import type { ChildResult, ChildStartRequest, WorkerInit } from './types.ts'
 interface ChildRecord {
   readonly run: SubagentRun
   disposal?: Promise<void>
-}
-
-/**
- * The scrubbed worker environment: no ambient credentials, no loader flags.
- * Windows derives `os.tmpdir()` from `TMP`/`TEMP` and falls back to the
- * literal relative path `undefined\temp` when the environment is empty, so
- * tsx's transform cache would land in a cwd-relative `undefined/temp`
- * directory; the host's real temp path (not a credential) is injected there.
- * The unbuilt shape additionally forwards `TSX_TSCONFIG_PATH` for path
- * resolution.
- * @param platform - host platform; overridable so tests exercise both peer arms.
- * @param tsconfigPath - the tsconfig pin to forward; only the unbuilt caller
- *   passes one, so the built worker never observes the host's pin.
- * @returns the scrubbed worker environment object.
- */
-export function workerSpawnEnv(
-  platform: NodeJS.Platform = process.platform,
-  tsconfigPath?: string,
-): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {}
-  if (platform === 'win32') {
-    const tmp = tmpdir()
-    env.TMP = tmp
-    env.TEMP = tmp
-  }
-  if (tsconfigPath !== undefined) env.TSX_TSCONFIG_PATH = tsconfigPath
-  return env
-}
-
-/**
- * Resolve a built worker bundle or an unbuilt bootstrap that installs both tsx
- * transforms inside the worker. Both shapes clear `execArgv` and the ambient
- * environment (the worker only sees the platform temp path and, unbuilt,
- * `TSX_TSCONFIG_PATH`).
- * @param init - the run payload, passed as `workerData`.
- * @returns the entry path or URL and the Worker options to spawn it with.
- */
-function resolveWorkerSpawn(init: WorkerInit): { entry: string | URL; options: WorkerOptions } {
-  /* v8 ignore next 3 -- the built-output arm: tests always run unbuilt (src/); the built-worker e2e exercises this shape for real */
-  if (!import.meta.url.endsWith('.ts')) {
-    return { entry: fileURLToPath(new URL('./worker.cjs', import.meta.url)), options: { workerData: init, env: workerSpawnEnv(), execArgv: [] } }
-  }
-  // Resolve tsx only for unbuilt consumers and install it before importing TS.
-  const workerEntry = new URL('./worker.ts', import.meta.url)
-  const tsxEsmApiEntry = import.meta.resolve('tsx/esm/api')
-  const tsxCjsApiEntry = import.meta.resolve('tsx/cjs/api')
-  const bootstrap = [
-    `import { register as registerEsm } from ${JSON.stringify(tsxEsmApiEntry)}`,
-    `import { register as registerCjs } from ${JSON.stringify(tsxCjsApiEntry)}`,
-    'registerCjs()',
-    'registerEsm()',
-    `await import(${JSON.stringify(workerEntry.href)})`,
-  ].join('\n')
-  return {
-    entry: new URL(`data:text/javascript,${encodeURIComponent(bootstrap)}`),
-    options: {
-      workerData: init,
-      env: workerSpawnEnv(undefined, process.env.TSX_TSCONFIG_PATH),
-      execArgv: [],
-    },
-  }
 }
 
 /**
@@ -135,6 +72,7 @@ export class WorkerRun implements WorkflowRun {
     readonly id: WorkflowRunId,
     readonly meta: WorkflowMeta,
     private readonly parent: Agent,
+    entry: WorkerEntry,
     init: WorkerInit,
     private readonly provider: string,
     private readonly disposeGraceMs: number,
@@ -144,9 +82,9 @@ export class WorkerRun implements WorkflowRun {
     this.result = new Promise<WorkflowResult>((resolve) => { this.settleResolve = resolve })
     // workerData rides the structured clone: args are plain JSON by the seam
     // contract, so the clone is total and doubles as the caller-isolation
-    // copy (a clone failure throws loud out of start()).
-    const { entry, options } = resolveWorkerSpawn(init)
-    this.worker = new Worker(entry, options)
+    // copy (a clone failure throws loud out of start()). The worker gets no
+    // ambient environment and none of the host's loader flags.
+    this.worker = new Worker(entry, { workerData: init, env: {}, execArgv: [] })
     this.worker.on('message', (message: WorkerToHostMessage) => { this.onMessage(message) })
     this.worker.on('error', (error) => { this.onWorkerDeath(`workflow worker failed: ${renderThrown(error)}`, false) })
     /* v8 ignore next -- messageerror: not constructible from the engine's own protocol (every payload is JSON data) */

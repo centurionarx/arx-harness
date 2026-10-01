@@ -65,6 +65,6 @@
     "@arx-ai/arx-tools": "workspace:^",
     "@arx-ai/arx-workflow": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
-    "tsx": "^4.19.2"
+    "esbuild": "^0.28.1"
   }
 }

@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
 import { tmpdir } from 'node:os'
-import { fileURLToPath } from 'node:url'
 import type { Worker } from 'node:worker_threads'
 import { Context } from '@arx-ai/cordis'
 import Loader from '@arx-ai/cordis-plugin-loader'
@@ -10,7 +9,6 @@ import type { SubagentCapabilities, SubagentProvider, SubagentResult, SubagentRu
 import type { WorkflowMeta, WorkflowResult, WorkflowResultInfo, WorkflowRun, WorkflowRunInfo } from '@arx-ai/arx-workflow'
 import * as workerEngineModule from '../src/index.ts'
 import WorkerThreadWorkflowEngine, { type Config } from '../src/index.ts'
-import { workerSpawnEnv } from '../src/host.ts'
 import { HostToWorkerType, WorkerToHostType } from '../src/protocol.ts'
 import { SessionId } from '@arx-ai/arx-session'
 
@@ -561,73 +559,35 @@ describe('arx-workflow-worker-thread', () => {
       expect(result.value).toBe('fine')
     })
 
-    it('the worker spawns with a scrubbed environment: an escaped script finds no ambient credentials', async () => {
+    it('the worker spawns with an empty environment: an escaped script finds no ambient variables', async () => {
       const { ctx, parent } = await setup()
       // A canary in the HARNESS process's env: with an inherited environment
       // the escape below would read it back (exactly how DEEPSEEK_API_KEY
-      // would leak); the worker env keeps every ambient variable out. Windows
-      // additionally receives the host temp path (TMP/TEMP) so `os.tmpdir()`
-      // inside the worker resolves instead of degrading to a cwd-relative
-      // `undefined\temp` (tsx writes its transform cache there).
+      // would leak).
       process.env.WORKFLOW_ENV_CANARY = 'leak me'
-      // The unbuilt worker forwards TSX_TSCONFIG_PATH (a path pin, not a
-      // credential); clear it so this test observes the empty ambient case
-      // regardless of the parent's environment.
-      const tsconfigPath = process.env.TSX_TSCONFIG_PATH
-      delete process.env.TSX_TSCONFIG_PATH
       try {
         const result = await run(ctx, parent, scripted(`
           const proc = ${ESCAPE}
-          return { canary: proc.env.WORKFLOW_ENV_CANARY ?? null, keys: Object.keys(proc.env).sort() }
+          return { canary: proc.env.WORKFLOW_ENV_CANARY ?? null, keys: Object.keys(proc.env) }
         `))
         expect(result.stopReason).toBe('completed')
-        const expectedKeys = process.platform === 'win32' ? ['TEMP', 'TMP'] : []
-        expect(result.value).toEqual({ canary: null, keys: expectedKeys })
+        expect(result.value).toEqual({ canary: null, keys: [] })
       } finally {
-        if (tsconfigPath === undefined) delete process.env.TSX_TSCONFIG_PATH
-        else process.env.TSX_TSCONFIG_PATH = tsconfigPath
         delete process.env.WORKFLOW_ENV_CANARY
       }
     })
 
-    it('workerSpawnEnv injects the host temp path on win32 and leaves the POSIX peer empty', () => {
-      const tmp = tmpdir()
-      expect(workerSpawnEnv('win32')).toEqual({ TMP: tmp, TEMP: tmp })
-      expect(workerSpawnEnv('linux')).toEqual({})
-    })
-
-    it('workerSpawnEnv forwards TSX_TSCONFIG_PATH when the snapshot harness pins it', () => {
-      const tsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))
-      expect(workerSpawnEnv('linux', tsconfig)).toEqual({ TSX_TSCONFIG_PATH: tsconfig })
-      expect(workerSpawnEnv('win32', tsconfig)).toEqual({
-        TMP: tmpdir(),
-        TEMP: tmpdir(),
-        TSX_TSCONFIG_PATH: tsconfig,
-      })
-    })
-
-    it('the unbuilt worker forwards exactly TSX_TSCONFIG_PATH through the scrub: the paths-map pin survives, secrets do not', async () => {
-      const { ctx, parent } = await setup()
-      // The ACP snapshot harness runs the parent with its cwd OUTSIDE the
-      // repo and pins the repo tsconfig through this variable; the worker
-      // must inherit the pin (or its arx-* imports silently resolve to
-      // unbuilt lib/ bundles) while every other variable stays scrubbed.
-      const tsconfig = fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url))
-      process.env.TSX_TSCONFIG_PATH = tsconfig
-      process.env.WORKFLOW_ENV_CANARY = 'leak me'
+    it('the source worker bundles its workspace imports from any host working directory', async () => {
+      // The ACP snapshot harness runs the host with its cwd outside the
+      // repository; the engine still bundles every arx-* import from source.
+      const cwd = process.cwd()
+      process.chdir(tmpdir())
       try {
-        const result = await run(ctx, parent, scripted(`
-          const proc = ${ESCAPE}
-          return { keys: Object.keys(proc.env).sort(), tsconfig: proc.env.TSX_TSCONFIG_PATH }
-        `))
-        expect(result.stopReason).toBe('completed')
-        const expectedKeys = process.platform === 'win32'
-          ? ['TEMP', 'TMP', 'TSX_TSCONFIG_PATH']
-          : ['TSX_TSCONFIG_PATH']
-        expect(result.value).toEqual({ keys: expectedKeys, tsconfig })
+        const { ctx, parent } = await setup()
+        const result = await run(ctx, parent, scripted('return 6 * 7'))
+        expect(result).toMatchObject({ value: 42, stopReason: 'completed' })
       } finally {
-        delete process.env.TSX_TSCONFIG_PATH
-        delete process.env.WORKFLOW_ENV_CANARY
+        process.chdir(cwd)
       }
     })
   })

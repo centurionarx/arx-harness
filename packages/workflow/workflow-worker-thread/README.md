@@ -14,7 +14,7 @@ The worker still provides useful containment:
 
 - Script CPU work and synchronous spins stay off the host event loop.
 - `worker.terminate()` gives disposal a real final stop.
-- The worker starts with an empty environment, except unbuilt loader plumbing, so ambient credentials do not cross through `process.env`.
+- The worker starts with an empty environment and none of the host's loader flags, so ambient credentials do not cross through `process.env`.
 - Host/worker messages use structured-clone data, with plain-JSON validation at the script boundary.
 
 A genuinely untrusted-script sandbox would require a different engine behind the same workflow seam.
@@ -34,7 +34,7 @@ Unknown options, malformed arguments, unsupported schemas, tripped caps, provide
 
 ## Run sequence
 
-`start()` validates meta, parses the body, resolves a registered normalized provider route, and resolves any per-run total-child cap before creating a worker or publishing `workflow/start`. A requested `maxTotalAgents` must be a positive safe integer no greater than the engine's configured deployment ceiling. Source mode installs TypeScript transforms through a data-URL bootstrap; built mode passes sibling `lib/worker.cjs` as a filesystem path because pkg's VFS hook expects CommonJS. Both work under ordinary Node. A ready/go handshake prevents a start-signal cancellation racing worker boot from executing the script's initial synchronous slice.
+`start()` validates meta, parses the body, resolves a registered normalized provider route, and resolves any per-run total-child cap before creating a worker or publishing `workflow/start`. A requested `maxTotalAgents` must be a positive safe integer no greater than the engine's configured deployment ceiling. Built mode passes sibling `lib/worker.cjs` as a filesystem path because pkg's VFS hook expects CommonJS. Source mode bundles `src/worker.ts` and its workspace imports with esbuild when the engine loads, and each run spawns that bundle from a `data:` URL with no TypeScript loader hooks in the worker; a bundling failure fails the plugin load, and edits to worker sources take effect at the next engine load. Both work under ordinary Node. A ready/go handshake prevents a start-signal cancellation racing worker boot from executing the script's initial synchronous slice.
 
 For each `agent()` call:
 
@@ -120,3 +120,4 @@ Append-only; newly visible content follows the reusable request prefix and does 
 - **No ambient timers, filesystem, or network are injected, but escaped code can still reach Node** — the missing globals are portability API, not containment.
 - **Termination can only report host-observed starts** — `agentsStarted` excludes worker-side calls still queued behind concurrency when a forced termination makes them unknowable.
 - **Cross-realm errors fail `instanceof Error` inside scripts** — workflow authors must branch on stable fields such as `name` and `code`.
+- **Source mode must not load the worker through TypeScript loader hooks** — on Windows with Node 24, terminating a worker shortly after tsx loaded its modules crashed the host process; the bundled worker has not reproduced it. See [the Agent Note](../../../.agents/notes/implemented/architecture/2026-10-01-source-workflow-worker-runs-a-bundle.md).
