@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-settings-plugins",
   "description": "Plugins settings section with feature-owned tabs and configurable host-plane plugin cards",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "publishConfig": {
     "access": "public"
   },

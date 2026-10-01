@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-hmr",
   "description": "Dev-only hot-reload driver for script-loaded client entries: SSE rebuilt frames → invalidate/prefetch → fiber swap through the vendored Loader entry",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "publishConfig": {
     "access": "public"
   },
