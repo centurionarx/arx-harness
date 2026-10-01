@@ -24,14 +24,17 @@ A standalone driver on `windows-2025` with Node 24.21.0 spawned a worker and cal
 
 | Worker | Process crashes |
 |---|---|
-| tsx bootstrap, the former source shape | 5 of 2 400 |
+| tsx bootstrap, the former source shape | 9 of 4 800, in two runs |
 | tsx bootstrap with tsx's IPC named-pipe connection stubbed out | 8 of 3 000 |
 | tsx bootstrap, host started with V8 `--single-threaded` | 0 of 3 000 |
 | tsx bootstrap that closes `parentPort` and exits without `terminate()` | 0 of 2 400 |
 | esbuild CommonJS bundle of `src/worker.ts` | 0 of 4 000 |
 | plain worker opening a named pipe to a missing server | 0 of 5 000 |
+| `bundleWorkerSource` output, the shipped source shape | 0 of 6 000 |
 
-At the tsx bootstrap's rate, zero crashes in 3 000 terminations has a probability below 0.1%. The crash needs V8 work on background threads at the moment of termination, which `--single-threaded` removes; a tsx-hooked worker boots in about 330 ms on that runner and leaves such work in flight right after `ready`, while the bundle boots in about 85 ms. Windows Error Reporting's local dumps produced no dump file, so no native stack is recorded.
+At the tsx bootstrap's rate of about 0.19%, zero crashes has a probability of about 0.4% in 3 000 terminations and below 0.01% in 6 000. The crash needs V8 work on background threads at the moment of termination, which `--single-threaded` removes; a tsx-hooked worker boots in about 330 ms on that runner and leaves such work in flight right after `ready`, while the bundle boots in about 85 ms. Windows Error Reporting's local dumps produced no dump file, so no native stack is recorded.
+
+Looping the worker-thread spec under instrumented coverage in two concurrent copies, which lost the fork in 2 of 44 runs with the tsx bootstrap, passed 226 of 226 runs with the bundle, at a median of 23.6 s per run.
 
 On Linux with Node 22 the worker-thread spec takes 11.3–11.6 s instead of 24.3–24.8 s, because each worker boots in about 65 ms instead of about 400 ms.
 
