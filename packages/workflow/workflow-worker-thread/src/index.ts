@@ -9,10 +9,13 @@
 import { randomUUID } from 'node:crypto'
 import { availableParallelism } from 'node:os'
 import * as vm from 'node:vm'
+import { Service } from '@arx-ai/cordis'
 import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import WorkflowEngine, { WorkflowError, WorkflowRunId } from '@arx-ai/arx-workflow'
 import type { WorkflowRun, WorkflowRunInfo, WorkflowStartRequest } from '@arx-ai/arx-workflow'
+import { resolveWorkerEntry } from './entry.ts'
+import type { WorkerEntry } from './entry.ts'
 import { WorkerRun } from './host.ts'
 import { validateMeta } from './meta.ts'
 import type { WorkerInit, WorkerLimits } from './types.ts'
@@ -122,12 +125,19 @@ class WorkerThreadWorkflowEngine extends WorkflowEngine {
   })
 
   private readonly config: ResolvedConfig
+  /** Resolved before the service becomes active; every run of this instance spawns it. */
+  private workerEntry!: WorkerEntry
 
   constructor(ctx: Context, config: Config) {
     super(ctx)
     // schemastery (static Config) has already filled the defaulted fields;
     // the assertion records that resolution, not a hidden fallback.
     this.config = config as ResolvedConfig
+  }
+
+  /** Resolve the worker entry; in source mode this bundles the worker, so a bundling failure fails the plugin load. */
+  protected async [Service.init](): Promise<void> {
+    this.workerEntry = await resolveWorkerEntry()
   }
 
   /**
@@ -175,6 +185,7 @@ class WorkerThreadWorkflowEngine extends WorkflowEngine {
       id,
       meta,
       request.parent,
+      this.workerEntry,
       init,
       subagentProvider,
       this.config.disposeGraceMs,

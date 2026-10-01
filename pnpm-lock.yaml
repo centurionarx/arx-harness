@@ -9619,9 +9619,9 @@ importers:
       '@arx-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
-      tsx:
-        specifier: ^4.19.2
-        version: 4.22.4
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
 
   packages/workspace/workspace:
     dependencies:
