@@ -1,0 +1,17 @@
+# Opt-in query server; run from this repository after generating the local graph.
+- insert:
+    - id: mcp-graphify
+      name: '@arx-ai/arx-mcp-client'
+      config:
+        serverName: graphify
+        transport: stdio
+        command: !!js process.env.ARX_GRAPHIFY_PYTHON || `${process.cwd()}/.cache/graphify-venv/${process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python'}`
+        args:
+          - '-m'
+          - graphify.serve
+          - !!js `${process.cwd()}/.artifacts/graphify/graph.json`
+        cwd: !!js process.cwd()
+        env:
+          GRAPHIFY_OUT: !!js `${process.cwd()}/.artifacts/graphify`
+          GRAPHIFY_QUERY_LOG_DISABLE: '1'
+        failOnStartupError: true

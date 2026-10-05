@@ -1,0 +1,10 @@
+# Opt-in route on the existing webServer; do not start a second GUI server.
+# Replace this literal plugin name with the absolute path in your clone.
+# Apply through the owning profile; graphPath assumes a repository-root cwd.
+- insert:
+    - id: graphify-publish
+      name: /absolute/path/to/arx-harness/.arx/integrations/graphify/publish.mjs
+      config:
+        path: /graphify
+        maxBytes: 2098176
+        graphPath: !!js `${process.cwd()}/.artifacts/graphify/graph.html`

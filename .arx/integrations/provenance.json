@@ -1,0 +1,38 @@
+{
+  "ponytail": {
+    "repository": "https://github.com/DietrichGebert/ponytail",
+    "commit": "c982cd411abb53323c4baa1baa3c2f020b8d0b08",
+    "version": "4.10.3",
+    "license": "MIT",
+    "sources": [
+      "skills/ponytail/SKILL.md",
+      "skills/ponytail-review/SKILL.md",
+      "skills/ponytail-audit/SKILL.md",
+      "skills/ponytail-debt/SKILL.md",
+      "skills/ponytail-gain/SKILL.md",
+      "skills/ponytail-help/SKILL.md"
+    ],
+    "adaptations": [
+      "ARX model-neutral skill invocation and context lifetime; no vendor hooks or mode flags",
+      "Repository testing, approval, security and documentation requirements take precedence",
+      "No unrequested scope substitution or weakened email validation",
+      "Use arx grep tool for debt scans",
+      "Help describes actual ARX features",
+      "Gain uses current agentic benchmark with no promised local savings"
+    ]
+  },
+  "graphify": {
+    "repository": "https://github.com/Graphify-Labs/graphify",
+    "commit": "0b60d47e6cd9338c51143f39f35b6c45c8453385",
+    "version": "0.9.74",
+    "distribution": "graphifyy",
+    "extras": [
+      "mcp",
+      "sql"
+    ],
+    "license": "Apache-2.0; upstream includes MIT notices",
+    "environment": ".cache/graphify-venv",
+    "output": ".artifacts/graphify",
+    "mode": "code-only extraction; no-label reporting; no assistant installer"
+  }
+}

@@ -10,7 +10,7 @@
  */
 import { readFile } from 'node:fs/promises'
 import { existsSync, globSync, readFileSync } from 'node:fs'
-import { isBuiltin } from 'node:module'
+import { createRequire, isBuiltin } from 'node:module'
 import { basename, dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { UserConfig } from 'tsdown'
@@ -434,6 +434,21 @@ function matchesSpecifier(patterns: readonly RegExp[], specifier: string): boole
   return patterns.some(pattern => pattern.test(specifier))
 }
 
+/**
+ * Resolve an exact generated Remote contribution through its declared runtime export.
+ * Resolving package.json avoids the Remote alias that the tsx loader applies to require.resolve.
+ */
+function generatedRemoteRuntime(source: string, importer: string): string {
+  const packageId = source.slice(0, -'/remote'.length)
+  const manifestPath = createRequire(importer).resolve(`${packageId}/package.json`)
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+    readonly exports?: { readonly './remote'?: { readonly default?: unknown } }
+  }
+  const runtime = manifest.exports?.['./remote']?.default
+  if (typeof runtime !== 'string') throw new Error(`tsdown: ${packageId} has no generated Remote runtime export`)
+  return resolvePath(dirname(manifestPath), runtime)
+}
+
 function clientConfig(id: string, entry: string): UserConfig {
   const isRequested = (specifier: string): boolean => clientExternals(id).has(specifier)
   return {
@@ -484,9 +499,11 @@ function clientConfig(id: string, entry: string): UserConfig {
       // or requires a specifier the module table cannot answer for this package.
       // Cross-plugin collaboration goes through cordis services instead.
       name: 'arx-client-bundle-purity',
-      resolveId(source: string) {
+      resolveId(source: string, importer: string | undefined) {
         if (!source.startsWith('@arx-ai/')) return null
         if (isRequested(source)) return null // requested module-table row: external wins
+        // Read the package's runtime export: tsx also applies declaration aliases to require.resolve(source).
+        if (GENERATED_REMOTE.test(source) && importer !== undefined) return generatedRemoteRuntime(source, importer)
         if (VENDORED_LIBRARY.test(source)) return null // vendored library: inline, no shared identity
         if (INLINE_SAFE.test(source) || GENERATED_REMOTE.test(source)) return null // wire contribution: inline is the point
         throw new Error(

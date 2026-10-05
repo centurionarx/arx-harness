@@ -2,11 +2,12 @@
  * Pins shared client-bundle preset rules: the module-edge purity gate and
  * the physical watch dependencies hidden behind virtual CSS Modules.
  */
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import { clientBundle, requestedExternals } from '../packages/client/tsdown.client.ts'
 
-type ResolveId = (source: string) => null | { id: string; external: boolean }
+type ResolveId = (source: string, importer?: string) => null | string | { id: string; external: boolean }
 
 interface CssModulePlugin {
   name: string
@@ -98,6 +99,30 @@ describe('client bundle purity gate', () => {
     expect(() => resolveId('@arx-ai/arx-goal')).toThrow(/purity/)
     expect(() => resolveId('@arx-ai/arx-goal/client')).toThrow(/purity/)
     expect(() => resolveId('@arx-ai/arx-goal/remote/nested')).toThrow(/purity/)
+  })
+
+  it.each(['github', 'repository'])('resolves generated %s Remote values to runtime JavaScript', (name) => {
+    const importer = fileURLToPath(new URL('../packages/api/remotes/src/client/index.ts', import.meta.url))
+    const expected = fileURLToPath(new URL(`../packages/git/${name}/lib/typert.remote-client.js`, import.meta.url))
+    expect(resolveId(`@arx-ai/arx-${name}/remote`, importer)).toBe(expected)
+  })
+
+  it('bundles source Remote values under the real tsx loader and declaration aliases', () => {
+    const script = [
+      "import { build } from 'tsdown'",
+      "import { clientBundle } from './packages/client/tsdown.client.ts'",
+      "const config = clientBundle('@arx-ai/arx-api-remotes', ['lib/types/index.js'])({ env: {} })",
+      "  .find(candidate => candidate.platform === 'browser')",
+      "if (config === undefined) throw new Error('Remote browser config missing')",
+      "const bundles = await build({ ...config, cwd: process.cwd() + '/packages/api/remotes',",
+      "  config: false, write: false, report: false, logLevel: 'silent' })",
+      'console.log(JSON.stringify({ bundles: bundles.length }))',
+    ].join('\n')
+    const output = execFileSync(process.execPath, ['--import', 'tsx', '--input-type', 'module', '--eval', script], {
+      cwd: fileURLToPath(new URL('..', import.meta.url)),
+      encoding: 'utf8',
+    })
+    expect(JSON.parse(output)).toEqual({ bundles: 1 })
   })
 
   it('throws on any other @arx-ai leak', () => {

@@ -1,0 +1,9 @@
+# TEST ONLY: real credentials-local uses the scaffold-owned isolated ARX_HOME.
+# Never apply this synthetic-credential scenario to a personal profile or store.
+- id: github
+  config:
+    credential:
+      mode: record
+      key: github/account
+    pageSize: 1
+    maxPages: 2

@@ -1,0 +1,6 @@
+# Read-only repository inspection uses the shipped Web repository services.
+# Port zero requests an isolated OS-assigned listener, never the existing GUI.
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 0

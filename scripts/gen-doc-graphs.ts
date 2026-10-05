@@ -574,6 +574,22 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Provider registration and selection plus normalized query execution over exactly four operations; the seam offers no protocol escape hatch, so a backend translates into the normalized request and result.',
   },
   {
+    key: 'github',
+    pkg: 'github',
+    title: 'Private authorization and read-only GitHub discovery',
+    mode: 'core',
+    consumers: ['ui-github'],
+    note: 'Resolves explicitly configured credentials, registers the private PAT record flow, and returns bounded account and repository metadata without caller URLs or Git writes.',
+  },
+  {
+    key: 'repository',
+    pkg: 'repository',
+    title: 'Registered-workspace read-only Git inspection',
+    mode: 'core',
+    consumers: ['ui-repository'],
+    note: 'Owns bounded managed Git reads against validated host-local providers, independent index and worktree sides, and complete comparisons without exposing arbitrary subprocess arguments.',
+  },
+  {
     key: 'filePreviews',
     pkg: 'file-preview',
     title: 'Session-authorized bounded file preview',

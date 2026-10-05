@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-title",
   "description": "Log-backed session title service and provider registry for the arx Harness",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "publishConfig": {
     "access": "public"
   },

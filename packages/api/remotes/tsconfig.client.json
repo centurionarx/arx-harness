@@ -57,6 +57,12 @@
       "path": "../../settings/settings"
     },
     {
+      "path": "../../git/repository"
+    },
+    {
+      "path": "../../git/github"
+    },
+    {
       "path": "../../typert/protocol"
     },
     {

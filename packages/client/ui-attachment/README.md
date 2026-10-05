@@ -12,7 +12,7 @@ Dynamic attachment presentation plugin for the conversation UI. It waits for the
 
 ## Drop overlay
 
-`DropOverlay` is the full-viewport invitation shown while a file drag is over the page: illustration, title, and a limits line while drops are accepted (`disabled` swaps the blocked illustration and hides the limits line). The layer is pointer-inert — the owner's document-level drag listeners keep the enter/leave count and decide accept/reject; the overlay only shows state. It portals to the body like the lightbox.
+`DropOverlay` is the full-viewport invitation shown while a file drag is over the page: illustration, title, and a limits line while drops are accepted (`disabled` swaps the blocked illustration and hides the limits line). The layer is pointer-inert — the owner's document-level drag listeners keep the enter/leave count and decide accept/reject; the overlay only shows state. It portals to the body like the lightbox. Its `status` region uses the localized title as its accessible name, so consumers can distinguish it from other page status regions by role and name.
 
 ## Model Experience
 

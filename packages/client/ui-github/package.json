@@ -1,0 +1,86 @@
+{
+  "name": "@arx-ai/arx-client-ui-github",
+  "description": "Read-only GitHub account and explicit workspace repository viewing",
+  "version": "1.0.38",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
+    "directory": "packages/client/ui-github"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "arx": {
+    "client": {
+      "inject": [
+        "@arx-ai/arx-client-runtime",
+        "@arx-ai/arx-client-locale",
+        "@arx-ai/arx-client-ui-repository",
+        "@arx-ai/arx-client-ui-settings",
+        "@arx-ai/arx-api-remotes"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@arx-ai/arx-github": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^",
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-client-ui-repository": "workspace:^",
+    "@arx-ai/arx-client-ui-settings": "workspace:^"
+  },
+  "devDependencies": {
+    "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-locale": "workspace:^",
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-api-remotes": "workspace:^",
+    "@arx-ai/arx-typert-protocol": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@arx-ai/arx-client-test-runtime": "workspace:^",
+    "react": "^18.2.0",
+    "@types/react": "~18.3.1",
+    "@arx-ai/cordis-plugin-loader": "workspace:^",
+    "@arx-ai/cordis-plugin-include": "workspace:^",
+    "@testing-library/react": "^16.1.0",
+    "@arx-ai/arx-github": "workspace:^",
+    "@arx-ai/arx-host-apiproxy": "workspace:^",
+    "@arx-ai/arx-credentials": "workspace:^",
+    "@arx-ai/arx-client-ui-repository": "workspace:^",
+    "@arx-ai/arx-client-ui-settings": "workspace:^"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

@@ -718,6 +718,52 @@ Depends on: [`LocalConfig`](#arx-aiarx-fs-local)
 
 Source: [`packages/fs/fs-sandbox/src/index.ts:49`](../packages/fs/fs-sandbox/src/index.ts)
 
+<a id="arx-aiarx-github"></a>
+
+## `@arx-ai/arx-github`
+
+Requires: `credentials` · `authorization`
+
+```ts config-catalog
+/** Operator input; omitted fields resolve to the documented defaults. */
+export interface Config {
+  /** Operator-selected address; unconfigured by default. */
+  readonly credential?: GithubCredential
+  /** External body and complete DTO byte budget; default 262144, ceiling 1048576. */
+  readonly maxBytes?: number
+  /** Repository item budget; default and ceiling 100. */
+  readonly maxItems?: number
+  /** Whole-operation deadline in milliseconds; default 10000, ceiling 60000. */
+  readonly timeoutMs?: number
+  /** Requested page size, no larger than maxItems; default 30, ceiling 100. */
+  readonly pageSize?: number
+  /** Local continuation ceiling; default 100, ceiling 1000. */
+  readonly maxPages?: number
+  /** Header-safe PAT byte budget; default and ceiling 4096. */
+  readonly patBytes?: number
+}
+
+/** Operator-only credential choice; no ambient environment fallback. */
+export type GithubCredential = {
+  /** No credential address selected; no PAT flow is registered. */
+  readonly mode: 'unconfigured'
+} | {
+  /** Read and authorize the plugin-owned durable record. */
+  readonly mode: 'record'
+  /** Exact plugin-owned key github/account; other scopes or ids reject. */
+  readonly key: CredentialKey
+} | {
+  /** Resolve an explicit provider reference without offering a PAT-writing flow. */
+  readonly mode: 'ref'
+  /** POSIX reference name; environment layering is owned by the credential provider. */
+  readonly ref: CredentialRef
+}
+```
+
+Depends on: [`CredentialKey`](subsystems/credentials.md) · [`CredentialRef`](subsystems/credentials.md)
+
+Source: [`packages/git/github/src/types.ts:45`](../packages/git/github/src/types.ts)
+
 <a id="arx-aiarx-goal"></a>
 
 ## `@arx-ai/arx-goal`
@@ -1775,6 +1821,32 @@ export interface Config {
 ```
 
 Source: [`packages/guard/repeat-tool-reminder/src/index.ts:28`](../packages/guard/repeat-tool-reminder/src/index.ts)
+
+<a id="arx-aiarx-repository"></a>
+
+## `@arx-ai/arx-repository`
+
+Requires: `fs` · `subprocess` · `workspaceRegistry`
+
+```ts config-catalog
+/** Finite deployment bounds, applied to complete process streams and encoded results. */
+export interface Config {
+  /** Maximum bytes per complete command output and JSON response; default 2 MiB, ceiling 16 MiB. */
+  maxBytes?: number
+  /** Maximum config/status/remote records and attribute inventory paths; default 10000, ceiling 100000. */
+  maxItems?: number
+  /** Whole-request deadline in milliseconds; default 10000, ceiling 120000. */
+  timeoutMs?: number
+  /** Managed process termination grace in milliseconds; default 250, ceiling 10000. */
+  graceMs?: number
+  /** Maximum metadata entries scanned before Git; default 100000, ceiling 1000000. */
+  maxMetadataItems?: number
+  /** Maximum cumulative metadata path/content bytes checked before Git; default 16 MiB, ceiling 64 MiB. */
+  maxMetadataBytes?: number
+}
+```
+
+Source: [`packages/git/repository/src/index.ts:20`](../packages/git/repository/src/index.ts)
 
 <a id="arx-aiarx-sandbox-local"></a>
 
@@ -3520,6 +3592,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-directory-picker-native` ([`packages/client/ui-directory-picker-native/src/index.ts`](../packages/client/ui-directory-picker-native/src/index.ts))
 - `@arx-ai/arx-client-ui-exit` ([`packages/client/ui-exit/src/index.ts`](../packages/client/ui-exit/src/index.ts))
 - `@arx-ai/arx-client-ui-file-preview` ([`packages/client/ui-file-preview/src/index.ts`](../packages/client/ui-file-preview/src/index.ts))
+- `@arx-ai/arx-client-ui-github` ([`packages/client/ui-github/src/index.ts`](../packages/client/ui-github/src/index.ts))
 - `@arx-ai/arx-client-ui-goal` ([`packages/client/ui-goal/src/index.ts`](../packages/client/ui-goal/src/index.ts))
 - `@arx-ai/arx-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
 - `@arx-ai/arx-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
@@ -3532,6 +3605,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-ui-projects` ([`packages/client/ui-projects/src/index.ts`](../packages/client/ui-projects/src/index.ts))
 - `@arx-ai/arx-client-ui-reference` ([`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts))
 - `@arx-ai/arx-client-ui-renderer` ([`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts))
+- `@arx-ai/arx-client-ui-repository` ([`packages/client/ui-repository/src/index.ts`](../packages/client/ui-repository/src/index.ts))
 - `@arx-ai/arx-client-ui-schedule` ([`packages/client/ui-schedule/src/index.ts`](../packages/client/ui-schedule/src/index.ts))
 - `@arx-ai/arx-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
 - `@arx-ai/arx-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-webhook",
   "description": "Durable bounded webhook rule runtime with explicit uncertain-delivery reconciliation",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

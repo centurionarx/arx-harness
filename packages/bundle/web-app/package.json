@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-app",
   "description": "The arx browser-surface bundle: the web patch layer over arx-base plus the runtime glue plugin (frontend dist serving, web-surface prompt, bash runtime variables, URL line)",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "publishConfig": {
     "access": "public"
   },
@@ -129,7 +129,11 @@
     "@arx-ai/arx-project-runner": "workspace:^",
     "@arx-ai/arx-skill-git": "workspace:^",
     "@arx-ai/arx-file-preview": "workspace:^",
-    "@arx-ai/arx-client-ui-file-preview": "workspace:^"
+    "@arx-ai/arx-client-ui-file-preview": "workspace:^",
+    "@arx-ai/arx-github": "workspace:^",
+    "@arx-ai/arx-client-ui-github": "workspace:^",
+    "@arx-ai/arx-repository": "workspace:^",
+    "@arx-ai/arx-client-ui-repository": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/cordis-plugin-loader": "workspace:^",

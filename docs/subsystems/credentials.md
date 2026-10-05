@@ -210,6 +210,34 @@ abstract deleteRecord(key: CredentialKey): Promise<void>
 
 Source: [`packages/credentials/credentials/src/index.ts`](../../packages/credentials/credentials/src/index.ts)
 
+<a id="ctxgithub--githubservice"></a>
+
+### `ctx.github` — `GithubService`
+
+Fixed-origin reads; all failures exclude external diagnostics and credentials.
+
+```ts cordis-catalog
+/**
+ * Read current connection state; 401 never deletes storage.
+ * @param request - Empty request, with no credential or URL selector.
+ * @param signal - Gateway-owned cancellation.
+ * @returns Allowlisted account and private flow availability.
+ */
+@Remote account(request: Record<string, never>, signal: AbortSignal): Promise<GithubAccountResult>
+
+/**
+ * Read one bounded, locally addressed page; all remote failures reject safely.
+ * @param request - Integer page within the configured range.
+ * @param signal - Gateway-owned cancellation.
+ * @returns Allowlisted rows and locally computed continuation.
+ */
+@Remote repositories(request: GithubRepositoriesRequest, signal: AbortSignal): Promise<GithubRepositoriesResult>
+```
+
+Types: [GithubAccountResult](../../packages/git/github/README.md) · [GithubRepositoriesRequest](../../packages/git/github/README.md) · [GithubRepositoriesResult](../../packages/git/github/README.md)
+
+Source: [`packages/git/github/src/index.ts`](../../packages/git/github/src/index.ts)
+
 <a id="ctxnativeaccounts--nativeaccounts"></a>
 
 ### `ctx.nativeAccounts` — `NativeAccounts`

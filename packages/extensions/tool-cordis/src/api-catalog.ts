@@ -832,6 +832,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'github',
+    summary: 'Fixed-origin reads; all failures exclude external diagnostics and credentials.',
+    description: 'Fixed-origin reads; all failures exclude external diagnostics and credentials.',
+    methods: [
+      {
+        signature: '@Remote account(request: Record<string, never>, signal: AbortSignal): Promise<GithubAccountResult>',
+        description: 'Read current connection state; 401 never deletes storage.',
+        parameters: [{ name: 'request', description: 'Empty request, with no credential or URL selector.' }, { name: 'signal', description: 'Gateway-owned cancellation.' }],
+        returns: 'Allowlisted account and private flow availability.',
+      },
+      {
+        signature: '@Remote repositories(request: GithubRepositoriesRequest, signal: AbortSignal): Promise<GithubRepositoriesResult>',
+        description: 'Read one bounded, locally addressed page; all remote failures reject safely.',
+        parameters: [{ name: 'request', description: 'Integer page within the configured range.' }, { name: 'signal', description: 'Gateway-owned cancellation.' }],
+        returns: 'Allowlisted rows and locally computed continuation.',
+      },
+    ],
+  },
+  {
     key: 'goals',
     summary: 'Goal service (`ctx.goals`) backed exclusively by the owning session log.',
     description: 'Goal service (`ctx.goals`) backed exclusively by the owning session log.',
@@ -1321,6 +1340,31 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Resolve restart uncertainty without silently retrying the interrupted step.',
         parameters: [{ name: 'projectId', description: 'Stable project identifier.' }, { name: 'expectedVersion', description: 'Required aggregate CAS version.' }, { name: 'request', description: 'Explicit retry or terminal failure decision.' }],
         returns: 'The committed aggregate snapshot.',
+      },
+    ],
+  },
+  {
+    key: 'repository',
+    summary: 'Read-only host Git operations; errors contain stable codes, never raw Git diagnostics or URLs.',
+    description: 'Read-only host Git operations; errors contain stable codes, never raw Git diagnostics or URLs.',
+    methods: [
+      {
+        signature: '@Remote inspect(request: RepositoryRequest, signal: AbortSignal): Promise<RepositoryInspection>',
+        description: 'Inspect current host repository identity and credential-free remote identities.',
+        parameters: [{ name: 'request', description: 'Registered workspace id; repositories above that workspace are refused.' }, { name: 'signal', description: 'Gateway-owned request cancellation; no Agent is required.' }],
+        returns: 'Root, branch, head, local ahead/behind counts and sanitized remote identities.',
+      },
+      {
+        signature: '@Remote status(request: RepositoryRequest, signal: AbortSignal): Promise<RepositoryStatus>',
+        description: 'Read complete porcelain-v2 status, never a truncated stream tail.',
+        parameters: [{ name: 'request', description: 'Registered host workspace selection.' }, { name: 'signal', description: 'Gateway-owned request cancellation.' }],
+        returns: 'Independent staged, unstaged, untracked and unmerged groups.',
+      },
+      {
+        signature: '@Remote diff(request: RepositoryDiffRequest, signal: AbortSignal): Promise<RepositoryDiff>',
+        description: 'Compare one current status entry; symlinks, escaping paths, conflicts and submodules are refused.',
+        parameters: [{ name: 'request', description: 'Workspace id, repository-relative status path and independent comparison side.' }, { name: 'signal', description: 'Gateway-owned request cancellation.' }],
+        returns: 'Complete bounded unified text, or binary metadata without blob content.',
       },
     ],
   },
@@ -3576,6 +3620,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface DiffResultView {\n    card: \'diff\';\n    title?: string;\n    diffs: FileDiff[];\n}',
   },
   {
+    name: 'DiffSide',
+    declaration: 'export type DiffSide = \'staged\' | \'unstaged\' | \'untracked\';',
+  },
+  {
     name: 'DirectoryPickerBrowseCapability',
     declaration: 'export interface DirectoryPickerBrowseCapability {\n    kind: \'browse\';\n    list(path?: string, signal?: AbortSignal): Promise<DirectoryListing>;\n    createDirectory(path: string, name: string): Promise<string>;\n}',
   },
@@ -3762,6 +3810,30 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'GenericResultView',
     declaration: 'export interface GenericResultView {\n    card: \'generic\';\n    title?: string;\n    content?: ContentBlock[];\n}',
+  },
+  {
+    name: 'GithubAccount',
+    declaration: 'export interface GithubAccount {\n    readonly id: GithubId;\n    readonly login: string;\n    readonly webUrl: string;\n}',
+  },
+  {
+    name: 'GithubAccountResult',
+    declaration: 'export interface GithubAccountResult {\n    readonly state: \'unconfigured\' | \'disconnected\' | \'connected\';\n    readonly account?: GithubAccount;\n    readonly writable: boolean;\n    readonly authFlowKey?: CredentialKey;\n}',
+  },
+  {
+    name: 'GithubId',
+    declaration: 'export type GithubId = Branded<\'GithubId\'>;',
+  },
+  {
+    name: 'GithubRepositoriesRequest',
+    declaration: 'export interface GithubRepositoriesRequest {\n    readonly page: number;\n}',
+  },
+  {
+    name: 'GithubRepositoriesResult',
+    declaration: 'export interface GithubRepositoriesResult {\n    readonly repositories: readonly GithubRepository[];\n    readonly nextPage?: number;\n}',
+  },
+  {
+    name: 'GithubRepository',
+    declaration: 'export interface GithubRepository {\n    readonly id: GithubId;\n    readonly owner: string;\n    readonly name: string;\n    readonly private: boolean;\n    readonly defaultBranch: string | null;\n    readonly webUrl: string;\n}',
   },
   {
     name: 'GitSkillSnapshot',
@@ -4470,6 +4542,34 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ReplayEnvelope',
     declaration: 'export interface ReplayEnvelope {\n    response: unknown;\n    blocks?: readonly unknown[];\n}',
+  },
+  {
+    name: 'RepositoryDiff',
+    declaration: 'export interface RepositoryDiff {\n    path: string;\n    side: DiffSide;\n    binary: boolean;\n    text: string;\n}',
+  },
+  {
+    name: 'RepositoryDiffRequest',
+    declaration: 'export interface RepositoryDiffRequest extends RepositoryRequest {\n    path: string;\n    side: DiffSide;\n}',
+  },
+  {
+    name: 'RepositoryEntry',
+    declaration: 'export interface RepositoryEntry {\n    path: string;\n    originalPath?: string;\n    xy: string;\n    submodule: string;\n}',
+  },
+  {
+    name: 'RepositoryInspection',
+    declaration: 'export interface RepositoryInspection {\n    root: string;\n    branch: string | null;\n    head: string | null;\n    aheadBehind: {\n        ahead: number;\n        behind: number;\n    } | null;\n    remotes: RepositoryRemote[];\n}',
+  },
+  {
+    name: 'RepositoryRemote',
+    declaration: 'export interface RepositoryRemote {\n    name: string;\n    host: string | null;\n    transport: string | null;\n}',
+  },
+  {
+    name: 'RepositoryRequest',
+    declaration: 'export interface RepositoryRequest {\n    workspaceId: WorkspaceId;\n}',
+  },
+  {
+    name: 'RepositoryStatus',
+    declaration: 'export interface RepositoryStatus {\n    staged: RepositoryEntry[];\n    unstaged: RepositoryEntry[];\n    untracked: RepositoryEntry[];\n    unmerged: RepositoryEntry[];\n}',
   },
   {
     name: 'RequestContext',

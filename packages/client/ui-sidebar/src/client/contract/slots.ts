@@ -34,6 +34,8 @@ declare module '@arx-ai/arx-client-ui-slots' {
      * registers the browser.
      */
     'sidebar.workspaces': { kind: 'single'; scope: 'root'; owner: SidebarSectionOwnerProps }
+    /** Independent read-only repository region below the workspace browser. */
+    'sidebar.repository': { kind: 'single'; scope: 'root'; owner: SidebarSectionOwnerProps }
     /**
      * The settings seat at the sidebar foot. Declared by this package's
      * 'sidebar' entry; ui-settings registers its trigger row + modal panel.
@@ -134,6 +136,7 @@ export type SidebarRootComponentProps =
     | 'sidebar.brand.mark'
     | 'sidebar.brand.name'
     | 'sidebar.workspaces'
+    | 'sidebar.repository'
     | 'sidebar.settings'
     | 'sidebar.footer.action'
     | 'sidebar.exit'
