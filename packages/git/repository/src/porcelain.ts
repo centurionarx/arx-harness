@@ -14,6 +14,7 @@ export interface Porcelain {
  * @param text - Untruncated Git output.
  * @param maxItems - Maximum total records, counting a dual-side path once.
  * @returns Independent status groups and branch identity.
+ * @throws Sanitized invalid-status or item-limit failure for malformed or excessive records.
  */
 export function parsePorcelain(text: string, maxItems: number): Porcelain {
   if (text !== '' && !text.endsWith('\0')) throw new Error('REPOSITORY_INVALID_STATUS')
@@ -24,7 +25,7 @@ export function parsePorcelain(text: string, maxItems: number): Porcelain {
   }
   let items = 0
   for (let index = 0; index < records.length; index++) {
-    const record = records[index] ?? ''
+    const record = records[index] as string
     if (record.startsWith('# ')) {
       if (record.startsWith('# branch.oid ')) {
         const value = record.slice(13)
@@ -59,7 +60,7 @@ export function parsePorcelain(text: string, maxItems: number): Porcelain {
       tokens.push(record.slice(cursor, end))
       cursor = end + 1
     }
-    const xy = tokens[1] ?? '', submodule = tokens[2] ?? '', path = record.slice(cursor)
+    const xy = tokens[1] as string, submodule = tokens[2] as string, path = record.slice(cursor)
     if (!/^[.MADRCUT]{2}$/.test(xy) || !/^(N\.\.\.|S[.C][.M][.U])$/.test(submodule) || !path) throw new Error('REPOSITORY_INVALID_STATUS')
     const entry: RepositoryEntry = { path, xy, submodule }
     if (tag === '2') {

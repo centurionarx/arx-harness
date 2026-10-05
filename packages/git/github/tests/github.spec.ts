@@ -242,6 +242,21 @@ describe('GitHub bounded fixed-origin GET operations', () => {
     expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: 'octocat' })
   })
 
+  it('rejects selectors decoded from an account JSON request before reading credentials or fetching', async () => {
+    const h = await connected()
+    const request = JSON.parse('{"credential":"fixture-PAT-MUST-NOT-LEAK","url":"https://evil.invalid/user"}') as Record<string, never>
+    const read = vi.spyOn(h.memory, 'readRecord'), describe = vi.spyOn(h.memory, 'describeRecord')
+    const error = await h.service.account(request, signal()).catch((error: unknown) => error)
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe('GitHub operation failed')
+    expect((error as Error).cause).toBeUndefined()
+    expect(String(error)).not.toContain(SECRET)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(read).not.toHaveBeenCalled()
+    expect(describe).not.toHaveBeenCalled()
+    expect(h.memory.commits).toEqual([GITHUB_CREDENTIAL_KEY])
+  })
+
   it('bounds disconnected public results including their metadata', async () => {
     const h = await boot({ ...DEFAULT_CONFIG, maxBytes: 1 })
     await expect(h.service.account({}, signal())).rejects.toThrow('GitHub operation failed')
@@ -252,6 +267,68 @@ describe('GitHub bounded fixed-origin GET operations', () => {
     const h = await connected()
     fetchMock.mockResolvedValue(new Response(JSON.stringify(account), { headers: { 'content-type': 'application/vnd.github+json; charset=utf-8' } }))
     expect((await h.service.account({}, signal())).state).toBe('connected')
+  })
+
+  it('rejects a response without a declared JSON media type and releases its reader', async () => {
+    const h = await connected()
+    const response = new Response(new TextEncoder().encode(JSON.stringify(account)))
+    expect(response.headers.get('content-type')).toBeNull()
+    fetchMock.mockResolvedValue(response)
+    await expect(h.service.account({}, signal())).rejects.toThrow('GitHub operation failed')
+    expect(response.body?.locked).toBe(false)
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
+  })
+
+  it('reports a bodyless 401 as disconnected and rejects a bodyless 200 without deleting the record', async () => {
+    const h = await connected()
+    const responses = [new Response(null, { status: 401 }), new Response(null, { headers: { 'content-type': 'application/json' } })]
+    const listeners: (() => void)[] = []
+    fetchMock.mockImplementation(async (_url, init) => {
+      const owned = init?.signal, response = responses.shift()
+      if (!owned || !response) throw new Error('expected a response and operation signal')
+      const added = vi.spyOn(owned, 'addEventListener'), removed = vi.spyOn(owned, 'removeEventListener')
+      listeners.push(() => { expect(added).not.toHaveBeenCalled(); expect(removed).not.toHaveBeenCalled() })
+      return response
+    })
+    expect(await h.service.account({}, signal())).toEqual({ state: 'disconnected', writable: true, authFlowKey: GITHUB_CREDENTIAL_KEY })
+    await expect(h.service.account({}, signal())).rejects.toThrow('GitHub operation failed')
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
+    expect(h.memory.commits).toEqual([GITHUB_CREDENTIAL_KEY])
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(listeners).toHaveLength(2)
+    for (const verify of listeners) verify()
+  })
+
+  it('accepts response URL metadata only at the fixed GitHub API origin', async () => {
+    const h = await connected()
+    const response = json(account)
+    Object.defineProperty(response, 'url', { value: 'https://api.github.com/user' })
+    fetchMock.mockResolvedValue(response)
+    expect(await h.service.account({}, signal())).toEqual({ state: 'connected', writable: true, authFlowKey: GITHUB_CREDENTIAL_KEY,
+      account: { id: '42', login: 'octocat', webUrl: account.html_url } })
+    expect(response.body?.locked).toBe(false)
+  })
+
+  it.each([
+    { url: 'https://api.github.com/user', redirected: true },
+    { url: 'https://evil.invalid/' + SECRET, redirected: false },
+    { url: 'https://api.github.com.evil.invalid/user', redirected: false },
+  ])('rejects redirected or foreign-origin response metadata and cancels the unread body %#', async (metadata) => {
+    const h = await connected()
+    let cancellations = 0
+    const stream = new ReadableStream<Uint8Array>({ cancel() { cancellations++ } }, { highWaterMark: 0 })
+    const response = new Response(stream, { headers: { 'content-type': 'application/json' } })
+    Object.defineProperties(response, { url: { value: metadata.url }, redirected: { value: metadata.redirected } })
+    fetchMock.mockResolvedValue(response)
+    const error = await h.service.account({}, signal()).catch((error: unknown) => error)
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe('GitHub operation failed')
+    expect((error as Error).cause).toBeUndefined()
+    expect(String(error)).not.toContain(SECRET)
+    expect(cancellations).toBe(1)
+    expect(stream.locked).toBe(false)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
   })
 
   it.each(['-1', 'NaN', '1.5', 'bad-length'])('rejects invalid declared content length %s', async (length) => {
@@ -383,6 +460,24 @@ describe('GitHub bounded fixed-origin GET operations', () => {
     await expect(h.service.repositories({ page: 1 }, signal())).rejects.toThrow('GitHub operation failed')
   })
 
+  it.each(['feature/\u0000', 'feature/\u001f', 'feature/\u007f'])('rejects control or DEL characters decoded from repository branch JSON %#', async (defaultBranch) => {
+    const h = await connected()
+    fetchMock.mockResolvedValue(json([{ ...repo, default_branch: defaultBranch }]))
+    await expect(h.service.repositories({ page: 1 }, signal())).rejects.toThrow('GitHub operation failed')
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
+  })
+
+  it('rejects a repository web URL that differs from its locally derived GitHub URL', async () => {
+    const h = await connected()
+    fetchMock.mockResolvedValue(json([{ ...repo, html_url: 'https://evil.invalid/' + SECRET }]))
+    const error = await h.service.repositories({ page: 1 }, signal()).catch((error: unknown) => error)
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe('GitHub operation failed')
+    expect((error as Error).cause).toBeUndefined()
+    expect(String(error)).not.toContain(SECRET)
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
+  })
+
   it('rejects an already cancelled caller before issuing a request', async () => {
     const h = await connected()
     const controller = new AbortController()
@@ -412,6 +507,44 @@ describe('GitHub bounded fixed-origin GET operations', () => {
     await rejection
     expect(operationSettled).toBe(true)
     expect(cancelled).toBe(true)
+  })
+
+  it('joins a rejected stream cancellation on unload without exposing its diagnostics', async () => {
+    const h = await connected()
+    const entered = gate()
+    let cancellations = 0
+    const stream = new ReadableStream<Uint8Array>({
+      pull() { entered.resolve() },
+      cancel() { cancellations++; return Promise.reject(new Error(SECRET, { cause: new Error('private stream path') })) },
+    }, { highWaterMark: 0 })
+    const listeners: (() => void)[] = []
+    fetchMock.mockImplementation(async (_url, init) => {
+      const owned = init?.signal
+      if (!owned) throw new Error('expected an operation signal')
+      const added = vi.spyOn(owned, 'addEventListener'), removed = vi.spyOn(owned, 'removeEventListener')
+      listeners.push(() => {
+        expect(added).toHaveBeenCalledTimes(1)
+        expect(added.mock.calls[0]?.[0]).toBe('abort')
+        expect(removed).toHaveBeenCalledTimes(1)
+        expect(removed).toHaveBeenCalledWith('abort', added.mock.calls[0]?.[1])
+      })
+      return new Response(stream, { headers: { 'content-type': 'application/json' } })
+    })
+    const result = h.service.account({}, signal()).catch((error: unknown) => error)
+    await entered.promise
+    await h.fiber.dispose()
+    const error = await result
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe('GitHub operation failed')
+    expect((error as Error).cause).toBeUndefined()
+    expect(String(error)).not.toContain(SECRET)
+    expect(cancellations).toBe(1)
+    expect(stream.locked).toBe(false)
+    expect(listeners).toHaveLength(1)
+    for (const verify of listeners) verify()
+    expect(h.ctx.authorization.list()).toEqual([])
+    expect(h.ctx.get('github')).toBeUndefined()
+    expect(await h.memory.readRecord(GITHUB_CREDENTIAL_KEY)).toEqual({ kind: 'api-key', key: SECRET })
   })
 
   it('times out a stalled external fetch and aborts its signal', async () => {

@@ -56,6 +56,7 @@ function mountShell(
   const startSession = vi.fn()
   const toggleSidebar = vi.fn()
   let regionOwner: SidebarSectionOwnerProps | undefined
+  let repositoryOwner: SidebarSectionOwnerProps | undefined
   let settingsOwner: SidebarSettingsOwnerProps | undefined
   let footerActionOwner: SidebarFooterActionOwnerProps | undefined
   let exitOwner: SidebarExitOwnerProps | undefined
@@ -75,7 +76,10 @@ function mountShell(
       ) => {
         if (key === 'sidebar.brand.mark') return brandMark
         if (key === 'sidebar.brand.name') return brandName
-        if (key === 'sidebar.repository') return <div data-testid="repository-seat" data-wide={owner.wide} />
+        if (key === 'sidebar.repository') {
+          repositoryOwner = owner as SidebarSectionOwnerProps
+          return <div data-testid="repository-seat" data-wide={owner.wide} />
+        }
         if (key === 'sidebar.settings') {
           settingsOwner = owner
           return <div data-testid="settings-seat" data-wide={owner.wide} />
@@ -101,6 +105,10 @@ function mountShell(
     regionOwner: () => {
       if (regionOwner === undefined) throw new Error('region owner not rendered')
       return regionOwner
+    },
+    repositoryOwner: () => {
+      if (repositoryOwner === undefined) throw new Error('repository owner not rendered')
+      return repositoryOwner
     },
     settingsOwner: () => {
       if (settingsOwner === undefined) throw new Error('settings owner not rendered')
@@ -169,36 +177,44 @@ describe('SidebarRoot shell', () => {
     expect(screen.getByText('1.0.3')).toBeTruthy()
   })
 
-  it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {
+  it('hands regions their wide flag and clamps expandSidebar to the collapsed state', () => {
     const b = mountShell()
     expect(b.regionOwner().wide).toBe(true)
+    expect(b.repositoryOwner().wide).toBe(true)
     // The settings seat rides the same wide flag (ui-settings renders the row).
     expect(b.settingsOwner().wide).toBe(true)
     expect(b.footerActionOwner().wide).toBe(true)
     expect(b.exitOwner().wide).toBe(true)
     // Expanded: the request is a no-op (no accidental collapse).
     b.regionOwner().expandSidebar()
+    b.repositoryOwner().expandSidebar()
     expect(b.toggleSidebar).not.toHaveBeenCalled()
   })
 
-  it('keeps the region mounted through collapse and expands on its request', () => {
+  it('keeps regions mounted through collapse and expands on their requests', () => {
     vi.useFakeTimers()
     const b = mountShell()
     b.rerender({ collapsed: true })
     // Wide content survives the crossfade window, then settles into the rail.
     expect(b.regionOwner().wide).toBe(true)
+    expect(b.repositoryOwner().wide).toBe(true)
     vi.advanceTimersByTime(200)
     b.rerender({})
     expect(b.regionOwner().wide).toBe(false)
+    expect(b.repositoryOwner().wide).toBe(false)
     expect(b.footerActionOwner().wide).toBe(false)
     expect(screen.getByTestId('region')).toBeTruthy()
+    expect(screen.getByTestId('repository-seat')).toBeTruthy()
     b.regionOwner().expandSidebar()
     expect(b.toggleSidebar).toHaveBeenCalledOnce()
+    b.repositoryOwner().expandSidebar()
+    expect(b.toggleSidebar).toHaveBeenCalledTimes(2)
   })
 
   it('renders statically collapsed on a cold start (no crossfade classes)', () => {
     const b = mountShell({ collapsed: true })
     expect(b.regionOwner().wide).toBe(false)
+    expect(b.repositoryOwner().wide).toBe(false)
     expect(screen.getByRole('button', { name: 'Open sidebar' })).toBeTruthy()
   })
 })

@@ -1846,7 +1846,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/git/repository/src/index.ts:20`](../packages/git/repository/src/index.ts)
+Source: [`packages/git/repository/src/index.ts:18`](../packages/git/repository/src/index.ts)
 
 <a id="arx-aiarx-sandbox-local"></a>
 

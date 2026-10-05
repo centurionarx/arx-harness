@@ -1,8 +1,6 @@
 /** Host-only, read-only Git repository BFF; no Agent, shell, network, or transcript events. */
-import { devNull } from 'node:os'
 import { opendir } from 'node:fs/promises'
-import { join } from 'node:path'
-import { isAbsolute, posix, sep } from 'node:path'
+import { isAbsolute, join, normalize, posix, sep } from 'node:path'
 import type { Readable } from 'node:stream'
 import { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
@@ -35,6 +33,9 @@ export interface Config {
 declare module '@arx-ai/cordis' {
   interface Context { /** Host workspace Git inspection service. */ repository: RepositoryService }
 }
+
+// Git uses this null-device spelling on Windows and POSIX hosts.
+const GIT_DEV_NULL = '/dev/null'
 
 const requestSchema = schema.object({ workspaceId: schema.string().min(1).max(128) }).strict()
 const diffSchema = requestSchema.extend({ path: schema.string().min(1), side: schema.enum(['staged', 'unstaged', 'untracked']) })
@@ -103,9 +104,9 @@ export class RepositoryService extends TypertRemoteService {
         } catch {
           // Git also accepts SCP-style and local paths; neither is exposed as a raw URL.
           const scp = /^(?:[^/@:\s]+@)?([a-zA-Z0-9.-]+):[^\r\n]+$/.exec(raw)
-          if (scp && !/^[a-zA-Z]:[\\/]/.test(raw)) { host = scp[1] ?? null; transport = 'ssh' }
+          if (scp && !/^[a-zA-Z]:[\\/]/.test(raw)) { host = scp[1] as string; transport = 'ssh' }
         }
-        remotes.push({ name: match[1] ?? '', host, transport })
+        remotes.push({ name: match[1] as string, host, transport })
       }
       return { root: repo.cwd, branch: parsed.branch, head: parsed.head, aheadBehind: parsed.aheadBehind, remotes }
     })
@@ -147,7 +148,7 @@ export class RepositoryService extends TypertRemoteService {
       if (entry.originalPath !== undefined) { await this.path(repo, entry.originalPath, op); paths.push(entry.originalPath) }
       const args = ['diff', '--no-ext-diff', '--no-textconv', '--no-color', '--no-renames', '--unified=3', '--ignore-submodules=all']
       if (input.data.side === 'staged') args.push('--cached')
-      if (input.data.side === 'untracked') args.push('--no-index', '--', devNull, './' + input.data.path)
+      if (input.data.side === 'untracked') args.push('--no-index', '--', GIT_DEV_NULL, './' + input.data.path)
       else args.push('--', ...paths.map(path => './' + path))
       const output = await this.git(repo.cwd, args, op, input.data.side === 'untracked' ? [0, 1] : [0])
       const binary = /^Binary files .* differ$/m.test(output.text)
@@ -221,7 +222,7 @@ export class RepositoryService extends TypertRemoteService {
     }
     const top = await this.git(cwd, ['rev-parse', '--show-toplevel'], op, [0, 128])
     if (top.exitCode !== 0) throw new Error('REPOSITORY_NOT_FOUND')
-    if (this.line(top.text) !== cwd) throw new Error('REPOSITORY_OUTSIDE_WORKSPACE')
+    if (normalize(this.line(top.text)) !== cwd) throw new Error('REPOSITORY_OUTSIDE_WORKSPACE')
     const repo = { fs, workspace: target, root, cwd }
     await this.attributes(repo, op)
     op.signal.throwIfAborted()
@@ -233,8 +234,7 @@ export class RepositoryService extends TypertRemoteService {
     let items = 0, bytes = 0
     while (directories.length) {
       op.signal.throwIfAborted()
-      const directory = directories.pop()
-      if (directory === undefined) break
+      const directory = directories.pop() as string
       // listDir buffers all children and follows links; host-only opendir streams names, then ctx.fs checks each path.
       const entries = await opendir(directory, { bufferSize: 1 })
       for await (const entry of entries) {
@@ -305,7 +305,7 @@ export class RepositoryService extends TypertRemoteService {
   }
 
   private async path(repo: Repository, path: string, op: Operation, parentsOnly = false): Promise<void> {
-    if (!path || path.includes('\0') || isAbsolute(path) || posix.isAbsolute(path) || (sep === '\\' && path.includes('\\'))
+    if (!path || path.includes('\0') || isAbsolute(path) || posix.isAbsolute(path) || (path.includes(sep) && sep === '\\')
       || /^[a-zA-Z]:/.test(path) || path.split('/').some(part => !part || part === '.' || part === '..' || part.toLowerCase() === '.git')) throw new Error('REPOSITORY_INVALID_PATH')
     let prefix = ''
     const parts = path.split('/')
@@ -329,7 +329,7 @@ export class RepositoryService extends TypertRemoteService {
     const { subprocess } = this.hostProviders()
     const env: NodeJS.ProcessEnv = {}
     for (const key of Object.keys(process.env)) if (/^(GIT_|SSH_|GCM_|ASKPASS|DISPLAY)/i.test(key)) env[key] = undefined
-    Object.assign(env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: devNull, GIT_CONFIG_GLOBAL: devNull,
+    Object.assign(env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: GIT_DEV_NULL, GIT_CONFIG_GLOBAL: GIT_DEV_NULL,
       GIT_DIR: join(cwd, '.git'), GIT_WORK_TREE: cwd })
     Object.assign(env, { GIT_TERMINAL_PROMPT: '0', GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_OPTIONAL_LOCKS: '0',
       GIT_NO_LAZY_FETCH: '1', GIT_ATTR_NOSYSTEM: '1', GIT_LITERAL_PATHSPECS: '1', LC_ALL: 'C' })
@@ -337,7 +337,7 @@ export class RepositoryService extends TypertRemoteService {
     try { executable = await subprocess.resolveExecutable('git', undefined, op.signal) }
     catch { op.signal.throwIfAborted(); throw new Error('REPOSITORY_GIT_UNAVAILABLE') }
     const handle = subprocess.spawn({ argv: [executable, '--no-pager', '--no-optional-locks',
-      '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', '-c', 'core.hooksPath=' + devNull,
+      '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', '-c', 'core.hooksPath=' + GIT_DEV_NULL,
       '-c', 'core.pager=', '-c', 'core.attributesFile=', '-c', 'core.excludesFile=',
       '-c', 'submodule.recurse=false', '-c', 'diff.submodule=short', '-c', 'credential.interactive=false',
       '-c', 'diff.external=', '-c', 'diff.trustExitCode=false', ...args], cwd, env,

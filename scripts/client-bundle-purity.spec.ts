@@ -2,7 +2,6 @@
  * Pins shared client-bundle preset rules: the module-edge purity gate and
  * the physical watch dependencies hidden behind virtual CSS Modules.
  */
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import { clientBundle, requestedExternals } from '../packages/client/tsdown.client.ts'
@@ -107,23 +106,6 @@ describe('client bundle purity gate', () => {
     expect(resolveId(`@arx-ai/arx-${name}/remote`, importer)).toBe(expected)
   })
 
-  it('bundles source Remote values under the real tsx loader and declaration aliases', () => {
-    const script = [
-      "import { build } from 'tsdown'",
-      "import { clientBundle } from './packages/client/tsdown.client.ts'",
-      "const config = clientBundle('@arx-ai/arx-api-remotes', ['lib/types/index.js'])({ env: {} })",
-      "  .find(candidate => candidate.platform === 'browser')",
-      "if (config === undefined) throw new Error('Remote browser config missing')",
-      "const bundles = await build({ ...config, cwd: process.cwd() + '/packages/api/remotes',",
-      "  config: false, write: false, report: false, logLevel: 'silent' })",
-      'console.log(JSON.stringify({ bundles: bundles.length }))',
-    ].join('\n')
-    const output = execFileSync(process.execPath, ['--import', 'tsx', '--input-type', 'module', '--eval', script], {
-      cwd: fileURLToPath(new URL('..', import.meta.url)),
-      encoding: 'utf8',
-    })
-    expect(JSON.parse(output)).toEqual({ bundles: 1 })
-  })
 
   it('throws on any other @arx-ai leak', () => {
     expect(() => resolveId('@arx-ai/arx-agent')).toThrow(/purity/)

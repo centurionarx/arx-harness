@@ -148,10 +148,10 @@ export class GithubService extends TypertRemoteService {
       headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } })
     const reader = response.body?.getReader()
     let cancellation: Promise<void> | undefined
-    const cancel = () => {
-      if (reader) cancellation ??= reader.cancel().catch(() => { /* Stream cancellation diagnostics stay private. */ })
+    const cancel = reader === undefined ? undefined : () => {
+      cancellation ??= reader.cancel().catch(() => { /* Stream cancellation diagnostics stay private. */ })
     }
-    signal.addEventListener('abort', cancel, { once: true })
+    if (cancel) signal.addEventListener('abort', cancel, { once: true })
     try {
       signal.throwIfAborted()
       if (response.redirected || (response.url && new URL(response.url).origin !== 'https://api.github.com')) throw failed()
@@ -172,12 +172,12 @@ export class GithubService extends TypertRemoteService {
       text += decoder.decode()
       return JSON.parse(text) as unknown
     } finally {
-      signal.removeEventListener('abort', cancel)
-      if (reader) {
+      if (cancel) {
+        signal.removeEventListener('abort', cancel)
         cancel()
         await cancellation
-        reader.releaseLock()
       }
+      reader?.releaseLock()
     }
   }
   private operation<T>(caller: AbortSignal, run: (signal: AbortSignal) => Promise<T>, commit = false): Promise<T> {
