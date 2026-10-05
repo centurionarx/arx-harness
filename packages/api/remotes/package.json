@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-api-remotes",
   "description": "Remote BFF assembly and Host Agent/Session lookup policy",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "publishConfig": {
     "access": "public"
   },
@@ -79,6 +79,8 @@
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/arx-project": "workspace:^",
     "@arx-ai/arx-file-preview": "workspace:^",
+    "@arx-ai/arx-repository": "workspace:^",
+    "@arx-ai/arx-github": "workspace:^",
     "@arx-ai/arx-session-turn-outline": "workspace:^"
   },
   "devDependencies": {
@@ -103,6 +105,8 @@
     "@arx-ai/arx-web": "workspace:^",
     "@arx-ai/arx-project": "workspace:^",
     "@arx-ai/arx-file-preview": "workspace:^",
+    "@arx-ai/arx-repository": "workspace:^",
+    "@arx-ai/arx-github": "workspace:^",
     "@arx-ai/arx-session-turn-outline": "workspace:^"
   }
 }

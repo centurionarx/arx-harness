@@ -452,6 +452,42 @@ Types: [SandboxExecutionPolicy](sandbox.md)
 
 Source: [`packages/fs/fs/src/index.ts`](../../packages/fs/fs/src/index.ts)
 
+<a id="ctxrepository--repositoryservice"></a>
+
+### `ctx.repository` — `RepositoryService`
+
+Read-only host Git operations; errors contain stable codes, never raw Git diagnostics or URLs.
+
+```ts cordis-catalog
+/**
+ * Inspect current host repository identity and credential-free remote identities.
+ * @param request - Registered workspace id; repositories above that workspace are refused.
+ * @param signal - Gateway-owned request cancellation; no Agent is required.
+ * @returns Root, branch, head, local ahead/behind counts and sanitized remote identities.
+ */
+@Remote inspect(request: RepositoryRequest, signal: AbortSignal): Promise<RepositoryInspection>
+
+/**
+ * Read complete porcelain-v2 status, never a truncated stream tail.
+ * @param request - Registered host workspace selection.
+ * @param signal - Gateway-owned request cancellation.
+ * @returns Independent staged, unstaged, untracked and unmerged groups.
+ */
+@Remote status(request: RepositoryRequest, signal: AbortSignal): Promise<RepositoryStatus>
+
+/**
+ * Compare one current status entry; symlinks, escaping paths, conflicts and submodules are refused.
+ * @param request - Workspace id, repository-relative status path and independent comparison side.
+ * @param signal - Gateway-owned request cancellation.
+ * @returns Complete bounded unified text, or binary metadata without blob content.
+ */
+@Remote diff(request: RepositoryDiffRequest, signal: AbortSignal): Promise<RepositoryDiff>
+```
+
+Types: [RepositoryDiff](../../packages/git/repository/README.md) · [RepositoryDiffRequest](../../packages/git/repository/README.md) · [RepositoryInspection](../../packages/git/repository/README.md) · [RepositoryRequest](../../packages/git/repository/README.md) · [RepositoryStatus](../../packages/git/repository/README.md)
+
+Source: [`packages/git/repository/src/index.ts`](../../packages/git/repository/src/index.ts)
+
 <a id="fs-events"></a>
 
 ### `fs/*` events

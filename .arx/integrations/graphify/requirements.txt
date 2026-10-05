@@ -1,0 +1,2 @@
+# Reviewed Graphify 0.9.74: MCP query server and SQL AST extraction only.
+graphifyy[mcp,sql]==0.9.74

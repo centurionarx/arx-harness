@@ -2,6 +2,10 @@
 
 arx Harness is a plugin-based agent harness on vendored Cordis: **everything is a plugin**. Read [docs/architecture.md](docs/architecture.md) before changing `packages/`; follow [docs/AGENTS.md](docs/AGENTS.md) for documentation.
 
+## Mandatory Graphify lifecycle
+
+Before every task, read the [Graphify artifacts](docs/cookbook/project-analysis-integrations.md#mandatory-task-lifecycle), including JSON, report, diagrams, and HTML. Before each top-level task’s final response, run `node .arx/integrations/graphify/refresh.mjs`, including read-only tasks; wait for delegates first. Never claim freshness or completion after a failed refresh.
+
 ## Repository layout
 
 ```

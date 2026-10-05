@@ -1,3 +1,9 @@
+export type {} from '@arx-ai/arx-github/remote'
+import githubRemote from '@arx-ai/arx-github/remote'
+export type { GithubId, GithubAccount, GithubAccountResult, GithubRepository, GithubRepositoriesResult, GithubRepositoriesRequest } from '@arx-ai/arx-github/types'
+export type {} from '@arx-ai/arx-repository/remote'
+import repositoryRemote from '@arx-ai/arx-repository/remote'
+export type { DiffSide, RepositoryRequest, RepositoryDiffRequest, RepositoryInspection, RepositoryRemote, RepositoryEntry, RepositoryStatus, RepositoryDiff } from '@arx-ai/arx-repository/types'
 export type {} from '@arx-ai/arx-project/remote'
 export type {} from '@arx-ai/arx-file-preview/remote'
 export type {} from '@arx-ai/arx-session-turn-outline/remote'
@@ -126,7 +132,8 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   try {
     for (const contribution of [
       commandsRemote, goalsRemote, dynamicRemote, fileReferencesRemote,
-      pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote, projectsRemote, turnOutlinesRemote, filePreviewsRemote,
+      pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote, projectsRemote,
+      turnOutlinesRemote, filePreviewsRemote, repositoryRemote, githubRemote,
     ]) {
       disposers.push(await ctx.remote.$mount(contribution))
     }

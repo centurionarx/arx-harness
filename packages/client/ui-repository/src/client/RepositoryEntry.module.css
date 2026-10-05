@@ -1,0 +1,54 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 0;
+  border-top: 1px solid var(--arx-alias-border-l2);
+  color: var(--arx-alias-label-primary);
+  font-size: 12px;
+}
+.header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
+.button, .file, .selector {
+  font: inherit;
+  color: inherit;
+  border: 1px solid var(--arx-alias-border-l2);
+  border-radius: 6px;
+  background: var(--arx-alias-button-elevated-fill);
+  padding: 6px;
+}
+.button, .file { cursor: pointer; }
+.button:hover, .file:hover { background: var(--arx-alias-interactive-bg-hover); }
+.button:disabled, .file:disabled { cursor: default; color: var(--arx-alias-label-secondary); }
+.button:focus-visible, .file:focus-visible, .selector:focus-visible, .patch:focus-visible { outline: 2px solid var(--arx-alias-label-primary); outline-offset: 2px; }
+.selector { width: 100%; margin: 8px 0; flex: none; }
+.scroll { min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+.metadata { display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; color: var(--arx-alias-label-secondary); }
+.group h3 { font-size: 12px; margin: 8px 0 4px; }
+.file { display: flex; gap: 6px; width: 100%; text-align: left; border: none; background: transparent; }
+.file span { overflow-wrap: anywhere; min-width: 0; }
+.file code { flex: none; }
+.rail { width: 36px; height: 36px; margin: 6px 0; border: none; background: transparent; }
+.dialog {
+  --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2);
+  --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2);
+  width: min(960px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--arx-alias-border-inverted);
+  border-radius: 16px;
+  background: var(--arx-alias-bg-layer-2);
+  color: var(--arx-alias-label-primary);
+  box-shadow: var(--arx-shadow-lv3);
+}
+.dialog::backdrop {
+  background: var(--arx-alias-bg-mask-1);
+  backdrop-filter: var(--arx-mask-blur);
+}
+.dialogHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dialogHeader h2 { margin: 0; font-size: 16px; }
+.description { overflow-wrap: anywhere; color: var(--arx-alias-label-secondary); }
+.patch { max-height: 65vh; overflow: auto; font-family: var(--ds-font-family-code); font-size: 12px; white-space: pre; }

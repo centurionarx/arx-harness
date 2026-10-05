@@ -1,4 +1,4 @@
-/** Map one workspace source alias target to its declaration-build target. */
+/** Map one workspace alias target to its declaration-build target. */
 export function builtDeclarationPath(candidate: string): string {
   // Two workspace path forms exist: whole-package entries end in /src, subpath
   // wildcards (apiproxy's browser-safe /api and /client channels) in /src/*.
@@ -18,5 +18,7 @@ export function builtDeclarationPath(candidate: string): string {
   if (sourceDir?.[1] && sourceDir[2]) {
     return `${sourceDir[1]}/lib/types/${sourceDir[2]}`
   }
+  // Generated Remote aliases already name their declaration-build output.
+  if (candidate.includes('/lib/') && candidate.endsWith('.d.ts')) return candidate
   throw new Error(`doc-typecheck: cannot map workspace source path to built declarations: ${candidate}`)
 }

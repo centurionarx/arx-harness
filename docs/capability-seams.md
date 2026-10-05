@@ -197,6 +197,12 @@ flowchart LR
   svc_lsp["ctx.lsp<br/>Language-server navigation seam"]
   pkg_lsp_local["lsp-local"]
   pkg_tool_lsp["tool-lsp"]
+  pkg_github["github"]
+  svc_github["ctx.github<br/>Private authorization and read-only GitHub discovery"]
+  pkg_ui_github["ui-github"]
+  pkg_repository["repository"]
+  svc_repository["ctx.repository<br/>Registered-workspace read-only Git inspection"]
+  pkg_ui_repository["ui-repository"]
   pkg_file_preview["file-preview"]
   svc_filePreviews["ctx.filePreviews<br/>Session-authorized bounded file preview"]
   pkg_ui_file_preview["ui-file-preview"]
@@ -253,6 +259,7 @@ flowchart LR
   pkg_fs_e2b --> svc_fs
   pkg_fs_local --> svc_fs
   pkg_fs_sandbox --> svc_fs
+  pkg_github --> svc_github
   pkg_goal --> svc_goals
   pkg_invariants --> svc_invariants
   pkg_jobs --> svc_jobs
@@ -270,6 +277,7 @@ flowchart LR
   pkg_project --> svc_projects
   pkg_project_runner --> svc_projectRunner
   pkg_pwsh_local --> svc_shell
+  pkg_repository --> svc_repository
   pkg_sandbox --> svc_sandbox
   pkg_sandbox_local --> svc_sandbox
   pkg_sandbox_policy --> svc_sandboxPolicy
@@ -354,6 +362,7 @@ flowchart LR
   svc_e2b --> pkg_subprocess_e2b
   svc_filePreviews --> pkg_ui_file_preview
   svc_fs --> pkg_tool_fs
+  svc_github --> pkg_ui_github
   svc_invariants --> pkg_agent
   svc_invariants --> pkg_agent_loop
   svc_invariants --> pkg_scope
@@ -371,6 +380,7 @@ flowchart LR
   svc_projects --> pkg_tool_project
   svc_projects --> pkg_ui_projects
   svc_projects --> pkg_webhook
+  svc_repository --> pkg_ui_repository
   svc_sandbox --> pkg_bash_sandbox
   svc_sandbox --> pkg_terminal_bash
   svc_sandboxPolicy --> pkg_bash_sandbox
@@ -514,6 +524,8 @@ flowchart LR
 | `ctx.clientModules` | `core` | `modules` | - | `hmr` | - | Composes the __ARX_BOOT__ entry graph from an incremental arx.client scan, serves plugin bundles, and notifies rebuilt/graph-changed subscribers. |
 | `ctx.workflowEngine` | `seam` | [`workflow`](../packages/workflow/workflow) | [`workflow-worker-thread`](../packages/workflow/workflow-worker-thread) | [`tool-workflow`](../packages/workflow/tool-workflow), [`tool-ralph`](../packages/workflow/tool-ralph) | - | One engine per context, as in bash, with no named-provider registry; the general workflow and fixed Ralph consumers start runs whose agent() calls fan out through ctx.subagents. |
 | `ctx.lsp` | `seam` | [`lsp`](../packages/lsp/lsp) | `lsp-local` | [`tool-lsp`](../packages/lsp/tool-lsp) | - | Provider registration and selection plus normalized query execution over exactly four operations; the seam offers no protocol escape hatch, so a backend translates into the normalized request and result. |
+| `ctx.github` | `core` | [`github`](../packages/git/github) | - | `ui-github` | - | Resolves explicitly configured credentials, registers the private PAT record flow, and returns bounded account and repository metadata without caller URLs or Git writes. |
+| `ctx.repository` | `core` | [`repository`](../packages/git/repository) | - | `ui-repository` | - | Owns bounded managed Git reads against validated host-local providers, independent index and worktree sides, and complete comparisons without exposing arbitrary subprocess arguments. |
 | `ctx.filePreviews` | `core` | [`file-preview`](../packages/fs/file-preview) | - | `ui-file-preview` | - | Resolves each request through the live Agent filesystem and cwd, confines the canonical path, enforces provider byte limits, and returns JSON-safe text or base64 through the authenticated Remote surface. |
 | `ctx.projects` | `core` | [`project`](../packages/project/project) | - | [`tool-project`](../packages/project/tool-project), [`project-runner`](../packages/project/project-runner), [`webhook`](../packages/webhook/webhook), `ui-projects` | - | Owns workspace-linked projects, immutable plan and prompt revisions, exact approval, task evidence, bounded workflow ledgers, and compare-and-set publication in one storage-domain aggregate. |
 | `ctx.projectRunner` | `core` | [`project-runner`](../packages/project/project-runner) | - | [`tool-project`](../packages/project/tool-project) | - | Claims one committed dependency-ready step at a time, launches it through the existing subagent seam, attaches the child Session, and settles measured bounded output without retrying uncertain external effects. |

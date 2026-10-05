@@ -408,6 +408,11 @@
         "tests/**/*.ts"
       ]
     },
+    "packages/git/github": {
+      "ignoreDependencies": [
+        "zod"
+      ]
+    },
     "packages/fs/file-preview": {
       "ignoreDependencies": [
         "zod"

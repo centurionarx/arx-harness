@@ -53,6 +53,12 @@
       "path": "../../typert/registry"
     },
     {
+      "path": "../../git/repository"
+    },
+    {
+      "path": "../../git/github"
+    },
+    {
       "path": "../../typert/protocol"
     }
   ]

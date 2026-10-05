@@ -14,7 +14,8 @@ export interface DropOverlayLabels {
  * Decoration only: `pointer-events: none` keeps drag targeting on the page
  * below, so the owner's document-level listeners keep an accurate enter/leave
  * count and own accept/reject. Rendered through a body portal for the same
- * transformed-ancestor reason as the lightbox.
+ * transformed-ancestor reason as the lightbox. The localized title names the
+ * status region independently of other page status regions.
  *
  * @param props.disabled - drops are currently refused; renders the blocked
  * illustration and drops the desc line.
@@ -26,7 +27,7 @@ export function DropOverlay({ disabled, labels }: {
   labels: DropOverlayLabels
 }) {
   return createPortal(
-    <div className={css.mask} role="status">
+    <div className={css.mask} role="status" aria-label={labels.title}>
       <div className={css.wrap}>
         <div className={css.illustration} aria-hidden="true">
           {disabled ? <UploadDisabledIllustration /> : <UploadIllustration />}

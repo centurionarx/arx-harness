@@ -1,0 +1,35 @@
+- name: '@arx-ai/arx-llm'
+- name: '@arx-ai/arx-session'
+- name: '@arx-ai/arx-system-prompt'
+- name: '@arx-ai/arx-tools'
+- name: '@arx-ai/arx-agent'
+- name: '@arx-ai/arx-skill'
+- name: '@arx-ai/arx-skill-filesystem'
+  config:
+    includeDefaultRoots: false
+    customSkillDirs:
+      - !!js process.env.ARX_PONYTAIL_SKILL_ROOT
+    watch: false
+- name: '@arx-ai/arx-tool-skill'
+- name: '@arx-ai/arx-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+    compression: none
+- name: '@arx-ai/arx-llm-replay'
+  config:
+    providers:
+      - id: ponytail-provider-a
+        models:
+          - id: ponytail-model-a
+            contextWindow: 128000
+      - id: ponytail-provider-b
+        models:
+          - id: ponytail-model-b
+            contextWindow: 128000
+- name: '@arx-ai/arx-agent-loop'
+  config:
+    agents:
+      - id: main
+        provider: !!js process.env.ARX_PONYTAIL_PROVIDER
+        model: !!js process.env.ARX_PONYTAIL_MODEL
+        cwd: !!js process.cwd()

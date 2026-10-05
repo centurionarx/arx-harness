@@ -1244,6 +1244,34 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     source: 'packages/client/ui-conversation/src/client/contract/slots.ts:63',
   },
   {
+    key: 'repository.github',
+    kind: 'single',
+    scope: 'root',
+    summary: 'Optional GitHub inspection above the local Git view, owned by ui-repository.',
+    doc: 'Optional GitHub inspection above the local Git view, owned by ui-repository.',
+    registerOptions: [],
+    ownerProps: [
+      '/** Explicit workspace pairing supplied to the optional GitHub inspection child. */\nexport interface GithubInspectionOwnerProps extends SidebarSectionOwnerProps {\n  /** Selected registered workspace; null means no explicit pairing. */\n  workspaceId: WorkspaceId | null\n  /** Retarget the Git inspection to the explicitly chosen registered workspace. */\n  selectWorkspace: (id: WorkspaceId | null) => void\n}',
+    ],
+    ownerPropsReferences: [
+      'SidebarSectionOwnerProps',
+    ],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar.repository\' (client-ui-repository), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-github GithubEntry',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'repository.github\', () => ctx.slots.register(\n      { name: \'repository.github\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-repository/src/client/props.ts:18',
+  },
+  {
     key: 'root',
     kind: 'single',
     scope: 'root',
@@ -1630,6 +1658,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar.settings\' (client-ui-settings-general), so it exists while that entry is mounted',
     occupants: [
       'client-ui-agent-preset AgentPresetSection id \'agent-presets\'',
+      'client-ui-github GithubAccountSection id \'github\'',
       'client-ui-settings-general GeneralSection id \'general\'',
       'client-ui-settings-models ModelsSection id \'models\'',
       'client-ui-settings-plugins PluginsSettingsSection id \'plugins\'',
@@ -1808,7 +1837,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.exit\', () => ctx.slots.register(\n      { name: \'sidebar.exit\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:53',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:55',
   },
   {
     key: 'sidebar.footer.action',
@@ -1854,7 +1883,33 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.footer.action\', () => ctx.slots.register(\n      { name: \'sidebar.footer.action\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:47',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:49',
+  },
+  {
+    key: 'sidebar.repository',
+    kind: 'single',
+    scope: 'root',
+    summary: 'Independent read-only repository region below the workspace browser.',
+    doc: 'Independent read-only repository region below the workspace browser.',
+    registerOptions: [],
+    ownerProps: [
+      '/**\n * Owner share of the browser hole — the only facts crossing the shell/region\n * boundary. Business data and actions arrive through the region\'s own inject.\n */\nexport interface SidebarSectionOwnerProps {\n  /** Shell fold-state output: wide renders the full browser, rail the icon column. */\n  wide: boolean\n  /** Rail icons request expansion; the browser rides the wide flip for focus. */\n  expandSidebar: () => void\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-repository RepositoryEntry',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.repository\', () => ctx.slots.register(\n      { name: \'sidebar.repository\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:38',
   },
   {
     key: 'sidebar.settings',
@@ -1880,7 +1935,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.settings\', () => ctx.slots.register(\n      { name: \'sidebar.settings\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:42',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:44',
   },
   {
     key: 'sidebar.workspaces',

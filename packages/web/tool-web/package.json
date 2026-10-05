@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-web",
   "description": "Model-facing web tools (web_search, web_fetch) over the arx Harness web capability seam (ctx.web)",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "publishConfig": {
     "access": "public"
   },

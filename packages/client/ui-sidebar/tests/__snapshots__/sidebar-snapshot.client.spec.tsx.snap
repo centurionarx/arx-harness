@@ -66,6 +66,14 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
       />
     </div>
     <div
+      class="repositoryArea"
+    >
+      <div
+        data-slot="sidebar.repository"
+        style="display: contents;"
+      />
+    </div>
+    <div
       class="footArea"
     >
       <div
@@ -202,6 +210,14 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
     >
       <div
         data-slot="sidebar.workspaces"
+        style="display: contents;"
+      />
+    </div>
+    <div
+      class="repositoryArea"
+    >
+      <div
+        data-slot="sidebar.repository"
         style="display: contents;"
       />
     </div>

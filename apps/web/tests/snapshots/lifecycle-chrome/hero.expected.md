@@ -17,6 +17,28 @@
     - img
     - text: workspace
   - treeitem "New Session" [selected]
+- region "Repository":
+  - region "GitHub":
+    - strong: GitHub
+    - button "Refresh"
+    - status: Metadata changed. Refresh before using GitHub.
+    - button "Configure GitHub"
+    - text: Workspace
+    - combobox "Workspace":
+      - option "Choose explicitly" [selected]
+      - option "workspace"
+    - text: Repo
+    - combobox "Repo" [disabled]:
+      - option "Choose explicitly" [selected]
+    - list
+    - button "Load more" [disabled]
+  - strong: Repository
+  - button "Refresh" [disabled]
+  - combobox "Workspace":
+    - option "Select a workspace" [selected]
+    - option "workspace"
+  - paragraph: Select a workspace to inspect its repository.
+  - status: Repository data is stale. Refresh to continue.
 - button "Projects"
 - button "Settings":
   - img

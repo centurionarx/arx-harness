@@ -10,6 +10,9 @@
     - button "Web search":
       - img
       - text: Web search
+    - button "GitHub":
+      - img
+      - text: GitHub
     - button "Plugins":
       - img
       - text: Plugins

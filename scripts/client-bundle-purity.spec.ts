@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import { clientBundle, requestedExternals } from '../packages/client/tsdown.client.ts'
 
-type ResolveId = (source: string) => null | { id: string; external: boolean }
+type ResolveId = (source: string, importer?: string) => null | string | { id: string; external: boolean }
 
 interface CssModulePlugin {
   name: string
@@ -99,6 +99,13 @@ describe('client bundle purity gate', () => {
     expect(() => resolveId('@arx-ai/arx-goal/client')).toThrow(/purity/)
     expect(() => resolveId('@arx-ai/arx-goal/remote/nested')).toThrow(/purity/)
   })
+
+  it.each(['github', 'repository'])('resolves generated %s Remote values to runtime JavaScript', (name) => {
+    const importer = fileURLToPath(new URL('../packages/api/remotes/src/client/index.ts', import.meta.url))
+    const expected = fileURLToPath(new URL(`../packages/git/${name}/lib/typert.remote-client.js`, import.meta.url))
+    expect(resolveId(`@arx-ai/arx-${name}/remote`, importer)).toBe(expected)
+  })
+
 
   it('throws on any other @arx-ai leak', () => {
     expect(() => resolveId('@arx-ai/arx-agent')).toThrow(/purity/)

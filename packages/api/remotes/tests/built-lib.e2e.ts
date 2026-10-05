@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process'
+import { execFile, execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 /**
  * Built-artifact smoke for the first generated Remote: plain Node boots the
  * Host and Browser bundle handoffs, then crosses the shared `/api` HTTP route.
+ * The real tsx build probe also requires generated Remote runtime artifacts.
  */
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url))
@@ -29,6 +30,24 @@ const requiredArtifacts = [
 ].every(path => existsSync(artifact(path)))
 
 describe.skipIf(!requiredArtifacts)('Goal Remote built LIB chain', () => {
+  it('bundles source Remote values under the real tsx loader and declaration aliases', () => {
+    const script = [
+      "import { build } from 'tsdown'",
+      "import { clientBundle } from './packages/client/tsdown.client.ts'",
+      "const config = clientBundle('@arx-ai/arx-api-remotes', ['lib/types/index.js'])({ env: {} })",
+      "  .find(candidate => candidate.platform === 'browser')",
+      "if (config === undefined) throw new Error('Remote browser config missing')",
+      "const bundles = await build({ ...config, cwd: process.cwd() + '/packages/api/remotes',",
+      "  config: false, write: false, report: false, logLevel: 'silent' })",
+      'console.log(JSON.stringify({ bundles: bundles.length }))',
+    ].join('\n')
+    const output = execFileSync(process.execPath, ['--import', 'tsx', '--input-type', 'module', '--eval', script], {
+      cwd: root,
+      encoding: 'utf8',
+    })
+    expect(JSON.parse(output)).toEqual({ bundles: 1 })
+  })
+
   it('runs root and Agent-scoped calls through generated bundles and real HTTP', async () => {
     const urls = Object.fromEntries(Object.entries({
       agent: 'packages/core/agent/lib/index.js',

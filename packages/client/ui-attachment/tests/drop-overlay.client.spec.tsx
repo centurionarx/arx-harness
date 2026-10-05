@@ -17,6 +17,17 @@ describe('DropOverlay', () => {
     expect(overlay.textContent).toContain('最多 20 张，每张 5MB')
   })
 
+  it('names the invitation independently of other page status regions', () => {
+    const view = render(<>
+      <p role="status">Repository metadata is cold</p>
+      <DropOverlay disabled={false} labels={{ title: 'Drag images here to add them', desc: 'Up to 20 images, 5MB each' }} />
+    </>)
+    const overlay = view.getByRole('status', { name: 'Drag images here to add them' })
+    expect(overlay.parentElement).toBe(document.body)
+    expect(overlay.textContent).toContain('Up to 20 images, 5MB each')
+    expect(view.getByText('Repository metadata is cold').getAttribute('role')).toBe('status')
+  })
+
   it('omits the desc line when none is resolved', () => {
     const view = render(<DropOverlay disabled={false} labels={{ title: '图片拖动到此处即可添加' }} />)
     expect(view.getByRole('status').textContent).toBe('图片拖动到此处即可添加')

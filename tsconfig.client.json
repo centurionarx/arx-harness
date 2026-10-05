@@ -75,6 +75,8 @@
     { "path": "./packages/client/ui-deliverables" },
     { "path": "./packages/client/ui-open-in-app" },
     { "path": "./packages/client/ui-workflow-run" },
+    { "path": "./packages/client/ui-repository" },
+    { "path": "./packages/client/ui-github" },
     { "path": "./packages/client/ui-workspace" },
     { "path": "./packages/client/ui-input-trigger" },
     { "path": "./packages/client/ui-commands" },
