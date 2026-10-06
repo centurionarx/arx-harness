@@ -13,7 +13,6 @@ import css from './RepositoryEntry.module.css'
  */
 export function RepositoryEntry(props: RepositoryProps) {
   const { wide, expandSidebar, useWorkspaces, useStore, useRepository, actions, select, cancel, show, close, refresh, t } = props
-  const { renderSlot } = props
   const chooseWorkspace = (id: WorkspaceId | null): void => { actions.selectWorkspace(id) }
   const workspaces = useWorkspaces(state => state)
   const selection = useStore(state => state)
@@ -78,7 +77,6 @@ export function RepositoryEntry(props: RepositoryProps) {
     expandSidebar()
   }}>Git</button>
   return <section className={css.root} aria-label={t('title')}>
-    {renderSlot('repository.github', { wide, expandSidebar, workspaceId, selectWorkspace: chooseWorkspace })}
     <div className={css.header}>
       <strong>{t('title')}</strong>
       <button type="button" className={css.button} disabled={workspaceId === null || phase === 'loading'} onClick={() => {

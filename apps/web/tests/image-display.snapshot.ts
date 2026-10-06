@@ -159,6 +159,15 @@ it('accepts a whole-page drop under the limits-labeled overlay and refuses an ov
   fireEvent.click(start)
   const textarea = await screen.findByPlaceholderText('Describe what you want to build', {}, { timeout: 10_000 })
 
+  // The account has an independent status while the page-wide drop status comes and goes.
+  fireEvent.click(await screen.findByRole('button', { name: 'Settings' }))
+  const settings = await screen.findByRole('dialog', { name: 'Settings' })
+  fireEvent.click(within(settings).getByRole('button', { name: 'GitHub' }))
+  const account = within(settings).getByRole('region', { name: 'GitHub' })
+  const accountStatus = within(account).getByRole('status')
+  const accountStatusText = accountStatus.textContent
+  expect(accountStatusText).toMatch(/\S/)
+
   // A file drag anywhere over the page raises the full-viewport overlay whose
   // desc line carries the projected limits — copy that can only render after
   // the imageLimits projection crossed the real fixture transport.
@@ -166,6 +175,7 @@ it('accepts a whole-page drop under the limits-labeled overlay and refuses an ov
   const dataTransfer = { types: ['Files'], files: [image], dropEffect: 'none' }
   fireEvent.dragEnter(document.body, { dataTransfer })
   const overlay = await screen.findByRole('status', { name: 'Drag images here to add them' })
+  expect(overlay.closest('[inert], [aria-hidden="true"], [hidden]')).toBeNull()
   expect(overlay.textContent).toContain('Drag images here to add them')
   await waitFor(() => {
     expect(overlay.textContent).toContain('Up to 20 images, 5MB each')
@@ -179,7 +189,10 @@ it('accepts a whole-page drop under the limits-labeled overlay and refuses an ov
     expect([...rail.querySelectorAll('img')].map(img => img.getAttribute('alt'))).toEqual(['dropped.png'])
   }, { timeout: 5_000 })
   expect(screen.queryByRole('status', { name: 'Drag images here to add them' })).toBeNull()
-  expect(within(screen.getByRole('region', { name: 'GitHub' })).getByRole('status')).not.toBeNull()
+  expect(within(account).getByRole('status')).toBe(accountStatus)
+  expect(accountStatus.textContent).toBe(accountStatusText)
+  fireEvent.click(within(settings).getByRole('button', { name: 'Close' }))
+  await waitFor(() => { expect(screen.queryByRole('dialog', { name: 'Settings' })).toBeNull() })
 
   // An intake that would exceed the projected per-message count is refused as
   // a whole batch at add time: the banner names the limit and the rail keeps

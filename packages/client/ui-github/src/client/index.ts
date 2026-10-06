@@ -1,4 +1,4 @@
-/** Account settings and repository navigation share one GitHub metadata controller. */
+/** Settings account and repository navigation share one GitHub metadata controller. */
 import type { ClientContext } from '@arx-ai/arx-client-runtime/client'
 import type { ConnectionHandle } from '@arx-ai/arx-api-remotes/client'
 import type {} from '@arx-ai/arx-client-locale/client'
@@ -21,7 +21,7 @@ declare module '@arx-ai/arx-client-ui-slots' {
 }
 /** Generated GitHub Remote and the generic authorization carrier are independent capabilities. */
 export const inject = ['slots', 'locale', 'connection', 'remote', 'remote.github']
-/** Contribute independently to actual settings and repository declarations.
+/** Contribute account settings and repository browsing within the Settings page.
  * @param ctx - Client plugin context.
  */
 export function apply(ctx: ClientContext): void {
@@ -53,12 +53,12 @@ export function apply(ctx: ClientContext): void {
   }
   const repositoryFace: GithubInjected = {
     hooks: { github: controller }, refresh: () => controller.refresh(), more: () => controller.more(),
-    openSettings: () => { ctx.emit('settings/open-section', 'github') },
   }
   ctx.slots.inject('settings.section', () => {
     const unregister = ctx.slots.register({
       name: 'settings.section', id: 'github', order: 12, locale: 'github',
       label: () => ctx.locale.bind('github')('title'), inject: () => accountFace,
+      children: { 'settings.github.repository': { kind: 'single', scope: 'root' } },
     }, GithubAccountSection)
     // oxlint-disable-next-line typescript/no-misused-promises -- Cordis awaits the declaration-bound effect disposer.
     return async () => { unregister(); await controller.leave() }

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-sandbox-windows-acl",
   "description": "Windows ACL write-restriction sandbox backend (restricted-token spawn with capability-SID write allowlist) for the arx Harness sandbox seam",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "publishConfig": {
     "access": "public"
   },

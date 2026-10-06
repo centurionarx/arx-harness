@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { bindSnapshotSelector, makeTranslate, SlotTestRuntime } from '@arx-ai/arx-client-test-runtime'
 import { LocaleRuntime } from '@arx-ai/arx-client-locale/client'
+import type { PropsRuntime, PropsRenderSlots } from '@arx-ai/arx-client-ui-slots'
 import * as RepositoryPlugin from '../src/client/index.ts'
 import { createSnapshotStore, type ClientContext, type WorkspaceListState } from '@arx-ai/arx-client-runtime/client'
 import type { GithubInspectionOwnerProps, RepositoryProps } from '../src/client/props.ts'
@@ -14,8 +15,15 @@ import { pt } from '../src/client/locales.ts'
 import { deferred, inspection, reads, status, wid } from './fixtures.client.ts'
 import type { RepositoryInspection } from '@arx-ai/arx-repository/types'
 
+declare module '@arx-ai/arx-client-ui-slots' {
+  interface SlotMap {
+    'test.repository.git-owner': { kind: 'single'; scope: 'root'; owner: { wide: boolean } }
+    'test.repository.settings-owner': { kind: 'single'; scope: 'root'; owner: {} }
+  }
+}
+
 afterEach(cleanup)
-function bench(overrides: Partial<RepositoryReads> = {}, renderSlot: RepositoryProps['renderSlot'] = () => null) {
+function bench(overrides: Partial<RepositoryReads> = {}) {
   const controller = new RepositoryController(reads(overrides))
   const store = createRepositoryViewStore().create()
   const workspaces = createSnapshotStore<WorkspaceListState>({
@@ -24,7 +32,6 @@ function bench(overrides: Partial<RepositoryReads> = {}, renderSlot: RepositoryP
     archivedSessionIds: [], state: 'idle', phase: 'ready', error: null, baselinesReady: true, recentWorkspaceId: undefined,
   })
   const props: RepositoryProps = {
-    renderSlot,
     wide: true, expandSidebar: vi.fn(), useSessions: () => { throw new Error('unused') },
     useWorkspaces: bindSnapshotSelector(workspaces), useStore: bindSnapshotSelector(store), actions: store.actions,
     useRepository: bindSnapshotSelector(controller), t: makeTranslate(pt),
@@ -40,60 +47,112 @@ function bench(overrides: Partial<RepositoryReads> = {}, renderSlot: RepositoryP
   return { view, props, store, controller, workspaces, choose, refresh }
 }
 describe('repository presentation', () => {
-  it('retargets the same Git reads through an optional child explicit workspace callback', async () => {
+  it('shares explicit workspace selection across independent Git and Settings declaration lifetimes', async () => {
     const pending = deferred<RepositoryInspection>()
     type RemoteRepository = ClientContext['remote']['repository']
-    const inspect = vi.fn<RemoteRepository['inspect']>(async () => ({ ok: true, value: await pending.promise }))
+    const inspect = vi.fn<RemoteRepository['inspect']>()
+      .mockImplementationOnce(async () => ({ ok: true, value: await pending.promise }))
+      .mockImplementation(async request => ({ ok: true, value: { ...inspection, branch: 'branch-' + request.workspaceId } }))
     const getStatus = vi.fn<RemoteRepository['status']>(async () => ({ ok: true, value: status }))
     const remote: RemoteRepository = {
       inspect, status: getStatus, diff: async request => ({ ok: true, value: { ...request, binary: false, text: '' } }),
     }
     const runtime = await SlotTestRuntime.create()
-    const locale = new LocaleRuntime(runtime.ctx)
-    locale.setLocale('pt')
-    runtime.provide('locale', locale)
-    runtime.slots.installLocale(locale)
-    runtime.provide('remote', { repository: remote })
-    runtime.provide('remote.repository', remote)
-    await runtime.workspaces.update((draft) => {
-      draft.items = ['one', 'two'].map(id => ({ workspaceId: wid(id), path: '/work/' + id, title: id,
-        sessionIds: [], createdAt: '2026-01-01', updatedAt: '2026-01-01' }))
-    })
-    await runtime.declare({ 'sidebar.repository': { kind: 'single', scope: 'root' } })
-    await runtime.mount(RepositoryPlugin)
-    const observed = vi.fn<(owner: GithubInspectionOwnerProps) => void>()
-    const Child = (owner: GithubInspectionOwnerProps) => {
-      observed(owner)
-      return <div>
-        <output aria-label="Child workspace">{owner.workspaceId ?? 'none'}</output>
-        <button type="button" onClick={() => { owner.selectWorkspace(wid('two')) }}>Pair workspace two</button>
-        <button type="button" onClick={() => { owner.selectWorkspace(null) }}>Clear pairing</button>
-      </div>
-    }
-    runtime.slots.register({ name: 'repository.github' }, Child)
-    const expandSidebar = vi.fn()
-    const view = runtime.renderSlot('sidebar.repository', { wide: true, expandSidebar })
-    expect(screen.getByLabelText('Child workspace').textContent).toBe('none')
-    expect(observed.mock.calls[0]?.[0]).toMatchObject({ wide: true, expandSidebar })
-    fireEvent.click(screen.getByRole('button', { name: 'Pair workspace two' }))
-    await screen.findByText('Carregando repositório…')
-    expect(screen.getByLabelText('Child workspace').textContent).toBe('two')
-    expect(screen.getByRole<HTMLSelectElement>('combobox').value).toBe('two')
-    expect(inspect.mock.calls[0]?.[0]).toEqual({ workspaceId: wid('two') })
-    expect(getStatus.mock.calls[0]?.[0]).toEqual({ workspaceId: wid('two') })
-    await act(async () => { pending.resolve({ ...inspection, branch: 'paired-workspace' }) })
-    await screen.findByText('paired-workspace')
-    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
-    await waitFor(() => { expect(inspect).toHaveBeenCalledTimes(2) })
-    expect(inspect.mock.calls.at(-1)?.[0]).toEqual({ workspaceId: wid('two') })
-    fireEvent.click(screen.getByRole('button', { name: 'Clear pairing' }))
-    await waitFor(() => { expect(screen.getByLabelText('Child workspace').textContent).toBe('none') })
-    expect(screen.getByRole('button', { name: 'Atualizar' }).hasAttribute('disabled')).toBe(true)
-    const renders = observed.mock.calls.length
-    view.update({ wide: false, expandSidebar })
-    expect(screen.queryByLabelText('Child workspace')).toBeNull()
-    expect(observed).toHaveBeenCalledTimes(renders)
-    await runtime.dispose()
+    try {
+      const locale = new LocaleRuntime(runtime.ctx)
+      locale.setLocale('pt')
+      runtime.provide('locale', locale)
+      runtime.slots.installLocale(locale)
+      runtime.provide('remote', { repository: remote })
+      runtime.provide('remote.repository', remote)
+      await runtime.workspaces.update((draft) => {
+        draft.items = ['one', 'two'].map(id => ({ workspaceId: wid(id), path: '/work/' + id, title: id,
+          sessionIds: [], createdAt: '2026-01-01', updatedAt: '2026-01-01' }))
+      })
+      await runtime.declare({
+        'test.repository.git-owner': { kind: 'single', scope: 'root' },
+        'test.repository.settings-owner': { kind: 'single', scope: 'root' },
+      })
+      const GitOwner = ({ wide, renderSlot }: PropsRuntime<'test.repository.git-owner'> & PropsRenderSlots<'sidebar.repository'>) =>
+        <>{renderSlot('sidebar.repository', { wide, expandSidebar: () => {} })}</>
+      const SettingsOwner = ({ renderSlot }: PropsRuntime<'test.repository.settings-owner'> & PropsRenderSlots<'settings.github.repository'>) =>
+        <>{renderSlot('settings.github.repository', {})}</>
+      const gitOwner = { inject: ['slots'], apply(ctx: ClientContext) {
+        ctx.slots.register({ name: 'test.repository.git-owner', children: { 'sidebar.repository': { kind: 'single', scope: 'root' } } }, GitOwner)
+      } }
+      const settingsOwner = { inject: ['slots'], apply(ctx: ClientContext) {
+        ctx.slots.register({ name: 'test.repository.settings-owner', children: { 'settings.github.repository': { kind: 'single', scope: 'root' } } }, SettingsOwner)
+      } }
+      await runtime.mount(RepositoryPlugin)
+      let gitFiber = await runtime.mount(gitOwner)
+      let settingsFiber = await runtime.mount(settingsOwner)
+      const observed = vi.fn<(owner: GithubInspectionOwnerProps) => void>()
+      const Child = (owner: GithubInspectionOwnerProps) => {
+        observed(owner)
+        return <div>
+          <output aria-label="Child workspace">{owner.workspaceId ?? 'none'}</output>
+          <button type="button" onClick={() => { owner.selectWorkspace(wid('two')) }}>Pair workspace two</button>
+          <button type="button" onClick={() => { owner.selectWorkspace(wid('one')) }}>Pair workspace one</button>
+          <button type="button" onClick={() => { owner.selectWorkspace(null) }}>Clear pairing</button>
+        </div>
+      }
+      await runtime.mount({ inject: ['slots'], apply(ctx: ClientContext) {
+        ctx.slots.inject('repository.github', () => ctx.slots.register({ name: 'repository.github' }, Child))
+      } })
+      const git = runtime.renderSlot('test.repository.git-owner', { wide: true })
+      const settings = runtime.renderSlot('test.repository.settings-owner', {})
+      const store = runtime.storeOf('sidebar.repository')
+      expect(runtime.storeOf('settings.github.repository')).toBe(store)
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('none')
+      expect(git.view.queryByLabelText('Child workspace')).toBeNull()
+      expect(observed.mock.calls[0]?.[0]).not.toHaveProperty('wide')
+      fireEvent.click(settings.view.getByRole('button', { name: 'Pair workspace two' }))
+      await git.view.findByText('Carregando repositório…')
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('two')
+      expect(git.view.getByRole<HTMLSelectElement>('combobox').value).toBe('two')
+      expect(inspect.mock.calls[0]?.[0]).toEqual({ workspaceId: wid('two') })
+      expect(getStatus.mock.calls[0]?.[0]).toEqual({ workspaceId: wid('two') })
+      fireEvent.change(git.view.getByRole('combobox'), { target: { value: 'one' } })
+      await git.view.findByText('branch-one')
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('one')
+      await act(async () => { pending.resolve({ ...inspection, branch: 'late-workspace-two' }) })
+      expect(git.view.queryByText('late-workspace-two')).toBeNull()
+      expect(git.view.getByText('branch-one')).toBeTruthy()
+      fireEvent.click(git.view.getByRole('button', { name: 'Atualizar' }))
+      await waitFor(() => { expect(inspect).toHaveBeenCalledTimes(3) })
+      expect(inspect.mock.calls.at(-1)?.[0]).toEqual({ workspaceId: wid('one') })
+      fireEvent.click(settings.view.getByRole('button', { name: 'Clear pairing' }))
+      await waitFor(() => { expect(settings.view.getByLabelText('Child workspace').textContent).toBe('none') })
+      expect(git.view.getByRole('button', { name: 'Atualizar' }).hasAttribute('disabled')).toBe(true)
+      git.update({ wide: false })
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('none')
+      await gitFiber.dispose()
+      const readsWithoutGit = inspect.mock.calls.length
+      fireEvent.click(settings.view.getByRole('button', { name: 'Pair workspace one' }))
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('one')
+      expect(inspect).toHaveBeenCalledTimes(readsWithoutGit)
+      git.update({ wide: true })
+      gitFiber = await runtime.mount(gitOwner)
+      await git.view.findByText('branch-one')
+      expect(runtime.storeOf('sidebar.repository')).toBe(store)
+      expect(git.view.getByRole<HTMLSelectElement>('combobox').value).toBe('one')
+      await settingsFiber.dispose()
+      expect(settings.view.queryByLabelText('Child workspace')).toBeNull()
+      expect(git.view.getByRole<HTMLSelectElement>('combobox').value).toBe('one')
+      settingsFiber = await runtime.mount(settingsOwner)
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('one')
+      expect(runtime.storeOf('settings.github.repository')).toBe(store)
+      await runtime.workspaces.update((draft) => { draft.items = draft.items.filter(row => row.workspaceId !== wid('one')) })
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('none')
+      expect(git.view.getByRole<HTMLSelectElement>('combobox').value).toBe('')
+      await settingsFiber.dispose()
+      await gitFiber.dispose()
+      gitFiber = await runtime.mount(gitOwner)
+      settingsFiber = await runtime.mount(settingsOwner)
+      expect(runtime.storeOf('sidebar.repository')).not.toBe(store)
+      expect(settings.view.getByLabelText('Child workspace').textContent).toBe('none')
+      expect(git.view.getByRole<HTMLSelectElement>('combobox').value).toBe('')
+    } finally { await runtime.dispose() }
   })
   it('wraps only Tab boundaries among its own controls and leaves modified and interior navigation native', async () => {
     const b = bench()
