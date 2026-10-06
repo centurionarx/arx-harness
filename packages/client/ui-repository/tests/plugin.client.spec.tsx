@@ -67,7 +67,7 @@ it('Loader installs the entry, unwraps Remote failures, and disposes the declara
     archivedSessionIds: [], state: 'idle', phase: 'ready', error: null, baselinesReady: true, recentWorkspaceId: undefined,
   })
   const Component = entry.component as (props: RepositoryProps) => React.JSX.Element
-  const view = render(<Component renderSlot={() => null} wide expandSidebar={() => {}} useSessions={() => { throw new Error('unused') }}
+  const view = render(<Component wide expandSidebar={() => {}} useSessions={() => { throw new Error('unused') }}
     useWorkspaces={bindSnapshotSelector(workspaces)} useStore={bindSnapshotSelector(store)} actions={store.actions}
     useRepository={bindSnapshotSelector(face.hooks.repository)} t={makeTranslate(pt)}
     select={(id) => { face.select(id) }} refresh={() => face.refresh()} show={request => face.show(request)}

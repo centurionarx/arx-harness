@@ -57,35 +57,32 @@ describe('GitHub repository navigation', () => {
     await b.refresh()
     expect(screen.getByText(en.noRepositories)).toBeTruthy()
   })
-  it('renders PT-BR labels and leaves collapsed expansion to the parent Git control', () => {
-    const b = bench({}, 'pt')
-    expect(screen.getByRole('button', { name: pt.refresh })).toBeTruthy()
-    b.view.rerender(<GithubEntry {...b.props} wide={false} />)
-    expect(b.view.container.textContent).toBe('')
-    expect(b.props.expandSidebar).not.toHaveBeenCalled()
+  it('renders PT-BR repository labels inside Settings without sidebar geometry', () => {
+    bench({}, 'pt')
+    expect(screen.getByRole('region', { name: pt.repositoriesTitle })).toBeTruthy()
+    expect(screen.getByRole('button', { name: pt.refreshRepositories })).toBeTruthy()
   })
   it.each([
     { language: 'en' as const, globalName: 'Settings', matcher: /settings/i, shortcut: 'Configure GitHub' },
     { language: 'pt' as const, globalName: 'Configurações', matcher: /configurações/i, shortcut: 'Configurar GitHub' },
-  ])('keeps the global $globalName trigger unambiguous beside the account shortcut', ({ language, globalName, matcher, shortcut }) => {
+  ])('keeps the global $globalName trigger unique within the repository page', ({ language, globalName, matcher, shortcut }) => {
     const b = bench({}, language)
     b.view.rerender(<><button type="button">{globalName}</button><GithubEntry {...b.props} /></>)
     expect(screen.getByRole('button', { name: matcher }).textContent).toBe(globalName)
-    fireEvent.click(screen.getByRole('button', { name: shortcut }))
-    expect(b.props.openSettings).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('button', { name: shortcut })).toBeNull()
   })
-  it('contains no account authorization workflow and opens the registered settings section', () => {
+  it('keeps account authorization controls and private PAT drafts outside the repository region', () => {
     const b = bench()
     expect(screen.queryByRole('button', { name: en.authorize })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: en.openSettings }))
-    expect(b.props.openSettings).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('textbox', { name: en.pat })).toBeNull()
+    expect(b.view.container.querySelector('input[type="password"]')).toBeNull()
   })
   it('shows current metadata invalidation and pending refresh', async () => {
     const late = deferred<Awaited<ReturnType<ReturnType<typeof reads>['account']>>>()
     const b = bench({ account: () => late.promise })
     await act(async () => { b.controller.invalidate() })
     expect(screen.getByText(en.stale)).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: en.refresh }))
+    fireEvent.click(screen.getByRole('button', { name: en.refreshRepositories }))
     expect(screen.getByText(en.loading)).toBeTruthy()
     await act(async () => { late.resolve(account) })
   })

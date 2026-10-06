@@ -1,14 +1,14 @@
-/** Repository navigation uses shared metadata and the repository owner's workspace selection. */
+/** Settings repository browsing uses shared metadata and the Git-owned workspace selection. */
 import { useEffect } from 'react'
 import type { GithubProps } from './props.ts'
 import css from './GithubEntry.module.css'
 
 /** Render explicit repository/workspace choices without owning account authorization.
  * @param props - Four framework-derived props shares.
- * @returns The repository-owned GitHub view, or nothing while the Git panel is collapsed.
+ * @returns The GitHub repository view within Settings.
  */
 export function GithubEntry(props: GithubProps) {
-  const { wide, workspaceId, selectWorkspace, useWorkspaces, useStore, useGithub, actions, t, refresh, more, openSettings } = props
+  const { workspaceId, selectWorkspace, useWorkspaces, useStore, useGithub, actions, t, refresh, more } = props
   const view = useGithub(state => state)
   const choices = useStore(state => state)
   const workspaces = useWorkspaces(state => state)
@@ -17,14 +17,12 @@ export function GithubEntry(props: GithubProps) {
   useEffect(() => {
     if (choices.repositoryId !== null && !repository && view.phase !== 'loading') actions.selectRepository(null)
   }, [choices.repositoryId, repository, view.phase, actions])
-  if (!wide) return null
-  return <section className={css.root} aria-label={t('title')}>
-    <header className={css.header}><strong>{t('title')}</strong>
-      <button type="button" className={css.control} disabled={view.phase === 'loading'} onClick={() => { void refresh() }}>{t('refresh')}</button>
+  return <section className={css.root} aria-label={t('repositoriesTitle')}>
+    <header className={css.header}><h3>{t('repositoriesTitle')}</h3>
+      <button type="button" className={css.control} disabled={view.phase === 'loading'} onClick={() => { void refresh() }}>{t('refreshRepositories')}</button>
     </header>
-    <p role="status">{view.account ? t(view.account.state) : t(view.phase === 'error' ? 'readError' : view.phase === 'loading' ? 'loading' : view.phase === 'stale' ? 'stale' : 'cold')}</p>
+    {(view.phase === 'loading' || view.phase === 'stale') && <p role="status">{t(view.phase)}</p>}
     {view.error && <p role="alert">{t('readError')}</p>}
-    <button type="button" className={css.control} onClick={openSettings}>{t('openSettings')}</button>
     <label>{t('workspace')}<select className={css.control} value={workspace?.workspaceId ?? ''} onChange={(event) => {
       actions.selectRepository(null)
       selectWorkspace(workspaces.items.find(row => row.workspaceId === event.target.value)?.workspaceId ?? null)

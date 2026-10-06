@@ -1,6 +1,6 @@
 /** English and Brazilian Portuguese copy for the human-only GitHub view. */
 export const en = {
-  title: 'GitHub', openSettings: 'Configure GitHub', refresh: 'Refresh', loading: 'Loading GitHub metadata…',
+  title: 'GitHub', repositoriesTitle: 'GitHub repositories', refreshRepositories: 'Refresh repositories', refresh: 'Refresh', loading: 'Loading GitHub metadata…',
   cold: 'Refresh to read GitHub account metadata.', stale: 'Metadata changed. Refresh before using GitHub.',
   unconfigured: 'Not configured. The operator must choose credential storage and isolation before a PAT can be accepted.',
   disconnected: 'Disconnected', connected: 'Connected', authorize: 'Connect with PAT',
@@ -20,7 +20,7 @@ export const en = {
 export type GithubKey = keyof typeof en
 /** Brazilian Portuguese copy. */
 export const pt: Record<GithubKey, string> = {
-  title: 'GitHub', openSettings: 'Configurar GitHub', refresh: 'Atualizar', loading: 'Carregando metadados do GitHub…',
+  title: 'GitHub', repositoriesTitle: 'Repositórios do GitHub', refreshRepositories: 'Atualizar repositórios', refresh: 'Atualizar', loading: 'Carregando metadados do GitHub…',
   cold: 'Atualize para consultar os metadados da conta do GitHub.', stale: 'Os metadados mudaram. Atualize antes de usar o GitHub.',
   unconfigured: 'Não configurado. O operador deve escolher armazenamento e isolamento de credenciais antes de aceitar um PAT.',
   disconnected: 'Desconectado', connected: 'Conectado', authorize: 'Conectar com PAT',

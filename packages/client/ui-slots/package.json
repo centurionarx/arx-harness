@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-slots",
   "description": "Slot registry pure core: SlotMap declaration merging, single register composition API, four-share props types, store-seat types, renderer install seam",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-skill-filesystem",
   "description": "Local filesystem skill provider for the arx Harness",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "publishConfig": {
     "access": "public"
   },

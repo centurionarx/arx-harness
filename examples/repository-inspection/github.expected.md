@@ -28,11 +28,9 @@
 
 ## First public metadata page
 
-- region "GitHub":
-  - strong: GitHub
-  - button "Refresh"
-  - status: Connected
-  - button "Configure GitHub"
+- region "GitHub repositories":
+  - heading "GitHub repositories" [level=3]
+  - button "Refresh repositories"
   - text: Workspace
   - combobox "Workspace":
     - option "Choose explicitly" [selected]
@@ -48,33 +46,34 @@
       - text: "Public Default branch: <img src=x onerror=alert(1)> & branch https://github.com/example-reader/first"
   - button "Load more"
 
+## Explicit pairing in GitHub settings
+
+- region "GitHub repositories":
+  - heading "GitHub repositories" [level=3]
+  - button "Refresh repositories"
+  - text: Workspace
+  - combobox "Workspace":
+    - option "Choose explicitly"
+    - option "Retarget example" [selected]
+    - option "Inspection example"
+  - text: Repo
+  - combobox "Repo":
+    - option "Choose explicitly"
+    - option "example-reader/first"
+    - option "example-reader/second" [selected]
+  - paragraph: "Workspace: Retarget example · Repo: example-reader/second View-only association for the current selection; no saved binding, clone or Git writes."
+  - list:
+    - listitem:
+      - strong: example-reader/first
+      - text: "Public Default branch: <img src=x onerror=alert(1)> & branch https://github.com/example-reader/first"
+    - listitem:
+      - strong: example-reader/second
+      - text: "Private Default branch: inspection https://github.com/example-reader/second"
+  - button "Load more" [disabled]
+
 ## Pairing retargets the real Git owner
 
 - region "Repository":
-  - region "GitHub":
-    - strong: GitHub
-    - button "Refresh"
-    - status: Connected
-    - button "Configure GitHub"
-    - text: Workspace
-    - combobox "Workspace":
-      - option "Choose explicitly"
-      - option "Retarget example" [selected]
-      - option "Inspection example"
-    - text: Repo
-    - combobox "Repo":
-      - option "Choose explicitly"
-      - option "example-reader/first"
-      - option "example-reader/second" [selected]
-    - paragraph: "Workspace: Retarget example · Repo: example-reader/second View-only association for the current selection; no saved binding, clone or Git writes."
-    - list:
-      - listitem:
-        - strong: example-reader/first
-        - text: "Public Default branch: <img src=x onerror=alert(1)> & branch https://github.com/example-reader/first"
-      - listitem:
-        - strong: example-reader/second
-        - text: "Private Default branch: inspection https://github.com/example-reader/second"
-    - button "Load more" [disabled]
   - strong: Repository
   - button "Refresh"
   - combobox "Workspace":

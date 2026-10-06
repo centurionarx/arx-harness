@@ -9,20 +9,6 @@
 ## Before selection
 
 - region "Repository":
-  - region "GitHub":
-    - strong: GitHub
-    - button "Refresh"
-    - status: Not configured. The operator must choose credential storage and isolation before a PAT can be accepted.
-    - button "Configure GitHub"
-    - text: Workspace
-    - combobox "Workspace":
-      - option "Choose explicitly" [selected]
-      - option "Inspection example"
-    - text: Repo
-    - combobox "Repo" [disabled]:
-      - option "Choose explicitly" [selected]
-    - list
-    - button "Load more" [disabled]
   - strong: Repository
   - button "Refresh" [disabled]
   - combobox "Workspace":
@@ -34,20 +20,6 @@
 ## Selected repository
 
 - region "Repository":
-  - region "GitHub":
-    - strong: GitHub
-    - button "Refresh"
-    - status: Not configured. The operator must choose credential storage and isolation before a PAT can be accepted.
-    - button "Configure GitHub"
-    - text: Workspace
-    - combobox "Workspace":
-      - option "Choose explicitly"
-      - option "Inspection example" [selected]
-    - text: Repo
-    - combobox "Repo" [disabled]:
-      - option "Choose explicitly" [selected]
-    - list
-    - button "Load more" [disabled]
   - strong: Repository
   - button "Refresh"
   - combobox "Workspace":

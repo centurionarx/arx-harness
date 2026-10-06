@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-turn-outline",
   "description": "Whole-session turn index for conversation navigation",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "publishConfig": {
     "access": "public"
   },

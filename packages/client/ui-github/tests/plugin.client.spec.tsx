@@ -40,14 +40,21 @@ it('Loader binds the actual declaration, unwraps typed Remote errors and removes
       fixtureCtx.provide('locale', new LocaleRuntime(fixtureCtx))
       fixtureCtx.provide('connection', { api: { authorization: carrier } })
     } }
-    type OwnerProps = PropsRuntime<'root'> & PropsRenderSlots<'repository.github' | 'settings.section'>
-    const Owner = ({ renderSlot }: OwnerProps) => <>{renderSlot('repository.github', { wide: true, expandSidebar: () => {}, workspaceId: null, selectWorkspace: () => {} })}{renderSlot('settings.section', { close: () => {} })}</>
+    type OwnerProps = PropsRuntime<'root'> & PropsRenderSlots<'settings.section'>
+    const Owner = ({ renderSlot }: OwnerProps) => <>{renderSlot('settings.section', { close: () => {} })}</>
     const owner = { inject: ['slots'], apply(ownerCtx: Context) {
-      ownerCtx.slots.register({ name: 'root', children: { 'repository.github': { kind: 'single', scope: 'root' }, 'settings.section': { kind: 'list', scope: 'root' } } }, Owner)
+      ownerCtx.slots.register({ name: 'root', children: { 'settings.section': { kind: 'list', scope: 'root' } } }, Owner)
     } }
-    const modules = new Map<string, unknown>([['slots', SlotRegistry], ['fixtures', fixtures], ['owner', owner], ['github-ui', Plugin]])
+    type RepositoryOwnerProps = PropsRuntime<'settings.github.repository'> & PropsRenderSlots<'repository.github'>
+    const RepositoryOwner = ({ renderSlot }: RepositoryOwnerProps) => <>{renderSlot('repository.github', { workspaceId: null, selectWorkspace: () => {} })}</>
+    const repositoryOwner = { inject: ['slots'], apply(ownerCtx: Context) {
+      ownerCtx.slots.inject('settings.github.repository', () => ownerCtx.slots.register({
+        name: 'settings.github.repository', children: { 'repository.github': { kind: 'single', scope: 'root' } },
+      }, RepositoryOwner))
+    } }
+    const modules = new Map<string, unknown>([['slots', SlotRegistry], ['fixtures', fixtures], ['owner', owner], ['repository-owner', repositoryOwner], ['github-ui', Plugin]])
     const configPath = join(root, 'cordis.yml')
-    await writeFile(configPath, JSON.stringify([{ name: 'slots' }, { name: 'fixtures' }, { name: 'github-ui' }, { name: 'owner' }]))
+    await writeFile(configPath, JSON.stringify([{ name: 'slots' }, { name: 'fixtures' }, { name: 'github-ui' }, { name: 'repository-owner' }, { name: 'owner' }]))
     ctx.baseUrl = pathToFileURL(root).href + '/'
     await ctx.plugin(Loader)
     ctx.loader.builtins.include = Include
@@ -72,8 +79,8 @@ it('Loader binds the actual declaration, unwraps typed Remote errors and removes
     expect(settingsFace.hooks.github).toBe(face.hooks.github)
     expect(face.hooks).not.toHaveProperty('authorization')
     expect(face).not.toHaveProperty('begin')
-    const onSettings = vi.fn(); ctx.on('settings/open-section', onSettings)
-    face.openSettings(); expect(onSettings).toHaveBeenCalledWith('github')
+    expect(face).not.toHaveProperty('openSettings')
+    expect(face).not.toHaveProperty('submit')
     const unmount = settingsFace.watch()
     await face.refresh(); expect(face.hooks.github.getSnapshot()).toMatchObject({ phase: 'error', error: 'read' })
     await face.refresh(); expect(face.hooks.github.getSnapshot().account?.state).toBe('connected')
@@ -97,7 +104,7 @@ it('Loader binds the actual declaration, unwraps typed Remote errors and removes
     const pluginEntry = [...ctx.loader.entries()].find(row => row.options.name === 'github-ui')!
     await pluginEntry.fiber!.dispose()
     expect(ctx.slots.entries('repository.github')).toHaveLength(0)
-    expect(ctx.slots.spec('repository.github')).toBeDefined()
+    expect(ctx.slots.spec('repository.github')).toBeUndefined()
     expect(ctx.slots.entries('settings.section')).toHaveLength(0)
     expect(unsubscribe).toHaveBeenCalledTimes(2)
     const disposedReads = accountRead.mock.calls.length
@@ -137,9 +144,9 @@ it('settings exists without repository declaration and each owner can independen
     </>
     type SettingsOwnerProps = PropsRuntime<'sidebar.settings'> & PropsRenderSlots<'settings.section'>
     const SettingsOwner = ({ renderSlot }: SettingsOwnerProps) => <>{renderSlot('settings.section', { close: () => {} })}</>
-    type RepositoryOwnerProps = PropsRuntime<'sidebar.repository'> & PropsRenderSlots<'repository.github'>
+    type RepositoryOwnerProps = PropsRuntime<'settings.github.repository'> & PropsRenderSlots<'repository.github'>
     const RepositoryOwner = ({ renderSlot }: RepositoryOwnerProps) => <>{renderSlot('repository.github', {
-      wide: true, expandSidebar: () => {}, workspaceId: null, selectWorkspace: () => {},
+      workspaceId: null, selectWorkspace: () => {},
     })}</>
     await ctx.plugin({ inject: ['slots'], apply(rootCtx: Context) {
       rootCtx.slots.register({
@@ -157,9 +164,9 @@ it('settings exists without repository declaration and each owner can independen
       }, SettingsOwner)
     } }
     const repositoryOwner = { inject: ['slots'], apply(ownerCtx: Context) {
-      ownerCtx.slots.register({
-        name: 'sidebar.repository', children: { 'repository.github': { kind: 'single', scope: 'root' } },
-      }, RepositoryOwner)
+      ownerCtx.slots.inject('settings.github.repository', () => ownerCtx.slots.register({
+        name: 'settings.github.repository', children: { 'repository.github': { kind: 'single', scope: 'root' } },
+      }, RepositoryOwner))
     } }
     const settingsFiber = ctx.plugin(settingsOwner); await settingsFiber.await()
     expect(ctx.slots.entries('settings.section').filter(row => row.options.id === 'github')).toHaveLength(1)
@@ -184,11 +191,12 @@ it('settings exists without repository declaration and each owner can independen
     expect(ctx.slots.entries('repository.github')).toHaveLength(1)
     await settingsFiber.dispose()
     expect(ctx.slots.entries('settings.section')).toHaveLength(0)
-    expect(ctx.slots.entries('repository.github')).toHaveLength(1)
+    expect(ctx.slots.entries('repository.github')).toHaveLength(0)
     expect(accountFace.hooks.authorization.getSnapshot().attempt).toBeNull()
     expect(carrier.cancel).toHaveBeenCalledOnce()
     const freshSettingsFiber = ctx.plugin(settingsOwner); await freshSettingsFiber.await()
     expect(ctx.slots.entries('settings.section').filter(row => row.options.id === 'github')).toHaveLength(1)
+    expect(ctx.slots.entries('repository.github')).toHaveLength(1)
     const currentPage = accountFace.watch()
     await accountFace.begin()
     oldPage()
@@ -204,7 +212,7 @@ it('settings exists without repository declaration and each owner can independen
     expect(ctx.slots.entries('settings.section')).toHaveLength(0)
     expect(ctx.slots.entries('repository.github')).toHaveLength(0)
     expect(ctx.slots.spec('settings.section')).toBeDefined()
-    expect(ctx.slots.spec('repository.github')).toBeDefined()
+    expect(ctx.slots.spec('repository.github')).toBeUndefined()
     expect(unsubscribe).toHaveBeenCalledTimes(2)
     currentPage()
   } finally {

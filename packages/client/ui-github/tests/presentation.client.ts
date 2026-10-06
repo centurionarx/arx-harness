@@ -42,9 +42,9 @@ export function repositoryBench(overrides: Partial<GithubReads> = {}, language: 
     archivedSessionIds: [], state: 'idle', phase: 'ready', error: null, baselinesReady: true, recentWorkspaceId: undefined,
   })
   const props: GithubProps = {
-    wide: true, expandSidebar: vi.fn(), workspaceId: null, selectWorkspace: vi.fn(), useSessions: () => { throw new Error('unused') },
+    workspaceId: null, selectWorkspace: vi.fn(), useSessions: () => { throw new Error('unused') },
     useWorkspaces: bindSnapshotSelector(workspaces), useStore: bindSnapshotSelector(store), actions: store.actions,
-    useGithub: b.useGithub, t: b.t, refresh: () => b.controller.refresh(), more: () => b.controller.more(), openSettings: vi.fn(),
+    useGithub: b.useGithub, t: b.t, refresh: () => b.controller.refresh(), more: () => b.controller.more(),
   }
   function GitOwner() {
     const [workspaceId, setWorkspaceId] = useState<WorkspaceId | null>(null)
@@ -60,7 +60,7 @@ export function repositoryBench(overrides: Partial<GithubReads> = {}, language: 
 export function accountBench(overrides: Partial<GithubReads> = {}, language: 'en' | 'pt' = 'en'): AccountBench {
   const b = setup(overrides, language)
   const props: GithubAccountProps = {
-    close: vi.fn(), useSessions: () => { throw new Error('account must not read sessions') },
+    renderSlot: () => null, close: vi.fn(), useSessions: () => { throw new Error('account must not read sessions') },
     useWorkspaces: () => { throw new Error('account must not require any workspace') },
     useGithub: b.useGithub, useAuthorization: bindSnapshotSelector(b.controller.authorizationView), t: b.t,
     refresh: () => b.controller.refreshAccount(), begin: () => b.controller.begin(),

@@ -3,12 +3,12 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { GithubAccountProps } from './props.ts'
 import css from './GithubEntry.module.css'
 
-/** Render account state and caller-owned authorization without repository or workspace selection.
+/** Render account state and caller-owned authorization without owning repository or workspace selection.
  * @param props - Framework-derived settings owner, locale and injected observable shares.
  * @returns The GitHub account settings section.
  */
 export function GithubAccountSection(props: GithubAccountProps) {
-  const { useGithub, useAuthorization, t, refresh, begin, submit, cancel, watch } = props
+  const { useGithub, useAuthorization, t, refresh, begin, submit, cancel, watch, renderSlot } = props
   const view = useGithub(state => state)
   const authorization = useAuthorization(state => state)
   const [open, setOpen] = useState(false)
@@ -37,7 +37,7 @@ export function GithubAccountSection(props: GithubAccountProps) {
   }, [open])
   useEffect(() => { if (open && prompt) field.current?.focus() }, [open, prompt?.id])
   const close = (): void => { setDraft(''); if (field.current) field.current.value = ''; setOpen(false); void cancel(); source.current?.focus() }
-  return <section className={css.root} aria-label={t('title')}>
+  return <><section className={css.root} aria-label={t('title')}>
     <header className={css.header}><h2>{t('title')}</h2>
       <button type="button" className={css.control} disabled={view.phase === 'loading'} onClick={() => { void refresh() }}>{t('refresh')}</button>
     </header>
@@ -76,5 +76,5 @@ export function GithubAccountSection(props: GithubAccountProps) {
         <button type="button" className={css.control} onClick={close}>{t('cancel')}</button>
       </form>
     </dialog>}
-  </section>
+  </section>{renderSlot('settings.github.repository', {})}</>
 }

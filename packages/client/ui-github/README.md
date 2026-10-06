@@ -1,8 +1,8 @@
 # @arx-ai/arx-client-ui-github
 
-The existing Configurações → GitHub page is a single `settings.section` contribution with id `github` and a localized label. It reads account state and owns PAT authorization independently of workspace availability. Repository browsing occupies the ui-repository-owned `repository.github` child slot and offers the `Configure GitHub` (`Configurar GitHub` in pt-BR) shortcut, which opens that settings page through `settings/open-section`. Both entries read one React-free controller's shared account facts; each registration waits for its actual slot declaration through `slots.inject`.
+Configurações → GitHub is a single `settings.section` contribution with id `github` and a localized label. Its account region reads state and owns PAT authorization independently of workspace availability. Repository browsing occupies a sibling region on the same Settings page through the ui-repository-owned `settings.github.repository` composition and its `repository.github` child. GitHub has no sidebar entry. Both regions read one React-free controller's shared account facts; each registration waits for its actual slot declaration through `slots.inject`.
 
-The repository entry store contains only the selected GitHub repository id, with no persistence. Workspace selection is owner data and its `selectWorkspace` callback retargets the same Git inspection panel. The parent Git control owns collapsed-panel expansion.
+The repository entry store contains only the selected GitHub repository id, with no persistence. Workspace selection is owner data and its `selectWorkspace` callback updates the same root store used by local Git inspection. Closing and reopening Settings retains both explicit choices while the declarations remain registered. Sidebar collapse affects only the local Git control.
 
 ## Behavior
 
@@ -30,4 +30,4 @@ None. This package does not assemble or modify provider requests, so viewing and
 
 ## Known Limitations and Deferred Work
 
-- Workspace + Repo choices establish only a view-only association for the current selection, not a durable binding. GitHub repository browsing is read-only; no create, clone or Git writes exist. PAT is supported, not OAuth. The parent sidebar.repository consumer owns local Git inspection and the workspace selection shared with this child. Host tools sharing the credential owner's UID are not isolated by this UI. The operator must configure the host provider; its default is unconfigured.
+- Workspace + Repo choices establish only a view-only association for the current selection, not a durable binding. GitHub repository browsing is read-only; no create, clone or Git writes exist. PAT is supported, not OAuth. The ui-repository package owns local Git inspection and the workspace selection shared with the Settings repository region. Host tools sharing the credential owner's UID are not isolated by this UI. The operator must configure the host provider; its default is unconfigured.
