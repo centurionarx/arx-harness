@@ -13,6 +13,7 @@ on:
         options:
           - larger-runner-benchmark
           - consolidated-runner-benchmark
+          - macos-lifecycle-diagnosis
 
 # A master push may carry only the two self-hosted standby drills and the Wine
 # apt cache seeder; those drills outlast the interval between master merges, so
@@ -405,3 +406,65 @@ jobs:
         env:
           ARX_GATE_CONCURRENCY: ${{ matrix.workers }}
         run: pnpm run check:ci:windows-blocking
+
+  macos-lifecycle-diagnosis:
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'macos-lifecycle-diagnosis'
+    name: macos / bounded lifecycle diagnosis
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install (immutable)
+        run: pnpm install --frozen-lockfile
+      - name: Record platform and source identity
+        run: |
+          node -e 'console.log(JSON.stringify({node:process.version,platform:process.platform,arch:process.arch}))'
+          git rev-parse HEAD HEAD^{tree}
+          shasum -a 256 pnpm-lock.yaml vendor/hmr/src/index.ts
+      - name: Owning tests before instrumentation
+        continue-on-error: true
+        run: pnpm exec vitest run packages/boot/app-boot/tests/hmr-config.spec.ts packages/git/repository/tests/repository.spec.ts
+      - name: Install bounded observation-only trace
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vendor/hmr/src/index.ts')
+          original = p.read_text()
+          anchor = '    const registration = { watcher }'
+          assert original.count(anchor) == 1
+          trace = """    let diagnosticCount = 0
+              const trace = (stage: string, details: object = {}) => {
+                if (diagnosticCount++ < 100) console.log('HMR_DIAG ' + JSON.stringify({ stage, at: Date.now(), filename, watchFilename, root, depth, ...details }))
+              }
+              trace('registered', { polling: watcher.options.usePolling })
+              watcher.on('raw', (event, path, details) => trace('raw', { event, path, details }))
+              watcher.on('all', (event, path) => trace('all', { event, path, watched: watcher.getWatched() }))
+              watcher.on('error', (error) => trace('error', { message: String(error) }))
+              watcher.once('ready', () => trace('ready', { watched: watcher.getWatched() }))
+              """
+          original_onchange = "      const observed = resolve(path)\n      if (observed !== filename && observed !== watchFilename) return"
+          traced_onchange = "      const observed = resolve(path)\n      trace('filter', { observed, accepted: observed === filename || observed === watchFilename })\n      if (observed !== filename && observed !== watchFilename) return"
+          assert original.count(original_onchange) == 1
+          updated = original.replace(anchor, trace + anchor).replace(original_onchange, traced_onchange)
+          updated = updated.replace('this.refreshConfig(registration, filename, refresh)', "this.refreshConfig(registration, filename, async () => { trace('refresh-start'); try { await refresh(); trace('refresh-end') } catch (error) { trace('refresh-failure', { message: String(error) }); throw error } })")
+          p.write_text(updated)
+          PY
+      - name: Three fixed native-watcher measurements
+        run: |
+          set +e
+          failures=0
+          for round in 1 2 3; do
+            echo "HMR_DIAG_ROUND=$round"
+            pnpm exec vitest run packages/boot/app-boot/tests/hmr-config.spec.ts -t 'config parent did not exist'
+            status=$?
+            echo "HMR_DIAG_EXIT=$status"
+            if [ "$status" -ne 0 ]; then failures=$((failures + 1)); fi
+          done
+          echo "HMR_DIAG_FAILURES=$failures/3"
+          [ "$failures" -eq 0 ]
