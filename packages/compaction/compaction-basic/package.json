@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-compaction-basic",
   "description": "Token-meter-driven compaction policy and LLM summarization backend for the arx Harness",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "publishConfig": {
     "access": "public"
   },

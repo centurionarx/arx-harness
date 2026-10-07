@@ -31,7 +31,7 @@ afterEach(async () => {
 })
 
 async function harness(config: Config = {}, sandbox = false) {
-  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-repository-')))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-repository-private-')))
   const cwd = join(root, 'workspace')
   await mkdir(cwd)
   const ctx = new Context()
@@ -288,13 +288,23 @@ describe('host repository through real Loader, FS, registry and managed Git', ()
   })
 
   describe('sanitizes credential URLs and uses only local upstream counters', () => {
+    const privateParts = {
+      user: 'arx-userinfo-sentinel',
+      password: 'arx-password-sentinel',
+      httpsPath: 'arx-https-path-sentinel',
+      query: 'arx-query-sentinel',
+      fragment: 'arx-fragment-sentinel',
+      sshPath: 'arx-ssh-path-sentinel',
+      localPath: 'arx-local-path-sentinel',
+    }
     let h: Awaited<ReturnType<typeof harness>>
     beforeEach(async () => {
       h = await harness()
       await commit(h)
-      await h.ok('remote', 'add', 'origin', 'https://user:private-password@example.invalid/secret-path?token=private#secret')
-      await h.ok('remote', 'add', 'ssh', 'user@example.invalid:private-path')
-      await h.ok('remote', 'add', 'local', '/secret/local-path')
+      await h.ok('remote', 'add', 'origin',
+        `https://${privateParts.user}:${privateParts.password}@example.invalid/${privateParts.httpsPath}?token=${privateParts.query}#${privateParts.fragment}`)
+      await h.ok('remote', 'add', 'ssh', `${privateParts.user}@example.invalid:${privateParts.sshPath}`)
+      await h.ok('remote', 'add', 'local', `/${privateParts.localPath}`)
       await h.ok('update-ref', 'refs/remotes/origin/main', 'HEAD')
       await h.ok('config', 'branch.main.remote', 'origin')
       await h.ok('config', 'branch.main.merge', 'refs/heads/main')
@@ -307,7 +317,10 @@ describe('host repository through real Loader, FS, registry and managed Git', ()
         { name: 'ssh', host: 'example.invalid', transport: 'ssh' },
         { name: 'local', host: null, transport: null },
       ])
-      expect(JSON.stringify(inspection)).not.toContain('private')
+      expect(inspection.root).toBe(h.cwd)
+      expect(inspection.root).toContain('private')
+      const serialized = JSON.stringify(inspection)
+      for (const part of Object.values(privateParts)) expect(serialized).not.toContain(part)
     })
     describe('ahead of the local upstream', () => {
       beforeEach(async () => {
