@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-subprocess-e2b",
   "description": "E2B subprocess implementation for arx Harness",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "publishConfig": {
     "access": "public"
   },

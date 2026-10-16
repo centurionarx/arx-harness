@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-subagent-control",
   "description": "Globally named send_message, interrupt_agent, and list_agents tools over ctx.subagents continuations",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "publishConfig": {
     "access": "public"
   },

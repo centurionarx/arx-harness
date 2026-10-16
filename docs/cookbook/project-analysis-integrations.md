@@ -14,6 +14,8 @@ node .arx/integrations/graphify/refresh.mjs
 
 This [refresh entry](../../.arx/integrations/graphify/refresh.mjs) re-extracts code locally, regenerates the report and HTML, runs MCP readiness queries, updates the focused architecture diagrams, and renders a static poster through the existing Playwright browser. It never uses `--no-viz`, semantic extraction, or model-generated community labels. The parent owns the final refresh after parallel children; children report changed paths and must not race to rewrite shared graph artifacts. The script refuses concurrent refreshes and records success in `.artifacts/graphify/last-refresh.json` only after all required outputs validate.
 
+On a host where a refresh stage times out, set `ARX_GRAPHIFY_TIMEOUT_SCALE` in its environment to a decimal from 1 to 10 with a dot separator; the refresh entry multiplies every default time bound by that value, and any other value fails the refresh before a Graphify subprocess runs. The first refresh of a fresh clone needs the most headroom. In PowerShell, quote a fractional value, as in `$env:ARX_GRAPHIFY_TIMEOUT_SCALE = '1.5'`, because an unquoted number takes the current culture's separator.
+
 Do not claim fresh artifacts or task completion after a failed refresh. Report the failed stage and concrete missing prerequisite or error; do not substitute an old HTML or silently skip generation. The command applies across supported model routes and operating systems, with the interpreter override described below. This is a mandatory agent instruction, not an automatically installed post-turn hook.
 
 ## 1. Use the installed Ponytail skills

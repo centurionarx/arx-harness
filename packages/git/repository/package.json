@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-repository",
   "description": "Host-only read-only workspace Git repository Remote service",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
