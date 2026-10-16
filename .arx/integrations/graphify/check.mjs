@@ -1,7 +1,7 @@
 /**
  * Run from the repository root: node .arx/integrations/graphify/check.mjs
  * Requires the local Graphify venv, graph artifact, and existing MCP SDK; installs nothing.
- * Bounds RPCs to 10 seconds and the smoke to 30 seconds, then closes the stdio server.
+ * Bounds RPCs to 10 seconds and the smoke to 30 seconds, each multiplied by ARX_GRAPHIFY_TIMEOUT_SCALE, then closes the stdio server.
  * Writes verification.json, three live query files, and a Mermaid integration diagram under .artifacts/graphify.
  * Exits nonzero on protocol or semantic errors; this smoke does not verify browser rendering.
  * Calls only graph reads, disables query logging, and never invokes PR tools or Claude.
@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { renderIntegrations } from './refresh.mjs';
+import { bound, renderIntegrations, timeoutScale } from './refresh.mjs';
 
 const root = process.cwd();
 const output = resolve(root, '.artifacts/graphify/verification.json');
@@ -19,12 +19,13 @@ const core = ['query_graph', 'get_node', 'get_neighbors', 'get_community', 'god_
 const optional = ['list_prs', 'get_pr_impact', 'triage_prs'];
 const started = Date.now();
 const results = { status: 'failed', tools: [], graphStats: null, queries: [] };
-const options = { timeout: 10_000, maxTotalTimeout: 10_000, signal: AbortSignal.timeout(30_000) };
 let client;
 let transport;
 let stderr = '';
 
 try {
+  const scale = timeoutScale();
+  const options = { timeout: bound(10_000, scale), maxTotalTimeout: bound(10_000, scale), signal: AbortSignal.timeout(bound(30_000, scale)) };
   const require = createRequire(resolve(root, 'packages/mcp/mcp-client/package.json'));
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
   const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');

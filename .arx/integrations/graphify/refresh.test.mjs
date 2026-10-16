@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { renderIntegrations } from './refresh.mjs';
+import { bound, renderIntegrations, timeoutScale } from './refresh.mjs';
 
 const entry = fileURLToPath(new URL('./refresh.mjs', import.meta.url));
 const root = resolve(dirname(entry), '../../..');
@@ -19,8 +19,8 @@ function temporary(t) {
   return cwd;
 }
 
-function launch(cwd, python) {
-  const result = spawnSync(process.execPath, [entry], { cwd, env: { ...process.env, ARX_GRAPHIFY_PYTHON: python }, encoding: 'utf8', timeout: 10_000 });
+function launch(cwd, python, env = {}) {
+  const result = spawnSync(process.execPath, [entry], { cwd, env: { ...process.env, ARX_GRAPHIFY_PYTHON: python, ...env }, encoding: 'utf8', timeout: 10_000 });
   assert.ifError(result.error);
   assert.equal(result.signal, null);
   assert.equal(result.status, 1);
@@ -42,8 +42,13 @@ test('extract precedes offline clustering and live smoke, with HTML enabled', ()
   const extract = source.indexOf("run(python, ['-m', 'graphify', 'extract', '.', '--code-only', '--max-workers', '2', '--timing']");
   const cluster = source.indexOf("run(python, ['-m', 'graphify', 'cluster-only', '.', '--no-label']");
   const smoke = source.indexOf('run(process.execPath');
-  const preview = source.indexOf("run(process.execPath, [resolve(root, '.arx/integrations/graphify/render-preview.mjs')], 120_000)");
+  const preview = source.indexOf("run(process.execPath, [resolve(root, '.arx/integrations/graphify/render-preview.mjs')], bound(120_000, scale))");
   assert(extract > 0 && cluster > extract && smoke > cluster && preview > smoke);
+  const runs = source.match(/^ +run\(/gm)?.length;
+  assert.equal(runs, 4);
+  assert.equal(source.match(/^ {4}run\(.*, bound\(\d[\d_]*, scale\)\);$/gm)?.length, runs);
+  const scaleAt = source.indexOf('const scale = timeoutScale();');
+  assert(scaleAt > 0 && scaleAt < extract);
   assert(source.indexOf("regenerated('graph-static.jpg')") > preview);
   assert(source.includes("'graph-static.jpg'].map"));
   assert(source.includes('Missing or invalid JPEG preview'));
@@ -52,6 +57,35 @@ test('extract precedes offline clustering and live smoke, with HTML enabled', ()
   assert(!source.includes('--no-viz'));
   assert(source.indexOf("remove('last-refresh.json')") < extract);
   assert(source.indexOf("writeFileSync(resolve(out, 'last-refresh.json')") > smoke);
+});
+
+test('the timeout scale defaults to 1, accepts decimals from 1 to 10, and yields whole-millisecond bounds', () => {
+  assert.equal(timeoutScale({}), 1);
+  for (const [raw, scale] of [['1', 1], ['2.5', 2.5], ['10', 10]]) assert.equal(timeoutScale({ ARX_GRAPHIFY_TIMEOUT_SCALE: raw }), scale);
+  for (const raw of ['', '0', '0.5', '10.5', '-2', 'abc', '2x', ' 2', '1e1', 'Infinity']) {
+    assert.throws(() => timeoutScale({ ARX_GRAPHIFY_TIMEOUT_SCALE: raw }), /Invalid ARX_GRAPHIFY_TIMEOUT_SCALE/);
+  }
+  assert.equal(bound(45_000, 2.5), 112_500);
+  assert.equal(bound(1, 1.5), 2);
+});
+
+test('the live smoke and the poster scale every time bound they set', () => {
+  for (const file of ['check.mjs', 'render-preview.mjs']) {
+    const text = readFileSync(new URL('./' + file, import.meta.url), 'utf8');
+    assert.match(text, /const scale = timeoutScale\(\);/, file);
+    assert.doesNotMatch(text.replace(/bound\(\d[\d_]*, scale\)/g, ''), /\b\d+_000\b/, file);
+  }
+  const preview = readFileSync(new URL('./render-preview.mjs', import.meta.url), 'utf8');
+  assert.match(preview, /chromium\.launch\(\{ headless: true, timeout: bound\(\d[\d_]*, scale\) \}\)/);
+  assert.match(preview, /page\.setDefaultTimeout\(bound\(\d[\d_]*, scale\)\)/);
+});
+
+test('an invalid timeout scale fails before any Graphify subprocess and cannot retain stale success', t => {
+  const cwd = temporary(t);
+  prerequisites(cwd);
+  const stderr = launch(cwd, process.execPath, { ARX_GRAPHIFY_TIMEOUT_SCALE: 'slow' });
+  assert.match(stderr, /Invalid ARX_GRAPHIFY_TIMEOUT_SCALE "slow"/);
+  assert.doesNotMatch(stderr, /Graphify command failed/);
 });
 
 test('missing repository prerequisites remove stale success and release lock', t => {
