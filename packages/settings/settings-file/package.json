@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-settings-file",
   "description": "File-backed settings provider (settings.yaml) for the arx Harness",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },
