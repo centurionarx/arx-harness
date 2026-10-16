@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-github",
   "description": "Host-only read-only GitHub Remote service and private human PAT authorization",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

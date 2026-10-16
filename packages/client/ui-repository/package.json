@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-repository",
   "description": "Read-only registered workspace Git inspection and unified comparisons",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "publishConfig": {
     "access": "public"
   },

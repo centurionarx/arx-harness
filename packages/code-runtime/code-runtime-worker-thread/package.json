@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-code-runtime-worker-thread",
   "description": "Worker-thread implementation of the arx Harness code-execution seam",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "publishConfig": {
     "access": "public"
   },

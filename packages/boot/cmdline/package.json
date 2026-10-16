@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-cmdline",
   "description": "Immutable command-line handoff from a arx launcher to any app plugin that injects cmdlineArgs",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "publishConfig": {
     "access": "public"
   },
