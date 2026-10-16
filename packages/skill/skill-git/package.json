@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-skill-git",
   "description": "Revision-pinned Git skill provider with verified immutable cache and prompt provenance snapshots",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",

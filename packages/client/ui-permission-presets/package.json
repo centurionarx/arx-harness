@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-permission-presets",
   "description": "Permission surfaces: a new-session default in General settings and a current-session /permission popup over the permissions projection",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "publishConfig": {
     "access": "public"
   },
