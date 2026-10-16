@@ -92,9 +92,9 @@ Run checks before pushes via [arx-pre-push-checks](.agents/skills/arx-pre-push-c
 - Never default to the full suite or repeat a passing check for commit or push. CI owns exhaustive coverage and the platform matrix; rehearse all locally only by explicit request, for CI diagnosis, or for an irreducibly repository-wide change.
 - `test:coverage`, not `test`, is the CI coverage gate ([why](docs/testing.md)).
 
-### After a merge, sync the local clones
+### After a merge, sync the local clone
 
-After a merge, the owner's clones MUST reach `master`: the notebook `C:\DESENVOLVIMENTO\projetos-centurionarx\Projeto-arx-ai\arx-harness` and the Azure VM `azureuser@dev-01:~/dev/arx-harness`. Run `git fetch origin`, then `git merge --ff-only origin/master` on `master`, or `git fetch origin master:master` from another branch. A dirty tree or diverged `master` stops that clone's sync and is reported, never stashed, reset, or overwritten. Web-serving clones next run `pnpm install --frozen-lockfile && pnpm run build:official`, restarting the service ([why](.agents/notes/implemented/process/2026-09-27-a-web-serving-clone-builds-the-official-client.md)). An agent without clone access gives the owner these commands, never a claimed sync ([why](.agents/notes/implemented/process/2026-09-22-a-merge-reaches-the-local-clones.md)).
+After a merge, the owner's single long-lived clone `C:\Desenvolvimento\arx-harness` MUST reach `master`: run `git fetch origin`, then `git merge --ff-only origin/master` on `master`, or `git fetch origin master:master` from another branch. A dirty tree or diverged `master` stops the sync and is reported, never stashed, reset, or overwritten. If the clone serves the Web UI, it next runs `pnpm install --frozen-lockfile && pnpm run build:official`, restarting the service ([why](.agents/notes/implemented/process/2026-09-27-a-web-serving-clone-builds-the-official-client.md)). An agent without access to the clone gives the owner these commands, never a claimed sync ([why](.agents/notes/implemented/process/2026-09-22-a-merge-reaches-the-local-clones.md)).
 
 ## Secrets / .env
 
