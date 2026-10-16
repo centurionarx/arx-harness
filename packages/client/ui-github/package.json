@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-github",
   "description": "Read-only GitHub account and explicit workspace repository viewing",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "publishConfig": {
     "access": "public"
   },
