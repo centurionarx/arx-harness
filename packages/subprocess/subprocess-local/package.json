@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-subprocess-local",
   "description": "Local-subprocess implementation of the arx Harness subprocess seam",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },
@@ -42,7 +42,7 @@
     "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "koffi": "^3.1.0 <3.3.2 || ^3.3.3",
+    "koffi": "^3.1.0 <3.3.2 || ^3.3.4",
     "node-pty": "1.2.0-beta.15"
   },
   "devDependencies": {

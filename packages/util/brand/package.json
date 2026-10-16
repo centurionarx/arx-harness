@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-brand",
   "description": "Type-only Branded<B> nominal-typing primitive for the arx Harness",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },

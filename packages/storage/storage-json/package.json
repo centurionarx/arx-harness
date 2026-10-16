@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-storage-json",
   "description": "JSON file KV storage backend for the arx Harness storage hub",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },

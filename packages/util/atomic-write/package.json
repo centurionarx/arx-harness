@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-atomic-write",
   "description": "Atomic file replacement with durable publication and private Windows staging",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },
@@ -32,7 +32,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "koffi": "^3.1.0 <3.3.2 || ^3.3.3"
+    "koffi": "^3.1.0 <3.3.2 || ^3.3.4"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
