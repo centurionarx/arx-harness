@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-fs-local",
   "description": "Local-filesystem implementation of the arx Harness filesystem seam (ctx.fs)",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "publishConfig": {
     "access": "public"
   },
