@@ -39,7 +39,7 @@
   "dependencies": {
     "@arx-ai/arx-host-directory-picker": "workspace:^",
     "@arx-ai/arx-native-command": "workspace:^",
-    "koffi": "^3.1.0 <3.3.2 || ^3.3.3"
+    "koffi": "^3.1.0 <3.3.2 || ^3.3.4"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",
