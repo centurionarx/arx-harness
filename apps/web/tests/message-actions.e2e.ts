@@ -157,11 +157,19 @@ describe('web e2e: message IconActions and clocks on settled history', () => {
     // The row action owns a distinct ui-workspace injection from the message
     // action above, so exercise both through the loaded app before capture.
     const sourceRow = page.locator('[role="treeitem"][aria-selected="true"]')
-    const rowBox = await sourceRow.boundingBox()
-    if (rowBox === null) throw new Error('fork source row has no layout box')
+    // Branch selects the child only after the fork's inherited title resolves;
+    // until then the selected row is the seeded session, so wait for the
+    // child's title before targeting its row action.
+    await expect.poll(() => sourceRow.textContent(), { timeout: 10_000 }).toContain('Use the read tool twice (1)')
     const actionButton = sourceRow.locator('button[aria-label^="Session actions for "]')
-    await sourceRow.hover({ position: { x: rowBox.width - 16, y: rowBox.height / 2 } })
-    await expect.poll(() => actionButton.isVisible(), { timeout: 2_000 }).toBe(true)
+    // A row that re-renders under a stationary pointer can drop the pending
+    // hover, so the gesture repeats until the revealed action shows.
+    await expect.poll(async () => {
+      const rowBox = await sourceRow.boundingBox()
+      if (rowBox === null) return false
+      await sourceRow.hover({ position: { x: rowBox.width - 16, y: rowBox.height / 2 } })
+      return actionButton.isVisible()
+    }, { timeout: 10_000 }).toBe(true)
     const buttonBox = await actionButton.boundingBox()
     if (buttonBox === null) throw new Error('fork source row action has no layout box')
     await page.mouse.click(buttonBox.x + buttonBox.width / 2, buttonBox.y + buttonBox.height / 2)
