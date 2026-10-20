@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-file-preview",
   "description": "Safe current-file document previews alongside the conversation",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "publishConfig": {
     "access": "public"
   },

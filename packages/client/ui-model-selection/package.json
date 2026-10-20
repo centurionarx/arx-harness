@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-model-selection",
   "description": "Model selection: the /model popupSelect over session.models / session.selectModel",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "publishConfig": {
     "access": "public"
   },

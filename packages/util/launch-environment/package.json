@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-launch-environment",
   "description": "Immutable arx Harness launch environment that records which layer supplied each value",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "publishConfig": {
     "access": "public"
   },

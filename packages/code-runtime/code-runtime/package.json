@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-code-runtime",
   "description": "Abstract code-execution seam (ctx.codeRuntime) for the arx Harness",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "publishConfig": {
     "access": "public"
   },
