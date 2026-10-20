@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-llm-replay",
   "description": "Replay LLM plugin: short-circuits llm/stream with model chunks reconstructed from a recorded session JSONL (keyless snapshot tests)",
-  "version": "1.0.41",
+  "version": "1.0.44",
   "publishConfig": {
     "access": "public"
   },

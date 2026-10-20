@@ -3,6 +3,7 @@
  * Run from the repository root after cluster-only: node .arx/integrations/graphify/render-preview.mjs
  * Uses the existing apps/web Playwright dependency and browser; changes no GUI security policy.
  * The preview strips scripts and image src attributes, but its CSP permits data-image CSS backgrounds.
+ * ARX_GRAPHIFY_TIMEOUT_SCALE multiplies the asset-download, browser-launch, and page bounds, including the page default.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -10,6 +11,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { bound, timeoutScale } from './refresh.mjs';
 
 /** Encode Graphify rows once per field schema; the browser reconstructs identical graph objects.
  * @param {string} html Fresh Graphify HTML with its JSON-only RAW_NODES and RAW_EDGES assignments.
@@ -65,6 +67,7 @@ export function withStaticPreview(html, jpegBase64, counts) {
  * @returns {Promise<void>} Rejects on dependency, browser, rendering, integrity, or preview-size failures.
  */
 export async function renderPreview() {
+  const scale = timeoutScale();
   const root = process.cwd();
   const out = resolve(root, '.artifacts/graphify');
   const target = resolve(out, 'graph.html');
@@ -80,7 +83,7 @@ export async function renderPreview() {
   try { asset = readFileSync(assetPath); }
   catch (error) {
     if (error.code !== 'ENOENT') throw error;
-    const response = await fetch(cdn, { signal: AbortSignal.timeout(20_000) });
+    const response = await fetch(cdn, { signal: AbortSignal.timeout(bound(20_000, scale)) });
     assert(response.ok, 'Visualization asset HTTP ' + response.status);
     asset = Buffer.from(await response.arrayBuffer());
   }
@@ -88,10 +91,11 @@ export async function renderPreview() {
   writeFileSync(assetPath, asset);
   const require = createRequire(resolve(root, 'apps/web/package.json'));
   const { chromium } = require('playwright');
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, timeout: bound(30_000, scale) });
   const errors = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1100, height: 740 } });
+    page.setDefaultTimeout(bound(30_000, scale));
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.route('**/*', async (route) => {
@@ -100,8 +104,8 @@ export async function renderPreview() {
       else if (url === pathToFileURL(target).href) await route.continue();
       else await route.abort('blockedbyclient');
     });
-    await page.goto(pathToFileURL(target).href, { waitUntil: 'load', timeout: 30_000 });
-    await page.waitForFunction(() => typeof network !== 'undefined' && network.physics.options.enabled === false, undefined, { timeout: 30_000 });
+    await page.goto(pathToFileURL(target).href, { waitUntil: 'load', timeout: bound(30_000, scale) });
+    await page.waitForFunction(() => typeof network !== 'undefined' && network.physics.options.enabled === false, undefined, { timeout: bound(30_000, scale) });
     const readGraph = () => {
       const canvas = document.querySelector('#graph canvas');
       const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
@@ -125,8 +129,8 @@ export async function renderPreview() {
     const temporary = target + '.poster-' + process.pid;
     writeFileSync(temporary, enhanced);
     renameSync(temporary, target);
-    await page.goto(pathToFileURL(target).href, { waitUntil: 'load', timeout: 30_000 });
-    await page.waitForFunction(() => typeof network !== 'undefined' && network.physics.options.enabled === false, undefined, { timeout: 30_000 });
+    await page.goto(pathToFileURL(target).href, { waitUntil: 'load', timeout: bound(30_000, scale) });
+    await page.waitForFunction(() => typeof network !== 'undefined' && network.physics.options.enabled === false, undefined, { timeout: bound(30_000, scale) });
     const verified = await page.evaluate(readGraph);
     assert(verified.painted > 0, 'Compact graph canvas is empty');
     assert.equal(verified.nodes, counts.nodes, 'Compact node count changed');

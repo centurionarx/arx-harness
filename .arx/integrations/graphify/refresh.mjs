@@ -3,6 +3,7 @@
  * Read the graph/report/diagram before every task. This entry refreshes ignored artifacts only;
  * it does not install hooks or enforce agent instructions. Requires the existing venv and MCP SDK.
  * Extraction/clustering are bounded to ten minutes each, the live smoke to 45 seconds, and preview to 120 seconds.
+ * ARX_GRAPHIFY_TIMEOUT_SCALE (a decimal from 1 to 10, default 1) multiplies these and the smoke/preview inner bounds.
  * Existing graph/report/HTML remain readable during refresh; changed mtimes prove their regeneration.
  * Any existing lock refuses concurrent writers; remove an abandoned lock only after checking its owner.
  */
@@ -37,6 +38,27 @@ export function renderIntegrations(queries) {
   return '# Architecture integrations extracted with Graphify\n\nLive scoped AST queries provide navigation evidence, not runtime verification. Ambiguous member calls are omitted. The protocol smoke does not prove browser rendering.\n\n' + sections.join('\n\n') + '\n';
 }
 
+/** Read the slow-host multiplier for every refresh, live-smoke, and preview time bound.
+ * @param {Record<string, string | undefined>} env Environment holding the optional ARX_GRAPHIFY_TIMEOUT_SCALE.
+ * @returns {number} 1 when the variable is unset; otherwise its decimal value from 1 to 10. Throws on any other value.
+ */
+export function timeoutScale(env = process.env) {
+  const raw = env.ARX_GRAPHIFY_TIMEOUT_SCALE;
+  if (raw === undefined) return 1;
+  const scale = /^\d+(\.\d+)?$/.test(raw) ? Number(raw) : Number.NaN;
+  assert(scale >= 1 && scale <= 10, 'Invalid ARX_GRAPHIFY_TIMEOUT_SCALE ' + JSON.stringify(raw) + ': expected a decimal from 1 to 10 with a dot separator, such as 1.5');
+  return scale;
+}
+
+/** Scale a default time bound.
+ * @param {number} milliseconds Bound for an unscaled host.
+ * @param {number} scale Multiplier returned by timeoutScale.
+ * @returns {number} Whole milliseconds, as spawnSync requires.
+ */
+export function bound(milliseconds, scale) {
+  return Math.round(milliseconds * scale);
+}
+
 /** Refresh all artifacts from cwd; publish success only after live counts and required outputs pass.
  * @returns {void} Throws on missing prerequisites, lock contention, or any failed subprocess/output.
  */
@@ -59,6 +81,7 @@ export function refresh() {
     };
     remove('last-refresh.json');
     const python = process.env.ARX_GRAPHIFY_PYTHON || resolve(root, '.cache/graphify-venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+    const scale = timeoutScale();
     for (const path of ['AGENTS.md', 'packages/mcp/mcp-client/package.json', '.arx/integrations/graphify/check.mjs', '.arx/integrations/graphify/render-preview.mjs']) {
       assert(statSync(resolve(root, path)).isFile(), 'Missing prerequisite: ' + path);
     }
@@ -79,13 +102,13 @@ export function refresh() {
     }
     const regenerated = file => assert.notEqual(statSync(resolve(out, file), { bigint: true }).mtimeNs, previous.get(file), 'Graphify did not regenerate ' + file);
     for (const file of ['verification.json', 'catalog-integration.txt', 'mcp-integration.txt', 'skill-integration.txt']) remove(file);
-    run(python, ['-m', 'graphify', 'extract', '.', '--code-only', '--max-workers', '2', '--timing'], 600_000);
+    run(python, ['-m', 'graphify', 'extract', '.', '--code-only', '--max-workers', '2', '--timing'], bound(600_000, scale));
     regenerated('graph.json');
-    run(python, ['-m', 'graphify', 'cluster-only', '.', '--no-label'], 600_000);
+    run(python, ['-m', 'graphify', 'cluster-only', '.', '--no-label'], bound(600_000, scale));
     regenerated('GRAPH_REPORT.md');
     regenerated('graph.html');
-    run(process.execPath, [resolve(root, '.arx/integrations/graphify/check.mjs')], 45_000);
-    run(process.execPath, [resolve(root, '.arx/integrations/graphify/render-preview.mjs')], 120_000);
+    run(process.execPath, [resolve(root, '.arx/integrations/graphify/check.mjs')], bound(45_000, scale));
+    run(process.execPath, [resolve(root, '.arx/integrations/graphify/render-preview.mjs')], bound(120_000, scale));
     regenerated('graph-static.jpg');
     for (const file of ['graph.json', 'GRAPH_REPORT.md', 'ARCHITECTURE_INTEGRATIONS.md', 'graph.html']) {
       assert(readFileSync(resolve(out, file), 'utf8').trim(), 'Empty Graphify artifact: ' + file);
