@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-workflow",
   "description": "Workflow capability seam: ctx.workflowEngine service, run vocabulary, and workflow/* events",
-  "version": "1.0.43",
+  "version": "1.0.44",
   "publishConfig": {
     "access": "public"
   },
