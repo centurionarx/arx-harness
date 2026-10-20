@@ -27,7 +27,7 @@ import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type { Page } from 'playwright'
+import type { Locator, Page } from 'playwright'
 import { expect } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import Loader from '@arx-ai/cordis-plugin-loader'
@@ -991,9 +991,27 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
 }
 
 /**
- * Capture the region's aria snapshot at a settled milestone: poll until two
- * consecutive normalized captures are equal — a single-shot capture races the
- * last React commits.
+ * Report whether every model selector trigger in a region names a current model
+ * or is disabled. An enabled trigger labelled only "Select model" means either
+ * a catalog that is still loading or a loaded catalog without a current
+ * selection; captures treat both as not ready, so the loading label cannot
+ * freeze into a golden. A disabled trigger belongs to a locked composer and is
+ * accepted as is. One in-page read keeps a trigger that unmounts mid-check from
+ * stalling on Playwright's attach wait.
+ * @param region - the region whose aria tree is captured.
+ * @returns whether the region holds no enabled bare model trigger.
+ */
+async function modelSelectorsSettled(region: Locator): Promise<boolean> {
+  return region.locator('button[aria-label^="Select model"]').evaluateAll(buttons => buttons.every(button =>
+    button.getAttribute('aria-label') !== 'Select model' || (button as HTMLButtonElement).disabled))
+}
+
+/**
+ * Capture the region's aria snapshot at a settled milestone: wait until any
+ * model selector in it names a current model or is disabled, then poll until
+ * two consecutive normalized captures are equal with the selector still settled
+ * — a single-shot capture races the last React commits, and a selector can
+ * mount or unlock after the first check.
  * @param page - the page under test.
  * @param selector - the region locator selector.
  * @param workspaceCwd - normalization input.
@@ -1001,10 +1019,14 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
  */
 export async function captureStableAria(page: Page, selector: string, workspaceCwd: string): Promise<string> {
   const region = page.locator(selector).first()
+  await expect.poll(() => modelSelectorsSettled(region), {
+    timeout: 15_000,
+    message: 'model selector shows no current model before the aria capture',
+  }).toBe(true)
   let previous = normalizeAria(await region.ariaSnapshot(), workspaceCwd)
   await expect.poll(async () => {
     const current = normalizeAria(await region.ariaSnapshot(), workspaceCwd)
-    const stable = current === previous
+    const stable = current === previous && await modelSelectorsSettled(region)
     previous = current
     return stable
   }, { timeout: 5_000, message: 'aria snapshot did not stabilize' }).toBe(true)
