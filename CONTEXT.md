@@ -4,7 +4,7 @@ This is the operational entry document for another developer. Read the [root ins
 
 ## Source and authority
 
-The published base is arx-harness 1.0.40 at commit 1e5309f133c8a09599fc90cfc003a1556677895b. Phase 001 publishes the documentation and phased-release policy as 1.0.44; it contains no AUTH runtime change. The authoritative AUTH implementation remains the existing private staging directory /home/azureuser/dev/arx-harness-auth-20261008 on dev-01. GitHub and the owner's single long-lived clone `C:\Desenvolvimento\arx-harness` hold the published source; the [sync rule](AGENTS.md#after-a-merge-sync-the-local-clone) brings that clone to `master` after every merge.
+The published base is arx-harness 1.0.40 at commit 1e5309f133c8a09599fc90cfc003a1556677895b. Phase 001 publishes the documentation and phased-release policy as 1.0.45; it contains no AUTH runtime change. The authoritative AUTH implementation remains the existing private staging directory /home/azureuser/dev/arx-harness-auth-20261008 on dev-01. GitHub and the owner's single long-lived clone `C:\Desenvolvimento\arx-harness` hold the published source; the [sync rule](AGENTS.md#after-a-merge-sync-the-local-clone) brings that clone to `master` after every merge.
 
 The owner authorizes AUTH-GL4 execution, preservation of previous results, and versioned Git publication for each phase. Service activation or restart, public hosting or network changes, real logins or account bootstrap, secret configuration, real database migration or restore, and real Resend delivery retain separate operating authorization. Repository development authority does not change application roles.
 
