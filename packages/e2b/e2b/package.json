@@ -36,7 +36,7 @@
     "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "e2b": "2.29.1",
+    "e2b": "2.51.0",
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
