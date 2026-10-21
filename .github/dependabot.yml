@@ -12,6 +12,19 @@ updates:
       timezone: "Asia/Shanghai"
     cooldown:
       default-days: 30
+    groups:
+      # Packages released in lockstep must move in one pull request.
+      opentelemetry:
+        patterns:
+          - "@opentelemetry/*"
+      shiki:
+        patterns:
+          - "shiki"
+          - "@shikijs/*"
+    ignore:
+      # @types/node tracks the oldest supported Node major in package.json engines.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     labels:
       - "kind/dependency"
       - "area/infra"
@@ -36,6 +49,12 @@ updates:
       timezone: "Asia/Shanghai"
     cooldown:
       default-days: 30
+    groups:
+      # The upload/download pair handles the same artifacts and is reviewed as one change.
+      artifact-actions:
+        patterns:
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
     labels:
       - "kind/dependency"
       - "area/infra"

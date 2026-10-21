@@ -415,9 +415,16 @@ async function graphql(query, variables) {
   return result.data
 }
 
-async function issueSnapshot(number, status = undefined) {
-  const issue = await api(`/repos/${config.organization}/${config.repository}/issues/${number}`)
-  if (issue.pull_request) return null
+/**
+ * Read one same-repository Issue with its Project status.
+ * @param {number} number Issue number, as cited by a body or an event.
+ * @param {string|null|undefined} status Known Project status; undefined reads it from the Project.
+ * @returns {Promise<object|null>} The Issue snapshot, or null when the number is a pull request or does not exist here.
+ */
+export async function issueSnapshot(number, status = undefined) {
+  // Bodies quote references from other repositories, such as Dependabot's upstream release notes, as bare #N.
+  const issue = await api(`/repos/${config.organization}/${config.repository}/issues/${number}`, { allow404: true })
+  if (!issue || issue.pull_request) return null
   const values = await api(
     `/repos/${config.organization}/${config.repository}/issues/${number}/issue-field-values?per_page=100`,
   )

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-frontend",
   "description": "Web application entry: vite build over the @arx-ai/arx-client-web shell library; dist/ served by apps/cli's arx web",
-  "version": "1.0.43",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
@@ -33,7 +33,7 @@
     "@arx-ai/arx-client-web": "workspace:^",
     "@arx-ai/arx-cmdline": "workspace:^",
     "@arx-ai/arx-pwsh-local": "workspace:^",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.20.4",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
     "@vitejs/plugin-react": "^4.0.0",

@@ -136,7 +136,7 @@ jobs:
           --package sdk
           --output-dir dist-python
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v6
         with:
           name: arx_harness_sdk-${{ needs.plan.outputs.version }}-py3-none-any.whl
           path: dist-python/arx_harness_sdk-${{ needs.plan.outputs.version }}-py3-none-any.whl
@@ -160,7 +160,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       # setup-node's built-in pnpm store cache keys on platform AND arch, so
       # the Linux architectures sharing runner.os stay on separate caches.
@@ -267,7 +267,7 @@ jobs:
           --runtime-exe "${{ steps.runtime.outputs.exe }}"
           --output-dir dist-python
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v7
         with:
           name: arx_harness_sdk-${{ needs.plan.outputs.version }}-py3-none-any.whl
           path: dist-python
@@ -330,7 +330,7 @@ jobs:
             /tmp/arx-sdk/bin/python /work/scripts/smoke-python-runtime.py --scenario sdk-mcp
           '
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.runtime.outputs.wheel }}
           path: dist-python/${{ steps.runtime.outputs.wheel }}

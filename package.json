@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-root",
-  "version": "1.0.43",
+  "version": "1.0.46",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -160,7 +160,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^28.0.3",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^22.20.0",
+    "@types/node": "^22.20.4",
     "@types/spdx-expression-parse": "^4.0.0",
     "@vitest/coverage-v8": "^4.1.8",
     "@yarnpkg/cli-dist": "4.17.1",

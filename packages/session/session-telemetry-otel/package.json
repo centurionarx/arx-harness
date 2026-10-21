@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-telemetry-otel",
   "description": "OpenTelemetry backend for the arx Harness telemetry seam: hands captured session records to the OTel JS SDK's log pipeline",
-  "version": "1.0.43",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
@@ -33,11 +33,11 @@
   "license": "MIT",
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/api-logs": "^0.220.0",
-    "@opentelemetry/exporter-logs-otlp-http": "^0.220.0",
-    "@opentelemetry/otlp-exporter-base": "^0.220.0",
-    "@opentelemetry/resources": "^2.9.0",
-    "@opentelemetry/sdk-logs": "^0.220.0",
+    "@opentelemetry/api-logs": "^0.222.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.222.0",
+    "@opentelemetry/otlp-exporter-base": "^0.222.0",
+    "@opentelemetry/resources": "^2.11.0",
+    "@opentelemetry/sdk-logs": "^0.222.0",
     "@arx-ai/schemastery": "workspace:^"
   },
   "peerDependencies": {

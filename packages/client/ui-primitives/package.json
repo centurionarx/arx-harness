@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-primitives",
   "description": "Pure React atoms for the arx web UI: controls, icons, markdown, and JSON inspectors (zero cordis)",
-  "version": "1.0.43",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
@@ -27,7 +27,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@shikijs/langs": "^4.3.1",
+    "@shikijs/langs": "^4.4.3",
     "@types/mdast": "^4.0.4",
     "anser": "^2.3.5",
     "clsx": "^2.0.0",
@@ -46,7 +46,7 @@
     "micromark-util-types": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "shiki": "^4.3.1"
+    "shiki": "^4.4.3"
   },
   "devDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",

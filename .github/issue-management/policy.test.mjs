@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   countVisibleUnits,
+  issueSnapshot,
   nextResolvingIssueStatus,
   parseReferences,
   retainIssueReferences,
@@ -418,4 +419,28 @@ test('allows missing Priority only when resolving Issues are also unprioritized'
       'um PR com Priority que resolve Issues exige Priority em cada Issue resolvida',
     ),
   )
+})
+
+test('issue snapshots treat a missing number or a pull request as no Issue and keep other API failures fatal', async (t) => {
+  const previousToken = process.env.GH_TOKEN
+  process.env.GH_TOKEN = 'test-token'
+  t.after(() => {
+    if (previousToken === undefined) delete process.env.GH_TOKEN
+    else process.env.GH_TOKEN = previousToken
+  })
+  const responses = new Map([
+    ['/issues/744', () => new Response('{"message":"Not Found"}', { status: 404 })],
+    ['/issues/20', () => Response.json({ number: 20, pull_request: {} })],
+    ['/issues/9', () => new Response('unavailable', { status: 500 })],
+  ])
+  t.mock.method(globalThis, 'fetch', async (url) => {
+    const path = new URL(url).pathname.replace(/^\/repos\/[^/]+\/[^/]+/, '')
+    const respond = responses.get(path)
+    assert(respond, `unexpected request ${url}`)
+    return respond()
+  })
+
+  assert.equal(await issueSnapshot(744, null), null)
+  assert.equal(await issueSnapshot(20, null), null)
+  await assert.rejects(issueSnapshot(9, null), /GET \/repos\/.+\/issues\/9: 500/)
 })

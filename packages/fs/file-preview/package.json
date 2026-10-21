@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-file-preview",
   "description": "Bounded agent-filesystem document previews over authenticated Remote RPC",
-  "version": "1.0.43",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
