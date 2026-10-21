@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-projects",
   "description": "Projects, immutable plans and prompt revisions in the sidebar",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
