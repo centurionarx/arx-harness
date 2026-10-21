@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-web-frontend",
   "description": "Web application entry: vite build over the @arx-ai/arx-client-web shell library; dist/ served by apps/cli's arx web",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },

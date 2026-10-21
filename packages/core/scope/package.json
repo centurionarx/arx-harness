@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-scope",
   "description": "Scoped-context registration primitive (scope tags, scope-filtered event dispatch) for the arx Harness",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },

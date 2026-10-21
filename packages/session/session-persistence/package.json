@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-persistence",
   "description": "Abstract durable session persistence seam (ctx.sessionPersistence) for the arx Harness",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },

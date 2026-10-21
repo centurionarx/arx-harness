@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-command-goal",
   "description": "Human-facing slash command for persisted same-session goals",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "publishConfig": {
     "access": "public"
   },
