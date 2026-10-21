@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-workflow-run",
   "description": "Durable workflow-run Conversation Node and nested member disclosure for arx web",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "publishConfig": {
     "access": "public"
   },
