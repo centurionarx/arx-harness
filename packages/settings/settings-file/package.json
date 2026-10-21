@@ -39,7 +39,7 @@
     "@arx-ai/cordis": "workspace:^"
   },
   "dependencies": {
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "@arx-ai/schemastery": "workspace:^",
     "yaml": "^2.9.0"
   },
