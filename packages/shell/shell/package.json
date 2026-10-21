@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-shell",
   "description": "Abstract bash executor seam (ctx.shell) for the arx Harness",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-persistence-jsonl",
   "description": "JSONL durable session persistence backend for the arx Harness",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "publishConfig": {
     "access": "public"
   },
