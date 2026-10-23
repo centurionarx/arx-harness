@@ -30,7 +30,6 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
       apiKey,
       envs: { NPM_TOKEN: 'sentinel-secret', ARX_STALE: 'sentinel-stale', KEEP: 'visible' },
       timeoutMs: 60_000,
-      secure: true,
       lifecycle: { onTimeout: 'kill' },
     })
     try {

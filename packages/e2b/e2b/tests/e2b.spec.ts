@@ -82,7 +82,6 @@ describe('E2BRuntime', () => {
     expect(sdk.create).toHaveBeenCalledWith({
       apiKey: 'test-key',
       timeoutMs: 300_000,
-      secure: true,
       lifecycle: { onTimeout: 'kill' },
     })
     expect(fixture.makeDir).toHaveBeenNthCalledWith(1, '/home/user/workspace')
@@ -130,7 +129,6 @@ describe('E2BRuntime', () => {
     expect(sdk.create).toHaveBeenCalledWith({
       apiKey: 'environment-key',
       timeoutMs: 60_000,
-      secure: true,
       lifecycle: { onTimeout: 'kill' },
     })
     expect(ctx.e2b.cwd).toBe('/workspace/project')
