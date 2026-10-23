@@ -152,7 +152,6 @@ export class E2BRuntime extends Service {
     const sandbox = await Sandbox.create({
       apiKey: this.config.apiKey,
       timeoutMs: this.config.timeoutMs,
-      secure: true,
       lifecycle: { onTimeout: 'kill' },
     })
     try {
