@@ -83,7 +83,7 @@
     "commander": "^15.0.0",
     "@arx-ai/cordis": "workspace:^",
     "js-yaml": "^4.2.0",
-    "node-addon-require-builtin": "^0.1.4"
+    "node-addon-require-builtin": "^0.1.6"
   },
   "devDependencies": {
     "@arx-ai/arx-agent": "workspace:^",
