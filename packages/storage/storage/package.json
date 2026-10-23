@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-storage",
   "description": "Storage hub (ctx.storage): named backend registry plus mounted data-form facilities for the arx Harness",
-  "version": "1.0.47",
+  "version": "1.0.48",
   "publishConfig": {
     "access": "public"
   },

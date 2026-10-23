@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-project-runner",
   "description": "Resume saved project steps through owned subagents and durable checkpoints",
-  "version": "1.0.47",
+  "version": "1.0.48",
   "publishConfig": {
     "access": "public"
   },
