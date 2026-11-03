@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-sandbox",
   "description": "Abstract process-sandbox seam (ctx.sandbox) for the arx Harness: same-world confinement vocabulary and the SandboxProvider contract",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "publishConfig": {
     "access": "public"
   },
