@@ -94,7 +94,7 @@ Run checks before pushes via [arx-pre-push-checks](.agents/skills/arx-pre-push-c
 
 ### After a merge, verify on GitHub
 
-GitHub holds the published source. After a merge, confirm that `master` contains the merge commit and report the CI result of that commit. Agents do not synchronize, rebuild, or restart local clones and do not hand out sync commands ([why](.agents/notes/implemented/process/2026-11-03-github-is-the-source-after-a-merge.md)).
+GitHub holds the published source. After a merge, confirm that `master` contains the merge commit and report the CI result of that commit. Agents do not synchronize, rebuild, or restart local clones as a merge follow-up and do not hand out sync commands ([why](.agents/notes/implemented/process/2026-11-03-github-is-the-source-after-a-merge.md)).
 
 ## Secrets / .env
 

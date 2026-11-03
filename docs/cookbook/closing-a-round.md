@@ -23,7 +23,7 @@ Read the applicable agent instructions, approved scope, current task, and existi
 
 The entry document leads to the approved scope, current source and status, decisions, test and review evidence, remaining work, and operating authority. It identifies which source version each result exercises. If another developer needs a private staging environment or a delta over a specific base, the handoff names those inputs and their limitations.
 
-Keep credentials, tokens, private user content, and live secret values out of the handoff. Preserve sealed packages and historical receipts; use a new identifier for each checkpoint. Publication and version advancement are required for every phase in the owner-approved scope. Obtain separate authority for merging when it is not already granted, service activation, infrastructure, real accounts, migrations, and external messages.
+Keep credentials, tokens, private user content, and live secret values out of the handoff. Preserve sealed evidence and historical receipts; use a new identifier for each checkpoint. Publication and version advancement are required for every phase in the owner-approved scope. Obtain separate authority for merging when it is not already granted, service activation, infrastructure, real accounts, migrations, and external messages.
 
 ## Verify closure
 
