@@ -121,6 +121,7 @@ const GENERIC_SKIPS: readonly GenericSkip[] = [
   { file: 'packages/extensions/cordis-host-runner/tests/helpers.ts', upstream: ['cordis'] },
   { file: 'packages/extensions/cordis-host-runner/tests/runner.spec.ts', upstream: ['cordis'] },
   { file: 'packages/extensions/cordis-host-runner/tests/versioning.spec.ts', upstream: ['cordis'] },
+  { file: 'packages/host/isolated-project-runtime/tests/allowed-remotes.spec.ts', upstream: ['cordis'] },
   { file: 'packages/extensions/tool-cordis/src/api-catalog.ts', upstream: ['cordis'] },
   { file: 'packages/extensions/tool-cordis/src/providers.ts', upstream: ['cordis'] },
   { file: 'packages/extensions/ui-cordis/src/client/index.ts', upstream: ['cordis'] },
@@ -143,6 +144,8 @@ interface PostCondition {
 }
 
 const POSTCONDITIONS: readonly PostCondition[] = [
+  // The worker rejects this unchanged administration event, not a package import.
+  { file: 'packages/host/isolated-project-runtime/tests/allowed-remotes.spec.ts', text: "'cordis/request-run'", count: 1 },
   { file: 'vendor/cordis/package.json', text: '"name": "@arx-ai/cordis"', count: 1 },
   { file: 'vendor/hmr/package.json', text: '"name": "@arx-ai/cordis-plugin-hmr"', count: 1 },
   { file: 'scripts/cordis-walk.ts', text: '@arx-ai\\/cordis', count: 1 },

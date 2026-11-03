@@ -6,11 +6,13 @@
  * enough.
  */
 
+import { Context } from '@arx-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { SessionEvent } from '@arx-ai/arx-session/types'
 import type {} from '@arx-ai/arx-commands/types'
 import type { SessionId } from '@arx-ai/arx-api-remotes/client'
 import { Session } from '../src/client/sessions/session.ts'
+import { createScope } from '../src/client/agents/scope.ts'
 import type {
   ChatConversationViewNode, ChatLocationNodeIndex, ChatNodeStore, ChatSnapshot,
   ConversationEventInput, ConversationNode, ConversationNodeDefinition,
@@ -248,6 +250,98 @@ describe('open', () => {
   })
 })
 
+
+describe('accepted model selections', () => {
+  const modelEvent = (seq: number): SessionEvent => ({
+    seq, time: 1_700_000_000_000 + seq,
+    type: 'model/selection',
+    data: { provider: 'fake', model: 'fk-selected' },
+  })
+
+  it('notifies only the owning scope for a newly accepted selection, never cold, historical, or replayed events', async () => {
+    const ctx = new Context()
+    const own = createScope(ctx, SID)
+    const other = createScope(ctx, PARENT)
+    const ownSeen: SessionId[] = []
+    const otherSeen: SessionId[] = []
+    own.ctx.on('session/model-selection', id => { ownSeen.push(id) })
+    other.ctx.on('session/model-selection', id => { otherSeen.push(id) })
+    const { api, session } = makeSession()
+    session.bindScope(own.ctx)
+    try {
+      session.handleMuxEnvelope('cold' as never, { type: 'session/event', sessionId: SID, event: modelEvent(0) })
+      api.onHistory = () => histResponse([modelEvent(0)])
+      await session.open()
+      expect(ownSeen).toEqual([])
+
+      session.handleMuxEnvelope('new' as never, { type: 'session/event', sessionId: SID, event: modelEvent(1) })
+      session.handleMuxEnvelope('replay' as never, { type: 'session/event', sessionId: SID, event: modelEvent(1) })
+      session.handleMuxEnvelope('old' as never, { type: 'session/event', sessionId: SID, event: modelEvent(0) })
+      expect(ownSeen).toEqual([SID])
+      expect(otherSeen).toEqual([])
+    } finally {
+      session.dispose()
+      await own.fiber.dispose()
+      await other.fiber.dispose()
+    }
+  })
+
+  it('waits for authoritative history before notifying buffered selections and drops the page overlap', async () => {
+    const ctx = new Context()
+    const scope = createScope(ctx, SID)
+    const seen: SessionId[] = []
+    scope.ctx.on('session/model-selection', id => { seen.push(id) })
+    const { api, session } = makeSession()
+    session.bindScope(scope.ctx)
+    const gate = deferred<Awaited<ReturnType<FakeApiClient['onHistory']>>>()
+    api.onHistory = () => gate.promise
+    try {
+      const opening = session.open()
+      session.handleMuxEnvelope('overlap' as never, { type: 'session/event', sessionId: SID, event: modelEvent(1) })
+      session.handleMuxEnvelope('new' as never, { type: 'session/event', sessionId: SID, event: modelEvent(2) })
+      expect(seen).toEqual([])
+      gate.resolve(ok({ events: entries([modelEvent(1)]) as never[], hasMore: false }))
+      await opening
+      session.handleMuxEnvelope('replay' as never, { type: 'session/event', sessionId: SID, event: modelEvent(2) })
+      expect(seen).toEqual([SID])
+    } finally {
+      session.dispose()
+      await scope.fiber.dispose()
+    }
+  })
+
+  it('respects scope pruning, rebinding, and resident-session disposal', async () => {
+    const ctx = new Context()
+    const first = createScope(ctx, SID)
+    const reborn = createScope(ctx, SID)
+    const firstSeen: SessionId[] = []
+    const rebornSeen: SessionId[] = []
+    first.ctx.on('session/model-selection', id => { firstSeen.push(id) })
+    const { session } = makeSession()
+    session.bindScope(first.ctx)
+    try {
+      await session.open()
+      session.handleMuxEnvelope('first' as never, { type: 'session/event', sessionId: SID, event: modelEvent(1) })
+      expect(firstSeen).toEqual([SID])
+      session.unbindScope()
+      await first.fiber.dispose()
+      reborn.ctx.on('session/model-selection', id => { rebornSeen.push(id) })
+      session.handleMuxEnvelope('unbound' as never, { type: 'session/event', sessionId: SID, event: modelEvent(2) })
+      expect(rebornSeen).toEqual([])
+      session.bindScope(reborn.ctx)
+      session.handleMuxEnvelope('rebound' as never, { type: 'session/event', sessionId: SID, event: modelEvent(3) })
+      expect(rebornSeen).toEqual([SID])
+      expect(firstSeen).toEqual([SID])
+      session.dispose()
+      session.handleMuxEnvelope('disposed' as never, { type: 'session/event', sessionId: SID, event: modelEvent(4) })
+      expect(rebornSeen).toEqual([SID])
+    } finally {
+      session.dispose()
+      await first.fiber.dispose()
+      await reborn.fiber.dispose()
+    }
+  })
+})
 
 describe('live event path', () => {
   async function opened(events: SessionEvent[] = plainTurn(0, 0, 'a', 'b')) {

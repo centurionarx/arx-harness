@@ -113,6 +113,12 @@ export const SERVICE_PAGE: Record<string, string> = {
   web: 'web.md',
   workflowEngine: 'workflow.md',
   workspaceRegistry: 'workspace.md',
+  webIdentity: 'identity.md',
+  identityAuthorityJournal: 'identity.md',
+  projectStorage: 'identity.md',
+  isolatedProjectRuntime: 'identity.md',
+  ownedWorkerHistory: 'identity.md',
+  webIdentityApi: 'identity.md',
 }
 
 /**
@@ -134,6 +140,8 @@ export const SERVICE_PAGE: Record<string, string> = {
  * to a model as `cordis_runtime_inspect what:"client"`).
  */
 export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
+  webAuth: 'client-face browser identity service; its complete methods and lifecycle are owned by packages/client/ui-auth/README.md and the separately generated client catalog',
+  clientComposition: 'not a service: optional immutable verified boot-composition value; packages/client/ui-slots/README.md owns its kind, audience, generation and scope metadata',
   agent: 'not a service: the DX accessor field on Agent.ctx (root accessor defaulting to undefined) — docs/subsystems/core.md owns the Agent handle',
   appExit: 'not a service: launcher-provided bounded process-exit callback — packages/boot/cmdline/README.md owns the launcher contract',
   cmdlineArgs: 'not a service: launcher-provided immutable app argument accessor — packages/boot/cmdline/README.md owns the launcher contract',
@@ -161,7 +169,7 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
   sessionLogDownload: 'client-side browser download controller — packages/session-query/session-log-export/README.md owns the API',
   inputTriggers: 'client-side interface-typed browser service — packages/client/ui-input-trigger/README.md owns the API',
   timer: 'client-side dynamic-package timer service — packages/extensions/cordis-client-runner/README.md owns the API',
-  slots: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
+  slots: 'client-side interface-typed browser service — packages/client/ui-slots/README.md owns the API',
   theme: 'client-side interface-typed browser service — packages/client/ui-theme/README.md owns the API',
   workspaces: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
 }
@@ -195,6 +203,7 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
   'session-telemetry': 'session-telemetry.md',
   'tools': 'tools.md',
   'webserver': 'web-server.md',
+  'web-identity': 'identity.md',
   'workflow': 'workflow.md',
   'web': 'web.md',
 }
@@ -229,6 +238,42 @@ export const EVENT_WALK_EXEMPTIONS: Record<string, string> = {
  * appear on more than one page.
  */
 export const LINK_MAP: Readonly<Record<string, string>> = {
+  AdminUserList: 'identity.md',
+  AdminUserSummary: 'identity.md',
+  AuthAudience: 'identity.md',
+  AuthState: 'identity.md',
+  AuthorityEvent: 'identity.md',
+  AuthorityRecord: 'identity.md',
+  ClientRequest: '../../packages/host/apiproxy/README.md',
+  ConnectionRpcResult: '../../packages/client/connection/README.md',
+  HistoryArtifactPage: 'identity.md',
+  HistoryCommit: 'identity.md',
+  HistoryPage: 'identity.md',
+  HostFrame: '../../packages/host/apiproxy/README.md',
+  IdentityDeliveryProvider: 'identity.md',
+  LoginResult: 'identity.md',
+  ModuleCatalog: 'identity.md',
+  ModuleId: 'identity.md',
+  MuxFrame: '../../packages/host/apiproxy/README.md',
+  OwnedResource: 'identity.md',
+  OwnerScope: 'identity.md',
+  PageOptions: 'identity.md',
+  ProjectsPage: 'identity.md',
+  RequestAuthority: 'identity.md',
+  RequestIndexRenderer: 'web-server.md',
+  RpcRequest: '../../packages/host/apiproxy/README.md',
+  SessionPersistenceRevision: 'persistence.md',
+  SessionRawArtifactPage: 'persistence.md',
+  SessionRawArtifactPageRequest: 'persistence.md',
+  StoredPrefix: 'persistence.md',
+  StoredSessionSummary: 'persistence.md',
+  UserWorkspaceSummary: 'identity.md',
+  WorkspacesPage: 'identity.md',
+  AuthInvalidationReason: 'identity.md',
+  WebUserId: 'identity.md',
+  WebAuthSessionId: 'identity.md',
+  OwnerResource: 'identity.md',
+  AuthorityHead: 'identity.md',
   AgentPresetComposition: 'core.md',
   FilePreview: 'filesystem.md',
   GithubAccountResult: '../../packages/git/github/README.md',
@@ -595,6 +640,12 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
 
 /** TypeScript lib and pinned framework types with no repository-owned data page. */
 export const FOUNDATION_TYPE_NAMES: ReadonlySet<string> = new Set([
+  // TypeScript utility/Fetch types and node:http request/response primitives.
+  'Extract',
+  'IncomingMessage',
+  'Request',
+  'Response',
+  'ServerResponse',
   'AbortSignal',
   'AsyncIterable',
   'Context',

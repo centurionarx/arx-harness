@@ -12,6 +12,7 @@
 
 /** Subscription + batched notification primitive (shared by Session and SessionManager). */
 export class Notifier {
+  private disposed = false
   private listeners = new Set<() => void>()
   private dirty = false
   private notifyPending = false
@@ -27,14 +28,25 @@ export class Notifier {
    * @returns the unsubscribe function.
    */
   subscribe(listener: () => void): () => void {
+    if (this.disposed) return () => {}
     this.listeners.add(listener)
     return () => {
       this.listeners.delete(listener)
     }
   }
 
+  /** Close listeners and invalidate queued publications when the data owner ends. */
+  dispose(): void {
+    this.disposed = true
+    this.listeners.clear()
+    this.dirty = false
+    this.notifyPending = false
+    this.invalidateSchedule()
+  }
+
   /** State-change entry: mark dirty and schedule the batched flush. */
   markDirty(): void {
+    if (this.disposed) return
     this.dirty = true
     this.notifyPending = true
     if (this.scheduled === 'microtask') return
@@ -43,6 +55,7 @@ export class Notifier {
 
   /** Stream-change entry: mark dirty and publish the cumulative state at most once per frame. */
   markFrameDirty(): void {
+    if (this.disposed) return
     this.dirty = true
     this.notifyPending = true
     if (this.scheduled !== 'none') return
@@ -54,6 +67,7 @@ export class Notifier {
    * onChange, or React rolls the DOM back to the stale value and the caret jumps to the end.
    */
   notifyNow(): void {
+    if (this.disposed) return
     this.dirty = true
     this.notifyPending = true
     this.invalidateSchedule()
@@ -98,6 +112,13 @@ export class Notifier {
       this.dirty = false
       this.rebuild()
     }
-    for (const listener of this.listeners) listener()
+    for (const listener of [...this.listeners]) {
+      if (this.disposed) break
+      try {
+        listener()
+      } catch (error) {
+        console.error('runtime notifier subscriber failed:', error)
+      }
+    }
   }
 }

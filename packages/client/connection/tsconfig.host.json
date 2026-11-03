@@ -14,7 +14,8 @@
     "src/loopback-hostname.ts",
     "src/rpc-host.ts",
     "src/rpc.ts",
-    "src/websocket-downlink.ts"
+    "src/websocket-downlink.ts",
+    "src/authenticated-gateway.ts"
   ],
   "references": [
     {
@@ -28,6 +29,12 @@
     },
     {
       "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../identity/web-identity"
+    },
+    {
+      "path": "../../host/isolated-project-runtime"
     }
   ]
 }

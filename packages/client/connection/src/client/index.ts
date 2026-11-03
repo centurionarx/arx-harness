@@ -9,6 +9,7 @@ import { ConnectionController, type ConnectionConfig, type ConnectionSinks, type
 import { FixtureApiClient } from './fixture.ts'
 import { WebApiClient } from './web-api-client.ts'
 import { createWebConnectionRpc, type RpcFetch } from './rpc.ts'
+import { authenticatedFetch } from './authenticated-fetch.ts'
 import { isLoopbackHostname } from '../loopback-hostname.ts'
 import type { ClientConnectionRpc } from '../rpc.ts'
 
@@ -95,6 +96,8 @@ export interface ConnectionHandle {
   readonly api: IApiClient
   /** Whether the current page authority is loopback; non-browser contexts default to true. */
   readonly isLoopback: boolean
+  /** Explicit composition mode; omitted by existing local test fixtures. */
+  readonly accessMode?: 'local' | 'authenticated'
   /** Generation-scoped Host facts, including the account home and native path-open capability. */
   readonly hostDescription: HostDescriptionSource
   /** Generic logical RPC channels over the same Connection transport. */
@@ -110,17 +113,35 @@ export interface ConnectionHandle {
   start(sinks: ConnectionSinks, config?: ConnectionConfig): { stop(): void }
 }
 
+/** Serving-origin access mode and ephemeral CSRF verifier for the Connection carrier. */
+export interface ClientConfig {
+  /** The serving composition chooses the mode; errors never select a local fallback. */
+  readonly accessMode?: 'local' | 'authenticated'
+  /** Ephemeral CSRF supplied from /auth/session before the protected graph is loaded. */
+  readonly csrfToken?: string
+}
+
 /**
  * Client plugin body: pick the api by page mode and provide ctx.connection.
  * @param ctx - client cordis context.
  */
-export function apply(ctx: Context): void {
+export function apply(ctx: Context, config?: ClientConfig): void {
+  const authenticated = config?.accessMode === 'authenticated'
+  const csrfToken = config?.csrfToken
+  if ((globalThis as { __ARX_CLIENT_ACCESS_MODE__?: string }).__ARX_CLIENT_ACCESS_MODE__ === 'authenticated' && !authenticated) {
+    throw new Error('Authenticated connection configuration is required')
+  }
+  if (authenticated && (typeof csrfToken !== 'string' || csrfToken.length === 0)) {
+    throw new Error('Authenticated CSRF verifier is required')
+  }
   const pageLocation = typeof location === 'undefined' ? undefined : location
-  const fixture = pageLocation !== undefined && new URLSearchParams(pageLocation.search).has('fixture')
+  const fixture = !authenticated && pageLocation !== undefined && new URLSearchParams(pageLocation.search).has('fixture')
   const fixtureClient = fixture ? new FixtureApiClient() : undefined
   const transport = (globalThis as ClientTransportGlobal).__ARX_TRANSPORT__
-  const api: IApiClient = fixtureClient ?? transport?.createApiClient() ?? new WebApiClient()
-  const rpc = fixtureClient?.rpc ?? createWebConnectionRpc(transport?.fetch)
+  if (authenticated && transport !== undefined) throw new Error('Authenticated connections require the serving-origin transport')
+  const send = authenticated && csrfToken !== undefined ? authenticatedFetch(csrfToken) : transport?.fetch
+  const api: IApiClient = fixtureClient ?? transport?.createApiClient() ?? new WebApiClient(send)
+  const rpc = fixtureClient?.rpc ?? createWebConnectionRpc(send)
   let started = false
   let description: HostDescription | undefined
   const descriptionListeners = new Set<() => void>()
@@ -137,7 +158,8 @@ export function apply(ctx: Context): void {
   }
   const handle: ConnectionHandle = {
     api,
-    isLoopback: pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    isLoopback: !authenticated && (pageLocation === undefined || isLoopbackHostname(pageLocation.hostname)),
+    accessMode: authenticated ? 'authenticated' : 'local',
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {

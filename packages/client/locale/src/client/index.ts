@@ -407,6 +407,8 @@ function detectBrowserLocale(): LocaleId | undefined {
 
 /** Required services: slot registration plus the settings transport. */
 export const inject = ['slots', 'connection', 'remote', 'settingsScope']
+/** Neutral face selected only for a verified public/admin boot. Same implementation and service. */
+export const application = { inject: ['slots'], apply }
 
 /**
  * Client plugin body: provide the locale service with base dictionaries and
@@ -415,7 +417,17 @@ export const inject = ['slots', 'connection', 'remote', 'settingsScope']
  * @param ctx - client cordis context.
  */
 export function apply(ctx: ClientContext): void {
-  const host = ctx.settingsScope.bind<LocaleSettings>({ namespace: LOCALE_SETTINGS_NAMESPACE })
+  if (ctx.slots.runtime === 'application') {
+    installLocale(ctx)
+    return
+  }
+  ctx.inject(['connection', 'remote', 'settingsScope'], (scope) => {
+    installLocale(scope, scope.settingsScope.bind<LocaleSettings>({ namespace: LOCALE_SETTINGS_NAMESPACE }))
+  })
+}
+
+/** Install presentation in either tree; durable preferences require a real project adapter. */
+function installLocale(ctx: ClientContext, host?: SettingsScope<LocaleSettings>): void {
   const locale = new LocaleRuntime(ctx, host)
   locale.register(COMMON_NS, { en, pt })
   locale.register(SETTINGS_NS, { en: settingsEn, pt: settingsPt })
@@ -423,6 +435,11 @@ export function apply(ctx: ClientContext): void {
   // The service IS the LocaleFace (bind + getSnapshot/subscribe): install it
   // so the render machinery can synthesize the `t` standard seat.
   ctx.slots.installLocale(locale)
+  syncDocumentLanguage(locale.getLocale().active)
+  if (host === undefined) {
+    ctx.on('locale/change', (snapshot) => { syncDocumentLanguage(snapshot.active) })
+    return
+  }
 
   const store = createLanguageRowStore()
   let bound: BoundActions<typeof store> | undefined

@@ -1,0 +1,43 @@
+# Native worker spine; histories reach the control broker through the existing coordinator.
+- name: '@arx-ai/arx-agent-spine-demo'
+  config:
+    workspaceContext: false
+    skills: {enabled: false}
+    toolBash: false
+    toolJobs: false
+    persona: ''
+- name: '@arx-ai/arx-isolated-project-runtime/worker'
+  config: __HISTORY_CONFIG__
+- name: '@arx-ai/arx-user-questions'
+- name: '@arx-ai/arx-storage'
+- name: '@arx-ai/arx-storage-json'
+  config: {root: __STATE_ROOT__}
+- name: '@arx-ai/arx-storage-domain'
+  config: {backend: json}
+- name: '@arx-ai/arx-session-projection'
+- name: '@arx-ai/arx-session-query'
+- name: '@arx-ai/arx-subagent'
+- name: '@arx-ai/arx-session-checkpoint-policy'
+
+- name: '@arx-ai/arx-session-title'
+  config: {fallbackMaxWords: 6, fallbackMaxBytes: 96, maxTitleBytes: 512}
+- name: '@arx-ai/arx-typert-registry'
+- name: '@arx-ai/arx-api-gateway'
+- name: '@arx-ai/arx-commands'
+- name: '@arx-ai/arx-goal'
+  config: {defaultMaxGoalRounds: 256}
+- name: '@arx-ai/arx-message-feedback'
+  config: {maxNoteBytes: 4096}
+- name: '@arx-ai/arx-file-preview'
+  config: {maxBytes: 131072}
+- name: '@arx-ai/arx-file-reference'
+- name: '@arx-ai/arx-session-reference'
+- name: '@arx-ai/arx-session-turn-outline'
+- name: '@arx-ai/arx-typert-loader'
+  config:
+    packages: ['@arx-ai/arx-commands', '@arx-ai/arx-goal', '@arx-ai/arx-message-feedback', '@arx-ai/arx-file-preview', '@arx-ai/arx-file-reference', '@arx-ai/arx-session-reference', '@arx-ai/arx-session-turn-outline']
+
+- name: '@arx-ai/arx-fs-local'
+  config: {cwd: __VOLUME_PATH__}
+- name: '@arx-ai/arx-attachment-local'
+  config: {arxHome: __VOLUME_PATH__}

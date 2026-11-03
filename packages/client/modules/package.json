@@ -45,7 +45,9 @@
     "@arx-ai/cordis-plugin-loader": "workspace:^",
     "@arx-ai/arx-host-webserver": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^"
   },
   "files": [
     "lib/index.js",
@@ -57,6 +59,7 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/cordis-plugin-loader": "workspace:^",
-    "@arx-ai/arx-host-webserver": "workspace:^"
+    "@arx-ai/arx-host-webserver": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^"
   }
 }

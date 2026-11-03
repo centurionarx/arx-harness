@@ -23,7 +23,10 @@
       "default": "./lib/invariant.js"
     },
     "./src/*": "./src/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./composition": {
+      "types": "./lib/types/composition.d.ts"
+    }
   },
   "license": "MIT",
   "devDependencies": {

@@ -123,6 +123,13 @@ export class ModelDirectoryResolver extends Service {
       () => sessions.subagentAddress(sessionId) === undefined,
     )
     live.directories.set(sessionId, directory)
+    // External picks arrive through the session's accepted event window, not
+    // this directory's select() call. Reuse the host read and generation guard.
+    actx.on('session/model-selection', function (this: unknown, changedSessionId) {
+      // The session-id filter also admits a recreated scope; require this binding's dispatch point.
+      if (changedSessionId !== sessionId || this !== actx) return
+      directory.load().catch(() => undefined)
+    })
     // The composer cannot read this plugin (the dependency runs one way), so
     // the block is pushed: the Host says whether an adapter serves the
     // session's route, and only a definite `false` makes the input inert.

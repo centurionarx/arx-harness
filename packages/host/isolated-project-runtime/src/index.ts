@@ -1,0 +1,788 @@
+/**
+ * Owner-scoped fetch carrier for an operator-declared isolated supervisor.
+ * HTTP fixtures exercise authorization and quiescence, never VM isolation.
+ * @module @arx-ai/arx-isolated-project-runtime
+ */
+import { Context, Service } from '@arx-ai/cordis'
+import z from '@arx-ai/schemastery'
+import type { ZodError } from 'zod'
+import { randomUUID, randomBytes } from 'node:crypto'
+import { credentialRef } from '@arx-ai/arx-credentials'
+import type {} from '@arx-ai/arx-credentials'
+import { InProcessApiClient } from '@arx-ai/arx-host-apiproxy/client'
+import { clientRequestSchema, clientResponseSchema, serverResponseSchema, parseApiMethodPayload } from '@arx-ai/arx-host-apiproxy/api'
+import type { ClientRequest, MuxFrame, HostFrame, RpcRequest, ServerResponse } from '@arx-ai/arx-host-apiproxy/api'
+import { SessionId as sessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
+import { ModuleId, ProjectId, WebIdentityError, allowsProjectAccess } from '@arx-ai/arx-web-identity'
+import type { OwnerResource, OwnedResource, RequestAuthority, WebUserId, WebAuthSessionId } from '@arx-ai/arx-web-identity'
+import type { WorkspaceId } from '@arx-ai/arx-workspace'
+import type {} from '@arx-ai/arx-project-storage'
+import { workerBrokerRequestSchema, WORKER_BROKER_PATH, WORKER_CAPABILITY_HEADER } from './broker-contract.ts'
+import type { WorkerBrokerRequest } from './broker-contract.ts'
+import { ownerRemoteAdmission, ownerRemoteEventAdmission, isOwnerRemoteActivity } from './allowed-remotes.ts'
+
+/** Deployment configuration is not mutable through USER or MASTER APIs. */
+export interface Config {
+  /** Trusted supervisor origin; absent leaves every execution unavailable. */
+  endpoint?: string
+  /** Operator-managed credential reference, never a browser-supplied secret. */
+  credentialRef?: string
+  /** Explicit loopback-only HTTP permission for disposable fixtures. */
+  fixtureLoopback?: boolean
+  /** Deadline for an individual HTTP operation. */
+  requestTimeoutMs: number
+  /** Deadline for remote cancellation to confirm process-tree quiescence. */
+  cancellationTimeoutMs: number
+  /** Largest buffered HTTP request body. */
+  maxRequestBytes: number
+  /** Largest unary result or individual SSE frame. */
+  maxResponseBytes: number
+}
+
+const METHODS: ReadonlyMap<string, 'passive' | 'active' | 'new-session'> = new Map([
+  ['session.list', 'passive'],
+  ['session.search', 'passive'],
+  ['session.create', 'new-session'],
+  ['session.history', 'passive'],
+  ['session.models', 'passive'],
+  ['session.selectModel', 'active'],
+  ['session.rename', 'active'],
+  ['session.fork', 'active'],
+  ['session.prompt', 'active'],
+  ['session.attachment', 'passive'],
+  ['session.updateQueue', 'active'],
+  ['session.cancel', 'active'],
+  ['subagent.list', 'passive'],
+  ['subagent.history', 'passive'],
+  ['subagent.prompt', 'active'],
+  ['subagent.interrupt', 'active'],
+  ['host.describe', 'passive'],
+  ['workspace.list', 'passive'],
+  ['workspace.create', 'active'],
+  ['workspace.rename', 'active'],
+  ['workspace.delete', 'active'],
+  ['workspace.insertBefore', 'active'],
+  ['workspace.insertSessionBefore', 'active'],
+  ['workspace.archiveSession', 'active'],
+  ['skill.list', 'passive'],
+  ['agentPreset.list', 'passive'],
+  ['agentPreset.select', 'active'],
+  ['goal.create', 'active'],
+  ['goal.edit', 'active'],
+  ['goal.pause', 'active'],
+  ['goal.resume', 'active'],
+  ['goal.complete', 'active'],
+  ['goal.clear', 'active'],
+  ['llm.providers', 'passive'],
+  ['llm.models', 'passive'],
+  ['web.providers', 'passive'],
+])
+/**
+ * Fixed request allowlist excludes operator configuration, native dialogs,
+ * arbitrary filesystem targets, credentials and plugin installation.
+ * @param method - Existing ApiProxy wire method.
+ * @returns Whether isolated USER dispatch admits the method.
+ */
+export function isIsolatedProjectMethod(method: string): boolean { return METHODS.has(method) }
+
+interface Lease {
+  readonly capability: string
+  readonly brokerTasks: Set<Promise<unknown>>
+  readonly allocations: Set<ReturnType<typeof sessionId>>
+  readonly operationId: string
+  readonly authority: RequestAuthority
+  readonly scope?: OwnedResource
+  readonly controller: AbortController
+  readonly settled: Promise<void>
+  settle(): void
+  cancelling?: Promise<void>
+}
+declare module '@arx-ai/cordis' {
+  interface Context { isolatedProjectRuntime: IsolatedProjectRuntime }
+}
+
+function failure(code: string, status: number, message: string): never {
+  throw new WebIdentityError(code, status, message)
+}
+function moduleFor(method: string): string {
+  if (method === 'session.history' || method === 'session.list' || method === 'session.search'
+    || method === 'session.export') return 'storage'
+  if (method.startsWith('workspace.') || method.startsWith('messageFeedback/')) return 'storage'
+  return 'runtime'
+}
+function object(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown> : undefined
+}
+
+async function boundedBody(response: Response, maxBytes: number): Promise<Uint8Array> {
+  if (response.body === null) return new Uint8Array()
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  try {
+    for (;;) {
+      const chunk = await reader.read()
+      if (chunk.done) break
+      size += chunk.value.byteLength
+      if (size > maxBytes) failure('RUNTIME_LIMIT', 502, 'Worker response limit exceeded')
+      chunks.push(chunk.value)
+    }
+    return Buffer.concat(chunks, size)
+  } finally { await reader.cancel() }
+}
+
+/** One trusted supervisor serves owner-assigned workers, never the shared host. */
+export class IsolatedProjectRuntime extends Service {
+  static inject = ['webIdentity', 'credentials', 'projectStorage']
+  static Config: z<Config> = z.object({
+    endpoint: z.string(), credentialRef: z.string(), fixtureLoopback: z.boolean().default(false),
+    requestTimeoutMs: z.number().step(1).min(1).required(),
+    cancellationTimeoutMs: z.number().step(1).min(1).required(),
+    maxRequestBytes: z.number().step(1).min(1).required(),
+    maxResponseBytes: z.number().step(1).min(1).required(),
+  })
+  private readonly endpoint?: URL
+  private readonly leases = new Map<string, Lease>()
+  private readonly quiescences = new Map<WebUserId | undefined, Promise<void>>()
+  private readonly sessionQuiescences = new Map<WebAuthSessionId, Promise<void>>()
+  private readonly pendingReplies = new Map<string, { lease: Lease
+    sessionId: ReturnType<typeof sessionId>
+    approvalId?: string }>()
+  private readonly brokerQueues = new Map<string, Promise<unknown>>()
+  private readonly writers = new Map<ReturnType<typeof sessionId>, { workerId: string
+    lease: Lease }>()
+  private closing = false
+  private unsafe = false
+
+  constructor(ctx: Context, readonly config: Config) {
+    super(ctx, 'isolatedProjectRuntime')
+    if ((config.endpoint === undefined) !== (config.credentialRef === undefined)) throw new Error('isolated runtime endpoint and credentialRef must be configured together')
+    if (config.endpoint !== undefined) {
+      const endpoint = new URL(config.endpoint)
+      const fixture = config.fixtureLoopback === true && endpoint.protocol === 'http:'
+        && ['127.0.0.1', '[::1]', 'localhost'].includes(endpoint.hostname)
+      if ((!fixture && endpoint.protocol !== 'https:') || endpoint.username !== ''
+        || endpoint.password !== '' || endpoint.search !== '' || endpoint.hash !== '' || endpoint.pathname !== '/') {
+        throw new Error('isolated runtime endpoint must be a credential-free HTTPS origin')
+      }
+      credentialRef((config.credentialRef as string))
+      this.endpoint = endpoint
+    }
+    ctx.on('web-identity/invalidated', async (userId) => { await this.quiesce(userId) })
+    ctx.on('web-identity/ownership-deleted', async (userId) => { await this.quiesce(userId) })
+    ctx.on('web-identity/session-expired', async (userId, authSessionId) => {
+      const prior = this.quiescences.get(undefined) ?? this.quiescences.get(userId) ?? this.sessionQuiescences.get(authSessionId)
+      if (prior !== undefined) { await prior; return }
+      const selected = [...this.leases.values()].filter(lease => lease.authority.principal.userId === userId
+        && lease.authority.authSessionId === authSessionId)
+      // Install the SID barrier before running abort callbacks or cancellation.
+      const joined = Promise.resolve().then(async () => {
+        const settled = await Promise.allSettled(selected.map(lease => this.cancel(lease)))
+        if (settled.some(result => result.status === 'rejected')) failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
+      }).finally(() => { this.sessionQuiescences.delete(authSessionId) })
+      this.sessionQuiescences.set(authSessionId, joined)
+      await joined
+    })
+    ctx.effect(() => async () => {
+      this.closing = true
+      await this.quiesce()
+    })
+  }
+
+  private available(): URL {
+    if (this.endpoint === undefined || this.closing || this.unsafe) failure('RUNTIME_UNAVAILABLE', 503, 'Isolated execution is unavailable')
+    return this.endpoint
+  }
+
+  private async authorize(authority: RequestAuthority, resource: OwnerResource | undefined,
+    method: string): Promise<OwnedResource | undefined> {
+    await this.ctx.webIdentity.revalidate(authority)
+    const principal = authority.principal
+    if (!allowsProjectAccess(principal, authority.audience)) {
+      failure('RUNTIME_FORBIDDEN', 403, 'Project execution is forbidden')
+    }
+    const module = ModuleId(moduleFor(method))
+    if (!principal.grants.includes(module)) failure('MODULE_DENIED', 403, 'Module unavailable')
+    const scope = resource === undefined ? undefined : await this.ctx.webIdentity.authorizeOwner(authority, resource, module)
+    this.assertAdmission(authority)
+    return scope
+  }
+
+  private assertAdmission(authority: RequestAuthority): void {
+    if (this.closing || this.unsafe || this.quiescences.has(undefined) || this.quiescences.has(authority.principal.userId)
+      || this.sessionQuiescences.has(authority.authSessionId)) {
+      failure('RUNTIME_UNAVAILABLE', 503, 'Isolated execution is unavailable')
+    }
+  }
+
+  private async headers(lease: Lease): Promise<Headers> {
+    const credential = await this.ctx.credentials.resolve(credentialRef((this.config.credentialRef as string)))
+    if (credential === undefined) failure('RUNTIME_UNAVAILABLE', 503, 'Isolated execution is unavailable')
+    const headers = new Headers({
+      authorization: `Bearer ${credential.value}`,
+      'x-arx-operation-id': lease.operationId,
+      'x-arx-user-id': lease.authority.principal.userId,
+      'x-arx-authority-revision': String(lease.authority.revision),
+      [WORKER_CAPABILITY_HEADER]: lease.capability,
+    })
+    if (lease.scope !== undefined) {
+      headers.set('x-arx-project-id', lease.scope.projectId)
+      if (lease.scope.workspaceId !== undefined) headers.set('x-arx-workspace-id', lease.scope.workspaceId)
+    }
+    return headers
+  }
+
+  private lease(authority: RequestAuthority, scope: OwnedResource | undefined): Lease {
+    this.assertAdmission(authority)
+    let settle!: () => void
+    const settled = new Promise<void>((resolve) => { settle = resolve })
+    const lease: Lease = { operationId: randomUUID(), capability: randomBytes(32).toString('base64url'),
+      brokerTasks: new Set(), allocations: new Set(), authority, ...(scope === undefined ? {} : { scope }),
+      controller: new AbortController(), settled, settle }
+    this.leases.set(lease.operationId, lease)
+    return lease
+  }
+
+  private async cancel(lease: Lease): Promise<void> {
+    if (lease.cancelling !== undefined) return lease.cancelling
+    lease.controller.abort(new Error('Authority invalidated'))
+    lease.cancelling = (async () => {
+      try {
+        const response = await fetch(new URL(`/_arx/operations/${lease.operationId}/cancel`, this.endpoint), {
+          method: 'POST', headers: await this.headers(lease), redirect: 'error',
+          signal: AbortSignal.timeout(this.config.cancellationTimeoutMs),
+        })
+        if (!response.ok) failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
+        const result: unknown = JSON.parse(Buffer.from(await boundedBody(response, this.config.maxResponseBytes)).toString())
+        const receipt = object(result)
+        if (receipt?.operationId !== lease.operationId || receipt.quiescent !== true) {
+          failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
+        }
+        await lease.settled
+        await Promise.allSettled([...lease.brokerTasks])
+        this.leases.delete(lease.operationId)
+        for (const [id, writer] of this.writers) if (writer.lease === lease) this.writers.delete(id)
+        for (const [id, pending] of this.pendingReplies) if (pending.lease === lease) this.pendingReplies.delete(id)
+      } catch {
+        this.unsafe = true
+        failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
+      }
+    })()
+    return lease.cancelling
+  }
+
+  /**
+   * Abort all affected transports, cancel every supervisor lease, and await
+   * process-tree receipts. Concurrent requests share the barrier, and new owner
+   * execution refuses until it settles. A missing receipt permanently closes this adapter.
+   * @param userId - Affected account, or all accounts during disposal.
+   */
+  quiesce(userId?: WebUserId): Promise<void> {
+    const existing = this.quiescences.get(undefined) ?? this.quiescences.get(userId)
+    if (existing !== undefined) return existing
+    const leases = [...this.leases.values()].filter(lease => userId === undefined || lease.authority.principal.userId === userId)
+    const operation = Promise.allSettled(leases.map(lease => this.cancel(lease))).then((settled) => {
+      if (settled.some(result => result.status === 'rejected')) failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
+    }).finally(() => { this.quiescences.delete(userId) })
+    this.quiescences.set(userId, operation)
+    return operation
+  }
+
+  /**
+   * Execute the closed worker-history protocol using a control-issued lease.
+   * Capabilities authorize only the current USER workspace and never carry SQL
+   * or path operations. Broker errors omit private locations and source bytes.
+   * @param request - Private supervisor-to-control Request.
+   * @returns Durable receipt or a fixed refusal.
+   */
+  async broker(request: Request): Promise<Response> {
+    const headers = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }
+    try {
+      request.signal.throwIfAborted()
+      if (request.method !== 'POST'
+        || new URL(request.url).pathname !== WORKER_BROKER_PATH) failure('RUNTIME_BROKER', 404, 'Worker operation unavailable')
+      if (request.headers.get('content-type')?.split(';',
+        1)[0]?.trim().toLowerCase() !== 'application/json') failure('RUNTIME_BROKER', 415, 'JSON required')
+      const capability = request.headers.get(WORKER_CAPABILITY_HEADER)
+      const lease = [...this.leases.values()].find(value => value.capability === capability)
+      if (lease === undefined || lease.controller.signal.aborted || this.closing || this.unsafe
+      ) failure('RUNTIME_BROKER', 403, 'Worker operation unavailable')
+      const text = Buffer.from(await boundedBody(new Response(request.body), this.config.maxRequestBytes)).toString()
+      request.signal.throwIfAborted()
+      const parsed = workerBrokerRequestSchema.safeParse(JSON.parse(text))
+      if (!parsed.success) failure('RUNTIME_BROKER', 400, 'Invalid worker operation')
+      const signal = AbortSignal.any([request.signal, lease.controller.signal])
+      signal.throwIfAborted()
+      const job = this.brokerOperation(lease, parsed.data, signal)
+      lease.brokerTasks.add(job)
+      try {
+        const value = await job
+        await this.authorize(lease.authority, { kind: 'workspace', workspaceId: parsed.data.workspaceId as WorkspaceId },
+          parsed.data.operation === 'append' || parsed.data.operation === 'allocate-fork' ? 'session.prompt' : 'session.history')
+        signal.throwIfAborted()
+        return Response.json({ value }, { headers })
+      } finally { lease.brokerTasks.delete(job) }
+    } catch (error) {
+      return Response.json({ error: 'Worker operation refused' },
+        { status: error instanceof WebIdentityError ? error.status : 503, headers })
+    }
+  }
+
+  private async brokerOperation(lease: Lease, request: WorkerBrokerRequest, signal: AbortSignal): Promise<unknown> {
+    const key = request.operation === 'list' || request.operation === 'list-snapshots' ? request.workspaceId : request.sessionId
+    const previous = this.brokerQueues.get(key)
+    const task = (previous ?? Promise.resolve()).catch(() => {}).then(() => {
+      signal.throwIfAborted()
+      return this.brokerOperationCore(lease, request, signal)
+    })
+    this.brokerQueues.set(key, task)
+    try { return await task }
+    finally { if (this.brokerQueues.get(key) === task) this.brokerQueues.delete(key) }
+  }
+
+  private async brokerOperationCore(lease: Lease, request: WorkerBrokerRequest, signal: AbortSignal): Promise<unknown> {
+    const workspaceId = request.workspaceId as WorkspaceId
+    const scope = await this.authorize(lease.authority, { kind: 'workspace', workspaceId },
+      request.operation === 'append' || request.operation === 'allocate-fork' ? 'session.prompt' : 'session.history')
+    if (lease.scope !== undefined && (scope?.projectId !== lease.scope.projectId
+      || (lease.scope.workspaceId !== undefined
+        && workspaceId !== lease.scope.workspaceId))) failure('RUNTIME_BROKER', 403, 'Worker scope differs')
+    signal.throwIfAborted()
+    if (request.operation === 'list') return this.ctx.projectStorage.executionHeaders(lease.authority, workspaceId, signal)
+    if (request.operation === 'list-snapshots') return this.ctx.projectStorage.executionSnapshots(lease.authority, workspaceId, signal)
+    const id = request.sessionId
+    await this.ownedReferences(lease.authority, { sessionId: id }, scope)
+    signal.throwIfAborted()
+    if (request.operation === 'creation-header') return this.ctx.projectStorage.executionCreationHeader(lease.authority, id, signal)
+    if (request.operation === 'revision') return await this.ctx.projectStorage.executionRevision(lease.authority, id, signal) ?? null
+    if (request.operation === 'raw-page') return await this.ctx.projectStorage.executionRawPage(lease.authority, id,
+      { offset: request.offset, maxBytes: request.maxBytes,
+        ...(request.revision === undefined ? {} : { revision: request.revision as import('@arx-ai/arx-session-persistence').SessionPersistenceRevision }) },
+      signal) ?? null
+    const old = this.writers.get(id)
+    const activeOther = old !== undefined && old.workerId !== request.workerId
+      && this.leases.has(old.lease.operationId) && !old.lease.controller.signal.aborted
+    if (activeOther) failure('RUNTIME_WRITER', 409, 'Another worker owns the session writer')
+    const cold = old === undefined || old.workerId !== request.workerId
+    if (request.operation === 'snapshot') {
+      const snapshot = await this.ctx.projectStorage.executionSnapshot(lease.authority, id, cold, signal)
+      signal.throwIfAborted()
+      this.writers.set(id, { workerId: request.workerId, lease })
+      return snapshot ?? null
+    }
+    if (request.operation === 'append') {
+      if (cold) failure('RUNTIME_WRITER', 409, 'Worker must hydrate before append')
+      this.writers.set(id, { workerId: request.workerId, lease })
+      return this.ctx.projectStorage.append(lease.authority, id, request.events, signal)
+    }
+    const source = await this.ctx.projectStorage.executionSnapshot(lease.authority, id, false, signal)
+    signal.throwIfAborted()
+    if (source === undefined || request.seedLength === 0
+      || request.seedLength > source.events.length) failure('RUNTIME_BROKER', 409, 'Fork source unavailable')
+    const childId = sessionId(randomUUID())
+    const header = await this.ctx.projectStorage.register(lease.authority, workspaceId, {
+      id: childId, version: SESSION_FORMAT_VERSION, createdAt: Date.now(),
+      parentSession: id, seedLength: request.seedLength,
+      ...(request.agentPreset === undefined ? {} : { agentPreset: request.agentPreset }),
+    }, signal)
+    signal.throwIfAborted()
+    lease.allocations.add(childId)
+    return header
+  }
+
+  private async ownedReferences(authority: RequestAuthority, value: unknown, scope?: OwnedResource): Promise<void> {
+    if (Array.isArray(value)) {
+      for (const child of value) await this.ownedReferences(authority, child, scope)
+      return
+    }
+    const record = object(value)
+    if (record === undefined) return
+    for (const [key, child] of Object.entries(record)) {
+      let owner: OwnedResource | undefined
+      if (['sessionId', 'parentSessionId', 'childSessionId', 'sourceSessionId', 'beforeSessionId'].includes(key)
+        && typeof child === 'string') {
+        owner = await this.ctx.webIdentity.authorizeOwner(authority, { kind: 'session', sessionId: sessionId(child) })
+      } else if (key === 'workspaceId' && typeof child === 'string') {
+        owner = await this.ctx.webIdentity.authorizeOwner(authority, { kind: 'workspace', workspaceId: child as WorkspaceId })
+      } else if (key === 'projectId' && typeof child === 'string') {
+        owner = await this.ctx.webIdentity.authorizeOwner(authority, { kind: 'project', projectId: ProjectId(child) })
+      } else if (['sessionIds', 'archivedSessionIds', 'workspaceIds'].includes(key) && Array.isArray(child)) {
+        for (const id of child) {
+          if (typeof id !== 'string') failure('RUNTIME_PROTOCOL', 502, 'Invalid worker reference')
+          await this.ctx.webIdentity.authorizeOwner(authority, key === 'workspaceIds'
+            ? { kind: 'workspace', workspaceId: id as WorkspaceId }
+            : { kind: 'session', sessionId: sessionId(id) })
+        }
+      }
+      if (owner !== undefined && scope !== undefined && (owner.projectId !== scope.projectId
+        || (scope.workspaceId !== undefined && owner.workspaceId !== scope.workspaceId))) {
+        failure('RUNTIME_FORBIDDEN', 403, 'Worker reference is outside the selected workspace')
+      }
+      // Event/tool data is opaque content. Resource references belong to the
+      // protocol metadata, not to arbitrary user code or model-visible text.
+      if (!['event', 'args', 'message', 'data', 'questions', 'view'].includes(key)) {
+        await this.ownedReferences(authority, child, scope)
+      }
+    }
+  }
+
+  private assertReplyLease(lease: Lease): void {
+    if (lease.controller.signal.aborted || !this.leases.has(lease.operationId)) {
+      failure('RUNTIME_FORBIDDEN', 403, 'Response is not pending')
+    }
+  }
+
+  private async revalidateReplyLease(lease: Lease): Promise<void> {
+    this.assertReplyLease(lease)
+    try { await this.ctx.webIdentity.revalidate(lease.authority) }
+    catch (error) {
+      // An expired interaction does not invalidate another login answering it.
+      if (error instanceof WebIdentityError && error.status === 401) {
+        failure('RUNTIME_FORBIDDEN', 403, 'Response is not pending')
+      }
+      throw error
+    }
+    this.assertReplyLease(lease)
+  }
+
+  private async dispatch(authority: RequestAuthority, resource: OwnerResource | undefined, method: string,
+    path: string, init: RequestInit, signal?: AbortSignal, linkedLease?: Lease): Promise<{ response: Response
+    lease: Lease }> {
+    const endpoint = this.available()
+    const scope = await this.authorize(authority, resource, method)
+    if (linkedLease !== undefined) await this.revalidateReplyLease(linkedLease)
+    signal?.throwIfAborted()
+    const lease = this.lease(authority, scope)
+    try {
+      const headers = await this.headers(lease)
+      if (linkedLease !== undefined) this.assertReplyLease(linkedLease)
+      for (const [key, value] of new Headers(init.headers)) headers.set(key, value)
+      await this.authorize(authority, resource, method)
+      if (linkedLease !== undefined) await this.revalidateReplyLease(linkedLease)
+      signal?.throwIfAborted()
+      lease.controller.signal.throwIfAborted()
+      if (this.closing || this.unsafe) failure('RUNTIME_UNAVAILABLE', 503, 'Isolated execution is unavailable')
+      const response = await fetch(new URL(path, endpoint), { ...init, headers, redirect: 'error',
+        signal: AbortSignal.any([lease.controller.signal, AbortSignal.timeout(this.config.requestTimeoutMs),
+          ...(signal === undefined ? [] : [signal])]) })
+      if (response.headers.get('x-arx-operation-id') !== lease.operationId) failure('RUNTIME_PROTOCOL', 502,
+        'Worker operation receipt is invalid')
+      if (!response.ok) failure('RUNTIME_UNAVAILABLE', 502, 'Worker request failed')
+      return { response, lease }
+    } catch (error) {
+      lease.settle()
+      await this.cancel(lease)
+      throw error
+    }
+  }
+
+  /**
+   * Forward one existing RPC request after the final ownership/revision check.
+   * No cookie, bearer, browser Origin or arbitrary endpoint crosses to workers.
+   * @param authority - Current provider-issued USER authority.
+   * @param resource - Authoritative selected resource, if the method addresses one.
+   * @param request - Existing ApiProxy request envelope.
+   * @param signal - Local caller cancellation.
+   * @returns Existing RPC business result.
+   */
+  async invoke(authority: RequestAuthority, resource: OwnerResource | undefined, request: ClientRequest,
+    signal?: AbortSignal): Promise<ServerResponse['result']> {
+    const remote = ownerRemoteAdmission(request.method, request.payload)
+    if (!isIsolatedProjectMethod(request.method) && remote === undefined) failure('RUNTIME_METHOD', 403, 'Method unavailable')
+    if (remote !== undefined) resource = remote.resource
+    await this.authorize(authority, undefined, request.method)
+    const rawPayload = object(request.payload)
+    if (rawPayload !== undefined && ['session.create', 'workspace.create'].includes(request.method)
+      && ['cwd', 'path', 'directory', 'agentPreset'].some(key => key in rawPayload)) {
+      failure('RUNTIME_FORBIDDEN', 403, 'Server-managed workspace required')
+    }
+    let validated: unknown
+    try { validated = remote === undefined ? parseApiMethodPayload(request.method, request.payload) : request.payload }
+    catch (error) {
+      const issues = object(error)?.issues
+      return { ok: false, error: { code: 'bad-request', message: `invalid payload for ${request.method}`,
+        details: { issues: Array.isArray(issues) ? issues as ZodError['issues'] : [] } } }
+    }
+    const parsedPayload = object(validated)
+    if (rawPayload !== undefined && parsedPayload !== undefined
+      && Object.keys(rawPayload).some(key => !Object.hasOwn(parsedPayload, key))) {
+      return { ok: false, error: { code: 'bad-request', message: `invalid payload for ${request.method}`,
+        details: { issues: [] } } }
+    }
+    request = { ...request, payload: validated }
+    const activity = remote === undefined && (METHODS.get(request.method) === 'active'
+      || (METHODS.get(request.method) === 'new-session' && parsedPayload?.sessionId === undefined))
+    const payloadResource = parsedPayload
+    if (resource === undefined && payloadResource !== undefined) {
+      const selectedSession = payloadResource.sessionId ?? payloadResource.parentSessionId
+      if (typeof selectedSession === 'string') resource = { kind: 'session', sessionId: sessionId(selectedSession) }
+      else if (typeof payloadResource.workspaceId === 'string') {
+        resource = { kind: 'workspace', workspaceId: payloadResource.workspaceId as WorkspaceId }
+      }
+    }
+    const selectedScope = await this.authorize(authority, resource, request.method)
+    await this.ownedReferences(authority, remote === undefined ? request.payload : object(request.payload)?.args, selectedScope)
+    let allocatedSessionId: ReturnType<typeof sessionId> | undefined
+    let newSessionId: ReturnType<typeof sessionId> | undefined
+    if (request.method === 'session.create') {
+      const payload = request.payload as ReturnType<typeof parseApiMethodPayload<'session.create'>>
+      this.available()
+      if (typeof payload.sessionId === 'string') {
+        // Existing SDK resume shape selects an already owned sidecar row. It
+        // cannot allocate a browser-selected id or infer authority from a path.
+        const owned = await this.ctx.webIdentity.authorizeOwner(authority,
+          { kind: 'session', sessionId: sessionId(payload.sessionId) }, ModuleId('runtime'))
+        if (payload.workspaceId !== undefined && payload.workspaceId !== owned.workspaceId) {
+          failure('RUNTIME_FORBIDDEN', 403, 'Session workspace differs')
+        }
+        allocatedSessionId = sessionId(payload.sessionId)
+        resource = { kind: 'workspace', workspaceId: owned.workspaceId }
+        request = { ...request, payload: { ...payload, workspaceId: owned.workspaceId } }
+      } else {
+        if (resource?.kind !== 'workspace') failure('RUNTIME_FORBIDDEN', 403, 'Server-managed workspace required')
+        const id = sessionId(randomUUID())
+        allocatedSessionId = id
+        newSessionId = id
+        await this.ctx.projectStorage.register(authority, resource.workspaceId, {
+          id, version: SESSION_FORMAT_VERSION, createdAt: Date.now(),
+        })
+        request = { ...request, payload: { ...payload, sessionId: id } }
+      }
+    }
+    const body = JSON.stringify(request)
+    if (Buffer.byteLength(body) > this.config.maxRequestBytes) failure('RUNTIME_LIMIT', 413, 'Worker request limit exceeded')
+    const { response, lease } = await this.dispatch(authority, resource, request.method, `/api/${request.method}`,
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body }, signal)
+    try {
+      const result = serverResponseSchema.parse(JSON.parse(Buffer.from(await boundedBody(response,
+        this.config.maxResponseBytes)).toString()))
+      if (result.rpcId !== request.rpcId) failure('RUNTIME_PROTOCOL', 502, 'Worker RPC receipt is invalid')
+      if (result.result.ok) {
+        const value = object(result.result.value)
+        if ((allocatedSessionId !== undefined && value?.sessionId !== allocatedSessionId)
+          || (request.method === 'session.fork' && (typeof value?.sessionId !== 'string'
+            || !lease.allocations.has(sessionId(value.sessionId))))) failure('RUNTIME_PROTOCOL', 502,
+          'Worker session allocation receipt is invalid')
+        // The worker first opens the genuinely new lifecycle; only its validated
+        // success commits the empty owned header before the external receipt.
+        if (newSessionId !== undefined) {
+          const materializeSignal = signal === undefined ? lease.controller.signal
+            : AbortSignal.any([signal, lease.controller.signal])
+          this.available()
+          materializeSignal.throwIfAborted()
+          await this.ctx.projectStorage.materialize(authority, newSessionId, materializeSignal)
+          this.available()
+          materializeSignal.throwIfAborted()
+        }
+        if (value !== undefined && ['session.list', 'session.search', 'workspace.list'].includes(request.method)
+          && Array.isArray(value.items)) {
+          const items: unknown[] = []
+          for (const item of value.items) {
+            try { await this.ownedReferences(authority, item); items.push(item) }
+            catch (error) {
+              if (!(error instanceof WebIdentityError) || error.status !== 403) throw error
+            }
+          }
+          value.items = items
+        }
+        await this.ownedReferences(authority, result.result.value, lease.scope)
+      } else { await this.ownedReferences(authority, result.result.error.details, lease.scope) }
+      await this.authorize(authority, resource, request.method)
+      lease.controller.signal.throwIfAborted()
+      if (result.result.ok && (remote === undefined ? activity : isOwnerRemoteActivity(request.method, result.result.value))) {
+        await this.ctx.webIdentity.revalidate(authority, { activity: true })
+        await this.authorize(authority, resource, request.method)
+        lease.controller.signal.throwIfAborted()
+      }
+      if (response.headers.get('x-arx-quiescent') === 'true') this.leases.delete(lease.operationId)
+      return result.result
+    } catch (error) {
+      lease.settle()
+      await this.cancel(lease)
+      throw error
+    } finally { lease.settle() }
+  }
+
+  /**
+   * Existing HTTP carrier entry for unary RPC and owned log downloads.
+   * @param authority - Current issued USER authority.
+   * @param request - Incoming browser carrier request.
+   * @param resource - Resource selected by the trusted gateway parser.
+   * @param signal - Caller cancellation.
+   * @returns Existing ServerResponse JSON envelope.
+   */
+  async fetch(authority: RequestAuthority, request: Request, resource?: OwnerResource, signal?: AbortSignal): Promise<Response> {
+    const path = new URL(request.url).pathname
+    if ((request.method === 'GET' || request.method === 'HEAD') && path === '/api/session.export') {
+      const url = new URL(request.url)
+      const id = url.searchParams.get('sessionId')
+      if (id === null || [...url.searchParams.keys()].some(key => !['sessionId', 'includeDescendants'].includes(key))) {
+        failure('RUNTIME_PROTOCOL', 400, 'Invalid export request')
+      }
+      const ownerResource: OwnerResource = { kind: 'session', sessionId: sessionId(id) }
+      const { response, lease } = await this.dispatch(authority, ownerResource, 'session.export',
+        path + url.search, { method: request.method }, signal ?? request.signal)
+      try {
+        const manifest = response.headers.get('x-arx-export-sessions')
+        if (manifest === null) failure('RUNTIME_PROTOCOL', 502, 'Worker export receipt is invalid')
+        const ids: unknown = JSON.parse(manifest)
+        if (!Array.isArray(ids) || !ids.includes(id)) failure('RUNTIME_PROTOCOL', 502, 'Worker export receipt is invalid')
+        await this.ownedReferences(authority, { sessionIds: ids }, lease.scope)
+        const body = request.method === 'HEAD' ? null : await boundedBody(response, this.config.maxResponseBytes)
+        await this.authorize(authority, ownerResource, 'session.export')
+        lease.controller.signal.throwIfAborted()
+        if (response.headers.get('x-arx-quiescent') === 'true') this.leases.delete(lease.operationId)
+        return new Response(body === null ? null : new Uint8Array(body), { headers: { 'content-type': 'application/zip',
+          'content-disposition': 'attachment; filename="session.zip"', 'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } })
+      } catch (error) {
+        lease.settle()
+        await this.cancel(lease)
+        throw error
+      } finally { lease.settle() }
+    }
+    if (request.method !== 'POST' || !path.startsWith('/api/')) failure('RUNTIME_METHOD', 403, 'Method unavailable')
+    if (request.headers.get('content-type')?.split(';')[0]?.trim() !== 'application/json') failure('RUNTIME_MEDIA', 415, 'JSON required')
+    const body = await boundedBody(new Response(request.body), this.config.maxRequestBytes)
+    const parsedBody: unknown = JSON.parse(Buffer.from(body).toString())
+    if (path === '/api/respond') return this.respond(authority, parsedBody, signal ?? request.signal)
+    const envelope = clientRequestSchema.parse(parsedBody)
+    if (path !== `/api/${envelope.method}`) failure('RUNTIME_PROTOCOL', 400, 'RPC path mismatch')
+    const result = await this.invoke(authority, resource, envelope, signal ?? request.signal)
+    return Response.json({ type: 'server-response', rpcId: envelope.rpcId, result },
+      { headers: { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } })
+  }
+
+  private async respond(authority: RequestAuthority, body: unknown, signal: AbortSignal): Promise<Response> {
+    const parsed = clientResponseSchema.safeParse(body)
+    if (!parsed.success) failure('RUNTIME_PROTOCOL', 400, 'Invalid client response')
+    const pending = this.pendingReplies.get(parsed.data.rpcId)
+    if (pending === undefined || pending.lease.controller.signal.aborted || !this.leases.has(pending.lease.operationId)
+      || pending.lease.authority.principal.userId !== authority.principal.userId) failure('RUNTIME_FORBIDDEN', 403,
+      'Response is not pending')
+    const assertPending = (): void => {
+      if (this.pendingReplies.get(parsed.data.rpcId) !== pending) failure('RUNTIME_FORBIDDEN', 403, 'Response is not pending')
+      this.assertReplyLease(pending.lease)
+    }
+    const resource: OwnerResource = { kind: 'session', sessionId: pending.sessionId }
+    const responseScope = await this.authorize(authority, resource, 'session.prompt')
+    assertPending()
+    if (parsed.data.result.ok) {
+      await this.ownedReferences(authority, parsed.data.result.value, responseScope)
+      assertPending()
+    }
+    const linkedSignal = AbortSignal.any([pending.lease.controller.signal, signal])
+    const { response, lease } = await this.dispatch(authority, resource, 'session.prompt', '/api/respond',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(parsed.data) }, linkedSignal, pending.lease)
+    try {
+      this.assertReplyLease(pending.lease)
+      const receipt: unknown = JSON.parse(Buffer.from(await boundedBody(response, this.config.maxResponseBytes)).toString())
+      this.assertReplyLease(pending.lease)
+      const value = object(receipt)
+      if (typeof value?.accepted !== 'boolean') failure('RUNTIME_PROTOCOL', 502, 'Invalid response receipt')
+      await this.authorize(authority, resource, 'session.prompt')
+      await this.revalidateReplyLease(pending.lease)
+      lease.controller.signal.throwIfAborted()
+      if (value.accepted) {
+        await this.ctx.webIdentity.revalidate(authority, { activity: true })
+        await this.authorize(authority, resource, 'session.prompt')
+        await this.revalidateReplyLease(pending.lease)
+        lease.controller.signal.throwIfAborted()
+      }
+      if (value.accepted) this.pendingReplies.delete(parsed.data.rpcId)
+      if (response.headers.get('x-arx-quiescent') === 'true') this.leases.delete(lease.operationId)
+      return Response.json(value, { headers: { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } })
+    } catch (error) {
+      lease.settle()
+      await this.cancel(lease)
+      throw error
+    } finally { lease.settle() }
+  }
+
+  /**
+   * Open the existing owner-filtered mux downlink.
+   * @param authority - Current issued USER authority.
+   * @param signal - Downlink cancellation.
+   * @returns Existing mux frames.
+   */
+  async *streamMux(authority: RequestAuthority, signal: AbortSignal): AsyncIterable<RpcRequest<MuxFrame>> {
+    for await (const frame of this.streams(authority, 'mux', signal)) yield frame as RpcRequest<MuxFrame>
+  }
+
+  /**
+   * Open the existing owner-filtered host downlink.
+   * @param authority - Current issued USER authority.
+   * @param signal - Downlink cancellation.
+   * @returns Existing host frames.
+   */
+  async *streamHost(authority: RequestAuthority, signal: AbortSignal): AsyncIterable<RpcRequest<HostFrame>> {
+    for await (const frame of this.streams(authority, 'host', signal)) yield frame as RpcRequest<HostFrame>
+  }
+
+  /**
+   * Reuse the existing carrier's SSE parser, then authorize each frame before
+   * exposing it to a browser WebSocket downlink. Remote host events are denied.
+   * @param authority - Current issued USER authority.
+   * @param channel - Existing host or mux channel.
+   * @param signal - Local downlink cancellation.
+   * @returns Existing narrow RpcRequest frames filtered by identity ownership.
+   */
+  async *streams(authority: RequestAuthority, channel: 'mux' | 'host', signal: AbortSignal):
+  AsyncIterable<RpcRequest<MuxFrame | HostFrame>> {
+    const { response, lease } = await this.dispatch(authority, undefined, 'runtime', `/api/events.${channel}`, { method: 'GET' }, signal)
+    try {
+      lease.settle()
+      let previous = -1
+      let size = 0
+      const bounded = response.body?.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+        transform: (chunk, controller) => {
+          for (const byte of chunk) {
+            size++
+            if (size > this.config.maxResponseBytes) failure('RUNTIME_LIMIT', 502, 'Worker frame limit exceeded')
+            if (byte === 10 && previous === 10) size = 0
+            previous = byte
+          }
+          controller.enqueue(chunk)
+        },
+      }))
+      if (bounded === undefined) failure('RUNTIME_PROTOCOL', 502, 'Worker stream unavailable')
+      const client = new InProcessApiClient({ fetch: () => new Promise<Response>((resolve) => {
+        resolve(new Response(bounded, { headers: response.headers }))
+      }) }, this.config.requestTimeoutMs)
+      const stream = channel === 'mux' ? client.events.mux({}, signal) : client.events.host({}, signal)
+      for await (const frame of stream) {
+        if (frame.payload.type === 'stream/error') continue
+        if (frame.payload.type === 'host/remote-event') {
+          const event = ownerRemoteEventAdmission(frame.payload.event, frame.payload.args)
+          if (event === undefined) continue
+          if (event.resource !== undefined) await this.ctx.webIdentity.authorizeOwner(authority, event.resource)
+        }
+        try { await this.ownedReferences(authority, frame.payload) }
+        catch (error) {
+          if (error instanceof WebIdentityError && error.status === 403) continue
+          throw error
+        }
+        await this.ctx.webIdentity.revalidate(authority)
+        if (lease.controller.signal.aborted || this.closing) return
+        if (frame.payload.type === 'approval/requested' || frame.payload.type === 'question/requested') {
+          const previous = this.pendingReplies.get(frame.rpcId)
+          if (previous !== undefined && (previous.lease.authority.principal.userId !== authority.principal.userId
+            || previous.sessionId !== frame.payload.sessionId)) failure('RUNTIME_PROTOCOL', 502, 'Pending response identity differs')
+          this.pendingReplies.set(frame.rpcId, { lease, sessionId: frame.payload.sessionId,
+            ...(frame.payload.type === 'approval/requested' ? { approvalId: frame.payload.approvalId } : {}) })
+        } else if (frame.payload.type === 'question/resolved') this.pendingReplies.delete(frame.payload.questionRpcId)
+        else if (frame.payload.type === 'approval/resolved') {
+          for (const [id, pending] of this.pendingReplies) {
+            if (pending.approvalId === frame.payload.approvalId) this.pendingReplies.delete(id)
+          }
+        }
+        yield frame
+      }
+    } finally {
+      lease.settle()
+      await this.cancel(lease)
+    }
+  }
+}
+export default IsolatedProjectRuntime

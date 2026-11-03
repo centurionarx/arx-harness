@@ -18,6 +18,8 @@ import type {} from '@arx-ai/arx-client-locale/client'
 import type { AppearanceRowInjected } from './AppearanceRow.tsx'
 import { AppearanceRow } from './AppearanceRow.tsx'
 import { createAppearanceRowStore } from './settings-store.ts'
+import { ThemePresenter } from './theme-presenter.ts'
+export { DARK_ATTRIBUTE, ThemePresenter } from './theme-presenter.ts'
 import { installThemeStyles } from './styles.ts'
 import { en, pt, type ThemeKey } from './locales.ts'
 import {
@@ -150,7 +152,7 @@ const BUILTIN_INSPECT_TOKENS: readonly ThemeTokenInspection[] = Object.freeze([
  */
 export class ThemeRuntime {
   private readonly ctx: Context
-  private readonly host: SettingsScope<ThemeSettings>
+  private readonly host: SettingsScope<ThemeSettings> | undefined
   private themes: ThemeDefinition[] = [...BUILTIN_THEMES]
   private preference: ThemePreference
   private revision = 0
@@ -165,7 +167,7 @@ export class ThemeRuntime {
    * media-query and scope listeners are released through ctx.effect on dispose).
    * @param host - durable preference scope owned by the same plugin.
    */
-  constructor(ctx: Context, host: SettingsScope<ThemeSettings>) {
+  constructor(ctx: Context, host?: SettingsScope<ThemeSettings>) {
     this.ctx = ctx
     this.host = host
     this.preference = DEFAULT_PREFERENCE
@@ -183,8 +185,10 @@ export class ThemeRuntime {
         return () => { media.removeEventListener('change', onChange) }
       }, 'ui-theme: prefers-color-scheme listener')
     }
-    ctx.effect(() => host.subscribe(() => { this.adopt() }), 'ui-theme: settings scope adoption')
-    this.adopt()
+    if (host !== undefined) {
+      ctx.effect(() => host.subscribe(() => { this.adopt() }), 'ui-theme: settings scope adoption')
+      this.adopt()
+    }
   }
 
   /**
@@ -226,13 +230,13 @@ export class ThemeRuntime {
     }
     if (this.preference === id) return
     this.preference = id as ThemePreference
-    if (isThemePreference(id)) void this.host.set(THEME_PREFERENCE_FIELD, id)
+    if (isThemePreference(id)) void this.host?.set(THEME_PREFERENCE_FIELD, id)
     this.publish()
   }
 
   /** Adopt the scope's accepted durable preference without writing it back. */
   private adopt(): void {
-    const section = this.host.getSnapshot().value
+    const section = this.host?.getSnapshot().value
     if (section === undefined || this.preference === section.preference) return
     this.preference = section.preference
     this.publish()
@@ -375,6 +379,8 @@ function dynamicToken(name: string): ThemeTokenInspection {
  * `ctx.settingsScope.bind(spec)` subscribes to on this context.
  */
 export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope']
+/** Neutral face selected only for a verified public/admin boot. Same implementation and service. */
+export const application = { inject: ['slots', 'locale'], apply }
 
 /**
  * Client plugin body: provide the theme service and register the
@@ -384,11 +390,30 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
  */
 export function apply(ctx: ClientContext): void {
   installThemeStyles(ctx)
-  const host = ctx.settingsScope.bind<ThemeSettings>({ namespace: THEME_SETTINGS_NAMESPACE })
+  if (ctx.slots.runtime === 'application') {
+    installTheme(ctx)
+    return
+  }
+  ctx.inject(['connection', 'remote', 'settingsScope'], (scope) => {
+    installTheme(scope, scope.settingsScope.bind<ThemeSettings>({ namespace: THEME_SETTINGS_NAMESPACE }))
+  })
+}
+
+/** The same theme service operates without a project preference scope in application trees. */
+function installTheme(ctx: ClientContext, host?: SettingsScope<ThemeSettings>): void {
   const theme = new ThemeRuntime(ctx, host)
   ctx.provide('theme', theme)
 
   ctx.effect(() => ctx.locale.register(SETTINGS_NS, { en, pt }), 'ui-theme: settings row dictionaries')
+  if (host === undefined) {
+    ctx.effect(() => {
+      const presenter = new ThemePresenter()
+      presenter.apply(theme.getTheme())
+      const off = ctx.on('theme/change', (snapshot) => { presenter.apply(snapshot) })
+      return () => { off(); presenter.dispose() }
+    }, 'ui-theme: application presenter')
+    return
+  }
 
   const store = createAppearanceRowStore()
   let bound: BoundActions<typeof store> | undefined

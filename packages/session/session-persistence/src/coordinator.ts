@@ -179,7 +179,9 @@ export interface PersistenceBackend<TornMarker = unknown> {
    * Durably append a CONTIGUOUS batch, lazily materializing the session first
    * when `!isMaterialized`. The materialize-write and the first event batch MUST
    * commit ATOMICALLY (a crash between them must not leave a materialized-but-
-   * empty session). Returns once the batch is durable.
+   * empty session). Explicit header materialization alone passes an empty batch
+   * and commits only its canonical header without an event record. Returns once
+   * the batch is durable.
    */
   appendBatch(meta: SessionHeader, events: readonly SessionEvent[], isMaterialized: boolean): Promise<void>
 
@@ -655,6 +657,23 @@ export class PersistenceCoordinator<TornMarker = unknown> {
     }
     // Pure lazy: record intent only. No artifact until the first append.
     this.states.set(meta.id, { meta, cursor: 0, materialized: false })
+  }
+
+  /**
+   * Commit a tracked header through the backend's canonical durable write path.
+   * This explicit operation does not change lazy create or empty append behavior.
+   * @param id - Registered or already persisted session identity.
+   * @returns Completion after publication; repeated committed calls are passive.
+   */
+  materialize(id: SessionId): Promise<void> {
+    return this.serialize(id, async () => {
+      this.preparations.assertWritable(id)
+      const state = this.states.get(id) ?? await this.adopt(id)
+      if (state.materialized) return
+      await this.backend.appendBatch(state.meta, [], false)
+      state.materialized = true
+      this.preparations.invalidate(id)
+    })
   }
 
   // `async` so synchronous materialization failures below reject (not throw) per

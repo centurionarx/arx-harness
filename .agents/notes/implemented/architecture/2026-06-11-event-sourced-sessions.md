@@ -24,3 +24,5 @@ Ordering contract: the loop claims inbox messages before `agent/pre-step`, opens
 - Persistence stays a plugin concern; the in-memory store ships in arx-session.
 - The event vocabulary is merge-extensible (plugins add e.g. compaction events); [session persistence](2026-06-14-session-persistence.md) froze its shape once the log became durable.
 - Derivation cost grows with log length — compaction (arx-compaction) is the intended mitigation, not log mutation.
+
+[Native web authority](../../proposed/architecture/2026-10-08-native-web-authority-and-owned-control-plane.md) adds account and content ownership while preserving this decision.

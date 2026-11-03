@@ -148,7 +148,13 @@
     "mock:llm": "node --import tsx packages/test-support/llm-mock-server/src/bin.ts",
     "dev:web": "tsx scripts/dev-web.ts --poll",
     "postinstall": "node scripts/install-lefthook.mjs",
-    "session:migration": "tsx scripts/session-migration.ts"
+    "session:migration": "tsx scripts/session-migration.ts",
+    "test:auth:browser": "tsx examples/web-identity/tests/native-browser-gate.host.ts",
+    "test:auth:browser:project": "tsx examples/web-identity/tests/native-project-browser-gate.host.ts",
+    "test:auth:storage:snapshot": "tsx examples/owned-project-storage/snapshot.ts",
+    "test:auth:benchmark:native": "tsx examples/owned-project-storage/benchmark-native.ts",
+    "test:auth:benchmark:micro": "tsx examples/owned-project-storage/benchmark.ts",
+    "test:auth:benchmark:micro:worker": "tsx examples/owned-project-storage/benchmark-worker.ts"
   },
   "devDependencies": {
     "@agentclientprotocol/sdk": "0.25.1",

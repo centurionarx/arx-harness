@@ -33,6 +33,8 @@ interface Config {
   host: '127.0.0.1' | '0.0.0.0'
   /** Listen port; zero requests an OS-assigned port. */
   port: number
+  /** Native identity uses only a principal-bound request renderer. */
+  accessMode?: 'local' | 'authenticated'
 }
 ```
 
@@ -43,6 +45,10 @@ interface Config {
 `WebServer` (`ctx.webServer`) listens immediately on activation; a listen failure (EADDRINUSE…) rejects initialization, and the boot process reports the failed fiber. `register(route)` adds one named route and returns its disposer; a duplicate `(kind, path)` throws because route patterns are a composition-level contract and a collision is a misconfiguration. `collectIndexInjections()` gathers structured `IndexInjection` rows over one `webserver/index-inject` emit, and `renderIndex(html)` renders them into successful root and configured index responses before applying the raw `tapIndex(transform)` escape-hatch transforms in registration order; [arx-client-modules](../../packages/client/modules) answers the event with the boot manifest rows. `port` reads the listening port, including the port assigned by the OS when `config.port` is 0.
 
 A request whose handling throws (a malformed %-escape hitting `decodeURIComponent`, a client dropping mid-body) is logged as a warning and answered 400 — or the socket destroyed when headers are already out — never a process exit. Disposal pairs `close()` with `closeAllConnections()` because a handler may hold its response open (SSE) and such connections never end on their own; without the force-close, teardown would hang. The package never prints: the URL line belongs to the shell. Per-package operational detail, including the dev-mode bundle watch pipeline, stays in the [README](../../packages/host/webserver/README.md).
+
+## Request-bound index
+
+`RequestIndexRenderer` is an async function from HTML and the original `IncomingMessage` to rendered HTML. `registerRequestIndexRenderer` returns an effect-owned disposer and permits one owner only in authenticated mode. `renderRequestIndex` awaits that owner and rejects with `RequestIndexUnavailableError` if the owner is missing, disposed or replaced before completion. The authenticated mode rejects global index collection; local mode retains `renderIndex`, structured rows and taps. The [module registry](client-modules.md) owns identity-specific graph selection, and the [static fallback](../../packages/host/frontend-static/README.md) owns token entry paths and no-store/no-referrer responses.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -100,6 +106,21 @@ Source: [`packages/webhook/webhook/src/index.ts`](../../packages/webhook/webhook
 The browser HTTP carrier service. Activation listens immediately. Route registration order does not affect requests because configured named routes must be distinct, and the fallback handler answers anything not yet claimed during startup with 404 until its owner registers. A listen failure rejects initialization, and the boot process reports the failed fiber.
 
 ```ts cordis-catalog
+/**
+ * Claim the native request-renderer seat, with one owner and no global taps.
+ * @param render - Async renderer which authenticates and projects this request.
+ * @returns Disposer which releases only this registration.
+ */
+registerRequestIndexRenderer(render: RequestIndexRenderer): () => void
+
+/**
+ * Render the request through its operator-selected local or native composition.
+ * @param html - Raw built shell, before global index listeners or taps run.
+ * @param request - Original request carrying the serving authority and cookies.
+ * @returns Principal-bound native HTML or the existing local index rendering.
+ */
+async renderRequestIndex(html: string, request: IncomingMessage): Promise<string>
+
 /**
  * Register a named route. Duplicate (kind, path) throws — route patterns are
  * a composition-level contract, so a collision is a misconfiguration.

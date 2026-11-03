@@ -1,0 +1,45 @@
+/* Identity uses the same semantic theme tokens as the project shell. */
+.page { min-height: 100dvh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: var(--arx-alias-bg-base); color: var(--arx-alias-label-primary); }
+.card { width: min(100%, 420px); display: grid; gap: 20px; padding: 28px; border: 1px solid var(--arx-alias-border-l1); border-radius: 16px; background: var(--arx-alias-bg-layer-1); box-sizing: border-box; }
+.card h1 { margin: 0; font-size: 24px; }
+.card p { margin: 0; line-height: 1.5; color: var(--arx-alias-label-secondary); }
+.form { display: grid; gap: 16px; }
+.field { display: grid; gap: 8px; font-size: 14px; }
+.field input, .field select { min-height: 44px; width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--arx-alias-border-l2); border-radius: 8px; color: var(--arx-alias-label-primary); background: var(--arx-alias-bg-base); font: inherit; }
+.button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--arx-alias-border-l2); border-radius: 8px; color: var(--arx-alias-label-primary); background: var(--arx-alias-bg-layer-1); font: inherit; cursor: pointer; }
+.primary { background: var(--arx-alias-brand-primary); color: var(--arx-alias-label-primary-foreground); border-color: var(--arx-alias-brand-primary); }
+.button:disabled { cursor: wait; opacity: 0.6; }
+.button:focus-visible, .field input:focus-visible, .field select:focus-visible, .link:focus-visible { outline: 2px solid var(--arx-alias-brand-primary); outline-offset: 3px; }
+.link { color: var(--arx-alias-brand-primary); background: transparent; border: 0; font: inherit; padding: 8px 0; cursor: pointer; text-decoration: underline; }
+.error { color: var(--arx-alias-label-primary); font-size: 14px; line-height: 1.5; }
+.notice { color: var(--arx-alias-label-primary); font-size: 14px; line-height: 1.5; }
+.admin { min-height: 100dvh; background: var(--arx-alias-bg-base); color: var(--arx-alias-label-primary); }
+.header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 24px; border-bottom: 1px solid var(--arx-alias-border-l1); }
+.header h1 { margin: 0; font-size: 24px; }
+.header p { margin: 6px 0 0; color: var(--arx-alias-label-secondary); }
+.nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.content { padding: 24px; max-width: 1120px; margin: auto; }
+.section { display: grid; gap: 20px; }
+.row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.inlineForm { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.inlineForm .field { flex: 1 1 200px; }
+.list { display: grid; gap: 12px; list-style: none; padding: 0; margin: 0; }
+.user { padding: 20px; border: 1px solid var(--arx-alias-border-l1); border-radius: 12px; display: grid; gap: 12px; background: var(--arx-alias-bg-layer-1); overflow-wrap: anywhere; }
+.user strong { font-size: 16px; }
+.secondary { color: var(--arx-alias-label-secondary); font-size: 13px; line-height: 1.5; }
+.check { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.check input { width: 20px; height: 20px; }
+.account { max-width: 480px; display: grid; gap: 20px; padding: 8px; }
+.account dl { display: grid; gap: 8px; }
+.account dd { margin: 0; overflow-wrap: anywhere; }
+.browser { display: grid; gap: 16px; padding: 12px; color: var(--arx-alias-label-primary); overflow-wrap: anywhere; }
+.browser h2, .browser h3 { margin: 0; font-size: 14px; }
+.browser .field input, .browser .field select { min-width: 0; }
+.browser .user { padding: 12px; gap: 8px; }
+.browser .button { padding: 8px; min-height: 44px; }
+.browser .row { gap: 6px; }
+.historyBackdrop { position: fixed; inset: 0; z-index: 1100; background: var(--arx-alias-bg-base); padding: 24px; overflow: auto; color: var(--arx-alias-label-primary); }
+.historyText { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; padding: 16px; border: 1px solid var(--arx-alias-border-l1); }
+@media (max-width: 480px) { .page { padding: 16px; } .card { padding: 20px; } .header, .content { padding: 16px; } .user { padding: 16px; } .historyBackdrop { padding: 16px; } }
+
+.accountDialog { max-width: 560px; margin: auto; }

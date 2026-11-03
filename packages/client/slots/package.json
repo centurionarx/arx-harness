@@ -1,0 +1,61 @@
+{
+  "name": "@arx-ai/arx-client-slots",
+  "description": "Neutral Cordis slot provider and React-free store engine",
+  "version": "1.0.48",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/centurionarx/arx-harness.git",
+    "directory": "packages/client/slots"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "arx": {
+    "client": {
+      "inject": [],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "immer": "^11.1.18",
+    "zustand": "~5.0.15"
+  },
+  "peerDependencies": {
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^"
+  },
+  "devDependencies": {
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-invariants": "workspace:^",
+    "@arx-ai/arx-client-ui-slots": "workspace:^",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

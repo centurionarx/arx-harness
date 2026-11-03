@@ -220,6 +220,9 @@
     - id: api-remotes
       name: '@arx-ai/arx-api-remotes'
 
+    - id: client-slots
+      name: '@arx-ai/arx-client-slots'
+
     - id: client-runtime
       name: '@arx-ai/arx-client-runtime'
 

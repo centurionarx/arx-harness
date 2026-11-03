@@ -56,7 +56,9 @@
     "@arx-ai/arx-commands": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^",
+    "@arx-ai/arx-isolated-project-runtime": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-host-webserver": "workspace:^",
@@ -68,6 +70,8 @@
     "@arx-ai/arx-commands": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^",
+    "@arx-ai/arx-isolated-project-runtime": "workspace:^"
   }
 }

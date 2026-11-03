@@ -32,10 +32,13 @@
   "arx": {
     "client": {
       "inject": [
-        "@arx-ai/arx-client-runtime"
+        "@arx-ai/arx-client-slots"
       ],
       "platform": "web",
-      "immediately": true
+      "immediately": true,
+      "external": [
+        "@arx-ai/arx-client-slots/client"
+      ]
     }
   },
   "scripts": {
@@ -49,7 +52,8 @@
   "peerDependencies": {
     "@arx-ai/arx-client-runtime": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@arx-ai/cordis": "workspace:^"
+    "@arx-ai/cordis": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-client-runtime": "workspace:^",
@@ -60,7 +64,8 @@
     "@types/react-dom": "~18.3.0",
     "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "files": [
     "lib/index.js",

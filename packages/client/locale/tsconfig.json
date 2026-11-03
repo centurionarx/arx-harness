@@ -28,6 +28,9 @@
     },
     {
       "path": "../ui-settings"
+    },
+    {
+      "path": "../slots"
     }
   ]
 }

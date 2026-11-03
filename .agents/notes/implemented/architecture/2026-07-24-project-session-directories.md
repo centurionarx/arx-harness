@@ -48,3 +48,5 @@ Lazy materialization remains tied to the transcript: `create()` performs no file
 Shared stores can be navigated by recognizable project names, while local and custom roots keep their existing configuration freedom. Every session has a directory available for future backend-owned artifacts, and existing transcript consumers still receive a file path.
 
 Project directory names are longer than the former 12-hex cwd hashes. Very long paths show only a bounded prefix. Moving a project usually selects a different directory, but distinct cwd strings that normalize to the same name share one project directory by design.
+
+[Native web authority](../../proposed/architecture/2026-10-08-native-web-authority-and-owned-control-plane.md) adds account and content ownership while preserving this decision.

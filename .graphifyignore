@@ -1,0 +1,2 @@
+# Private Gauntlet evidence contains copied source and must not enter the product AST graph.
+/.gauntlet/

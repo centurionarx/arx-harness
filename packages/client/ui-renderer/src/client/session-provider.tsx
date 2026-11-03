@@ -124,6 +124,7 @@ const projectionHookCache = new WeakMap<SessionMaybeProvideInfo, (
  */
 export function SessionMaybeProvider({ children }: { children: ReactNode }) {
   const host = useHost()
+  if (host.runtime === 'application') throw new SlotAssemblyError('application host has no sessions')
   const info = observableHook(host.sessions.provideInfo)(s => s)
   return (
     <BindingContext.Provider value={info}>
@@ -149,6 +150,7 @@ export interface SessionProviderProps {
  */
 export function SessionProvider({ empty, children }: SessionProviderProps) {
   const host = useHost()
+  if (host.runtime === 'application') throw new SlotAssemblyError('application host has no sessions')
   const info = observableHook(host.sessions.provideInfo)(s => s)
   const id = info.sessionId
   if (id === undefined) return <>{empty?.() ?? null}</>

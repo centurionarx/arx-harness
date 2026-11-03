@@ -36,7 +36,10 @@
         "@arx-ai/arx-client-runtime",
         "@arx-ai/arx-client-ui-theme"
       ],
-      "platform": "web"
+      "platform": "web",
+      "external": [
+        "@arx-ai/arx-client-ui-theme/client"
+      ]
     }
   },
   "scripts": {

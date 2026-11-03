@@ -919,6 +919,35 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'identityAuthorityJournal',
+    summary: 'The protected authority log is outside every restored auth/content snapshot.',
+    description: 'The protected authority log is outside every restored auth/content snapshot.',
+    methods: [
+      {
+        signature: 'abstract readonly head: AuthorityHead',
+        description: 'Current authority head; implementations refuse absent or stale authority.',
+        parameters: [],
+      },
+      {
+        signature: 'abstract readonly root: string',
+        description: 'Protected journal location excluded from rollback snapshots and worker mounts.',
+        parameters: [],
+      },
+      {
+        signature: 'abstract recordsAfter(sequence: number): Promise<readonly AuthorityRecord[]>',
+        description: 'Read immutable records after the supplied projection watermark.',
+        parameters: [{ name: 'sequence', description: 'Last sequence already projected.' }],
+        returns: 'Ordered records strictly after the watermark.',
+      },
+      {
+        signature: 'abstract append(expectedSequence: number, event: AuthorityEvent): Promise<AuthorityRecord>',
+        description: 'Append and fsync one decision against the expected current head.',
+        parameters: [{ name: 'expectedSequence', description: 'Current authority sequence required by the writer.' }, { name: 'event', description: 'Provider-owned decision with a unique operation ID.' }],
+        returns: 'Immutable record after journal and watermark durability.',
+      },
+    ],
+  },
+  {
     key: 'invariants',
     summary: 'Package-owned invariant registry with global and regex-based selection.',
     description: 'Package-owned invariant registry with global and regex-based selection.',
@@ -928,6 +957,54 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Register one package\'s invariant installer. The package name is reserved even when filtering disables its checks. Enabled installers run in a child fiber; failure disposes that fiber and releases the reservation.',
         parameters: [{ name: 'packageName', description: 'full npm package name that owns the contribution.' }, { name: 'installer', description: 'listener or startup-check installer for the child context.' }],
         returns: 'an effect-scoped disposer for the registration.',
+      },
+    ],
+  },
+  {
+    key: 'isolatedProjectRuntime',
+    summary: 'One trusted supervisor serves owner-assigned workers, never the shared host.',
+    description: 'One trusted supervisor serves owner-assigned workers, never the shared host.',
+    methods: [
+      {
+        signature: 'quiesce(userId?: WebUserId): Promise<void>',
+        description: 'Abort all affected transports, cancel every supervisor lease, and await process-tree receipts. Concurrent requests share the barrier, and new owner execution refuses until it settles. A missing receipt permanently closes this adapter.',
+        parameters: [{ name: 'userId', description: 'Affected account, or all accounts during disposal.' }],
+      },
+      {
+        signature: 'async broker(request: Request): Promise<Response>',
+        description: 'Execute the closed worker-history protocol using a control-issued lease. Capabilities authorize only the current USER workspace and never carry SQL or path operations. Broker errors omit private locations and source bytes.',
+        parameters: [{ name: 'request', description: 'Private supervisor-to-control Request.' }],
+        returns: 'Durable receipt or a fixed refusal.',
+      },
+      {
+        signature: 'async invoke(authority: RequestAuthority, resource: OwnerResource | undefined, request: ClientRequest, signal?: AbortSignal): Promise<ServerResponse[\'result\']>',
+        description: 'Forward one existing RPC request after the final ownership/revision check. No cookie, bearer, browser Origin or arbitrary endpoint crosses to workers.',
+        parameters: [{ name: 'authority', description: 'Current provider-issued USER authority.' }, { name: 'resource', description: 'Authoritative selected resource, if the method addresses one.' }, { name: 'request', description: 'Existing ApiProxy request envelope.' }, { name: 'signal', description: 'Local caller cancellation.' }],
+        returns: 'Existing RPC business result.',
+      },
+      {
+        signature: 'async fetch(authority: RequestAuthority, request: Request, resource?: OwnerResource, signal?: AbortSignal): Promise<Response>',
+        description: 'Existing HTTP carrier entry for unary RPC and owned log downloads.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'request', description: 'Incoming browser carrier request.' }, { name: 'resource', description: 'Resource selected by the trusted gateway parser.' }, { name: 'signal', description: 'Caller cancellation.' }],
+        returns: 'Existing ServerResponse JSON envelope.',
+      },
+      {
+        signature: 'async *streamMux(authority: RequestAuthority, signal: AbortSignal): AsyncIterable<RpcRequest<MuxFrame>>',
+        description: 'Open the existing owner-filtered mux downlink.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'signal', description: 'Downlink cancellation.' }],
+        returns: 'Existing mux frames.',
+      },
+      {
+        signature: 'async *streamHost(authority: RequestAuthority, signal: AbortSignal): AsyncIterable<RpcRequest<HostFrame>>',
+        description: 'Open the existing owner-filtered host downlink.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'signal', description: 'Downlink cancellation.' }],
+        returns: 'Existing host frames.',
+      },
+      {
+        signature: 'async *streams(authority: RequestAuthority, channel: \'mux\' | \'host\', signal: AbortSignal): AsyncIterable<RpcRequest<MuxFrame | HostFrame>>',
+        description: 'Reuse the existing carrier\'s SSE parser, then authorize each frame before exposing it to a browser WebSocket downlink. Remote host events are denied.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'channel', description: 'Existing host or mux channel.' }, { name: 'signal', description: 'Local downlink cancellation.' }],
+        returns: 'Existing narrow RpcRequest frames filtered by identity ownership.',
       },
     ],
   },
@@ -1153,6 +1230,90 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'ownedWorkerHistory',
+    summary: 'Existing SessionPersistence provider, with no local history database/files.',
+    description: 'Existing SessionPersistence provider, with no local history database/files.',
+    methods: [
+      {
+        signature: 'bind(capability: string, scope: OwnerScope): void',
+        description: 'Bind a trusted supervisor request to this fixed workspace.',
+        parameters: [{ name: 'capability', description: 'Opaque control-issued lease capability.' }, { name: 'scope', description: 'Fixed assigned scope carried by trusted supervisor metadata.' }],
+      },
+      {
+        signature: 'override async readRawPage(id: SessionId, request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage>',
+        description: 'Read original private bytes over the bounded broker contract.',
+        parameters: [{ name: 'id', description: 'Owned session within this operator-mounted workspace.' }, { name: 'request', description: 'Existing persistence page request.' }, { name: 'signal', description: 'Carrier cancellation.' }],
+        returns: 'Original page or refusal when no materialized artifact exists.',
+      },
+      {
+        signature: 'override async readRaw(id: SessionId, signal?: AbortSignal): Promise<SessionRawArtifact | undefined>',
+        description: 'Assemble an explicit raw export without reserializing any recorded event. Navigation continues to use bounded control pages, never this full reader.',
+        parameters: [{ name: 'id', description: 'Owned session.' }, { name: 'signal', description: 'Export cancellation.' }],
+        returns: 'The unchanged logical artifact, absent for a lazy log.',
+      },
+      {
+        signature: 'async allocateForkSessionId(sessionId: SessionId, seedLength: number, agentPreset?: string): Promise<SessionId>',
+        description: 'Allocate fork lineage in control before the worker creates its child.',
+        parameters: [{ name: 'sessionId', description: 'Existing owned parent session.' }, { name: 'seedLength', description: 'Canonical event prefix length accepted by persistence.' }, { name: 'agentPreset', description: 'Optional existing preset recorded in the new header.' }],
+        returns: 'The control-generated owned child session identity.',
+      },
+      {
+        signature: 'async allocateForkSessionHeader(sessionId: SessionId, seedLength: number, agentPreset?: string): Promise<SessionHeader>',
+        description: 'Preserve the exact control-committed creation timestamp and immutable lineage.',
+        parameters: [{ name: 'sessionId', description: 'Existing parent in this fixed workspace.' }, { name: 'seedLength', description: 'Canonical inherited event prefix.' }, { name: 'agentPreset', description: 'Expected original composition preset.' }],
+        returns: 'The closed control-issued header before Agent publication.',
+      },
+      {
+        signature: 'locate(_meta: SessionHeader): SessionLocation | undefined',
+        description: 'Worker volumes contain no authoritative session artifact locations.',
+        parameters: [{ name: '_meta', description: 'Owned header; control keeps its physical log location private.' }],
+        returns: 'Undefined because this worker has no local history path.',
+      },
+      {
+        signature: 'async loadStored(id: SessionId, signal?: AbortSignal): Promise<StoredPrefix | undefined>',
+        description: 'Cold control recovery completes before returning the first writer snapshot.',
+        parameters: [{ name: 'id', description: 'Owned session identity.' }, { name: 'signal', description: 'Optional snapshot cancellation.' }],
+        returns: 'A committed original prefix at the fixed worker mount, or undefined for a lazy log.',
+      },
+      {
+        signature: 'override readRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined>',
+        description: 'Read the current control-owned artifact generation.',
+        parameters: [{ name: 'id', description: 'Owned session identity.' }, { name: 'signal', description: 'Optional revision-read cancellation.' }],
+        returns: 'The opaque generation, or undefined before log materialization.',
+      },
+      {
+        signature: 'async readStoredRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined>',
+        description: 'Read the current control-owned artifact generation over the closed broker.',
+        parameters: [{ name: 'id', description: 'Owned session identity.' }, { name: 'signal', description: 'Optional revision-read cancellation.' }],
+        returns: 'The opaque generation, or undefined before log materialization.',
+      },
+      {
+        signature: 'async appendBatch(meta: SessionHeader, events: readonly SessionEvent[], _isMaterialized: boolean): Promise<void>',
+        description: 'Commit one coordinator batch through the current fixed workspace lease.',
+        parameters: [{ name: 'meta', description: 'Owned session header used to identify the control log.' }, { name: 'events', description: 'Canonical events already validated by the coordinator.' }, { name: '_isMaterialized', description: 'Coordinator state; control determines actual materialization.' }],
+        returns: 'Completion only after the durable append receipt.',
+      },
+      {
+        signature: 'commitRepair(_meta: SessionHeader, _marker: unknown, closers: readonly SessionEvent[]): Promise<void>',
+        description: 'Control has already durably repaired a cold prefix; a live open-tail reload refuses.',
+        parameters: [{ name: '_meta', description: 'Existing session header already authorized by control.' }, { name: '_marker', description: 'Existing coordinator marker; control owns durable repair.' }, { name: 'closers', description: 'Proposed repair events; a live worker refuses nonempty repair.' }],
+        returns: 'A completed promise only when no live repair is needed.',
+      },
+      {
+        signature: 'async list(signal?: AbortSignal): Promise<SessionHeader[]>',
+        description: 'List materialized owned headers for this fixed workspace.',
+        parameters: [{ name: 'signal', description: 'Optional list cancellation.' }],
+        returns: 'Original owned headers with the operator-assigned execution mount.',
+      },
+      {
+        signature: 'async listSnapshots(signal?: AbortSignal): Promise<SessionPersistenceSnapshot[]>',
+        description: 'Pair materialized owned headers with their current control generations.',
+        parameters: [{ name: 'signal', description: 'Optional snapshot-list cancellation.' }],
+        returns: 'Only headers whose artifacts remain present at the revision lookup.',
+      },
+    ],
+  },
+  {
     key: 'permissionPresets',
     summary: 'Owns the deployment\'s permission presets and their write path.',
     description: 'Owns the deployment\'s permission presets and their write path. Requires a confining `ctx.shell` executor and `ctx.approval`; unmatched knob values are reported as CUSTOM_PRESET, not an error.',
@@ -1344,6 +1505,119 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'projectStorage',
+    summary: 'The index is derived from acknowledged persistence operations and identity ownership, never from cwd, usernames, legacy headers or a global directory scan.',
+    description: 'The index is derived from acknowledged persistence operations and identity ownership, never from cwd, usernames, legacy headers or a global directory scan.',
+    methods: [
+      {
+        signature: 'async createProject(authority: RequestAuthority, name: string): Promise<ProjectSummary>',
+        description: 'Create project identity before projecting its user-visible metadata.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'name', description: 'Display name, never a filesystem path.' }],
+        returns: 'New opaque project metadata.',
+      },
+      {
+        signature: 'async projects(authority: RequestAuthority, cursor?: string): Promise<ProjectsPage>',
+        description: 'List projects whose identity records still authorize the principal.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'cursor', description: 'Prior identity page cursor.' }],
+        returns: 'Metadata for the current owned project page.',
+      },
+      {
+        signature: 'async createWorkspace(authority: RequestAuthority, projectId: ProjectId, name: string): Promise<UserWorkspaceSummary>',
+        description: 'Create an owned workspace volume with an opaque server id.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'projectId', description: 'Owned project.' }, { name: 'name', description: 'Display name, never a host path.' }],
+        returns: 'User-safe workspace metadata.',
+      },
+      {
+        signature: 'async workspaces(authority: RequestAuthority, projectId: ProjectId, cursor?: string): Promise<WorkspacesPage>',
+        description: 'List grouping metadata without inspecting any user directory.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'projectId', description: 'Owned project.' }, { name: 'cursor', description: 'Last returned workspace id.' }],
+        returns: 'Owner-authorized workspace metadata page.',
+      },
+      {
+        signature: 'async removeGrouping(authority: RequestAuthority, workspaceId: WorkspaceId): Promise<void>',
+        description: 'Remove a grouping registration while preserving every identity, history artifact and workspace file.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'workspaceId', description: 'Owned workspace.' }],
+      },
+      {
+        signature: 'async rename(authority: RequestAuthority, id: SessionId, title: string): Promise<StoredSessionSummary>',
+        description: 'Rename only the index title; the canonical session stream is unchanged.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'title', description: 'Display title.' }],
+        returns: 'Updated metadata.',
+      },
+      {
+        signature: 'async deleteSession(authority: RequestAuthority, id: SessionId): Promise<void>',
+        description: 'Commit an identity tombstone before removing derived history metadata. Physical logs and backups remain subject to the operator retention policy.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'id', description: 'Owned session.' }],
+      },
+      {
+        signature: 'async provision(authority: RequestAuthority, workspaceId: WorkspaceId, signal?: AbortSignal): Promise<{ scope: OwnerScope volumePath: string }>',
+        description: 'Reserve a workspace\'s opaque volume without exposing its parent or touching worker-created files. Only the deployment operator mounts the returned path.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'workspaceId', description: 'Identity-owned workspace.' }, { name: 'signal', description: 'Optional cancellation before provisioning or dispatch.' }],
+        returns: 'Private provisioning data for the trusted runtime adapter.',
+      },
+      {
+        signature: 'async register(authority: RequestAuthority, workspaceId: WorkspaceId, header: SessionHeader, signal?: AbortSignal): Promise<SessionHeader>',
+        description: 'Register authoritative ownership before creating new persistence state. Caller-supplied cwd is replaced by the opaque owned workspace volume.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'workspaceId', description: 'Owning workspace.' }, { name: 'header', description: 'Session header in the existing on-disk format.' }, { name: 'signal', description: 'Optional broker admission cancellation before commit starts.' }],
+        returns: 'Header committed to the index and persistence provider.',
+      },
+      {
+        signature: 'async append(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit>',
+        description: 'Append a contiguous batch and acknowledge only the fsync plus FULL index projection. Failed appends publish neither a cursor nor a saved receipt.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'events', description: 'Existing SessionEvents, including their sequence envelopes.' }, { name: 'signal', description: 'Optional cancellation before append starts; an initiated commit still projects its index.' }],
+        returns: 'The next durable event sequence.',
+      },
+      {
+        signature: 'async recover(authority: RequestAuthority, id: SessionId): Promise<HistoryCommit>',
+        description: 'Reconcile an index after durable crash recovery without dispatching tools. Legacy sessions without authoritative ownership and an index mapping fail.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned and indexed session.' }],
+        returns: 'Durable commit cursor after the provider repairs interrupted turns.',
+      },
+      {
+        signature: 'async executionSnapshot(authority: RequestAuthority, id: SessionId, cold: boolean = false, signal?: AbortSignal): Promise<{ meta: SessionHeader events: SessionEvent[] revision: string } | undefined>',
+        description: 'Read the private authoritative execution source for a validated worker lease. Cold recovery is requested only after the runtime has excluded another writer.',
+        parameters: [{ name: 'authority', description: 'Issued owner authority, checked again after persistence work.' }, { name: 'id', description: 'Owned session identity.' }, { name: 'cold', description: 'A quiescent new worker needs durable interrupted-tail recovery.' }, { name: 'signal', description: 'Optional cancellation before repair starts or source reads continue.' }],
+        returns: 'Immutable source interpreted by the existing persistence provider.',
+      },
+      {
+        signature: 'async executionRawPage(authority: RequestAuthority, id: SessionId, request: import(\'@arx-ai/arx-session-persistence\').SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<import(\'@arx-ai/arx-session-persistence\').SessionRawArtifactPage | undefined>',
+        description: 'Read a bounded private artifact page through an already scoped worker broker. Raw bytes preserve the existing serialization, including its original cwd; only the operator\'s assigned mount is used when executing the hydrated session.',
+        parameters: [{ name: 'authority', description: 'Current sealed owner authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'request', description: 'Existing persistence page contract, bounded by storage policy.' }, { name: 'signal', description: 'Lease cancellation.' }],
+        returns: 'Original artifact page, absent for an unmaterialized log.',
+      },
+      {
+        signature: 'async executionRevision(authority: RequestAuthority, id: SessionId, signal?: AbortSignal): Promise<string | undefined>',
+        description: 'Observe one owned log revision without repairing or buffering its full body.',
+        parameters: [{ name: 'authority', description: 'Current issued owner authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'signal', description: 'Cancellation before and after the provider observation.' }],
+        returns: 'Provider-qualified revision, absent for a lazy unmaterialized log.',
+      },
+      {
+        signature: 'async executionHeaders(authority: RequestAuthority, workspaceId: WorkspaceId, signal?: AbortSignal): Promise<SessionHeader[]>',
+        description: 'List private headers inside one fixed worker mount, including only current owners.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'workspaceId', description: 'The operator-assigned workspace.' }, { name: 'signal', description: 'Optional cancellation for metadata observation and ownership checks.' }],
+        returns: 'Metadata only; no conversation bodies or other owner rows.',
+      },
+      {
+        signature: 'async executionSnapshots(authority: RequestAuthority, workspaceId: WorkspaceId, signal?: AbortSignal): Promise<SessionPersistenceSnapshot[]>',
+        description: 'Pair owned execution headers with revisions from one authoritative provider scan. The index supplies membership candidates; each owner and materialized source is checked independently before any metadata is returned to the worker.',
+        parameters: [{ name: 'authority', description: 'Current sealed USER authority.' }, { name: 'workspaceId', description: 'Operator-assigned workspace bound to the requesting lease.' }, { name: 'signal', description: 'Optional cancellation throughout metadata and ownership observation.' }],
+        returns: 'Original owned headers and actual source-qualified revisions.',
+      },
+      {
+        signature: 'async list(authority: RequestAuthority, resource: Exclude<OwnerResource, { kind: \'session\' }>, cursor?: string): Promise<HistoryPage>',
+        description: 'List owned session headers without loading any conversation body.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'resource', description: 'Owned project or workspace.' }, { name: 'cursor', description: 'Last returned opaque session id.' }],
+        returns: 'A bounded page with an optional continuation.',
+      },
+      {
+        signature: 'async read(authority: RequestAuthority, id: SessionId, cursor?: string, signal?: AbortSignal): Promise<HistoryArtifactPage>',
+        description: 'Read the provider\'s bounded original JSONL page under a source revision. Pages retain complete UTF-8 characters and never use full-log readRaw. Current session and ancestor ownership is checked again after physical I/O.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'cursor', description: 'Opaque revision-bound continuation from the prior page.' }, { name: 'signal', description: 'Optional carrier cancellation for physical read/decode work.' }],
+        returns: 'Unmodified decoded bytes plus the durable cursor.',
+      },
+    ],
+  },
+  {
     key: 'repository',
     summary: 'Read-only host Git operations; errors contain stable codes, never raw Git diagnostics or URLs.',
     description: 'Read-only host Git operations; errors contain stable codes, never raw Git diagnostics or URLs.',
@@ -1434,6 +1708,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         throws: ['when this backend does not expose per-session raw artifacts.'],
       },
       {
+        signature: 'readonly supportsRawArtifactPages: boolean = false',
+        description: 'Whether raw pages use bounded retained plaintext rather than a full-log buffer. The default deliberately declares no range capability.',
+        parameters: [],
+      },
+      {
+        signature: 'readRawPage(_id: SessionId, _request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage | undefined>',
+        description: 'Read an independently revision-bound UTF-8 page without falling back to readRaw. A checksummed backend may decode a whole containing frame while retaining only the requested page. Unknown providers reject.',
+        parameters: [{ name: '_id', description: 'Persisted session identity.' }, { name: '_request', description: 'Decoded byte range and optional continuation revision.' }, { name: 'signal', description: 'Optional cancellation.' }],
+        returns: 'A bounded artifact page or undefined for an absent artifact.',
+        throws: ['For unsupported range reads, invalid offsets or a changed revision.'],
+      },
+      {
         signature: 'abstract create(meta: SessionHeader): Promise<void>',
         description: 'Register a new session\'s metadata. A backend MAY defer the physical write until the first append (lazy materialization), in which case a created-but-never-appended session is absent from list — abandoned sessions leave nothing behind.',
         parameters: [{ name: 'meta', description: 'the immutable header (id, version, cwd, lineage) to record.' }],
@@ -1478,6 +1764,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'List materialized sessions with cheap per-log change tokens.\n\nRepeated observations of an unchanged log return the same revision. A successful mutating load repair changes the next listed revision. Revisions also distinguish independently backed stores so backend-local counters cannot compare equal across different persistence sources.',
         parameters: [{ name: 'signal', description: 'optional cancellation for backend snapshot-listing work.' }],
         returns: 'one header and opaque revision per materialized session without loading full logs.',
+      },
+      {
+        signature: 'async readRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined>',
+        description: 'Observe one materialized log\'s source-qualified revision without mutation. Providers with direct identity lookup override this metadata-list fallback. An unchanged source keeps its revision; an absent lazy log returns undefined.',
+        parameters: [{ name: 'id', description: 'Persisted session identity, independent of any index projection.' }, { name: 'signal', description: 'Optional cancellation for the provider\'s observation.' }],
+        returns: 'The provider\'s current revision, or undefined for an absent log.',
       },
     ],
   },
@@ -2473,6 +2765,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the validated business result.',
         throws: ['{@link TypertGatewayError} for dispatch, provider, or boundary failures; lookup-policy and business errors retain identity.'],
       },
+      {
+        signature: 'async dispatchRpc( endpoint: string, payload: unknown, signal: AbortSignal, ): Promise<ConnectionRpcResult>',
+        description: 'Dispatch a canonical named-argument envelope with the existing RPC error mapping. Network callers must authenticate and authorize owner-scoped arguments before invoking this worker-local boundary; this method creates no transport route.',
+        parameters: [{ name: 'endpoint', description: 'Canonical namespace/method admitted by the trusted caller.' }, { name: 'payload', description: 'Exact named argument envelope validated by Typert codecs.' }, { name: 'signal', description: 'The caller\'s operation cancellation.' }],
+        returns: 'The existing Connection RPC result.',
+      },
     ],
   },
   {
@@ -2581,10 +2879,215 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'webIdentity',
+    summary: 'Site identity, grants and opaque ownership; this service exposes no project content.',
+    description: 'Site identity, grants and opaque ownership; this service exposes no project content.',
+    methods: [
+      {
+        signature: 'abstract readonly authorityHead: AuthorityHead',
+        description: 'Current FULL projection head, checked against the external authority journal.',
+        parameters: [],
+      },
+      {
+        signature: 'abstract login(identifier: string, password: string, audience: AuthAudience, signal?: AbortSignal): Promise<LoginResult>',
+        description: 'Verify username or email and establish an audience-bound session.',
+        parameters: [{ name: 'identifier', description: 'Username or registered email.' }, { name: 'password', description: 'Submitted password, never logged.' }, { name: 'audience', description: 'Deployment audience of the new session.' }, { name: 'signal', description: 'Cancels hashing or queued admission.' }],
+        returns: 'Host-only token and detached public session state.',
+      },
+      {
+        signature: 'abstract authenticate(token: string, audience: AuthAudience): Promise<RequestAuthority>',
+        description: 'Verify the token against current session, account and deployment audience.',
+        parameters: [{ name: 'token', description: 'Opaque cookie or explicitly enabled bearer token.' }, { name: 'audience', description: 'Deployment audience required by the carrier.' }],
+        returns: 'Sealed immutable authority issued by this provider.',
+      },
+      {
+        signature: 'abstract revalidate(authority: RequestAuthority, options?: { readonly activity?: boolean }): Promise<RequestAuthority>',
+        description: 'Refuse stale, expired, revoked or copied authority; explicitly admitted activity may renew only the idle deadline.',
+        parameters: [{ name: 'authority', description: 'Previously issued authority.' }, { name: 'options', description: 'Activity admitted by the authenticated carrier after its request fences; passive checks omit it.' }],
+        returns: 'The same issued authority when still current, after durable activity publication when requested.',
+      },
+      {
+        signature: 'abstract state(authority: RequestAuthority): Promise<Extract<AuthState, { authenticated: true }>>',
+        description: 'Read public session state for a current issued authority.',
+        parameters: [{ name: 'authority', description: 'Issued authority to revalidate.' }],
+        returns: 'Authenticated state including CSRF verifier and generation.',
+      },
+      {
+        signature: 'abstract logout(authority: RequestAuthority): Promise<void>',
+        description: 'Commit session revocation and await execution quiescence outside the writer queue.',
+        parameters: [{ name: 'authority', description: 'Issued authority being revoked.' }],
+      },
+      {
+        signature: 'abstract changePassword( authority: RequestAuthority, currentPassword: string, newPassword: string, signal?: AbortSignal, ): Promise<LoginResult>',
+        description: 'Replace credentials, revoke earlier sessions and await quiescence before returning a replacement token.',
+        parameters: [{ name: 'authority', description: 'Issued account authority.' }, { name: 'currentPassword', description: 'Current password to verify.' }, { name: 'newPassword', description: 'Replacement satisfying the native password policy.' }, { name: 'signal', description: 'Cancels hashing or queued admission.' }],
+        returns: 'Replacement token and current public session state after the barrier.',
+      },
+      {
+        signature: 'abstract forgotPassword(identifier: string): Promise<void>',
+        description: 'Queue recovery only to the account registered recipient while preserving generic public responses.',
+        parameters: [{ name: 'identifier', description: 'Username or registered email.' }],
+      },
+      {
+        signature: 'abstract resetPassword(token: string, newPassword: string, signal?: AbortSignal): Promise<void>',
+        description: 'Consume a valid single-use reset without releasing or granting a blocked account.',
+        parameters: [{ name: 'token', description: 'Purpose-bound reset token.' }, { name: 'newPassword', description: 'Recipient-selected replacement password.' }, { name: 'signal', description: 'Cancels hashing or queued consumption.' }],
+      },
+      {
+        signature: 'abstract acceptInvitation(token: string, newPassword: string, signal?: AbortSignal): Promise<void>',
+        description: 'Establish the recipient password independently of administrative account release.',
+        parameters: [{ name: 'token', description: 'Single-use invitation token.' }, { name: 'newPassword', description: 'Recipient-selected password.' }, { name: 'signal', description: 'Cancels hashing or queued consumption.' }],
+      },
+      {
+        signature: 'abstract createUser(authority: RequestAuthority, input: { username: string email: string }): Promise<AdminUserSummary>',
+        description: 'Create a pending USER and private invitation under current MASTER authority.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority after its first password change.' }, { name: 'input', description: 'Username and registered invitation email.' }],
+        returns: 'Detached administrative summary.',
+      },
+      {
+        signature: 'abstract listUsers(authority: RequestAuthority, options?: PageOptions): Promise<AdminUserList>',
+        description: 'Page administrative metadata without project content.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }, { name: 'options', description: 'Continuation and page bound.' }],
+        returns: 'Administrative page and optional continuation.',
+      },
+      {
+        signature: 'abstract setStatus(authority: RequestAuthority, userId: WebUserId, status: \'ACTIVE\' | \'BLOCKED\' | \'DELETED\'): Promise<AdminUserSummary>',
+        description: 'Release, block or delete a USER and await committed revocation quiescence.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }, { name: 'userId', description: 'Existing USER account.' }, { name: 'status', description: 'Requested release, block or terminal deletion.' }],
+        returns: 'Summary of the committed account state.',
+      },
+      {
+        signature: 'abstract setModules(authority: RequestAuthority, userId: WebUserId, grants: readonly string[]): Promise<AdminUserSummary>',
+        description: 'Replace installed module grants and await execution quiescence.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }, { name: 'userId', description: 'Existing USER account.' }, { name: 'grants', description: 'IDs from the operator-installed catalog.' }],
+        returns: 'Summary of the committed grants.',
+      },
+      {
+        signature: 'abstract resendInvitation(authority: RequestAuthority, userId: WebUserId): Promise<void>',
+        description: 'Replace an unused invitation for an account without an established password.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }, { name: 'userId', description: 'Invitation recipient account.' }],
+      },
+      {
+        signature: 'abstract correctInvitationEmail(authority: RequestAuthority, userId: WebUserId, email: string): Promise<AdminUserSummary>',
+        description: 'Correct only an unestablished invitation recipient and invalidate its older links.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }, { name: 'userId', description: 'Account without an established password.' }, { name: 'email', description: 'Corrected registered recipient.' }],
+        returns: 'Committed recipient summary.',
+      },
+      {
+        signature: 'abstract moduleCatalog(authority: RequestAuthority): Promise<ModuleCatalog>',
+        description: 'Read the operator-installed module catalog for administration.',
+        parameters: [{ name: 'authority', description: 'Current MASTER authority.' }],
+        returns: 'Installed module definitions.',
+      },
+      {
+        signature: 'abstract authorizeOwner(authority: RequestAuthority, resource: Exclude<OwnerResource, { kind: \'project\' }>, moduleId?: ModuleId): Promise<OwnerScope>',
+        description: 'Resolve workspace or session ownership with a complete workspace scope; MASTER cannot use this operation.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'resource', description: 'Opaque workspace or session reference.' }, { name: 'moduleId', description: 'Installed grant additionally required by the caller.' }],
+        returns: 'Current USER, project and workspace ownership with nondeleted ancestors.',
+      },
+      {
+        signature: 'abstract authorizeOwner(authority: RequestAuthority, resource: OwnerResource, moduleId?: ModuleId): Promise<OwnedResource>',
+        description: 'Resolve exact ownership, current revision and nondeleted ancestors; MASTER cannot use this operation.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'resource', description: 'Opaque project, workspace or session reference.' }, { name: 'moduleId', description: 'Installed grant additionally required by the caller.' }],
+        returns: 'Current USER/project ownership and workspace when applicable.',
+      },
+      {
+        signature: 'abstract createProject(authority: RequestAuthority): Promise<ProjectId>',
+        description: 'Allocate a project owned only by the current USER.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }],
+        returns: 'New opaque project ID.',
+      },
+      {
+        signature: 'abstract createWorkspace(authority: RequestAuthority, projectId: ProjectId): Promise<OwnerScope>',
+        description: 'Allocate a workspace under an existing project of the current USER.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'projectId', description: 'Owned, nondeleted project.' }],
+        returns: 'Complete owner scope for the new workspace.',
+      },
+      {
+        signature: 'abstract registerSession(authority: RequestAuthority, scope: OwnerScope, sessionId: SessionId, signal?: AbortSignal): Promise<void>',
+        description: 'Journal session ownership before any content is materialized.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'scope', description: 'Exact current owned workspace scope.' }, { name: 'sessionId', description: 'Existing-format session ID being registered.' }, { name: 'signal', description: 'Caller deadline; cancellation prevents a new append. An append already started completes its durable projection.' }],
+        returns: 'Completion of the journal and SQLite ownership projection.',
+      },
+      {
+        signature: 'abstract deleteSession(authority: RequestAuthority, sessionId: SessionId): Promise<void>',
+        description: 'Commit a session tombstone and await ownership quiescence without changing the auth generation.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'sessionId', description: 'Owned session to tombstone.' }],
+      },
+      {
+        signature: 'abstract deleteWorkspace(authority: RequestAuthority, workspaceId: WorkspaceId): Promise<void>',
+        description: 'Commit a workspace tombstone, deny descendants and await ownership quiescence.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'workspaceId', description: 'Owned workspace to tombstone.' }],
+      },
+      {
+        signature: 'abstract deleteProject(authority: RequestAuthority, projectId: ProjectId): Promise<void>',
+        description: 'Commit a project tombstone, deny descendants and await ownership quiescence.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'projectId', description: 'Owned project to tombstone.' }],
+      },
+      {
+        signature: 'abstract listOwnedProjects(authority: RequestAuthority, options?: PageOptions): Promise<{ projectIds: readonly ProjectId[] nextCursor?: string }>',
+        description: 'Page only current USER project IDs.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'options', description: 'Continuation and page bound.' }],
+        returns: 'Owned project IDs and optional continuation.',
+      },
+      {
+        signature: 'abstract registerDelivery(provider: IdentityDeliveryProvider): () => void',
+        description: 'Install the single outbound provider as a scoped registration.',
+        parameters: [{ name: 'provider', description: 'Explicit private delivery transport.' }],
+        returns: 'Disposer that removes the same registration.',
+      },
+      {
+        signature: 'abstract flushOutbox(signal?: AbortSignal): Promise<void>',
+        description: 'Attempt pending nonexpired mail without reviving cancelled ciphertext.',
+        parameters: [{ name: 'signal', description: 'Cancels active delivery or the remaining batch.' }],
+      },
+      {
+        signature: 'abstract assertCsrf(authority: RequestAuthority, token: string): Promise<void>',
+        description: 'Verify the session-bound browser CSRF token after current-authority revalidation.',
+        parameters: [{ name: 'authority', description: 'Current issued cookie authority.' }, { name: 'token', description: 'Submitted CSRF verifier.' }],
+      },
+      {
+        signature: 'abstract restoreFence(): Promise<void>',
+        description: 'Operator restore barrier that invalidates historical sessions and links, then awaits quiescence.',
+        parameters: [],
+      },
+      {
+        signature: 'abstract bootstrapMaster(password: string): Promise<void>',
+        description: 'Operator-only idempotent bootstrap with mandatory first password change; never an HTTP/RPC tool or literal config secret.',
+        parameters: [{ name: 'password', description: 'Protected operator-supplied temporary password.' }],
+      },
+    ],
+  },
+  {
+    key: 'webIdentityApi',
+    summary: 'Shared audience, Host/Origin and CSRF request admission used by every authenticated carrier.',
+    description: 'Shared audience, Host/Origin and CSRF request admission used by every authenticated carrier.',
+    methods: [
+      {
+        signature: 'authenticateRequest(request: Request | IncomingMessage, options?: { readonly mutating?: boolean }): Promise<RequestAuthority>',
+        description: 'Authenticate an incoming carrier through the fixed deployment audience, Host/Origin and cookie/bearer policy.',
+        parameters: [{ name: 'request', description: 'Web Request or original Node request whose authority and headers are checked.' }, { name: 'options', description: 'Require session-bound browser CSRF when the carrier performs a mutation.' }],
+        returns: 'Current immutable authority issued and revalidated by the native identity provider.',
+      },
+    ],
+  },
+  {
     key: 'webServer',
     summary: 'The browser HTTP carrier service.',
     description: 'The browser HTTP carrier service. Activation listens immediately. Route registration order does not affect requests because configured named routes must be distinct, and the fallback handler answers anything not yet claimed during startup with 404 until its owner registers. A listen failure rejects initialization, and the boot process reports the failed fiber.',
     methods: [
+      {
+        signature: 'registerRequestIndexRenderer(render: RequestIndexRenderer): () => void',
+        description: 'Claim the native request-renderer seat, with one owner and no global taps.',
+        parameters: [{ name: 'render', description: 'Async renderer which authenticates and projects this request.' }],
+        returns: 'Disposer which releases only this registration.',
+      },
+      {
+        signature: 'async renderRequestIndex(html: string, request: IncomingMessage): Promise<string>',
+        description: 'Render the request through its operator-selected local or native composition.',
+        parameters: [{ name: 'html', description: 'Raw built shell, before global index listeners or taps run.' }, { name: 'request', description: 'Original request carrying the serving authority and cookies.' }],
+        returns: 'Principal-bound native HTML or the existing local index rendering.',
+      },
       {
         signature: 'register(route: WebRoute): () => void',
         description: 'Register a named route. Duplicate (kind, path) throws — route patterns are a composition-level contract, so a collision is a misconfiguration.',
@@ -3120,6 +3623,38 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'exec', description: 'the execution object that traversed the pipeline.' }, { name: 'result', description: 'a deep-frozen snapshot of the final returned result.' }],
   },
   {
+    name: 'web-identity/invalidated',
+    mode: 'parallel',
+    signature: '\'web-identity/invalidated\'(userId: WebUserId, reason: AuthInvalidationReason, revision: number): void | Promise<void>',
+    summary: 'Authentication invalidation after durable projection.',
+    description: 'Authentication invalidation after durable projection. Listeners run outside the writer queue and finish quiescence before mutation ACK.',
+    parameters: [{ name: 'userId', description: 'Affected account.' }, { name: 'reason', description: 'Invalidation category.' }, { name: 'revision', description: 'Committed authority revision.' }],
+  },
+  {
+    name: 'web-identity/ownership-deleted',
+    mode: 'parallel',
+    signature: '\'web-identity/ownership-deleted\'(userId: WebUserId, resource: OwnerResource): void | Promise<void>',
+    summary: 'Ownership tombstone after durable projection.',
+    description: 'Ownership tombstone after durable projection. Awaited listeners quiesce deleted resources without revoking the valid cookie or auth revision.',
+    parameters: [{ name: 'userId', description: 'Affected USER owner.' }, { name: 'resource', description: 'Tombstoned resource and its denied descendants.' }],
+  },
+  {
+    name: 'web-identity/projected',
+    mode: 'emit',
+    signature: '\'web-identity/projected\'(head: AuthorityHead): void',
+    summary: 'Committed journal and FULL projection watermark for derived observers.',
+    description: 'Committed journal and FULL projection watermark for derived observers.',
+    parameters: [{ name: 'head', description: 'Current durable authority head.' }],
+  },
+  {
+    name: 'web-identity/session-expired',
+    mode: 'parallel',
+    signature: '\'web-identity/session-expired\'(userId: WebUserId, authSessionId: WebAuthSessionId): void | Promise<void>',
+    summary: 'One expired authentication session after journal and FULL projection.',
+    description: 'One expired authentication session after journal and FULL projection. Awaited listeners finish session-scoped quiescence outside the writer queue.',
+    parameters: [{ name: 'userId', description: 'Affected account.' }, { name: 'authSessionId', description: 'Expired authentication session; other sessions retain authority.' }],
+  },
+  {
     name: 'web/providers-updated',
     mode: 'emit',
     signature: '\'web/providers-updated\'(): void',
@@ -3190,6 +3725,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'AdapterRegistrationHandle',
     declaration: 'export interface AdapterRegistrationHandle {\n    (): void;\n    replace(providers: string[]): void;\n}',
+  },
+  {
+    name: 'AdminUserList',
+    declaration: 'export interface AdminUserList {\n    readonly users: readonly AdminUserSummary[];\n    readonly nextCursor?: string;\n}',
+  },
+  {
+    name: 'AdminUserSummary',
+    declaration: 'export interface AdminUserSummary extends WebPrincipal {\n    readonly passwordEstablished: boolean;\n}',
   },
   {
     name: 'Agent',
@@ -3316,6 +3859,26 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface AttachWorkflowStepSessionRequest {\n    readonly runId: ProjectWorkflowRunId;\n    readonly stepId: ProjectWorkflowStepId;\n    readonly sessionId: SessionId;\n}',
   },
   {
+    name: 'AuthAudience',
+    declaration: 'export type AuthAudience = \'user\' | \'admin\';',
+  },
+  {
+    name: 'AuthInvalidationReason',
+    declaration: 'export type AuthInvalidationReason = \'logout\' | \'credentials-changed\' | \'status-changed\' | \'grants-changed\' | \'restore\' | \'expired\' | \'disposed\';',
+  },
+  {
+    name: 'AuthorityEvent',
+    declaration: 'export interface AuthorityEvent {\n    readonly operationId: string;\n    readonly kind: \'user\' | \'session\' | \'token\' | \'owner\' | \'restore\' | \'outbox\';\n    readonly payload: {\n        readonly [key: string]: JsonValue;\n    };\n}',
+  },
+  {
+    name: 'AuthorityHead',
+    declaration: 'export interface AuthorityHead {\n    readonly sequence: number;\n    readonly hash: string;\n}',
+  },
+  {
+    name: 'AuthorityRecord',
+    declaration: 'export interface AuthorityRecord extends AuthorityEvent, AuthorityHead {\n    readonly recordedAt: number;\n    readonly previousHash: string;\n}',
+  },
+  {
     name: 'AuthorizationEntry',
     declaration: 'export interface AuthorizationEntry {\n    key: CredentialKey;\n    label: string;\n    methods: readonly AuthorizationMethod[];\n    inFlight: boolean;\n}',
   },
@@ -3364,6 +3927,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type AuthorizationStatus = \'authorized\' | \'cancelled\';',
   },
   {
+    name: 'AuthState',
+    declaration: 'export type AuthState = {\n    readonly authenticated: false;\n    readonly audience: AuthAudience;\n} | {\n    readonly audience: AuthAudience;\n    readonly authenticated: true;\n    readonly principal: WebPrincipal;\n    readonly csrfToken: string;\n    readonly expiresAt: number;\n    readonly generation: number;\n};',
+  },
+  {
     name: 'BackendRegistry',
     declaration: 'export class BackendRegistry {\n    register(name: string, backend: StorageBackend): () => void;\n    get(name: string): StorageBackend;\n    names(): string[];\n}',
   },
@@ -3390,6 +3957,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ClaimWorkflowStepResult',
     declaration: 'export interface ClaimWorkflowStepResult {\n    readonly project: ProjectRecord;\n    readonly step?: ProjectWorkflowStepRun;\n}',
+  },
+  {
+    name: 'ClientRequest',
+    declaration: 'export interface ClientRequest {\n    type: \'client-request\';\n    rpcId: RpcId;\n    method: string;\n    payload: unknown;\n}',
   },
   {
     name: 'ClientResponse',
@@ -3565,7 +4136,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'CreateAgentOptions',
-    declaration: 'export interface CreateAgentOptions {\n    readonly sessionId: SessionId;\n    readonly meta?: {\n        readonly cwd?: string;\n        readonly parentSession?: SessionId;\n        readonly seedLength?: number;\n        readonly origin?: \'subagent\';\n        readonly delegationDepth?: number;\n        readonly agentPreset?: string;\n    };\n    readonly seed?: readonly SessionEvent[];\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
+    declaration: 'export interface CreateAgentOptions {\n    readonly sessionId: SessionId;\n    readonly meta?: {\n        readonly cwd?: string;\n        readonly createdAt?: number;\n        readonly parentSession?: SessionId;\n        readonly seedLength?: number;\n        readonly origin?: \'subagent\';\n        readonly delegationDepth?: number;\n        readonly agentPreset?: string;\n    };\n    readonly seed?: readonly SessionEvent[];\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
   },
   {
     name: 'CreateGoalRequest',
@@ -3880,6 +4451,34 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface GrantRecord {\n    readonly kind: \'grant\';\n    readonly payload: unknown;\n}',
   },
   {
+    name: 'HistoryArtifactPage',
+    declaration: 'export interface HistoryArtifactPage {\n    readonly sessionId: SessionId;\n    readonly nextSeq: number;\n    readonly content: string;\n    readonly nextCursor?: string;\n}',
+  },
+  {
+    name: 'HistoryCommit',
+    declaration: 'export interface HistoryCommit {\n    readonly sessionId: SessionId;\n    readonly nextSeq: number;\n}',
+  },
+  {
+    name: 'HistoryPage',
+    declaration: 'export interface HistoryPage {\n    readonly sessions: readonly StoredSessionSummary[];\n    readonly nextCursor?: string;\n}',
+  },
+  {
+    name: 'HostFrame',
+    declaration: 'export type HostFrame = {\n    type: \'host/session-added\';\n    sessionId: SessionId;\n    blank: boolean;\n    parentSessionId?: SessionId;\n    origin?: \'subagent\';\n    cwd?: string;\n    agentPreset?: string;\n} | {\n    type: \'host/session-removed\';\n    sessionId: SessionId;\n} | {\n    type: \'host/session-status\';\n    sessionId: SessionId;\n    running: boolean;\n} | {\n    type: \'host/agent-error\';\n    sessionId: SessionId;\n    message: string;\n} | {\n    type: \'host/workspace-changed\';\n    workspace: WorkspaceView;\n} | {\n    type: \'host/workspace-removed\';\n    workspaceId: WorkspaceView[\'workspaceId\'];\n} | {\n    type: \'host/workspace-order-changed\';\n    workspaceIds: WorkspaceView[\'workspaceId\'][];\n} | {\n    type: \'host/archived-sessions-changed\';\n    archivedSessionIds: SessionId[];\n} | {\n    type: \'host/remote-event\';\n    event: string;\n    args: JsonValue[];\n} | {\n    type: \'stream/error\';\n    error: RpcError;\n};',
+  },
+  {
+    name: 'IdentityDelivery',
+    declaration: 'export interface IdentityDelivery {\n    readonly operationId: string;\n    readonly to: string;\n    readonly purpose: \'invitation\' | \'reset\';\n    readonly link: string;\n    readonly expiresAt: number;\n}',
+  },
+  {
+    name: 'IdentityDeliveryProvider',
+    declaration: 'export interface IdentityDeliveryProvider {\n    send(delivery: IdentityDelivery, signal: AbortSignal): Promise<IdentityDeliveryResult>;\n}',
+  },
+  {
+    name: 'IdentityDeliveryResult',
+    declaration: 'export interface IdentityDeliveryResult {\n    readonly providerId: string;\n}',
+  },
+  {
     name: 'ImageAttachmentLimits',
     declaration: 'export interface ImageAttachmentLimits {\n    maxImageBytes: number;\n    maxImagesPerMessage: number;\n    maxMessageImageBytes: number;\n    maxImagePixels: number;\n    maxImageDimension: number;\n    mediaTypes: readonly ImageMediaType[];\n}',
   },
@@ -3996,6 +4595,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type JobStatus = \'running\' | \'stopping\' | \'completed\' | \'killed\' | \'failed\';',
   },
   {
+    name: 'JobView',
+    declaration: 'export interface JobView {\n    id: JobId;\n    kind: string;\n    label: string;\n    status: \'running\' | \'stopping\' | \'completed\' | \'killed\' | \'failed\';\n    detail?: string;\n    startedAt: number;\n    finishedAt?: number;\n}',
+  },
+  {
     name: 'JsonSchemaNode',
     declaration: 'export interface JsonSchemaNode {\n    type?: JsonSchemaType;\n    oneOf?: JsonSchemaNode[];\n    properties?: Record<string, JsonSchemaNode>;\n    required?: string[];\n    additionalProperties?: boolean;\n    items?: JsonSchemaNode;\n    enum?: JsonSchemaScalar[];\n    const?: JsonSchemaScalar;\n    description?: string;\n    title?: string;\n    default?: JsonValue;\n    examples?: JsonValue;\n}',
   },
@@ -4006,10 +4609,6 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'JsonSchemaType',
     declaration: 'export type JsonSchemaType = \'object\' | \'array\' | \'string\' | \'number\' | \'integer\' | \'boolean\' | \'null\';',
-  },
-  {
-    name: 'JsonValue',
-    declaration: 'export type JsonValue = null | boolean | number | string | JsonValue[] | {\n    [key: string]: JsonValue;\n};',
   },
   {
     name: 'KnobState',
@@ -4086,6 +4685,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'LlmRuntime',
     declaration: 'export class LlmRuntime extends Service {\n    constructor(ctx: Context);\n    registerAdapter(providers: string[], adapter: LlmAdapter): AdapterRegistrationHandle;\n    listProviders(): LlmProviderInfo[];\n    registerConfigurableProviders(entries: readonly LlmConfigurableProvider[]): DirectoryRegistrationHandle;\n    listConfigurableProviders(): LlmConfigurableProvider[];\n    registerModelDiscovery(settingsNs: string, discover: (request: LlmModelDiscoveryRequest) => Promise<readonly LlmDiscoveredModel[]>): () => void;\n    async discoverModels(settingsNs: string, request: LlmModelDiscoveryRequest): Promise<LlmDiscoveredModel[]>;\n    providerRetryPolicy(provider: string): ResolvedRetryPolicy;\n    async listModels(provider: string): Promise<LlmModelInfo[]>;\n    async resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<LlmResolvedModelInfo>;\n    async resolveCallConfig(config: LlmCallConfig, signal?: AbortSignal): Promise<LlmCallConfig>;\n    async prepareCall(config: LlmCallConfig, signal?: AbortSignal): Promise<PreparedLlmCall>;\n    stream(options: GenerateOptions): AsyncIterable<StreamChunk>;\n}',
+  },
+  {
+    name: 'LoginResult',
+    declaration: 'export interface LoginResult {\n    readonly token: string;\n    readonly state: Extract<AuthState, {\n        authenticated: true;\n    }>;\n}',
   },
   {
     name: 'LspHover',
@@ -4236,6 +4839,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ModelModalityMap {\n    text: \'text\';\n    image: \'image\';\n}',
   },
   {
+    name: 'ModuleCatalog',
+    declaration: 'export interface ModuleCatalog {\n    readonly modules: readonly WebModule[];\n}',
+  },
+  {
+    name: 'ModuleId',
+    declaration: 'export type ModuleId = Branded<\'WebModuleId\'>;',
+  },
+  {
+    name: 'MuxFrame',
+    declaration: 'export type MuxFrame = {\n    type: \'session/event\';\n    sessionId: SessionId;\n    event: SessionEvent;\n    view?: ToolEventView;\n} | {\n    type: \'session/subscribed\';\n    sessionId: SessionId;\n    lastSeq: number;\n} | {\n    type: \'approval/requested\';\n    sessionId: SessionId;\n    approvalId: ApprovalRequestId;\n    toolName: string;\n    callId?: CallId;\n    reason?: string;\n} | {\n    type: \'approval/resolved\';\n    sessionId: SessionId;\n    approvalId: ApprovalRequestId;\n    outcome: ApprovalOutcome;\n} | {\n    type: \'question/requested\';\n    sessionId: SessionId;\n    questions: AskUserQuestionItem[];\n} | {\n    type: \'question/resolved\';\n    sessionId: SessionId;\n    questionRpcId: RpcId;\n    outcome: \'answered\' | \'cancelled\';\n} | {\n    type: \'session/queue\';\n    sessionId: SessionId;\n    items: QueuedInboxItem[];\n} | {\n    type: \'session/jobs\';\n    sessionId: SessionId;\n    jobs: JobView[];\n} | {\n    type: \'session/projection\';\n    sessionId: SessionId;\n    key: string;\n    value: unknown;\n    seq: number;\n} | {\n    type: \'stream/error\';\n    error: RpcError;\n};',
+  },
+  {
     name: 'NativeAccountAttempt',
     declaration: 'export interface NativeAccountAttempt {\n    id: NativeAccountAttemptId;\n    provider: NativeAccountProvider;\n    state: \'starting\' | \'waiting\' | \'connected\' | \'cancelled\' | \'expired\' | \'failed\';\n    expiresAt: number;\n    pollAfterMs: number;\n    url?: string;\n    code?: string;\n    message?: string;\n    input?: NativeLoginInput;\n    rejected?: boolean;\n}',
   },
@@ -4270,6 +4885,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'OneShotSubagentDescriptorData',
     declaration: 'export interface OneShotSubagentDescriptorData extends SubagentDescriptorBase {\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n}',
+  },
+  {
+    name: 'OwnedResource',
+    declaration: 'export interface OwnedResource {\n    readonly userId: WebUserId;\n    readonly projectId: ProjectId;\n    readonly workspaceId?: WorkspaceId;\n}',
+  },
+  {
+    name: 'OwnerResource',
+    declaration: 'export type OwnerResource = {\n    readonly kind: \'project\';\n    readonly projectId: ProjectId;\n} | {\n    readonly kind: \'workspace\';\n    readonly workspaceId: WorkspaceId;\n} | {\n    readonly kind: \'session\';\n    readonly sessionId: SessionId;\n};',
+  },
+  {
+    name: 'OwnerScope',
+    declaration: 'export interface OwnerScope extends OwnedResource {\n    readonly workspaceId: WorkspaceId;\n}',
+  },
+  {
+    name: 'PageOptions',
+    declaration: 'export interface PageOptions {\n    readonly cursor?: string;\n    readonly limit?: number;\n}',
   },
   {
     name: 'PermissionSelect',
@@ -4322,10 +4953,6 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ProjectBudget',
     declaration: 'export interface ProjectBudget {\n    readonly maxActiveRuns: number;\n    readonly maxStepsPerRun: number;\n    readonly maxRunDurationMs: number;\n}',
-  },
-  {
-    name: 'ProjectId',
-    declaration: 'export type ProjectId = Branded<\'ProjectId\'>;',
   },
   {
     name: 'ProjectionChangeListener',
@@ -4420,8 +5047,8 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ProjectRunExecution {\n    readonly projectId: ProjectId;\n    readonly version: number;\n    readonly run: ProjectWorkflowRun;\n}',
   },
   {
-    name: 'ProjectSummary',
-    declaration: 'export interface ProjectSummary {\n    readonly id: ProjectId;\n    readonly version: number;\n    readonly workspaceId: WorkspaceId;\n    readonly name: string;\n    readonly approvedPlanRevision?: number;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}',
+    name: 'ProjectsPage',
+    declaration: 'export interface ProjectsPage {\n    readonly projects: readonly ProjectSummary[];\n    readonly nextCursor?: string;\n}',
   },
   {
     name: 'ProjectTask',
@@ -4516,6 +5143,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface PruneResult {\n    readonly pruned: readonly PrunedEntry[];\n    readonly charsRemoved: number;\n}',
   },
   {
+    name: 'QueuedInboxItem',
+    declaration: 'export interface QueuedInboxItem {\n    id: MessageId;\n    placement: \'queued\' | \'steering\' | \'context\';\n    message: Message;\n}',
+  },
+  {
     name: 'ReadFileLine',
     declaration: 'export interface ReadFileLine {\n    number: number;\n    text: string;\n}',
   },
@@ -4572,6 +5203,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface RepositoryStatus {\n    staged: RepositoryEntry[];\n    unstaged: RepositoryEntry[];\n    untracked: RepositoryEntry[];\n    unmerged: RepositoryEntry[];\n}',
   },
   {
+    name: 'RequestAuthority',
+    declaration: 'export interface RequestAuthority {\n    readonly principal: WebPrincipal;\n    readonly authSessionId: WebAuthSessionId;\n    readonly audience: AuthAudience;\n    readonly revision: number;\n}',
+  },
+  {
     name: 'RequestContext',
     declaration: 'export interface RequestContext {\n    provider: string;\n    model: string;\n    contextWindow?: number;\n}',
   },
@@ -4586,6 +5221,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'RequestImageAttachment',
     declaration: 'export interface RequestImageAttachment {\n    variantId: ImageVariantId;\n    attachment: ImageAttachmentRef;\n    data: Uint8Array;\n    mediaType: ImageMediaType;\n    bytes: number;\n    width: number;\n    height: number;\n    depth: \'uchar\';\n    space: \'srgb\';\n    hasAlpha: boolean;\n}',
+  },
+  {
+    name: 'RequestIndexRenderer',
+    declaration: 'export type RequestIndexRenderer = (html: string, request: IncomingMessage) => Promise<string>;',
   },
   {
     name: 'RequestRunOutcome',
@@ -4646,6 +5285,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'RpcReceipt',
     declaration: 'export type RpcReceipt = {\n    accepted: true;\n} | {\n    accepted: false;\n    reason: \'not-pending\' | \'bad-response\';\n};',
+  },
+  {
+    name: 'RpcRequest',
+    declaration: 'export interface RpcRequest<P> {\n    rpcId: RpcId;\n    payload: P;\n}',
   },
   {
     name: 'RpcResult',
@@ -4870,6 +5513,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SessionRawArtifact',
     declaration: 'export interface SessionRawArtifact {\n    readonly meta: SessionHeader;\n    readonly filename: string;\n    readonly content: string;\n}',
+  },
+  {
+    name: 'SessionRawArtifactPage',
+    declaration: 'export interface SessionRawArtifactPage {\n    readonly meta: SessionHeader;\n    readonly filename: string;\n    readonly offset: number;\n    readonly content: string;\n    readonly nextOffset?: number;\n    readonly revision: SessionPersistenceRevision;\n}',
+  },
+  {
+    name: 'SessionRawArtifactPageRequest',
+    declaration: 'export interface SessionRawArtifactPageRequest {\n    readonly offset: number;\n    readonly maxBytes: number;\n    readonly revision?: SessionPersistenceRevision;\n}',
   },
   {
     name: 'SessionRecord',
@@ -5138,6 +5789,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'StoredImageAttachment',
     declaration: 'export interface StoredImageAttachment {\n    ref: ImageAttachmentRef;\n    data: Uint8Array;\n}',
+  },
+  {
+    name: 'StoredPrefix',
+    declaration: 'export interface StoredPrefix<TornMarker = unknown> {\n    meta: SessionHeader;\n    events: SessionEvent[];\n    revision: SessionPersistenceRevision;\n    tornMarker?: TornMarker;\n}',
+  },
+  {
+    name: 'StoredSessionSummary',
+    declaration: 'export interface StoredSessionSummary {\n    readonly sessionId: SessionId;\n    readonly projectId: ProjectIdBrand;\n    readonly workspaceId: WorkspaceId;\n    readonly createdAt: number;\n    readonly nextSeq: number;\n    readonly title: string;\n    readonly grouped: boolean;\n}',
   },
   {
     name: 'StreamChunk',
@@ -5452,6 +6111,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ToolErrorInfo {\n    name: string;\n    code: string;\n}',
   },
   {
+    name: 'ToolEventView',
+    declaration: 'export type ToolEventView = {\n    for: \'call\';\n    view: ToolCallView;\n} | {\n    for: \'result\';\n    view: ToolResultView;\n};',
+  },
+  {
     name: 'ToolExecution',
     declaration: 'export interface ToolExecution extends ToolExecutionInput {\n    readonly rootCallId: CallId;\n    readonly token: ToolExecutionToken;\n}',
   },
@@ -5636,8 +6299,16 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface UserQuestionProvider {\n    ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>;\n}',
   },
   {
+    name: 'UserWorkspaceSummary',
+    declaration: 'export interface UserWorkspaceSummary {\n    readonly workspaceId: WorkspaceId;\n    readonly projectId: ProjectIdBrand;\n    readonly name: string;\n    readonly createdAt: number;\n    readonly grouped: boolean;\n}',
+  },
+  {
     name: 'VerifiedWebhookDelivery',
     declaration: 'export interface VerifiedWebhookDelivery<K extends string = string> {\n    readonly kind: K;\n    readonly source: WebhookSourceId;\n    readonly deliveryId: WebhookDeliveryId;\n    readonly event: WebhookEventOf<K>;\n    readonly receivedAt: number;\n}',
+  },
+  {
+    name: 'WebAuthSessionId',
+    declaration: 'export type WebAuthSessionId = Branded<\'WebAuthSessionId\'>;',
   },
   {
     name: 'WebBootEntry',
@@ -5720,6 +6391,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type WebhookSourceId = Branded<\'WebhookSourceId\'>;',
   },
   {
+    name: 'WebModule',
+    declaration: 'export interface WebModule {\n    readonly id: ModuleId;\n    readonly label: string;\n    readonly operations: readonly string[];\n}',
+  },
+  {
+    name: 'WebPrincipal',
+    declaration: 'export interface WebPrincipal {\n    readonly userId: WebUserId;\n    readonly username: string;\n    readonly email: string;\n    readonly role: WebUserRole;\n    readonly status: WebUserStatus;\n    readonly mustChangePassword: boolean;\n    readonly grants: readonly ModuleId[];\n}',
+  },
+  {
     name: 'WebProviderSelection',
     declaration: 'export interface WebProviderSelection {\n    readonly configured: string | undefined;\n    readonly effective: string | undefined;\n    readonly failure?: WebSelectionFailure;\n}',
   },
@@ -5772,6 +6451,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface WebUpgradeRoute {\n    path: string;\n    handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => void | Promise<void>;\n}',
   },
   {
+    name: 'WebUserId',
+    declaration: 'export type WebUserId = Branded<\'WebUserId\'>;',
+  },
+  {
+    name: 'WebUserRole',
+    declaration: 'export type WebUserRole = \'MASTER_ADMIN\' | \'USER\';',
+  },
+  {
+    name: 'WebUserStatus',
+    declaration: 'export type WebUserStatus = \'PENDING\' | \'ACTIVE\' | \'BLOCKED\' | \'DELETED\';',
+  },
+  {
     name: 'WorkflowAgentEndInfo',
     declaration: 'export interface WorkflowAgentEndInfo extends WorkflowAgentInfo {\n    outcome: WorkflowAgentOutcome;\n}',
   },
@@ -5818,6 +6509,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WorkflowStopReason',
     declaration: 'export type WorkflowStopReason = \'completed\' | \'cancelled\' | \'error\';',
+  },
+  {
+    name: 'WorkspacesPage',
+    declaration: 'export interface WorkspacesPage {\n    readonly workspaces: readonly UserWorkspaceSummary[];\n    readonly nextCursor?: string;\n}',
+  },
+  {
+    name: 'WorkspaceView',
+    declaration: 'export interface WorkspaceView {\n    workspaceId: WorkspaceId;\n    path: string;\n    title: string;\n    sessionIds: SessionId[];\n    createdAt: string;\n    updatedAt: string;\n}',
   },
 ]
 

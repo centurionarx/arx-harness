@@ -9,6 +9,7 @@ import { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
 import { bridge, DEFAULT_MAX_REQUEST_BODY_BYTES } from './http-bridge.ts'
 import { assertTrustedAuthority, isTrustedApiRequest } from './api-request-trust.ts'
 import { HostConnectionService } from './rpc-host.ts'
+import { AuthenticatedGateway } from './authenticated-gateway.ts'
 import { rejectWebSocketUpgrade, WebSocketDownlinks } from './websocket-downlink.ts'
 
 export type {
@@ -22,6 +23,8 @@ export type {
 export { HostConnectionService } from './rpc-host.ts'
 
 export { API_PATH, HOST_EVENTS_PATH, MUX_EVENTS_PATH } from './api-path.ts'
+
+export { assertTrustedAuthority, isTrustedApiRequest } from './api-request-trust.ts'
 
 /** Stable Cordis plugin name. */
 export const name = 'client-connection'
@@ -57,12 +60,15 @@ export interface ConnectionConfig {
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
+  /** Native auth routes never dispatch to the shared operator host. */
+  accessMode?: 'local' | 'authenticated'
   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
   maxRequestBodyBytes?: number
 }
 
 export const Config: z<ConnectionConfig> = z.object({
   trustedHosts: z.array(String).default([]),
+  accessMode: z.union([z.const('local'), z.const('authenticated')]).default('local'),
   maxRequestBodyBytes: z.natural().min(1).default(DEFAULT_MAX_REQUEST_BODY_BYTES),
 })
 
@@ -149,7 +155,11 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
   // silently authorizing its hostname prefix at request time.
   for (const entry of trustedHosts) assertTrustedAuthority(entry)
   if (ctx.get('apiProxy') !== undefined) assertImageBodyCapacity(ctx, maxRequestBodyBytes)
-  const connection = new HostConnectionService(ctx, trustedHosts)
+  const authenticated = config?.accessMode === 'authenticated' ? new AuthenticatedGateway(ctx) : undefined
+  const connection = new HostConnectionService(ctx, trustedHosts, authenticated)
+  if (authenticated !== undefined) {
+    ctx.effect(() => () => authenticated.close(), 'client-connection: authenticated gateway')
+  }
   const fetchHandler = connection.createSharedFetchHandler(API_PATH, {
     async fetch(request) {
       const pathname = new URL(request.url).pathname
@@ -181,10 +191,23 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
         res.end('forbidden')
         return
       }
-      await bridge(req, res, fetchHandler, maxRequestBodyBytes)
+      await bridge(req, res, fetchHandler, maxRequestBodyBytes,
+        authenticated === undefined ? undefined : ctx.get('webIdentityApi')?.canonicalOrigin)
     },
   }
   ctx.effect(() => ctx.webServer.register(route), 'client-connection: /api route')
+  if (authenticated !== undefined) {
+    for (const [path, kind] of [[MUX_EVENTS_PATH, 'mux'], [HOST_EVENTS_PATH, 'host']] as const) {
+      ctx.effect(() => ctx.webServer.registerUpgrade({
+        path,
+        handler: (request, socket, head) => {
+          if (!isTrustedApiRequest(request, trustedHosts)) { rejectWebSocketUpgrade(socket); return }
+          return authenticated.upgrade(kind, request, socket, head)
+        },
+      }), `client-connection: ${path} authenticated WebSocket`)
+    }
+    return
+  }
   ctx.inject(['apiProxy'], (apiCtx) => {
     assertImageBodyCapacity(apiCtx, maxRequestBodyBytes)
     const downlinks = new WebSocketDownlinks(apiCtx.apiProxy)

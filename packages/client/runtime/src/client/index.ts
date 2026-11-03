@@ -7,7 +7,7 @@ import type { ConnectionHandle, SessionId } from '@arx-ai/arx-api-remotes/client
 import type {} from '@arx-ai/arx-api-remotes/client'
 import type { TypertContext } from '@arx-ai/arx-typert-protocol'
 import type { MaybeSnapshotSelectorHook, SnapshotSelectorHook } from '@arx-ai/arx-client-ui-slots'
-import { SlotRegistry } from './slots.ts'
+import { SlotRegistry } from '@arx-ai/arx-client-slots/client'
 import { SessionRuntime } from './sessions/service.ts'
 import type { SessionListState } from './sessions/service.ts'
 import { WorkspaceRuntime } from './workspaces/service.ts'
@@ -165,9 +165,15 @@ declare module '@arx-ai/cordis' {
      * @mode emit
      */
     'connection/reset'(): void
+    /**
+     * A model selection entered one session's accepted live window.
+     * Scoped consumers repull host-derived model state for that session.
+     * @mode emit
+     * @param sessionId - the session whose selection changed.
+     */
+    'session/model-selection'(sessionId: SessionId): void
   }
   interface Context {
-    slots: import('./slots.ts').SlotRegistry
     /** Event-to-business-Context Definition registry. */
     conversationEvents: import('./conversation/event-registry.ts').ConversationEventRegistry
     /** Per-target Conversation snapshot builder registry. */
@@ -186,7 +192,12 @@ export const inject = ['connection', 'typert', 'remote', 'remote.commands']
  * @param ctx - Client Cordis context.
  */
 export function apply(ctx: Context): void {
-  ctx.plugin(SlotRegistry)
+  if (ctx.get('slots') === undefined) {
+    // Direct legacy mounts retain the same registry. Native graph admission
+    // requires the neutral provider and never creates a substitute here.
+    if (ctx.get('clientComposition') !== undefined) throw new Error('native runtime requires the slot provider')
+    new SlotRegistry(ctx)
+  }
   const conversation = {
     events: new ConversationEventRegistry(ctx),
     views: new ConversationViewRegistry(ctx),

@@ -7,7 +7,14 @@
     "noEmit": true,
     "rewriteRelativeImportExtensions": false
   },
+  // Pure platform vocabulary shared with Host graph admission tests.
+  "files": [
+    "packages/client/web/src/platform.ts",
+    "examples/web-identity/tests/browser-fixture.contract.ts"
+  ],
   "include": [
+    "examples/owned-project-storage/scenario.ts",
+    "examples/owned-project-storage/benchmark*.ts",
     "apps/web/tests/project-workspace.e2e.ts",
     "apps/web/tests/repository-inspection.e2e.ts",
     "examples/repository-inspection/github-fetch-fixture.ts",
@@ -327,6 +334,14 @@
     { "path": "./packages/lsp/lsp" },
     { "path": "./packages/lsp/lsp-stdio" },
     { "path": "./packages/lsp/tool-lsp" },
-    { "path": "./apps/cli" }
+    { "path": "./apps/cli" },
+    { "path": "./packages/identity/web-identity" },
+    { "path": "./packages/identity/web-identity-sqlite" },
+    { "path": "./packages/identity/identity-authority-journal" },
+    { "path": "./packages/identity/web-identity-resend" },
+    { "path": "./packages/host/web-identity-api" },
+    { "path": "./packages/identity/project-storage" },
+    { "path": "./packages/host/isolated-project-runtime" },
+    { "path": "./packages/client/modules" }
   ]
 }

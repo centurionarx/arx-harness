@@ -8,7 +8,7 @@
 import { Context } from '@arx-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
 import type { FC } from 'react'
-import type { SlotRendererHost } from '@arx-ai/arx-client-ui-slots'
+import type { SlotRendererHost, ProjectSlotRendererHost } from '@arx-ai/arx-client-ui-slots'
 import { SlotRegistry } from '../src/client/slots.ts'
 
 // Test-only slot keys (merged so the typed entries/spec faces accept them).
@@ -79,7 +79,7 @@ function fakeHandle() {
  * same call — 'root' is single, so the one occupant is also the declarer),
  * and pull the host face out through renderSlot('root').
  */
-function captureHost(bench: Bench, children?: object): SlotRendererHost {
+function captureHost(bench: Bench, children?: object): ProjectSlotRendererHost {
   let host: SlotRendererHost | undefined
   bench.erased.install({
     renderRoot: (h: SlotRendererHost) => { host = h; return 'rendered' },
@@ -89,6 +89,7 @@ function captureHost(bench: Bench, children?: object): SlotRendererHost {
   bench.ctx.reflect.provide('workspaces', fakeWorkspaces())
   bench.erased.renderSlot('root', {})
   if (host === undefined) throw new Error('renderer never received the host')
+  if (host.runtime !== 'project') throw new Error('default registry did not provide the legacy project host')
   return host
 }
 

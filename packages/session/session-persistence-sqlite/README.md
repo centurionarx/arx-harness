@@ -16,6 +16,8 @@ Each append holds `BEGIN IMMEDIATE`, validates the bounded physical tail, packs 
 
 Full reads scan physical rows in first-logical-sequence order. A reverse pass finds the last valid `turn/end` without retaining decoded copies of every physical row; the forward pass decodes and validates one physical row at a time into the returned logical event array. `readFrom(id, fromSeq)` examines packed predecessors only within the maximum row span and anchors the suffix at the earliest one that may contain `fromSeq`; this includes an event range that starts inside a packed row, detects overlapping physical corruption, and does not parse unrelated earlier scalar rows. A malformed packed row is all-or-nothing: committed corruption rejects, while a torn final row is deleted from its physical base during mutating recovery. Repair re-reads the tail under the write lock and rejects a stale marker before deleting anything. Packed `data` that exceeds the schema byte limit rejects before JSON parsing.
 
+`readRevision(id, signal?)` delegates to the original row lookup and source-qualified store revision. It reads no event rows and returns `undefined` before materialization; `listSnapshots` remains the whole-store metadata operation.
+
 ## Schema compatibility
 
 A pristine database initializes directly at schema 17. Older schemas, foreign application identities, non-pristine unversioned databases, and incompatible schema objects reject; this pre-release provider supplies no migration. Every statement and fixed pragma lives in a packaged `.sql` resource; values use SQLite parameters and runtime code never assembles query text.

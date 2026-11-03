@@ -149,6 +149,8 @@ const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   '@arx-ai/arx-client-ui-primitives': ['lib/**/*.css'],
   '@arx-ai/arx-client-web': ['lib/**/*.css'],
   '@arx-ai/arx-client-ui-theme': ['lib/styles'],
+  // The identity client exposes its credential-free browser carrier as a built subpath.
+  '@arx-ai/arx-client-ui-auth': ['lib/browser.js'],
   // The CPython side ships as source .py files, published as-is rather than built.
   '@arx-ai/arx-code-runtime-python': ['py/**/*.py'],
   // The Python runtime uses a distinct closed-resolution bin; the public CLI
@@ -168,7 +170,8 @@ function sameStringList(actual: readonly string[] | undefined, expected: readonl
   return !!actual && actual.length === expected.length && actual.every((value, index) => value === expected[index])
 }
 
-function expectedArxPackageFiles(manifest: PackageManifest): readonly string[] {
+/** Exact publication payload for a workspace package, including its declared build faces. */
+export function expectedArxPackageFiles(manifest: PackageManifest): readonly string[] {
   const declaredPatch = manifest.arx?.bundle?.patch
   const bundleFiles = declaredPatch === undefined ? [] : [declaredPatch.replace(/^\.\//, '')]
   const extras = [
@@ -181,7 +184,9 @@ function expectedArxPackageFiles(manifest: PackageManifest): readonly string[] {
     // bundle; the package-invariant gate validates the companion itself.
     'lib/invariant.js',
     ...manifest.bin ? ['lib/bin.js'] : [],
-    ...manifest.exports?.['./worker'] ? ['lib/worker.cjs'] : [],
+    // A worker provider subpath can be an emitted ESM plugin; only a process
+    // worker whose runtime target is worker.cjs publishes that bundle.
+    ...exportDefault(manifest, './worker') === './lib/worker.cjs' ? ['lib/worker.cjs'] : [],
     // UI plugin packages ship their browser bundle beside the node lib
     // (single-artifact ruling: dist/ retired, ./client resolves lib/client.js).
     // Keyed on the artifact path, not the subpath name: apiproxy's ./client is

@@ -6,21 +6,16 @@
 
 import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
-import type {
-  SessionEvent,
-  SessionHeader,
-  SessionId,
-  SessionPreparation,
-} from '@arx-ai/arx-session'
+import type { SessionHeader, SessionId } from '@arx-ai/arx-session'
 import {
   DEFAULT_PREPARED_SESSION_CACHE_SIZE,
   DEFAULT_WRITE_BATCH_MAX_DELAY_MS,
   MAX_WRITE_BATCH_DELAY_MS,
   PersistenceCoordinator,
-  SessionPersistence,
-  type SessionInspection,
+  CoordinatedSessionPersistence,
   type SessionLocation,
   type SessionPersistenceSnapshot,
+  type SessionPersistenceRevision,
 } from '@arx-ai/arx-session-persistence'
 import type { JournalMode } from './schema.ts'
 import { SqliteStore } from './store.ts'
@@ -49,7 +44,7 @@ export interface Config {
 /**
  * SQLite `SessionPersistence` provider with a schema-owned physical codec.
  */
-export class SqliteSessionPersistence extends SessionPersistence {
+export class SqliteSessionPersistence extends CoordinatedSessionPersistence<number> {
   override readonly supportsRawArtifacts = false
   override readonly name = 'session-persistence-sqlite'
 
@@ -65,7 +60,7 @@ export class SqliteSessionPersistence extends SessionPersistence {
   })
 
   private readonly store: SqliteStore
-  private readonly coordinator: PersistenceCoordinator<number>
+  protected override readonly coordinator: PersistenceCoordinator<number>
 
   constructor(ctx: Context, public config: Config) {
     super(ctx)
@@ -94,32 +89,14 @@ export class SqliteSessionPersistence extends SessionPersistence {
     return undefined
   }
 
-  create(meta: SessionHeader): Promise<void> {
-    return this.coordinator.create(meta)
-  }
-
-  append(id: SessionId, events: readonly SessionEvent[]): Promise<void> {
-    return this.coordinator.append(id, events)
-  }
-
-  override prepare(id: SessionId, signal?: AbortSignal): Promise<SessionPreparation> {
-    return this.coordinator.prepare(id, signal)
-  }
-
-  load(id: SessionId): Promise<SessionInspection> {
-    return this.coordinator.load(id)
-  }
-
-  inspect(id: SessionId, signal?: AbortSignal): Promise<SessionInspection> {
-    return this.coordinator.inspect(id, signal)
-  }
-
-  readFrom(
-    id: SessionId,
-    fromSeq: number,
-    signal?: AbortSignal,
-  ): Promise<{ meta: SessionHeader; events: SessionEvent[] }> {
-    return this.coordinator.readFrom(id, fromSeq, signal)
+  /**
+   * Observe the existing SQLite store identity and this session's row generation.
+   * @param id - Stored session identity.
+   * @param signal - Optional cancellation for the store observation.
+   * @returns The original source-qualified revision, or undefined for a lazy log.
+   */
+  override readRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined> {
+    return this.store.readStoredRevision(id, signal)
   }
 
   list(signal?: AbortSignal): Promise<SessionHeader[]> {

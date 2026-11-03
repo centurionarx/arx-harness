@@ -52,6 +52,7 @@
     "@arx-ai/arx-client-locale": "workspace:^",
     "@arx-ai/arx-client-modules": "workspace:^",
     "@arx-ai/arx-client-runtime": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^",
     "@arx-ai/arx-client-ui-agent-preset": "workspace:^",
     "@arx-ai/arx-client-ui-attachment": "workspace:^",
     "@arx-ai/arx-client-ui-brand-official": "workspace:^",

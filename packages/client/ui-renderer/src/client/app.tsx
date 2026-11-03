@@ -21,6 +21,9 @@ export interface AssemblyDeps {
  */
 export function buildRenderApp(deps: AssemblyDeps): () => ReactNode {
   const { ctx } = deps
+  if (ctx.get('slots')?.runtime === 'application') {
+    return () => <><DocumentTitle />{ctx.slots.renderSlot('root', {})}</>
+  }
   const sessions = ctx.get('sessions')
   if (sessions === undefined) throw new Error('ui renderer: sessions service unavailable')
   const useSessions = bindSnapshotSelector(sessions.list)

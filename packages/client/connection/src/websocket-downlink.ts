@@ -53,7 +53,7 @@ export class WebSocketDownlinks {
   private readonly pumps = new Set<Promise<void>>()
 
   /** @param api - host API supplying the typed event streams. */
-  constructor(private readonly api: ApiProxy) {}
+  constructor(private readonly api: Pick<ApiProxy, 'events'>) {}
 
   /**
    * Upgrade one socket and pump the mux stream until either side closes.
@@ -140,10 +140,12 @@ export class WebSocketDownlinks {
 /**
  * Reject an untrusted upgrade before protocol negotiation.
  * @param socket - Raw HTTP socket that remains owned by the caller.
+ * @param status - Authentication, authorization or closed-availability HTTP status.
  */
-export function rejectWebSocketUpgrade(socket: Duplex): void {
+export function rejectWebSocketUpgrade(socket: Duplex, status = 403): void {
+  const line = status === 401 ? 'HTTP/1.1 401 Unauthorized' : status === 403 ? 'HTTP/1.1 403 Forbidden' : 'HTTP/1.1 503 Service Unavailable'
   socket.end([
-    'HTTP/1.1 403 Forbidden',
+    line,
     'Connection: close',
     'Content-Type: text/plain; charset=utf-8',
     'Content-Length: 9',

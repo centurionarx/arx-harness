@@ -21,6 +21,7 @@
  * @module @arx-ai/arx-client-modules
  */
 
+import { NATIVE_RECOVERY_SCRIPT } from './client/recovery-script.ts'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
@@ -30,8 +31,13 @@ import { dirname, join } from 'node:path'
 import { Service } from '@arx-ai/cordis'
 import type { Context } from '@arx-ai/cordis'
 import type {} from '@arx-ai/cordis-plugin-loader'
+import { renderIndexInjections, RequestIndexUnavailableError } from '@arx-ai/arx-host-webserver'
 import type { IndexInjection } from '@arx-ai/arx-host-webserver'
-import { optionalStringArray, stripClientSuffix } from './client/manifest.ts'
+import type {} from '@arx-ai/arx-web-identity'
+import type { AuthState } from '@arx-ai/arx-web-identity/contract'
+import { authenticatedGraph, nativeComposition } from './authenticated-graph.ts'
+import type { ClientComposition } from '@arx-ai/arx-client-ui-slots/composition'
+import { assertCompositionManifest, parseBootManifest, optionalStringArray, stripClientSuffix } from './client/manifest.ts'
 import type { WebBootEntry, WebBootGraph } from './client/manifest.ts'
 
 export { stripClientSuffix } from './client/manifest.ts'
@@ -238,7 +244,21 @@ const PARSER_PRELOAD_IDS = [CLIENT_MODULES_ID, CLIENT_RUNTIME_ID] as const
  * @param graph - the composed entry graph.
  * @returns head rows in execution order: queue script, preload scripts, graph global.
  */
-export function bootInjections(graph: WebBootGraph): IndexInjection[] {
+export interface BootAccessOptions {
+  readonly accessMode: 'local' | 'authenticated'
+  readonly composition?: ClientComposition
+}
+/**
+ * Build the minimal inline bootstrap for a selected request composition.
+ * @param graph - Real registry graph already filtered for the request.
+ * @param access - Explicit serving profile and optional native tree marker.
+ * @returns Inline index injections without principal, cookie, CSRF, or private plugin configuration.
+ */
+export function bootInjections(graph: WebBootGraph, access?: BootAccessOptions): IndexInjection[] {
+  if (access?.accessMode === 'authenticated') {
+    if (access.composition === undefined) throw new Error('authenticated boot requires a composition view')
+    assertCompositionManifest(parseBootManifest(graph), access.composition)
+  }
   const bootstrapId = JSON.stringify(CLIENT_MODULES_ID)
   const queue = `(()=>{
 const pendingQueue=[]
@@ -262,13 +282,25 @@ window.__ModuleLoader__={
   }
 }
 })()`
-  const preload = PARSER_PRELOAD_IDS.map(id => graph.entries.find(entry => entry.id === id))
+  const ids = access?.accessMode === 'authenticated' ? [CLIENT_MODULES_ID] : PARSER_PRELOAD_IDS
+  const preload = ids.map(id => graph.entries.find(entry => entry.id === id))
     .filter((entry): entry is WebBootEntry => entry !== undefined)
     .map((entry): IndexInjection => ({ kind: 'script-src', placement: 'head', src: entry.url }))
+
   return [
+    ...(access?.accessMode === 'authenticated' ? [{ kind: 'script' as const, placement: 'head' as const, text: NATIVE_RECOVERY_SCRIPT }] : []),
     { kind: 'script', placement: 'head', text: queue },
     ...preload,
     { kind: 'global', name: '__ARX_BOOT__', value: graph },
+    ...(access === undefined ? [] : [
+      { kind: 'global' as const, name: '__ARX_CLIENT_ACCESS_MODE__', value: access.accessMode },
+      ...(access.composition === undefined ? [] : [
+        { kind: 'global' as const, name: '__ARX_CLIENT_COMPOSITION__', value: {
+          kind: access.composition.kind, audience: access.composition.audience,
+          ...(access.composition.generation === undefined ? {} : { generation: access.composition.generation }),
+        } },
+      ]),
+    ]),
   ]
 }
 
@@ -340,9 +372,40 @@ export class ClientModuleRegistry extends Service {
       () => ctx.webServer.register({ kind: 'prefix', path: '/plugins', handler: this.serveBundle }),
       'client-modules: bundle route',
     )
-    ctx.on('webserver/index-inject', (table) => {
-      table.push(...bootInjections(this.composed))
-    })
+    if (ctx.webServer.accessMode === 'authenticated') {
+      ctx.inject(['webIdentityApi', 'webIdentity', 'webServer'], (scope) => {
+        scope.effect(() => scope.webServer.registerRequestIndexRenderer(async (html, request) => {
+          try {
+            const first = await this.requestState(scope, request)
+            const pathname = new URL(request.url ?? '/', 'http://x').pathname
+            const composition = nativeComposition(first, pathname)
+            const entries = authenticatedGraph(this.composed, composition)
+            const graph = { rev: shortHash(JSON.stringify(entries)), entries }
+            const rendered = renderIndexInjections(html, bootInjections(graph, { accessMode: 'authenticated', composition }))
+            const confirmed = nativeComposition(await this.requestState(scope, request), pathname)
+            if (composition.kind !== confirmed.kind || composition.audience !== confirmed.audience
+              || composition.scope !== confirmed.scope || composition.generation !== confirmed.generation) {
+              throw new RequestIndexUnavailableError()
+            }
+            return rendered
+          } catch { throw new RequestIndexUnavailableError() }
+        }), 'client-modules: native request index renderer')
+      })
+    } else {
+      ctx.on('webserver/index-inject', (table) => { table.push(...bootInjections(this.composed)) })
+    }
+  }
+
+  /** Authentication is evaluated for this request; only 401 maps to the public audience page. */
+  private async requestState(ctx: Context, request: IncomingMessage): Promise<AuthState> {
+    try {
+      return await ctx.webIdentity.state(await ctx.webIdentityApi.authenticateRequest(request))
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && (error as { status?: unknown }).status === 401) {
+        return { authenticated: false, audience: ctx.webIdentityApi.audience }
+      }
+      throw error
+    }
   }
 
   /**

@@ -183,7 +183,16 @@ export class TypertGatewayService extends Service implements TypertGateway {
     return decode(descriptor.result, result, 'result-invalid', endpoint, 'result')
   }
 
-  private async dispatchRpc(
+  /**
+   * Dispatch a canonical named-argument envelope with the existing RPC error mapping.
+   * Network callers must authenticate and authorize owner-scoped arguments before
+   * invoking this worker-local boundary; this method creates no transport route.
+   * @param endpoint - Canonical namespace/method admitted by the trusted caller.
+   * @param payload - Exact named argument envelope validated by Typert codecs.
+   * @param signal - The caller's operation cancellation.
+   * @returns The existing Connection RPC result.
+   */
+  async dispatchRpc(
     endpoint: string,
     payload: unknown,
     signal: AbortSignal,

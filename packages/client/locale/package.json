@@ -38,7 +38,10 @@
         "@arx-ai/arx-api-remotes"
       ],
       "platform": "web",
-      "immediately": true
+      "immediately": true,
+      "external": [
+        "@arx-ai/arx-client-slots/client"
+      ]
     }
   },
   "license": "MIT",
@@ -49,7 +52,8 @@
     "@arx-ai/arx-client-runtime": "workspace:^",
     "@arx-ai/arx-client-ui-settings": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/cordis": "workspace:^",
@@ -63,7 +67,8 @@
     "@types/react": "~18.3.1",
     "react": "^18.2.0",
     "@arx-ai/arx-client-connection": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "dependencies": {
     "@arx-ai/schemastery": "workspace:^"

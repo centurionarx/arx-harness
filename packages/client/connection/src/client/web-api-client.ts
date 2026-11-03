@@ -5,14 +5,18 @@ import { AbstractApiClient } from './api.ts'
 import { hostFrameSchema, muxFrameSchema } from '@arx-ai/arx-host-apiproxy/api/events.schema'
 import { serverRequestSchema } from '@arx-ai/arx-host-apiproxy/api/rpc.schema'
 import { HOST_EVENTS_PATH, MUX_EVENTS_PATH } from '../api-path.ts'
+import type { RpcFetch } from './rpc.ts'
 
 type SocketItem<F> = { kind: 'frame'; envelope: RpcRequest<F> } | { kind: 'end' }
 type Parser<F> = { parse(value: unknown): F }
 
 /** Browser platform subclass: unary/respond use fetch; mux/host use downlink-only WebSockets. */
 export class WebApiClient extends AbstractApiClient {
+  /** @param send - Optional authenticated transport; the local carrier stays unchanged. */
+  constructor(private readonly send?: RpcFetch) { super() }
+
   protected doFetch(input: URL, init?: RequestInit): Promise<Response> {
-    return globalThis.fetch(input, init)
+    return this.send === undefined ? globalThis.fetch(input, init) : this.send(input, init ?? {})
   }
 
   protected override openMux(

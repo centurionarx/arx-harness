@@ -7,6 +7,20 @@ A service can be a core spine service, a swappable capability seam, or a bundle/
 
 ```mermaid
 flowchart LR
+  pkg_web_identity["web-identity"]
+  svc_webIdentity["ctx.webIdentity<br/>Authenticated user and ownership authority"]
+  pkg_web_identity_sqlite["web-identity-sqlite"]
+  pkg_web_identity_api["web-identity-api"]
+  pkg_project_storage["project-storage"]
+  pkg_isolated_project_runtime["isolated-project-runtime"]
+  svc_identityAuthorityJournal["ctx.identityAuthorityJournal<br/>Durable authority revision journal"]
+  pkg_identity_authority_journal["identity-authority-journal"]
+  svc_webIdentityApi["ctx.webIdentityApi<br/>Audience-specific authenticated HTTP API"]
+  pkg_modules["modules"]
+  pkg_connection["connection"]
+  svc_projectStorage["ctx.projectStorage<br/>Owner-scoped project and history control plane"]
+  svc_isolatedProjectRuntime["ctx.isolatedProjectRuntime<br/>Owned worker admission and quiescence"]
+  svc_ownedWorkerHistory["ctx.ownedWorkerHistory<br/>Worker session persistence adapter"]
   pkg_attachment["attachment"]
   svc_attachments["ctx.attachments<br/>Durable binary attachment storage"]
   pkg_attachment_local["attachment-local"]
@@ -185,8 +199,6 @@ flowchart LR
   pkg_directory_picker_browse["directory-picker-browse"]
   pkg_webserver["webserver"]
   svc_webServer["ctx.webServer<br/>HTTP route registration"]
-  pkg_connection["connection"]
-  pkg_modules["modules"]
   pkg_hmr["hmr"]
   svc_clientModules["ctx.clientModules<br/>Client plugin graph host"]
   pkg_workflow["workflow"]
@@ -261,7 +273,10 @@ flowchart LR
   pkg_fs_sandbox --> svc_fs
   pkg_github --> svc_github
   pkg_goal --> svc_goals
+  pkg_identity_authority_journal --> svc_identityAuthorityJournal
   pkg_invariants --> svc_invariants
+  pkg_isolated_project_runtime --> svc_isolatedProjectRuntime
+  pkg_isolated_project_runtime --> svc_ownedWorkerHistory
   pkg_jobs --> svc_jobs
   pkg_jobs_local --> svc_jobs
   pkg_llm --> svc_llm
@@ -276,6 +291,7 @@ flowchart LR
   pkg_plan_mode --> svc_planMode
   pkg_project --> svc_projects
   pkg_project_runner --> svc_projectRunner
+  pkg_project_storage --> svc_projectStorage
   pkg_pwsh_local --> svc_shell
   pkg_repository --> svc_repository
   pkg_sandbox --> svc_sandbox
@@ -329,6 +345,10 @@ flowchart LR
   pkg_user_questions --> svc_userQuestions
   pkg_web --> svc_web
   pkg_web_fetch_http --> svc_web
+  pkg_web_identity --> svc_identityAuthorityJournal
+  pkg_web_identity --> svc_webIdentity
+  pkg_web_identity_api --> svc_webIdentityApi
+  pkg_web_identity_sqlite --> svc_webIdentity
   pkg_web_search_exa --> svc_web
   pkg_web_search_perplexity --> svc_web
   pkg_webhook --> svc_webhookRuntime
@@ -363,6 +383,7 @@ flowchart LR
   svc_filePreviews --> pkg_ui_file_preview
   svc_fs --> pkg_tool_fs
   svc_github --> pkg_ui_github
+  svc_identityAuthorityJournal --> pkg_web_identity_sqlite
   svc_invariants --> pkg_agent
   svc_invariants --> pkg_agent_loop
   svc_invariants --> pkg_scope
@@ -376,6 +397,7 @@ flowchart LR
   svc_lsp --> pkg_tool_lsp
   svc_nativeAccounts --> pkg_apiproxy
   svc_projectRunner --> pkg_tool_project
+  svc_projectStorage --> pkg_isolated_project_runtime
   svc_projects --> pkg_project_runner
   svc_projects --> pkg_tool_project
   svc_projects --> pkg_ui_projects
@@ -455,6 +477,11 @@ flowchart LR
   svc_typert --> pkg_typert_loader
   svc_userQuestions --> pkg_tool_ask_user
   svc_web --> pkg_tool_web
+  svc_webIdentity --> pkg_isolated_project_runtime
+  svc_webIdentity --> pkg_project_storage
+  svc_webIdentity --> pkg_web_identity_api
+  svc_webIdentityApi --> pkg_connection
+  svc_webIdentityApi --> pkg_modules
   svc_webServer --> pkg_connection
   svc_webServer --> pkg_hmr
   svc_webServer --> pkg_modules
@@ -467,6 +494,12 @@ flowchart LR
 
 | ctx key | Role | Owner | Implementations | Direct consumers | Companion plugins | Note |
 | --- | --- | --- | --- | --- | --- | --- |
+| `ctx.webIdentity` | `seam` | [`web-identity`](../packages/identity/web-identity) | [`web-identity-sqlite`](../packages/identity/web-identity-sqlite) | `web-identity-api`, [`project-storage`](../packages/identity/project-storage), [`isolated-project-runtime`](../packages/host/isolated-project-runtime) | - | The authority issues current user sessions and owner-scoped resource capabilities; USER content and MASTER_ADMIN administration have separate audiences. |
+| `ctx.identityAuthorityJournal` | `seam` | [`web-identity`](../packages/identity/web-identity) | [`identity-authority-journal`](../packages/identity/identity-authority-journal) | [`web-identity-sqlite`](../packages/identity/web-identity-sqlite) | - | The independent journal records authority revisions before identity transactions acknowledge revocation or ownership deletion; stale restored databases fail closed. |
+| `ctx.webIdentityApi` | `core` | `web-identity-api` | - | `modules`, `connection` | - | The HTTP provider validates origin, audience, session generation, and CSRF before admitting protected operations or selecting a native browser composition. |
+| `ctx.projectStorage` | `core` | [`project-storage`](../packages/identity/project-storage) | - | [`isolated-project-runtime`](../packages/host/isolated-project-runtime) | - | The control plane keeps owner indices and committed session history outside workers; opaque resource identifiers do not substitute for current request authority. |
+| `ctx.isolatedProjectRuntime` | `core` | [`isolated-project-runtime`](../packages/host/isolated-project-runtime) | - | - | - | Admission validates current owner capabilities and fixed operator endpoints; supervisor receipts and actual worker termination complete revocation quiescence. |
+| `ctx.ownedWorkerHistory` | `core` | [`isolated-project-runtime`](../packages/host/isolated-project-runtime) | - | - | - | OwnedWorkerPersistence mediates worker history through a control-issued capability; authoritative owner indices and JSONL artifacts remain outside the worker filesystem. |
 | `ctx.attachments` | `seam` | [`attachment`](../packages/attachment/attachment) | [`attachment-local`](../packages/attachment/attachment-local) | `host-runtime`, [`llm-pi-ai`](../packages/llm/llm-pi-ai) | - | The host commits accepted images before session events; provider adapters resolve authorized durable references into provider-native content. |
 | `ctx.llm` | `seam` | [`llm`](../packages/llm/llm) | [`llm-pi-ai`](../packages/llm/llm-pi-ai), [`llm-replay`](../packages/test-support/llm-replay) | [`agent-loop`](../packages/core/agent-loop), [`compaction-basic`](../packages/compaction/compaction-basic) | - | Adapters register provider implementations; the loop and compaction call the provider-neutral stream service. |
 | `ctx.tokenMeter` | `core` | [`token-meter`](../packages/llm/token-meter) | - | [`compaction-basic`](../packages/compaction/compaction-basic) | - | Owns isolated per-session replay folds; pressure consumers share immutable revisioned measurements. |

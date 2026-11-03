@@ -33,6 +33,7 @@ type WorkspaceDelta =
 
 /** Workspace object cluster driven by one list baseline and changed-frame upserts. */
 export class WorkspaceManager {
+  private disposed = false
   private items: Workspace[] = []
   private itemViewsSource: readonly Workspace[] | null = null
   private itemViewsCache: readonly WorkspaceView[] = []
@@ -76,6 +77,31 @@ export class WorkspaceManager {
     this.snapshotCache = this.buildSnapshot()
   }
 
+  /** Release the object mirror when the owning runtime context ends. */
+  dispose(): void {
+    if (this.disposed) return
+    this.disposed = true
+    this.notifier.dispose()
+    this.items = []
+    this.itemViewsSource = null
+    this.itemViewsCache = []
+    this.archivedSessionIds = []
+    this.state = 'idle'
+    this.phase = 'pending'
+    this.error = null
+    this.inflight = null
+    this.refreshFrames = null
+    this.archivedSupersedesRefresh = false
+    this.committedOrder = []
+    this.removedIds.clear()
+    this.snapshotCache = this.buildSnapshot()
+  }
+
+  /** Reject actions whose runtime context has ended. */
+  assertActive(): void {
+    if (this.disposed) throw new Error('workspace manager is disposed')
+  }
+
   /**
    * Refresh from workspace.list. The first successful response establishes
    * Host order; later responses re-establish the durable order so reconnects
@@ -84,6 +110,7 @@ export class WorkspaceManager {
    * @returns the shared in-flight refresh.
    */
   refresh(): Promise<void> {
+    if (this.disposed) return Promise.resolve()
     if (this.inflight !== null) return this.inflight
     this.state = 'loading'
     this.error = null
@@ -93,6 +120,7 @@ export class WorkspaceManager {
     this.inflight = (async () => {
       try {
         const { result } = await this.api.workspace.list({})
+        if (this.disposed) return
         if (result.ok) {
           let items = result.value.items
           items = items.filter(workspace => !this.removedIds.has(workspace.workspaceId))
@@ -106,15 +134,18 @@ export class WorkspaceManager {
           this.error = result.error
         }
       } catch (error) {
+        if (this.disposed) return
         this.state = 'error'
         const folded = transportError<never>(error)
         /* v8 ignore next -- transportError always returns the failure branch. */
         this.error = folded.ok ? null : folded.error
       } finally {
-        this.refreshFrames = null
-        this.archivedSupersedesRefresh = false
-        this.inflight = null
-        this.notifier.markDirty()
+        if (!this.disposed) {
+          this.refreshFrames = null
+          this.archivedSupersedesRefresh = false
+          this.inflight = null
+          this.notifier.markDirty()
+        }
       }
     })()
     return this.inflight
@@ -127,10 +158,12 @@ export class WorkspaceManager {
    * @returns the wire result.
    */
   async create(input: WorkspaceCreateInput): Promise<RpcResult<{ workspace: WorkspaceView; created: boolean }>> {
+    this.assertActive()
     const workspace = new Workspace(this.api, input)
     const completion = workspace.materialize()
     if (completion === undefined) throw new Error('a local Workspace must be materializable')
     const result = await completion
+    this.assertActive()
     if (result.ok) this.upsert(result.value.workspace, workspace)
     return result
   }
@@ -143,7 +176,9 @@ export class WorkspaceManager {
    * @returns the wire result.
    */
   async rename(workspaceId: WorkspaceId, title: string): Promise<RpcResult<{ workspace: WorkspaceView }>> {
+    this.assertActive()
     const { result } = await this.api.workspace.rename({ workspaceId, title })
+    this.assertActive()
     if (result.ok) this.upsert(result.value.workspace)
     return result
   }
@@ -155,7 +190,9 @@ export class WorkspaceManager {
    * @returns the wire result.
    */
   async delete(workspaceId: WorkspaceId): Promise<RpcResult<{ deleted: true }>> {
+    this.assertActive()
     const { result } = await this.api.workspace.delete({ workspaceId })
+    this.assertActive()
     if (result.ok) this.remove(workspaceId, true)
     return result
   }
@@ -171,6 +208,7 @@ export class WorkspaceManager {
     workspaceId: WorkspaceId,
     beforeWorkspaceId?: WorkspaceId,
   ): Promise<RpcResult<{ workspaceIds: WorkspaceId[] }>> {
+    this.assertActive()
     const requestGeneration = ++this.orderRequestGeneration
     const frameGeneration = this.orderFrameGeneration
     const localOrder = this.itemViews().map(workspace => workspace.workspaceId)
@@ -182,12 +220,13 @@ export class WorkspaceManager {
         ...beforeWorkspaceId === undefined ? {} : { beforeWorkspaceId },
       }))
     } catch (error) {
-      if (requestGeneration === this.orderRequestGeneration
+      if (!this.disposed && requestGeneration === this.orderRequestGeneration
         && frameGeneration === this.orderFrameGeneration) {
         this.installOrder(this.committedOrder)
       }
       throw error
     }
+    this.assertActive()
     if (result.ok && requestGeneration === this.orderRequestGeneration
       && frameGeneration === this.orderFrameGeneration) {
       this.installOrder(result.value.workspaceIds, true)
@@ -211,10 +250,12 @@ export class WorkspaceManager {
     sessionId: SessionId,
     beforeSessionId?: SessionId,
   ): Promise<RpcResult<{ workspace: WorkspaceView }>> {
+    this.assertActive()
     const { result } = await this.api.workspace.insertSessionBefore({
       workspaceId, sessionId,
       ...beforeSessionId === undefined ? {} : { beforeSessionId },
     })
+    this.assertActive()
     if (result.ok) this.upsert(result.value.workspace)
     return result
   }
@@ -226,7 +267,9 @@ export class WorkspaceManager {
    * @returns the wire result.
    */
   async archiveSession(sessionId: SessionId): Promise<RpcResult<{ archivedSessionIds: SessionId[] }>> {
+    this.assertActive()
     const { result } = await this.api.workspace.archiveSession({ sessionId })
+    this.assertActive()
     if (result.ok) this.installArchived(result.value.archivedSessionIds)
     return result
   }
@@ -237,6 +280,7 @@ export class WorkspaceManager {
    * @param envelope - host stream envelope.
    */
   handleHostEnvelope(envelope: RpcRequest<HostFrame>): void {
+    if (this.disposed) return
     if (envelope.payload.type === 'host/workspace-changed') this.upsert(envelope.payload.workspace)
     else if (envelope.payload.type === 'host/workspace-removed') this.remove(envelope.payload.workspaceId)
     else if (envelope.payload.type === 'host/workspace-order-changed') {
