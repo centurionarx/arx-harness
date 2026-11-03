@@ -80,6 +80,8 @@ A `turn/end` whose reason is `max-tokens` projects one `turn-max-tokens` node at
 
 Each resident `Session` owns a `modelSelection` snapshot containing the current `ModelSelection`, provider-grouped directory, provider-local failures, and the `idle`/`loading`/`ready`/`selecting`/`error` state. History establishes or refreshes the current selection, opening a selector refreshes the directory, and selection failures preserve the last selection and usable groups. Directory and selection operations share a monotonically increasing generation so an older response cannot overwrite a newer selection. A reconnect rebuild restores the selection reported by the Host without replacing unchanged selection substructure.
 
+A fresh `model/selection` accepted into a bound Session's live event window emits the client-only Cordis notification `session/model-selection` in that session scope. It carries only the `SessionId`. History hydration, duplicate or older events, an unbound Session and a disposed Session do not notify. Consumers own their Host read and response-generation handling; the notification adds no wire frame or durable event. The [scoped refresh decision](../../../.agents/notes/implemented/bug-fix/2026-10-10-session-model-selection-refresh.md) records the directory consumer and verification.
+
 ## Model Experience
 
 None, as the session object layer selects the provider/model route used by a later Host request but adds no model-visible content.

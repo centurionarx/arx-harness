@@ -22,6 +22,7 @@ const OVERLAY = fileURLToPath(new URL('./declared-reasoning.overlay.yml', import
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/declared-reasoning', import.meta.url))
 const UI_EXPECTED = fileURLToPath(new URL('./snapshots/declared-reasoning/ui.expected.md', import.meta.url))
 const PICKED_EXPECTED = fileURLToPath(new URL('./snapshots/declared-reasoning/picked.expected.md', import.meta.url))
+const EXTERNAL_EXPECTED = fileURLToPath(new URL('./snapshots/declared-reasoning/external-selection.expected.md', import.meta.url))
 const MODE = webSnapshotMode()
 
 describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach the composer', () => {
@@ -126,7 +127,52 @@ describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach th
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
+  it('refreshes the composer after a host selection without opening the picker', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-declared-reasoning-external'))
+    const trigger = page.getByRole('button', { name: /^Select model/ })
+    // This case also runs alone for its directed new-golden capture. The
+    // untouched owner cases leave Swift/Low; a fresh owner starts Think/Default.
+    await expect.poll(() => trigger.getAttribute('aria-label'), { timeout: 10_000 })
+      .toMatch(/^Select model, current Acme (?:Think|Swift), reasoning effort (?:Default|Low)$/)
+    expect(await page.getByRole('menu').count()).toBe(0)
+    const sessions = scaffold.ctx.sessions.list()
+    expect(sessions).toHaveLength(1)
+    const session = sessions[0]
+    if (session === undefined) throw new Error('connected composer session is missing')
+
+    // The real host selection publishes its accepted session event. No picker
+    // gesture or settings refresh is allowed to supply the browser update.
+    const response = await scaffold.ctx.apiProxy.sessions.selectModel({
+      rpcId: 'declared-reasoning-external-selection' as never,
+      payload: {
+        sessionId: session.header.id,
+        provider: 'acme-gateway',
+        model: 'acme-think',
+        reasoningEffort: 'high',
+      },
+    })
+    expect(response.result.ok).toBe(true)
+    expect(session.events.filter(event => event.type === 'model/selection').at(-1))
+      .toMatchObject({
+        type: 'model/selection',
+        data: { provider: 'acme-gateway', model: 'acme-think', reasoningEffort: 'high' },
+      })
+    await expect.poll(() => trigger.getAttribute('aria-label'), { timeout: 10_000 })
+      .toBe('Select model, current Acme Think, reasoning effort High')
+    expect(await page.locator('textarea').first().isEditable()).toBe(true)
+    expect(await page.getByRole('menu').count()).toBe(0)
+    expect(session.events.some(event => (
+      event.type === 'request/header' || event.type === 'turn/start' || event.type === 'tool/call'
+    ))).toBe(false)
+    const snapshot = await captureStableAria(
+      page, 'button[aria-label^="Select model"]', scaffold.workspaceCwd,
+    )
+    await compareOrRefreshGolden(EXTERNAL_EXPECTED, snapshot, MODE)
+    expect(tripwire.pageErrors).toEqual([])
+    expect(tripwire.warnings).toEqual([])
+  }, 60_000)
+
   it('keeps its snapshot inventory closed', async () => {
-    await assertFixtureInventory(SNAPSHOT_DIR, ['picked.expected.md', 'ui.expected.md'])
+    await assertFixtureInventory(SNAPSHOT_DIR, ['external-selection.expected.md', 'picked.expected.md', 'ui.expected.md'])
   })
 })
