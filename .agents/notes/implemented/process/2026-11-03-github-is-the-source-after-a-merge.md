@@ -12,7 +12,7 @@ After a merge, the agent verifies the result on GitHub: `master` contains the me
 
 A round's handoff lives in what GitHub publishes and in the private receipts that the published entry document names. The [round closure procedure](../../../../docs/cookbook/closing-a-round.md) does not copy handoff files or evidence to another environment.
 
-Where unaccepted AUTH code lives is a separate decision: [unaccepted AUTH code stays in a private repository](2026-11-03-unaccepted-auth-code-stays-private.md).
+Where unaccepted AUTH code lives is a separate decision: [unaccepted AUTH code goes to a private repository](2026-11-03-unaccepted-auth-code-stays-private.md).
 
 This decision consolidates the local-clone sync rule and the Web-serving clone build rule, whose notes it replaces. It partially supersedes [every round leaves a verifiable handoff](2026-10-10-every-round-leaves-a-verifiable-handoff.md), whose closure and publication obligations remain current apart from transferred copies.
 
