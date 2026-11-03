@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-cordis-host-runner",
   "description": "Dynamic package definition registry, host-half sandbox lifecycle, and invoke handler table for model-mounted dual-half packages",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "publishConfig": {
     "access": "public"
   },
