@@ -32,7 +32,8 @@ let resolverRoot: string | undefined
 const resolutionPackages: string[] = []
 if (frontend) {
   const staging = await realpath(process.cwd())
-  if (!staging.endsWith('/arx-harness-auth-20261008')) throw new Error('fixture requires isolated staging')
+  // The resolution root links every workspace package, so the fixture starts at the repository root.
+  if (!(await readdir(staging)).includes('pnpm-workspace.yaml')) throw new Error('fixture requires the repository root')
   resolverRoot = await mkdtemp(join(tmpdir(), 'arx-auth-resolution-'))
   for (const category of await readdir(join(staging, 'packages'), { withFileTypes: true })) {
     if (!category.isDirectory()) continue
