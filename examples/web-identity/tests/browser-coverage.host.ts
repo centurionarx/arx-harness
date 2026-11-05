@@ -32,7 +32,17 @@ export class ClientCoverageRecorder {
     readonly functions: ScriptCoverage['functions']
   }> = []
   private readonly root = resolve('.')
-  private readonly sourceBaseline = resolve('.gauntlet/evidence/AUTH-001-20261008/AUTH-GL3-20261009/frontend-source-baseline.json')
+  private readonly evidenceRoot: string
+  private readonly sourceBaseline: string
+
+  /**
+   * @param evidenceRoot - Caller-supplied private evidence directory; every receipt directory must lie inside it.
+   * @param sourceBaseline - Caller-supplied frontend source baseline JSON recorded before the build.
+   */
+  constructor(evidenceRoot: string, sourceBaseline: string) {
+    this.evidenceRoot = resolve(evidenceRoot)
+    this.sourceBaseline = resolve(sourceBaseline)
+  }
 
   /**
    * Start before navigation so every factory execution and reload remains measured.
@@ -80,9 +90,8 @@ export class ClientCoverageRecorder {
    * @returns After byte verification and writing; mismatch rejects instead of claiming source coverage.
    */
   async finish(output: string, completeness: 'complete' | 'partial' = 'complete'): Promise<void> {
-    const evidence = resolve('.gauntlet/evidence/AUTH-001-20261008')
     const outputPath = resolve(output)
-    assert.ok(!relative(evidence, outputPath).startsWith('..'))
+    assert.ok(!relative(this.evidenceRoot, outputPath).startsWith('..'))
     const baselineBytes = await readFile(this.sourceBaseline, 'utf8')
     const baseline: unknown = JSON.parse(baselineBytes)
     assert.ok(typeof baseline === 'object' && baseline !== null && 'files' in baseline

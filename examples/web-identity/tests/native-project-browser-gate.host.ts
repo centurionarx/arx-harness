@@ -2,6 +2,7 @@
  * Real native project browser acceptance over two USERs and a separate MASTER origin.
  * Uses actual Loader, SDK, SQLite, broker, worker, tool-fs and replay; no auth override.
  * Receipts contain counts only. Cookies, bodies, credentials and WS payloads stay private.
+ * Usage: native-project-browser-gate.host.ts <output> <evidence-root> <frontend-source-baseline>; output must lie inside evidence-root.
  */
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
@@ -20,15 +21,17 @@ import { APPLICATION_PLUGIN_IDS } from '../../../packages/client/modules/src/cli
 
 const require = createRequire(resolve('apps/web/package.json'))
 const { chromium } = require('playwright') as typeof import('playwright')
-const output = resolve(process.argv[2] ?? '.gauntlet/evidence/AUTH-001-20261008/auth004-native-project-browser')
-assert.ok(!relative(resolve('.gauntlet/evidence/AUTH-001-20261008'), output).startsWith('..'))
+const [outputArg, evidenceRoot, sourceBaseline] = process.argv.slice(2)
+if (!outputArg || !evidenceRoot || !sourceBaseline) throw new Error('usage: native-project-browser-gate.host.ts <output> <evidence-root> <frontend-source-baseline>')
+const output = resolve(outputArg)
+assert.ok(!relative(resolve(evidenceRoot), output).startsWith('..'))
 await mkdir(output, { recursive: true })
 let step = 'start actual project services'
 const checks: Record<string, boolean | number> = {}
 const fixture = await browserFixture('user', false, true, true)
 const browser = await chromium.launch()
 const contexts: BrowserContext[] = []
-const clientCoverage = new ClientCoverageRecorder()
+const clientCoverage = new ClientCoverageRecorder(evidenceRoot, sourceBaseline)
 let coverageFinished = false
 const traffic = new WeakMap<Page, { paths: string[]; frames: string[]; errors: number }>()
 function watch(page: Page): void {

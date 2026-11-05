@@ -1,6 +1,7 @@
 /**
  * Real native HTML/browser gate over disposable identity and owned storage.
  * No trace, header/body logging, password receipt, or auth transport override.
+ * Usage: native-browser-gate.host.ts <output> <evidence-root> <frontend-source-baseline>; output must lie inside evidence-root.
  */
 import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -14,8 +15,10 @@ import type { Page, BrowserContext, Browser } from 'playwright'
 
 const require = createRequire(resolve('apps/web/package.json'))
 const { chromium } = require('playwright') as typeof import('playwright')
-const output = resolve(process.argv[2] ?? '.gauntlet/evidence/AUTH-001-20261008/auth004-native-browser')
-assert.ok(!relative(resolve('.gauntlet/evidence/AUTH-001-20261008'), output).startsWith('..'), 'browser receipt must remain in isolated evidence')
+const [outputArg, evidenceRoot, sourceBaseline] = process.argv.slice(2)
+if (!outputArg || !evidenceRoot || !sourceBaseline) throw new Error('usage: native-browser-gate.host.ts <output> <evidence-root> <frontend-source-baseline>')
+const output = resolve(outputArg)
+assert.ok(!relative(resolve(evidenceRoot), output).startsWith('..'), 'browser receipt must remain in isolated evidence')
 await mkdir(output, { recursive: true })
 let step = 'start real services'
 const checks: Record<string, boolean | number | string[]> = {}
@@ -23,7 +26,7 @@ const fixture = await browserFixture('user', false, true)
 const browser = await chromium.launch()
 const contexts: BrowserContext[] = []
 let storageDeniedBrowser: Browser | undefined
-const clientCoverage = new ClientCoverageRecorder()
+const clientCoverage = new ClientCoverageRecorder(evidenceRoot, sourceBaseline)
 let coverageFinished = false
 const requests = new WeakMap<Page, Array<{ method: string; path: string }>>()
 const errors = new WeakMap<Page, string[]>()

@@ -2,10 +2,10 @@
 
 The runnable [snapshot.ts](snapshot.ts) composes the real Loader and checked-in identity template through [storageHarness](../../packages/identity/project-storage/tests/harness.ts). It loads native identity, its external authority journal, existing JSONL persistence, project storage, operator credential fixture and the isolated-runtime carrier. Every password/key/token is randomly generated for a private temporary fixture; no live account, real email or production configuration is used.
 
-Run through the AUTH-001 guarded runner:
+Run from the repository root:
 
 ```sh
-python3 .gauntlet/evidence/AUTH-001-20261008/run-gate-isolated.py auth005-example node node_modules/tsx/dist/cli.mjs examples/owned-project-storage/snapshot.ts
+node node_modules/tsx/dist/cli.mjs examples/owned-project-storage/snapshot.ts
 ```
 
 The [snapshot golden](snapshot.expected.md) records safe ownership, durability, grouping, backup/restore and migration receipts. Own raw downloads preserve the existing JSONL bytes and can contain the owning volume's cwd; navigation DTOs only expose opaque ids and display names. A raw path is never an ownership credential and cannot be submitted as workspace provisioning authority.
@@ -22,10 +22,10 @@ The measured `auth005-native-none-second` run used `none` encoding and retained 
 
 The original FSLocal provider synchronizes the staged file before atomic publication but does not synchronize its containing directory. V2 therefore does not prove crash-durable namespace publication. A post-operation directory fsync alone also cannot establish the required directory identity if ancestors or symlinks can change. Durable namespace publication requires a reviewed worker filesystem design and supervisor-controlled namespace on the authorized deployment target; neither the existing provider nor the benchmark is silently changed to claim that guarantee.
 
-Run only in the agreed idle measurement window, with a fresh exclusive receipt directory:
+Run only in the agreed idle measurement window, with a fresh exclusive receipt directory and the pre-implementation baseline provenance JSON:
 
 ```sh
-python3 .gauntlet/evidence/AUTH-001-20261008/run-gate-isolated.py auth005-performance-native node node_modules/tsx/dist/cli.mjs examples/owned-project-storage/benchmark-native.ts .gauntlet/evidence/AUTH-001-20261008/performance-native none
+node node_modules/tsx/dist/cli.mjs examples/owned-project-storage/benchmark-native.ts <receipt-dir> none <baseline-provenance.json>
 ```
 
 The older [benchmark.ts](benchmark.ts) and [benchmark-worker.ts](benchmark-worker.ts) are V1 microbenchmarks. Their fixture HTTP boundary and additional directory fsync do not represent equivalent production SDK/tool/worker flows; their blocking non-equivalence result remains preserved and cannot substitute for V2 or a deployment gate.

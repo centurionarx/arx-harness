@@ -1,6 +1,7 @@
 /**
  * AUTH-005/v2 fixed-workload keyless native driver.
  * Run only in the parent's agreed idle window through run-gate-isolated.py.
+ * Usage: benchmark-native.ts <output> <none|zstd> <baseline-provenance>.
  * No service, infrastructure, account, secret or product endpoint is created.
  */
 import { mkdtemp, mkdir, writeFile, readFile, rm, statfs } from 'node:fs/promises'
@@ -26,6 +27,8 @@ const compression = process.argv[3]
 if (compression !== 'none' && compression !== 'zstd') throw new Error('explicit none or zstd encoding required')
 if (process.argv[2] === undefined || process.argv[2] === '') throw new Error('explicit evidence output directory required')
 const output = resolve(process.argv[2])
+const provenancePath = process.argv[4]
+if (provenancePath === undefined || provenancePath === '') throw new Error('explicit baseline provenance path required')
 const root = await mkdtemp(join(tmpdir(), 'arx-auth005-native-'))
 const operations = ['list', 'open', 'append', 'read-file', 'write-file'] as const
 type Operation = typeof operations[number]
@@ -38,7 +41,6 @@ interface BaselineProvenance {
     candidate: { methods: string[]; paths: string[] }
   }>
 }
-const provenancePath = '.gauntlet/evidence/AUTH-001-20261008/auth005-native-baseline-provenance.json'
 const baselineProvenance = JSON.parse(await readFile(provenancePath, 'utf8')) as BaselineProvenance
 if (baselineProvenance.version !== 'AUTH-005/v2-baseline-provenance'
   || baselineProvenance.baseCommit !== '1e5309f133c8a09599fc90cfc003a1556677895b'

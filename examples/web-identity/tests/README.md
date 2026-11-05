@@ -8,9 +8,9 @@ The fixture's temporary resolution directory links only real package directories
 
 native-browser-gate.host.ts runs headless Playwright against these servers. The current phase covers public and admin application trees and USER storage with no runtime grant, so no project RPC is needed. It checks request-specific HTML before and after login and revocation, real owner denial, virtual project/workspace creation, saved history, account/logout, independent tabs, accessibility at desktop/mobile widths, and reset/invitation recovery transfer before the first bundle and auth GET. The delivery template uses reserved fixture domains; the driver rebases only the delivered pathname/fragment onto the dynamically bound same-audience fixture server and records that fact, without overriding any auth request or carrier. It records method/path only and safe screenshots; it creates no trace and logs no headers, cookies, credentials, or recovery links.
 
-Run through the isolated gate runner from the staging directory:
+Run from the repository root after the build. Every location is explicit: the receipt directory, the private evidence directory that must contain it, and the frontend source baseline recorded before the build. A missing argument fails before any server starts. native-project-browser-gate.host.ts takes the same arguments.
 
-    python3 .gauntlet/evidence/AUTH-001-20261008/run-gate-isolated.py auth004-native-browser-first node node_modules/tsx/dist/cli.mjs examples/web-identity/tests/native-browser-gate.host.ts .gauntlet/evidence/AUTH-001-20261008/auth004-native-browser-first
+    node node_modules/tsx/dist/cli.mjs examples/web-identity/tests/native-browser-gate.host.ts <evidence-root>/<receipt-dir> <evidence-root> <frontend-source-baseline.json>
 
 Source/HTTP integration runs independently in packages/client/ui-auth/tests/auth-http.client.spec.ts. It imports actual source plugins for the application composition and uses real HTTP authority for every credential or ownership transition.
 
