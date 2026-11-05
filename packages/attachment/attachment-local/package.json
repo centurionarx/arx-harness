@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-attachment-local",
   "description": "Private content-addressed ARX_HOME attachment storage",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "publishConfig": {
     "access": "public"
   },
