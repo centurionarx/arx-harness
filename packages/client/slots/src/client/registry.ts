@@ -209,6 +209,7 @@ export class SlotRegistry extends Service {
     this.ctx.effect(() => {
       this._renderer = renderer
       return () => {
+        /* v8 ignore next -- install() is boot-once, so no other renderer can replace this one before its effect disposes. */
         if (this._renderer === renderer) this._renderer = undefined
       }
     }, 'slots.install()')
@@ -226,6 +227,7 @@ export class SlotRegistry extends Service {
     this.ctx.effect(() => {
       this._locale = face
       return () => {
+        /* v8 ignore next -- installLocale() is boot-once, so no other face can replace this one before its effect disposes. */
         if (this._locale === face) this._locale = undefined
       }
     }, 'slots.installLocale()')
@@ -372,6 +374,7 @@ export class SlotRegistry extends Service {
     }
     let disposed = false
     return () => {
+      /* v8 ignore next -- register() wraps this disposer in ctx.effect, whose disposer runs at most once. */
       if (disposed) return
       disposed = true
       dispose()

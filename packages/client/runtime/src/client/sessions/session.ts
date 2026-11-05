@@ -232,6 +232,7 @@ export class Session implements SessionFace {
         } else {
           const routed = (await this.api.subagents.prompt({
             ...this.address,
+            /* v8 ignore next 3 -- the `: []` arm is unreachable: image parts are refused above, and PromptContentPart is text or image. */
             content: content.flatMap(part => part.type === 'text'
               ? [{ type: 'text' as const, text: part.text }]
               : []),

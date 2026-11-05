@@ -498,6 +498,8 @@ export class BrowserAuthClient implements HostObservable<AuthView> {
     const epoch = this.epoch
     const delay = Math.max(0, Math.min(2_147_483_647, this.state.expiresAt - Date.now()))
     this.expiration = setTimeout(() => { if (!this.isDisposed() && epoch === this.epoch) this.end('revoked') }, delay)
+    /* v8 ignore next -- each epoch resumes validation once: start() runs once, and a successful
+       validateRecovery always follows an epoch increment. */
     if (this.pollEpoch === epoch) return
     this.pollEpoch = epoch
     void this.pollInvalidation(this.state.generation, epoch).finally(() => {
@@ -873,6 +875,8 @@ export class BrowserAuthClient implements HostObservable<AuthView> {
       } catch (error) {
         if (this.isDisposed() || epoch !== this.epoch) return
         // An auth-channel outage cannot leave protected content mounted.
+        /* v8 ignore next -- the 'revoked' arm needs a live 401 AuthHttpError, but response() ends the
+           session on a server 401 and SESSION_ENDED implies a changed epoch; both return above. */
         this.end(error instanceof AuthHttpError && error.status === 401 ? 'revoked' : 'unavailable')
       }
     }

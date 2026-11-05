@@ -101,6 +101,7 @@ export function AdminModules(props: AdminPageProps): ReactNode {
     <ul className={css.list}>{state.modules.map(module => <li className={css.user} key={module.id}>
       <label className={css.check}><input type="checkbox" checked={user?.grants.includes(module.id) ?? false}
         disabled={user === undefined || state.busy} onChange={(event) => {
+          /* v8 ignore next -- the checkbox is disabled while no user is selected, so a browser delivers no change event. */
           if (user === undefined) return
           props.modules(user.userId, event.target.checked ? [...user.grants, module.id] : user.grants.filter(id => id !== module.id))
         }} />{module.label}</label>

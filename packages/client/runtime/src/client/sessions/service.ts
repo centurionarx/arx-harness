@@ -159,6 +159,7 @@ export { scopeOf } from '../agents/scope.ts'
  * @returns basename title, or '' when no non-empty segment exists.
  */
 export function workspaceTitleOf(cwd: string): string {
+  /* v8 ignore next -- `?? ''` arm: split always returns at least one element. */
   return cwd.replace(/[/\\]+$/, '').split(/[/\\]/).pop() ?? ''
 }
 

@@ -441,6 +441,7 @@ export class SessionManager {
           parentAvailable: this.catalogInflight.get(parentSessionId)?.parentAvailableOverride
             ?? previous?.parentAvailable ?? false,
           state: 'error',
+          /* v8 ignore next -- the `? null` arm is unreachable: transportError always returns ok:false. */
           error: folded.ok ? null : folded.error,
         })
       } finally {
@@ -1102,6 +1103,7 @@ export class SessionManager {
       // The composer selects the first question ahead of approval. Mirror that
       // answer order so the sidebar names the interaction the user can act on.
       const status = statuses.find(candidate => candidate !== 'approval') ?? statuses[0]
+      /* v8 ignore next -- stored interaction maps are never empty: resolvePending deletes a map when it empties. */
       if (status !== undefined) pendingInteractions.set(sessionId, status)
     }
     const fresh = flattenLineage(merged, pendingInteractions, this.completedNotifications)

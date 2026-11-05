@@ -202,6 +202,7 @@ export function AccountFooter(props: AccountFooterProps): ReactNode {
       aria-labelledby={titleId} onKeyDown={(event) => {
         if (event.key === 'Escape') { setOpen(false); return }
         if (event.key !== 'Tab') return
+        /* v8 ignore next -- `?? []` arm: the keydown handler runs only while the mounted dialog holds the ref. */
         const nodes = [...(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]') ?? [])]
         const first = nodes[0], last = nodes.at(-1)
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }

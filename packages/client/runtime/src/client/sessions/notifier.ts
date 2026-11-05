@@ -105,6 +105,7 @@ export class Notifier {
   }
 
   private flush(): void {
+    /* v8 ignore next -- every valid scheduled publish follows a mark that set notifyPending; notifyNow and dispose cancel the schedule. */
     if (!this.notifyPending) return
     if (this.listeners.size === 0) return // lazy: dirty (if still set) rebuilds on next getSnapshot
     this.notifyPending = false

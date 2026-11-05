@@ -348,6 +348,7 @@ export class WorkspaceManager {
     const items = [...this.items].sort((left, right) => {
       const leftId = left.getSnapshot().view?.workspaceId
       const rightId = right.getSnapshot().view?.workspaceId
+      /* v8 ignore next 2 -- `undefined` view arms: a Workspace enters items only with a materialized view. */
       return (leftId === undefined ? Number.MAX_SAFE_INTEGER : rank.get(leftId) ?? Number.MAX_SAFE_INTEGER)
         - (rightId === undefined ? Number.MAX_SAFE_INTEGER : rank.get(rightId) ?? Number.MAX_SAFE_INTEGER)
     })
@@ -405,6 +406,7 @@ export class WorkspaceManager {
     const existing = new Map(
       this.items.flatMap((workspace) => {
         const view = workspace.getSnapshot().view
+        /* v8 ignore next -- `undefined` view arm: a Workspace enters items only with a materialized view. */
         return view === undefined ? [] : [[view.workspaceId, workspace] as const]
       }),
     )
@@ -428,6 +430,7 @@ export class WorkspaceManager {
     this.itemViewsSource = this.items
     this.itemViewsCache = this.items.flatMap((workspace) => {
       const view = workspace.getSnapshot().view
+      /* v8 ignore next -- `undefined` view arm: a Workspace enters items only with a materialized view. */
       return view === undefined ? [] : [view]
     })
     return this.itemViewsCache

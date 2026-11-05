@@ -18,6 +18,7 @@ function HistoryDialog(props: BrowserProps & { content: string; sessionId: Store
     onKeyDown={(event) => {
       if (event.key === 'Escape') props.actions.closeHistory()
       if (event.key !== 'Tab') return
+      /* v8 ignore next -- `?? []` arm: the keydown handler runs only while the mounted dialog holds the ref. */
       const buttons = [...(dialog.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])]
       const first = buttons[0]; const last = buttons.at(-1)
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
