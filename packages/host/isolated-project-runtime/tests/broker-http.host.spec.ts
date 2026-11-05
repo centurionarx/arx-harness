@@ -242,11 +242,11 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
     const headers = supervisor.headersOf(workspaceId)
     const privateCapability = headers?.get(WORKER_CAPABILITY_HEADER)
     if (privateCapability === undefined || privateCapability === null) throw new Error('fresh metadata lease unavailable')
-    const entered = Promise.withResolvers<void>(), release = Promise.withResolvers<void>()
+    const entered = Promise.withResolvers<undefined>(), release = Promise.withResolvers<undefined>()
     const read = harness.ctx.projectStorage.executionCreationHeader.bind(harness.ctx.projectStorage)
     const retained = vi.spyOn(harness.ctx.projectStorage, 'executionCreationHeader').mockImplementationOnce(async (...args) => {
       const header = await read(...args)
-      entered.resolve()
+      entered.resolve(undefined)
       await release.promise
       return header
     })
@@ -260,7 +260,7 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
       await vi.waitFor(async () => {
         await expect(harness.ctx.webIdentity.revalidate(fresh)).rejects.toMatchObject({ code: 'AUTH_INVALID' })
       })
-      release.resolve()
+      release.resolve(undefined)
       const refused = await pending
       expect(refused.ok).toBe(false)
       expect(await refused.json()).toEqual({ error: 'Worker operation refused' })
@@ -273,6 +273,6 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
       expect(await harness.ctx.projectStorage.executionRevision(inspector, lazy.id)).toBeUndefined()
       expect(await harness.ctx.projectStorage.executionRawPage(inspector, lazy.id, { offset: 0, maxBytes: 400 })).toBeUndefined()
       expect(supervisor.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
-    } finally { release.resolve(); retained.mockRestore(); controller.abort(); await stream.return?.() }
+    } finally { release.resolve(undefined); retained.mockRestore(); controller.abort(); await stream.return?.() }
   })
 })

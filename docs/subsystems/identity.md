@@ -180,6 +180,13 @@ override async readRawPage(id: SessionId, request: SessionRawArtifactPageRequest
 override async readRaw(id: SessionId, signal?: AbortSignal): Promise<SessionRawArtifact | undefined>
 
 /**
+ * Obtain an existing control allocation before native Agent publication.
+ * @param sessionId - Registered unseeded session in this fixed workspace.
+ * @returns Canonical immutable metadata without materializing its lazy log.
+ */
+async readCreationHeader(sessionId: SessionId): Promise<SessionHeader>
+
+/**
  * Allocate fork lineage in control before the worker creates its child.
  * @param sessionId - Existing owned parent session.
  * @param seedLength - Canonical event prefix length accepted by persistence.
@@ -351,6 +358,25 @@ async provision(authority: RequestAuthority, workspaceId: WorkspaceId, signal?: 
  * @returns Header committed to the index and persistence provider.
  */
 async register(authority: RequestAuthority, workspaceId: WorkspaceId, header: SessionHeader, signal?: AbortSignal): Promise<SessionHeader>
+
+/**
+ * Read committed creation metadata without materializing or inspecting a log.
+ * @param authority - Current issued USER authority.
+ * @param id - Already registered owned session.
+ * @param signal - Lease cancellation checked before and after metadata access.
+ * @returns The registered canonical header after current owner revalidation.
+ */
+async executionCreationHeader(authority: RequestAuthority, id: SessionId, signal?: AbortSignal): Promise<SessionHeader>
+
+/**
+ * Commit an already registered empty header for native session creation.
+ * Default registration stays lazy; failed writes publish no durable receipt.
+ * @param authority - Current issued USER authority for this owned session.
+ * @param id - Registered owner session, never a caller-supplied filesystem path.
+ * @param signal - Cancellation before admission and after an initiated commit.
+ * @returns Completion after the canonical provider commit and owner revalidation.
+ */
+async materialize(authority: RequestAuthority, id: SessionId, signal?: AbortSignal): Promise<void>
 
 /**
  * Append a contiguous batch and acknowledge only the fsync plus FULL index

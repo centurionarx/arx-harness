@@ -46,7 +46,7 @@ for (const compression of ['none', 'zstd'] as const) {
     peer.assign({ controlOrigin: origin, scope: provision.scope, volumePath: provision.volumePath })
     const state = await h.ctx.webIdentity.state(user.authority)
     const client = await actualClient((input, init) => {
-      const url = new URL(String(input), origin), headers = new Headers(init?.headers)
+      const url = new URL(input as string | URL, origin), headers = new Headers(init?.headers)
       headers.set('cookie', AUTH_COOKIE_NAMES.user + '=' + user.token)
       headers.set('origin', origin)
       headers.set(AUTH_HEADER, '1')

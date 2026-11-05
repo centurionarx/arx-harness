@@ -57,8 +57,7 @@
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "fflate": "^0.8.2",
-    "@arx-ai/arx-subagent": "workspace:*",
-    "@arx-ai/arx-client-connection": "workspace:*"
+    "@arx-ai/arx-subagent": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

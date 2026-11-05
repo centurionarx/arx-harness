@@ -1252,6 +1252,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'The unchanged logical artifact, absent for a lazy log.',
       },
       {
+        signature: 'async readCreationHeader(sessionId: SessionId): Promise<SessionHeader>',
+        description: 'Obtain an existing control allocation before native Agent publication.',
+        parameters: [{ name: 'sessionId', description: 'Registered unseeded session in this fixed workspace.' }],
+        returns: 'Canonical immutable metadata without materializing its lazy log.',
+      },
+      {
         signature: 'async allocateForkSessionId(sessionId: SessionId, seedLength: number, agentPreset?: string): Promise<SessionId>',
         description: 'Allocate fork lineage in control before the worker creates its child.',
         parameters: [{ name: 'sessionId', description: 'Existing owned parent session.' }, { name: 'seedLength', description: 'Canonical event prefix length accepted by persistence.' }, { name: 'agentPreset', description: 'Optional existing preset recorded in the new header.' }],
@@ -1562,6 +1568,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'Header committed to the index and persistence provider.',
       },
       {
+        signature: 'async executionCreationHeader(authority: RequestAuthority, id: SessionId, signal?: AbortSignal): Promise<SessionHeader>',
+        description: 'Read committed creation metadata without materializing or inspecting a log.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Already registered owned session.' }, { name: 'signal', description: 'Lease cancellation checked before and after metadata access.' }],
+        returns: 'The registered canonical header after current owner revalidation.',
+      },
+      {
+        signature: 'async materialize(authority: RequestAuthority, id: SessionId, signal?: AbortSignal): Promise<void>',
+        description: 'Commit an already registered empty header for native session creation. Default registration stays lazy; failed writes publish no durable receipt.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority for this owned session.' }, { name: 'id', description: 'Registered owner session, never a caller-supplied filesystem path.' }, { name: 'signal', description: 'Cancellation before admission and after an initiated commit.' }],
+        returns: 'Completion after the canonical provider commit and owner revalidation.',
+      },
+      {
         signature: 'async append(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit>',
         description: 'Append a contiguous batch and acknowledge only the fsync plus FULL index projection. Failed appends publish neither a cursor nor a saved receipt.',
         parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'events', description: 'Existing SessionEvents, including their sequence envelopes.' }, { name: 'signal', description: 'Optional cancellation before append starts; an initiated commit still projects its index.' }],
@@ -1723,6 +1741,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         signature: 'abstract create(meta: SessionHeader): Promise<void>',
         description: 'Register a new session\'s metadata. A backend MAY defer the physical write until the first append (lazy materialization), in which case a created-but-never-appended session is absent from list — abandoned sessions leave nothing behind.',
         parameters: [{ name: 'meta', description: 'the immutable header (id, version, cwd, lineage) to record.' }],
+      },
+      {
+        signature: 'materialize(_id: SessionId): Promise<void>',
+        description: 'Explicitly commit a registered header without inventing events. Default creation remains lazy; providers that do not own this capability reject. Successful repeated calls preserve the existing artifact unchanged.',
+        parameters: [{ name: '_id', description: 'Registered session whose canonical header must be durable.' }],
+        returns: 'Completion only after the provider\'s durable header receipt.',
       },
       {
         signature: 'abstract append(id: SessionId, events: readonly SessionEvent[]): Promise<void>',

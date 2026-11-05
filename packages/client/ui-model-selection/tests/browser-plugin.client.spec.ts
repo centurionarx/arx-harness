@@ -341,7 +341,7 @@ describe('ui-model-selection dual entry', () => {
     const b = await bench({ selected: false, wire: { models: () => {
       calls += 1
       return calls === 1
-        ? new Promise(resolve => { resolveOld = resolve })
+        ? new Promise((resolve) => { resolveOld = resolve })
         : Promise.resolve({ result: { ok: true, value: { current, routable: true, groups: GROUPS, failures: [] } } })
     } } })
     const scope = b.mint('target')
@@ -359,7 +359,7 @@ describe('ui-model-selection dual entry', () => {
 
   it('cannot refresh or publish from a disposed selection scope into its replacement', async () => {
     let resolveModels: (value: unknown) => void = () => undefined
-    const b = await bench({ wire: { models: () => new Promise(resolve => { resolveModels = resolve }) } })
+    const b = await bench({ wire: { models: () => new Promise((resolve) => { resolveModels = resolve }) } })
     const first = b.mint('target')
     const oldFace = b.seat().inject!(sid('target'))
     first.ctx.emit(first.ctx, 'session/model-selection', sid('target'))

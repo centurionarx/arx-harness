@@ -302,6 +302,15 @@ readRawPage(_id: SessionId, _request: SessionRawArtifactPageRequest, signal?: Ab
 abstract create(meta: SessionHeader): Promise<void>
 
 /**
+ * Explicitly commit a registered header without inventing events. Default
+ * creation remains lazy; providers that do not own this capability reject.
+ * Successful repeated calls preserve the existing artifact unchanged.
+ * @param _id - Registered session whose canonical header must be durable.
+ * @returns Completion only after the provider's durable header receipt.
+ */
+materialize(_id: SessionId): Promise<void>
+
+/**
  * Durably persist a batch of events. Honors the append-only and contiguous-
  * seq contracts: the first event's `seq` MUST equal the stored next-seq
  * (after `load` has durably closed any interrupted turn). Rejects non-JSON-

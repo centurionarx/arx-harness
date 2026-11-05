@@ -30,13 +30,13 @@ it('commits a genuine admitted native header but gives no RPC success or idle re
   peer.assign({ controlOrigin: origin, scope: provision.scope, volumePath: provision.volumePath })
   const provider = h.ctx.sessionPersistence
   const materialize = provider.materialize.bind(provider)
-  const admitted = Promise.withResolvers<void>(), retained = Promise.withResolvers<void>()
-  release = retained.resolve
+  const admitted = Promise.withResolvers<undefined>(), retained = Promise.withResolvers<undefined>()
+  release = () => { retained.resolve(undefined) }
   let id: SessionId | undefined
   let committed = false
   const barrier = vi.spyOn(provider, 'materialize').mockImplementationOnce(async (sessionId) => {
     id = sessionId
-    admitted.resolve()
+    admitted.resolve(undefined)
     await retained.promise
     await materialize(sessionId)
     committed = true
@@ -49,7 +49,7 @@ it('commits a genuine admitted native header but gives no RPC success or idle re
     (error: unknown) => ({ acknowledged: false, error }))
   await admitted.promise
   outer.abort(reason)
-  retained.resolve()
+  retained.resolve(undefined)
   const outcome = await pending
   expect(barrier).toHaveBeenCalledTimes(1)
   expect(committed).toBe(true)

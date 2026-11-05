@@ -34,7 +34,7 @@ async function ownerHttpFixture() {
 it('does not renew idle when the committed project becomes tombstoned before HTTP publication', async () => {
   const { h, user, origin, state, initial, deadlines } = await ownerHttpFixture()
   const created = Promise.withResolvers<Awaited<ReturnType<typeof h.ctx.projectStorage.createProject>>>()
-  const retained = Promise.withResolvers<void>(); release = retained.resolve
+  const retained = Promise.withResolvers<undefined>(); release = () => { retained.resolve(undefined) }
   const original = h.ctx.projectStorage.createProject.bind(h.ctx.projectStorage)
   vi.spyOn(h.ctx.projectStorage, 'createProject').mockImplementation(async (...args) => {
     const project = await original(...args)
@@ -97,10 +97,11 @@ it('does not renew when an admitted owner loses the storage grant before the com
   const { h, user, origin, initial, deadlines, headers } = await ownerHttpFixture()
   const master = h.master
   if (master === undefined) throw new Error('real MASTER authority unavailable')
-  const created = Promise.withResolvers<void>(), retained = Promise.withResolvers<void>(); release = retained.resolve
+  const created = Promise.withResolvers<undefined>(), retained = Promise.withResolvers<undefined>()
+  release = () => { retained.resolve(undefined) }
   const original = h.ctx.projectStorage.createProject.bind(h.ctx.projectStorage)
   vi.spyOn(h.ctx.projectStorage, 'createProject').mockImplementation(async (...args) => {
-    const project = await original(...args); created.resolve(); await retained.promise; return project
+    const project = await original(...args); created.resolve(undefined); await retained.promise; return project
   })
   const outcome = fetch(origin + '/user/projects', { method: 'POST', headers,
     body: JSON.stringify({ name: 'Committed before grant withdrawal' }) }).then(value => ({ value }), (error: unknown) => ({ error }))

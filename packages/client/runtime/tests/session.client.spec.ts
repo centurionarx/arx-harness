@@ -264,8 +264,8 @@ describe('accepted model selections', () => {
     const other = createScope(ctx, PARENT)
     const ownSeen: SessionId[] = []
     const otherSeen: SessionId[] = []
-    own.ctx.on('session/model-selection', id => { ownSeen.push(id) })
-    other.ctx.on('session/model-selection', id => { otherSeen.push(id) })
+    own.ctx.on('session/model-selection', (id) => { ownSeen.push(id) })
+    other.ctx.on('session/model-selection', (id) => { otherSeen.push(id) })
     const { api, session } = makeSession()
     session.bindScope(own.ctx)
     try {
@@ -290,7 +290,7 @@ describe('accepted model selections', () => {
     const ctx = new Context()
     const scope = createScope(ctx, SID)
     const seen: SessionId[] = []
-    scope.ctx.on('session/model-selection', id => { seen.push(id) })
+    scope.ctx.on('session/model-selection', (id) => { seen.push(id) })
     const { api, session } = makeSession()
     session.bindScope(scope.ctx)
     const gate = deferred<Awaited<ReturnType<FakeApiClient['onHistory']>>>()
@@ -316,7 +316,7 @@ describe('accepted model selections', () => {
     const reborn = createScope(ctx, SID)
     const firstSeen: SessionId[] = []
     const rebornSeen: SessionId[] = []
-    first.ctx.on('session/model-selection', id => { firstSeen.push(id) })
+    first.ctx.on('session/model-selection', (id) => { firstSeen.push(id) })
     const { session } = makeSession()
     session.bindScope(first.ctx)
     try {
@@ -325,7 +325,7 @@ describe('accepted model selections', () => {
       expect(firstSeen).toEqual([SID])
       session.unbindScope()
       await first.fiber.dispose()
-      reborn.ctx.on('session/model-selection', id => { rebornSeen.push(id) })
+      reborn.ctx.on('session/model-selection', (id) => { rebornSeen.push(id) })
       session.handleMuxEnvelope('unbound' as never, { type: 'session/event', sessionId: SID, event: modelEvent(2) })
       expect(rebornSeen).toEqual([])
       session.bindScope(reborn.ctx)

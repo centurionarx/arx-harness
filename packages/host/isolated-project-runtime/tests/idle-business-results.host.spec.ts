@@ -130,7 +130,7 @@ it('renews once after a real successful command and preserves the durable comman
   expect((await own.h.ctx.identityAuthorityJournal.recordsAfter(own.head.sequence)).filter(record => record.kind === 'session')).toHaveLength(1)
   const stored = await own.h.ctx.sessionPersistence.readFrom(own.meta.id, 0)
   expect(stored.events.filter(event => event.type === 'command/run')).toHaveLength(1)
-  expect(stored.events.filter(event => event.type === 'command/done')).toEqual([expect.objectContaining({ data: expect.objectContaining({ kind: 'success' }) })])
+  expect(stored.events.filter(event => event.type === 'command/done')).toEqual([expect.objectContaining({ data: expect.objectContaining({ kind: 'success' }) as unknown })])
   expect(own.peer.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
 }, 30000)
 
@@ -139,7 +139,7 @@ it('renews successful feedback put and delete but keeps compare-and-set refusals
   own.advance()
   const created = rpcValue(await own.call('messageFeedback/put', { args: { request: { sessionId: own.meta.id,
     messageId: target, rating: 'positive', ifVersion: null } } }))
-  expect(created).toMatchObject({ ok: true, value: { messageId: target, rating: 'positive', version: expect.any(String) } })
+  expect(created).toMatchObject({ ok: true, value: { messageId: target, rating: 'positive', version: expect.any(String) as unknown } })
   if (typeof created !== 'object' || created === null || !('value' in created)
     || typeof created.value !== 'object' || created.value === null || !('version' in created.value)
     || typeof created.value.version !== 'string') throw new Error('canonical feedback version unavailable')

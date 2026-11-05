@@ -37,6 +37,16 @@ async function actualWebApiClient(send: typeof globalThis.fetch): Promise<IApiCl
   return client
 }
 
+/** Read the real web session absolute and idle deadlines from the identity database. */
+function sessionDeadlines(path: string, authSessionId: string) {
+  const database = new DatabaseSync(path)
+  try {
+    const row = database.prepare('SELECT expires_at,idle_expires_at FROM web_sessions WHERE id=?').get(authSessionId)
+    if (row === undefined) throw new Error('real session deadline missing')
+    return { absolute: Number(row.expires_at), idle: Number(row.idle_expires_at) }
+  } finally { database.close() }
+}
+
 it('does not renew idle or journal head for SDK handshake, reconnect and automatic subagent refetch POSTs', async () => {
   supervisor = await nativeSupervisorFixture()
   harness = await storageHarness({ http: true, endpoint: supervisor.endpoint, readyUsers: 1,
@@ -54,7 +64,7 @@ it('does not renew idle or journal head for SDK handshake, reconnect and automat
   const state = await h.ctx.webIdentity.state(user.authority)
   const methods: string[] = []
   const client = await actualWebApiClient((input, init) => {
-    const url = new URL(String(input), origin)
+    const url = new URL(input as string | URL, origin)
     methods.push(url.pathname)
     const headers = new Headers(init?.headers)
     headers.set('cookie', AUTH_COOKIE_NAMES.user + '=' + user.token)
@@ -64,14 +74,7 @@ it('does not renew idle or journal head for SDK handshake, reconnect and automat
     return fetch(new URL(url.pathname + url.search, origin), { ...init, headers })
   })
   expect(await client.sessions.create({ sessionId: meta.id })).toMatchObject({ result: { ok: true, value: { sessionId: meta.id } } })
-  const deadlines = () => {
-    const database = new DatabaseSync(h.paths.database)
-    try {
-      const row = database.prepare('SELECT expires_at,idle_expires_at FROM web_sessions WHERE id=?').get(user.authority.authSessionId)
-      if (row === undefined) throw new Error('real session deadline missing')
-      return { absolute: Number(row.expires_at), idle: Number(row.idle_expires_at) }
-    } finally { database.close() }
-  }
+  const deadlines = () => sessionDeadlines(h.paths.database, user.authority.authSessionId)
   const initial = deadlines(), head = h.ctx.webIdentity.authorityHead
   const now = initial.idle - 1000
   vi.spyOn(Date, 'now').mockReturnValue(now)
@@ -102,21 +105,14 @@ async function sdkActivityFixture() {
   peer.assign({ controlOrigin: origin, scope: provision.scope, volumePath: provision.volumePath })
   const state = await h.ctx.webIdentity.state(user.authority)
   const client = await actualWebApiClient((input, init) => {
-    const url = new URL(String(input), origin), headers = new Headers(init?.headers)
+    const url = new URL(input as string | URL, origin), headers = new Headers(init?.headers)
     headers.set('cookie', AUTH_COOKIE_NAMES.user + '=' + user.token)
     headers.set('origin', origin)
     headers.set(AUTH_HEADER, '1')
     headers.set(CSRF_HEADER, state.csrfToken)
     return fetch(new URL(url.pathname + url.search, origin), { ...init, headers })
   })
-  const deadlines = () => {
-    const database = new DatabaseSync(h.paths.database)
-    try {
-      const row = database.prepare('SELECT expires_at,idle_expires_at FROM web_sessions WHERE id=?').get(user.authority.authSessionId)
-      if (row === undefined) throw new Error('real session deadline missing')
-      return { absolute: Number(row.expires_at), idle: Number(row.idle_expires_at) }
-    } finally { database.close() }
-  }
+  const deadlines = () => sessionDeadlines(h.paths.database, user.authority.authSessionId)
   const initial = deadlines()
   let now = initial.idle - 1000
   vi.spyOn(Date, 'now').mockImplementation(() => now)
@@ -143,7 +139,7 @@ it('renews new session creation, rename and a consumed replay prompt through the
   if (ctx === undefined || agent === undefined) throw new Error('actual SDK created worker session unavailable')
   own.advance(); before = own.deadlines(); head = own.h.ctx.webIdentity.authorityHead
   expect(await own.client.sessions.rename({ sessionId: id, title: 'Durable SDK activity title' }))
-    .toMatchObject({ result: { ok: true, value: { title: 'Durable SDK activity title', seq: expect.any(Number) } } })
+    .toMatchObject({ result: { ok: true, value: { title: 'Durable SDK activity title', seq: expect.any(Number) as unknown } } })
   await expectRenewal(before, head.sequence)
   const renamed = await own.h.ctx.sessionPersistence.readFrom(id, 0)
   expect(renamed.events.some(event => JSON.stringify(event.data).includes('Durable SDK activity title'))).toBe(true)

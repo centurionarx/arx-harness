@@ -55,7 +55,7 @@ it('renews each exact successful administration route once while GET, invalid an
     expect(own.deadlines().idle).toBeGreaterThan(before.idle)
     expect(own.deadlines().idle).toBeLessThanOrEqual(own.initial.absolute)
     const records = (await own.h.ctx.identityAuthorityJournal.recordsAfter(head.sequence)).filter(record => record.kind === 'session')
-    const rows = records.map(record => {
+    const rows = records.map((record) => {
       const row = record.payload.session
       if (typeof row !== 'object' || row === null || !('id' in row) || typeof row.id !== 'string'
         || !('revoked' in row) || !('idle_expires_at' in row)) throw new Error('canonical authority session record unavailable')
@@ -97,11 +97,11 @@ it('renews each exact successful administration route once while GET, invalid an
 }, 30000)
 
 it('does not renew or publish an admin result when logout precedes completed activity', async () => {
-  const own = await adminActivityFixture(), entered = Promise.withResolvers<void>(), retained = Promise.withResolvers<void>()
-  release = retained.resolve
+  const own = await adminActivityFixture(), entered = Promise.withResolvers<undefined>(), retained = Promise.withResolvers<undefined>()
+  release = () => { retained.resolve(undefined) }
   const original = own.h.ctx.webIdentity.createUser.bind(own.h.ctx.webIdentity)
   vi.spyOn(own.h.ctx.webIdentity, 'createUser').mockImplementation(async (...args) => {
-    const user = await original(...args); entered.resolve(); await retained.promise; return user
+    const user = await original(...args); entered.resolve(undefined); await retained.promise; return user
   })
   const username = 'held-admin-' + randomUUID()
   const outcome = own.send('/admin/users', { username, email: username + '@fixture.test' })
@@ -120,14 +120,14 @@ it('does not renew or publish an admin result when logout precedes completed act
 }, 30000)
 
 function retainedActivity(own: Awaited<ReturnType<typeof adminActivityFixture>>) {
-  const entered = Promise.withResolvers<void>(), retained = Promise.withResolvers<void>()
-  release = retained.resolve
+  const entered = Promise.withResolvers<undefined>(), retained = Promise.withResolvers<undefined>()
+  release = () => { retained.resolve(undefined) }
   const original = own.h.ctx.webIdentity.revalidate.bind(own.h.ctx.webIdentity)
   let held = false
   vi.spyOn(own.h.ctx.webIdentity, 'revalidate').mockImplementation(async (...args) => {
     const result = await original(...args)
     if (!held && args[0].authSessionId === own.authority.authSessionId && args[1]?.activity === true) {
-      held = true; entered.resolve(); await retained.promise
+      held = true; entered.resolve(undefined); await retained.promise
     }
     return result
   })
@@ -157,11 +157,11 @@ it('rechecks admin authority after an awaited durable renewal before returning a
 type NodeIdentityApi = { handle(request: IncomingMessage, response: ServerResponse): Promise<void> }
 it('rechecks the real Node connection signal after awaited durable activity when the HTTP caller closes', async () => {
   const own = await adminActivityFixture(), held = retainedActivity(own)
-  const closed = Promise.withResolvers<void>(), completed = Promise.withResolvers<void>()
+  const closed = Promise.withResolvers<undefined>(), completed = Promise.withResolvers<undefined>()
   const api = own.h.ctx.webIdentityApi as unknown as NodeIdentityApi, original = api.handle.bind(api)
   vi.spyOn(api, 'handle').mockImplementation(async (request, response) => {
-    response.once('close', () => { closed.resolve() })
-    try { await original(request, response) } finally { completed.resolve() }
+    response.once('close', () => { closed.resolve(undefined) })
+    try { await original(request, response) } finally { completed.resolve(undefined) }
   })
   const controller = new AbortController()
   const outcome = own.send('/admin/users', { username: held.username, email: held.username + '@fixture.test' }, 'POST', controller.signal)
@@ -194,7 +194,7 @@ it('rechecks the API provider lifetime after awaited durable activity before pub
   const result = await outcome
   if (!('value' in result)) throw result.error
   expect(result.value.status).toBe(503)
-  const body = await result.value.json()
+  const body = await result.value.json() as Record<string, unknown>
   expect(body).toMatchObject({ error: { code: 'AUTH_UNAVAILABLE' } })
   expect(Object.keys(body)).toEqual(['error'])
   expect(own.deadlines()).toEqual(renewed)
