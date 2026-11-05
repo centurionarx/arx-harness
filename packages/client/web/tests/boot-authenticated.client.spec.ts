@@ -7,7 +7,7 @@ import type {
 } from '@arx-ai/arx-client-modules/client'
 import { assertCompositionManifest } from '@arx-ai/arx-client-modules/src/client/manifest.ts'
 import { BrowserAuthClient, type AuthBoundary, type AuthRevocationHandoff } from '@arx-ai/arx-client-ui-auth/browser'
-import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockInstance } from 'vitest'
 import { AppWebEntry } from '../src/boot.ts'
 import { verifiedComposition } from '../src/composition.ts'
 
@@ -39,7 +39,7 @@ interface FakeAuth {
   transportConfig: ReturnType<typeof vi.fn>
   start: ReturnType<typeof vi.fn>
 }
-interface Handoff extends AuthRevocationHandoff { settle: (value: boolean) => void; dispose: ReturnType<typeof vi.fn> }
+interface Handoff extends AuthRevocationHandoff { settle: (value: boolean) => void; dispose: Mock<() => void> }
 
 type Boundary = (reason: AuthBoundary, confirmation?: AuthRevocationHandoff) => void
 let boundary: Boundary
