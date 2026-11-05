@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-session-checkpoint-policy",
   "description": "Semantic session durability checkpoints before model requests and tool side effects",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "publishConfig": {
     "access": "public"
   },

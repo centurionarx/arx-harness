@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-typert-registry",
   "description": "Runtime registry for generated package reflection and Zod schemas",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "publishConfig": {
     "access": "public"
   },
