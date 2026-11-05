@@ -3650,6 +3650,19 @@ export interface Config {
     operations: string[]
   }[]
   /**
+   * Identifiers of the single MASTER_ADMIN account that bootstrapMaster creates; both must be valid account identifiers.
+   */
+  bootstrapAccount: {
+    /**
+     * Username of the bootstrap MASTER_ADMIN account.
+     */
+    username: string
+    /**
+     * Email address of the bootstrap MASTER_ADMIN account, used for its password recovery.
+     */
+    email: string
+  }
+  /**
    * Explicit operator or fixture permission to create a new independent identity schema; it does not recreate a
    * missing journal.
    */

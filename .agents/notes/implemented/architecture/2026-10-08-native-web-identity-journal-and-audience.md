@@ -20,6 +20,8 @@ The current external authority is excluded from rollback snapshot sets. Replay p
 
 Existing Node scrypt and node:sqlite provide bounded asynchronous password work and local durable decisions without another native dependency. Hash work is limited to two active requests and a bounded pending queue; admission checks abort and current credential/link state again after hashing. Purpose-bound digest tokens and encrypted SQLite outbox state keep raw links out of the journal. The [Resend adapter](../../../../packages/identity/web-identity-resend/README.md) sends only to registered recipients and treats external acceptance separately from delivery.
 
+The bootstrap MASTER_ADMIN username and email are the required provider configuration `bootstrapAccount`, validated at load with the ordinary account identifier rules. The provider holds no fixed account identifiers, and the bootstrap password stays a caller-supplied operator input. A schema default was rejected because it would ship one organization's address as every deployment's administrator.
+
 ## Alternatives considered
 
 **Provider login as site login.** Vendor grants identify a provider account, have different credential lifecycles and cannot establish project ownership or a MASTER role. Existing credential/authorization plugins retain their own responsibilities.

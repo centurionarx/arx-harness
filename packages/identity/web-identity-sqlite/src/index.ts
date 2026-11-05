@@ -60,6 +60,19 @@ export interface Config {
     operations: string[]
   }[]
   /**
+   * Identifiers of the single MASTER_ADMIN account that bootstrapMaster creates; both must be valid account identifiers.
+   */
+  bootstrapAccount: {
+    /**
+     * Username of the bootstrap MASTER_ADMIN account.
+     */
+    username: string
+    /**
+     * Email address of the bootstrap MASTER_ADMIN account, used for its password recovery.
+     */
+    email: string
+  }
+  /**
    * Explicit operator or fixture permission to create a new independent identity schema; it does not recreate a
    * missing journal.
    */
@@ -207,6 +220,7 @@ export class SqliteWebIdentity extends WebIdentity {
     modules: z.array(z.object({
       id: z.string().required(), label: z.string().required(), operations: z.array(String).required(),
     })).required(),
+    bootstrapAccount: z.object({ username: z.string().required(), email: z.string().required() }).required(),
     allowInitialize: z.boolean().default(false),
     sessionTtlMs: z.natural().min(1000).max(86400000).default(28800000),
     sessionIdleTtlMs: z.natural().min(1000).max(86400000).required(),
@@ -232,12 +246,19 @@ export class SqliteWebIdentity extends WebIdentity {
   private closing = false
   private readonly ownerCtx: Context
   private readonly catalog: readonly WebModule[]
+  private readonly bootstrap: { username: { value: string; key: string }; email: { value: string; key: string } }
   constructor(ctx: Context, private readonly config: Config) {
     super(ctx)
     this.ownerCtx = ctx
     if (!Number.isSafeInteger(config.sessionIdleTtlMs) || config.sessionIdleTtlMs < 1000 || config.sessionIdleTtlMs > 86400000)
       identityFailure('AUTH_CONFIGURATION', 503, 'Explicit bounded session idle policy required')
     configureHashQueueLimit(config.hashQueueLimit ?? 16)
+    try {
+      this.bootstrap = { username: username(config.bootstrapAccount.username), email: email(config.bootstrapAccount.email) }
+    } catch {
+      // username/email reject with request-level errors; a configuration value maps to AUTH_CONFIGURATION.
+      identityFailure('AUTH_CONFIGURATION', 503, 'Valid bootstrap account identifiers required')
+    }
     const ids = new Set<string>(), operations = new Set<string>()
     this.catalog = Object.freeze(config.modules.map((row) => {
       const id = ModuleId(row.id)
@@ -689,14 +710,17 @@ export class SqliteWebIdentity extends WebIdentity {
   async bootstrapMaster(password: string): Promise<void> {
     const password_hash = await hashPassword(password)
     await this.run(async () => {
-      const existing = this.lookup('arxadmin'), sameEmail = this.lookup('admin@centurionarx.com')
+      const { username: name, email: address } = this.bootstrap
+      const existing = this.lookup(name.key), sameEmail = this.lookup(address.key)
       if (existing !== undefined || sameEmail !== undefined) {
         if (existing?.id !== sameEmail?.id || existing?.role !== 'MASTER_ADMIN')
           identityFailure('AUTH_BOOTSTRAP_COLLISION', 503, 'Bootstrap account collision')
         return
       }
-      await this.commit({ user: { id: randomUUID(), username: 'arxadmin', username_key: 'arxadmin',
-        email: 'admin@centurionarx.com', email_key: 'admin@centurionarx.com', role: 'MASTER_ADMIN', status: 'ACTIVE',
+      if (this.db().prepare("SELECT 1 FROM users WHERE role='MASTER_ADMIN' LIMIT 1").get() !== undefined)
+        identityFailure('AUTH_BOOTSTRAP_COLLISION', 503, 'Bootstrap account collision')
+      await this.commit({ user: { id: randomUUID(), username: name.value, username_key: name.key,
+        email: address.value, email_key: address.key, role: 'MASTER_ADMIN', status: 'ACTIVE',
         password_hash, must_change: 1, revision: this.nextRevision(), created_at: Date.now() } }, 'user')
     })
   }

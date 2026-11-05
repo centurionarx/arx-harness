@@ -11,6 +11,7 @@ let ctx: Context | undefined, fixture: Awaited<ReturnType<typeof identityHarness
 afterEach(async () => { vi.restoreAllMocks(); await ctx?.fiber.dispose(); ctx = undefined; await fixture?.close(); fixture = undefined })
 function configuration(paths: Awaited<ReturnType<typeof identityHarness>>['paths']): Config {
   return { path: paths.database, privateKeyPath: paths.key, sessionIdleTtlMs: 1800000, recoveryOrigins: { user: 'https://user.fixture.test', admin: 'https://admin.fixture.test' },
+    bootstrapAccount: { username: 'arxadmin', email: 'admin@centurionarx.com' },
     modules: [{ id: 'runtime', label: 'Runtime', operations: ['tools.execute'] }, { id: 'storage', label: 'Storage', operations: ['projects.create'] }] }
 }
 async function load(paths: Awaited<ReturnType<typeof identityHarness>>['paths'], override: Partial<Config> = {}) {
@@ -36,6 +37,32 @@ describe('identity projection closed configuration and recovery', () => {
       }
       finally { await independent.fiber.dispose() }
     }
+  })
+  it('validates the configured bootstrap account and creates exactly those identifiers', { timeout: 30000 }, async () => {
+    fixture = await identityHarness({ bootstrap: false })
+    for (const bootstrapAccount of [{ username: 'x', email: 'root@fixture.test' }, { username: 'operator', email: 'not-an-email' }]) {
+      const independent = new Context()
+      try {
+        expect(() => new Identity(independent, { ...configuration(fixture!.paths), bootstrapAccount }))
+          .toThrow(/Valid bootstrap account identifiers/)
+      }
+      finally { await independent.fiber.dispose() }
+    }
+    const { paths } = fixture
+    await fixture.close(false)
+    ctx = await load(paths, { bootstrapAccount: { username: 'Operator.Root', email: 'Root@Fixture.test' } })
+    const password = 'Bootstrap-fixture-' + 'x'.repeat(20)
+    await ctx.webIdentity.bootstrapMaster(password)
+    await ctx.webIdentity.bootstrapMaster(password)
+    expect((await ctx.webIdentity.login('Operator.Root', password, 'admin')).token).toEqual(expect.any(String))
+    await expect(ctx.webIdentity.login('arxadmin', password, 'admin')).rejects.toMatchObject({ status: 401 })
+    const db = new DatabaseSync(paths.database)
+    expect(db.prepare("SELECT username,email FROM users WHERE role='MASTER_ADMIN'").all())
+      .toEqual([{ username: 'Operator.Root', email: 'Root@Fixture.test' }])
+    db.close()
+    await ctx.fiber.dispose()
+    ctx = await load(paths, { bootstrapAccount: { username: 'second-root', email: 'second@fixture.test' } })
+    await expect(ctx.webIdentity.bootstrapMaster(password)).rejects.toMatchObject({ code: 'AUTH_BOOTSTRAP_COLLISION' })
   })
   it('rejects unsafe catalogs, origins, filesystem placement and public storage', { timeout: 30000 }, async () => {
     fixture = await identityHarness()

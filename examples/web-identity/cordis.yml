@@ -14,6 +14,9 @@
     allowInitialize: __INITIALIZE__
     sessionTtlMs: 28800000
     sessionIdleTtlMs: 1800000
+    bootstrapAccount:
+      username: arxadmin
+      email: admin@centurionarx.com
     recoveryOrigins:
       user: https://user.fixture.test
       admin: https://admin.fixture.test

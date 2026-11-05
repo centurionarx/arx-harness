@@ -37,6 +37,7 @@ describe('package-owned identity invariant lifecycle', () => {
     await ctx.plugin(Journal, { root: paths.journal, protectedRoots: [paths.state, paths.content] })
     await ctx.plugin(SqliteIdentity, { path: paths.database, privateKeyPath: paths.key, sessionIdleTtlMs: 1800000,
       recoveryOrigins: { user: 'https://user.fixture.test', admin: 'https://admin.fixture.test' },
+      bootstrapAccount: { username: 'arxadmin', email: 'admin@centurionarx.com' },
       modules: [{ id: 'runtime', label: 'Runtime', operations: ['tools.execute'] }] })
     await ctx.plugin(Registry)
     const journal = ctx.plugin(JournalInvariant)
