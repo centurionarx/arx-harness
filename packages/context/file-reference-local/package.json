@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-file-reference-local",
   "description": "Local-filesystem ctx.fileReferences provider with bounded fuzzy indexes",
-  "version": "1.0.52",
+  "version": "1.0.53",
   "publishConfig": {
     "access": "public"
   },
