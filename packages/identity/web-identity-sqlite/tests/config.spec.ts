@@ -64,6 +64,22 @@ describe('identity projection closed configuration and recovery', () => {
     ctx = await load(paths, { bootstrapAccount: { username: 'second-root', email: 'second@fixture.test' } })
     await expect(ctx.webIdentity.bootstrapMaster(password)).rejects.toMatchObject({ code: 'AUTH_BOOTSTRAP_COLLISION' })
   })
+  it('trims the configured bootstrap identifiers, logs in by email key and refuses a missing bootstrapAccount at load', { timeout: 30000 }, async () => {
+    fixture = await identityHarness({ bootstrap: false })
+    const { paths } = fixture
+    await fixture.close(false)
+    const { bootstrapAccount: _omitted, ...missing } = configuration(paths)
+    await expect(load(paths, { bootstrapAccount: undefined as unknown as Config['bootstrapAccount'] })).rejects.toThrow(/bootstrapAccount missing required value/)
+    expect(() => Identity.Config(missing as Config)).toThrow(/bootstrapAccount missing required value/)
+    ctx = await load(paths, { bootstrapAccount: { username: '  Operator.Root  ', email: ' Root@Fixture.test ' } })
+    const password = 'Bootstrap-fixture-' + 'x'.repeat(20)
+    await ctx.webIdentity.bootstrapMaster(password)
+    expect((await ctx.webIdentity.login('root@fixture.TEST', password, 'admin')).token).toEqual(expect.any(String))
+    const db = new DatabaseSync(paths.database)
+    expect(db.prepare("SELECT username,username_key,email,email_key FROM users WHERE role='MASTER_ADMIN'").all())
+      .toEqual([{ username: 'Operator.Root', username_key: 'operator.root', email: 'Root@Fixture.test', email_key: 'root@fixture.test' }])
+    db.close()
+  })
   it('rejects unsafe catalogs, origins, filesystem placement and public storage', { timeout: 30000 }, async () => {
     fixture = await identityHarness()
     const { paths } = fixture
