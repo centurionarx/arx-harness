@@ -29,7 +29,7 @@ export interface Config {
   credentialRef?: string
   /** Explicit loopback-only HTTP permission for disposable fixtures. */
   fixtureLoopback?: boolean
-  /** Deadline for an individual HTTP operation. */
+  /** Deadline for a unary exchange, or a stream's response headers. */
   requestTimeoutMs: number
   /** Deadline for remote cancellation to confirm process-tree quiescence. */
   cancellationTimeoutMs: number
@@ -446,8 +446,13 @@ export class IsolatedProjectRuntime extends Service {
     this.assertReplyLease(lease)
   }
 
-  private async dispatch(authority: RequestAuthority, resource: OwnerResource | undefined, method: string,
-    path: string, init: RequestInit, signal?: AbortSignal, linkedLease?: Lease): Promise<{ response: Response
+  /**
+   * A unary exchange is bounded by requestTimeoutMs end to end. A stream is
+   * bounded only until its response headers arrive; afterwards the lease and
+   * the caller signal end its body.
+   */
+  private async dispatch(phase: 'unary' | 'stream', authority: RequestAuthority, resource: OwnerResource | undefined,
+    method: string, path: string, init: RequestInit, signal?: AbortSignal, linkedLease?: Lease): Promise<{ response: Response
     lease: Lease }> {
     const endpoint = this.available()
     const scope = await this.authorize(authority, resource, method)
@@ -463,9 +468,17 @@ export class IsolatedProjectRuntime extends Service {
       signal?.throwIfAborted()
       lease.controller.signal.throwIfAborted()
       if (this.closing || this.unsafe) failure('RUNTIME_UNAVAILABLE', 503, 'Isolated execution is unavailable')
-      const response = await fetch(new URL(path, endpoint), { ...init, headers, redirect: 'error',
-        signal: AbortSignal.any([lease.controller.signal, AbortSignal.timeout(this.config.requestTimeoutMs),
-          ...(signal === undefined ? [] : [signal])]) })
+      const headerDeadline = new AbortController()
+      const timer = phase === 'stream' ? setTimeout(() => {
+        headerDeadline.abort(new DOMException('Worker response headers timed out', 'TimeoutError'))
+      }, this.config.requestTimeoutMs) : undefined
+      let response: Response
+      try {
+        response = await fetch(new URL(path, endpoint), { ...init, headers, redirect: 'error',
+          signal: AbortSignal.any([lease.controller.signal,
+            phase === 'unary' ? AbortSignal.timeout(this.config.requestTimeoutMs) : headerDeadline.signal,
+            ...(signal === undefined ? [] : [signal])]) })
+      } finally { clearTimeout(timer) }
       if (response.headers.get('x-arx-operation-id') !== lease.operationId) failure('RUNTIME_PROTOCOL', 502,
         'Worker operation receipt is invalid')
       if (!response.ok) failure('RUNTIME_UNAVAILABLE', 502, 'Worker request failed')
@@ -552,7 +565,7 @@ export class IsolatedProjectRuntime extends Service {
     }
     const body = JSON.stringify(request)
     if (Buffer.byteLength(body) > this.config.maxRequestBytes) failure('RUNTIME_LIMIT', 413, 'Worker request limit exceeded')
-    const { response, lease } = await this.dispatch(authority, resource, request.method, `/api/${request.method}`,
+    const { response, lease } = await this.dispatch('unary', authority, resource, request.method, `/api/${request.method}`,
       { method: 'POST', headers: { 'content-type': 'application/json' }, body }, signal)
     try {
       const result = serverResponseSchema.parse(JSON.parse(Buffer.from(await boundedBody(response,
@@ -621,7 +634,7 @@ export class IsolatedProjectRuntime extends Service {
         failure('RUNTIME_PROTOCOL', 400, 'Invalid export request')
       }
       const ownerResource: OwnerResource = { kind: 'session', sessionId: sessionId(id) }
-      const { response, lease } = await this.dispatch(authority, ownerResource, 'session.export',
+      const { response, lease } = await this.dispatch('unary', authority, ownerResource, 'session.export',
         path + url.search, { method: request.method }, signal ?? request.signal)
       try {
         const manifest = response.headers.get('x-arx-export-sessions')
@@ -673,7 +686,7 @@ export class IsolatedProjectRuntime extends Service {
       assertPending()
     }
     const linkedSignal = AbortSignal.any([pending.lease.controller.signal, signal])
-    const { response, lease } = await this.dispatch(authority, resource, 'session.prompt', '/api/respond',
+    const { response, lease } = await this.dispatch('unary', authority, resource, 'session.prompt', '/api/respond',
       { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(parsed.data) }, linkedSignal, pending.lease)
     try {
       this.assertReplyLease(pending.lease)
@@ -730,7 +743,8 @@ export class IsolatedProjectRuntime extends Service {
    */
   async *streams(authority: RequestAuthority, channel: 'mux' | 'host', signal: AbortSignal):
   AsyncIterable<RpcRequest<MuxFrame | HostFrame>> {
-    const { response, lease } = await this.dispatch(authority, undefined, 'runtime', `/api/events.${channel}`, { method: 'GET' }, signal)
+    const { response, lease } = await this.dispatch('stream', authority, undefined, 'runtime',
+      `/api/events.${channel}`, { method: 'GET' }, signal)
     try {
       lease.settle()
       let previous = -1

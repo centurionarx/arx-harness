@@ -8,7 +8,7 @@ The adapter carries existing ApiProxy requests and event frames to an operator-c
 
 `endpoint` is a credential-free HTTPS origin, configured together with `credentialRef`. The adapter resolves only that reference through the existing credential provider for each operation. Browser cookies, bearer credentials and Origin headers are excluded from worker requests. `fixtureLoopback` permits HTTP only for an explicitly configured disposable loopback fixture.
 
-`requestTimeoutMs`, `cancellationTimeoutMs`, `maxRequestBytes` and `maxResponseBytes` are required. Unary responses and individual SSE frames obey the response byte limit. Redirects are refused.
+`requestTimeoutMs`, `cancellationTimeoutMs`, `maxRequestBytes` and `maxResponseBytes` are required. `requestTimeoutMs` bounds a whole unary exchange but only the response headers of an event stream; afterwards the lease and the downlink signal end the stream. Unary responses and individual SSE frames obey the response byte limit. Redirects are refused.
 
 ## Authority and protocol
 
@@ -24,7 +24,7 @@ Canonical Typert business results keep their existing codecs. `commands/execute`
 
 Worker requests carry an opaque operation id, owner user id, security revision and selected project/workspace ids. The final authority check occurs after credential resolution and before fetch. Supervisor responses echo `x-arx-operation-id`; `x-arx-quiescent: true` releases a finished lease. A background operation retains its lease until supervisor cancellation.
 
-Cancellation posts to `/_arx/operations/{id}/cancel` and requires a matching operation id with `quiescent: true`. Revocation listeners are asynchronous and reach quiescence before the identity mutation acknowledges. Resource deletion uses its separate ownership-deleted event, also awaiting cancellation before ACK while preserving the authentication cookie and security revision. A missing receipt closes the adapter. Process interruption never triggers automatic replay of external work.
+Cancellation posts to `/_arx/operations/{id}/cancel` and requires a matching operation id with `quiescent: true`. The path operation id selects the target; scope headers do not. The supervisor verifies the bearer credential and that `x-arx-user-id` owns the operation, stops only that operation, and refuses another user's operation. An unknown or finished operation id returns `{ operationId, quiescent: true }`: a finished operation id is confirmed only to its owner; an unseen id is confirmed to the caller and then refused for later requests. A confirmed id is tombstoned, so a later request carrying it is refused. Revocation listeners are asynchronous and reach quiescence before the identity mutation acknowledges. Resource deletion uses its separate ownership-deleted event, also awaiting cancellation before ACK while preserving the authentication cookie and security revision. A missing receipt closes the adapter. Process interruption never triggers automatic replay of external work.
 
 The existing SSE carrier parses mux and host frames. Owner references are verified before emission, foreign aggregate rows are filtered, and generic remote host events are refused. Logout, security revision changes and disposal abort transports and cancel retained supervisor leases.
 
@@ -50,6 +50,7 @@ The carrier adds no model-visible prefix and preserves the existing worker compo
 
 - HTTP fixtures prove request ownership, response filtering and cancellation of disposable child processes. They do not prove distinct VM/UID, filesystem mounts or network isolation.
 - The trusted supervisor must isolate worker filesystem, processes and egress and keep its credential outside untrusted code. Internet activation requires verified supervisor deployment.
+- The supervisor protocol defines no routing for unscoped user-level operations when a user has several workers; this blocks activation ([Agent Note](../../../.agents/notes/proposed/architecture/2026-11-06-multi-worker-routing-of-user-level-operations.md)).
 - Arbitrary host-path workspace creation and control-plane API methods are unavailable in authenticated project mode.
 
 - `session.fork` requires the worker persistence broker to allocate and register the child id in the control domain before worker effects. A composition without that broker fails closed; local fork payloads remain unchanged.

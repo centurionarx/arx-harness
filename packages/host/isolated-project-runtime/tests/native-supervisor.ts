@@ -63,8 +63,15 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     compression: 'none' | 'zstd' } } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'arx-native-worker-fixture-'))
   const workers = new Map<string, NativeWorker>()
+  // A finished response that reported x-arx-quiescent other than 'true' stays
+  // here until cancelled, because control retains its lease.
   const operations = new Map<string, { controller: AbortController
-    worker: NativeWorker }>()
+    worker: NativeWorker
+    closed: Promise<void>
+    background?: boolean }>()
+  // First admitted request owns an id; a confirmed cancel tombstones it.
+  const owners = new Map<string, string>()
+  const tombstones = new Set<string>()
   const seen: string[] = []
   async function mount(worker: NativeWorker, capability: string) {
     const assignment = worker.assignment
@@ -146,26 +153,57 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
   }
   async function handleFixtureRequest(incoming: IncomingMessage, outgoing: ServerResponse): Promise<void> {
     if (incoming.headers.authorization !== 'Bearer disposable-supervisor-fixture') { outgoing.writeHead(401); outgoing.end(); return }
+    const userId = String(incoming.headers['x-arx-user-id'])
+    const cancel = incoming.method === 'POST' ? /^\/_arx\/operations\/([^/]+)\/cancel$/.exec(incoming.url ?? '') : null
+    if (cancel !== null) {
+      // The path names the target; scope headers never select it.
+      const id = cancel[1]!
+      if ((owners.get(id) ?? userId) !== userId) { outgoing.writeHead(403); outgoing.end(); return }
+      try {
+        const operation = operations.get(id)
+        owners.set(id, owners.get(id) ?? userId)
+        tombstones.add(id)
+        if (operation !== undefined) {
+          operations.delete(id)
+          operation.controller.abort()
+          await operation.closed
+          // ponytail: the fixture cannot attribute in-worker work to an operation. A finished
+          // non-quiescent response left a background turn, and a worker left without tracked
+          // operations may hold pending interactions, so both stop the whole worker and its
+          // other operations. Per-turn cancellation needs worker-side operation tracking.
+          if (operation.background === true
+            || ![...operations.values()].some(other => other.worker === operation.worker)) await stop(operation.worker)
+        }
+        outgoing.writeHead(200, { 'content-type': 'application/json' })
+        outgoing.end(JSON.stringify({ operationId: id, quiescent: true }))
+      } catch { outgoing.writeHead(503); outgoing.end() }
+      return
+    }
     const operationId = String(incoming.headers['x-arx-operation-id'])
-    const assigned = [...workers.values()].filter(worker => worker.assignment.scope.userId === incoming.headers['x-arx-user-id'])
+    if (tombstones.has(operationId) || (owners.get(operationId) ?? userId) !== userId) {
+      outgoing.writeHead(403); outgoing.end(); return
+    }
+    const assigned = [...workers.values()].filter(worker => worker.assignment.scope.userId === userId)
     const workspaceId = incoming.headers['x-arx-workspace-id']
     const worker = workspaceId === undefined ? (assigned.length === 1 ? assigned[0] : undefined)
       : workers.get(String(workspaceId))
-    if (worker === undefined || worker.assignment.scope.userId !== incoming.headers['x-arx-user-id']
+    if (worker === undefined || worker.assignment.scope.userId !== userId
       || (incoming.headers['x-arx-project-id'] !== undefined
         && worker.assignment.scope.projectId !== incoming.headers['x-arx-project-id'])) {
       outgoing.writeHead(403); outgoing.end(); return
     }
-    if (incoming.url === '/_arx/operations/' + operationId + '/cancel') {
-      try {
-        await stop(worker)
-        outgoing.writeHead(200, { 'content-type': 'application/json' })
-        outgoing.end(JSON.stringify({ operationId, quiescent: true }))
-      } catch { outgoing.writeHead(503); outgoing.end() }
-      return
-    }
-    const controller = new AbortController(); operations.set(operationId, { controller, worker })
-    outgoing.once('close', () => { controller.abort(); operations.delete(operationId) })
+    owners.set(operationId, userId)
+    const controller = new AbortController()
+    const closed = new Promise<void>((resolve) => { outgoing.once('close', resolve) })
+    let quiescent = false, stream = false
+    const operation: { controller: AbortController; worker: NativeWorker; closed: Promise<void>; background?: boolean } =
+      { controller, worker, closed }
+    operations.set(operationId, operation)
+    void closed.then(() => {
+      controller.abort()
+      if (quiescent) operations.delete(operationId)
+      else operation.background = outgoing.writableFinished && !stream
+    })
     try {
       if (worker.stopping !== undefined) await worker.stopping
       const capability = String(incoming.headers[WORKER_CAPABILITY_HEADER] ?? '')
@@ -185,6 +223,8 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
         ...(incoming.method === 'GET' || incoming.method === 'HEAD' ? {} : { body }),
       }))
       if (!result.ok) console.error('native carrier refusal:', result.status, (await result.clone().text()).slice(0, 1000))
+      quiescent = result.headers.get('x-arx-quiescent') === 'true'
+      stream = result.headers.get('content-type')?.startsWith('text/event-stream') === true
       outgoing.writeHead(result.status, { ...Object.fromEntries(result.headers), 'x-arx-operation-id': operationId })
       if (result.body !== null) for await (const chunk of result.body) outgoing.write(chunk)
       outgoing.end()

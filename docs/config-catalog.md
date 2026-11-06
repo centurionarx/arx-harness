@@ -1126,7 +1126,7 @@ export interface Config {
   credentialRef?: string
   /** Explicit loopback-only HTTP permission for disposable fixtures. */
   fixtureLoopback?: boolean
-  /** Deadline for an individual HTTP operation. */
+  /** Deadline for a unary exchange, or a stream's response headers. */
   requestTimeoutMs: number
   /** Deadline for remote cancellation to confirm process-tree quiescence. */
   cancellationTimeoutMs: number
