@@ -20,7 +20,7 @@ let harness: Awaited<ReturnType<typeof storageHarness>>
 const controllers: AbortController[] = []
 const request = (method: string, payload: unknown = {}): ClientRequest =>
   ({ type: 'client-request', method, payload, rpcId: RpcId(randomUUID()) })
-async function owned(user: number, name: string) {
+async function owned(user: number, name: string, mount = true) {
   const authority = harness.users[user]!.authority
   const project = await harness.ctx.projectStorage.createProject(authority, 'Cancel owner ' + name)
   const workspace = await harness.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Cancel workspace ' + name)
@@ -29,7 +29,7 @@ async function owned(user: number, name: string) {
   const meta = await harness.ctx.projectStorage.register(authority, workspace.workspaceId,
     { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1 })
   await harness.ctx.projectStorage.append(authority, meta.id, oneTurnLog())
-  expect(await harness.ctx.isolatedProjectRuntime.invoke(authority, undefined,
+  if (mount) expect(await harness.ctx.isolatedProjectRuntime.invoke(authority, undefined,
     request('session.create', { sessionId: meta.id }))).toMatchObject({ ok: true, value: { sessionId: meta.id } })
   return { authority, workspace, meta, volumePath: provision.volumePath }
 }
@@ -83,6 +83,36 @@ async function questionFrame(stream: ReturnType<typeof openMux>['stream'], own: 
 }
 
 describe('native supervisor cancellation by operation id', () => {
+  it('never dispatches a cancelled prompt that waited for mounting beside an open stream', async () => {
+    const own = await owned(0, 'A', false)
+    const receipts: { promptSeen: boolean }[] = []
+    const originalFetch = globalThis.fetch
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (...args) => {
+      const response = await originalFetch(...args)
+      const input = args[0]
+      if (input instanceof URL && input.pathname.endsWith('/cancel')
+        && new Headers(args[1]?.headers).get('x-arx-workspace-id') === own.workspace.workspaceId) {
+        receipts.push({ promptSeen: supervisor.seen.includes('session.prompt') })
+      }
+      return response
+    })
+    const { stream } = openMux(own.authority)
+    const streamOutcome = stream.next().then(() => 'settled', () => 'settled')
+    const caller = new AbortController()
+    const prompt = harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.prompt',
+      { sessionId: own.meta.id, mode: 'queue', content: [{ type: 'text', text: 'Never dispatch' }] }), caller.signal)
+    const promptOutcome = prompt.then(() => 'dispatched', () => 'refused')
+    await sleep(100)
+    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
+    caller.abort()
+    expect(await promptOutcome).toBe('refused')
+    expect(receipts).toEqual([{ promptSeen: false }])
+    for (const controller of controllers) controller.abort()
+    await streamOutcome
+    await sleep(500)
+    expect(supervisor.seen).not.toContain('session.prompt')
+  })
+
   it('stops a finished background turn before confirming its SID expiry while another login streams from the worker', async () => {
     const own = await owned(0, 'A')
     const account = harness.users[0]!

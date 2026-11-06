@@ -63,12 +63,12 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     compression: 'none' | 'zstd' } } = {}) {
   const root = await mkdtemp(join(tmpdir(), 'arx-native-worker-fixture-'))
   const workers = new Map<string, NativeWorker>()
-  // A finished response that reported x-arx-quiescent other than 'true' stays
-  // here until cancelled, because control retains its lease.
+  // A response that did not report x-arx-quiescent: true stays here until
+  // cancelled, because control retains its lease.
   const operations = new Map<string, { controller: AbortController
     worker: NativeWorker
-    closed: Promise<void>
-    background?: boolean }>()
+    done: Promise<void>
+    stream: boolean }>()
   // First admitted request owns an id; a confirmed cancel tombstones it.
   const owners = new Map<string, string>()
   const tombstones = new Set<string>()
@@ -166,12 +166,13 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
         if (operation !== undefined) {
           operations.delete(id)
           operation.controller.abort()
-          await operation.closed
-          // ponytail: the fixture cannot attribute in-worker work to an operation. A finished
-          // non-quiescent response left a background turn, and a worker left without tracked
-          // operations may hold pending interactions, so both stop the whole worker and its
-          // other operations. Per-turn cancellation needs worker-side operation tracking.
-          if (operation.background === true
+          await operation.done
+          // ponytail: the fixture cannot attribute in-worker work to an operation. Any
+          // non-quiescent request other than an event stream may have started a turn, and a
+          // worker left without tracked operations may hold pending interactions, so both stop
+          // the whole worker and its other operations before the receipt. Per-turn
+          // cancellation needs worker-side operation tracking.
+          if (!operation.stream
             || ![...operations.values()].some(other => other.worker === operation.worker)) await stop(operation.worker)
         }
         outgoing.writeHead(200, { 'content-type': 'application/json' })
@@ -194,15 +195,14 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     }
     owners.set(operationId, userId)
     const controller = new AbortController()
-    const closed = new Promise<void>((resolve) => { outgoing.once('close', resolve) })
-    let quiescent = false, stream = false
-    const operation: { controller: AbortController; worker: NativeWorker; closed: Promise<void>; background?: boolean } =
-      { controller, worker, closed }
-    operations.set(operationId, operation)
-    void closed.then(() => {
+    let finish!: () => void
+    const done = new Promise<void>((resolve) => { finish = resolve })
+    let quiescent = false
+    operations.set(operationId, { controller, worker, done,
+      stream: incoming.url?.startsWith('/api/events.') === true })
+    outgoing.once('close', () => {
       controller.abort()
       if (quiescent) operations.delete(operationId)
-      else operation.background = outgoing.writableFinished && !stream
     })
     try {
       if (worker.stopping !== undefined) await worker.stopping
@@ -210,6 +210,8 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
       if (worker.carrier === undefined) { worker.mounting ??= mount(worker, capability); await worker.mounting }
       const chunks: Buffer[] = []
       for await (const chunk of incoming) chunks.push(Buffer.from(chunk as Uint8Array))
+      // A cancelled operation never reaches the worker carrier.
+      controller.signal.throwIfAborted()
       const headers = new Headers()
       for (const [key, value] of Object.entries(incoming.headers)) if (typeof value === 'string') headers.set(key, value)
       const body = Buffer.concat(chunks).toString()
@@ -224,14 +226,21 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
       }))
       if (!result.ok) console.error('native carrier refusal:', result.status, (await result.clone().text()).slice(0, 1000))
       quiescent = result.headers.get('x-arx-quiescent') === 'true'
-      stream = result.headers.get('content-type')?.startsWith('text/event-stream') === true
       outgoing.writeHead(result.status, { ...Object.fromEntries(result.headers), 'x-arx-operation-id': operationId })
-      if (result.body !== null) for await (const chunk of result.body) outgoing.write(chunk)
+      if (result.body !== null) {
+        // Cancelling the reader ends a stream body that would otherwise wait for its next frame.
+        const reader = result.body.getReader()
+        const stopReading = () => { void reader.cancel() }
+        controller.signal.addEventListener('abort', stopReading, { once: true })
+        if (controller.signal.aborted) stopReading()
+        try { for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) outgoing.write(chunk.value) }
+        finally { controller.signal.removeEventListener('abort', stopReading) }
+      }
       outgoing.end()
     } catch (error) {
       if (!outgoing.destroyed) { outgoing.writeHead(503, { 'x-arx-operation-id': operationId }); outgoing.end() }
       console.error('native supervisor fixture:', error instanceof Error ? error.message : 'unknown')
-    }
+    } finally { finish() }
   }
   const server = createServer((incoming, outgoing) => { void handleFixtureRequest(incoming, outgoing) })
   server.listen(0, '127.0.0.1'); await once(server, 'listening')

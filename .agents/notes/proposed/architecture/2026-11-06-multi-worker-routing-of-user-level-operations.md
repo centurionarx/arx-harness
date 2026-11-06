@@ -8,6 +8,10 @@ The isolated project runtime sends some operations without a project or workspac
 
 Cancellation does not depend on this routing: `/_arx/operations/{id}/cancel` selects the target by the operation id in its path, as the package [README](../../../../packages/host/isolated-project-runtime/README.md) states.
 
+### Related gap: aborted requests reach the worker API
+
+The product worker boundary, `toOwnedWorkerFetch` in `packages/host/isolated-project-runtime/src/worker-boundary.ts`, does not check `request.signal.aborted` before dispatching to the native API. A supervisor that forwards a request after its operation was cancelled can therefore start worker work after the quiescent receipt; the native supervisor fixture refuses such requests itself. This note records the gap and does not fix it; the supervisor contract or the boundary must close it before activation.
+
 ## Proposal
 
 No option is chosen. The owner decides before activation between the two options below.
