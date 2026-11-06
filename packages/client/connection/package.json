@@ -39,7 +39,7 @@
   "license": "MIT",
   "dependencies": {
     "@arx-ai/schemastery": "workspace:^",
-    "ws": "^8.21.0"
+    "ws": "^8.22.0"
   },
   "files": [
     "lib/index.js",
@@ -61,7 +61,7 @@
   "devDependencies": {
     "@arx-ai/arx-host-webserver": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@types/ws": "^8.18.1",
+    "@types/ws": "^8.18.2",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-attachment": "workspace:^",
     "@arx-ai/arx-host-apiproxy": "workspace:^",
