@@ -25,12 +25,15 @@ it('serves a single scoped bulk receipt and rejects malformed or foreign workspa
     await h.ctx.projectStorage.append(authority, meta.id, oneTurnLog())
     if (h.url === undefined) throw new Error('real control HTTP origin missing')
     supervisor.assign({ controlOrigin: h.url, scope: provision.scope, volumePath: provision.volumePath })
+    iterator = h.ctx.isolatedProjectRuntime.streamMux(authority, controller.signal)[Symbol.asyncIterator]()
+    const first = iterator.next()
+    first.catch(() => {})
+    // The resumed session's workspace-scoped request attaches its sub-stream to the open downlink before forwarding.
     const created = await h.ctx.isolatedProjectRuntime.invoke(authority, undefined,
       { type: 'client-request', rpcId: RpcId(randomUUID()), method: 'session.create', payload: { sessionId: meta.id } })
     expect(created).toMatchObject({ ok: true })
-    iterator = h.ctx.isolatedProjectRuntime.streamMux(authority, controller.signal)[Symbol.asyncIterator]()
-    expect((await iterator.next()).done).toBe(false)
-    const captured = supervisor.headersOf(workspace.workspaceId), worker = supervisor.ctxOf(workspace.workspaceId)
+    expect((await first).done).toBe(false)
+    const captured = supervisor.streamHeadersOf(workspace.workspaceId), worker = supervisor.ctxOf(workspace.workspaceId)
     if (captured === undefined || worker === undefined) throw new Error('native active lease missing')
     const capability = captured.get(WORKER_CAPABILITY_HEADER)
     if (capability === null) throw new Error('native private capability missing')

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { randomUUID } from 'node:crypto'
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { unzipSync, strFromU8 } from 'fflate'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
@@ -12,6 +13,7 @@ import { installLlmReplay } from '@arx-ai/arx-llm-replay'
 import { defineContentToolFixture } from '@arx-ai/arx-tools'
 import { textResponse, toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
+import { WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
 
 describe('owned history with native worker Loader and ApiProxy', () => {
@@ -20,6 +22,7 @@ describe('owned history with native worker Loader and ApiProxy', () => {
   let workspaceId: Awaited<ReturnType<typeof harness.ctx.projectStorage.createWorkspace>>['workspaceId']
   let otherWorkspaceId: typeof workspaceId
   let volumePath: string
+  let ownScope: Awaited<ReturnType<typeof harness.ctx.projectStorage.provision>>['scope']
   const request = (method: string, payload: unknown = {}): ClientRequest =>
     ({ type: 'client-request', method, payload, rpcId: RpcId(randomUUID()) })
   beforeAll(async () => {
@@ -32,6 +35,7 @@ describe('owned history with native worker Loader and ApiProxy', () => {
     workspaceId = workspace.workspaceId
     const provision = await harness.ctx.projectStorage.provision(authority, workspaceId)
     volumePath = provision.volumePath
+    ownScope = provision.scope
     supervisor.assign({ controlOrigin: harness.url!, scope: provision.scope, volumePath })
     const other = harness.users[1]!.authority
     const otherProject = await harness.ctx.projectStorage.createProject(other, 'Native USER B project')
@@ -49,6 +53,13 @@ describe('owned history with native worker Loader and ApiProxy', () => {
     const events = oneTurnLog()
     await harness.ctx.projectStorage.append(authority, meta.id, openTail ? events.slice(0, 4) : events)
     return { authority, meta, events, runtime: harness.ctx.isolatedProjectRuntime }
+  }
+  async function attach(own: Awaited<ReturnType<typeof seed>>, mux: AsyncIterator<unknown>) {
+    const first = mux.next()
+    await sleep(50)
+    expect(await own.runtime.invoke(own.authority, undefined, request('session.history', { sessionId: own.meta.id })))
+      .toMatchObject({ ok: true })
+    expect((await first).done).toBe(false)
   }
   it('commits a native replay turn before its tool side effect and cold-resumes without executing it twice', async () => {
     const authority = harness.users[0]!.authority
@@ -227,7 +238,7 @@ describe('owned history with native worker Loader and ApiProxy', () => {
       .toMatchObject({ ok: true, value: { sessionId: own.meta.id } })
     const abort = new AbortController()
     const mux = own.runtime.streamMux(own.authority, abort.signal)[Symbol.asyncIterator]()
-    await mux.next()
+    await attach(own, mux)
     const ctx = supervisor.ctxOf(workspaceId)!
     const agent = ctx.agents.get(own.meta.id)!
     const asked = ctx.userQuestions.ask({ agent, questions: [{ id: 'owner-choice',
@@ -274,10 +285,12 @@ describe('owned history with native worker Loader and ApiProxy', () => {
       .toMatchObject({ ok: true })
     const abort = new AbortController()
     const mux = own.runtime.streamMux(own.authority, abort.signal)[Symbol.asyncIterator]()
-    await mux.next()
+    await attach(own, mux)
     try {
       const ctx = supervisor.ctxOf(workspaceId)!
       const persistence = ctx.ownedWorkerHistory
+      // Direct persistence calls run under the live stream lease; the attaching unary lease is already quiescent.
+      persistence.bind(supervisor.streamHeadersOf(workspaceId)!.get(WORKER_CAPABILITY_HEADER)!, ownScope)
       const control = await harness.ctx.sessionPersistence.readFrom(own.meta.id, 0)
       expect(persistence.locate(own.meta)).toBeUndefined()
       expect((await persistence.load(own.meta.id)).events).toEqual(control.events)

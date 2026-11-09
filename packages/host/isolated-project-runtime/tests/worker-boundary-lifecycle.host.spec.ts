@@ -4,6 +4,7 @@ import type { Context } from '@arx-ai/cordis'
 import { randomUUID } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { RpcId, type ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { installLlmReplay } from '@arx-ai/arx-llm-replay'
@@ -61,8 +62,12 @@ describe('native worker availability races and canonical Remote quiescence', () 
     sessionId = SessionId(created.value.sessionId)
     abort = new AbortController()
     mux = harness.ctx.isolatedProjectRuntime.streamMux(authority(), abort.signal)[Symbol.asyncIterator]()
-    expect((await mux.next()).done).toBe(false)
-    const context = supervisor.ctxOf(workspaceId), captured = supervisor.headersOf(workspaceId)
+    const first = mux.next()
+    await sleep(50)
+    expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
+      envelope('session.history', { sessionId }))).toMatchObject({ ok: true })
+    expect((await first).done).toBe(false)
+    const context = supervisor.ctxOf(workspaceId), captured = supervisor.streamHeadersOf(workspaceId)
     const boundary = supervisor.carrierOf(workspaceId)
     if (context === undefined || captured === undefined || boundary === undefined) throw new Error('actual native worker lease missing')
     worker = context; headers = captured; carrier = boundary

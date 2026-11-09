@@ -4,6 +4,7 @@ import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { supervisorFixture } from './supervisor.ts'
 
@@ -19,7 +20,10 @@ async function setup(endpoint?: string) {
   const workspace = await harness.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Workspace A')
   const header = await harness.ctx.projectStorage.register(authority, workspace.workspaceId,
     { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1000 })
-  return { supervisor, harness, authority, header, runtime: harness.ctx.isolatedProjectRuntime }
+  // A workspace-scoped request attaches that workspace's sub-stream to every open downlink; its own reply may fail.
+  const attach = () => harness.ctx.isolatedProjectRuntime.invoke(authority, { kind: 'workspace', workspaceId: workspace.workspaceId },
+    { type: 'client-request', method: 'llm.providers', payload: {}, rpcId: RpcId(randomUUID()) }).then(() => undefined, () => undefined)
+  return { supervisor, harness, authority, header, attach, runtime: harness.ctx.isolatedProjectRuntime }
 }
 const muxFrame = (rpcId: string, payload: unknown) => 'data: ' + JSON.stringify({ type: 'server-request', rpcId,
   method: 'events.mux', payload }) + '\n\n'
@@ -35,6 +39,7 @@ describe('stream deadline covers only the supervisor response headers', () => {
     const stream = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
     const first = stream.next()
     first.catch(() => {})
+    await f.attach()
     await accepted
     await sleep(REQUEST_TIMEOUT_MS * 4)
     expect(cancels).toBe(0)
@@ -52,7 +57,9 @@ describe('stream deadline covers only the supervisor response headers', () => {
 
   it('rejects a stream whose supervisor sends no response headers at requestTimeoutMs', async () => {
     const cancelled: string[] = []
+    const streamOperations: string[] = []
     const silent = createServer((request, response) => {
+      if (request.url?.startsWith('/api/events.') === true) streamOperations.push(String(request.headers['x-arx-operation-id']))
       const match = /^\/_arx\/operations\/([^/]+)\/cancel$/.exec(request.url ?? '')
       if (match === null) return
       cancelled.push(match[1]!)
@@ -66,9 +73,11 @@ describe('stream deadline covers only the supervisor response headers', () => {
     const f = await setup('http://127.0.0.1:' + String(address.port))
     const started = performance.now()
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
-    await expect(stream.next()).rejects.toMatchObject({ name: 'TimeoutError' })
+    const next = stream.next()
+    await Promise.all([expect(next).rejects.toMatchObject({ name: 'TimeoutError' }), f.attach()])
     expect(performance.now() - started).toBeLessThan(REQUEST_TIMEOUT_MS * 40)
-    expect(cancelled).toHaveLength(1)
+    expect(streamOperations).toHaveLength(1)
+    expect(cancelled.filter(id => streamOperations.includes(id))).toEqual(streamOperations)
   })
 
   it('keeps a pending question answerable after requestTimeoutMs', async () => {
@@ -78,7 +87,9 @@ describe('stream deadline covers only the supervisor response headers', () => {
         questions: [{ id: 'choice', question: 'Continue?', options: [{ label: 'Continue' }] }] } })
     const controller = new AbortController()
     const stream = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
-    const frame = await stream.next()
+    const next = stream.next()
+    await f.attach()
+    const frame = await next
     if (frame.done === true) throw new Error('expected a pending question frame')
     expect(frame.value.payload.type).toBe('question/requested')
     // A live downlink keeps reading, so a closed transport runs the stream's cleanup.
@@ -102,7 +113,9 @@ describe('stream deadline covers only the supervisor response headers', () => {
       payload: { type: 'question/requested', sessionId: f.header.id,
         questions: [{ id: 'choice', question: 'Continue?', options: [{ label: 'Continue' }] }] } })
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
-    expect((await stream.next()).done).toBe(false)
+    const next = stream.next()
+    await f.attach()
+    expect((await next).done).toBe(false)
     const revalidate = f.harness.ctx.webIdentity.revalidate.bind(f.harness.ctx.webIdentity)
     let closing: Promise<unknown> | undefined
     vi.spyOn(f.harness.ctx.webIdentity, 'revalidate').mockImplementationOnce(async (...args) => {
@@ -124,6 +137,7 @@ describe('stream deadline covers only the supervisor response headers', () => {
     let settled = false
     const next = stream.next().then(result => (result.done ? 'done' : 'frame'), () => 'rejected')
     void next.then(() => { settled = true })
+    await f.attach()
     await accepted
     await sleep(REQUEST_TIMEOUT_MS * 4)
     expect(settled).toBe(false)

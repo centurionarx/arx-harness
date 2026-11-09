@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto'
 import { once } from 'node:events'
 import { request as httpRequest } from 'node:http'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import WebSocket from 'ws'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
@@ -49,7 +49,16 @@ async function setup(configured = true) {
   })
   const post = (method: string, payload: unknown = {}, supplied: Record<string, string> = headers, channel = '/api') =>
     fetch(fixture.url! + channel + '/' + method, { method: 'POST', headers: supplied, body: JSON.stringify(request(method, payload)) })
-  return { fixture, supervisor, user, headers, header, workspace, request, post }
+  /** A downlink attaches the workspace sub-stream on a later scoped request once it is registered. */
+  const attach = async (message: Promise<unknown>) => {
+    let received = false
+    void message.then(() => { received = true })
+    await vi.waitFor(async () => {
+      expect((await post('session.history', { sessionId: header.id })).status).toBe(200)
+      expect(received).toBe(true)
+    }, { timeout: 10000, interval: 50 })
+  }
+  return { fixture, supervisor, user, headers, header, workspace, request, post, attach }
 }
 
 async function refusedSocket(url: string, headers: Record<string, string>): Promise<number> {
@@ -99,8 +108,14 @@ describe('authenticated Connection composed with native providers', () => {
     expect((await f.post('session.history', { sessionId: f.header.id }, { ...f.headers,
       cookie: AUTH_COOKIE_NAMES.user + '=' + other.token, [CSRF_HEADER]: otherState.csrfToken })).status).toBe(403)
     await expect(f.fixture.ctx.webIdentity.login('arxadmin', f.fixture.passwords.master, 'user')).rejects.toMatchObject({ status: 401 })
+    const described = await f.post('host.describe')
+    expect(described.status).toBe(200)
+    expect(described.headers.get('cache-control')).toBe('no-store')
+    expect(envelopeField(await described.json(), 'result')).toEqual({ ok: true, value: { version: '0.0.0', cwd: '',
+      attachedSessions: 0, home: '', canOpenPath: false } })
+    expect(f.supervisor.accepted).toHaveLength(0)
     f.supervisor.result({ isolated: true })
-    const accepted = await f.post('host.describe')
+    const accepted = await f.post('session.history', { sessionId: f.header.id })
     expect(accepted.status).toBe(200)
     expect(accepted.headers.get('cache-control')).toBe('no-store')
     expect(envelopeField(await accepted.json(), 'result')).toEqual({ ok: true, value: { isolated: true } })
@@ -132,6 +147,7 @@ describe('authenticated Connection composed with native providers', () => {
     mux.on('error', () => {})
     const muxMessage = once(mux, 'message')
     await once(mux, 'open')
+    await f.attach(muxMessage)
     expect(envelopeField(JSON.parse(String((await muxMessage)[0])), 'payload')).toEqual({ type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 })
     f.supervisor.frame({ type: 'server-request', rpcId: 'host-frame', method: 'events.host',
       payload: { type: 'host/session-status', sessionId: f.header.id, running: true } })
@@ -139,6 +155,7 @@ describe('authenticated Connection composed with native providers', () => {
     host.on('error', () => {})
     const hostMessage = once(host, 'message')
     await once(host, 'open')
+    await f.attach(hostMessage)
     expect(envelopeField(JSON.parse(String((await hostMessage)[0])), 'payload')).toEqual({ type: 'host/session-status', sessionId: f.header.id, running: true })
     expect(f.supervisor.operations.size).toBe(2)
     const closed = Promise.all([once(mux, 'close'), once(host, 'close')])

@@ -33,14 +33,19 @@ const browser = await chromium.launch()
 const contexts: BrowserContext[] = []
 const clientCoverage = new ClientCoverageRecorder(evidenceRoot, sourceBaseline)
 let coverageFinished = false
-const traffic = new WeakMap<Page, { paths: string[]; frames: string[]; errors: number }>()
+const traffic = new WeakMap<Page, { paths: string[]; frames: string[]; errors: number; refusals: string[] }>()
 function watch(page: Page): void {
-  const observed = { paths: [] as string[], frames: [] as string[], errors: 0 }
+  const observed = { paths: [] as string[], frames: [] as string[], errors: 0, refusals: [] as string[] }
   traffic.set(page, observed)
   page.on('request', (request) => { observed.paths.push(new URL(request.url()).pathname) })
+  page.on('response', (response) => {
+    const path = new URL(response.url()).pathname
+    if (path.startsWith('/api/') && response.status() >= 400) observed.refusals.push(String(response.status()) + ' ' + path)
+  })
   page.on('pageerror', () => { observed.errors++ })
   page.on('websocket', (socket) => {
     socket.on('framereceived', (event) => { observed.frames.push(typeof event.payload === 'string' ? event.payload : event.payload.toString('utf8')) })
+    socket.on('socketerror', (error) => { observed.refusals.push('socketerror ' + new URL(socket.url()).pathname + ' ' + error) })
   })
 }
 async function context(): Promise<BrowserContext> {
@@ -304,10 +309,14 @@ try {
   const bytesBefore = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
   const countsBefore = await fixture.command('worker-counts')
   await fixture.command('restart-workers')
+  const refusalsBeforeReload = traffic.get(a)?.refusals.length ?? 0
   await a.reload()
   await ownProjects(a, String(seedA.projectId))
   await sessionRow(a, 'Conversa privada 0').getByRole('button', { name: 'Retomar', exact: true }).click()
   await a.getByText(/Preview fixture ready:/).waitFor()
+  // USER A owns two workspaces here: the reloaded downlink and its handshake must see no refusal.
+  assert.deepEqual(traffic.get(a)?.refusals.slice(refusalsBeforeReload), [])
+  checks.coldRestartDownlinkWithoutRefusal = true
   const bytesAfter = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
   assert.deepEqual(bytesAfter, bytesBefore)
   const countsAfter = await fixture.command('worker-counts')

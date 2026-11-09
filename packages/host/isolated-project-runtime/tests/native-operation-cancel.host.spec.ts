@@ -70,6 +70,14 @@ function captureOperationIds(path: string) {
   })
   return ids
 }
+/** Attach the owned workspace to every open downlink through a scoped request and await each first frame. */
+async function attachAll(own: Awaited<ReturnType<typeof owned>>, ...streams: ReturnType<typeof openMux>['stream'][]) {
+  const first = streams.map(stream => stream.next())
+  await sleep(50)
+  expect(await harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined,
+    request('session.history', { sessionId: own.meta.id }))).toMatchObject({ ok: true })
+  for (const frame of first) expect((await frame).done).toBe(false)
+}
 async function questionFrame(stream: ReturnType<typeof openMux>['stream'], own: Awaited<ReturnType<typeof owned>>, id: string) {
   const ctx = supervisor.ctxOf(own.workspace.workspaceId)
   const agent = ctx?.agents.get(own.meta.id)
@@ -116,7 +124,7 @@ describe('native supervisor cancellation by operation id', () => {
   it('replaces the worker context before the receipt when a cancelled prompt hangs inside the carrier beside an open stream', async () => {
     const own = await owned(0, 'A')
     const { stream } = openMux(own.authority)
-    expect((await stream.next()).done).toBe(false)
+    await attachAll(own, stream)
     const ctx = supervisor.ctxOf(own.workspace.workspaceId)
     const carrier = supervisor.carrierOf(own.workspace.workspaceId)
     if (ctx === undefined || carrier === undefined) throw new Error('native worker unavailable')
@@ -226,10 +234,8 @@ describe('native supervisor cancellation by operation id', () => {
     const a = await owned(0, 'A')
     const b = await owned(1, 'B')
     const finished = captureOperationIds('/api/session.history')
-    expect(await harness.ctx.isolatedProjectRuntime.invoke(a.authority, undefined,
-      request('session.history', { sessionId: a.meta.id }))).toMatchObject({ ok: true })
     const { stream } = openMux(a.authority)
-    expect((await stream.next()).done).toBe(false)
+    await attachAll(a, stream)
     expect((await cancelAs(finished[0]!, b.authority.principal.userId)).status).toBe(403)
     expect(await questionFrame(stream, a, 'after-foreign-cancel')).toMatchObject({ type: 'question/requested', sessionId: a.meta.id })
   })
@@ -248,7 +254,7 @@ describe('native supervisor cancellation by operation id', () => {
       return response
     })
     // The fixture keeps its one-worker routing for unscoped user-level work.
-    await expect(harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('host.describe')))
+    await expect(harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('llm.providers')))
       .rejects.toMatchObject({ status: 502 })
     expect(receipts).toMatchObject([{ status: 200, receipt: { quiescent: true } }])
     expect(await harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined,
@@ -269,7 +275,7 @@ describe('native supervisor cancellation by operation id', () => {
       return originalFetch(...args)
     })
     const { stream } = openMux(a.authority)
-    expect((await stream.next()).done).toBe(false)
+    await attachAll(a, stream)
     const unknown = randomUUID()
     const confirmed = await cancelAs(unknown, b.authority.principal.userId)
     expect(confirmed.status).toBe(200)
@@ -283,8 +289,7 @@ describe('native supervisor cancellation by operation id', () => {
   it('closing one stream leaves the USER\'s other stream on the same worker delivering frames', async () => {
     const own = await owned(0, 'A')
     const first = openMux(own.authority), second = openMux(own.authority)
-    expect((await first.stream.next()).done).toBe(false)
-    expect((await second.stream.next()).done).toBe(false)
+    await attachAll(own, first.stream, second.stream)
     first.controller.abort()
     await first.stream.return?.()
     await sleep(100)

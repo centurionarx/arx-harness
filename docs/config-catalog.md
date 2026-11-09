@@ -1137,7 +1137,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/host/isolated-project-runtime/src/index.ts:25`](../packages/host/isolated-project-runtime/src/index.ts)
+Source: [`packages/host/isolated-project-runtime/src/index.ts:27`](../packages/host/isolated-project-runtime/src/index.ts)
 
 <a id="arx-aiarx-jobs-local"></a>
 

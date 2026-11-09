@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { installLlmReplay } from '@arx-ai/arx-llm-replay'
 import { defineContentToolFixture } from '@arx-ai/arx-tools'
 import { toolCallResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
@@ -56,7 +57,11 @@ async function pendingQuestion(id: string) {
   if (a === undefined) throw new Error('owned pending question unavailable')
   const own = a
   const mux = h.ctx.isolatedProjectRuntime.streamMux(own.authority, controller.signal)[Symbol.asyncIterator]()
-  expect((await mux.next()).done).toBe(false)
+  const first = mux.next()
+  await sleep(50)
+  expect(await h.ctx.isolatedProjectRuntime.invoke(own.authority, undefined,
+    request('session.history', { sessionId: own.meta.id }))).toMatchObject({ ok: true })
+  expect((await first).done).toBe(false)
   const ctx = supervisor.ctxOf(own.workspace.workspaceId)
   const agent = ctx?.agents.get(own.meta.id)
   if (ctx === undefined || agent === undefined) throw new Error('real native question agent unavailable')
@@ -108,10 +113,12 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     const clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
     restoreClock = () => { clock.mockRestore() }
     await h.ctx.webIdentity.revalidate(own.authority)
+    const stream = h.ctx.isolatedProjectRuntime.streamMux(own.authority, controller.signal)[Symbol.asyncIterator]()
+    const first = stream.next()
+    await sleep(50)
     expect(await h.ctx.isolatedProjectRuntime.invoke(own.authority, undefined,
       request('session.history', { sessionId: own.meta.id }))).toMatchObject({ ok: true })
-    const stream = h.ctx.isolatedProjectRuntime.streamMux(own.authority, controller.signal)[Symbol.asyncIterator]()
-    expect((await stream.next()).done).toBe(false)
+    expect((await first).done).toBe(false)
     expect(deadlines(own.authority)).toEqual(initial)
     expect(h.ctx.webIdentity.authorityHead).toEqual(head)
     const ctx = supervisor.ctxOf(own.workspace.workspaceId)
@@ -134,6 +141,65 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     expect(deadlines(own.authority)).toEqual(initial)
     expect(deadlines(other.authority)).toEqual(otherInitial)
     expect(h.ctx.webIdentity.authorityHead).toEqual(head)
+    expect(supervisor.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
+  })
+  it('serves one USER with two native workers after restart and routes each workspace with its own scope', async () => {
+    const { h, supervisor } = mounted()
+    if (a === undefined || b === undefined) throw new Error('owned native sessions unavailable')
+    const own = a, peer = b, second = await owned(0)
+    const runtime = h.ctx.isolatedProjectRuntime
+    await supervisor.restart()
+    const mux = runtime.streamMux(own.authority, controller.signal)[Symbol.asyncIterator]()
+    const firstFrame = mux.next()
+    const forwarded = supervisor.seen.length
+    expect(await runtime.invoke(own.authority, undefined, request('host.describe'))).toEqual({ ok: true, value: {
+      version: expect.any(String) as string, cwd: '', attachedSessions: 0, home: '', canOpenPath: false } })
+    expect(supervisor.seen).toHaveLength(forwarded)
+    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
+    expect(supervisor.ctxOf(second.workspace.workspaceId)).toBeUndefined()
+    const peerController = new AbortController()
+    const peerMux = runtime.streamMux(peer.authority, peerController.signal)[Symbol.asyncIterator]()
+    const peerFirst = peerMux.next()
+    await sleep(50)
+    expect(await runtime.invoke(peer.authority, undefined, request('session.create', { sessionId: peer.meta.id })))
+      .toMatchObject({ ok: true, value: { sessionId: peer.meta.id } })
+    expect((await peerFirst).done).toBe(false)
+    for (const target of [own, second]) {
+      expect(await runtime.invoke(own.authority, undefined, request('session.create', { sessionId: target.meta.id })))
+        .toMatchObject({ ok: true, value: { sessionId: target.meta.id } })
+    }
+    expect((await firstFrame).done).toBe(false)
+    for (const target of [own, second, peer]) {
+      const unary = supervisor.headersOf(target.workspace.workspaceId), stream = supervisor.streamHeadersOf(target.workspace.workspaceId)
+      for (const headers of [unary, stream]) {
+        expect(headers?.get('x-arx-workspace-id')).toBe(target.workspace.workspaceId)
+        expect(headers?.get('x-arx-user-id')).toBe(target.authority.principal.userId)
+      }
+    }
+    const ask = (target: typeof own, id: string) => {
+      const ctx = supervisor.ctxOf(target.workspace.workspaceId), agent = ctx?.agents.get(target.meta.id)
+      if (ctx === undefined || agent === undefined) throw new Error('remounted native session unavailable')
+      ctx.userQuestions.ask({ agent, questions: [{ id, question: 'Which worker asked?', options: [{ label: 'This one' }] }] })
+        .catch(() => {})
+    }
+    ask(peer, 'peer-choice')
+    let peerFrame = await peerMux.next()
+    while (!peerFrame.done && peerFrame.value.payload.type !== 'question/requested') peerFrame = await peerMux.next()
+    expect(peerFrame.done === true ? undefined : peerFrame.value.payload).toMatchObject({ sessionId: peer.meta.id })
+    ask(own, 'first-choice')
+    ask(second, 'second-choice')
+    const asked = new Set<string>(), sessions = new Set<string>()
+    while (asked.size < 2) {
+      const frame = await mux.next()
+      if (frame.done === true) throw new Error('two-workspace downlink ended')
+      const payload = frame.value.payload as { type: string; sessionId?: string }
+      if (payload.sessionId !== undefined) sessions.add(payload.sessionId)
+      if (payload.type === 'question/requested' && payload.sessionId !== undefined) asked.add(payload.sessionId)
+    }
+    expect([...asked].sort()).toEqual([own.meta.id, second.meta.id].sort())
+    expect(sessions.has(peer.meta.id)).toBe(false)
+    peerController.abort(); await peerMux.return?.()
+    controller.abort(); await mux.return?.()
     expect(supervisor.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
   })
   it('quiesces a quiet expired SID without a frame or new request and preserves another login of that USER', async () => {
@@ -266,9 +332,11 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
       },
     }))
     const mux = h.ctx.isolatedProjectRuntime.streamMux(own.authority, controller.signal)[Symbol.asyncIterator]()
-    expect((await mux.next()).done).toBe(false)
+    const first = mux.next()
+    await sleep(50)
     expect(await h.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.selectModel',
       { sessionId: own.meta.id, provider: 'reply-idle-replay', model: 'reply-idle-model' }))).toMatchObject({ ok: true })
+    expect((await first).done).toBe(false)
     expect(await h.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.prompt',
       { sessionId: own.meta.id, mode: 'queue', content: [{ type: 'text', text: 'Wait for the own retained reply' }] })))
       .toMatchObject({ ok: true, value: { accepted: true } })
@@ -370,7 +438,6 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
       }
       return response
     })
-    const initial = scheduleQuietClock(own.authority)
     await h.ctx.webIdentity.revalidate(responder, { activity: true })
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
     await h.ctx.webIdentity.authenticate(own.account.token, 'user')
@@ -378,6 +445,10 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     const deletion = h.ctx.webIdentity.deleteWorkspace(own.authority, own.workspace.workspaceId)
       .then(() => { acknowledgements++; return { deleted: true } }, (error: unknown) => ({ error }))
     await receiptHeld
+    // The quiet SID reaches its deadline only after the deletion barrier holds the receipt; a passive
+    // authentication reschedules the identity expiry timer against the advanced clock.
+    const initial = scheduleQuietClock(own.authority)
+    await h.ctx.webIdentity.authenticate(login.token, 'user')
     await realExpiry
     expect(acknowledgements).toBe(0)
     await expect(h.ctx.isolatedProjectRuntime.invoke(responder, undefined, request('host.describe')))

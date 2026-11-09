@@ -91,8 +91,13 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
         rpcId: RpcId(randomUUID()) })).toMatchObject({ ok: true })
     abort = new AbortController()
     mux = harness.ctx.isolatedProjectRuntime.streamMux(authority(), abort.signal)[Symbol.asyncIterator]()
-    expect((await mux.next()).done).toBe(false)
-    const context = supervisor.ctxOf(workspaceId), headers = supervisor.headersOf(workspaceId)
+    const first = mux.next()
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
+      { type: 'client-request', method: 'session.history', payload: { sessionId },
+        rpcId: RpcId(randomUUID()) })).toMatchObject({ ok: true })
+    expect((await first).done).toBe(false)
+    const context = supervisor.ctxOf(workspaceId), headers = supervisor.streamHeadersOf(workspaceId)
     const token = headers?.get(WORKER_CAPABILITY_HEADER)
     if (context === undefined || token === undefined || token === null) throw new Error('genuine private lease missing')
     workerId = context.ownedWorkerHistory.config.workerId
@@ -239,7 +244,7 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
     const controller = new AbortController()
     const stream = harness.ctx.isolatedProjectRuntime.streamMux(fresh, controller.signal)[Symbol.asyncIterator]()
     expect((await stream.next()).done).toBe(false)
-    const headers = supervisor.headersOf(workspaceId)
+    const headers = supervisor.streamHeadersOf(workspaceId)
     const privateCapability = headers?.get(WORKER_CAPABILITY_HEADER)
     if (privateCapability === undefined || privateCapability === null) throw new Error('fresh metadata lease unavailable')
     const entered = Promise.withResolvers<undefined>(), release = Promise.withResolvers<undefined>()

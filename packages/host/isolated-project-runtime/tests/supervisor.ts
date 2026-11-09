@@ -13,10 +13,18 @@ export interface SupervisorOperation {
   readonly capability: string
   readonly child?: ChildProcess
   readonly response: ServerResponse
+  readonly workspaceId?: string
 }
 export async function supervisorFixture() {
   const operations = new Map<string, SupervisorOperation>()
   const accepted: ClientRequest[] = []
+  // Arrival order of every non-cancel request: path and workspace header.
+  const log: string[] = []
+  const cancelled: string[] = []
+  const workspaceFrames = new Map<string, unknown[]>()
+  const workspaceResults = new Map<string, unknown>()
+  const failingWorkspaces = new Set<string>()
+  const refusingWorkspaces = new Set<string>()
   let hold = false
   let corruptEcho = false
   let invalidQuiescence = false
@@ -40,6 +48,7 @@ export async function supervisorFixture() {
       }
       operation?.response.end()
       operations.delete(operationId)
+      cancelled.push(operationId)
       onCancelled?.()
       await cancellationBarrier
       response.writeHead(cancelStatus, { 'content-type': 'application/json' })
@@ -48,6 +57,12 @@ export async function supervisorFixture() {
     }
     const buffers: Buffer[] = []
     for await (const chunk of request) buffers.push(Buffer.from(chunk as Uint8Array))
+    const workspaceHeader = request.headers['x-arx-workspace-id']
+    const workspaceId = typeof workspaceHeader === 'string' ? workspaceHeader : undefined
+    log.push(String(request.url) + ' ' + (workspaceId ?? '-'))
+    if (workspaceId !== undefined && failingWorkspaces.has(workspaceId)) {
+      response.writeHead(500, { 'x-arx-operation-id': operationId }); response.end(); return
+    }
     if (wireReply !== undefined && !hold) {
       response.writeHead(wireReply.status, { 'content-type': 'application/json', 'x-arx-operation-id': operationId,
         'x-arx-quiescent': 'true', ...wireReply.headers })
@@ -57,8 +72,10 @@ export async function supervisorFixture() {
       response.writeHead(200, { 'content-type': 'text/event-stream', 'x-arx-operation-id': operationId })
       operations.set(operationId, { id: operationId, userId: String(request.headers['x-arx-user-id']),
         revision: String(request.headers['x-arx-authority-revision']),
-        capability: String(request.headers['x-arx-worker-capability']), response })
-      if (frame !== undefined) response.write('data: ' + JSON.stringify(frame) + '\n\n')
+        capability: String(request.headers['x-arx-worker-capability']), response,
+        ...(workspaceId === undefined ? {} : { workspaceId }) })
+      const frames = workspaceId === undefined ? undefined : workspaceFrames.get(workspaceId)
+      for (const value of frames ?? (frame === undefined ? [] : [frame])) response.write('data: ' + JSON.stringify(value) + '\n\n')
       response.flushHeaders()
       onAccepted?.()
       return
@@ -75,7 +92,8 @@ export async function supervisorFixture() {
     if (child !== undefined) await once(child, 'spawn')
     operations.set(operationId, { id: operationId, userId: String(request.headers['x-arx-user-id']),
       revision: String(request.headers['x-arx-authority-revision']),
-      capability: String(request.headers['x-arx-worker-capability']), ...(child === undefined ? {} : { child }), response })
+      capability: String(request.headers['x-arx-worker-capability']), ...(child === undefined ? {} : { child }), response,
+      ...(workspaceId === undefined ? {} : { workspaceId }) })
     response.setHeader('content-type', 'application/json')
     response.setHeader('x-arx-operation-id', corruptEcho ? 'wrong-operation' : operationId)
     response.setHeader('x-arx-quiescent', child === undefined ? 'true' : 'false')
@@ -83,9 +101,12 @@ export async function supervisorFixture() {
     onAccepted?.()
     if (hold) return
     operations.delete(operationId)
-    const value = result === undefined
+    const scopedResult = workspaceId === undefined ? undefined : workspaceResults.get(workspaceId)
+    const value = scopedResult !== undefined ? scopedResult : result === undefined
       ? envelope.method === 'session.create' ? { sessionId: (envelope.payload as { sessionId: string }).sessionId } : {} : result
-    response.end(JSON.stringify({ type: 'server-response', rpcId: envelope.rpcId, result: { ok: true, value } }))
+    response.end(JSON.stringify({ type: 'server-response', rpcId: envelope.rpcId,
+      result: workspaceId !== undefined && refusingWorkspaces.has(workspaceId)
+        ? { ok: false, error: { code: 'internal', message: 'fixture refusal', details: {} } } : { ok: true, value } }))
   }
   const server = createServer((request, response) => { void handleFixtureRequest(request, response) })
   server.listen(0, '127.0.0.1')
@@ -93,7 +114,15 @@ export async function supervisorFixture() {
   const address = server.address()
   if (address === null || typeof address === 'string') throw new Error('fixture listener unavailable')
   return {
-    endpoint: 'http://127.0.0.1:' + String(address.port), operations, accepted,
+    endpoint: 'http://127.0.0.1:' + String(address.port), operations, accepted, log, cancelled,
+    /** Frames written on every event stream opened for one workspace, replacing the shared frame. */
+    framesFor(workspaceId: string, values: unknown[]) { workspaceFrames.set(workspaceId, values) },
+    /** Unary result returned for one workspace, replacing the shared result. */
+    resultFor(workspaceId: string, value: unknown) { workspaceResults.set(workspaceId, value) },
+    /** Every later request for one workspace receives HTTP 500. */
+    failFor(workspaceId: string) { failingWorkspaces.add(workspaceId) },
+    /** Every later unary request for one workspace receives a canonical business error. */
+    refuseFor(workspaceId: string) { refusingWorkspaces.add(workspaceId) },
     hold(value: boolean) { hold = value },
     corruptEcho(value: boolean) { corruptEcho = value },
     invalidQuiescence(value: boolean) { invalidQuiescence = value },

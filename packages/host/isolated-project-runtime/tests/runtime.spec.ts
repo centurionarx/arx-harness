@@ -27,8 +27,8 @@ describe('isolated project runtime through Loader and HTTP', () => {
   it('denies an unconfigured endpoint without reaching a local host', async () => {
     const unconfigured = await storageHarness(); resources.push(unconfigured)
     await expect(unconfigured.ctx.isolatedProjectRuntime.fetch(unconfigured.users[0]!.authority,
-      new Request('http://fixture/api/host.describe', { method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ type: 'client-request', rpcId: 'fixture', method: 'host.describe', payload: {} }) })))
+      new Request('http://fixture/api/llm.providers', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ type: 'client-request', rpcId: 'fixture', method: 'llm.providers', payload: {} }) })))
       .rejects.toMatchObject({ status: 503 })
   })
   it('denies unknown/operator methods, copied authority and cross-owner resources before dispatch', async () => {
@@ -36,7 +36,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
     for (const method of ['credentials.describe', 'settings.replace', 'host.openPath', 'host.exit', 'agentPreset.copy', 'unknown.call']) {
       await expect(f.runtime.invoke(f.authority, undefined, f.request(method))).rejects.toMatchObject({ status: 403 })
     }
-    await expect(f.runtime.invoke({ ...f.authority }, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 401 })
+    await expect(f.runtime.invoke({ ...f.authority }, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 401 })
     for (const denied of [f.harness.users[1]!.authority, f.harness.master!]) {
       await expect(f.runtime.invoke(denied, undefined, f.request('session.history',
         { sessionId: f.header.id }))).rejects.toMatchObject({ status: 403 })
@@ -53,10 +53,10 @@ describe('isolated project runtime through Loader and HTTP', () => {
       { cwd: '/etc' }))).rejects.toMatchObject({ status: 403 })
     await expect(f.runtime.invoke(f.authority, undefined, f.request('session.create',
       { workspaceId: f.workspace.workspaceId, sessionId: 'browser-supplied' }))).rejects.toMatchObject({ status: 403 })
-    const response = await f.runtime.fetch(f.authority, new Request('http://fixture/api/host.describe', {
+    const response = await f.runtime.fetch(f.authority, new Request('http://fixture/api/llm.providers', {
       method: 'POST', headers: { 'content-type': 'application/json', cookie: 'never-forward',
         authorization: 'never-forward', origin: 'http://untrusted' },
-      body: JSON.stringify(f.request('host.describe')),
+      body: JSON.stringify(f.request('llm.providers')),
     }))
     expect(response.headers.get('cache-control')).toBe('no-store')
     expect(serverResponseSchema.parse(await response.json()).result).toEqual({ ok: true, value: { accepted: true } })
@@ -107,7 +107,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
     await expect(f.harness.ctx.webIdentity.authorizeOwner(resumed, { kind: 'session',
       sessionId: f.header.id })).rejects.toMatchObject({ status: 403 })
     f.supervisor.hold(false)
-    expect(await f.runtime.invoke(resumed, undefined, f.request('host.describe'))).toEqual({ ok: true, value: {} })
+    expect(await f.runtime.invoke(resumed, undefined, f.request('llm.providers'))).toEqual({ ok: true, value: {} })
   })
   it('filters all-session metadata with sidecar ownership and rejects malicious foreign direct results', async () => {
     const f = await setup()
@@ -139,7 +139,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
     expect(operation.child!.exitCode !== null || operation.child!.signalCode !== null).toBe(true)
     expect(f.supervisor.operations.size).toBe(0)
     expect(await outcome).toBe('denied')
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 401 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 401 })
   })
   it('closes an unsafe supervisor after an invalid quiescence receipt without reviving auth', async () => {
     const f = await setup()
@@ -154,15 +154,15 @@ describe('isolated project runtime through Loader and HTTP', () => {
     expect(await action).toBe('denied')
     await expect(f.harness.ctx.webIdentity.authenticate(f.harness.users[0]!.token, 'user')).rejects.toMatchObject({ status: 401 })
     await expect(f.runtime.invoke(f.harness.users[1]!.authority, undefined,
-      f.request('host.describe'))).rejects.toMatchObject({ status: 503 })
+      f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
   })
   it('rejects mismatched operation receipts, and a missing operator credential never falls back to the host', async () => {
     const f = await setup()
     f.supervisor.corruptEcho(true)
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 502 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 502 })
     f.supervisor.corruptEcho(false)
     await f.harness.ctx.credentials.unset(credentialRef(FIXTURE_CREDENTIAL))
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 503 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
   })
   it('reuses mux frames, blocks remote host control events and closes suspended streams on revocation', async () => {
     const f = await setup()
@@ -170,7 +170,9 @@ describe('isolated project runtime through Loader and HTTP', () => {
       payload: { type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 } })
     const controller = new AbortController()
     const stream = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
-    const frame = await stream.next()
+    const next = stream.next()
+    await f.runtime.invoke(f.authority, { kind: 'workspace', workspaceId: f.workspace.workspaceId }, f.request('llm.providers'))
+    const frame = await next
     if (frame.done) throw new Error('expected a native mux frame')
     expect(frame.value.payload).toEqual({ type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 })
     await f.harness.ctx.webIdentity.setStatus(f.harness.master!, f.authority.principal.userId, 'BLOCKED')

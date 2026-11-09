@@ -7,9 +7,11 @@ import { DatabaseSync, backup } from 'node:sqlite'
 import { join, relative } from 'node:path'
 import { tmpdir } from 'node:os'
 import { randomUUID, createHash } from 'node:crypto'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { oneTurnLog } from '../../packages/session/session-persistence/tests/contract.ts'
 import { storageHarness } from '../../packages/identity/project-storage/tests/harness.ts'
+import { supervisorFixture } from '../../packages/host/isolated-project-runtime/tests/supervisor.ts'
 
 async function privateBackup(source: string, target: string) {
   const database = new DatabaseSync(source, { readOnly: true })
@@ -27,6 +29,57 @@ async function files(root: string, current = root): Promise<{ path: string
       sha256: createHash('sha256').update(await readFile(path)).digest('hex') })
   }
   return result.sort((a, b) => a.path.localeCompare(b.path))
+}
+
+/**
+ * Answer host.describe and merge a host downlink over two workspaces through a disposable supervisor.
+ * @returns Receipt lines naming workspaces A/B and sessions by label, never by id or path.
+ */
+async function runtimeReceipts(): Promise<string[]> {
+  const supervisor = await supervisorFixture()
+  try {
+    const fixture = await storageHarness({ endpoint: supervisor.endpoint, readyUsers: 1 })
+    try {
+      const authority = present(fixture.users[0]).authority
+      const runtime = fixture.ctx.isolatedProjectRuntime
+      const project = await fixture.ctx.projectStorage.createProject(authority, 'Runtime project')
+      const labels = new Map<string, string>()
+      const workspaces = []
+      for (const label of ['A', 'B']) {
+        const workspace = await fixture.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Workspace ' + label)
+        const header = await fixture.ctx.projectStorage.register(authority, workspace.workspaceId,
+          { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1 })
+        labels.set(workspace.workspaceId, label); labels.set(header.id, 'session ' + label)
+        supervisor.framesFor(workspace.workspaceId, [{ type: 'server-request', rpcId: randomUUID(), method: 'events.host',
+          payload: { type: 'host/session-status', sessionId: header.id, running: true } }])
+        workspaces.push(workspace.workspaceId)
+      }
+      const request = (method: string) => ({ type: 'client-request' as const, rpcId: RpcId(randomUUID()), method, payload: {} })
+      const described = await runtime.invoke(authority, undefined, request('host.describe'))
+      const describeRequests = supervisor.log.length
+      const controller = new AbortController()
+      const downlink = runtime.streamHost(authority, controller.signal)[Symbol.asyncIterator]()
+      const frames: string[] = []
+      for (const workspaceId of workspaces) {
+        const next = downlink.next()
+        await runtime.invoke(authority, { kind: 'workspace', workspaceId }, request('llm.providers'))
+        const frame = await next
+        if (frame.done === true || frame.value.payload.type !== 'host/session-status') throw new Error('fixture downlink frame')
+        frames.push(present(labels.get(frame.value.payload.sessionId)))
+      }
+      const routed = supervisor.log.map(line => line.replace(/ (\S+)$/, (_, id: string) => ' ' + (labels.get(id) ?? id)))
+      controller.abort()
+      await downlink.return?.()
+      return [
+        '- Runtime host.describe: control answers ' + JSON.stringify(described) + ' with '
+          + String(describeRequests) + ' supervisor requests.',
+        '- Host downlink over two workspaces: opened idle; each first scoped request attached its sub-stream first ('
+          + routed.join(', ') + '); merged frames: ' + frames.join(', ') + '; closing left '
+          + String(supervisor.operations.size) + ' supervisor operations and cancelled '
+          + String(supervisor.cancelled.length) + ' sub-leases.',
+      ]
+    } finally { await fixture.close() }
+  } finally { await supervisor.close() }
 }
 
 /**
@@ -131,6 +184,7 @@ export async function ownedStorageScenario(): Promise<string> {
       '- Restore: old cookies revoked, blocked USER stayed blocked, deleted session stayed denied.',
       '- Legacy migration: unmapped logs denied; owner was never inferred from cwd.',
       '- Runtime without an operator endpoint: execution stays unavailable.',
+      ...await runtimeReceipts(),
       '- Operational worker/UID/mount/network isolation and production restore remain separate gates.',
       '',
     ].join('\n')

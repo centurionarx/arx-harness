@@ -55,6 +55,7 @@ interface NativeWorker {
   toolCalls: number
   modelCalls: number
   lastHeaders?: Headers
+  lastStreamHeaders?: Headers
 }
 export async function nativeSupervisorFixture(options: { workerConfig?: Partial<WorkerPersistenceConfig>
   fsTools?: boolean
@@ -146,7 +147,7 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
       }
       await worker.mounting?.catch(() => {})
       const ctx = worker.ctx
-      delete worker.ctx; delete worker.carrier; delete worker.mounting; delete worker.lastHeaders
+      delete worker.ctx; delete worker.carrier; delete worker.mounting; delete worker.lastHeaders; delete worker.lastStreamHeaders
       try { await ctx?.fiber.dispose() } finally { worker.workerId = randomUUID() }
     })()
     try { await worker.stopping } finally { delete worker.stopping }
@@ -220,6 +221,7 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
         if (value.method !== undefined) seen.push(value.method)
       }
       worker.lastHeaders = new Headers(headers)
+      if (incoming.url?.startsWith('/api/events.') === true) worker.lastStreamHeaders = new Headers(headers)
       const result = await worker.carrier!.fetch(new Request('http://fixture' + String(incoming.url), {
         method: incoming.method ?? 'GET', headers, signal: controller.signal,
         ...(incoming.method === 'GET' || incoming.method === 'HEAD' ? {} : { body }),
@@ -256,6 +258,11 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     carrierOf(workspaceId: string) { return workers.get(workspaceId)?.carrier },
     headersOf(workspaceId: string) {
       const headers = workers.get(workspaceId)?.lastHeaders
+      return headers === undefined ? undefined : new Headers(headers)
+    },
+    /** Headers of the latest event stream forwarded to one worker; its lease stays live while the stream is open. */
+    streamHeadersOf(workspaceId: string) {
+      const headers = workers.get(workspaceId)?.lastStreamHeaders
       return headers === undefined ? undefined : new Headers(headers)
     },
     get counts() { return [...workers.values()].reduce((sum, worker) =>

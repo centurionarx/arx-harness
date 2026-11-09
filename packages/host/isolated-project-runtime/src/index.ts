@@ -9,8 +9,10 @@ import type { ZodError } from 'zod'
 import { randomUUID, randomBytes } from 'node:crypto'
 import { credentialRef } from '@arx-ai/arx-credentials'
 import type {} from '@arx-ai/arx-credentials'
+import { UNDECLARED_APP_VERSION } from '@arx-ai/arx-host-apiproxy'
 import { InProcessApiClient } from '@arx-ai/arx-host-apiproxy/client'
-import { clientRequestSchema, clientResponseSchema, serverResponseSchema, parseApiMethodPayload } from '@arx-ai/arx-host-apiproxy/api'
+import { RpcId, SESSION_SEARCH_RESULT_LIMIT, clientRequestSchema, clientResponseSchema, serverResponseSchema,
+  parseApiMethodPayload } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest, MuxFrame, HostFrame, RpcRequest, ServerResponse } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId as sessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { ModuleId, ProjectId, WebIdentityError, allowsProjectAccess } from '@arx-ai/arx-web-identity'
@@ -97,6 +99,23 @@ interface Lease {
   settle(): void
   cancelling?: Promise<void>
 }
+/** A frame waiting for the consumer; control-authored frames have no sub-lease. */
+interface QueuedFrame {
+  readonly frame: RpcRequest<MuxFrame | HostFrame>
+  readonly lease?: Lease
+  delivered(): void
+}
+/** One browser downlink: a merged stream over one workspace-scoped sub-stream per attached workspace. */
+interface Downlink {
+  readonly authority: RequestAuthority
+  readonly channel: 'mux' | 'host'
+  readonly closed: AbortController
+  readonly attached: Map<WorkspaceId, Promise<void>>
+  readonly leases: Set<Lease>
+  readonly queue: QueuedFrame[]
+  failure?: { error: unknown }
+  wake?: () => void
+}
 declare module '@arx-ai/cordis' {
   interface Context { isolatedProjectRuntime: IsolatedProjectRuntime }
 }
@@ -113,6 +132,15 @@ function moduleFor(method: string): string {
 function object(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? value as Record<string, unknown> : undefined
+}
+
+/** Settle with `promise`, or reject with the reason of `signal`; the caller passes a signal that is not yet aborted. */
+function untilAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const stop = (): void => { reject(signal.reason as Error) }
+    signal.addEventListener('abort', stop, { once: true })
+    promise.then(resolve, reject).finally(() => { signal.removeEventListener('abort', stop) })
+  })
 }
 
 async function boundedBody(response: Response, maxBytes: number): Promise<Uint8Array> {
@@ -150,6 +178,11 @@ export class IsolatedProjectRuntime extends Service {
     sessionId: ReturnType<typeof sessionId>
     approvalId?: string }>()
   private readonly brokerQueues = new Map<string, Promise<unknown>>()
+  private readonly downlinks = new Set<Downlink>()
+  // ponytail: last known archive per workspace and one ordering tail for each user, kept for the process lifetime and never pruned.
+  // Upgrade path: drop a user's entry on ownership deletion and a workspace's entry when its grouping is removed.
+  private readonly archives = new Map<WebUserId, Map<WorkspaceId, readonly unknown[]>>()
+  private readonly archiveTails = new Map<WebUserId, Promise<void>>()
   private readonly writers = new Map<ReturnType<typeof sessionId>, { workerId: string
     lease: Lease }>()
   private closing = false
@@ -172,6 +205,8 @@ export class IsolatedProjectRuntime extends Service {
     ctx.on('web-identity/invalidated', async (userId) => { await this.quiesce(userId) })
     ctx.on('web-identity/ownership-deleted', async (userId) => { await this.quiesce(userId) })
     ctx.on('web-identity/session-expired', async (userId, authSessionId) => {
+      this.closeDownlinks(downlink => downlink.authority.principal.userId === userId
+        && downlink.authority.authSessionId === authSessionId)
       const prior = this.quiescences.get(undefined) ?? this.quiescences.get(userId) ?? this.sessionQuiescences.get(authSessionId)
       if (prior !== undefined) { await prior; return }
       const selected = [...this.leases.values()].filter(lease => lease.authority.principal.userId === userId
@@ -273,12 +308,13 @@ export class IsolatedProjectRuntime extends Service {
   }
 
   /**
-   * Abort all affected transports, cancel every supervisor lease, and await
+   * Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await
    * process-tree receipts. Concurrent requests share the barrier, and new owner
    * execution refuses until it settles. A missing receipt permanently closes this adapter.
    * @param userId - Affected account, or all accounts during disposal.
    */
   quiesce(userId?: WebUserId): Promise<void> {
+    this.closeDownlinks(downlink => userId === undefined || downlink.authority.principal.userId === userId)
     const existing = this.quiescences.get(undefined) ?? this.quiescences.get(userId)
     if (existing !== undefined) return existing
     const leases = [...this.leases.values()].filter(lease => userId === undefined || lease.authority.principal.userId === userId)
@@ -345,7 +381,7 @@ export class IsolatedProjectRuntime extends Service {
     const workspaceId = request.workspaceId as WorkspaceId
     const scope = await this.authorize(lease.authority, { kind: 'workspace', workspaceId },
       request.operation === 'append' || request.operation === 'allocate-fork' ? 'session.prompt' : 'session.history')
-    if (lease.scope !== undefined && (scope?.projectId !== lease.scope.projectId
+    if (lease.scope === undefined || (scope?.projectId !== lease.scope.projectId
       || (lease.scope.workspaceId !== undefined
         && workspaceId !== lease.scope.workspaceId))) failure('RUNTIME_BROKER', 403, 'Worker scope differs')
     signal.throwIfAborted()
@@ -447,9 +483,10 @@ export class IsolatedProjectRuntime extends Service {
   }
 
   /**
-   * A unary exchange is bounded by requestTimeoutMs end to end. A stream is
+   * A unary exchange is bounded by requestTimeoutMs end to end, including the sub-stream attach. A stream is
    * bounded only until its response headers arrive; afterwards the lease and
-   * the caller signal end its body.
+   * the caller signal end its body. A workspace-scoped unary exchange first
+   * attaches that workspace's sub-stream to each open downlink of the user.
    */
   private async dispatch(phase: 'unary' | 'stream', authority: RequestAuthority, resource: OwnerResource | undefined,
     method: string, path: string, init: RequestInit, signal?: AbortSignal, linkedLease?: Lease): Promise<{ response: Response
@@ -460,6 +497,15 @@ export class IsolatedProjectRuntime extends Service {
     signal?.throwIfAborted()
     const lease = this.lease(authority, scope)
     try {
+      // The lease exists before the attach, so a downlink opening concurrently finds this workspace.
+      const unaryDeadline = phase === 'unary' ? AbortSignal.timeout(this.config.requestTimeoutMs) : undefined
+      const workspaceId = scope?.workspaceId
+      if (unaryDeadline !== undefined && workspaceId !== undefined) {
+        await untilAborted(Promise.allSettled([...this.downlinks]
+          .filter(downlink => downlink.authority.principal.userId === authority.principal.userId)
+          .map(downlink => this.attach(downlink, workspaceId))),
+        AbortSignal.any([unaryDeadline, lease.controller.signal, ...(signal === undefined ? [] : [signal])]))
+      }
       const headers = await this.headers(lease)
       if (linkedLease !== undefined) this.assertReplyLease(linkedLease)
       for (const [key, value] of new Headers(init.headers)) headers.set(key, value)
@@ -476,7 +522,7 @@ export class IsolatedProjectRuntime extends Service {
       try {
         response = await fetch(new URL(path, endpoint), { ...init, headers, redirect: 'error',
           signal: AbortSignal.any([lease.controller.signal,
-            phase === 'unary' ? AbortSignal.timeout(this.config.requestTimeoutMs) : headerDeadline.signal,
+            unaryDeadline ?? headerDeadline.signal,
             ...(signal === undefined ? [] : [signal])]) })
       } finally { clearTimeout(timer) }
       if (response.headers.get('x-arx-operation-id') !== lease.operationId) failure('RUNTIME_PROTOCOL', 502,
@@ -524,6 +570,12 @@ export class IsolatedProjectRuntime extends Service {
         details: { issues: [] } } }
     }
     request = { ...request, payload: validated }
+    if (request.method === 'host.describe') {
+      this.available()
+      // Control answers the readiness handshake: no worker cwd, attached count or host home leaves a worker.
+      return { ok: true, value: { version: this.ctx.get('appVersion') ?? UNDECLARED_APP_VERSION, cwd: '',
+        attachedSessions: 0, home: '', canOpenPath: false } }
+    }
     const activity = remote === undefined && (METHODS.get(request.method) === 'active'
       || (METHODS.get(request.method) === 'new-session' && parsedPayload?.sessionId === undefined))
     const payloadResource = parsedPayload
@@ -536,6 +588,12 @@ export class IsolatedProjectRuntime extends Service {
     }
     const selectedScope = await this.authorize(authority, resource, request.method)
     await this.ownedReferences(authority, remote === undefined ? request.payload : object(request.payload)?.args, selectedScope)
+    if (resource === undefined && ['session.list', 'workspace.list', 'session.search'].includes(request.method)) {
+      return this.listAcrossWorkspaces(authority, request, signal)
+    }
+    if (request.method === 'workspace.insertBefore') {
+      return this.orderWorkspace(authority, request.payload as ReturnType<typeof parseApiMethodPayload<'workspace.insertBefore'>>)
+    }
     let allocatedSessionId: ReturnType<typeof sessionId> | undefined
     let newSessionId: ReturnType<typeof sessionId> | undefined
     if (request.method === 'session.create') {
@@ -609,12 +667,107 @@ export class IsolatedProjectRuntime extends Service {
         lease.controller.signal.throwIfAborted()
       }
       if (response.headers.get('x-arx-quiescent') === 'true') this.leases.delete(lease.operationId)
+      const archived = result.result.ok && request.method === 'workspace.archiveSession'
+        ? object(result.result.value)?.archivedSessionIds : undefined
+      if (Array.isArray(archived) && lease.scope?.workspaceId !== undefined) {
+        const archivedSessionIds = await this.recordArchive(authority, [[lease.scope.workspaceId, archived]])
+        return { ok: true, value: { archivedSessionIds } }
+      }
       return result.result
     } catch (error) {
       lease.settle()
       await this.cancel(lease)
       throw error
     } finally { lease.settle() }
+  }
+
+  private async listAcrossWorkspaces(authority: RequestAuthority, request: ClientRequest,
+    signal?: AbortSignal): Promise<ServerResponse['result']> {
+    this.available()
+    const workspaceIds = await this.ctx.projectStorage.workspaceOrder(authority)
+    // ponytail: every unscoped listing sends one request to each workspace worker of the user and wakes it.
+    // Upgrade path: control keeps per-workspace summaries current from the downlinks and answers without workers.
+    const results = await Promise.all(workspaceIds.map(workspaceId => this.invoke(authority, { kind: 'workspace', workspaceId },
+      request, signal)))
+    const items: unknown[] = []
+    const archives: (readonly [WorkspaceId, readonly unknown[]])[] = []
+    let hasMore = false
+    for (const [index, result] of results.entries()) {
+      if (!result.ok) failure('RUNTIME_UNAVAILABLE', 502, 'Workspace listing failed')
+      const value = object(result.value)
+      if (!Array.isArray(value?.items) || (request.method === 'workspace.list' && !Array.isArray(value.archivedSessionIds))
+        || (request.method === 'session.search' && typeof value.hasMore !== 'boolean')) {
+        failure('RUNTIME_PROTOCOL', 502, 'Workspace listing is invalid')
+      }
+      items.push(...value.items as unknown[])
+      hasMore ||= value.hasMore === true
+      if (request.method === 'workspace.list') {
+        archives.push([workspaceIds[index] as WorkspaceId, value.archivedSessionIds as unknown[]])
+      }
+    }
+    if (request.method === 'workspace.list') {
+      return { ok: true, value: { items, archivedSessionIds: await this.recordArchive(authority, archives) } }
+    }
+    // Search results keep each worker's ranking and are concatenated in workspace order within the wire limit.
+    if (request.method === 'session.search') {
+      return { ok: true, value: { items: items.slice(0, SESSION_SEARCH_RESULT_LIMIT),
+        hasMore: hasMore || items.length > SESSION_SEARCH_RESULT_LIMIT } }
+    }
+    return { ok: true, value: { items } }
+  }
+
+  /**
+   * Record workspace archives for the user; a worker reports only its own workspace. Calls of one
+   * user apply in call order, so a later answer or frame never carries an older union.
+   * @returns Archived ids of every workspace control has seen for the user that the user still owns.
+   */
+  private recordArchive(authority: RequestAuthority, entries: readonly (readonly [WorkspaceId, readonly unknown[]])[]): Promise<unknown[]> {
+    const userId = authority.principal.userId
+    const task = (this.archiveTails.get(userId) ?? Promise.resolve()).then(async () => {
+      const archives = this.archives.get(userId) ?? new Map<WorkspaceId, readonly unknown[]>()
+      for (const [workspaceId, archivedSessionIds] of entries) archives.set(workspaceId, archivedSessionIds)
+      this.archives.set(userId, archives)
+      // Ids learned from other workspaces are published only while the user still owns them.
+      const owned: unknown[] = []
+      for (const id of new Set([...archives.values()].flat())) {
+        try {
+          await this.ownedReferences(authority, { sessionIds: [id] })
+          owned.push(id)
+        } catch (error) {
+          if (!(error instanceof WebIdentityError) || error.status !== 403) throw error
+        }
+      }
+      return owned
+    })
+    this.archiveTails.set(userId, task.then(() => {}, () => {}))
+    return task
+  }
+
+  /** Store one move, then notify host downlinks; an identity failure while notifying can follow the committed order. */
+  private async orderWorkspace(authority: RequestAuthority,
+    payload: ReturnType<typeof parseApiMethodPayload<'workspace.insertBefore'>>): Promise<ServerResponse['result']> {
+    this.available()
+    const workspaceId = payload.workspaceId as WorkspaceId
+    await this.authorize(authority, { kind: 'workspace', workspaceId }, 'workspace.insertBefore')
+    const workspaceIds = await this.ctx.projectStorage.moveWorkspace(authority, workspaceId,
+      payload.beforeWorkspaceId as WorkspaceId | undefined)
+    await this.ctx.webIdentity.revalidate(authority, { activity: true })
+    await this.authorize(authority, { kind: 'workspace', workspaceId }, 'workspace.insertBefore')
+    for (const downlink of [...this.downlinks]) {
+      if (downlink.channel !== 'host' || downlink.authority.principal.userId !== authority.principal.userId) continue
+      // Each receiving login is revalidated and its references authorized like a worker frame.
+      try {
+        await this.ctx.webIdentity.revalidate(downlink.authority)
+        await this.ownedReferences(downlink.authority, { workspaceIds })
+      } catch (error) {
+        if (!(error instanceof WebIdentityError) || (error.status !== 401 && error.status !== 403)) throw error
+        continue
+      }
+      downlink.queue.push({ frame: { rpcId: RpcId(randomUUID()), payload: { type: 'host/workspace-order-changed', workspaceIds } },
+        delivered: () => {} })
+      downlink.wake?.()
+    }
+    return { ok: true, value: { workspaceIds } }
   }
 
   /**
@@ -734,8 +887,12 @@ export class IsolatedProjectRuntime extends Service {
   }
 
   /**
-   * Reuse the existing carrier's SSE parser, then authorize each frame before
-   * exposing it to a browser WebSocket downlink. Remote host events are denied.
+   * Merge one workspace-scoped sub-stream per attached workspace into one
+   * downlink. The initial set is the user's workspaces with a live lease;
+   * dispatch() attaches others before forwarding their first request. Each
+   * frame is authorized against its sub-lease's workspace before exposure.
+   * Any sub-stream end or failure ends the whole downlink and cancels every
+   * sub-lease. Remote host events are denied.
    * @param authority - Current issued USER authority.
    * @param channel - Existing host or mux channel.
    * @param signal - Local downlink cancellation.
@@ -743,10 +900,86 @@ export class IsolatedProjectRuntime extends Service {
    */
   async *streams(authority: RequestAuthority, channel: 'mux' | 'host', signal: AbortSignal):
   AsyncIterable<RpcRequest<MuxFrame | HostFrame>> {
-    const { response, lease } = await this.dispatch('stream', authority, undefined, 'runtime',
-      `/api/events.${channel}`, { method: 'GET' }, signal)
+    this.available()
+    await this.authorize(authority, undefined, 'runtime')
+    signal.throwIfAborted()
+    const downlink: Downlink = { authority, channel, closed: new AbortController(), attached: new Map(), leases: new Set(), queue: [] }
+    const stop = (): void => { this.endDownlink(downlink) }
+    signal.addEventListener('abort', stop, { once: true })
+    this.downlinks.add(downlink)
+    let current: QueuedFrame | undefined
     try {
+      const live = new Set<WorkspaceId>()
+      for (const lease of this.leases.values()) {
+        const workspaceId = lease.scope?.workspaceId
+        if (workspaceId !== undefined && lease.authority.principal.userId === authority.principal.userId
+          && !lease.controller.signal.aborted) live.add(workspaceId)
+      }
+      await Promise.all([...live].map(workspaceId => this.attach(downlink, workspaceId)))
+      for (;;) {
+        current = downlink.queue.shift()
+        if (current !== undefined) {
+          // Exposure is checked at dequeue: a frame queued before quiescence or closure is never published.
+          if (downlink.closed.signal.aborted || this.closing || this.unsafe || this.quiescences.has(undefined)
+            || this.quiescences.has(authority.principal.userId) || this.sessionQuiescences.has(authority.authSessionId)
+            || [...downlink.leases].some(lease => lease.controller.signal.aborted)) {
+            for (const pending of [current, ...downlink.queue.splice(0)]) pending.delivered()
+            current = undefined
+            continue
+          }
+          yield current.frame
+          current.delivered()
+          current = undefined
+          continue
+        }
+        if (downlink.failure !== undefined) throw downlink.failure.error
+        if (downlink.closed.signal.aborted) return
+        await new Promise<void>((resolve) => { downlink.wake = resolve })
+      }
+    } finally {
+      signal.removeEventListener('abort', stop)
+      this.downlinks.delete(downlink)
+      this.endDownlink(downlink)
+      for (const pending of [...current === undefined ? [] : [current], ...downlink.queue.splice(0)]) pending.delivered()
+      await Promise.allSettled([...downlink.attached.values()])
+      const settled = await Promise.allSettled([...downlink.leases].map(lease => this.cancel(lease)))
+      const rejected = settled.find(result => result.status === 'rejected')
+      if (rejected !== undefined) throw rejected.reason
+    }
+  }
+
+  /** Close selected idle downlinks; a downlink with sub-streams ends through its cancelled sub-leases, keeping their failure. */
+  private closeDownlinks(selected: (downlink: Downlink) => boolean): void {
+    for (const downlink of this.downlinks) if (downlink.attached.size === 0 && selected(downlink)) this.endDownlink(downlink)
+  }
+
+  private endDownlink(downlink: Downlink, failed?: { error: unknown }): void {
+    if (!downlink.closed.signal.aborted) {
+      if (failed !== undefined) downlink.failure = failed
+      downlink.closed.abort()
+    }
+    downlink.wake?.()
+  }
+
+  private attach(downlink: Downlink, workspaceId: WorkspaceId): Promise<void> {
+    const existing = downlink.attached.get(workspaceId)
+    if (existing !== undefined) return existing
+    const attaching = (async () => {
+      const { response, lease } = await this.dispatch('stream', downlink.authority, { kind: 'workspace', workspaceId }, 'runtime',
+        `/api/events.${downlink.channel}`, { method: 'GET' }, downlink.closed.signal)
       lease.settle()
+      downlink.leases.add(lease)
+      void this.pump(downlink, response, lease)
+    })()
+    attaching.catch((error: unknown) => { this.endDownlink(downlink, { error }) })
+    downlink.attached.set(workspaceId, attaching)
+    return attaching
+  }
+
+  /** Reuse the existing carrier's SSE parser for one sub-stream and queue each authorized frame. */
+  private async pump(downlink: Downlink, response: Response, lease: Lease): Promise<void> {
+    const authority = downlink.authority
+    try {
       let previous = -1
       let size = 0
       const bounded = response.body?.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
@@ -764,21 +997,23 @@ export class IsolatedProjectRuntime extends Service {
       const client = new InProcessApiClient({ fetch: () => new Promise<Response>((resolve) => {
         resolve(new Response(bounded, { headers: response.headers }))
       }) }, this.config.requestTimeoutMs)
-      const stream = channel === 'mux' ? client.events.mux({}, signal) : client.events.host({}, signal)
+      const signal = downlink.closed.signal
+      const stream = downlink.channel === 'mux' ? client.events.mux({}, signal) : client.events.host({}, signal)
       for await (const frame of stream) {
-        if (frame.payload.type === 'stream/error') continue
+        // Control owns workspace order; a worker only knows its own workspace.
+        if (frame.payload.type === 'stream/error' || frame.payload.type === 'host/workspace-order-changed') continue
         if (frame.payload.type === 'host/remote-event') {
           const event = ownerRemoteEventAdmission(frame.payload.event, frame.payload.args)
           if (event === undefined) continue
           if (event.resource !== undefined) await this.ctx.webIdentity.authorizeOwner(authority, event.resource)
         }
-        try { await this.ownedReferences(authority, frame.payload) }
+        try { await this.ownedReferences(authority, frame.payload, lease.scope) }
         catch (error) {
           if (error instanceof WebIdentityError && error.status === 403) continue
           throw error
         }
         await this.ctx.webIdentity.revalidate(authority)
-        if (lease.controller.signal.aborted || this.closing) return
+        if (lease.controller.signal.aborted || this.closing || signal.aborted) break
         if (frame.payload.type === 'approval/requested' || frame.payload.type === 'question/requested') {
           const previous = this.pendingReplies.get(frame.rpcId)
           if (previous !== undefined && (previous.lease.authority.principal.userId !== authority.principal.userId
@@ -791,12 +1026,19 @@ export class IsolatedProjectRuntime extends Service {
             if (pending.approvalId === frame.payload.approvalId) this.pendingReplies.delete(id)
           }
         }
-        yield frame
+        let exposed: RpcRequest<MuxFrame | HostFrame> = frame
+        if (frame.payload.type === 'host/archived-sessions-changed' && lease.scope?.workspaceId !== undefined) {
+          exposed = { rpcId: frame.rpcId, payload: { type: 'host/archived-sessions-changed',
+            archivedSessionIds: await this.recordArchive(authority, [[lease.scope.workspaceId,
+              frame.payload.archivedSessionIds]]) as typeof frame.payload.archivedSessionIds } }
+        }
+        await new Promise<void>((resolve) => {
+          downlink.queue.push({ frame: exposed, lease, delivered: resolve })
+          downlink.wake?.()
+        })
       }
-    } finally {
-      lease.settle()
-      await this.cancel(lease)
-    }
+      this.endDownlink(downlink)
+    } catch (error) { this.endDownlink(downlink, { error }) }
   }
 }
 export default IsolatedProjectRuntime

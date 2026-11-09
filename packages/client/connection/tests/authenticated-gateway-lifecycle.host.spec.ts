@@ -4,6 +4,7 @@ import { once } from 'node:events'
 import { Context } from '@arx-ai/cordis'
 import WebSocket from 'ws'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER, WebIdentityError } from '@arx-ai/arx-web-identity'
 import { identityHarness } from '../../../../examples/web-identity/tests/harness.ts'
@@ -150,7 +151,12 @@ describe('authenticated gateway lifecycle', () => {
     socket.on('error', () => {})
     try {
       await once(socket, 'open')
-      await vi.waitFor(() => { expect(supervisor.operations.size).toBe(1) })
+      // A later workspace-scoped request attaches that workspace's sub-stream once the downlink is registered.
+      await vi.waitFor(async () => {
+        await f.ctx.isolatedProjectRuntime.invoke(user.authority, undefined, { type: 'client-request',
+          rpcId: RpcId(randomUUID()), method: 'session.history', payload: { sessionId: header.id } })
+        expect(supervisor.operations.size).toBe(1)
+      })
       const closed = once(socket, 'close')
       await expect(gateway.close()).rejects.toThrow('Authenticated downlink disposal failed')
       await closed

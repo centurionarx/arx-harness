@@ -8,7 +8,7 @@ Run from the repository root:
 node node_modules/tsx/dist/cli.mjs examples/owned-project-storage/snapshot.ts
 ```
 
-The [snapshot golden](snapshot.expected.md) records safe ownership, durability, grouping, backup/restore and migration receipts. Own raw downloads preserve the existing JSONL bytes and can contain the owning volume's cwd; navigation DTOs only expose opaque ids and display names. A raw path is never an ownership credential and cannot be submitted as workspace provisioning authority.
+The [snapshot golden](snapshot.expected.md) records safe ownership, durability, grouping, backup/restore and migration receipts, plus the control-answered `host.describe` and a host downlink merged over two workspace sub-streams. Own raw downloads preserve the existing JSONL bytes and can contain the owning volume's cwd; navigation DTOs only expose opaque ids and display names. A raw path is never an ownership credential and cannot be submitted as workspace provisioning authority.
 
 The synthetic backup takes SQLite-native consistent snapshots and copies only disposable histories/volumes. It excludes the signing key, credential files and external authority journal. Restoring an old auth/index snapshot keeps the live external journal, revokes old cookies, preserves blocked users and deleted-resource tombstones, and denies logs without authoritative mapping. No interrupted tool is resumed by this process. Production quiescence, backup destination/encryption, retention, RPO/RTO and an actual restore drill remain operational gates.
 

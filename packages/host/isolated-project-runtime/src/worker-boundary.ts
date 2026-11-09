@@ -65,12 +65,15 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
   }
   return {
     async fetch(request) {
+      // A request whose operation was already cancelled starts no worker work.
+      if (request.signal.aborted) return new Response('Worker request aborted', { status: 409 })
       if (request.headers.get('x-arx-user-id') !== config.userId) return new Response('Worker owner refused', { status: 403 })
       const projectId = request.headers.get('x-arx-project-id'), workspaceId = request.headers.get('x-arx-workspace-id')
       if ((projectId !== null && projectId !== config.projectId) || (workspaceId !== null && workspaceId !== config.workspaceId)) {
         return new Response('Worker scope refused', { status: 403 })
       }
-      history.bind(request.headers.get(WORKER_CAPABILITY_HEADER) ?? '', scope)
+      // Only a workspace-scoped lease may back worker history; an unscoped request keeps the current capability.
+      if (workspaceId !== null) history.bind(request.headers.get(WORKER_CAPABILITY_HEADER) ?? '', scope)
       if (localWorkspaceId === undefined) localWorkspaceId = (await ctx.workspaceRegistry.create(config.volumePath)).id
       const path = new URL(request.url).pathname
       let input = request

@@ -24,7 +24,10 @@ async function setup(runtimeConfig: NonNullable<Parameters<typeof storageHarness
   const meta = await h.ctx.projectStorage.register(authority, workspace.workspaceId,
     { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1 })
   const request = (method: string, payload: unknown = {}): ClientRequest => ({ type: 'client-request', method, payload, rpcId: RpcId(randomUUID()) })
-  return { supervisor, h, authority, project, workspace, meta, request, runtime: h.ctx.isolatedProjectRuntime }
+  // A workspace-scoped request attaches that workspace's sub-stream to every open downlink; its own reply may fail.
+  const attach = () => h.ctx.isolatedProjectRuntime.invoke(authority, { kind: 'workspace', workspaceId: workspace.workspaceId },
+    request('llm.providers')).then(() => undefined, () => undefined)
+  return { supervisor, h, authority, project, workspace, meta, request, attach, runtime: h.ctx.isolatedProjectRuntime }
 }
 describe('isolated carrier limits and private broker admission', () => {
   it.each([
@@ -57,7 +60,7 @@ describe('isolated carrier limits and private broker admission', () => {
   it('bounds actual worker responses and validates export receipt selection for GET and HEAD', async () => {
     const f = await setup({ maxResponseBytes: 300 })
     f.supervisor.result({ text: 'x'.repeat(1000) })
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 502, code: 'RUNTIME_LIMIT' })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 502, code: 'RUNTIME_LIMIT' })
     await expect(f.runtime.fetch(f.authority, new Request('http://fixture/api/session.export'))).rejects.toMatchObject({ status: 400 })
     await expect(f.runtime.fetch(f.authority, new Request('http://fixture/api/session.export?sessionId=' + f.meta.id + '&path=/etc')))
       .rejects.toMatchObject({ status: 400 })
@@ -103,13 +106,13 @@ describe('isolated carrier limits and private broker admission', () => {
     const observer = (value: unknown) => {
       if (typeof value !== 'object' || value === null || !('request' in value) || !(value.request instanceof IncomingMessage)) return
       const incoming = value.request
-      if (incoming.url === '/api/host.describe' && incoming.headers['x-arx-user-id'] === f.authority.principal.userId) {
+      if (incoming.url === '/api/llm.providers' && incoming.headers['x-arx-user-id'] === f.authority.principal.userId) {
         seen.push({ project: incoming.headers['x-arx-project-id'], workspace: incoming.headers['x-arx-workspace-id'] })
       }
     }
     subscribe('http.server.request.start', observer)
     try {
-      expect(await f.runtime.invoke(f.authority, { kind: 'project', projectId: f.project.projectId }, f.request('host.describe')))
+      expect(await f.runtime.invoke(f.authority, { kind: 'project', projectId: f.project.projectId }, f.request('llm.providers')))
         .toEqual({ ok: true, value: {} })
     } finally { unsubscribe('http.server.request.start', observer) }
     expect(seen).toEqual([{ project: f.project.projectId, workspace: undefined }])
@@ -135,14 +138,14 @@ describe('isolated carrier limits and private broker admission', () => {
     await cancelled
     expect(await f.h.ctx.webIdentity.revalidate(f.authority)).toBe(f.authority)
     f.supervisor.resetReply()
-    expect(await f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).toEqual({ ok: true, value: {} })
+    expect(await f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).toEqual({ ok: true, value: {} })
   })
   it('enforces module grants again before every carrier and private broker request', async () => {
     const f = await setup()
     await f.h.ctx.webIdentity.setModules(f.h.master!, f.authority.principal.userId, [ModuleId('storage')])
     const login = await f.h.ctx.webIdentity.login(f.h.users[0]!.username, f.h.users[0]!.password, 'user')
     const authority = await f.h.ctx.webIdentity.authenticate(login.token, 'user')
-    await expect(f.runtime.invoke(authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 403, code: 'MODULE_DENIED' })
+    await expect(f.runtime.invoke(authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 403, code: 'MODULE_DENIED' })
     expect(await f.runtime.invoke(authority, undefined, f.request('session.history', { sessionId: f.meta.id }))).toEqual({ ok: true, value: {} })
   })
   it('admits only the private closed broker contract and refuses oversize HTTP before any tool/history effects', async () => {
@@ -177,13 +180,13 @@ describe('isolated carrier limits and private broker admission', () => {
     f.supervisor.rawReply(JSON.stringify({ type: 'server-response', rpcId: input.rpcId, result: canonical }))
     expect(await f.runtime.invoke(f.authority, undefined, input)).toEqual(canonical)
     f.supervisor.rawReply(JSON.stringify({ type: 'server-response', rpcId: 'wrong-rpc', result: { ok: true, value: [] } }))
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 502 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 502 })
     f.supervisor.rawReply('', {}, 204)
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toThrow()
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toThrow()
     f.supervisor.rawReply('bad JSON')
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toThrow()
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toThrow()
     f.supervisor.rawReply('refused', {}, 503)
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 502 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 502 })
   })
   it('accepts only allowed neutral/owned host Remote events and bounds each SSE frame before parsing', async () => {
     const f = await setup({ maxResponseBytes: 600 })
@@ -193,13 +196,17 @@ describe('isolated carrier limits and private broker admission', () => {
       frame('agent-preset/selected', [f.meta.id, 'owned-preset']), frame('settings/document-updated', ['private-global'])]
     f.supervisor.rawReply(values.map(value => 'data: ' + JSON.stringify(value) + '\n\n').join(''), { 'content-type': 'text/event-stream' })
     const controller = new AbortController(), seen: unknown[] = []
-    for await (const value of f.runtime.streamHost(f.authority, controller.signal)) seen.push(value.payload)
+    const downlink = f.runtime.streamHost(f.authority, controller.signal)
+    const collected = (async () => { for await (const value of downlink) seen.push(value.payload) })()
+    await f.attach()
+    await collected
     expect(seen).toEqual([values[1]!.payload, values[2]!.payload])
     f.supervisor.rawReply('', { 'content-type': 'text/event-stream' }, 204)
-    await expect(f.runtime.streamHost(f.authority, controller.signal)[Symbol.asyncIterator]().next()).rejects.toMatchObject({ status: 502 })
+    const empty = f.runtime.streamHost(f.authority, controller.signal)[Symbol.asyncIterator]().next()
+    await Promise.all([expect(empty).rejects.toMatchObject({ status: 502 }), f.attach()])
     f.supervisor.rawReply('data: ' + 'x'.repeat(601), { 'content-type': 'text/event-stream' })
-    const bounded = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
-    await expect(bounded.next()).rejects.toMatchObject({ status: 502, code: 'RUNTIME_LIMIT' })
+    const bounded = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]().next()
+    await Promise.all([expect(bounded).rejects.toMatchObject({ status: 502, code: 'RUNTIME_LIMIT' }), f.attach()])
   })
   it('refuses the final dispatch when another USER cancellation fails between genuine revalidation and dispatch continuation', async () => {
     const f = await setup({}, 2)
@@ -241,12 +248,12 @@ describe('isolated carrier limits and private broker admission', () => {
       await entered.promise
       f.supervisor.cancelStatus(200)
       f.supervisor.hold(false)
-      await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe')))
+      await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers')))
         .rejects.toMatchObject({ status: 503, code: 'RUNTIME_UNAVAILABLE' })
       expect(validations).toBe(4)
       expect(await quiescence).toMatchObject({ status: 503, code: 'RUNTIME_QUIESCENCE' })
       expect(await otherOutcome).toBe('cancelled')
-      expect(f.supervisor.accepted.filter(value => value.method === 'host.describe')).toEqual([])
+      expect(f.supervisor.accepted.filter(value => value.method === 'llm.providers')).toEqual([])
     } finally { release.resolve(undefined); revalidateSpy.mockRestore(); fetchSpy.mockRestore() }
   })
   it('marks failed HTTP quiescence as unsafe and admits no further execution after the barrier settles', async () => {
@@ -258,7 +265,7 @@ describe('isolated carrier limits and private broker admission', () => {
     await accepted
     await expect(f.runtime.quiesce(f.authority.principal.userId)).rejects.toMatchObject({ status: 503 })
     expect(await outcome).toBe('cancelled')
-    await expect(f.runtime.invoke(f.authority, undefined, f.request('host.describe'))).rejects.toMatchObject({ status: 503 })
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
   })
 
 })

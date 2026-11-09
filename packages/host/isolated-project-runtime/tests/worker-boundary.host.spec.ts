@@ -6,6 +6,7 @@ import { beforeAll, beforeEach, afterEach, afterAll, describe, expect, it } from
 import type { Context } from '@arx-ai/cordis'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { randomUUID } from 'node:crypto'
 import { strFromU8, unzipSync } from 'fflate'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
@@ -70,9 +71,12 @@ describe('native owned worker boundary with genuine authority and host frames', 
     sessionId = SessionId((created.value as { sessionId: string }).sessionId)
     abort = new AbortController()
     mux = harness.ctx.isolatedProjectRuntime.streamMux(authority(), abort.signal)[Symbol.asyncIterator]()
-    const first = await mux.next()
-    expect(first.done).toBe(false)
-    const context = supervisor.ctxOf(workspaceId), captured = supervisor.headersOf(workspaceId)
+    const first = mux.next()
+    await sleep(50)
+    expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
+      envelope('session.history', { sessionId }))).toMatchObject({ ok: true })
+    expect((await first).done).toBe(false)
+    const context = supervisor.ctxOf(workspaceId), captured = supervisor.streamHeadersOf(workspaceId)
     if (context === undefined || captured === undefined) throw new Error('native lease not captured')
     worker = context
     headers = captured
@@ -101,6 +105,33 @@ describe('native owned worker boundary with genuine authority and host frames', 
     const snapshot = await harness.ctx.projectStorage.list(authority(), { kind: 'workspace', workspaceId })
     expect(snapshot.sessions.map(value => value.sessionId)).toContain(sessionId)
     expect(supervisor.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
+  })
+
+  it('returns 409 for an already aborted request without starting worker work', async () => {
+    const sessions = worker.sessions.list().length
+    const before = await harness.ctx.projectStorage.list(authority(), { kind: 'workspace', workspaceId })
+    const controller = new AbortController()
+    controller.abort()
+    for (const request of [post('session.create', { workspaceId }), post('host.describe'), get('/api/session.export')]) {
+      const response = await boundary.fetch(new Request(request, { signal: controller.signal }))
+      expect(response.status).toBe(409)
+      expect(await response.text()).toBe('Worker request aborted')
+    }
+    expect(worker.sessions.list()).toHaveLength(sessions)
+    expect((await harness.ctx.projectStorage.list(authority(), { kind: 'workspace', workspaceId })).sessions)
+      .toEqual(before.sessions)
+    expect(supervisor.counts).toEqual({ modelCalls: 0, toolCalls: 0 })
+  })
+
+  it('keeps the scoped history capability when an unscoped request reaches the worker', async () => {
+    await boundary.fetch(post('llm.providers'))
+    await expect(worker.ownedWorkerHistory.list()).resolves.toEqual(expect.any(Array))
+    const unscoped = new Headers(headers)
+    unscoped.delete('x-arx-workspace-id')
+    unscoped.delete('x-arx-project-id')
+    unscoped.set(WORKER_CAPABILITY_HEADER, 'u'.repeat(43))
+    await boundary.fetch(post('llm.providers', {}, unscoped))
+    await expect(worker.ownedWorkerHistory.list()).resolves.toEqual(expect.any(Array))
   })
 
   it('fails closed for canonical Remote without a dispatcher and rejects another workspace on session creation', async () => {

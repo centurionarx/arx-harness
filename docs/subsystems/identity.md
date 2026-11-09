@@ -79,7 +79,7 @@ One trusted supervisor serves owner-assigned workers, never the shared host.
 
 ```ts cordis-catalog
 /**
- * Abort all affected transports, cancel every supervisor lease, and await
+ * Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await
  * process-tree receipts. Concurrent requests share the barrier, and new owner
  * execution refuses until it settles. A missing receipt permanently closes this adapter.
  * @param userId - Affected account, or all accounts during disposal.
@@ -133,8 +133,12 @@ async *streamMux(authority: RequestAuthority, signal: AbortSignal): AsyncIterabl
 async *streamHost(authority: RequestAuthority, signal: AbortSignal): AsyncIterable<RpcRequest<HostFrame>>
 
 /**
- * Reuse the existing carrier's SSE parser, then authorize each frame before
- * exposing it to a browser WebSocket downlink. Remote host events are denied.
+ * Merge one workspace-scoped sub-stream per attached workspace into one
+ * downlink. The initial set is the user's workspaces with a live lease;
+ * dispatch() attaches others before forwarding their first request. Each
+ * frame is authorized against its sub-lease's workspace before exposure.
+ * Any sub-stream end or failure ends the whole downlink and cancels every
+ * sub-lease. Remote host events are denied.
  * @param authority - Current issued USER authority.
  * @param channel - Existing host or mux channel.
  * @param signal - Local downlink cancellation.
@@ -312,6 +316,24 @@ async createWorkspace(authority: RequestAuthority, projectId: ProjectId, name: s
  * @returns Owner-authorized workspace metadata page.
  */
 async workspaces(authority: RequestAuthority, projectId: ProjectId, cursor?: string): Promise<WorkspacesPage>
+
+/**
+ * List the user's grouped workspaces in display order. Workspaces absent from
+ * the stored order follow it in creation order; unowned rows are omitted.
+ * @param authority - Issued USER authority.
+ * @returns Owned workspace ids in display order.
+ */
+async workspaceOrder(authority: RequestAuthority): Promise<WorkspaceId[]>
+
+/**
+ * Move one owned workspace before another, or to the end, and store the
+ * user's complete display order. Moves of one user apply one at a time.
+ * @param authority - Issued USER authority.
+ * @param workspaceId - Owned grouped workspace to move.
+ * @param beforeWorkspaceId - Owned grouped anchor; absent appends.
+ * @returns The complete stored display order.
+ */
+async moveWorkspace(authority: RequestAuthority, workspaceId: WorkspaceId, beforeWorkspaceId?: WorkspaceId): Promise<WorkspaceId[]>
 
 /**
  * Remove a grouping registration while preserving every identity, history

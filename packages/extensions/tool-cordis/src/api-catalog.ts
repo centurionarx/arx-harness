@@ -967,7 +967,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     methods: [
       {
         signature: 'quiesce(userId?: WebUserId): Promise<void>',
-        description: 'Abort all affected transports, cancel every supervisor lease, and await process-tree receipts. Concurrent requests share the barrier, and new owner execution refuses until it settles. A missing receipt permanently closes this adapter.',
+        description: 'Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await process-tree receipts. Concurrent requests share the barrier, and new owner execution refuses until it settles. A missing receipt permanently closes this adapter.',
         parameters: [{ name: 'userId', description: 'Affected account, or all accounts during disposal.' }],
       },
       {
@@ -1002,7 +1002,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: 'async *streams(authority: RequestAuthority, channel: \'mux\' | \'host\', signal: AbortSignal): AsyncIterable<RpcRequest<MuxFrame | HostFrame>>',
-        description: 'Reuse the existing carrier\'s SSE parser, then authorize each frame before exposing it to a browser WebSocket downlink. Remote host events are denied.',
+        description: 'Merge one workspace-scoped sub-stream per attached workspace into one downlink. The initial set is the user\'s workspaces with a live lease; dispatch() attaches others before forwarding their first request. Each frame is authorized against its sub-lease\'s workspace before exposure. Any sub-stream end or failure ends the whole downlink and cancels every sub-lease. Remote host events are denied.',
         parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'channel', description: 'Existing host or mux channel.' }, { name: 'signal', description: 'Local downlink cancellation.' }],
         returns: 'Existing narrow RpcRequest frames filtered by identity ownership.',
       },
@@ -1538,6 +1538,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'List grouping metadata without inspecting any user directory.',
         parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'projectId', description: 'Owned project.' }, { name: 'cursor', description: 'Last returned workspace id.' }],
         returns: 'Owner-authorized workspace metadata page.',
+      },
+      {
+        signature: 'async workspaceOrder(authority: RequestAuthority): Promise<WorkspaceId[]>',
+        description: 'List the user\'s grouped workspaces in display order. Workspaces absent from the stored order follow it in creation order; unowned rows are omitted.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }],
+        returns: 'Owned workspace ids in display order.',
+      },
+      {
+        signature: 'async moveWorkspace(authority: RequestAuthority, workspaceId: WorkspaceId, beforeWorkspaceId?: WorkspaceId): Promise<WorkspaceId[]>',
+        description: 'Move one owned workspace before another, or to the end, and store the user\'s complete display order. Moves of one user apply one at a time.',
+        parameters: [{ name: 'authority', description: 'Issued USER authority.' }, { name: 'workspaceId', description: 'Owned grouped workspace to move.' }, { name: 'beforeWorkspaceId', description: 'Owned grouped anchor; absent appends.' }],
+        returns: 'The complete stored display order.',
       },
       {
         signature: 'async removeGrouping(authority: RequestAuthority, workspaceId: WorkspaceId): Promise<void>',

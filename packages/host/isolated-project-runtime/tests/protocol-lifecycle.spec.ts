@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { RpcId, type ClientRequest, type MuxFrame, type RpcRequest } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import type { RequestAuthority } from '@arx-ai/arx-web-identity'
+import type { WorkspaceId } from '@arx-ai/arx-workspace'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { WORKER_BROKER_PATH, WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
@@ -11,7 +12,7 @@ import { supervisorFixture } from './supervisor.ts'
 let peer: Awaited<ReturnType<typeof supervisorFixture>> | undefined
 let h: Awaited<ReturnType<typeof storageHarness>> | undefined
 let authority: RequestAuthority
-let own: { projectId: string; workspaceId: string; sessionId: SessionId }
+let own: { projectId: string; workspaceId: WorkspaceId; sessionId: SessionId }
 const streams: { abort: AbortController; iterator: AsyncIterator<unknown> }[] = []
 function frame(payload: unknown, rpcId = randomUUID()) {
   return { type: 'server-request', rpcId, method: 'events.mux', payload }
@@ -27,13 +28,22 @@ function respond(rpcId: string, result: unknown = { ok: true, value: {} }) {
   return new Request('http://fixture/api/respond', { method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ type: 'client-response', rpcId, result }) })
 }
-async function open(payload: unknown, rpcId = randomUUID(), owner = authority) {
+/** A workspace-scoped request attaches that workspace's sub-stream to every open downlink; its own reply may fail. */
+function attach(owner = authority, workspaceId = own.workspaceId) {
+  if (h === undefined) throw new Error('real protocol fixture missing')
+  return h.ctx.isolatedProjectRuntime.invoke(owner, { kind: 'workspace', workspaceId },
+    input('llm.providers')).then(() => undefined, () => undefined)
+}
+async function open(payload: unknown, rpcId = randomUUID(), owner = authority, workspaceId = own.workspaceId) {
   if (peer === undefined || h === undefined) throw new Error('real protocol fixture missing')
   peer.frame(frame(payload, rpcId))
   const abort = new AbortController()
   const iterator = h.ctx.isolatedProjectRuntime.streamMux(owner, abort.signal)[Symbol.asyncIterator]()
   streams.push({ abort, iterator })
-  expect((await iterator.next()).done).toBe(false)
+  const first = iterator.next()
+  first.catch(() => {})
+  await attach(owner, workspaceId)
+  expect((await first).done).toBe(false)
   return iterator
 }
 async function nextType(iterator: AsyncIterator<RpcRequest<MuxFrame>>): Promise<MuxFrame['type']> {
@@ -70,9 +80,9 @@ describe('real HTTP peer faults in correlated owner lifecycle', () => {
     const expected = { projectId: own.projectId, workspaceIds: [own.workspaceId],
       sessionIds: [own.sessionId], archivedSessionIds: [own.sessionId] }
     peer.result(expected)
-    expect(await h.ctx.isolatedProjectRuntime.invoke(authority, undefined, input('host.describe'))).toEqual({ ok: true, value: expected })
+    expect(await h.ctx.isolatedProjectRuntime.invoke(authority, undefined, input('llm.providers'))).toEqual({ ok: true, value: expected })
     peer.result({ workspaceIds: [42] })
-    await expect(h.ctx.isolatedProjectRuntime.invoke(authority, undefined, input('host.describe')))
+    await expect(h.ctx.isolatedProjectRuntime.invoke(authority, undefined, input('llm.providers')))
       .rejects.toMatchObject({ status: 502, code: 'RUNTIME_PROTOCOL' })
   })
   it('refuses a creation without a server-managed workspace before the peer sees a request', async () => {
@@ -149,7 +159,10 @@ describe('real HTTP peer faults in correlated owner lifecycle', () => {
       frame({ type: 'session/subscribed', sessionId: own.sessionId, lastSeq: 0 })]
     peer.rawReply(values.map(value => 'data: ' + JSON.stringify(value) + '\n\n').join(''), { 'content-type': 'text/event-stream' })
     const abort = new AbortController(), seen: unknown[] = []
-    for await (const value of h.ctx.isolatedProjectRuntime.streamMux(authority, abort.signal)) seen.push(value.payload)
+    const downlink = h.ctx.isolatedProjectRuntime.streamMux(authority, abort.signal)
+    const collected = (async () => { for await (const value of downlink) seen.push(value.payload) })()
+    await attach()
+    await collected
     expect(seen).toEqual([values[2]!.payload])
   })
   it('refuses a second pending request that reuses the rpcId for a different owned session', async () => {
@@ -189,7 +202,7 @@ describe('real HTTP peer faults in correlated owner lifecycle', () => {
         const abort = new AbortController()
         const iterator = fixture.ctx.isolatedProjectRuntime.streamMux(authority, abort.signal)[Symbol.asyncIterator]()
         streams.push({ abort, iterator })
-        await expect(iterator.next()).rejects.toMatchObject({ status: 401 })
+        await Promise.all([expect(iterator.next()).rejects.toMatchObject({ status: 401 }), attach()])
       }
       expect(revocation).toBeDefined()
       await revocation
@@ -221,7 +234,9 @@ describe('real HTTP peer faults in correlated owner lifecycle', () => {
     const abort = new AbortController()
     const iterator = fixture.ctx.isolatedProjectRuntime.streamMux(authority, abort.signal)[Symbol.asyncIterator]()
     streams.push({ abort, iterator })
-    expect(await iterator.next()).toEqual({ done: true, value: undefined })
+    const next = iterator.next()
+    await attach()
+    expect(await next).toEqual({ done: true, value: undefined })
     expect(barrier).toBeDefined()
     await barrier
     expect(peer.operations.size).toBe(0)
@@ -267,7 +282,7 @@ describe('real HTTP peer faults in correlated owner lifecycle', () => {
     const workspace = await h.ctx.projectStorage.createWorkspace(foreign, project.projectId, 'Other pending workspace')
     const meta = await h.ctx.projectStorage.register(foreign, workspace.workspaceId,
       { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1 })
-    await expect(open(question(meta.id), rpcId, foreign)).rejects.toMatchObject({ status: 502, code: 'RUNTIME_PROTOCOL' })
+    await expect(open(question(meta.id), rpcId, foreign, workspace.workspaceId)).rejects.toMatchObject({ status: 502, code: 'RUNTIME_PROTOCOL' })
     expect(await h.ctx.webIdentity.revalidate(authority)).toBe(authority)
   })
   it('retains one correlated reply across a repeated frame for the same owner and session', async () => {

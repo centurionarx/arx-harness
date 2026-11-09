@@ -2,12 +2,14 @@
 import { randomUUID } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { installLlmReplay } from '@arx-ai/arx-llm-replay'
 import { textResponse } from '../../../core/agent-loop/tests/mock-adapter.ts'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, expect, it, vi } from 'vitest'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity'
+import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { AbstractApiClient } from '@arx-ai/arx-host-apiproxy/client'
 import type { IApiClient } from '@arx-ai/arx-host-apiproxy/client'
 import * as Connection from '../../../client/connection/src/index.ts'
@@ -192,7 +194,11 @@ it('renews only the replying SID after a real same-owner question is accepted th
   }
   downlink = new AbortController()
   const mux = own.h.ctx.isolatedProjectRuntime.streamMux(own.user.authority, downlink.signal)[Symbol.asyncIterator]()
-  expect((await mux.next()).done).toBe(false)
+  const first = mux.next()
+  await sleep(50)
+  expect(await own.h.ctx.isolatedProjectRuntime.invoke(own.user.authority, undefined, { type: 'client-request',
+    method: 'session.history', payload: { sessionId: id }, rpcId: RpcId(randomUUID()) })).toMatchObject({ ok: true })
+  expect((await first).done).toBe(false)
   const asked = ctx.userQuestions.ask({ agent, questions: [{ id: 'sid-activity-choice',
     question: 'Only the SID providing this answer performs activity', options: [{ label: 'Continue' }] }] })
   const outcome = asked.then(value => ({ value }), (error: unknown) => ({ error }))

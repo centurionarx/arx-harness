@@ -107,6 +107,7 @@ export class ProjectStorage extends Service {
   })
   private db: DatabaseSync | undefined
   private readonly tails = new Map<SessionId, Promise<unknown>>()
+  private readonly orderTails = new Map<string, Promise<unknown>>()
   private closed = false
   private readonly indexPath: string
   private readonly logRoot: string
@@ -148,6 +149,8 @@ export class ProjectStorage extends Service {
     const version = this.db.prepare('PRAGMA user_version').get()?.user_version
     if (version !== 0 && version !== 1) throw new Error('unsupported project storage index version')
     this.db.exec("CREATE TABLE IF NOT EXISTS history(session TEXT PRIMARY KEY,user TEXT NOT NULL,project TEXT NOT NULL,workspace TEXT NOT NULL,created INTEGER NOT NULL,next_seq INTEGER NOT NULL CHECK(next_seq>=0),header TEXT NOT NULL,title TEXT NOT NULL DEFAULT '',grouped INTEGER NOT NULL DEFAULT 1 CHECK(grouped IN (0,1))); CREATE INDEX IF NOT EXISTS history_owner_page ON history(user,project,workspace,session); CREATE TABLE IF NOT EXISTS projects(project TEXT PRIMARY KEY,user TEXT NOT NULL,name TEXT NOT NULL,created INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS workspaces(workspace TEXT PRIMARY KEY,project TEXT NOT NULL,user TEXT NOT NULL,name TEXT NOT NULL,created INTEGER NOT NULL,grouped INTEGER NOT NULL CHECK(grouped IN (0,1))); CREATE INDEX IF NOT EXISTS workspaces_owner_page ON workspaces(user,project,workspace); PRAGMA user_version=1;")
+    // Additive table: existing tables, rows and user_version are unchanged.
+    this.db.exec('CREATE TABLE IF NOT EXISTS workspace_order(user TEXT PRIMARY KEY,workspaces TEXT NOT NULL)')
   }
 
   private database(): DatabaseSync {
@@ -261,6 +264,65 @@ export class ProjectStorage extends Service {
     if (bytes(result) > this.config.maxPageBytes) throw new WebIdentityError('HISTORY_LIMIT', 413, 'Workspace metadata limit exceeded')
     await this.ctx.webIdentity.revalidate(authority)
     return result
+  }
+
+  /**
+   * List the user's grouped workspaces in display order. Workspaces absent from
+   * the stored order follow it in creation order; unowned rows are omitted.
+   * @param authority - Issued USER authority.
+   * @returns Owned workspace ids in display order.
+   */
+  async workspaceOrder(authority: RequestAuthority): Promise<WorkspaceId[]> {
+    await this.requireStorageGrant(authority)
+    const user = authority.principal.userId
+    const stored = this.database().prepare('SELECT workspaces FROM workspace_order WHERE user=?').get(user)
+    const saved = stored === undefined ? [] : JSON.parse(String(stored.workspaces)) as string[]
+    const rank = (id: string): number => { const index = saved.indexOf(id); return index === -1 ? saved.length : index }
+    const ids = this.database().prepare('SELECT workspace FROM workspaces WHERE user=? AND grouped=1 ORDER BY rowid').all(user)
+      .map(value => String(value.workspace) as WorkspaceId)
+    const order: WorkspaceId[] = []
+    for (const workspaceId of ids.map((id, index) => ({ id, index })).sort((a, b) => rank(a.id) - rank(b.id) || a.index - b.index)
+      .map(entry => entry.id)) {
+      try {
+        await this.scope(authority, { kind: 'workspace', workspaceId })
+        order.push(workspaceId)
+      } catch (error) {
+        if (!(error instanceof WebIdentityError) || error.status !== 403) throw error
+      }
+    }
+    return order
+  }
+
+  /**
+   * Move one owned workspace before another, or to the end, and store the
+   * user's complete display order. Moves of one user apply one at a time.
+   * @param authority - Issued USER authority.
+   * @param workspaceId - Owned grouped workspace to move.
+   * @param beforeWorkspaceId - Owned grouped anchor; absent appends.
+   * @returns The complete stored display order.
+   */
+  async moveWorkspace(authority: RequestAuthority, workspaceId: WorkspaceId, beforeWorkspaceId?: WorkspaceId): Promise<WorkspaceId[]> {
+    const user = authority.principal.userId
+    const task = (this.orderTails.get(user) ?? Promise.resolve()).catch(() => {})
+      .then(() => this.moveWorkspaceNow(authority, workspaceId, beforeWorkspaceId))
+    this.orderTails.set(user, task)
+    try { return await task }
+    finally { if (this.orderTails.get(user) === task) this.orderTails.delete(user) }
+  }
+
+  private async moveWorkspaceNow(authority: RequestAuthority, workspaceId: WorkspaceId,
+    beforeWorkspaceId?: WorkspaceId): Promise<WorkspaceId[]> {
+    await this.scope(authority, { kind: 'workspace', workspaceId })
+    if (beforeWorkspaceId !== undefined) await this.scope(authority, { kind: 'workspace', workspaceId: beforeWorkspaceId })
+    const current = await this.workspaceOrder(authority)
+    const order = current.filter(id => id !== workspaceId)
+    const at = beforeWorkspaceId === undefined ? order.length : order.indexOf(beforeWorkspaceId)
+    if (!current.includes(workspaceId) || at === -1) deny('Workspace order anchor unavailable')
+    order.splice(at, 0, workspaceId)
+    this.database().prepare('INSERT INTO workspace_order VALUES(?,?) ON CONFLICT(user) DO UPDATE SET workspaces=excluded.workspaces')
+      .run(authority.principal.userId, JSON.stringify(order))
+    await this.ctx.webIdentity.revalidate(authority)
+    return order
   }
 
   /**
