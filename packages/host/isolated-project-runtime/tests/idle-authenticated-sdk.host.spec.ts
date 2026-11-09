@@ -11,10 +11,11 @@ import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-ide
 import { AbstractApiClient } from '@arx-ai/arx-host-apiproxy/client'
 import type { IApiClient } from '@arx-ai/arx-host-apiproxy/client'
 import * as Connection from '../../../client/connection/src/index.ts'
-import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
+import { frozenBeforeIdle, storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { oneTurnLog } from '../../../session/session-persistence/tests/contract.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
+
 
 let harness: Awaited<ReturnType<typeof storageHarness>> | undefined
 let supervisor: Awaited<ReturnType<typeof nativeSupervisorFixture>> | undefined
@@ -76,7 +77,7 @@ it('does not renew idle or journal head for SDK handshake, reconnect and automat
   expect(await client.sessions.create({ sessionId: meta.id })).toMatchObject({ result: { ok: true, value: { sessionId: meta.id } } })
   const deadlines = () => sessionDeadlines(h.paths.database, user.authority.authSessionId)
   const initial = deadlines(), head = h.ctx.webIdentity.authorityHead
-  const now = initial.idle - 1000
+  const now = frozenBeforeIdle(h.paths.database)
   vi.spyOn(Date, 'now').mockReturnValue(now)
   expect((await client.host.describe({})).result.ok).toBe(true)
   expect(deadlines()).toEqual(initial)
@@ -114,7 +115,7 @@ async function sdkActivityFixture() {
   })
   const deadlines = () => sessionDeadlines(h.paths.database, user.authority.authSessionId)
   const initial = deadlines()
-  let now = initial.idle - 1000
+  let now = frozenBeforeIdle(h.paths.database)
   vi.spyOn(Date, 'now').mockImplementation(() => now)
   return { h, peer, user, origin, project, workspace, provision, client, deadlines, initial, advance: () => { now += 10 } }
 }

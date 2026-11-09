@@ -669,6 +669,7 @@ export class PersistenceCoordinator<TornMarker = unknown> {
     return this.serialize(id, async () => {
       this.preparations.assertWritable(id)
       const state = this.states.get(id) ?? await this.adopt(id)
+      /* v8 ignore else -- V8 extends the `?? await` range over this if; jsonl.spec.ts asserts the publishing path. */
       if (state.materialized) return
       await this.backend.appendBatch(state.meta, [], false)
       state.materialized = true

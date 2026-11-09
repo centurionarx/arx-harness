@@ -8,10 +8,11 @@ import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { serverResponseSchema } from '@arx-ai/arx-host-apiproxy/api'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity'
 import * as Connection from '../../../client/connection/src/index.ts'
-import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
+import { frozenBeforeIdle, storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { oneTurnLog } from '../../../session/session-persistence/tests/contract.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
+
 
 let harness: Awaited<ReturnType<typeof storageHarness>> | undefined
 let supervisor: Awaited<ReturnType<typeof nativeSupervisorFixture>> | undefined
@@ -56,7 +57,7 @@ async function ownFixture() {
     } finally { database.close() }
   }
   const initial = deadlines(), head = h.ctx.webIdentity.authorityHead
-  let now = initial.idle - 1000
+  let now = frozenBeforeIdle(h.paths.database)
   vi.spyOn(Date, 'now').mockImplementation(() => now)
   const advance = () => { now += 10 }
   const ctx = peer.ctxOf(workspace.workspaceId)

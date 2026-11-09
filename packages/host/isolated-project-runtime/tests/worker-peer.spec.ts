@@ -56,7 +56,9 @@ describe('native worker provider over a real private broker transport', () => {
   }
   beforeAll(async () => {
     supervisor = await supervisorFixture()
-    h = await storageHarness({ endpoint: supervisor.endpoint, readyUsers: 1 })
+    // Every worker in a test shares the lease of the prompt held in beforeEach. A unary dispatch ends at
+    // requestTimeoutMs, so the window matches the CI test timeout instead of the harness's 5 seconds.
+    h = await storageHarness({ endpoint: supervisor.endpoint, readyUsers: 1, runtimeConfig: { requestTimeoutMs: 30000 } })
     own = await seed()
     peer.listen(0, '127.0.0.1'); await once(peer, 'listening')
     const address = peer.address()

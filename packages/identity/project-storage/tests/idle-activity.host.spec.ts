@@ -5,7 +5,8 @@ import { oneTurnLog } from '../../../session/session-persistence/tests/contract.
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, expect, it, vi } from 'vitest'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity'
-import { storageHarness } from './harness.ts'
+import { frozenBeforeIdle, storageHarness } from './harness.ts'
+
 let fixture: Awaited<ReturnType<typeof storageHarness>> | undefined
 let release: (() => void) | undefined
 afterEach(async () => { release?.(); vi.restoreAllMocks(); await fixture?.close(); fixture = undefined; release = undefined })
@@ -25,7 +26,7 @@ async function ownerHttpFixture() {
     } finally { database.close() }
   }
   const initial = deadlines()
-  vi.spyOn(Date, 'now').mockReturnValue(initial.idle - 1000)
+  vi.spyOn(Date, 'now').mockReturnValue(frozenBeforeIdle(h.paths.database))
   const headers = { cookie: AUTH_COOKIE_NAMES.user + '=' + user.token, origin,
     [AUTH_HEADER]: '1', [CSRF_HEADER]: state.csrfToken, 'content-type': 'application/json' }
   return { h, user, origin, state, initial, deadlines, headers }
@@ -67,7 +68,7 @@ it('renews each successful exact owner HTTP mutation once while preserving the a
   const meta = await h.ctx.projectStorage.register(user.authority, workspace.workspaceId,
     { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1 })
   await h.ctx.projectStorage.append(user.authority, meta.id, oneTurnLog())
-  let now = initial.idle - 1000, previousIdle = initial.idle
+  let now = frozenBeforeIdle(h.paths.database), previousIdle = initial.idle
   vi.spyOn(Date, 'now').mockImplementation(() => now)
   const operations = [
     { path: '/user/projects', method: 'POST', body: { name: 'Created project' }, status: 201 },

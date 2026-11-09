@@ -2,6 +2,7 @@
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import SessionStore from '@arx-ai/arx-session'
 import JsonlPersistence from '@arx-ai/arx-session-persistence-jsonl'
 import SqlitePersistence from '../../../session/session-persistence-sqlite/src/index.ts'
@@ -64,4 +65,19 @@ export async function storageHarness(options: { endpoint?: string
       async close(remove = options.root === undefined) { await fixture.close(false); if (remove) await rm(root,
         { recursive: true, force: true }) } }
   } catch (error) { if (options.root === undefined) await rm(root, { recursive: true, force: true }); throw error }
+}
+
+/**
+ * One second before the earliest idle deadline among live sessions. Freezing time relative to the
+ * acting user alone would expire an earlier fixture session (such as MASTER) when setup runs slowly.
+ * @param path - Identity database of the fixture.
+ * @returns Epoch milliseconds at which every live fixture session is still idle-valid.
+ */
+export function frozenBeforeIdle(path: string): number {
+  const database = new DatabaseSync(path)
+  try {
+    const row = database.prepare('SELECT MIN(idle_expires_at) AS deadline FROM web_sessions WHERE revoked=0').get()
+    if (row?.deadline == null) throw new Error('live session deadline missing')
+    return Number(row.deadline) - 1000
+  } finally { database.close() }
 }
