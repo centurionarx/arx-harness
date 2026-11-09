@@ -271,6 +271,24 @@ describe('the inherited readRaw default', () => {
   })
 })
 
+describe('the inherited readRawPage and materialize defaults', () => {
+  it('reject bounded pages and explicit materialization, honoring an aborted page signal', async () => {
+    const ctx = new Context()
+    await ctx.plugin(SessionStore)
+    await ctx.plugin(MemoryPersistence)
+    const id = SessionId('any-session')
+    const request = { offset: 0, maxBytes: 1 }
+    expect(ctx.sessionPersistence.supportsRawArtifactPages).toBe(false)
+    await expect(ctx.sessionPersistence.readRawPage(id, request)).rejects.toThrow('does not expose bounded raw pages')
+    const reason = new Error('page cancelled')
+    await expect(ctx.sessionPersistence.readRawPage(id, request, AbortSignal.abort(reason))).rejects.toBe(reason)
+    const controller = new AbortController()
+    controller.abort('boom')
+    await expect(ctx.sessionPersistence.readRawPage(id, request, controller.signal)).rejects.toThrow('aborted')
+    await expect(ctx.sessionPersistence.materialize(id)).rejects.toThrow('does not support explicit header materialization')
+  })
+})
+
 // Each fixture shares one map across mounts. No `corruptTail` is supplied because map writes are
 // atomic; the suite asserts that skip while JSONL and SQLite cover the repair branch.
 runCoordinatorContract('memory', async (): Promise<CoordinatorFixture> => {

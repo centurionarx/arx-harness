@@ -1619,3 +1619,33 @@ describe('JsonlSessionPersistence: edge cases', () => {
   })
 
 })
+
+describe('explicit header materialization', () => {
+  it('commits lazily created headers once and stays passive in the same and a reloaded backend', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'arx-jsonl-materialize-')); dirs.push(dir)
+    const mount = async () => {
+      const ctx = new Context()
+      await ctx.plugin(SessionStore)
+      const fiber = await ctx.plugin(JsonlSessionPersistence, { root: dir, compression: 'none' })
+      return { persistence: ctx.sessionPersistence, fiber }
+    }
+    // Three first commits against two passive calls: V8-to-Istanbul derives this
+    // early return's implicit else as the fall-through count minus the return
+    // count, so the publishing path must run more often to register as covered.
+    const headers = ['materialize-a', 'materialize-b', 'materialize-c'].map(id => meta(id))
+    const paths = headers.map(header => rawLogPath(dir, header.cwd, header.id))
+    const first = await mount()
+    for (const header of headers) await first.persistence.create(header)
+    for (const path of paths) await expect(stat(path)).rejects.toThrow()
+    for (const header of headers) await first.persistence.materialize(header.id)
+    const committed = await Promise.all(paths.map(path => readFile(path, 'utf8')))
+    for (const content of committed) expect(content.trimEnd().split('\n')).toHaveLength(1)
+    await first.persistence.materialize(headers[0]!.id)
+    expect(await readFile(paths[0]!, 'utf8')).toBe(committed[0])
+    await first.fiber.dispose()
+    const reloaded = await mount()
+    await reloaded.persistence.materialize(headers[0]!.id)
+    expect(await readFile(paths[0]!, 'utf8')).toBe(committed[0])
+    await reloaded.fiber.dispose()
+  })
+})

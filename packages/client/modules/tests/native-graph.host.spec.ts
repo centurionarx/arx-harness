@@ -102,6 +102,13 @@ describe('native request graph', () => {
     expect(rows.map(row => row.id)).toEqual(full.entries.map(row => row.id))
     expect(rows.map(row => row.id).join('\n')).not.toMatch(/ui-workspace|ui-projects|ui-repository|ui-schedule|hmr|native-open|inventory|plugin-install/)
   })
+  it('passes a project row without declared dependencies through without inventing inject or external', () => {
+    const composition = nativeComposition(state('USER', 'user', ['runtime', 'storage']))
+    const bare = '@arx-ai/arx-client-ui-brand-official'
+    const entries = full.entries.map(row => row.id === bare ? { id: row.id, url: row.url, rev: row.rev } : row)
+    expect(authenticatedGraph({ ...full, entries }, composition).find(row => row.id === bare))
+      .toEqual({ id: bare, url: '/plugins/' + bare + '/client.js', rev: 'fixture' })
+  })
   it('fails closed for missing required rows and an unknown declared dependency', () => {
     const composition = nativeComposition(state('USER', 'user', ['runtime', 'storage']))
     expect(() => authenticatedGraph({ ...full, entries: full.entries.filter(row => row.id !== '@arx-ai/arx-client-connection') }, composition))
