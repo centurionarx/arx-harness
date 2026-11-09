@@ -113,6 +113,49 @@ describe('native supervisor cancellation by operation id', () => {
     expect(supervisor.seen).not.toContain('session.prompt')
   })
 
+  it('replaces the worker context before the receipt when a cancelled prompt hangs inside the carrier beside an open stream', async () => {
+    const own = await owned(0, 'A')
+    const { stream } = openMux(own.authority)
+    expect((await stream.next()).done).toBe(false)
+    const ctx = supervisor.ctxOf(own.workspace.workspaceId)
+    const carrier = supervisor.carrierOf(own.workspace.workspaceId)
+    if (ctx === undefined || carrier === undefined) throw new Error('native worker unavailable')
+    const accept = carrier.fetch.bind(carrier)
+    let accepted!: () => void
+    const promptAccepted = new Promise<void>((resolve) => { accepted = resolve })
+    vi.spyOn(carrier, 'fetch').mockImplementation(async (input: Request) => {
+      if (!(await input.clone().text()).includes('"session.prompt"')) return accept(input)
+      await accept(input)
+      accepted()
+      // The carrier keeps handling the accepted prompt until it observes the abort.
+      await new Promise<void>((resolve) => {
+        input.signal.addEventListener('abort', () => { resolve() }, { once: true })
+        if (input.signal.aborted) resolve()
+      })
+      await sleep(300)
+      throw input.signal.reason
+    })
+    const atReceipt: boolean[] = []
+    const originalFetch = globalThis.fetch
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (...args) => {
+      const response = await originalFetch(...args)
+      const input = args[0]
+      if (input instanceof URL && input.pathname.endsWith('/cancel')
+        && new Headers(args[1]?.headers).get('x-arx-workspace-id') === own.workspace.workspaceId) {
+        atReceipt.push(supervisor.ctxOf(own.workspace.workspaceId) !== ctx)
+      }
+      return response
+    })
+    const caller = new AbortController()
+    const prompt = harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.prompt',
+      { sessionId: own.meta.id, mode: 'queue', content: [{ type: 'text', text: 'Hang after acceptance' }] }), caller.signal)
+    const promptOutcome = prompt.then(() => 'resolved', () => 'refused')
+    await promptAccepted
+    caller.abort()
+    await promptOutcome
+    expect(atReceipt).toEqual([true])
+  })
+
   it('stops a finished background turn before confirming its SID expiry while another login streams from the worker', async () => {
     const own = await owned(0, 'A')
     const account = harness.users[0]!
