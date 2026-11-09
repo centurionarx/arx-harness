@@ -310,6 +310,49 @@ describe('accepted model selections', () => {
     }
   })
 
+  it('notifies once when the history window absorbs a buffered live selection', async () => {
+    const ctx = new Context()
+    const scope = createScope(ctx, SID)
+    const seen: SessionId[] = []
+    scope.ctx.on('session/model-selection', (id) => { seen.push(id) })
+    const { api, session } = makeSession()
+    session.bindScope(scope.ctx)
+    const gate = deferred<Awaited<ReturnType<FakeApiClient['onHistory']>>>()
+    api.onHistory = () => gate.promise
+    try {
+      const opening = session.open()
+      // The Host commits the pick after the history request left and before its answer.
+      session.handleMuxEnvelope('absorbed' as never, { type: 'session/event', sessionId: SID, event: modelEvent(1) })
+      gate.resolve(ok({ events: entries([modelEvent(1)]) as never[], hasMore: false }))
+      await opening
+      expect(seen).toEqual([SID])
+    } finally {
+      session.dispose()
+      await scope.fiber.dispose()
+    }
+  })
+
+  it('notifies once when a gap repair absorbs a buffered live selection', async () => {
+    const ctx = new Context()
+    const scope = createScope(ctx, SID)
+    const seen: SessionId[] = []
+    scope.ctx.on('session/model-selection', (id) => { seen.push(id) })
+    const { api, session } = makeSession()
+    session.bindScope(scope.ctx)
+    api.onHistory = () => histResponse([modelEvent(0)])
+    try {
+      await session.open()
+      // seq 2 after tail 0 is a gap: the repaired tail page already holds it.
+      api.onHistory = () => histResponse([modelEvent(0), modelEvent(1), modelEvent(2)])
+      session.handleMuxEnvelope('gap' as never, { type: 'session/event', sessionId: SID, event: modelEvent(2) })
+      await vi.waitFor(() => { expect(api.callsOf('session.history').length).toBe(2) })
+      await vi.waitFor(() => { expect(seen).toEqual([SID]) })
+    } finally {
+      session.dispose()
+      await scope.fiber.dispose()
+    }
+  })
+
   it('respects scope pruning, rebinding, and resident-session disposal', async () => {
     const ctx = new Context()
     const first = createScope(ctx, SID)

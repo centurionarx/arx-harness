@@ -166,7 +166,8 @@ declare module '@arx-ai/cordis' {
      */
     'connection/reset'(): void
     /**
-     * A model selection entered one session's accepted live window.
+     * A model selection entered one session's accepted live window, or a live
+     * selection buffered during an open or gap repair was absorbed by the installed history window.
      * Scoped consumers repull host-derived model state for that session.
      * @mode emit
      * @param sessionId - the session whose selection changed.

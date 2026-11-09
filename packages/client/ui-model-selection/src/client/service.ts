@@ -123,8 +123,8 @@ export class ModelDirectoryResolver extends Service {
       () => sessions.subagentAddress(sessionId) === undefined,
     )
     live.directories.set(sessionId, directory)
-    // External picks arrive through the session's accepted event window, not
-    // this directory's select() call. Reuse the host read and generation guard.
+    // External picks arrive through the session's accepted or history-absorbed event window,
+    // not this directory's select() call. Reuse the host read and generation guard.
     actx.on('session/model-selection', function (this: unknown, changedSessionId) {
       // The session-id filter also admits a recreated scope; require this binding's dispatch point.
       if (changedSessionId !== sessionId || this !== actx) return

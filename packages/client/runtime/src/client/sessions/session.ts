@@ -724,12 +724,18 @@ export class Session implements SessionFace {
     if (projections !== undefined) this.projections.seed(projections)
     const buffered = this.liveBuffer
     this.liveBuffer = []
-    for (const item of buffered) this.appendLive(item.event, item.view)
+    // A buffered live selection may already sit inside the new window (the Host committed it after the
+    // history request left), where appendLive drops it as overlap; notify once when the buffer held a pick.
+    for (const item of buffered) this.appendLive(item.event, item.view, false)
+    const actx = this.actx
+    if (actx !== undefined && buffered.some(item => item.event.type === 'model/selection')) {
+      actx.emit(actx, 'session/model-selection', this.sessionId)
+    }
     this.notifier.markDirty()
   }
 
   /** Seq-guarded append shared by stitching and the open-state live path. */
-  private appendLive(event: SessionEvent, view?: ToolEventView): ConversationPublication {
+  private appendLive(event: SessionEvent, view?: ToolEventView, notifySelection = true): ConversationPublication {
     const tailSeq = this.windowTailSeq()
     if (tailSeq !== null && event.seq <= tailSeq) return 'none' // replay overlap, drop
     this.events.push(event)
@@ -738,7 +744,7 @@ export class Session implements SessionFace {
     const queueChanged = this.queueMirror.acceptDurable(event)
     const publication = this.conversation.append({ event, view })
     const actx = this.actx
-    if (event.type === 'model/selection' && actx !== undefined) {
+    if (notifySelection && event.type === 'model/selection' && actx !== undefined) {
       actx.emit(actx, 'session/model-selection', this.sessionId)
     }
     return queueChanged ? 'immediate' : publication
