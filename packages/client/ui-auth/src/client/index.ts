@@ -219,8 +219,12 @@ function installUser(ctx: Context, publicFace: () => PublicInjected, projectRunt
         const sessionId = await ctx.workspaces.connectWorkspace(workspaceId)
         if (same(epoch)) { ctx.sessions.open(sessionId); actions.ready(); await sessions(epoch) }
       }) },
-      resume: (sessionId) => { void perform((epoch) => {
+      resume: (sessionId) => { void perform(async (epoch) => {
         if (!projectRuntimeAvailable) throw new AuthHttpError(403, 'PROJECT_RUNTIME_REQUIRED')
+        // The runtime session list can arrive after this HTTP page: wait for its pull before opening a
+        // session it does not hold yet. A session still unknown fails visibly, creates nothing, and a
+        // retry starts a new pull.
+        if (ctx.sessions.list.getSnapshot().byId[sessionId] === undefined) await ctx.sessions.refresh()
         // Open consumes existing runtime metadata/history. It does not issue a user message.
         if (same(epoch)) { ctx.sessions.open(sessionId); actions.ready() }
       }) },

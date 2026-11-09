@@ -222,6 +222,7 @@ describe('sessions', () => {
       .toMatchObject({ displayTitle: 'renamed', running: true })
     runtime.sessions.setSubagentCatalogOpen('s2' as SessionId, true)
     await runtime.sessions.refreshSubagents('s2' as SessionId)
+    await runtime.sessions.refresh()
     // The confirmed-switch write-back lands on the row it names and ignores
     // one the fixture never added, exactly as production's list upsert does.
     runtime.sessions.noteAgentPreset('s1' as SessionId, 'minimal')
@@ -243,6 +244,7 @@ describe('sessions', () => {
       { method: 'openSubagent', args: [address] },
       { method: 'setSubagentCatalogOpen', args: ['s2', true] },
       { method: 'refreshSubagents', args: ['s2'] },
+      { method: 'refresh', args: [] },
       { method: 'open', args: ['s1'] },
       { method: 'clear', args: [] },
       { method: 'fork', args: [{ sessionId: 's1', atSeq: 7, increaseTitle: true }] },

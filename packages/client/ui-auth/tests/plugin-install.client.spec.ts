@@ -76,7 +76,13 @@ function makeCtx(options: Options = {}) {
   const injects: Array<[string, () => unknown]> = []
   const disposers: Array<() => void> = []
   const dictionaries: unknown[] = []
-  const sessions = { open: vi.fn(), fork: vi.fn() }
+  // The runtime list holds the sessions the client can select; resume never creates one.
+  const listed = new Set<string>()
+  const sessions = {
+    open: vi.fn((id: string) => { if (!listed.has(id)) throw new Error('sessions.select: unknown session ' + id) }),
+    fork: vi.fn(), refresh: vi.fn(() => Promise.resolve()),
+    list: { getSnapshot: () => ({ byId: Object.fromEntries([...listed].map(id => [id, { sessionId: id }])) }) },
+  }
   const workspaces = { connectWorkspace: vi.fn() }
   const provided: Record<string, unknown> = {}
   if (options.withAuth !== false) provided.webAuth = harness.auth
@@ -96,6 +102,7 @@ function makeCtx(options: Options = {}) {
   }
   if (options.withAuth === false) Reflect.deleteProperty(ctx, 'webAuth')
   return { ...harness, ctx: ctx as unknown as Context, registrations, injects, dictionaries, sessions, workspaces,
+    listed,
     dispose() { for (const dispose of disposers.splice(0)) dispose() },
     find(name: string, key?: string) {
       const hit = registrations.find(entry => entry.opts.name === name && entry.opts.key === key)
@@ -473,6 +480,8 @@ describe('owner browser install', () => {
   it('opens workspaces and sessions through the project runtime and refreshes sessions afterwards', async () => {
     const t = owner()
     const p = uuid(), w = uuid(), s = uuid(), child = uuid()
+    // Runtime create and fork resolve only after their session is in the list.
+    t.listed.add(s); t.listed.add(child)
     t.face.selectProject(p); await settle()
     t.workspaces.connectWorkspace.mockResolvedValueOnce(s)
     t.face.openWorkspace(w as never); await settle()
@@ -498,6 +507,37 @@ describe('owner browser install', () => {
     t.face.resume(s as never); t.face.selectProject(uuid())
     await settle()
     expect(t.sessions.open).toHaveBeenCalledTimes(1)
+  })
+
+  it('waits for the runtime session list pull before resuming a session the list does not hold yet', async () => {
+    const t = owner()
+    const s = uuid()
+    const pull = deferred<undefined>()
+    t.sessions.refresh.mockReturnValueOnce(pull.promise)
+    t.face.resume(s as never); await settle()
+    expect(t.sessions.refresh).toHaveBeenCalledTimes(1)
+    expect(t.sessions.open).not.toHaveBeenCalled()
+    t.listed.add(s); pull.resolve(undefined); await settle()
+    expect(t.sessions.open).toHaveBeenCalledWith(s)
+    expect(t.handle.store.getSnapshot().error).toBeUndefined()
+    t.face.resume(s as never); await settle()
+    expect(t.sessions.refresh).toHaveBeenCalledTimes(1)
+    expect(t.sessions.fork).not.toHaveBeenCalled()
+    expect(t.workspaces.connectWorkspace).not.toHaveBeenCalled()
+  })
+
+  it('shows an error for a session still unknown after the pull, creates nothing, and pulls again on retry', async () => {
+    const t = owner()
+    const s = uuid()
+    t.face.resume(s as never); await settle()
+    expect(t.handle.store.getSnapshot()).toMatchObject({ error: 'OPERATION_FAILED', busy: false })
+    expect(t.sessions.fork).not.toHaveBeenCalled()
+    expect(t.workspaces.connectWorkspace).not.toHaveBeenCalled()
+    t.sessions.refresh.mockImplementationOnce(() => { t.listed.add(s); return Promise.resolve() })
+    t.face.resume(s as never); await settle()
+    expect(t.sessions.refresh).toHaveBeenCalledTimes(2)
+    expect(t.sessions.open).toHaveBeenLastCalledWith(s)
+    expect(t.handle.store.getSnapshot().error).toBeUndefined()
   })
 
   it('shows a history page only for the requested session and ignores a mismatched or stale response', async () => {
