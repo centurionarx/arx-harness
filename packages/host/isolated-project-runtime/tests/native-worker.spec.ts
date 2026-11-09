@@ -232,6 +232,41 @@ describe('owned history with native worker Loader and ApiProxy', () => {
       await expect(own.runtime.fetch(denied,
         new Request('http://fixture/api/session.export?sessionId=' + own.meta.id))).rejects.toMatchObject({ status: 403 })
   })
+  it('hydrates a restarted worker whose session writer is still a retained lease of the stopped worker', async () => {
+    const authority = harness.users[0]!.authority
+    const runtime = harness.ctx.isolatedProjectRuntime
+    const created = await runtime.invoke(authority, undefined, request('session.create', { workspaceId }))
+    if (!created.ok) throw new Error('native fresh session refused')
+    const id = SessionId((created.value as { sessionId: string }).sessionId)
+    const ctx = supervisor.ctxOf(workspaceId)!
+    const replayPath = join(volumePath, 'native-retained-writer-fixture.jsonl')
+    const records = [{ type: 'session', id: 'recorded-retained-writer', createdAt: 1 },
+      ...textResponse('Retained writer turn').map(chunk => ({ type: 'assistant/chunk', data: { turn: 1, step: 1, chunk } }))]
+    await writeFile(replayPath, records.map(row => JSON.stringify(row)).join('\n') + '\n')
+    const replay = installLlmReplay(ctx, { file: replayPath,
+      providers: [{ id: 'native-replay', models: [{ id: 'native-owned-model' }] }] })
+    try {
+      expect(await runtime.invoke(authority, undefined, request('session.selectModel',
+        { sessionId: id, provider: 'native-replay', model: 'native-owned-model' }))).toMatchObject({ ok: true })
+      // The prompt answers while its turn runs, so control retains its lease; the turn writes under it.
+      expect(await runtime.invoke(authority, undefined, request('session.prompt',
+        { sessionId: id, mode: 'queue', content: [{ type: 'text', text: 'Write under a retained lease' }] })))
+        .toMatchObject({ ok: true, value: { accepted: true } })
+      const agent = ctx.agents.get(id)!
+      await agent.whenIdle()
+      await ctx.sessions.flush(agent.session)
+      replay.assertConsumed()
+    } finally { replay.dispose() }
+    const stored = await harness.ctx.sessionPersistence.readFrom(id, 0)
+    // A worker restart that control never quiesced leaves that retained lease as the session writer.
+    await supervisor.restart()
+    const history = await runtime.invoke(authority, undefined, request('session.history', { sessionId: id }))
+    expect(history, JSON.stringify(history)).toMatchObject({ ok: true })
+    expect(await runtime.invoke(authority, undefined, request('session.create', { sessionId: id })))
+      .toMatchObject({ ok: true, value: { sessionId: id } })
+    expect((await harness.ctx.sessionPersistence.readFrom(id, 0)).events.slice(0, stored.events.length)).toEqual(stored.events)
+  })
+
   it('answers a genuine pending user question only through its active owner lease and original RPC id', async () => {
     const own = await seed()
     expect(await own.runtime.invoke(own.authority, undefined, request('session.create', { sessionId: own.meta.id })))

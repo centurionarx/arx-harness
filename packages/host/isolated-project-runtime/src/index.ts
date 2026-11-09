@@ -366,6 +366,7 @@ export class IsolatedProjectRuntime extends Service {
   }
 
   private async brokerOperation(lease: Lease, request: WorkerBrokerRequest, signal: AbortSignal): Promise<unknown> {
+    if (request.operation === 'snapshot') await this.releaseStaleWriter(lease, request, signal)
     const key = request.operation === 'list' || request.operation === 'list-snapshots' ? request.workspaceId : request.sessionId
     const previous = this.brokerQueues.get(key)
     const task = (previous ?? Promise.resolve()).catch(() => {}).then(() => {
@@ -377,13 +378,38 @@ export class IsolatedProjectRuntime extends Service {
     finally { if (this.brokerQueues.get(key) === task) this.brokerQueues.delete(key) }
   }
 
-  private async brokerOperationCore(lease: Lease, request: WorkerBrokerRequest, signal: AbortSignal): Promise<unknown> {
+  /**
+   * A different worker hydrating a session whose writer lease is still live is a restarted worker.
+   * After the same scope and owner checks as the operation itself, control cancels the old lease by
+   * its operation id and waits for its quiescent receipt; the writer then moves in the queued snapshot.
+   * Concurrent requests share the lease's single cancellation; a missing receipt closes the adapter.
+   * This runs before the per-session queue, so the old lease's queued broker work can settle.
+   */
+  private async releaseStaleWriter(lease: Lease, request: Extract<WorkerBrokerRequest, { operation: 'snapshot' }>,
+    signal: AbortSignal): Promise<void> {
+    const writer = this.writers.get(request.sessionId)
+    // The requester's own lease is the current operation, not a stopped one: the core refuses it.
+    if (writer === undefined || writer.workerId === request.workerId || writer.lease === lease
+      || !this.leases.has(writer.lease.operationId)) return
+    const scope = await this.brokerScope(lease, request)
+    await this.ownedReferences(lease.authority, { sessionId: request.sessionId }, scope)
+    signal.throwIfAborted()
+    await this.cancel(writer.lease)
+  }
+
+  private async brokerScope(lease: Lease, request: WorkerBrokerRequest): Promise<OwnedResource | undefined> {
     const workspaceId = request.workspaceId as WorkspaceId
     const scope = await this.authorize(lease.authority, { kind: 'workspace', workspaceId },
       request.operation === 'append' || request.operation === 'allocate-fork' ? 'session.prompt' : 'session.history')
     if (lease.scope === undefined || (scope?.projectId !== lease.scope.projectId
       || (lease.scope.workspaceId !== undefined
         && workspaceId !== lease.scope.workspaceId))) failure('RUNTIME_BROKER', 403, 'Worker scope differs')
+    return scope
+  }
+
+  private async brokerOperationCore(lease: Lease, request: WorkerBrokerRequest, signal: AbortSignal): Promise<unknown> {
+    const workspaceId = request.workspaceId as WorkspaceId
+    const scope = await this.brokerScope(lease, request)
     signal.throwIfAborted()
     if (request.operation === 'list') return this.ctx.projectStorage.executionHeaders(lease.authority, workspaceId, signal)
     if (request.operation === 'list-snapshots') return this.ctx.projectStorage.executionSnapshots(lease.authority, workspaceId, signal)
