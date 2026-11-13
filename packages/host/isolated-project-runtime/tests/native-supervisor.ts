@@ -34,6 +34,7 @@ import * as TurnOutlines from '@arx-ai/arx-session-turn-outline'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { once } from 'node:events'
 import { mkdir, mkdtemp, readFile, writeFile, rm, symlink } from 'node:fs/promises'
+import { setTimeout as delay } from 'node:timers/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
@@ -57,7 +58,16 @@ interface NativeWorker {
   lastHeaders?: Headers
   lastStreamHeaders?: Headers
 }
+/**
+ * Start the native supervisor fixture.
+ * @param options - `stopTimeoutMs` bounds one worker stop. An in-process Context cannot be killed, so after the
+ * deadline the fixture detaches the worker, counts a forced stop and issues the receipt while the abandoned
+ * disposal continues until `close()`. This reproduces the timing of a supervisor kill, not its isolation;
+ * without the option a stop waits for the disposal with no deadline.
+ * @returns Fixture controls and the supervisor endpoint.
+ */
 export async function nativeSupervisorFixture(options: { workerConfig?: Partial<WorkerPersistenceConfig>
+  stopTimeoutMs?: number
   fsTools?: boolean
   dispatchRemotes?: boolean
   baseline?: { logRoot: string
@@ -74,6 +84,11 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
   const owners = new Map<string, string>()
   const tombstones = new Set<string>()
   const seen: string[] = []
+  // Operations aborted by a worker stop stay here until that stop ends, so their receipts wait for it.
+  const stoppingWith = new Map<string, NativeWorker>()
+  const abandoned: Promise<void>[] = []
+  let stopBarrier: Promise<void> | undefined
+  let forcedStops = 0
   async function mount(worker: NativeWorker, capability: string) {
     const assignment = worker.assignment
     const workerRoot = join(root, worker.workerId)
@@ -142,13 +157,27 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
   }
   async function stop(worker: NativeWorker) {
     worker.stopping ??= (async () => {
+      const aborted: string[] = []
       for (const [id, operation] of operations) if (operation.worker === worker) {
-        operation.controller.abort(); operations.delete(id)
+        operation.controller.abort(); operations.delete(id); stoppingWith.set(id, worker); aborted.push(id)
       }
       await worker.mounting?.catch(() => {})
       const ctx = worker.ctx
       delete worker.ctx; delete worker.carrier; delete worker.mounting; delete worker.lastHeaders; delete worker.lastStreamHeaders
-      try { await ctx?.fiber.dispose() } finally { worker.workerId = randomUUID() }
+      const disposal = (async () => { await stopBarrier; await ctx?.fiber.dispose() })()
+      const deadline = new AbortController()
+      try {
+        if (options.stopTimeoutMs === undefined) await disposal
+        else if (await Promise.race([disposal.then(() => false),
+          delay(options.stopTimeoutMs, true, { signal: deadline.signal }).catch(() => false)])) {
+          forcedStops++
+          abandoned.push(disposal.catch(() => {}))
+        }
+      } finally {
+        deadline.abort()
+        worker.workerId = randomUUID()
+        for (const id of aborted) stoppingWith.delete(id)
+      }
     })()
     try { await worker.stopping } finally { delete worker.stopping }
   }
@@ -175,7 +204,7 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
           // cancellation needs worker-side operation tracking.
           if (!operation.stream
             || ![...operations.values()].some(other => other.worker === operation.worker)) await stop(operation.worker)
-        }
+        } else await stoppingWith.get(id)?.stopping
         outgoing.writeHead(200, { 'content-type': 'application/json' })
         outgoing.end(JSON.stringify({ operationId: id, quiescent: true }))
       } catch { outgoing.writeHead(503); outgoing.end() }
@@ -269,8 +298,13 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
       ({ toolCalls: sum.toolCalls + worker.toolCalls, modelCalls: sum.modelCalls + worker.modelCalls }), { toolCalls: 0, modelCalls: 0 }) },
     resetCounts() { for (const worker of workers.values()) { worker.modelCalls = 0; worker.toolCalls = 0 } },
     async restart() { await Promise.all([...workers.values()].map(stop)) },
+    /** Every later worker stop waits for this barrier before disposing its Context; no argument removes it. */
+    holdStop(barrier?: Promise<void>) { stopBarrier = barrier },
+    /** Number of worker stops that reached `stopTimeoutMs` before their disposal finished. */
+    get forcedStops() { return forcedStops },
     async close() {
       await this.restart()
+      await Promise.all(abandoned)
       server.closeAllConnections()
       await new Promise<void>((resolve, reject) => server.close((error) =>{  if (error === undefined) resolve(); else reject(error) }))
       await rm(root, { recursive: true, force: true })

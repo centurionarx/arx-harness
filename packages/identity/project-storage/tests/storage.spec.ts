@@ -1,17 +1,38 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
-import { appendFile, readFile, stat, writeFile } from 'node:fs/promises'
+import { appendFile, cp, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { oneTurnLog } from '../../../session/session-persistence/tests/contract.ts'
 import { storageHarness } from './harness.ts'
 
-const active: Awaited<ReturnType<typeof storageHarness>>[] = []
+const active: Awaited<ReturnType<typeof seededHarness>>[] = []
 afterEach(async () => { vi.restoreAllMocks(); for (const fixture of active.splice(0)) await fixture.close() })
-async function fixture(options: Parameters<typeof storageHarness>[0] = {}) {
-  const harness = await storageHarness(options); active.push(harness); return harness
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+beforeAll(async () => {
+  const harness = await storageHarness()
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
 }
-async function seeded(harness: Awaited<ReturnType<typeof storageHarness>>, user = 0) {
+async function fixture(options: Parameters<typeof storageHarness>[0] = {}) {
+  const harness = await seededHarness(options); active.push(harness); return harness
+}
+async function seeded(harness: Awaited<ReturnType<typeof seededHarness>>, user = 0) {
   const authority = harness.users[user]!.authority
   const project = await harness.ctx.projectStorage.createProject(authority, 'Owned project')
   const workspace = await harness.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Owned workspace')
@@ -37,7 +58,7 @@ describe('owned project storage through Loader', () => {
     expect((await stat(own.header.cwd!)).mode & 0o777).toBe(0o700)
     expect((await stat(harness.index)).mode & 0o777).toBe(0o600)
     const before = await readFile(location.path)
-    for (const denied of [harness.users[1]!.authority, harness.master!]) {
+    for (const denied of [harness.users[1]!.authority, harness.master]) {
       const api = harness.ctx.projectStorage
       for (const action of [
         () => api.provision(denied, own.workspace.workspaceId),

@@ -320,12 +320,14 @@ try {
   const bytesAfter = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
   // A resumed session marks its seed boundary once (Session constructor, packages/core/session/src/index.ts):
   // the export may grow by exactly one empty session/end-seed at the next seq, and every earlier byte stays identical.
+  // A log that already ended in the marker before the restart must not gain a second one.
   assert.deepEqual(bytesAfter.subarray(0, bytesBefore.length), bytesBefore)
   const appended = bytesAfter.subarray(bytesBefore.length).toString('utf8')
   assert.ok(appended.endsWith('\n') && !appended.slice(0, -1).includes('\n'))
   const lastBefore: unknown = JSON.parse(bytesBefore.toString('utf8').trimEnd().split('\n').at(-1)!)
   const marker: unknown = JSON.parse(appended)
-  assert.ok(typeof lastBefore === 'object' && lastBefore !== null && 'seq' in lastBefore && typeof lastBefore.seq === 'number')
+  assert.ok(typeof lastBefore === 'object' && lastBefore !== null && 'seq' in lastBefore && typeof lastBefore.seq === 'number'
+    && 'type' in lastBefore && lastBefore.type !== 'session/end-seed')
   assert.ok(typeof marker === 'object' && marker !== null && 'time' in marker && typeof marker.time === 'number')
   assert.deepEqual(marker, { type: 'session/end-seed', seq: lastBefore.seq + 1, time: marker.time, data: {} })
   assert.deepEqual(Object.keys(marker), ['type', 'seq', 'time', 'data'])
