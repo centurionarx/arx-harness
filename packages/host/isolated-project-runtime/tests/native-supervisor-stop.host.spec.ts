@@ -147,6 +147,8 @@ describe('native supervisor worker stop', () => {
     expect(await prompt).toBe('refused')
     // The supervisor is still stopping the worker when control gives up on the receipt.
     expect(f.supervisor.forcedStops).toBe(0)
+    expect(f.harness.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args.slice(2)))
+      .toEqual([['request-failed', 'TimeoutError']])
     await expect(f.runtime.invoke(f.harness.users[1]!.authority, undefined, request('host.describe')))
       .rejects.toMatchObject({ status: 503 })
     await vi.waitFor(() => { expect(f.supervisor.forcedStops).toBe(1) }, { timeout: 3000 })

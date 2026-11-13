@@ -112,7 +112,7 @@ interface Lease {
  * in the diagnostic when its quiescent receipt is missing.
  */
 type CancellationTrigger = 'authority-invalidated' | 'ownership-deleted' | 'session-expired' | 'disposal'
-  | 'quiesce-call' | 'writer-handoff' | 'request-ended' | 'downlink-closed'
+  | 'quiesce-call' | 'writer-handoff' | 'request-failed' | 'downlink-closed'
 /** A frame waiting for the consumer; control-authored frames have no sub-lease. */
 interface QueuedFrame {
   readonly frame: RpcRequest<MuxFrame | HostFrame>
@@ -314,12 +314,14 @@ export class IsolatedProjectRuntime extends Service {
         for (const [id, writer] of this.writers) if (writer.lease === lease) this.writers.delete(id)
         for (const [id, pending] of this.pendingReplies) if (pending.lease === lease) this.pendingReplies.delete(id)
       } catch (error) {
-        // The adapter stays closed until the process restarts; this line is the only record of what closed it.
-        if (!this.unsafe) {
-          this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
-            lease.operationId, trigger, String(error))
-        }
+        const closes = !this.unsafe
         this.unsafe = true
+        // The adapter stays closed until the process restarts; this line is the only record of what closed it.
+        // It names the error class only: a message can carry the supervisor credential or response bytes.
+        if (closes) {
+          this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+            lease.operationId, trigger, String((Object(error) as { name?: unknown }).name))
+        }
         failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
       }
     })()
@@ -579,7 +581,7 @@ export class IsolatedProjectRuntime extends Service {
       return { response, lease }
     } catch (error) {
       lease.settle()
-      await this.cancel(lease, 'request-ended')
+      await this.cancel(lease, 'request-failed')
       throw error
     }
   }
@@ -724,7 +726,7 @@ export class IsolatedProjectRuntime extends Service {
       return result.result
     } catch (error) {
       lease.settle()
-      await this.cancel(lease, 'request-ended')
+      await this.cancel(lease, 'request-failed')
       throw error
     } finally { lease.settle() }
   }
@@ -852,7 +854,7 @@ export class IsolatedProjectRuntime extends Service {
           'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } })
       } catch (error) {
         lease.settle()
-        await this.cancel(lease, 'request-ended')
+        await this.cancel(lease, 'request-failed')
         throw error
       } finally { lease.settle() }
     }
@@ -909,7 +911,7 @@ export class IsolatedProjectRuntime extends Service {
       return Response.json(value, { headers: { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } })
     } catch (error) {
       lease.settle()
-      await this.cancel(lease, 'request-ended')
+      await this.cancel(lease, 'request-failed')
       throw error
     } finally { lease.settle() }
   }

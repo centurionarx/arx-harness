@@ -122,7 +122,7 @@ describe('a restarted worker takes over a session writer only after the old leas
       payload: {}, rpcId: RpcId(randomUUID()) })).rejects.toMatchObject({ status: 503 })
     expect(f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
       .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
-        old.id, 'writer-handoff', 'TimeoutError: The operation was aborted due to timeout']])
+        old.id, 'writer-handoff', 'TimeoutError']])
     f.supervisor.cancellationGate()
   })
 

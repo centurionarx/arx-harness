@@ -1,10 +1,10 @@
-# Agent Note: Isolated runtime fixes after the multi-worker acceptance reviews
+# Agent Note: The isolated runtime records what closed its adapter
 
 Status: implemented
 
 ## Problem
 
-The independent code and design reviews of the multi-worker routing and the writer handoff left four runtime defects in the isolated project runtime and project storage, and two defects in the native test supervisor.
+The isolated project runtime and project storage had four runtime defects around cancellation, downlink closure and stored workspace order, and the native test supervisor had two.
 
 - The adapter closes permanently when a cancellation receipt is missing, and nothing recorded which operation or which cancellation closed it.
 - A hydration request waiting for the old writer's cancellation kept waiting after its own request was aborted.
@@ -16,7 +16,7 @@ The independent code and design reviews of the multi-worker routing and the writ
 
 The owner authorized these fixes on 2026-11-13. They keep the missing-receipt rule: a missing receipt still closes the adapter for every user.
 
-- `cancel()` receives the trigger of the cancellation. When the receipt is missing and the adapter was still open, control logs one error through `ctx.logger` with the operation id, the trigger and the cause. The first cancellation of a lease decides its trigger, because later callers share the memoized cancellation. The triggers are `authority-invalidated`, `ownership-deleted`, `session-expired`, `disposal`, `quiesce-call`, `writer-handoff`, `request-ended` and `downlink-closed`.
+- `cancel()` receives the trigger of the cancellation. When the receipt is missing and the adapter was still open, control logs one error through `ctx.logger` with the operation id, the trigger and the class of the error. The message of the error is not logged, because it can carry the supervisor credential (an invalid header value) or bytes of a supervisor response. The first cancellation of a lease decides its trigger, because later callers share the memoized cancellation. The triggers are `authority-invalidated`, `ownership-deleted`, `session-expired`, `disposal`, `quiesce-call`, `writer-handoff`, `request-failed` and `downlink-closed`.
 - `releaseStaleWriter` races the shared cancellation against the requester's signal.
 - The pump checks the downlink signal again immediately before it queues a frame.
 - `workspaceOrder` accepts only a JSON array of strings and otherwise throws `corrupt project storage workspace order`; `moveWorkspace` fails the same way because it reads the current order first.
@@ -37,7 +37,7 @@ The owner authorized these fixes on 2026-11-13. They keep the missing-receipt ru
 ## Consequences
 
 - An operator can tell from one log line which operation and which cancellation closed the adapter. The line is not durable beyond the configured log exporters.
-- A corrupt `workspace_order` row now fails unscoped listings and workspace moves for that user until an operator repairs the row; before, the stored order was partly or wholly ignored.
-- An aborted takeover request returns at once; it no longer holds its broker task for up to `cancellationTimeoutMs`.
+- A corrupt `workspace_order` row now fails unscoped listings and workspace moves for that user until an operator repairs the row; the product has no repair path, and the error does not name the row. Before, the stored order was partly or wholly ignored.
+- An aborted takeover request returns at once instead of holding its broker task until the shared cancellation ends.
 - The receipt deadline and the supervisor stop bound remain an operator obligation that control does not check.
-- Testing: `writer-handoff.spec.ts`, `runtime.spec.ts` and `multi-workspace-routing.spec.ts` assert the diagnostic for three triggers, the aborted takeover and the closed-downlink frame; `workspace-order.spec.ts` covers five corrupt stored values; `native-supervisor-stop.host.spec.ts` covers the receipt after a sibling's worker stop, the forced stop at the deadline and a receipt later than `cancellationTimeoutMs`. Five fixture-heavy specs and the new native spec create the identity fixture once per file and copy it for each test.
+- Testing: `writer-handoff.spec.ts`, `runtime.spec.ts` and `multi-workspace-routing.spec.ts` assert the diagnostic for four triggers, the aborted takeover and the closed-downlink frame; `workspace-order.spec.ts` covers five corrupt stored values; `native-supervisor-stop.host.spec.ts` covers the receipt after a sibling's worker stop, the forced stop at the deadline and a receipt later than `cancellationTimeoutMs`. Five fixture-heavy specs and the new native spec create the identity fixture once per file and copy it for each test.

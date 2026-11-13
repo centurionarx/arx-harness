@@ -320,7 +320,8 @@ try {
   const bytesAfter = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
   // A resumed session marks its seed boundary once (Session constructor, packages/core/session/src/index.ts):
   // the export may grow by exactly one empty session/end-seed at the next seq, and every earlier byte stays identical.
-  // A log that already ended in the marker before the restart must not gain a second one.
+  // The check below requires that the last event before the restart is not the marker; otherwise a second
+  // marker appended after an existing one would satisfy it.
   assert.deepEqual(bytesAfter.subarray(0, bytesBefore.length), bytesBefore)
   const appended = bytesAfter.subarray(bytesBefore.length).toString('utf8')
   assert.ok(appended.endsWith('\n') && !appended.slice(0, -1).includes('\n'))
