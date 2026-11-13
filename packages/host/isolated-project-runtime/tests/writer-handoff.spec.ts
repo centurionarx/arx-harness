@@ -1,5 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { randomUUID } from 'node:crypto'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
@@ -10,9 +13,28 @@ import { supervisorFixture } from './supervisor.ts'
 const resources: { close(): Promise<void> }[] = []
 afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
 
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+beforeAll(async () => {
+  const harness = await storageHarness()
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 async function setup(runtimeConfig: Readonly<Record<string, unknown>> = {}) {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
-  const h = await storageHarness({ endpoint: supervisor.endpoint, readyUsers: 2, runtimeConfig }); resources.push(h)
+  const h = await seededHarness({ endpoint: supervisor.endpoint, runtimeConfig }); resources.push(h)
   const authority = h.users[0]!.authority
   const project = await h.ctx.projectStorage.createProject(authority, 'Owner')
   const workspace = await h.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Workspace')
@@ -31,8 +53,8 @@ async function setup(runtimeConfig: Readonly<Record<string, unknown>> = {}) {
     const operation = [...supervisor.operations.values()].at(-1)!
     return { id: operation.id, capability: operation.capability, outcome }
   }
-  const broker = (capability: string, workerId: string, sessionId: string, operation = 'snapshot') =>
-    runtime.broker(new Request('http://control' + WORKER_BROKER_PATH, { method: 'POST',
+  const broker = (capability: string, workerId: string, sessionId: string, operation = 'snapshot', signal?: AbortSignal) =>
+    runtime.broker(new Request('http://control' + WORKER_BROKER_PATH, { method: 'POST', ...(signal === undefined ? {} : { signal }),
       headers: { 'content-type': 'application/json', [WORKER_CAPABILITY_HEADER]: capability },
       body: JSON.stringify({ operation, workerId, workspaceId: workspace.workspaceId, sessionId: sessionId,
         ...(operation === 'append' ? { events: [] } : {}) }) }))
@@ -98,7 +120,34 @@ describe('a restarted worker takes over a session writer only after the old leas
     expect((await f.broker(next.capability, newWorker, f.first.id, 'append')).status).toBe(403)
     await expect(f.runtime.invoke(f.authority, undefined, { type: 'client-request', method: 'llm.providers',
       payload: {}, rpcId: RpcId(randomUUID()) })).rejects.toMatchObject({ status: 503 })
+    expect(f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
+      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+        old.id, 'writer-handoff', 'TimeoutError: The operation was aborted due to timeout']])
     f.supervisor.cancellationGate()
+  })
+
+  it('stops waiting for the old lease when the takeover request itself is aborted', async () => {
+    const f = await setup()
+    const old = await f.retained(), next = await f.retained()
+    const oldWorker = randomUUID(), newWorker = randomUUID()
+    expect((await f.broker(old.capability, oldWorker, f.first.id)).status).toBe(200)
+    let release!: () => void
+    f.supervisor.cancellationGate(new Promise<void>((resolve) => { release = resolve }))
+    const caller = new AbortController()
+    const cancelled = f.supervisor.cancelledSignal()
+    const takeover = f.broker(next.capability, newWorker, f.first.id, 'snapshot', caller.signal)
+    await cancelled
+    const started = Date.now()
+    caller.abort()
+    expect((await takeover).status).toBe(503)
+    expect(Date.now() - started).toBeLessThan(1000)
+    // The shared cancellation continues: once its receipt arrives the new worker hydrates.
+    release()
+    f.supervisor.cancellationGate()
+    expect(await old.outcome).toBe('cancelled')
+    expect((await f.broker(next.capability, newWorker, f.first.id)).status).toBe(200)
+    expect(f.supervisor.cancelled).toEqual([old.id])
+    expect(f.h.ctx.logger.buffer.filter(message => message.type === 'error')).toEqual([])
   })
 
   it('refuses a takeover request outside the session owner and workspace before cancelling anything', async () => {

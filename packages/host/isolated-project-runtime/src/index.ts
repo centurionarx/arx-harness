@@ -31,9 +31,17 @@ export interface Config {
   credentialRef?: string
   /** Explicit loopback-only HTTP permission for disposable fixtures. */
   fixtureLoopback?: boolean
-  /** Deadline for a unary exchange, or a stream's response headers. */
+  /**
+   * Deadline for a unary exchange, or a stream's response headers. A workspace-scoped unary exchange
+   * and the sub-stream attach that precedes it share this one deadline.
+   */
   requestTimeoutMs: number
-  /** Deadline for remote cancellation to confirm process-tree quiescence. */
+  /**
+   * Deadline for each cancellation request to return its quiescent receipt. Cancellations of one user
+   * run in parallel, each with its own deadline. The value must exceed, with margin, the longest time
+   * the supervisor takes to stop a worker, including its forced kill, and deliver the receipt. A receipt
+   * that is missing, invalid or later than this deadline closes the adapter for every user.
+   */
   cancellationTimeoutMs: number
   /** Largest buffered HTTP request body. */
   maxRequestBytes: number
@@ -99,6 +107,12 @@ interface Lease {
   settle(): void
   cancelling?: Promise<void>
 }
+/**
+ * What made control cancel a lease. The first cancellation of a lease decides the trigger named
+ * in the diagnostic when its quiescent receipt is missing.
+ */
+type CancellationTrigger = 'authority-invalidated' | 'ownership-deleted' | 'session-expired' | 'disposal'
+  | 'quiesce-call' | 'writer-handoff' | 'request-ended' | 'downlink-closed'
 /** A frame waiting for the consumer; control-authored frames have no sub-lease. */
 interface QueuedFrame {
   readonly frame: RpcRequest<MuxFrame | HostFrame>
@@ -202,8 +216,8 @@ export class IsolatedProjectRuntime extends Service {
       credentialRef((config.credentialRef as string))
       this.endpoint = endpoint
     }
-    ctx.on('web-identity/invalidated', async (userId) => { await this.quiesce(userId) })
-    ctx.on('web-identity/ownership-deleted', async (userId) => { await this.quiesce(userId) })
+    ctx.on('web-identity/invalidated', async (userId) => { await this.quiesceFor(userId, 'authority-invalidated') })
+    ctx.on('web-identity/ownership-deleted', async (userId) => { await this.quiesceFor(userId, 'ownership-deleted') })
     ctx.on('web-identity/session-expired', async (userId, authSessionId) => {
       this.closeDownlinks(downlink => downlink.authority.principal.userId === userId
         && downlink.authority.authSessionId === authSessionId)
@@ -213,7 +227,7 @@ export class IsolatedProjectRuntime extends Service {
         && lease.authority.authSessionId === authSessionId)
       // Install the SID barrier before running abort callbacks or cancellation.
       const joined = Promise.resolve().then(async () => {
-        const settled = await Promise.allSettled(selected.map(lease => this.cancel(lease)))
+        const settled = await Promise.allSettled(selected.map(lease => this.cancel(lease, 'session-expired')))
         if (settled.some(result => result.status === 'rejected')) failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
       }).finally(() => { this.sessionQuiescences.delete(authSessionId) })
       this.sessionQuiescences.set(authSessionId, joined)
@@ -221,7 +235,7 @@ export class IsolatedProjectRuntime extends Service {
     })
     ctx.effect(() => async () => {
       this.closing = true
-      await this.quiesce()
+      await this.quiesceFor(undefined, 'disposal')
     })
   }
 
@@ -279,7 +293,7 @@ export class IsolatedProjectRuntime extends Service {
     return lease
   }
 
-  private async cancel(lease: Lease): Promise<void> {
+  private async cancel(lease: Lease, trigger: CancellationTrigger): Promise<void> {
     if (lease.cancelling !== undefined) return lease.cancelling
     lease.controller.abort(new Error('Authority invalidated'))
     lease.cancelling = (async () => {
@@ -299,7 +313,12 @@ export class IsolatedProjectRuntime extends Service {
         this.leases.delete(lease.operationId)
         for (const [id, writer] of this.writers) if (writer.lease === lease) this.writers.delete(id)
         for (const [id, pending] of this.pendingReplies) if (pending.lease === lease) this.pendingReplies.delete(id)
-      } catch {
+      } catch (error) {
+        // The adapter stays closed until the process restarts; this line is the only record of what closed it.
+        if (!this.unsafe) {
+          this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+            lease.operationId, trigger, String(error))
+        }
         this.unsafe = true
         failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
       }
@@ -313,12 +332,14 @@ export class IsolatedProjectRuntime extends Service {
    * execution refuses until it settles. A missing receipt permanently closes this adapter.
    * @param userId - Affected account, or all accounts during disposal.
    */
-  quiesce(userId?: WebUserId): Promise<void> {
+  quiesce(userId?: WebUserId): Promise<void> { return this.quiesceFor(userId, 'quiesce-call') }
+
+  private quiesceFor(userId: WebUserId | undefined, trigger: CancellationTrigger): Promise<void> {
     this.closeDownlinks(downlink => userId === undefined || downlink.authority.principal.userId === userId)
     const existing = this.quiescences.get(undefined) ?? this.quiescences.get(userId)
     if (existing !== undefined) return existing
     const leases = [...this.leases.values()].filter(lease => userId === undefined || lease.authority.principal.userId === userId)
-    const operation = Promise.allSettled(leases.map(lease => this.cancel(lease))).then((settled) => {
+    const operation = Promise.allSettled(leases.map(lease => this.cancel(lease, trigger))).then((settled) => {
       if (settled.some(result => result.status === 'rejected')) failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
     }).finally(() => { this.quiescences.delete(userId) })
     this.quiescences.set(userId, operation)
@@ -394,7 +415,8 @@ export class IsolatedProjectRuntime extends Service {
     const scope = await this.brokerScope(lease, request)
     await this.ownedReferences(lease.authority, { sessionId: request.sessionId }, scope)
     signal.throwIfAborted()
-    await this.cancel(writer.lease)
+    // An aborted requester stops waiting; the shared cancellation continues for the other requesters.
+    await untilAborted(this.cancel(writer.lease, 'writer-handoff'), signal)
   }
 
   private async brokerScope(lease: Lease, request: WorkerBrokerRequest): Promise<OwnedResource | undefined> {
@@ -557,7 +579,7 @@ export class IsolatedProjectRuntime extends Service {
       return { response, lease }
     } catch (error) {
       lease.settle()
-      await this.cancel(lease)
+      await this.cancel(lease, 'request-ended')
       throw error
     }
   }
@@ -702,7 +724,7 @@ export class IsolatedProjectRuntime extends Service {
       return result.result
     } catch (error) {
       lease.settle()
-      await this.cancel(lease)
+      await this.cancel(lease, 'request-ended')
       throw error
     } finally { lease.settle() }
   }
@@ -830,7 +852,7 @@ export class IsolatedProjectRuntime extends Service {
           'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } })
       } catch (error) {
         lease.settle()
-        await this.cancel(lease)
+        await this.cancel(lease, 'request-ended')
         throw error
       } finally { lease.settle() }
     }
@@ -887,7 +909,7 @@ export class IsolatedProjectRuntime extends Service {
       return Response.json(value, { headers: { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } })
     } catch (error) {
       lease.settle()
-      await this.cancel(lease)
+      await this.cancel(lease, 'request-ended')
       throw error
     } finally { lease.settle() }
   }
@@ -968,7 +990,7 @@ export class IsolatedProjectRuntime extends Service {
       this.endDownlink(downlink)
       for (const pending of [...current === undefined ? [] : [current], ...downlink.queue.splice(0)]) pending.delivered()
       await Promise.allSettled([...downlink.attached.values()])
-      const settled = await Promise.allSettled([...downlink.leases].map(lease => this.cancel(lease)))
+      const settled = await Promise.allSettled([...downlink.leases].map(lease => this.cancel(lease, 'downlink-closed')))
       const rejected = settled.find(result => result.status === 'rejected')
       if (rejected !== undefined) throw rejected.reason
     }
@@ -1058,6 +1080,8 @@ export class IsolatedProjectRuntime extends Service {
             archivedSessionIds: await this.recordArchive(authority, [[lease.scope.workspaceId,
               frame.payload.archivedSessionIds]]) as typeof frame.payload.archivedSessionIds } }
         }
+        // The downlink can close during the archive filter; its drained queue has no consumer left to deliver this frame.
+        if (downlink.closed.signal.aborted) break
         await new Promise<void>((resolve) => {
           downlink.queue.push({ frame: exposed, lease, delivered: resolve })
           downlink.wake?.()

@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { once } from 'node:events'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { RpcId, serverResponseSchema } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
@@ -10,9 +13,28 @@ import { supervisorFixture } from './supervisor.ts'
 
 const resources: { close(): Promise<void> }[] = []
 afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+beforeAll(async () => {
+  const harness = await storageHarness()
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 async function setup() {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
-  const harness = await storageHarness({ endpoint: supervisor.endpoint }); resources.push(harness)
+  const harness = await seededHarness({ endpoint: supervisor.endpoint }); resources.push(harness)
   const authority = harness.users[0]!.authority
   const project = await harness.ctx.projectStorage.createProject(authority, 'USER_A')
   const workspace = await harness.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Workspace A')
@@ -25,7 +47,7 @@ async function setup() {
 
 describe('isolated project runtime through Loader and HTTP', () => {
   it('denies an unconfigured endpoint without reaching a local host', async () => {
-    const unconfigured = await storageHarness(); resources.push(unconfigured)
+    const unconfigured = await seededHarness(); resources.push(unconfigured)
     await expect(unconfigured.ctx.isolatedProjectRuntime.fetch(unconfigured.users[0]!.authority,
       new Request('http://fixture/api/llm.providers', { method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ type: 'client-request', rpcId: 'fixture', method: 'llm.providers', payload: {} }) })))
@@ -37,7 +59,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
       await expect(f.runtime.invoke(f.authority, undefined, f.request(method))).rejects.toMatchObject({ status: 403 })
     }
     await expect(f.runtime.invoke({ ...f.authority }, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 401 })
-    for (const denied of [f.harness.users[1]!.authority, f.harness.master!]) {
+    for (const denied of [f.harness.users[1]!.authority, f.harness.master]) {
       await expect(f.runtime.invoke(denied, undefined, f.request('session.history',
         { sessionId: f.header.id }))).rejects.toMatchObject({ status: 403 })
     }
@@ -134,7 +156,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
     const operation = [...f.supervisor.operations.values()][0]!
     expect(operation.child?.pid).toBeTypeOf('number')
     const exited = once(operation.child!, 'close')
-    await f.harness.ctx.webIdentity.setStatus(f.harness.master!, f.authority.principal.userId, 'BLOCKED')
+    await f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId, 'BLOCKED')
     await exited
     expect(operation.child!.exitCode !== null || operation.child!.signalCode !== null).toBe(true)
     expect(f.supervisor.operations.size).toBe(0)
@@ -149,12 +171,15 @@ describe('isolated project runtime through Loader and HTTP', () => {
       mode: 'queue', content: [] }))
       .then(() => 'unexpected-success', () => 'denied')
     await accepted
-    await expect(f.harness.ctx.webIdentity.setStatus(f.harness.master!, f.authority.principal.userId,
+    await expect(f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId,
       'BLOCKED')).rejects.toMatchObject({ status: 503 })
     expect(await action).toBe('denied')
     await expect(f.harness.ctx.webIdentity.authenticate(f.harness.users[0]!.token, 'user')).rejects.toMatchObject({ status: 401 })
     await expect(f.runtime.invoke(f.harness.users[1]!.authority, undefined,
       f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
+    expect(f.harness.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
+      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+        f.supervisor.cancelled[0], 'authority-invalidated', 'WebIdentityError: Worker quiescence was not confirmed']])
   })
   it('rejects mismatched operation receipts, and a missing operator credential never falls back to the host', async () => {
     const f = await setup()
@@ -175,7 +200,7 @@ describe('isolated project runtime through Loader and HTTP', () => {
     const frame = await next
     if (frame.done) throw new Error('expected a native mux frame')
     expect(frame.value.payload).toEqual({ type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 })
-    await f.harness.ctx.webIdentity.setStatus(f.harness.master!, f.authority.principal.userId, 'BLOCKED')
+    await f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId, 'BLOCKED')
     await stream.return?.()
     expect(f.supervisor.operations.size).toBe(0)
   })

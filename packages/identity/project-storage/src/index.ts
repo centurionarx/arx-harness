@@ -59,6 +59,19 @@ declare module '@arx-ai/cordis' {
 }
 
 function deny(message: string): never { throw new WebIdentityError('STORAGE_DENIED', 403, message) }
+/**
+ * Decode one `workspace_order.workspaces` value read from the control index.
+ * @param text - Stored column value.
+ * @returns Workspace ids in stored order.
+ * @throws Error when the value is not a JSON array of strings; no part of it is applied.
+ */
+function parseWorkspaceOrder(text: string): string[] {
+  let value: unknown
+  try { value = JSON.parse(text) }
+  catch (cause) { throw new Error('corrupt project storage workspace order', { cause }) }
+  if (!Array.isArray(value) || !value.every(id => typeof id === 'string')) throw new Error('corrupt project storage workspace order')
+  return value
+}
 function contained(parent: string, child: string): boolean {
   const path = relative(parent, child)
   return path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`))
@@ -276,7 +289,7 @@ export class ProjectStorage extends Service {
     await this.requireStorageGrant(authority)
     const user = authority.principal.userId
     const stored = this.database().prepare('SELECT workspaces FROM workspace_order WHERE user=?').get(user)
-    const saved = stored === undefined ? [] : JSON.parse(String(stored.workspaces)) as string[]
+    const saved = stored === undefined ? [] : parseWorkspaceOrder(String(stored.workspaces))
     const rank = (id: string): number => { const index = saved.indexOf(id); return index === -1 ? saved.length : index }
     const ids = this.database().prepare('SELECT workspace FROM workspaces WHERE user=? AND grouped=1 ORDER BY rowid').all(user)
       .map(value => String(value.workspace) as WorkspaceId)

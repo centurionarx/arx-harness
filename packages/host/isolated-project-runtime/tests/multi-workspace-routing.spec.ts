@@ -1,7 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { createServer, request as httpRequest } from 'node:http'
 import { once } from 'node:events'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
@@ -14,9 +17,28 @@ import { supervisorFixture } from './supervisor.ts'
 const resources: { close(): Promise<void> }[] = []
 afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
 
-async function setup(readyUsers = 1) {
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+beforeAll(async () => {
+  const harness = await storageHarness()
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
+async function setup() {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
-  const h = await storageHarness({ endpoint: supervisor.endpoint, readyUsers }); resources.push(h)
+  const h = await seededHarness({ endpoint: supervisor.endpoint }); resources.push(h)
   const authority = h.users[0]!.authority
   const project = await h.ctx.projectStorage.createProject(authority, 'Owner')
   const first = await h.ctx.projectStorage.createWorkspace(authority, project.projectId, 'First')
@@ -150,7 +172,7 @@ describe('control aggregates user-level operations across workspace workers', ()
   })
 
   it('stores workspace order in the control index, refuses foreign workspaces and notifies host downlinks', async () => {
-    const f = await setup(2)
+    const f = await setup()
     const view = (workspaceId: string) => ({ workspaceId, path: 'workspace://' + workspaceId, title: workspaceId,
       sessionIds: [], createdAt: '1', updatedAt: '1' })
     f.supervisor.resultFor(f.first.workspaceId, { items: [view(f.first.workspaceId)], archivedSessionIds: [f.firstSession.id] })
@@ -221,6 +243,26 @@ describe('control aggregation refusals and idle downlink closure', () => {
     f.supervisor.cancelStatus(500)
     controller.abort()
     await expect(next).rejects.toMatchObject({ status: 503 })
+    const closed = f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args)
+    expect(closed).toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+      f.supervisor.cancelled[0], 'downlink-closed', 'WebIdentityError: Worker quiescence was not confirmed']])
+  })
+
+  it('logs the adapter closure once when two sub-lease cancellations are not confirmed', async () => {
+    const f = await setup()
+    const controller = new AbortController()
+    const downlink = f.runtime.streamHost(f.authority, controller.signal)[Symbol.asyncIterator]()
+    const next = downlink.next()
+    next.catch(() => {})
+    await f.scoped(f.first.workspaceId)
+    await f.scoped(f.second.workspaceId)
+    f.supervisor.cancelStatus(500)
+    controller.abort()
+    await expect(next).rejects.toMatchObject({ status: 503 })
+    expect(f.supervisor.cancelled).toHaveLength(2)
+    const closed = f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args)
+    expect(closed).toHaveLength(1)
+    expect(f.supervisor.cancelled).toContain(closed[0]![1])
   })
 })
 
@@ -291,6 +333,38 @@ describe('merged downlink exposure, deadlines and per-user state', () => {
       .toEqual({ ok: true, value: { archivedSessionIds: [f.firstSession.id, f.secondSession.id] } })
     controller.abort()
     await downlink.return?.()
+  })
+
+  it('queues no archive frame on a downlink that closes while its archive union is filtered', async () => {
+    const f = await setup()
+    f.supervisor.framesFor(f.second.workspaceId, [{ type: 'server-request', rpcId: randomUUID(), method: 'events.host',
+      payload: { type: 'host/archived-sessions-changed', archivedSessionIds: [f.secondSession.id] } }])
+    const original = f.h.ctx.webIdentity.authorizeOwner.bind(f.h.ctx.webIdentity)
+    let checks = 0
+    let entered!: () => void, release!: () => void
+    const filtering = new Promise<void>((resolve) => { entered = resolve })
+    const held = new Promise<void>((resolve) => { release = resolve })
+    vi.spyOn(f.h.ctx.webIdentity, 'authorizeOwner').mockImplementation(async (authority, resource, module) => {
+      // The first check of this id admits the worker frame; the second one filters the archive union.
+      if (resource.kind === 'session' && resource.sessionId === f.secondSession.id && ++checks === 2) { entered(); await held }
+      return original(authority, resource, module)
+    })
+    const controller = new AbortController()
+    const downlink = f.runtime.streamHost(f.authority, controller.signal)[Symbol.asyncIterator]()
+    const next = downlink.next()
+    await f.scoped(f.second.workspaceId)
+    await filtering
+    // The frame queue is private and a closed downlink has no consumer, so the queue is the only place a late frame shows.
+    const queue = [...(f.runtime as unknown as { downlinks: Set<{ queue: unknown[] }> }).downlinks][0]!.queue
+    controller.abort()
+    expect(await next).toEqual({ done: true, value: undefined })
+    release()
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(queue).toEqual([])
+    vi.restoreAllMocks()
+    f.supervisor.resultFor(f.first.workspaceId, { items: [], archivedSessionIds: [] })
+    f.supervisor.resultFor(f.second.workspaceId, { items: [], archivedSessionIds: [] })
+    expect(await f.runtime.invoke(f.authority, undefined, f.request('workspace.list'))).toMatchObject({ ok: true })
   })
 
   it('does not expose a queued control order frame after the user is quiesced', async () => {
@@ -429,7 +503,7 @@ describe('merged downlink exposure, deadlines and per-user state', () => {
     } })
     const address = silent.address()
     if (address === null || typeof address === 'string') throw new Error('silent fixture port missing')
-    const h = await storageHarness({ endpoint: 'http://127.0.0.1:' + String(address.port), readyUsers: 1 }); resources.push(h)
+    const h = await seededHarness({ endpoint: 'http://127.0.0.1:' + String(address.port) }); resources.push(h)
     const authority = h.users[0]!.authority
     const project = await h.ctx.projectStorage.createProject(authority, 'Owner')
     const workspace = await h.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Only')

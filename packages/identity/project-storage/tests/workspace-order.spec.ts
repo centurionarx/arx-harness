@@ -1,14 +1,37 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
 import { WebIdentityError } from '@arx-ai/arx-web-identity'
 import { storageHarness } from './harness.ts'
 
-const fixtures: Awaited<ReturnType<typeof storageHarness>>[] = []
+const fixtures: Awaited<ReturnType<typeof seededHarness>>[] = []
 afterEach(async () => {
   vi.restoreAllMocks()
   for (const fixture of fixtures.splice(0)) await fixture.close()
 })
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+beforeAll(async () => {
+  const harness = await storageHarness()
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 async function fixture() {
-  const h = await storageHarness(); fixtures.push(h)
+  const h = await seededHarness(); fixtures.push(h)
   const authority = h.users[0]!.authority
   const project = await h.ctx.projectStorage.createProject(authority, 'Ordered')
   const ids = []
@@ -80,5 +103,16 @@ describe('workspace display order in the control index', () => {
     expect(await f.storage.workspaceOrder(f.authority)).toEqual([f.first, f.third])
     failure = new Error('fixture identity unavailable')
     await expect(f.storage.workspaceOrder(f.authority)).rejects.toThrow('fixture identity unavailable')
+  })
+
+  it('refuses a stored order that is not a JSON array of strings instead of applying part of it', async () => {
+    const f = await fixture()
+    await f.storage.moveWorkspace(f.authority, f.third, f.first)
+    for (const corrupt of ['{', '{}', JSON.stringify([f.third, 7]), JSON.stringify([null]), 'null']) {
+      const database = new DatabaseSync(f.h.index)
+      try { database.prepare('UPDATE workspace_order SET workspaces=?').run(corrupt) } finally { database.close() }
+      await expect(f.storage.workspaceOrder(f.authority)).rejects.toThrow('corrupt project storage workspace order')
+      await expect(f.storage.moveWorkspace(f.authority, f.second, f.first)).rejects.toThrow('corrupt project storage workspace order')
+    }
   })
 })
