@@ -33,7 +33,8 @@ Decided by the owner on 2026-11-09: control, the isolated runtime adapter, aggre
 
 - Every unscoped listing or search sends one request to each workspace worker of the user and wakes it, and the attached sub-streams keep those workers busy while a downlink is open. The upgrade path is control-held per-workspace summaries kept current from the downlinks.
 - One broken worker ends the user's downlink and forces client reconnects. The upgrade path is to drop only that sub-stream and resynchronize.
-- The first request for a workspace adds one stream round trip.
+- The first request for a workspace adds one stream round trip, and that attach shares the request's single `requestTimeoutMs` with the unary exchange.
+- A downlink over N workspaces holds N sub-leases, so its end needs N cancellation receipts, sent in parallel with one `cancellationTimeoutMs` each. Any missing receipt closes the adapter for every user, so the routing multiplies the receipts that can close it.
 - `skill.list`, `agentPreset.list`, `llm.providers`, `llm.models` without a session and `web.providers` remain unscoped worker requests: a supervisor routes them only for a user with one worker, and they use the worker's current scoped history capability.
 - Control keeps the last known archive per workspace for each user for the process lifetime.
 - Applying the `workspace_order` table to a deployed index is an operator step.

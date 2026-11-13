@@ -1126,9 +1126,17 @@ export interface Config {
   credentialRef?: string
   /** Explicit loopback-only HTTP permission for disposable fixtures. */
   fixtureLoopback?: boolean
-  /** Deadline for a unary exchange, or a stream's response headers. */
+  /**
+   * Deadline for a unary exchange, or a stream's response headers. A workspace-scoped unary exchange
+   * and the sub-stream attach that precedes it share this one deadline.
+   */
   requestTimeoutMs: number
-  /** Deadline for remote cancellation to confirm process-tree quiescence. */
+  /**
+   * Deadline for each cancellation request to return its quiescent receipt. Cancellations of one user
+   * run in parallel, each with its own deadline. The value must exceed, with margin, the longest time
+   * the supervisor takes to stop a worker, including its forced kill, and deliver the receipt. A receipt
+   * that is missing, invalid or later than this deadline closes the adapter for every user.
+   */
   cancellationTimeoutMs: number
   /** Largest buffered HTTP request body. */
   maxRequestBytes: number
