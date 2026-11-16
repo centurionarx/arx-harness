@@ -407,6 +407,8 @@ export class IsolatedProjectRuntime extends Service {
    * its operation id and waits for its quiescent receipt; the writer then moves in the queued snapshot.
    * Concurrent requests share the lease's single cancellation; a missing receipt closes the adapter.
    * This runs before the per-session queue, so the old lease's queued broker work can settle.
+   * Control cancels only the writer it read before the checks, and only while that writer is still
+   * current and its lease is still live: a lease that ended with a quiescent receipt receives no cancellation.
    */
   private async releaseStaleWriter(lease: Lease, request: Extract<WorkerBrokerRequest, { operation: 'snapshot' }>,
     signal: AbortSignal): Promise<void> {
@@ -417,6 +419,7 @@ export class IsolatedProjectRuntime extends Service {
     const scope = await this.brokerScope(lease, request)
     await this.ownedReferences(lease.authority, { sessionId: request.sessionId }, scope)
     signal.throwIfAborted()
+    if (this.writers.get(request.sessionId) !== writer || !this.leases.has(writer.lease.operationId)) return
     // An aborted requester stops waiting; the shared cancellation continues for the other requesters.
     await untilAborted(this.cancel(writer.lease, 'writer-handoff'), signal)
   }

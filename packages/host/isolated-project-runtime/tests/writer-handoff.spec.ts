@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { cp, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -59,6 +59,23 @@ async function setup(runtimeConfig: Readonly<Record<string, unknown>> = {}) {
       body: JSON.stringify({ operation, workerId, workspaceId: workspace.workspaceId, sessionId: sessionId,
         ...(operation === 'append' ? { events: [] } : {}) }) }))
   return { supervisor, h, authority, workspace, first, second, retained, broker, runtime }
+}
+// Once armed, the next ownership check of the session pauses: the takeover has read the writer and not yet cancelled it.
+function pauseOwnershipCheck(f: Awaited<ReturnType<typeof setup>>, sessionId: string) {
+  const reached = Promise.withResolvers<undefined>(), resumed = Promise.withResolvers<undefined>()
+  const original = f.h.ctx.webIdentity.authorizeOwner.bind(f.h.ctx.webIdentity)
+  let armed = false
+  const spy = vi.spyOn(f.h.ctx.webIdentity, 'authorizeOwner').mockImplementation(async (...args) => {
+    const value = await original(...args)
+    if (armed && args[1].kind === 'session' && args[1].sessionId === sessionId) {
+      armed = false
+      reached.resolve(undefined)
+      await resumed.promise
+    }
+    return value
+  })
+  return { arm() { armed = true }, reached: reached.promise, resume() { resumed.resolve(undefined) },
+    restore() { resumed.resolve(undefined); spy.mockRestore() } }
 }
 
 describe('a restarted worker takes over a session writer only after the old lease is quiescent', () => {
@@ -148,6 +165,59 @@ describe('a restarted worker takes over a session writer only after the old leas
     expect((await f.broker(next.capability, newWorker, f.first.id)).status).toBe(200)
     expect(f.supervisor.cancelled).toEqual([old.id])
     expect(f.h.ctx.logger.buffer.filter(message => message.type === 'error')).toEqual([])
+  })
+
+  it('sends no cancellation for a writer lease that ended while the takeover was checking ownership', async () => {
+    const f = await setup()
+    const next = await f.retained()
+    f.supervisor.hold(false)
+    const oldWorker = randomUUID(), newWorker = randomUUID()
+    // The old writer is an ordinary request: its receipt is quiescent, so its lease ends without a cancellation.
+    const sent = Promise.withResolvers<string>(), receipt = Promise.withResolvers<undefined>()
+    const fetchOriginal = globalThis.fetch.bind(globalThis)
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (...args) => {
+      const response = await fetchOriginal(...args)
+      if (String(args[0]).endsWith('/api/llm.providers')) {
+        sent.resolve(new Headers(args[1]?.headers).get(WORKER_CAPABILITY_HEADER) ?? '')
+        await receipt.promise
+      }
+      return response
+    })
+    const check = pauseOwnershipCheck(f, f.first.id)
+    try {
+      const old = f.runtime.invoke(f.authority, { kind: 'workspace', workspaceId: f.workspace.workspaceId },
+        { type: 'client-request', method: 'llm.providers', payload: {}, rpcId: RpcId(randomUUID()) })
+      const capability = await sent.promise
+      expect((await f.broker(capability, oldWorker, f.first.id)).status).toBe(200)
+      check.arm()
+      const takeover = f.broker(next.capability, newWorker, f.first.id)
+      await check.reached
+      receipt.resolve(undefined)
+      expect(await old).toEqual({ ok: true, value: {} })
+      check.resume()
+      expect((await takeover).status).toBe(200)
+      expect(f.supervisor.cancelled).toEqual([])
+      expect((await f.broker(next.capability, newWorker, f.first.id, 'append')).status).toBe(200)
+    } finally { receipt.resolve(undefined); check.restore(); fetchSpy.mockRestore() }
+  })
+
+  it('sends no cancellation when the writer moved to a newer lease while the takeover was checking ownership', async () => {
+    const f = await setup()
+    const old = await f.retained(), moved = await f.retained(), next = await f.retained()
+    const oldWorker = randomUUID(), newWorker = randomUUID()
+    expect((await f.broker(old.capability, oldWorker, f.first.id)).status).toBe(200)
+    const check = pauseOwnershipCheck(f, f.first.id)
+    try {
+      check.arm()
+      const takeover = f.broker(next.capability, newWorker, f.first.id)
+      await check.reached
+      // The old worker is alive: it hydrates again with a newer lease, which becomes the writer.
+      expect((await f.broker(moved.capability, oldWorker, f.first.id)).status).toBe(200)
+      check.resume()
+      expect((await takeover).status).toBe(409)
+      expect(f.supervisor.cancelled).toEqual([])
+      expect((await f.broker(moved.capability, oldWorker, f.first.id, 'append')).status).toBe(200)
+    } finally { check.restore() }
   })
 
   it('refuses a takeover request outside the session owner and workspace before cancelling anything', async () => {
