@@ -317,10 +317,17 @@ export class IsolatedProjectRuntime extends Service {
         const closes = !this.unsafe
         this.unsafe = true
         // The adapter stays closed until the process restarts; this line is the only record of what closed it.
-        // It names the error class only: a message can carry the supervisor credential or response bytes.
+        // It names the error class and, for a WebIdentityError, its code, a fixed string of this package.
+        // Never the message, cause or stack: they can carry the supervisor credential or response bytes.
         if (closes) {
-          this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
-            lease.operationId, trigger, String((Object(error) as { name?: unknown }).name))
+          const cause = String((Object(error) as { name?: unknown }).name)
+          if (error instanceof WebIdentityError) {
+            this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s, code: %s)',
+              lease.operationId, trigger, cause, error.code)
+          } else {
+            this.ctx.logger.error('isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
+              lease.operationId, trigger, cause)
+          }
         }
         failure('RUNTIME_QUIESCENCE', 503, 'Worker quiescence was not confirmed')
       }
@@ -331,7 +338,8 @@ export class IsolatedProjectRuntime extends Service {
   /**
    * Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await
    * process-tree receipts. Concurrent requests share the barrier, and new owner
-   * execution refuses until it settles. A missing receipt permanently closes this adapter.
+   * execution refuses until it settles. A missing receipt permanently closes this adapter and logs one error
+   * with the operation id, the trigger, the error class and, for a WebIdentityError, its code; never its message.
    * @param userId - Affected account, or all accounts during disposal.
    */
   quiesce(userId?: WebUserId): Promise<void> { return this.quiesceFor(userId, 'quiesce-call') }

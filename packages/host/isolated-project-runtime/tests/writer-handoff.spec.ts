@@ -150,6 +150,18 @@ describe('a restarted worker takes over a session writer only after the old leas
     f.supervisor.cancellationGate()
   })
 
+  it('names the error code when the old lease receipt is larger than maxResponseBytes', async () => {
+    const f = await setup({ maxResponseBytes: 32 })
+    const old = await f.retained(), next = await f.retained()
+    const oldWorker = randomUUID(), newWorker = randomUUID()
+    expect((await f.broker(old.capability, oldWorker, f.first.id)).status).toBe(200)
+    expect((await f.broker(next.capability, newWorker, f.first.id)).status).toBe(503)
+    expect(f.supervisor.cancelled).toEqual([old.id])
+    expect(f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
+      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s, code: %s)',
+        old.id, 'writer-handoff', 'WebIdentityError', 'RUNTIME_LIMIT']])
+  })
+
   it('stops waiting for the old lease when the takeover request itself is aborted', async () => {
     const f = await setup()
     const old = await f.retained(), next = await f.retained()

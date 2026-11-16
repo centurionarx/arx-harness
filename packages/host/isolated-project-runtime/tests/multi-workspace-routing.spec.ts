@@ -251,8 +251,8 @@ describe('control aggregation refusals and idle downlink closure', () => {
     controller.abort()
     await expect(next).rejects.toMatchObject({ status: 503 })
     const closed = f.h.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args)
-    expect(closed).toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
-      f.supervisor.cancelled[0], 'downlink-closed', 'WebIdentityError']])
+    expect(closed).toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s, code: %s)',
+      f.supervisor.cancelled[0], 'downlink-closed', 'WebIdentityError', 'RUNTIME_QUIESCENCE']])
   })
 
   it('logs the adapter closure once when two sub-lease cancellations are not confirmed', async () => {

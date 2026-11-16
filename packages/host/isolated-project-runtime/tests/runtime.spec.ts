@@ -185,8 +185,8 @@ describe('isolated project runtime through Loader and HTTP', () => {
     await expect(f.runtime.invoke(f.harness.users[1]!.authority, undefined,
       f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
     expect(f.harness.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
-      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s)',
-        f.supervisor.cancelled[0], 'authority-invalidated', 'WebIdentityError']])
+      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s, code: %s)',
+        f.supervisor.cancelled[0], 'authority-invalidated', 'WebIdentityError', 'RUNTIME_QUIESCENCE']])
   })
   it('rejects mismatched operation receipts, and a missing operator credential never falls back to the host', async () => {
     const f = await setup()
