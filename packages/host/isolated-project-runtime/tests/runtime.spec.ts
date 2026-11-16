@@ -196,6 +196,14 @@ describe('isolated project runtime through Loader and HTTP', () => {
     await f.harness.ctx.credentials.unset(credentialRef(FIXTURE_CREDENTIAL))
     await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
   })
+  it('names RUNTIME_UNAVAILABLE when the cancellation of a failed request cannot resolve the operator credential', async () => {
+    const f = await setup()
+    await f.harness.ctx.credentials.unset(credentialRef(FIXTURE_CREDENTIAL))
+    await expect(f.runtime.invoke(f.authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 503 })
+    expect(f.harness.ctx.logger.buffer.filter(message => message.type === 'error').map((message): unknown[] => message.args))
+      .toEqual([['isolated runtime adapter closed: operation %s has no quiescent receipt (trigger: %s, cause: %s, code: %s)',
+        expect.any(String), 'request-failed', 'WebIdentityError', 'RUNTIME_UNAVAILABLE']])
+  })
   it('reuses mux frames, blocks remote host control events and closes suspended streams on revocation', async () => {
     const f = await setup()
     f.supervisor.frame({ type: 'server-request', rpcId: 'frame-1', method: 'events.mux',

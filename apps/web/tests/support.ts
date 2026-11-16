@@ -87,7 +87,7 @@ export interface HeldApiRequest {
 }
 
 /**
- * Hold the page's next `POST /api/<method>` before it leaves the browser, so a scenario can change Host state while
+ * Hold the page's next request to `/api/<method>` before it leaves the browser, so a scenario can change Host state while
  * the client waits for that answer (for example a history read during a session open). Only the first matching
  * request is held; later ones pass through. The Host first sees the request at {@link HeldApiRequest.release}.
  * @param page - the page whose request is held; install the hold before the action that sends the request.
@@ -101,7 +101,7 @@ export async function holdNextApiRequest(page: Page, method: string): Promise<He
     await released.promise
     await route.continue()
   }, { times: 1 })
-  return { held: held.promise.then(() => undefined), release: () => { released.resolve(undefined) } }
+  return { held: held.promise, release: () => { released.resolve(undefined) } }
 }
 
 /** Failure evidence goes to the gitignored .artifacts/ (repo convention). */
