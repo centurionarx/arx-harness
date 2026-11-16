@@ -431,8 +431,7 @@ export abstract class AbstractApiClient implements IApiClient {
             full = serverRequestSchema.parse(JSON.parse(data))
             frame = frameSchema.parse(full.payload)
           } catch (error) {
-            // The error class only: a JSON or schema error message can quote the frame bytes.
-            console.error(`[apiproxy] dropping malformed SSE frame on ${path}: ${String((Object(error) as { name?: unknown }).name)}`)
+            console.error(`[apiproxy] dropping malformed SSE frame on ${path}:`, error)
             continue
           }
           this.onEnvelope(full)
