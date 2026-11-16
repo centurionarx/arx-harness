@@ -967,7 +967,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     methods: [
       {
         signature: 'quiesce(userId?: WebUserId): Promise<void>',
-        description: 'Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await process-tree receipts. Concurrent requests share the barrier, and new owner execution refuses until it settles. A missing receipt permanently closes this adapter.',
+        description: 'Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await process-tree receipts. Concurrent requests share the barrier, and new owner execution refuses until it settles. A missing receipt permanently closes this adapter and logs one error with the operation id, the trigger, the error class and, for a WebIdentityError, its code; never its message.',
         parameters: [{ name: 'userId', description: 'Affected account, or all accounts during disposal.' }],
       },
       {

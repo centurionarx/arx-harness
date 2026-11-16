@@ -81,7 +81,8 @@ One trusted supervisor serves owner-assigned workers, never the shared host.
 /**
  * Close the affected downlinks, abort all affected transports, cancel every supervisor lease, and await
  * process-tree receipts. Concurrent requests share the barrier, and new owner
- * execution refuses until it settles. A missing receipt permanently closes this adapter.
+ * execution refuses until it settles. A missing receipt permanently closes this adapter and logs one error
+ * with the operation id, the trigger, the error class and, for a WebIdentityError, its code; never its message.
  * @param userId - Affected account, or all accounts during disposal.
  */
 quiesce(userId?: WebUserId): Promise<void>
