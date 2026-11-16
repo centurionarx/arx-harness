@@ -171,7 +171,7 @@ describe('stream deadline covers only the supervisor response headers', () => {
     await accepted
     await sleep(REQUEST_TIMEOUT_MS * 4)
     expect(settled).toBe(false)
-    await f.harness.ctx.webIdentity.setStatus(f.harness.master!, f.authority.principal.userId, 'BLOCKED')
+    await f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId, 'BLOCKED')
     expect(await next).not.toBe('frame')
     expect(f.supervisor.operations.size).toBe(0)
   })

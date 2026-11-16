@@ -172,7 +172,7 @@ describe('isolated carrier limits and private broker admission', () => {
   })
   it('enforces module grants again before every carrier and private broker request', async () => {
     const f = await setup()
-    await f.h.ctx.webIdentity.setModules(f.h.master!, f.authority.principal.userId, [ModuleId('storage')])
+    await f.h.ctx.webIdentity.setModules(f.h.master, f.authority.principal.userId, [ModuleId('storage')])
     const login = await f.h.ctx.webIdentity.login(f.h.users[0]!.username, f.h.users[0]!.password, 'user')
     const authority = await f.h.ctx.webIdentity.authenticate(login.token, 'user')
     await expect(f.runtime.invoke(authority, undefined, f.request('llm.providers'))).rejects.toMatchObject({ status: 403, code: 'MODULE_DENIED' })

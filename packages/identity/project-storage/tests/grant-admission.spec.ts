@@ -45,7 +45,7 @@ it('denies ungranted USER creation directly and over HTTP without owner, index o
   const f = await seededHarness({ http: true }); active.push(f)
   const user = f.users[0]!
   const project = await f.ctx.projectStorage.createProject(user.authority, 'Existing owned project')
-  await f.ctx.webIdentity.setModules(f.master!, user.userId, ['runtime'])
+  await f.ctx.webIdentity.setModules(f.master, user.userId, ['runtime'])
   const login = await f.ctx.webIdentity.login(user.username, user.password, 'user')
   const denied = await f.ctx.webIdentity.authenticate(login.token, 'user')
   const headers = { Cookie: AUTH_COOKIE_NAMES.user + '=' + login.token, Origin: f.url!,
@@ -65,7 +65,7 @@ it('denies ungranted USER creation directly and over HTTP without owner, index o
   expect(rows(f.paths.database, ownerTables)).toEqual(beforeOwners)
   expect(rows(f.index, indexTables)).toEqual(beforeIndex)
   expect(await readdir(f.volumeRoot)).toEqual(beforeVolumes)
-  await f.ctx.webIdentity.setModules(f.master!, user.userId, ['storage'])
+  await f.ctx.webIdentity.setModules(f.master, user.userId, ['storage'])
   const restored = await f.ctx.webIdentity.login(user.username, user.password, 'user')
   const authority = await f.ctx.webIdentity.authenticate(restored.token, 'user')
   expect((await f.ctx.projectStorage.projects(authority)).projects).toEqual([project])

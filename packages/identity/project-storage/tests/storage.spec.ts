@@ -36,7 +36,7 @@ async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] 
       async close() { await harness.close(false); await remove() } }
   } catch (error) { await harness.close(false); await remove(); throw error }
 }
-async function fixture(options: Parameters<typeof storageHarness>[0] = {}) {
+async function fixture(options: Parameters<typeof seededHarness>[0] = {}) {
   const harness = await seededHarness(options); active.push(harness); return harness
 }
 async function seeded(harness: Awaited<ReturnType<typeof seededHarness>>, user = 0) {

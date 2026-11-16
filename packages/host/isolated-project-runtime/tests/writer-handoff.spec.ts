@@ -184,7 +184,7 @@ describe('a restarted worker takes over a session writer only after the old leas
     const fetchOriginal = globalThis.fetch.bind(globalThis)
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (...args) => {
       const response = await fetchOriginal(...args)
-      if (String(args[0]).endsWith('/api/llm.providers')) {
+      if (new URL(args[0] instanceof Request ? args[0].url : String(args[0])).pathname === '/api/llm.providers') {
         sent.resolve(new Headers(args[1]?.headers).get(WORKER_CAPABILITY_HEADER) ?? '')
         await receipt.promise
       }
