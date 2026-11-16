@@ -12,23 +12,30 @@ afterEach(async () => {
   for (const fixture of fixtures.splice(0)) await fixture.close()
 })
 // Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
-const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '' }
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
 beforeAll(async () => {
-  const harness = await storageHarness()
-  seed.root = harness.paths.root
-  seed.users = harness.users
-  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
-  await harness.close(false)
+  const harness = await storageHarness({ readyUsers: 2 })
+  try {
+    seed.root = harness.paths.root
+    seed.users = harness.users
+    seed.passwords = harness.passwords
+    seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  } finally { await harness.close(false) }
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
-async function seededHarness(options: Parameters<typeof storageHarness>[0] = {}) {
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
   const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
-  await cp(seed.root, root, { recursive: true })
-  const harness = await storageHarness({ ...options, root })
-  const users = await Promise.all(seed.users.map(async user => ({ ...user,
-    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
-  return { ...harness, users, master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
-    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+  const remove = () => rm(root, { recursive: true, force: true })
+  const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
+    .catch(async (error: unknown) => { await remove(); throw error })
+  try {
+    const users = await Promise.all(seed.users.map(async user => ({ ...user,
+      authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+    return { ...harness, users, passwords: seed.passwords,
+      master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+      async close() { await harness.close(false); await remove() } }
+  } catch (error) { await harness.close(false); await remove(); throw error }
 }
 async function fixture() {
   const h = await seededHarness(); fixtures.push(h)
