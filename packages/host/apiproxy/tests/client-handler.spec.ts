@@ -545,6 +545,27 @@ describe('SSE stream path', () => {
     }
   })
 
+  it('logs only the error class of a malformed SSE frame, never its bytes', async () => {
+    const marker = 'frame-bytes-marker'
+    const wire = [
+      `data: {${marker}`, // not JSON: the SyntaxError message quotes these bytes
+      `data: ${JSON.stringify({ type: 'server-request', rpcId: 'b1', method: 'nope', payload: { type: marker } })}`,
+    ].map(l => `${l}\n\n`).join('')
+    const doFetch = (): Promise<Response> => Promise.resolve(new Response(wire, { status: 200 }))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    try {
+      for await (const _ of new InProcessApiClient({ fetch: doFetch }).events.mux({}, new AbortController().signal)) {
+        throw new Error('no frame should pass')
+      }
+      expect(errorSpy.mock.calls).toEqual([
+        ['[apiproxy] dropping malformed SSE frame on /api/events.mux: SyntaxError'],
+        ['[apiproxy] dropping malformed SSE frame on /api/events.mux: ZodError'],
+      ])
+    } finally {
+      errorSpy.mockRestore()
+    }
+  })
+
   it('fires onOpen once headers are in, before the first frame, and not on transport failure', async () => {
     const api = scriptedApi({
       events: {
