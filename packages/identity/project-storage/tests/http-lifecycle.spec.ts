@@ -1,13 +1,38 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, afterAll, beforeAll } from 'vitest'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { subscribe, unsubscribe } from 'node:diagnostics_channel'
 import { IncomingMessage, ServerResponse, request as httpRequest } from 'node:http'
-import { readFile } from 'node:fs/promises'
+import { readFile, cp, mkdtemp, rm } from 'node:fs/promises'
 import { setImmediate as nextTick } from 'node:timers/promises'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity/contract'
 import { oneTurnLog } from '../../../session/session-persistence/tests/contract.ts'
 import { storageHarness } from './harness.ts'
+
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 1 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 
 let h: Awaited<ReturnType<typeof storageHarness>> | undefined
 let headers: Record<string, string>
@@ -28,7 +53,7 @@ function observe(marker: string, callback: (request: IncomingMessage, onClose: (
   subscribe('http.server.request.start', observer); observers.push(observer)
 }
 beforeEach(async () => {
-  h = await storageHarness({ http: true, readyUsers: 1 })
+  h = await seededHarness({ http: true })
   const user = h.users[0]!
   const state = await h.ctx.webIdentity.state(user.authority)
   headers = { Cookie: AUTH_COOKIE_NAMES.user + '=' + user.token, Origin: h.url!,

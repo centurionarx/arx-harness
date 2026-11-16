@@ -1,13 +1,39 @@
 /** Public formatter failure traverses genuine HTTP, sealed identity and canonical payload parsing. */
 import { randomUUID } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, afterAll, beforeAll } from 'vitest'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { z } from 'zod'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity'
 import * as Connection from '../../../client/connection/src/index.ts'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { supervisorFixture } from './supervisor.ts'
+
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 1 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 
 const resources: { close(): Promise<void> }[] = []
 afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
@@ -16,7 +42,7 @@ describe('canonical payload error formatter at the actual authenticated HTTP bou
   it('retains a safe bad-request receipt when the public formatter fails and restores its exact configuration', async () => {
     const supervisor = await supervisorFixture()
     resources.push(supervisor)
-    const fixture = await storageHarness({ http: true, endpoint: supervisor.endpoint, readyUsers: 1,
+    const fixture = await seededHarness({ http: true, endpoint: supervisor.endpoint,
       extraPlugins: [{ name: '@arx-ai/arx-client-connection', plugin: Connection,
         config: { accessMode: 'authenticated' } }] })
     resources.push(fixture)

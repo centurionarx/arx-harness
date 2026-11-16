@@ -1,11 +1,37 @@
 /** Real native creation must finish admitted header commits without acknowledging an aborted caller. */
 import { randomUUID } from 'node:crypto'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi, afterAll, beforeAll } from 'vitest'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
+
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 1 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 
 let harness: Awaited<ReturnType<typeof storageHarness>> | undefined
 let supervisor: Awaited<ReturnType<typeof nativeSupervisorFixture>> | undefined
@@ -20,7 +46,7 @@ afterEach(async () => {
 
 it('commits a genuine admitted native header but gives no RPC success or idle renewal after outer cancellation', async () => {
   supervisor = await nativeSupervisorFixture()
-  harness = await storageHarness({ http: true, endpoint: supervisor.endpoint, readyUsers: 1,
+  harness = await seededHarness({ http: true, endpoint: supervisor.endpoint,
     extraPlugins: [{ name: '@arx-ai/arx-isolated-project-runtime/broker-http', plugin: BrokerHttp }] })
   const h = harness, peer = supervisor, user = h.users[0], origin = h.url
   if (user === undefined || origin === undefined) throw new Error('native USER fixture unavailable')

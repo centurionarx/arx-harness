@@ -1,7 +1,9 @@
 /** Real native SDK creation commits an owned empty header without model execution. */
 import { randomUUID } from 'node:crypto'
-import { rm } from 'node:fs/promises'
-import { afterEach, expect, it } from 'vitest'
+import { rm, cp, mkdtemp } from 'node:fs/promises'
+import { afterEach, expect, it, afterAll, beforeAll } from 'vitest'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { unzipSync, strFromU8 } from 'fflate'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity'
@@ -13,6 +15,29 @@ import * as Connection from '../../../client/connection/src/index.ts'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
+
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 2 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 
 let harness: Awaited<ReturnType<typeof storageHarness>> | undefined
 let supervisor: Awaited<ReturnType<typeof nativeSupervisorFixture>> | undefined
@@ -35,7 +60,7 @@ async function actualClient(send: typeof globalThis.fetch): Promise<IApiClient> 
 for (const compression of ['none', 'zstd'] as const) {
   it(`serves the canonical empty native session immediately with ${compression} and preserves absent-log denials`, async () => {
     supervisor = await nativeSupervisorFixture()
-    harness = await storageHarness({ http: true, endpoint: supervisor.endpoint, readyUsers: 2, compression,
+    harness = await seededHarness({ http: true, endpoint: supervisor.endpoint, compression,
       extraPlugins: [{ name: '@arx-ai/arx-isolated-project-runtime/broker-http', plugin: BrokerHttp },
         { name: '@arx-ai/arx-client-connection', plugin: Connection, config: { accessMode: 'authenticated' } }] })
     const h = harness, peer = supervisor, user = h.users[0], foreign = h.users[1], origin = h.url

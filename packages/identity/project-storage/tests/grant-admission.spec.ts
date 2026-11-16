@@ -1,9 +1,34 @@
 /** Real module revocation must precede any project/workspace side effect. */
-import { readdir } from 'node:fs/promises'
+import { readdir, cp, mkdtemp, rm } from 'node:fs/promises'
 import { DatabaseSync } from 'node:sqlite'
-import { afterEach, expect, it } from 'vitest'
+import { afterEach, expect, it, afterAll, beforeAll } from 'vitest'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity/contract'
 import { storageHarness } from './harness.ts'
+
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 1 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
 
 const active: Awaited<ReturnType<typeof storageHarness>>[] = []
 afterEach(async () => { for (const f of active.splice(0)) await f.close() })
@@ -13,7 +38,7 @@ function rows(path: string, tables: readonly string[]): number[] {
   finally { database.close() }
 }
 it('denies ungranted USER creation directly and over HTTP without owner, index or volume mutation', async () => {
-  const f = await storageHarness({ http: true, readyUsers: 1 }); active.push(f)
+  const f = await seededHarness({ http: true }); active.push(f)
   const user = f.users[0]!
   const project = await f.ctx.projectStorage.createProject(user.authority, 'Existing owned project')
   await f.ctx.webIdentity.setModules(f.master!, user.userId, ['runtime'])

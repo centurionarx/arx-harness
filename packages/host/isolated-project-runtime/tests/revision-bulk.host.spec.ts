@@ -1,5 +1,8 @@
 /** Closed bulk metadata RPC over a real native SSE lease and control HTTP broker. */
-import { expect, it } from 'vitest'
+import { expect, it, afterAll, beforeAll } from 'vitest'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
@@ -9,9 +12,32 @@ import * as BrokerHttp from '../src/broker-http.ts'
 import { WORKER_CAPABILITY_HEADER, WORKER_BROKER_PATH } from '../src/broker-contract.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
 
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 2 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
+
 it('serves a single scoped bulk receipt and rejects malformed or foreign workspace requests on the actual broker', async () => {
   const supervisor = await nativeSupervisorFixture()
-  const h = await storageHarness({ endpoint: supervisor.endpoint, http: true,
+  const h = await seededHarness({ endpoint: supervisor.endpoint, http: true,
     extraPlugins: [{ name: '@arx-ai/arx-isolated-project-runtime/broker-http', plugin: BrokerHttp }] })
   const controller = new AbortController()
   let iterator: AsyncIterator<unknown> | undefined

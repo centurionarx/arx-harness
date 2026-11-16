@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { afterEach, describe, expect, it, vi, afterAll, beforeAll } from 'vitest'
+import { mkdtemp, mkdir, readFile, rm, writeFile, cp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
@@ -10,6 +10,29 @@ import { toHeaderLine } from '../../../session/session-persistence-jsonl/src/for
 import { oneTurnLog } from '../../../session/session-persistence/tests/contract.ts'
 import { storageHarness } from './harness.ts'
 
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 1 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
+
 const fixtures: Awaited<ReturnType<typeof storageHarness>>[] = []
 const roots: string[] = []
 afterEach(async () => {
@@ -17,8 +40,8 @@ afterEach(async () => {
   for (const h of fixtures.splice(0)) await h.close()
   for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true })
 })
-async function fixture(options: Parameters<typeof storageHarness>[0] = {}) {
-  const h = await storageHarness({ readyUsers: 1, ...options }); fixtures.push(h); return h
+async function fixture(options: Parameters<typeof seededHarness>[0] = {}) {
+  const h = await seededHarness(options); fixtures.push(h); return h
 }
 async function owned(h: Awaited<ReturnType<typeof storageHarness>>) {
   const authority = h.users[0]!.authority
@@ -99,7 +122,8 @@ describe('owned control index lifecycle and physical recovery', () => {
   })
   it('refuses an actual JSONL provider outside the configured control root during both registration and recovery', async () => {
     const root = await mkdtemp(join(tmpdir(), 'arx-storage-map-fixture-')); roots.push(root)
-    const h = await fixture({ root, initialize: true, readyUsers: 1, storageConfig: { logRoot: join(root, 'different-control-logs') } })
+    const h = await storageHarness({ root, initialize: true, readyUsers: 1, storageConfig: { logRoot: join(root, 'different-control-logs') } })
+    fixtures.push(h)
     const authority = h.users[0]!.authority
     const project = await h.ctx.projectStorage.createProject(authority, 'Mapping project')
     const workspace = await h.ctx.projectStorage.createWorkspace(authority, project.projectId, 'Mapping workspace')

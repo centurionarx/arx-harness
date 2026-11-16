@@ -1,4 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi, afterAll, beforeAll } from 'vitest'
+import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
@@ -8,12 +11,35 @@ import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { supervisorFixture } from './supervisor.ts'
 
+// Identity bootstrap hashes several passwords, so it runs once; every test opens its own copy of that root.
+const seed = { root: '', users: [] as Awaited<ReturnType<typeof storageHarness>>['users'], master: '',
+  passwords: {} as Awaited<ReturnType<typeof storageHarness>>['passwords'] }
+beforeAll(async () => {
+  const harness = await storageHarness({ readyUsers: 2 })
+  seed.root = harness.paths.root
+  seed.users = harness.users
+  seed.passwords = harness.passwords
+  seed.master = (await harness.ctx.webIdentity.login('arxadmin', harness.passwords.master, 'admin')).token
+  await harness.close(false)
+})
+afterAll(() => rm(seed.root, { recursive: true, force: true }))
+async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
+  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  await cp(seed.root, root, { recursive: true })
+  const harness = await storageHarness({ ...options, root })
+  const users = await Promise.all(seed.users.map(async user => ({ ...user,
+    authority: await harness.ctx.webIdentity.authenticate(user.token, 'user') })))
+  return { ...harness, users, passwords: seed.passwords,
+    master: await harness.ctx.webIdentity.authenticate(seed.master, 'admin'),
+    async close() { await harness.close(false); await rm(root, { recursive: true, force: true }) } }
+}
+
 const REQUEST_TIMEOUT_MS = 50
 const resources: { close(): Promise<void> }[] = []
 afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
 async function setup(endpoint?: string) {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
-  const harness = await storageHarness({ endpoint: endpoint ?? supervisor.endpoint,
+  const harness = await seededHarness({ endpoint: endpoint ?? supervisor.endpoint,
     runtimeConfig: { requestTimeoutMs: REQUEST_TIMEOUT_MS } }); resources.push(harness)
   const authority = harness.users[0]!.authority
   const project = await harness.ctx.projectStorage.createProject(authority, 'USER_A')
