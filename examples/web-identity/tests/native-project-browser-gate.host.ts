@@ -320,8 +320,8 @@ try {
   const bytesAfter = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
   // A resumed session marks its seed boundary once (Session constructor, packages/core/session/src/index.ts):
   // the export may grow by exactly one empty session/end-seed at the next seq, and every earlier byte stays identical.
-  // The check below requires that the last event before the restart is not the marker; otherwise a second
-  // marker appended after an existing one would satisfy it.
+  // The log before this restart must not end in the marker, so this restart exercises the append; the second
+  // restart below reopens the log that now ends in it and requires that nothing is appended.
   assert.deepEqual(bytesAfter.subarray(0, bytesBefore.length), bytesBefore)
   const appended = bytesAfter.subarray(bytesBefore.length).toString('utf8')
   assert.ok(appended.endsWith('\n') && !appended.slice(0, -1).includes('\n'))
@@ -339,6 +339,22 @@ try {
   assert.equal(history.status(), 200)
   assert.ok(parseHistoryPage(await history.json()).sessions.some(row => row.sessionId === forkId))
   checks.coldRestartBytePreservation = true
+
+  step = 'second cold restart reopens the marked session without another marker'
+  await fixture.command('restart-workers')
+  const refusalsBeforeSecondReload = traffic.get(a)?.refusals.length ?? 0
+  await a.reload()
+  await ownProjects(a, String(seedA.projectId))
+  await sessionRow(a, 'Conversa privada 0').getByRole('button', { name: 'Retomar', exact: true }).click()
+  await a.getByText(/Preview fixture ready:/).waitFor()
+  assert.deepEqual(traffic.get(a)?.refusals.slice(refusalsBeforeSecondReload), [])
+  const bytesAfterSecond = await (await browserHttp(ctxA, fixture.url + '/user/sessions/' + String(seedA.sessionId) + '/export')).body()
+  // No event was written between the restarts: a second session/end-seed, or any other byte, fails here.
+  assert.deepEqual(bytesAfterSecond, bytesAfter)
+  const countsAfterSecond = await fixture.command('worker-counts')
+  assert.equal(countsAfterSecond.modelCalls, countsBefore.modelCalls)
+  assert.equal(countsAfterSecond.toolCalls, countsBefore.toolCalls)
+  checks.secondColdRestartWithoutMarker = true
 
   step = 'runtime grant revocation tears down USER project composition'
   await fixture.command('set-modules', { index: 0, grants: ['storage'] })
