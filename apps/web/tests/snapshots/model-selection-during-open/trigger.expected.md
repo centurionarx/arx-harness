@@ -1,0 +1,3 @@
+- button "Select model, current Acme Think":
+  - text: Acme Think
+  - img
