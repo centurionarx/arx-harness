@@ -112,4 +112,27 @@ describe('broker cancellation and durable control projection', () => {
       finally { db.close() }
     } finally { release.release(); await operation.catch(() => undefined) }
   })
+  it('accepts a worker batch sent again after its committed append was refused and appends only the events after it', async () => {
+    const { h, authority, header } = await owned()
+    const events = oneTurnLog(), controller = new AbortController(), reason = new Error('fixture broker cancelled after fsync')
+    const original = h.ctx.sessionPersistence.append.bind(h.ctx.sessionPersistence)
+    const append = vi.spyOn(h.ctx.sessionPersistence, 'append').mockImplementationOnce(async (...args) => {
+      await original(...args); controller.abort(reason)
+    })
+    await expect(h.ctx.projectStorage.append(authority, header.id, events.slice(0, 2), controller.signal)).rejects.toBe(reason)
+    // The worker kept the refused batch and sends it again with the events that followed it.
+    expect(await h.ctx.projectStorage.executionAppend(authority, header.id, events))
+      .toEqual({ sessionId: header.id, nextSeq: events.length })
+    expect(append).toHaveBeenLastCalledWith(header.id, events.slice(2))
+    expect(await h.ctx.projectStorage.executionAppend(authority, header.id, events))
+      .toEqual({ sessionId: header.id, nextSeq: events.length })
+    expect(append).toHaveBeenCalledTimes(2)
+    expect((await h.ctx.sessionPersistence.readFrom(header.id, 0)).events).toEqual(events)
+    // A batch that differs from a stored event keeps its full length, and the provider refuses its sequence.
+    await expect(h.ctx.projectStorage.executionAppend(authority, header.id, [{ ...events[0]!, time: 99 }]))
+      .rejects.toThrow('seq mismatch')
+    // The general append still sends a held batch to the provider.
+    await expect(h.ctx.projectStorage.append(authority, header.id, events)).rejects.toThrow('seq mismatch')
+    expect((await h.ctx.sessionPersistence.readFrom(header.id, 0)).events).toEqual(events)
+  })
 })

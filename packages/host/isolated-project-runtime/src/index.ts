@@ -474,7 +474,7 @@ export class IsolatedProjectRuntime extends Service {
     if (request.operation === 'append') {
       if (cold) failure('RUNTIME_WRITER', 409, 'Worker must hydrate before append')
       this.writers.set(id, { workerId: request.workerId, lease })
-      return this.ctx.projectStorage.append(lease.authority, id, request.events, signal)
+      return this.ctx.projectStorage.executionAppend(lease.authority, id, request.events, signal)
     }
     const source = await this.ctx.projectStorage.executionSnapshot(lease.authority, id, false, signal)
     signal.throwIfAborted()

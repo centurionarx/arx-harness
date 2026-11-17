@@ -434,6 +434,20 @@ async materialize(authority: RequestAuthority, id: SessionId, signal?: AbortSign
 async append(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit>
 
 /**
+ * Append a worker's batch like `append`, except that leading events the log
+ * already holds with the same content are not appended again. A worker
+ * resends a batch whose append was committed but refused after the commit,
+ * as when its lease was cancelled in between; a held event that differs
+ * leaves the whole batch to the provider, which refuses its sequence.
+ * @param authority - Current issued USER authority.
+ * @param id - Owned session.
+ * @param events - Existing SessionEvents, including their sequence envelopes.
+ * @param signal - Optional cancellation before append starts; an initiated commit still projects its index.
+ * @returns The next durable event sequence.
+ */
+async executionAppend(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit>
+
+/**
  * Reconcile an index after durable crash recovery without dispatching tools.
  * Legacy sessions without authoritative ownership and an index mapping fail.
  * @param authority - Current issued USER authority.

@@ -9,6 +9,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { mkdir, lstat, chmod, open } from 'node:fs/promises'
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { createHash } from 'node:crypto'
+import { isDeepStrictEqual } from 'node:util'
 import { SessionId } from '@arx-ai/arx-session'
 import type { SessionHeader, SessionEvent } from '@arx-ai/arx-session'
 import { SessionPersistenceRevision } from '@arx-ai/arx-session-persistence'
@@ -501,6 +502,28 @@ export class ProjectStorage extends Service {
    * @returns The next durable event sequence.
    */
   async append(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit> {
+    return this.appendBatch(authority, id, events, false, signal)
+  }
+
+  /**
+   * Append a worker's batch like `append`, except that leading events the log
+   * already holds with the same content are not appended again. A worker
+   * resends a batch whose append was committed but refused after the commit,
+   * as when its lease was cancelled in between; a held event that differs
+   * leaves the whole batch to the provider, which refuses its sequence.
+   * @param authority - Current issued USER authority.
+   * @param id - Owned session.
+   * @param events - Existing SessionEvents, including their sequence envelopes.
+   * @param signal - Optional cancellation before append starts; an initiated commit still projects its index.
+   * @returns The next durable event sequence.
+   */
+  async executionAppend(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[],
+    signal?: AbortSignal): Promise<HistoryCommit> {
+    return this.appendBatch(authority, id, events, true, signal)
+  }
+
+  private async appendBatch(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], skipHeld: boolean,
+    signal?: AbortSignal): Promise<HistoryCommit> {
     if (bytes(events) > this.config.appendBytes) throw new WebIdentityError('HISTORY_LIMIT', 413, 'History batch too large')
     return this.exclusive(id, async () => {
       signal?.throwIfAborted()
@@ -508,7 +531,8 @@ export class ProjectStorage extends Service {
       signal?.throwIfAborted()
       await this.ctx.webIdentity.revalidate(authority)
       signal?.throwIfAborted()
-      await this.ctx.sessionPersistence.append(id, events)
+      const unstored = skipHeld ? await this.unstored(id, events, signal) : events
+      if (unstored.length > 0 || events.length === 0) await this.ctx.sessionPersistence.append(id, unstored)
       const nextSeq = events.length === 0
         ? row(this.database().prepare('SELECT * FROM history WHERE session=?').get(id)).next_seq
         : (events[events.length - 1] as SessionEvent).seq + 1
@@ -517,6 +541,25 @@ export class ProjectStorage extends Service {
       signal?.throwIfAborted()
       return { sessionId: id, nextSeq }
     })
+  }
+
+  /**
+   * The part of a batch that the log does not hold yet: the events after a
+   * leading run that the indexed log already holds with the same content, or
+   * the whole batch when a held event differs.
+   * @param id - Owned session, inside its exclusive section.
+   * @param events - Contiguous batch to append.
+   * @param signal - Cancellation of the read.
+   * @returns Events still to append.
+   */
+  private async unstored(id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<readonly SessionEvent[]> {
+    const first = events[0]
+    if (first === undefined
+      || first.seq >= row(this.database().prepare('SELECT * FROM history WHERE session=?').get(id)).next_seq) return events
+    const held = (await this.ctx.sessionPersistence.readFrom(id, first.seq, signal)).events
+    const overlap = Math.min(held.length, events.length)
+    for (let index = 0; index < overlap; index++) if (!isDeepStrictEqual(held[index], events[index])) return events
+    return events.slice(overlap)
   }
 
   /**

@@ -1610,6 +1610,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'The next durable event sequence.',
       },
       {
+        signature: 'async executionAppend(authority: RequestAuthority, id: SessionId, events: readonly SessionEvent[], signal?: AbortSignal): Promise<HistoryCommit>',
+        description: 'Append a worker\'s batch like `append`, except that leading events the log already holds with the same content are not appended again. A worker resends a batch whose append was committed but refused after the commit, as when its lease was cancelled in between; a held event that differs leaves the whole batch to the provider, which refuses its sequence.',
+        parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned session.' }, { name: 'events', description: 'Existing SessionEvents, including their sequence envelopes.' }, { name: 'signal', description: 'Optional cancellation before append starts; an initiated commit still projects its index.' }],
+        returns: 'The next durable event sequence.',
+      },
+      {
         signature: 'async recover(authority: RequestAuthority, id: SessionId): Promise<HistoryCommit>',
         description: 'Reconcile an index after durable crash recovery without dispatching tools. Legacy sessions without authoritative ownership and an index mapping fail.',
         parameters: [{ name: 'authority', description: 'Current issued USER authority.' }, { name: 'id', description: 'Owned and indexed session.' }],

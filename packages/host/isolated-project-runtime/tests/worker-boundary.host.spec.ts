@@ -2,7 +2,7 @@
  * Native worker boundary cases over real Loader services and control-issued leases.
  * Capabilities are held only in memory and never printed or snapshotted.
  */
-import { beforeAll, beforeEach, afterEach, afterAll, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, afterEach, afterAll, describe, expect, it, vi } from 'vitest'
 import type { Context } from '@arx-ai/cordis'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -175,6 +175,7 @@ describe('native owned worker boundary with genuine authority and host frames', 
   /**
    * Hold the session's next append and send it under `capability`, as a write in a flush barrier that another request
    * opened, and run one request whose flush of the session is known to wait on that barrier before it is released.
+   * It assumes that the request's flush starts before the session's 200 ms write-batch timer fires.
    */
   async function sharedFlush(capability: string, request: Request, beforeRelease = () => {}) {
     const history = worker.ownedWorkerHistory, sessions = worker.sessions
@@ -211,9 +212,13 @@ describe('native owned worker boundary with genuine authority and host frames', 
   }
 
   it('flushes again under its own lease when control refused a write under another request\'s released lease', async () => {
+    const retried = vi.spyOn(worker.ownedWorkerHistory, 'refusedAnotherLease')
     const response = await sharedFlush(await releasedCapability(),
       post('session.rename', { sessionId, title: 'Renamed after a refused shared write' }))
     expect(response.status).toBe(200)
+    // The request saw the refusal of the other lease; a write-batch timer that fired first would bypass the retry.
+    expect(retried.mock.results.some(result => result.value === true)).toBe(true)
+    retried.mockRestore()
     expect((await harness.ctx.sessionPersistence.readRaw(sessionId))?.content).toContain('Renamed after a refused shared write')
   })
 
@@ -227,6 +232,23 @@ describe('native owned worker boundary with genuine authority and host frames', 
     // The refused batch stays queued; the next live request writes it.
     expect((await boundary.fetch(post('host.describe'))).status).toBe(200)
     expect((await harness.ctx.sessionPersistence.readRaw(sessionId))?.content).toContain('Renamed by a cancelled operation')
+  })
+
+  it('lets the next flush write a batch whose committed append control refused, without writing it twice', async () => {
+    const storage = harness.ctx.projectStorage
+    const append = storage.executionAppend.bind(storage)
+    const refused = vi.spyOn(storage, 'executionAppend').mockImplementationOnce(async (...args) => {
+      await append(...args)
+      throw new Error('fixture refusal after the commit')
+    })
+    try {
+      await expect(boundary.fetch(post('session.rename', { sessionId, title: 'Committed before a refused receipt' })))
+        .rejects.toThrow('worker history operation refused')
+    } finally { refused.mockRestore() }
+    // The worker kept the refused batch, so the next flush sends it again.
+    expect((await boundary.fetch(post('host.describe'))).status).toBe(200)
+    const content = (await harness.ctx.sessionPersistence.readRaw(sessionId))?.content ?? ''
+    expect(content.split('Committed before a refused receipt')).toHaveLength(2)
   })
 
   it('fails closed for canonical Remote without a dispatcher and rejects another workspace on session creation', async () => {

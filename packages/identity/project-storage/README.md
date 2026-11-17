@@ -22,7 +22,7 @@ Session registration commits identity ownership before creating lazy persistence
 
 Removing grouping preserves identities, histories and files. Session deletion commits a journal-backed identity tombstone before deleting derived metadata. Restoring an older index cannot authorize a tombstoned session. Physical purge and backup expiration require the operator retention procedure.
 
-Execution metadata comes from one provider snapshot scan per workspace request, followed by an authoritative ownership check for every indexed candidate and final revalidation. Direct execution revision reads use the provider's per-id `readRevision`; full snapshot hydration still validates the complete log between source revisions and finishes any started durable repair before acknowledging. Default lazy logs remain absent until their first append or an explicit owned header commit.
+Execution metadata comes from one provider snapshot scan per workspace request, followed by an authoritative ownership check for every indexed candidate and final revalidation. Direct execution revision reads use the provider's per-id `readRevision`; full snapshot hydration still validates the complete log between source revisions and finishes any started durable repair before acknowledging. Default lazy logs remain absent until their first append or an explicit owned header commit. `executionAppend`, the worker broker's append, skips leading events that the log already holds with the same content and appends only the rest, so a worker can resend a batch whose append was committed but refused after the commit; a held event that differs fails on the provider's sequence check, as every held batch does through `append`.
 
 ## USER HTTP routes
 
