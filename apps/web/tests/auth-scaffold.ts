@@ -6,7 +6,9 @@
 // isolated runtime, the native test supervisor with in-process workers and
 // the built frontend from apps/web/dist. Sessions are seeded with a
 // hand-built conversation through the fixture's `seed-history` command, so no
-// model is called and no recording exists; `worker-counts` proves it.
+// model is called and no recording exists; `worker-counts` proves it. The
+// fixture's in-process worker composition resolves its packages through the
+// NODE_PATH that the pnpm `vitest` bin sets.
 import type { Browser, BrowserContext, Page } from 'playwright'
 import { browserFixture } from '../../../examples/web-identity/tests/browser-fixture.host.ts'
 import type { BrowserFixtureControl } from '../../../examples/web-identity/tests/browser-fixture.contract.ts'
@@ -14,12 +16,10 @@ import type { BrowserFixtureControl } from '../../../examples/web-identity/tests
 /** One running authenticated USER deployment with a project runtime, as the fixture serves it. */
 export interface AuthWebScaffold {
   readonly fixture: BrowserFixtureControl
-  /** Owned project, workspace and session the fixture seeded for USER `index`; the session is titled `Conversa privada <index>`. */
-  seed(index: number): Promise<{ projectId: string; workspaceId: string; sessionId: string; title: string }>
+  /** Owned project and session the fixture seeded for USER `index`; the session is titled `Conversa privada <index>`. */
+  seed(index: number): Promise<{ projectId: string; title: string }>
   /** Model and tool calls the supervisor's workers made so far. */
   workerCounts(): Promise<{ modelCalls: number; toolCalls: number }>
-  /** Stop every worker; the next request for a workspace starts a fresh worker with a new id. */
-  restartWorkers(): Promise<void>
   close(): Promise<void>
 }
 
@@ -33,18 +33,14 @@ export async function launchAuthWebScaffold(): Promise<AuthWebScaffold> {
   return {
     fixture,
     async seed(index) {
-      const seeded = await fixture.command('seed-history', { index })
-      const { projectId, workspaceId, sessionId } = seeded
-      if (typeof projectId !== 'string' || typeof workspaceId !== 'string' || typeof sessionId !== 'string') {
-        throw new Error('auth scaffold: seed-history returned no ids')
-      }
-      return { projectId, workspaceId, sessionId, title: 'Conversa privada ' + String(index) }
+      const { projectId } = await fixture.command('seed-history', { index })
+      if (typeof projectId !== 'string') throw new Error('auth scaffold: seed-history returned no project id')
+      return { projectId, title: 'Conversa privada ' + String(index) }
     },
     async workerCounts() {
       const counts = await fixture.command('worker-counts')
       return { modelCalls: Number(counts.modelCalls), toolCalls: Number(counts.toolCalls) }
     },
-    async restartWorkers() { await fixture.command('restart-workers') },
     close: () => fixture.close(),
   }
 }
@@ -53,26 +49,34 @@ export async function launchAuthWebScaffold(): Promise<AuthWebScaffold> {
  * Open a Brazilian Portuguese browser context and page on the fixture origin, as the identity gates do.
  * @param browser - Playwright browser owning the context.
  * @param origin - fixture USER origin.
+ * @param onPageError - called for every uncaught page error, from the first navigation on.
  * @returns the context and its page at the public sign-in screen.
  */
-export async function openAuthPage(browser: Browser, origin: string): Promise<{ context: BrowserContext; page: Page }> {
+export async function openAuthPage(browser: Browser, origin: string,
+  onPageError: () => void): Promise<{ context: BrowserContext; page: Page }> {
   const context = await browser.newContext({ locale: 'pt-BR', viewport: { width: 1280, height: 800 } })
   const page = await context.newPage()
+  page.on('pageerror', onPageError)
   await page.goto(origin)
   await page.getByRole('heading', { name: 'Entrar', exact: true }).waitFor({ timeout: 30_000 })
   return { context, page }
 }
 
 /**
- * Sign in through the real form.
+ * Sign in through the real form. A failed fill rethrows only the error class: Playwright's error message quotes the
+ * filled value, and the test runner prints that message.
  * @param page - page at the sign-in screen.
  * @param user - fixture USER credentials.
  * @param user.username - fixture user name.
  * @param user.password - fixture password.
  */
 export async function signIn(page: Page, user: { readonly username: string; readonly password: string }): Promise<void> {
-  await page.getByLabel('Nome de usuário ou e-mail').fill(user.username)
-  await page.getByLabel('Senha', { exact: true }).fill(user.password)
+  try {
+    await page.getByLabel('Nome de usuário ou e-mail').fill(user.username)
+    await page.getByLabel('Senha', { exact: true }).fill(user.password)
+  } catch (error) {
+    throw new Error('auth scaffold: sign-in form fill failed (' + (error instanceof Error ? error.name : 'unknown') + ')')
+  }
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
 }
 

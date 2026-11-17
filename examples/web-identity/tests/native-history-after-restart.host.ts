@@ -2,12 +2,13 @@
  * Keyless scenario of the native browser fixture: an owned session's history opens again after the supervisor
  * restarts the project workers.
  *
- * One replayed turn, the fixture's code-built preview replay (no key, no recording), leaves the prompt's lease
- * retained as the session writer, as any browser prompt does. The restarted worker has a new worker id, so control
- * moves the writer only after it cancels that lease and receives the quiescent receipt (restarted-worker writer
- * handoff). Without the handoff, control refuses the new worker's hydration and Resume after the restart shows a
- * history load error instead of the history. The facts golden is the output of a run: `record` writes it, the
- * default mode compares against it.
+ * One replayed turn, the fixture's code-built preview replay (no key, no recording), leaves a browser request's lease
+ * retained as the session writer. The restarted worker has a new worker id, so control moves the writer only after it
+ * cancels that lease and receives the quiescent receipt (restarted-worker writer handoff); without the handoff,
+ * control refuses the new worker's hydration and the page shows a history load error instead of the history. The
+ * writer is the lease of the session's last append, so a run whose last append went out under a lease that had
+ * already ended needs no handoff and passes without it. The facts golden is the output of a run: `record` writes it,
+ * the default mode compares against it.
  *
  * Run from the repository root after the build, through the pnpm `tsx` bin, which puts the hoisted workspace
  * packages on NODE_PATH for the in-process worker composition:
@@ -21,7 +22,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { BrowserContext, Page } from 'playwright'
+import type { Browser, BrowserContext, Page } from 'playwright'
 import { AUTH_HEADER, CSRF_HEADER, parseAuthState } from '@arx-ai/arx-web-identity/contract'
 import { RpcId, clientRequestSchema, serverResponseSchema } from '@arx-ai/arx-host-apiproxy/api'
 import { browserFixture } from './browser-fixture.host.ts'
@@ -33,18 +34,13 @@ const mode = process.argv[2]
 if (mode !== undefined && mode !== 'record') throw new Error('usage: native-history-after-restart.host.ts [record]')
 const GOLDEN = fileURLToPath(new URL('./snapshots/native-history-after-restart.expected.md', import.meta.url))
 
-const fixture = await browserFixture('user', false, true, true)
-const browser = await chromium.launch()
-const ctx = await browser.newContext({ locale: 'pt-BR', viewport: { width: 1280, height: 800 } })
-let step = 'start'
-
-async function rpc(context: BrowserContext, method: string, payload: unknown) {
-  const response = await browserHttp(context, fixture.url + '/auth/session')
+async function rpc(context: BrowserContext, origin: string, method: string, payload: unknown) {
+  const response = await browserHttp(context, origin + '/auth/session')
   assert.equal(response.status(), 200)
   const state = parseAuthState(await response.json())
   assert.ok(state.authenticated)
   const body = clientRequestSchema.parse({ type: 'client-request', rpcId: RpcId(randomUUID()), method, payload })
-  return browserHttp(context, fixture.url + '/api/' + method, { method: 'POST',
+  return browserHttp(context, origin + '/api/' + method, { method: 'POST',
     headers: { [AUTH_HEADER]: '1', [CSRF_HEADER]: state.csrfToken }, data: body })
 }
 async function openProject(page: Page, projectId: string): Promise<void> {
@@ -59,7 +55,14 @@ async function resume(page: Page, title: string): Promise<void> {
     .getByRole('button', { name: 'Retomar', exact: true }).click()
 }
 
+let fixture: Awaited<ReturnType<typeof browserFixture>> | undefined
+let browser: Browser | undefined
+let ctx: BrowserContext | undefined
+let step = 'start'
 try {
+  fixture = await browserFixture('user', false, true, true)
+  browser = await chromium.launch()
+  ctx = await browser.newContext({ locale: 'pt-BR', viewport: { width: 1280, height: 800 } })
   const page = await ctx.newPage()
   await page.goto(fixture.url)
   await page.getByRole('heading', { name: 'Entrar', exact: true }).waitFor()
@@ -74,10 +77,10 @@ try {
   await resume(page, 'Conversa privada 0')
   await page.getByText(/Resposta privada 0/).waitFor()
 
-  step = 'one replayed turn whose prompt lease stays the session writer'
+  step = 'one replayed turn'
   const replay = await fixture.command('configure-preview-replay', { workspaceId, sessionId })
   assert.equal(replay.configured, true)
-  const selected = await rpc(ctx, 'session.selectModel', { sessionId, provider: replay.provider, model: replay.model })
+  const selected = await rpc(ctx, fixture.url, 'session.selectModel', { sessionId, provider: replay.provider, model: replay.model })
   assert.equal(selected.status(), 200)
   assert.ok(serverResponseSchema.parse(await selected.json()).result.ok)
   const composer = page.locator('textarea:visible')
@@ -94,19 +97,18 @@ try {
   await page.reload()
   await openProject(page, projectId)
   await resume(page, 'Conversa privada 0')
-  // After the turn the breadcrumb also names the session after its first message, so the message is the last match.
-  await page.getByText('Registro próprio 0', { exact: true }).last().waitFor()
-  await page.getByText(/Resposta privada 0/).waitFor()
-  await page.getByText(/Preview fixture ready:/).waitFor()
+  // The resumed history or the load error, whichever renders; the facts tell them apart.
+  const loadError = page.getByText(/Falha ao carregar o histórico/)
+  await page.getByText(/Preview fixture ready:/).or(loadError).first().waitFor()
   const after = await fixture.command('worker-counts')
 
   const facts = [
     '# Owned history after a worker restart (native fixture)',
     '',
     '- Replayed turn: model calls ' + String(consumed.modelCalls) + ', tool calls ' + String(consumed.toolCalls),
-    '- History load error after the restart: ' + String(await page.getByText(/Falha ao carregar o histórico/).count() > 0),
+    '- History load error after the restart: ' + String(await loadError.count() > 0),
     '- Seeded reply visible after the restart: ' + String(await page.getByText(/Resposta privada 0/).count() === 1),
-    '- Replayed turn reply visible after the restart: ' + String(await page.getByText(/Preview fixture ready:/).count() >= 1),
+    '- Replayed turn reply visible after the restart: ' + String(await page.getByText(/Preview fixture ready:/).count() === 1),
     '- Model calls before / after the restart: ' + String(before.modelCalls) + ' / ' + String(after.modelCalls),
     '- Tool calls before / after the restart: ' + String(before.toolCalls) + ' / ' + String(after.toolCalls),
   ].join('\n') + '\n'
@@ -120,12 +122,13 @@ try {
   }
   process.stdout.write(JSON.stringify({ status: 'PASS', mode: mode ?? 'compare' }) + '\n')
 } catch (error) {
+  // Only the step, the error class and line:column sites: a Playwright message can quote a filled credential.
   process.stdout.write(JSON.stringify({ status: 'FAIL', step, errorClass: error instanceof Error ? error.name : 'unknown',
     sites: error instanceof Error ? error.stack?.split('\n').filter(line => line.includes('native-history-after-restart.host.ts'))
       .map(line => line.match(/:\d+:\d+/)?.[0]) : [] }) + '\n')
   process.exitCode = 1
 } finally {
-  await ctx.close()
-  await browser.close()
-  await fixture.close()
+  try { await ctx?.close() } finally {
+    try { await browser?.close() } finally { await fixture?.close() }
+  }
 }
