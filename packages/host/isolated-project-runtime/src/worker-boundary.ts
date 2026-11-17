@@ -63,6 +63,67 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
     }
     return result
   }
+  const handle = async (request: Request): Promise<Response> => {
+    if (localWorkspaceId === undefined) localWorkspaceId = (await ctx.workspaceRegistry.create(config.volumePath)).id
+    const path = new URL(request.url).pathname
+    let input = request
+    if (request.method === 'POST' && path !== '/api/respond') {
+      const envelope = clientRequestSchema.parse(await request.json())
+      const remote = ownerRemoteAdmission(envelope.method, envelope.payload)
+      if (remote !== undefined) {
+        if (dispatchRemote === undefined) return new Response('Worker Remote unavailable', { status: 503 })
+        const result = await dispatchRemote(envelope.method, envelope.payload, request.signal)
+        await flush()
+        const busy = ctx.agents.list().some(agent => agent.status !== 'idle')
+        return Response.json(rewrite({ type: 'server-response', rpcId: envelope.rpcId, result }),
+          { headers: { 'cache-control': 'no-store', 'x-arx-quiescent': busy ? 'false' : 'true' } })
+      }
+      if (envelope.method === 'session.create') {
+        const payload = envelope.payload as { workspaceId?: string }
+        if (payload.workspaceId !== config.workspaceId) return new Response('Worker workspace refused', { status: 403 })
+        envelope.payload = { ...payload, workspaceId: localWorkspaceId }
+      }
+      input = new Request(request.url, { method: request.method, headers: request.headers,
+        body: JSON.stringify(envelope), signal: request.signal })
+    }
+    const result = await carrier.fetch(input)
+    if (result.headers.get('content-type')?.startsWith('text/event-stream') === true) return result
+    if (path === '/api/session.export') {
+      await flush()
+      const url = new URL(request.url)
+      const requested = url.searchParams.get('sessionId')
+      const ids = new Set<SessionId>(requested === null ? [] : [requested as SessionId])
+      if (result.ok && requested !== null && url.searchParams.get('includeDescendants') === 'true') {
+        const query = ctx.get('sessionQuery')
+        if (query === undefined) throw new Error('worker export lineage unavailable')
+        const lineage = await query.traceSession(requested as SessionId, request.signal)
+        const pending: SessionLineageNode[] = [...lineage.descendants]
+        while (pending.length > 0) {
+          const node = (pending.pop() as SessionLineageNode)
+          ids.add(node.session.header.id)
+          pending.push(...node.descendants)
+        }
+      }
+      const headers = new Headers(result.headers)
+      // Receipt uses the same canonical lineage selection as native ZIP export.
+      // Control validates every included owner before publishing any bytes.
+      headers.set('x-arx-export-sessions', JSON.stringify([...ids]))
+      headers.set('x-arx-quiescent', ctx.agents.list().some(agent => agent.status !== 'idle') ? 'false' : 'true')
+      return new Response(result.body, { status: result.status, headers })
+    }
+    const raw = await result.text()
+    await flush()
+    let body = raw
+    if (result.headers.get('content-type')?.startsWith('application/json') === true) {
+      const parsed: unknown = JSON.parse(raw)
+      const validated = path === '/api/respond' ? parsed : serverResponseSchema.parse(parsed)
+      body = JSON.stringify(rewrite(validated))
+    }
+    const headers = new Headers(result.headers)
+    const busy = ctx.agents.list().some(agent => agent.status !== 'idle')
+    headers.set('x-arx-quiescent', busy ? 'false' : 'true')
+    return new Response(body, { status: result.status, headers })
+  }
   return {
     async fetch(request) {
       // A request whose operation was already cancelled starts no worker work.
@@ -72,67 +133,10 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
       if ((projectId !== null && projectId !== config.projectId) || (workspaceId !== null && workspaceId !== config.workspaceId)) {
         return new Response('Worker scope refused', { status: 403 })
       }
-      // Only a workspace-scoped lease may back worker history; an unscoped request keeps the current capability.
-      if (workspaceId !== null) history.bind(request.headers.get(WORKER_CAPABILITY_HEADER) ?? '', scope)
-      if (localWorkspaceId === undefined) localWorkspaceId = (await ctx.workspaceRegistry.create(config.volumePath)).id
-      const path = new URL(request.url).pathname
-      let input = request
-      if (request.method === 'POST' && path !== '/api/respond') {
-        const envelope = clientRequestSchema.parse(await request.json())
-        const remote = ownerRemoteAdmission(envelope.method, envelope.payload)
-        if (remote !== undefined) {
-          if (dispatchRemote === undefined) return new Response('Worker Remote unavailable', { status: 503 })
-          const result = await dispatchRemote(envelope.method, envelope.payload, request.signal)
-          await flush()
-          const busy = ctx.agents.list().some(agent => agent.status !== 'idle')
-          return Response.json(rewrite({ type: 'server-response', rpcId: envelope.rpcId, result }),
-            { headers: { 'cache-control': 'no-store', 'x-arx-quiescent': busy ? 'false' : 'true' } })
-        }
-        if (envelope.method === 'session.create') {
-          const payload = envelope.payload as { workspaceId?: string }
-          if (payload.workspaceId !== config.workspaceId) return new Response('Worker workspace refused', { status: 403 })
-          envelope.payload = { ...payload, workspaceId: localWorkspaceId }
-        }
-        input = new Request(request.url, { method: request.method, headers: request.headers,
-          body: JSON.stringify(envelope), signal: request.signal })
-      }
-      const result = await carrier.fetch(input)
-      if (result.headers.get('content-type')?.startsWith('text/event-stream') === true) return result
-      if (path === '/api/session.export') {
-        await flush()
-        const url = new URL(request.url)
-        const requested = url.searchParams.get('sessionId')
-        const ids = new Set<SessionId>(requested === null ? [] : [requested as SessionId])
-        if (result.ok && requested !== null && url.searchParams.get('includeDescendants') === 'true') {
-          const query = ctx.get('sessionQuery')
-          if (query === undefined) throw new Error('worker export lineage unavailable')
-          const lineage = await query.traceSession(requested as SessionId, request.signal)
-          const pending: SessionLineageNode[] = [...lineage.descendants]
-          while (pending.length > 0) {
-            const node = (pending.pop() as SessionLineageNode)
-            ids.add(node.session.header.id)
-            pending.push(...node.descendants)
-          }
-        }
-        const headers = new Headers(result.headers)
-        // Receipt uses the same canonical lineage selection as native ZIP export.
-        // Control validates every included owner before publishing any bytes.
-        headers.set('x-arx-export-sessions', JSON.stringify([...ids]))
-        headers.set('x-arx-quiescent', ctx.agents.list().some(agent => agent.status !== 'idle') ? 'false' : 'true')
-        return new Response(result.body, { status: result.status, headers })
-      }
-      const raw = await result.text()
-      await flush()
-      let body = raw
-      if (result.headers.get('content-type')?.startsWith('application/json') === true) {
-        const parsed: unknown = JSON.parse(raw)
-        const validated = path === '/api/respond' ? parsed : serverResponseSchema.parse(parsed)
-        body = JSON.stringify(rewrite(validated))
-      }
-      const headers = new Headers(result.headers)
-      const busy = ctx.agents.list().some(agent => agent.status !== 'idle')
-      headers.set('x-arx-quiescent', busy ? 'false' : 'true')
-      return new Response(body, { status: result.status, headers })
+      // Only a workspace-scoped lease may back worker history, and its history calls carry that lease's capability;
+      // an unscoped request keeps the latest bound capability.
+      if (workspaceId === null) return handle(request)
+      return history.runBound(request.headers.get(WORKER_CAPABILITY_HEADER) ?? '', scope, () => handle(request))
     },
   }
 }

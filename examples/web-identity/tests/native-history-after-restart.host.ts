@@ -2,13 +2,13 @@
  * Keyless scenario of the native browser fixture: an owned session's history opens again after the supervisor
  * restarts the project workers.
  *
- * One replayed turn, the fixture's code-built preview replay (no key, no recording), leaves a browser request's lease
- * retained as the session writer. The restarted worker has a new worker id, so control moves the writer only after it
- * cancels that lease and receives the quiescent receipt (restarted-worker writer handoff); without the handoff,
- * control refuses the new worker's hydration and the page shows a history load error instead of the history. The
- * writer is the lease of the session's last append, so a run whose last append went out under a lease that ended
- * before the restart needs no handoff and passes without it. The facts golden is the output of a run: `record` writes it,
- * the default mode compares against it.
+ * One replayed turn, the fixture's code-built preview replay (no key, no recording), runs before the restart, so the
+ * restarted worker, which has a new worker id, hydrates a session that another worker wrote. Control records as the
+ * session writer the lease of its last append: when that lease is still retained at the restart, the history opens only
+ * through the restarted-worker writer handoff, and otherwise without it, so this scenario does not prove the handoff
+ * (writer-handoff.spec.ts of the isolated project runtime does). When control refuses the hydration, the page shows a
+ * history load error, which the facts record. The facts golden is the output of a run: `record` writes it, the default
+ * mode compares against it.
  *
  * Run from the repository root after the build, through the pnpm `tsx` bin, which puts the hoisted workspace
  * packages on NODE_PATH for the in-process worker composition:

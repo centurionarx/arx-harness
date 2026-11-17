@@ -167,6 +167,18 @@ Existing SessionPersistence provider, with no local history database/files.
 bind(capability: string, scope: OwnerScope): void
 
 /**
+ * Bind a trusted supervisor request and run its work under that request's own capability. Every broker call that
+ * `work` makes, including deferred writes it schedules and background turns it starts, carries this capability even
+ * after later requests bind theirs; control keeps it valid while the request runs and, after a non-quiescent
+ * response, until it cancels the operation. A broker call outside any bound request uses the latest bound capability.
+ * @param capability - Opaque control-issued lease capability of this request.
+ * @param scope - Fixed assigned scope carried by trusted supervisor metadata.
+ * @param work - The request's handling.
+ * @returns The result of `work`.
+ */
+runBound<T>(capability: string, scope: OwnerScope, work: () => Promise<T>): Promise<T>
+
+/**
  * Read original private bytes over the bounded broker contract.
  * @param id - Owned session within this operator-mounted workspace.
  * @param request - Existing persistence page request.

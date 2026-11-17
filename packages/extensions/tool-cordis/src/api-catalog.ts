@@ -1240,6 +1240,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'capability', description: 'Opaque control-issued lease capability.' }, { name: 'scope', description: 'Fixed assigned scope carried by trusted supervisor metadata.' }],
       },
       {
+        signature: 'runBound<T>(capability: string, scope: OwnerScope, work: () => Promise<T>): Promise<T>',
+        description: 'Bind a trusted supervisor request and run its work under that request\'s own capability. Every broker call that `work` makes, including deferred writes it schedules and background turns it starts, carries this capability even after later requests bind theirs; control keeps it valid while the request runs and, after a non-quiescent response, until it cancels the operation. A broker call outside any bound request uses the latest bound capability.',
+        parameters: [{ name: 'capability', description: 'Opaque control-issued lease capability of this request.' }, { name: 'scope', description: 'Fixed assigned scope carried by trusted supervisor metadata.' }, { name: 'work', description: 'The request\'s handling.' }],
+        returns: 'The result of `work`.',
+      },
+      {
         signature: 'override async readRawPage(id: SessionId, request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage>',
         description: 'Read original private bytes over the bounded broker contract.',
         parameters: [{ name: 'id', description: 'Owned session within this operator-mounted workspace.' }, { name: 'request', description: 'Existing persistence page request.' }, { name: 'signal', description: 'Carrier cancellation.' }],

@@ -134,6 +134,34 @@ describe('native owned worker boundary with genuine authority and host frames', 
     await expect(worker.ownedWorkerHistory.list()).resolves.toEqual(expect.any(Array))
   })
 
+  it('sends a request\'s history calls under its own lease after a later request ended quiescent', async () => {
+    const meta = await harness.ctx.projectStorage.register(authority(), workspaceId,
+      { id: SessionId(randomUUID()), version: SESSION_FORMAT_VERSION, createdAt: 1000 })
+    await harness.ctx.projectStorage.append(authority(), meta.id, oneTurnLog())
+    const history = worker.ownedWorkerHistory
+    const readStoredRevision = history.readStoredRevision.bind(history)
+    let arrive!: () => void, release!: () => void
+    const reached = new Promise<void>((resolve) => { arrive = resolve })
+    const resumed = new Promise<void>((resolve) => { release = resolve })
+    history.readStoredRevision = async (id, signal) => {
+      arrive()
+      await resumed
+      return readStoredRevision(id, signal)
+    }
+    try {
+      // The export runs under the stream lease, which control keeps while the stream is open.
+      const exported = boundary.fetch(get('/api/session.export?sessionId=' + meta.id))
+      await reached
+      // A later request binds its own capability and ends quiescent, so control releases its lease.
+      expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
+        envelope('session.history', { sessionId }))).toMatchObject({ ok: true })
+      release()
+      const response = await exported
+      expect(response.status).toBe(200)
+      expect(JSON.parse(response.headers.get('x-arx-export-sessions') ?? 'null')).toEqual([meta.id])
+    } finally { history.readStoredRevision = readStoredRevision }
+  })
+
   it('fails closed for canonical Remote without a dispatcher and rejects another workspace on session creation', async () => {
     const remote = await boundary.fetch(post('commands/list', { args: { agentId: sessionId } }))
     expect(remote.status).toBe(503)

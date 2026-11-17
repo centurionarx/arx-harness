@@ -3,6 +3,7 @@
  * The existing coordinator retains write queues, seed adoption and flushes.
  * @module arx-isolated-project-runtime/worker-persistence
  */
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import {
@@ -58,7 +59,10 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
   override readonly name: string = 'owned-worker-persistence'
   private readonly origin: URL
   protected override readonly coordinator: PersistenceCoordinator
+  // Latest bound capability: backs broker calls made outside any bound request, such as at mount.
   private capability: string | undefined
+  // Capability of the bound request whose asynchronous work is running.
+  private readonly requestCapability = new AsyncLocalStorage<string>()
 
   constructor(ctx: Context, readonly config: WorkerPersistenceConfig) {
     super(ctx)
@@ -89,11 +93,27 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
     this.capability = capability
   }
 
+  /**
+   * Bind a trusted supervisor request and run its work under that request's own capability. Every broker call that
+   * `work` makes, including deferred writes it schedules and background turns it starts, carries this capability even
+   * after later requests bind theirs; control keeps it valid while the request runs and, after a non-quiescent
+   * response, until it cancels the operation. A broker call outside any bound request uses the latest bound capability.
+   * @param capability - Opaque control-issued lease capability of this request.
+   * @param scope - Fixed assigned scope carried by trusted supervisor metadata.
+   * @param work - The request's handling.
+   * @returns The result of `work`.
+   */
+  runBound<T>(capability: string, scope: OwnerScope, work: () => Promise<T>): Promise<T> {
+    this.bind(capability, scope)
+    return this.requestCapability.run(capability, work)
+  }
+
   private async call(request: WorkerCall, signal?: AbortSignal): Promise<unknown> {
-    if (this.capability === undefined) throw new Error('worker history capability unavailable')
+    const capability = this.requestCapability.getStore() ?? this.capability
+    if (capability === undefined) throw new Error('worker history capability unavailable')
     const response = await fetch(new URL(WORKER_BROKER_PATH, this.origin), {
       method: 'POST', redirect: 'error',
-      headers: { 'content-type': 'application/json', [WORKER_CAPABILITY_HEADER]: this.capability },
+      headers: { 'content-type': 'application/json', [WORKER_CAPABILITY_HEADER]: capability },
       body: JSON.stringify({ ...request, workerId: this.config.workerId, workspaceId: this.config.workspaceId }),
       signal: AbortSignal.any([AbortSignal.timeout(this.config.requestTimeoutMs), ...(signal === undefined ? [] : [signal])]),
     })
