@@ -38,11 +38,9 @@ declare module '@arx-ai/cordis' {
   interface Context { ownedWorkerHistory: OwnedWorkerPersistence }
 }
 
-/** Control refused a worker broker call; `status` is control's HTTP status, 403 when the call's lease is gone or aborted. */
-export class WorkerHistoryRefusal extends Error {
-  /** @param status - HTTP status of control's broker response. */
-  constructor(readonly status: number) { super('worker history operation refused') }
-}
+// Capability that each refused broker call carried, keyed by its error. Module-private, so a capability never reaches
+// a log line or a serialized error.
+const refusedCapabilities = new WeakMap<object, string>()
 
 /** JSON round trips validate through coordinator before Session publication. */
 interface SnapshotReceipt { meta: SessionHeader; events: SessionEvent[]; revision: string }
@@ -115,6 +113,18 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
     return this.requestCapability.run(capability, work)
   }
 
+  /**
+   * Whether `error` is control's refusal of a broker call that carried a capability other than the current bound
+   * request's own, such as a write in a flush barrier that another request opened.
+   * @param error - A failure observed by the current bound request.
+   * @returns False outside a bound request and for a refusal of the request's own capability.
+   */
+  refusedAnotherLease(error: unknown): boolean {
+    const own = this.requestCapability.getStore()
+    const refused = refusedCapabilities.get(Object(error) as object)
+    return own !== undefined && refused !== undefined && refused !== own
+  }
+
   private async call(request: WorkerCall, signal?: AbortSignal): Promise<unknown> {
     const capability = this.requestCapability.getStore() ?? this.capability
     if (capability === undefined) throw new Error('worker history capability unavailable')
@@ -139,7 +149,11 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
       } finally { await reader.cancel() }
     }
     const receipt = JSON.parse(Buffer.concat(chunks, length).toString()) as BrokerResult
-    if (!response.ok || receipt.error !== undefined) throw new WorkerHistoryRefusal(response.status)
+    if (!response.ok || receipt.error !== undefined) {
+      const refusal = new Error('worker history operation refused')
+      refusedCapabilities.set(refusal, capability)
+      throw refusal
+    }
     return receipt.value
   }
 

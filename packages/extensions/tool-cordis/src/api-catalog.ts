@@ -1246,6 +1246,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'The result of `work`.',
       },
       {
+        signature: 'refusedAnotherLease(error: unknown): boolean',
+        description: 'Whether `error` is control\'s refusal of a broker call that carried a capability other than the current bound request\'s own, such as a write in a flush barrier that another request opened.',
+        parameters: [{ name: 'error', description: 'A failure observed by the current bound request.' }],
+        returns: 'False outside a bound request and for a refusal of the request\'s own capability.',
+      },
+      {
         signature: 'override async readRawPage(id: SessionId, request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage>',
         description: 'Read original private bytes over the bounded broker contract.',
         parameters: [{ name: 'id', description: 'Owned session within this operator-mounted workspace.' }, { name: 'request', description: 'Existing persistence page request.' }, { name: 'signal', description: 'Carrier cancellation.' }],

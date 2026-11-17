@@ -180,6 +180,14 @@ bind(capability: string, scope: OwnerScope): void
 runBound<T>(capability: string, scope: OwnerScope, work: () => Promise<T>): Promise<T>
 
 /**
+ * Whether `error` is control's refusal of a broker call that carried a capability other than the current bound
+ * request's own, such as a write in a flush barrier that another request opened.
+ * @param error - A failure observed by the current bound request.
+ * @returns False outside a bound request and for a refusal of the request's own capability.
+ */
+refusedAnotherLease(error: unknown): boolean
+
+/**
  * Read original private bytes over the bounded broker contract.
  * @param id - Owned session within this operator-mounted workspace.
  * @param request - Existing persistence page request.

@@ -12,7 +12,7 @@ import type { OwnerScope } from '@arx-ai/arx-web-identity'
 import type { SessionLineageNode } from '@arx-ai/arx-session-query'
 import type { SessionId } from '@arx-ai/arx-session'
 import { WORKER_CAPABILITY_HEADER } from './broker-contract.ts'
-import { WorkerHistoryRefusal } from './worker-persistence.ts'
+import type {} from './worker-persistence.ts'
 import { ownerRemoteAdmission } from './allowed-remotes.ts'
 
 /**
@@ -34,13 +34,14 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
     allocateForkSessionHeader: (sourceId, seedLength, agentPreset) => history.allocateForkSessionHeader(sourceId, seedLength, agentPreset),
   })
   // A flush joins the session's open write barrier, whose writes carry the capability of the request that opened it.
-  // When control refuses that capability (403: the opener's lease is gone or was cancelled), the events stay queued,
-  // and a request whose own operation is still live flushes once more, opening a barrier under its own capability. A
-  // request whose operation was cancelled, and every other failure, such as a failed durable append, propagate.
+  // When control refuses a write that carried another request's capability, for instance after it cancelled the
+  // opener's lease, the events stay queued, and a request whose own operation is still live flushes once more, opening
+  // a barrier under its own capability. A refusal of the request's own capability, such as a failed durable append
+  // under it, and any failure of a cancelled operation propagate; the opener therefore never retries under its lease.
   const flush = async (signal: AbortSignal) => {
     for (const session of ctx.sessions.list()) {
       try { await ctx.sessions.flush(session) } catch (error) {
-        if (signal.aborted || !(error instanceof WorkerHistoryRefusal) || error.status !== 403) throw error
+        if (signal.aborted || !history.refusedAnotherLease(error)) throw error
         await ctx.sessions.flush(session)
       }
     }

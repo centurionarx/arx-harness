@@ -8,6 +8,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { randomUUID } from 'node:crypto'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { strFromU8, unzipSync } from 'fflate'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import type { ClientRequest } from '@arx-ai/arx-host-apiproxy/api'
@@ -19,8 +20,8 @@ import { oneTurnLog } from '../../../session/session-persistence/tests/contract.
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
+import type { OwnerScope } from '@arx-ai/arx-web-identity'
 import type { toOwnedWorkerFetch } from '../src/worker-boundary.ts'
-import { WorkerHistoryRefusal } from '../src/worker-persistence.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
 
 describe('native owned worker boundary with genuine authority and host frames', () => {
@@ -163,48 +164,66 @@ describe('native owned worker boundary with genuine authority and host frames', 
     } finally { history.readStoredRevision = readStoredRevision }
   })
 
-  it('writes the events of a failed shared flush again under the flushing request\'s own lease', async () => {
-    const history = worker.ownedWorkerHistory
-    const appendBatch = history.appendBatch.bind(history)
-    let appends = 0
-    // A request that joins a flush another request opened waits for that flush, whose writes carry the opener's
-    // capability; this first append fails as one under the opener's cancelled lease does.
-    history.appendBatch = async (meta, events, materialized) => {
-      if (appends++ === 0) throw new WorkerHistoryRefusal(403)
-      return appendBatch(meta, events, materialized)
-    }
-    try {
-      const response = await boundary.fetch(post('session.rename', { sessionId, title: 'Renamed after a failed flush' }))
-      expect(response.status).toBe(200)
-      expect(appends).toBe(2)
-      const raw = await harness.ctx.sessionPersistence.readRaw(sessionId)
-      expect(raw?.content).toContain('Renamed after a failed flush')
-    } finally { history.appendBatch = appendBatch }
-  })
-
-  it('does not flush again for a request whose operation was cancelled while its flush failed', async () => {
-    const history = worker.ownedWorkerHistory
-    const appendBatch = history.appendBatch.bind(history)
-    let failed = false, arrive!: () => void, release!: () => void
+  /** A capability whose lease control already released: a control request answered quiescent with it. */
+  async function releasedCapability(): Promise<string> {
+    expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
+      envelope('session.history', { sessionId }))).toMatchObject({ ok: true })
+    const released = supervisor.headersOf(workspaceId)?.get(WORKER_CAPABILITY_HEADER)
+    if (released === undefined || released === null) throw new Error('released native lease not captured')
+    return released
+  }
+  /**
+   * Hold the session's next append and send it under `capability`, as a write in a flush barrier that another request
+   * opened, and run one request whose flush of the session is known to wait on that barrier before it is released.
+   */
+  async function sharedFlush(capability: string, request: Request, beforeRelease = () => {}) {
+    const history = worker.ownedWorkerHistory, sessions = worker.sessions
+    const appendBatch = history.appendBatch.bind(history), flushSession = sessions.flush.bind(sessions)
+    const scope = { userId: history.config.userId, projectId: history.config.projectId,
+      workspaceId: history.config.workspaceId } as OwnerScope
+    const marker = new AsyncLocalStorage<true>()
+    let used = false, arrive!: () => void, joined!: () => void, release!: () => void
     const reached = new Promise<void>((resolve) => { arrive = resolve })
+    const joining = new Promise<void>((resolve) => { joined = resolve })
     const resumed = new Promise<void>((resolve) => { release = resolve })
     history.appendBatch = async (meta, events, materialized) => {
-      if (failed) return appendBatch(meta, events, materialized)
-      failed = true
+      if (used) return appendBatch(meta, events, materialized)
+      used = true
       arrive()
       await resumed
-      throw new WorkerHistoryRefusal(403)
+      return history.runBound(capability, scope, () => appendBatch(meta, events, materialized))
     }
-    const cancelled = new AbortController()
+    sessions.flush = async (session) => {
+      if (marker.getStore() === true && session.id === sessionId) joined()
+      return flushSession(session)
+    }
     try {
-      const renamed = boundary.fetch(new Request(post('session.rename', { sessionId, title: 'Renamed by a cancelled operation' }),
-        { signal: cancelled.signal }))
+      const response = marker.run(true, () => boundary.fetch(request))
       await reached
-      cancelled.abort()
+      await joining
+      beforeRelease()
       release()
-      // A retry by this request would succeed, so the rejection shows that only live operations flush again.
-      await expect(renamed).rejects.toThrow('worker history operation refused')
-    } finally { history.appendBatch = appendBatch }
+      return await response
+    } finally {
+      history.appendBatch = appendBatch
+      sessions.flush = flushSession
+    }
+  }
+
+  it('flushes again under its own lease when control refused a write under another request\'s released lease', async () => {
+    const response = await sharedFlush(await releasedCapability(),
+      post('session.rename', { sessionId, title: 'Renamed after a refused shared write' }))
+    expect(response.status).toBe(200)
+    expect((await harness.ctx.sessionPersistence.readRaw(sessionId))?.content).toContain('Renamed after a refused shared write')
+  })
+
+  it('does not flush again for a request whose operation was cancelled while the shared write was refused', async () => {
+    const cancelled = new AbortController()
+    const request = new Request(post('session.rename', { sessionId, title: 'Renamed by a cancelled operation' }),
+      { signal: cancelled.signal })
+    // Another request's capability is refused, so flushing again would succeed; only the cancellation prevents it.
+    await expect(sharedFlush(await releasedCapability(), request, () => { cancelled.abort() }))
+      .rejects.toThrow('worker history operation refused')
     // The refused batch stays queued; the next live request writes it.
     expect((await boundary.fetch(post('host.describe'))).status).toBe(200)
     expect((await harness.ctx.sessionPersistence.readRaw(sessionId))?.content).toContain('Renamed by a cancelled operation')
