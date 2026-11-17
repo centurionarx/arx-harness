@@ -14,6 +14,7 @@ Decided by the owner on 2026-11-16 (option A of the session-12 stop): extend the
 - `holdNextApiRequest` in [support.ts](../../../../apps/web/tests/support.ts) holds the page's next request to `/api/<method>` until the test releases it, so the Host first sees the request after the test has changed state.
 - [auth-resume-before-list.e2e.ts](../../../../apps/web/tests/auth-resume-before-list.e2e.ts) holds the first `session.list`, presses Resume, checks that nothing opened, releases the list and checks the history, the single session row and zero model and tool calls. With the wait for the list's pull removed from `ui-auth` and the dist rebuilt, the session never opens and the scenario fails.
 - Its golden records stable facts, not ARIA trees or coordinates, and every AUTH scenario skips record mode because it has nothing to record.
+- History after a worker restart stays in the native identity fixture (owner decision of 2026-11-16): [native-history-after-restart.host.ts](../../../../examples/web-identity/tests/native-history-after-restart.host.ts) sends one turn through the fixture's code-built preview replay, restarts the workers and resumes the session; its facts golden is written by a `record` run on dev-01.
 
 ## Alternatives considered
 
@@ -24,5 +25,5 @@ Decided by the owner on 2026-11-16 (option A of the session-12 stop): extend the
 ## Consequences
 
 - AUTH journeys in the Web lane depend on `examples/web-identity/tests/browser-server.host.ts`; a change there can change these scenarios.
-- History after a worker restart has no snapshot yet. The writer-handoff defect needs a writer lease that is still live at the restart, which in the browser means a turn in progress; a seeded session or a pending question leaves none, and a draft scenario passed with the handoff disabled. Covering it needs a turn in progress (a model call, even a scripted replay), which the owner decides.
-- In this container the fixture's workers sometimes answer UI-side reads with transient 502 while they start; the scenarios do not count refused requests.
+- The writer handoff needs the session writer's lease still retained at the restart, which takes a browser prompt; a seeded session or a pending question leaves none, so a Web-lane scenario without a turn passes with the handoff disabled.
+- The isolated runtime's worker boundary binds one history capability from the worker's latest workspace-scoped request, so a page read that overlaps a session's deferred append can send that append under a lease that is not the session writer; control refuses it and the read answers 502. The Web-lane scenarios do not count refused requests. In the native history scenario the refusal can leave the resumed session unmounted, and that run fails at its replay step.

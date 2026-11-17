@@ -151,6 +151,7 @@
     "session:migration": "tsx scripts/session-migration.ts",
     "test:auth:browser": "tsx examples/web-identity/tests/native-browser-gate.host.ts",
     "test:auth:browser:project": "tsx examples/web-identity/tests/native-project-browser-gate.host.ts",
+    "test:auth:browser:history": "tsx examples/web-identity/tests/native-history-after-restart.host.ts",
     "test:auth:storage:snapshot": "tsx examples/owned-project-storage/snapshot.ts",
     "test:auth:benchmark:native": "tsx examples/owned-project-storage/benchmark-native.ts",
     "test:auth:benchmark:micro": "tsx examples/owned-project-storage/benchmark.ts",

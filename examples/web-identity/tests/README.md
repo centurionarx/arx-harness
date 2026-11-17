@@ -12,6 +12,10 @@ Run from the repository root after the build. Every location is explicit: the re
 
     node node_modules/tsx/dist/cli.mjs examples/web-identity/tests/native-browser-gate.host.ts <evidence-root>/<receipt-dir> <evidence-root> <frontend-source-baseline.json>
 
+A script that starts the project runtime runs through the pnpm `tsx` bin (`pnpm run test:auth:browser:project <arguments>`), which puts the hoisted workspace packages on NODE_PATH; under plain `node node_modules/tsx/dist/cli.mjs` the in-process worker composition cannot resolve its typert packages and every project request answers 502.
+
+native-history-after-restart.host.ts is a keyless scenario with a facts golden instead of a receipt. It seeds an owned session, sends one replayed turn (the fixture's code-built preview replay) so the prompt's lease stays the session writer, restarts the workers and resumes the session again; without the restarted-worker writer handoff the history does not open. `pnpm run test:auth:browser:history record` writes snapshots/native-history-after-restart.expected.md, and `pnpm run test:auth:browser:history` compares against it and fails when it is missing.
+
 Source/HTTP integration runs independently in packages/client/ui-auth/tests/auth-http.client.spec.ts. It imports actual source plugins for the application composition and uses real HTTP authority for every credential or ownership transition.
 
 The complete USER project graph, real runtime worker, pending response carrier, stream/event isolation, cold resume/fork, and malicious preview browser gate remain separate requirements. An HTTP fixture or successful subprocess round trip does not prove VM UID, mount, or network isolation. Unconfigured execution must stay closed. Never replace authentication or ownership with a mock to make the browser gate pass.
