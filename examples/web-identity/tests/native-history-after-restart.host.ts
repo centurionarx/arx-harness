@@ -6,8 +6,8 @@
  * retained as the session writer. The restarted worker has a new worker id, so control moves the writer only after it
  * cancels that lease and receives the quiescent receipt (restarted-worker writer handoff); without the handoff,
  * control refuses the new worker's hydration and the page shows a history load error instead of the history. The
- * writer is the lease of the session's last append, so a run whose last append went out under a lease that had
- * already ended needs no handoff and passes without it. The facts golden is the output of a run: `record` writes it,
+ * writer is the lease of the session's last append, so a run whose last append went out under a lease that ended
+ * before the restart needs no handoff and passes without it. The facts golden is the output of a run: `record` writes it,
  * the default mode compares against it.
  *
  * Run from the repository root after the build, through the pnpm `tsx` bin, which puts the hoisted workspace
