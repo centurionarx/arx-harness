@@ -167,10 +167,11 @@ Existing SessionPersistence provider, with no local history database/files.
 bind(capability: string, scope: OwnerScope): void
 
 /**
- * Bind a trusted supervisor request and run its work under that request's own capability. Every broker call that
- * `work` makes, including deferred writes it schedules and background turns it starts, carries this capability even
- * after later requests bind theirs; control keeps it valid while the request runs and, after a non-quiescent
- * response, until it cancels the operation. A broker call outside any bound request uses the latest bound capability.
+ * Bind a trusted supervisor request and run its work under that request's own capability. A broker call made by
+ * `work` or by asynchronous work it starts carries this capability even after later requests bind theirs; control
+ * keeps it valid while the request runs and, after a non-quiescent response, until it cancels the operation. A write
+ * that `work` only awaits through a flush or loop another request started carries that request's capability, and a
+ * broker call outside any bound request carries the latest bound capability.
  * @param capability - Opaque control-issued lease capability of this request.
  * @param scope - Fixed assigned scope carried by trusted supervisor metadata.
  * @param work - The request's handling.

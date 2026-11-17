@@ -12,7 +12,7 @@ import type { OwnerScope } from '@arx-ai/arx-web-identity'
 import type { SessionLineageNode } from '@arx-ai/arx-session-query'
 import type { SessionId } from '@arx-ai/arx-session'
 import { WORKER_CAPABILITY_HEADER } from './broker-contract.ts'
-import type {} from './worker-persistence.ts'
+import { WorkerHistoryRefusal } from './worker-persistence.ts'
 import { ownerRemoteAdmission } from './allowed-remotes.ts'
 
 /**
@@ -33,20 +33,29 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
     resolveSessionCreationHeader: sessionId => history.readCreationHeader(sessionId),
     allocateForkSessionHeader: (sourceId, seedLength, agentPreset) => history.allocateForkSessionHeader(sourceId, seedLength, agentPreset),
   })
-  const flush = async () => {
-    for (const session of ctx.sessions.list()) await ctx.sessions.flush(session)
+  // A flush joins the session's open write barrier, whose writes carry the capability of the request that opened it.
+  // When control refuses that capability (403: the opener's lease is gone or was cancelled), the events stay queued,
+  // and a request whose own operation is still live flushes once more, opening a barrier under its own capability. A
+  // request whose operation was cancelled, and every other failure, such as a failed durable append, propagate.
+  const flush = async (signal: AbortSignal) => {
+    for (const session of ctx.sessions.list()) {
+      try { await ctx.sessions.flush(session) } catch (error) {
+        if (signal.aborted || !(error instanceof WorkerHistoryRefusal) || error.status !== 403) throw error
+        await ctx.sessions.flush(session)
+      }
+    }
   }
   const events = async function* <Frame extends MuxFrame | HostFrame>(
-    source: AsyncIterable<RpcRequest<Frame>>,
+    source: AsyncIterable<RpcRequest<Frame>>, signal: AbortSignal,
   ): AsyncIterable<RpcRequest<Frame>> {
     for await (const frame of source) {
-      await flush()
+      await flush(signal)
       yield rewrite(frame) as RpcRequest<Frame>
     }
   }
   const durable: ApiProxy = { ...api, events: {
-    mux: (request, signal) => events(api.events.mux(request, signal)),
-    host: (request, signal) => events(api.events.host(request, signal)),
+    mux: (request, signal) => events(api.events.mux(request, signal), signal),
+    host: (request, signal) => events(api.events.host(request, signal), signal),
   } }
   const carrier = toFetchHandler(durable)
   let localWorkspaceId: ReturnType<typeof WorkspaceId> | undefined
@@ -73,7 +82,7 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
       if (remote !== undefined) {
         if (dispatchRemote === undefined) return new Response('Worker Remote unavailable', { status: 503 })
         const result = await dispatchRemote(envelope.method, envelope.payload, request.signal)
-        await flush()
+        await flush(request.signal)
         const busy = ctx.agents.list().some(agent => agent.status !== 'idle')
         return Response.json(rewrite({ type: 'server-response', rpcId: envelope.rpcId, result }),
           { headers: { 'cache-control': 'no-store', 'x-arx-quiescent': busy ? 'false' : 'true' } })
@@ -89,7 +98,7 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
     const result = await carrier.fetch(input)
     if (result.headers.get('content-type')?.startsWith('text/event-stream') === true) return result
     if (path === '/api/session.export') {
-      await flush()
+      await flush(request.signal)
       const url = new URL(request.url)
       const requested = url.searchParams.get('sessionId')
       const ids = new Set<SessionId>(requested === null ? [] : [requested as SessionId])
@@ -112,7 +121,7 @@ export function toOwnedWorkerFetch(ctx: Context, defaults: ApiProxyDefaults,
       return new Response(result.body, { status: result.status, headers })
     }
     const raw = await result.text()
-    await flush()
+    await flush(request.signal)
     let body = raw
     if (result.headers.get('content-type')?.startsWith('application/json') === true) {
       const parsed: unknown = JSON.parse(raw)

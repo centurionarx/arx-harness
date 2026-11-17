@@ -20,6 +20,7 @@ import { storageHarness } from '../../../identity/project-storage/tests/harness.
 import * as BrokerHttp from '../src/broker-http.ts'
 import { WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
 import type { toOwnedWorkerFetch } from '../src/worker-boundary.ts'
+import { WorkerHistoryRefusal } from '../src/worker-persistence.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
 
 describe('native owned worker boundary with genuine authority and host frames', () => {
@@ -160,6 +161,53 @@ describe('native owned worker boundary with genuine authority and host frames', 
       expect(response.status).toBe(200)
       expect(JSON.parse(response.headers.get('x-arx-export-sessions') ?? 'null')).toEqual([meta.id])
     } finally { history.readStoredRevision = readStoredRevision }
+  })
+
+  it('writes the events of a failed shared flush again under the flushing request\'s own lease', async () => {
+    const history = worker.ownedWorkerHistory
+    const appendBatch = history.appendBatch.bind(history)
+    let appends = 0
+    // A request that joins a flush another request opened waits for that flush, whose writes carry the opener's
+    // capability; this first append fails as one under the opener's cancelled lease does.
+    history.appendBatch = async (meta, events, materialized) => {
+      if (appends++ === 0) throw new WorkerHistoryRefusal(403)
+      return appendBatch(meta, events, materialized)
+    }
+    try {
+      const response = await boundary.fetch(post('session.rename', { sessionId, title: 'Renamed after a failed flush' }))
+      expect(response.status).toBe(200)
+      expect(appends).toBe(2)
+      const raw = await harness.ctx.sessionPersistence.readRaw(sessionId)
+      expect(raw?.content).toContain('Renamed after a failed flush')
+    } finally { history.appendBatch = appendBatch }
+  })
+
+  it('does not flush again for a request whose operation was cancelled while its flush failed', async () => {
+    const history = worker.ownedWorkerHistory
+    const appendBatch = history.appendBatch.bind(history)
+    let failed = false, arrive!: () => void, release!: () => void
+    const reached = new Promise<void>((resolve) => { arrive = resolve })
+    const resumed = new Promise<void>((resolve) => { release = resolve })
+    history.appendBatch = async (meta, events, materialized) => {
+      if (failed) return appendBatch(meta, events, materialized)
+      failed = true
+      arrive()
+      await resumed
+      throw new WorkerHistoryRefusal(403)
+    }
+    const cancelled = new AbortController()
+    try {
+      const renamed = boundary.fetch(new Request(post('session.rename', { sessionId, title: 'Renamed by a cancelled operation' }),
+        { signal: cancelled.signal }))
+      await reached
+      cancelled.abort()
+      release()
+      // A retry by this request would succeed, so the rejection shows that only live operations flush again.
+      await expect(renamed).rejects.toThrow('worker history operation refused')
+    } finally { history.appendBatch = appendBatch }
+    // The refused batch stays queued; the next live request writes it.
+    expect((await boundary.fetch(post('host.describe'))).status).toBe(200)
+    expect((await harness.ctx.sessionPersistence.readRaw(sessionId))?.content).toContain('Renamed by a cancelled operation')
   })
 
   it('fails closed for canonical Remote without a dispatcher and rejects another workspace on session creation', async () => {

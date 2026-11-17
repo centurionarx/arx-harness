@@ -38,6 +38,12 @@ declare module '@arx-ai/cordis' {
   interface Context { ownedWorkerHistory: OwnedWorkerPersistence }
 }
 
+/** Control refused a worker broker call; `status` is control's HTTP status, 403 when the call's lease is gone or aborted. */
+export class WorkerHistoryRefusal extends Error {
+  /** @param status - HTTP status of control's broker response. */
+  constructor(readonly status: number) { super('worker history operation refused') }
+}
+
 /** JSON round trips validate through coordinator before Session publication. */
 interface SnapshotReceipt { meta: SessionHeader; events: SessionEvent[]; revision: string }
 interface BrokerResult { value?: unknown; error?: string }
@@ -94,10 +100,11 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
   }
 
   /**
-   * Bind a trusted supervisor request and run its work under that request's own capability. Every broker call that
-   * `work` makes, including deferred writes it schedules and background turns it starts, carries this capability even
-   * after later requests bind theirs; control keeps it valid while the request runs and, after a non-quiescent
-   * response, until it cancels the operation. A broker call outside any bound request uses the latest bound capability.
+   * Bind a trusted supervisor request and run its work under that request's own capability. A broker call made by
+   * `work` or by asynchronous work it starts carries this capability even after later requests bind theirs; control
+   * keeps it valid while the request runs and, after a non-quiescent response, until it cancels the operation. A write
+   * that `work` only awaits through a flush or loop another request started carries that request's capability, and a
+   * broker call outside any bound request carries the latest bound capability.
    * @param capability - Opaque control-issued lease capability of this request.
    * @param scope - Fixed assigned scope carried by trusted supervisor metadata.
    * @param work - The request's handling.
@@ -132,7 +139,7 @@ export class OwnedWorkerPersistence extends CoordinatedSessionPersistence implem
       } finally { await reader.cancel() }
     }
     const receipt = JSON.parse(Buffer.concat(chunks, length).toString()) as BrokerResult
-    if (!response.ok || receipt.error !== undefined) throw new Error('worker history operation refused')
+    if (!response.ok || receipt.error !== undefined) throw new WorkerHistoryRefusal(response.status)
     return receipt.value
   }
 

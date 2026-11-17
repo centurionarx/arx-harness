@@ -4,9 +4,9 @@
  *
  * One replayed turn, the fixture's code-built preview replay (no key, no recording), runs before the restart, so the
  * restarted worker, which has a new worker id, hydrates a session that another worker wrote. Control records as the
- * session writer the lease of its last append: when that lease is still retained at the restart, the history opens only
- * through the restarted-worker writer handoff, and otherwise without it, so this scenario does not prove the handoff
- * (writer-handoff.spec.ts of the isolated project runtime does). When control refuses the hydration, the page shows a
+ * session writer the lease of its last hydration or append: when that lease is still retained at the restart, the
+ * history opens only through the restarted-worker writer handoff, and otherwise without it, so this scenario does not
+ * prove the handoff (writer-handoff.spec.ts of the isolated project runtime does). When control refuses the hydration, the page shows a
  * history load error, which the facts record. The facts golden is the output of a run: `record` writes it, the default
  * mode compares against it.
  *
