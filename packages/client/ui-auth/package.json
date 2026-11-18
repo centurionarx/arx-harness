@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-auth",
   "description": "Native web identity: public, administration, and own-account slot compositions",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
