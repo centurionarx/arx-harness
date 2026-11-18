@@ -42,6 +42,7 @@ After the structural pass, hunt the standard's slop checklist with the cheapest 
 4. Replace hand-written catalogs, test/status inventories, and JSDoc restatements with the authoritative tree, script, or generated reference.
 5. In `implemented/` Agent Notes, remove migration plans, acceptance-task checklists, and future-tense spec language. Keep concise verification contracts that identify the behaviors and tiers pinning the shipped decision, plus named coverage gaps.
 6. If removing prose changes a promised behavior rather than its explanation, use a proposed Agent Note first (follow [arx-find-simplifications](../arx-find-simplifications/SKILL.md)).
+7. Optionally, check documented claims against the current code. For each statement in scope about behavior, configuration, defaults, commands, or paths, read the owning source and record only claims that are false or outdated; internal detail the document omits is not drift. This pass complements the deterministic `pnpm run doc-sync` gates listed in [scripts/run-gates.ts](../../../scripts/run-gates.ts), which do not judge whether a prose statement about behavior is true, and it never replaces them.
 
 Exclude `.agents/notes/archived/` from corpus audits and edits. Active prose may repair, redirect, or delete an inbound link, but never follow an archive-wide cleanup into the frozen target.
 
