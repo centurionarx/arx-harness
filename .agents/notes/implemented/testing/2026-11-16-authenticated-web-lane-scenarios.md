@@ -14,7 +14,7 @@ Decided by the owner on 2026-11-16: extend the keyless Web lane with the authent
 - `holdNextApiRequest` in [support.ts](../../../../apps/web/tests/support.ts) holds the page's next request to `/api/<method>` until the test releases it, so the Host first sees the request after the test has changed state.
 - [auth-resume-before-list.e2e.ts](../../../../apps/web/tests/auth-resume-before-list.e2e.ts) holds the first `session.list`, presses Resume, checks that nothing opened, releases the list and checks the history, the single session row and zero model and tool calls. With the wait for the list's pull removed from `ui-auth` and the dist rebuilt, the session never opens and the scenario fails.
 - Its golden records stable facts, not ARIA trees or coordinates, and every AUTH scenario skips record mode because it has nothing to record.
-- History after a worker restart stays in the native identity fixture: [native-history-after-restart.host.ts](../../../../examples/web-identity/tests/native-history-after-restart.host.ts) sends one turn through the fixture's code-built preview replay, restarts the workers and resumes the session. Its facts golden comes only from a `record` run; until one is committed, its compare mode fails.
+- History after a worker restart stays in the native identity fixture: [native-history-after-restart.host.ts](../../../../examples/web-identity/tests/native-history-after-restart.host.ts) sends one turn through the fixture's code-built preview replay, restarts the workers and resumes the session. Its facts golden comes only from a `record` run, and its compare mode fails when the golden is missing or differs.
 
 ## Alternatives considered
 
