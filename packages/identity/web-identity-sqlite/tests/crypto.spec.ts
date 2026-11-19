@@ -58,7 +58,9 @@ describe('password work and bounded admission', () => {
     await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await writeFile(path, Buffer.alloc(32, 7), { mode: 0o600 })
     await chmod(path, 0o644)
-    await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+    // readPrivateKey applies no mode or owner check on win32, so it accepts a key file that other accounts can read there.
+    if (process.platform === 'win32') await expect(readPrivateKey(path)).resolves.toHaveLength(32)
+    else await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await chmod(path, 0o600)
     const linked = join(root, 'linked')
     await symlink(path, linked)

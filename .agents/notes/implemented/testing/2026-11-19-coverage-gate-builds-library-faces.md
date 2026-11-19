@@ -29,4 +29,4 @@ The AUTH fixtures create each temporary root as `realpath(await mkdtemp(…))`. 
 - The coverage job spends about two minutes on `build:lib` before its first test.
 - A spec in the coverage gate may import `lib/` of the Host and Client faces. A spec that needs `apps/web/dist` belongs to the snapshot lanes.
 - `vite-tsconfig-paths` still resolves bare workspace imports to `src`, so the instrumented code is the source, not the built copy.
-- The Windows key-file rule is unchanged: `readPrivateKey` applies no mode or owner check on `win32`, and `crypto.spec.ts` still asserts the POSIX rejection there.
+- The AUTH file checks apply no mode or owner rule on `win32`: the private key and the Resend key, the identity database and its directory, and the authority journal's directory and files. `crypto.spec.ts` asserts the POSIX rejection of a key file that other accounts can read and, on `win32`, its acceptance. A Windows access-control rule for these eight checks is not implemented.
