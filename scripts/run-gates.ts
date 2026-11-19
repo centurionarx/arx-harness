@@ -217,7 +217,7 @@ export function gatesForMode(selected: Mode): Gate[] {
         pnpmScript('duplication', 'duplication'),
       ]
     case 'ci-coverage':
-      return coverageGates()
+      return [libraryFacesGate(), ...coverageGates({ needs: ['library-faces'] })]
     case 'ci-snapshot':
       return [ciBuildGate(), snapshotGate()]
     case 'ci-artifacts':
@@ -285,7 +285,7 @@ function ciPrimaryGates(): Gate[] {
     pnpmScript('typecheck', 'typecheck:contracts-ready', { needs: ['typert-contracts'] }),
     lintGate({ needs: ['typert-contracts'] }),
     pnpmScript('duplication', 'duplication'),
-    ...coverageGates(),
+    ...coverageGates({ needs: ['build'] }),
     ...nodeCompatSmokeGates(),
     snapshotGate(),
     ...docSyncLeafGates({
@@ -526,9 +526,7 @@ function ciWindowsPackedInstallGates(): Gate[] {
 }
 
 function ciWindowsCompleteGates(): Gate[] {
-  const coverage = coverageGates().map(gate => gate.id === 'coverage-exempt-heavy'
-    ? { ...gate, needs: [...new Set(['build', ...(gate.needs ?? [])])] }
-    : gate)
+  const coverage = coverageGates({ needs: ['build'] })
   const coverageAfter = coverage.map(gate => gate.id)
   const observational = ciWindowsObservationalGates()
     // The required production site replaces the observational MPA build; both
@@ -564,6 +562,14 @@ function ciWindowsObservationalGates(): Gate[] {
 
 function typertContractsGate(): Gate {
   return pnpmScript('typert-contracts', 'build:lib:host', { label: 'Typert contracts' })
+}
+
+/**
+ * Build the Host and Client library faces without the Web frontend.
+ * @returns the gate that the coverage aggregate's suites wait for.
+ */
+function libraryFacesGate(): Gate {
+  return pnpmScript('library-faces', 'build:lib', { label: 'library faces' })
 }
 
 function lintGate(options: { needs?: string[] } = {}): Gate {
@@ -606,7 +612,9 @@ function coverageWorkerArgs(): { instrumented: string[]; exempt: string[] } {
   }
 }
 
-function coverageGates(): Gate[] {
+// Specs that start a real worker Loader import generated Typert faces and package entries from
+// `lib/`. Both gates wait for the aggregate's library build, so no suite runs while it writes `lib/`.
+function coverageGates(options: { needs: string[] }): Gate[] {
   const workers = coverageWorkerArgs()
   const timeouts = coverageTestTimeoutArgs(process.env[COVERAGE_TEST_TIMEOUT_ENV])
   const partitions = parseCoveragePartitionCount(process.env[COVERAGE_PARTITIONS_ENV])
@@ -620,12 +628,14 @@ function coverageGates(): Gate[] {
     ], {
       label: 'test:coverage',
       env: { [COVERAGE_EXEMPT_ENV]: '1' },
+      needs: options.needs,
     })
     : pnpmScript('coverage', 'test:coverage:partitioned', {
       label: 'test:coverage',
       displayCommand: `${COVERAGE_PARTITIONS_ENV}=${partitions} pnpm run test:coverage:partitioned`,
       env: { [COVERAGE_EXEMPT_ENV]: '1' },
       streamOutput: true,
+      needs: options.needs,
     })
   return [
     instrumented,
@@ -637,6 +647,7 @@ function coverageGates(): Gate[] {
       ...timeouts,
     ], {
       label: 'test:coverage-exempt-heavy',
+      needs: options.needs,
     }),
   ]
 }

@@ -144,7 +144,8 @@ describe('gate graph validation', () => {
 
     expect(byId.get('coverage')?.allowFailure).not.toBe(true)
     expect(byId.get('coverage-exempt-heavy')?.allowFailure).not.toBe(true)
-    expect(byId.get('coverage-exempt-heavy')?.needs).toContain('build')
+    expect(byId.get('coverage')?.needs).toEqual(['build'])
+    expect(byId.get('coverage-exempt-heavy')?.needs).toEqual(['build'])
     expect(observational).not.toHaveLength(0)
     for (const gate of observational) {
       const completeGate = byId.get(gate.id)
@@ -284,6 +285,27 @@ describe('Oxlint gate', () => {
       command: process.execPath,
       args: ['/private/pnpm.cjs', 'run', 'lint:contracts-ready'],
     })
+  })
+})
+
+describe('coverage library faces', () => {
+  it('builds the library faces before both coverage gates in the coverage aggregate', () => {
+    const subject = withPnpmEntrypoint(() => gatesForMode('ci-coverage'))
+
+    expect(subject.map(item => item.id)).toEqual(['library-faces', 'coverage', 'coverage-exempt-heavy'])
+    expect(subject.find(item => item.id === 'library-faces')).toMatchObject({
+      displayCommand: 'pnpm run build:lib',
+      args: ['/private/pnpm.cjs', 'run', 'build:lib'],
+    })
+    for (const id of ['coverage', 'coverage-exempt-heavy'])
+      expect(subject.find(item => item.id === id)?.needs).toEqual(['library-faces'])
+  })
+
+  it('waits for the full build in the primary aggregate', () => {
+    const subject = withPnpmEntrypoint(() => gatesForMode('ci-primary'))
+
+    for (const id of ['coverage', 'coverage-exempt-heavy'])
+      expect(subject.find(item => item.id === id)?.needs).toEqual(['build'])
   })
 })
 
