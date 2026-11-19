@@ -301,6 +301,12 @@ describe('coverage library faces', () => {
       expect(subject.find(item => item.id === id)?.needs).toEqual(['library-faces'])
   })
 
+  it('runs the unit suite after the build in the complete local aggregate', () => {
+    const subject = withPnpmEntrypoint(() => gatesForMode('check-all'))
+
+    expect(subject.find(item => item.id === 'test')?.needs).toEqual(['build'])
+  })
+
   it('waits for the full build in the primary aggregate', () => {
     const subject = withPnpmEntrypoint(() => gatesForMode('ci-primary'))
 
