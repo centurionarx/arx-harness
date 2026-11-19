@@ -48,8 +48,11 @@ describe('protected authority outside restored data', () => {
     ctx = undefined
     const path = join(root, 'public')
     await mkdir(path, { mode: 0o700 })
-    await chmod(path, 0o755)
-    await expect(load(path, true)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+    // The journal applies no mode or owner check on win32, so the rejection of a path that other accounts can reach holds only on POSIX.
+    if (process.platform !== 'win32') {
+      await chmod(path, 0o755)
+      await expect(load(path, true)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+    }
   })
   it('captures caller payload before queuing and prevents mutation of cached records', async () => {
     root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-immutable-')))
@@ -86,13 +89,16 @@ describe('protected authority outside restored data', () => {
       await expect(load(path, false, { maxRecordBytes: 1024 })).rejects.toBeDefined()
     }
     await writeFile(file, original, { mode: 0o600 })
-    await chmod(file, 0o644)
-    await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
-    await chmod(file, 0o600)
     const watermark = join(path, 'watermark.json')
-    await chmod(watermark, 0o644)
-    await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
-    await chmod(watermark, 0o600)
+    // The journal applies no mode or owner check on win32, so the rejection of a path that other accounts can reach holds only on POSIX.
+    if (process.platform !== 'win32') {
+      await chmod(file, 0o644)
+      await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
+      await chmod(file, 0o600)
+      await chmod(watermark, 0o644)
+      await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
+      await chmod(watermark, 0o600)
+    }
     const external = join(root, 'external')
     await writeFile(external, original, { mode: 0o600 })
     await rm(file)

@@ -62,8 +62,11 @@ describe('owned project storage through Loader', () => {
     if (location.kind !== 'jsonl') throw new Error('fixture JSONL provider absent')
     expect(location.path.startsWith(harness.logRoot)).toBe(true)
     expect(own.header.cwd!.startsWith(harness.volumeRoot)).toBe(true)
-    expect((await stat(own.header.cwd!)).mode & 0o777).toBe(0o700)
-    expect((await stat(harness.index)).mode & 0o777).toBe(0o600)
+    // Windows reports no POSIX permission bits, so the private modes are asserted only on POSIX.
+    if (process.platform !== 'win32') {
+      expect((await stat(own.header.cwd!)).mode & 0o777).toBe(0o700)
+      expect((await stat(harness.index)).mode & 0o777).toBe(0o600)
+    }
     const before = await readFile(location.path)
     for (const denied of [harness.users[1]!.authority, harness.master]) {
       const api = harness.ctx.projectStorage

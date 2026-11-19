@@ -92,12 +92,15 @@ describe('identity projection closed configuration and recovery', () => {
       { recoveryOrigins: { user: 'http://user.fixture.test', admin: 'https://admin.fixture.test' } },
       { path: 'relative.sqlite' }, { privateKeyPath: join(paths.state, 'key') }])
       await expect(load(paths, override)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
-    await chmod(paths.state, 0o755)
-    await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
-    await chmod(paths.state, 0o700)
-    await chmod(paths.database, 0o644)
-    await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
-    await chmod(paths.database, 0o600)
+    // The projection applies no mode check to its directory or database on win32, so these rejections hold only on POSIX.
+    if (process.platform !== 'win32') {
+      await chmod(paths.state, 0o755)
+      await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+      await chmod(paths.state, 0o700)
+      await chmod(paths.database, 0o644)
+      await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+      await chmod(paths.database, 0o600)
+    }
     const alias = join(paths.root, 'alias')
     await symlink(paths.root, alias, 'dir')
     await expect(load(paths, { path: join(alias, 'state', 'identity.sqlite') })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
