@@ -26,7 +26,8 @@ The AUTH fixtures create each temporary root as `realpath(await mkdtemp(…))`. 
 
 ## Consequences
 
-- The coverage job spends about two minutes on `build:lib` before its first test.
+- The coverage job spends about two minutes on `build:lib` before its first test. In `ci-primary` and `ci-windows-complete` the instrumented coverage gate starts after `build` instead of beside it.
+- A bare `pnpm run test` or `pnpm run test:coverage` on a checkout without `lib/` fails in these fifteen specs; `pnpm run build:lib` once makes them pass.
 - A spec in the coverage gate may import `lib/` of the Host and Client faces. A spec that needs `apps/web/dist` belongs to the snapshot lanes.
 - `vite-tsconfig-paths` still resolves bare workspace imports to `src`, so the instrumented code is the source, not the built copy.
-- The AUTH file checks apply no mode or owner rule on `win32`: the private key and the Resend key, the identity database and its directory, and the authority journal's directory and files. `crypto.spec.ts` asserts the POSIX rejection of a key file that other accounts can read and, on `win32`, its acceptance. A Windows access-control rule for these eight checks is not implemented.
+- The AUTH file checks apply no mode or owner rule on `win32`: the private key and the Resend key, the identity database and its directory, and the authority journal's directory and files. `crypto.spec.ts` asserts the POSIX rejection of a key file that other accounts can read and, on `win32`, its acceptance. A Windows access-control rule for these seven checks is not implemented.
