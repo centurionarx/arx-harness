@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, describe, expect, it, afterAll, beforeAll } from 'vitest'
-import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { cp, mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { z } from 'zod'
@@ -26,7 +26,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })

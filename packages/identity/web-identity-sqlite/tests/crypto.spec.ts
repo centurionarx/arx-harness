@@ -1,4 +1,4 @@
-import { chmod, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, rm, symlink, writeFile, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -50,7 +50,7 @@ describe('password work and bounded admission', () => {
     await canceled
   })
   it('requires protected explicit keys and authenticates encrypted outbox records against their operation', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-auth-private-key-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-private-key-')))
     const path = join(root, 'identity.key')
     for (const value of ['relative.key', join(root, '.env')])
       await expect(readPrivateKey(value)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })

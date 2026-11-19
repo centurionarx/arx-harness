@@ -1,5 +1,5 @@
 /** Real module revocation must precede any project/workspace side effect. */
-import { readdir, cp, mkdtemp, rm } from 'node:fs/promises'
+import { readdir, cp, mkdtemp, rm, realpath } from 'node:fs/promises'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, expect, it, afterAll, beforeAll } from 'vitest'
 import { tmpdir } from 'node:os'
@@ -21,7 +21,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })

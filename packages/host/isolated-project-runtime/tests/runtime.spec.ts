@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { randomUUID } from 'node:crypto'
 import { once } from 'node:events'
-import { cp, mkdtemp, rm } from 'node:fs/promises'
+import { cp, mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { RpcId, serverResponseSchema } from '@arx-ai/arx-host-apiproxy/api'
@@ -27,7 +27,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })

@@ -4,7 +4,7 @@
  * Usage: benchmark-native.ts <output> <none|zstd> <baseline-provenance>.
  * No service, infrastructure, account, secret or product endpoint is created.
  */
-import { mkdtemp, mkdir, writeFile, readFile, rm, statfs } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, readFile, rm, statfs, realpath } from 'node:fs/promises'
 import { tmpdir, cpus, totalmem, platform, release } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
@@ -29,7 +29,7 @@ if (process.argv[2] === undefined || process.argv[2] === '') throw new Error('ex
 const output = resolve(process.argv[2])
 const provenancePath = process.argv[4]
 if (provenancePath === undefined || provenancePath === '') throw new Error('explicit baseline provenance path required')
-const root = await mkdtemp(join(tmpdir(), 'arx-auth005-native-'))
+const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth005-native-')))
 const operations = ['list', 'open', 'append', 'read-file', 'write-file'] as const
 type Operation = typeof operations[number]
 interface BaselineProvenance {

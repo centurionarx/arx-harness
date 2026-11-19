@@ -34,7 +34,7 @@ if (frontend) {
   const staging = await realpath(process.cwd())
   // The resolution root links every workspace package, so the fixture starts at the repository root.
   if (!(await readdir(staging)).includes('pnpm-workspace.yaml')) throw new Error('fixture requires the repository root')
-  resolverRoot = await mkdtemp(join(tmpdir(), 'arx-auth-resolution-'))
+  resolverRoot = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-resolution-')))
   for (const category of await readdir(join(staging, 'packages'), { withFileTypes: true })) {
     if (!category.isDirectory()) continue
     for (const directory of await readdir(join(staging, 'packages', category.name), { withFileTypes: true })) {

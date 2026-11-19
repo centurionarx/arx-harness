@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi, afterAll, beforeAll } from 'vitest'
-import { mkdtemp, mkdir, readFile, rm, writeFile, cp } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, rm, writeFile, cp, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
@@ -24,7 +24,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })
@@ -125,7 +125,7 @@ describe('owned control index lifecycle and physical recovery', () => {
     sql(h, (db) =>{  expect(db.prepare('SELECT title FROM history WHERE session=?').get(own.meta.id)?.title).toBe('') })
   })
   it('refuses an actual JSONL provider outside the configured control root during both registration and recovery', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'arx-storage-map-fixture-')); roots.push(root)
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-storage-map-fixture-'))); roots.push(root)
     const h = await storageHarness({ root, initialize: true, readyUsers: 1, storageConfig: { logRoot: join(root, 'different-control-logs') } })
     fixtures.push(h)
     const authority = h.users[0]!.authority

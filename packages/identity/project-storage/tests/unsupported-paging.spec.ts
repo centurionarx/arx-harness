@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { randomUUID } from 'node:crypto'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SessionId, SESSION_FORMAT_VERSION, type SessionHeader } from '@arx-ai/arx-session'
@@ -15,7 +15,7 @@ let authority: RequestAuthority
 let meta: SessionHeader
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'arx-storage-sqlite-fixture-'))
+  root = await realpath(await mkdtemp(join(tmpdir(), 'arx-storage-sqlite-fixture-')))
   original = await storageHarness({ root, initialize: true, readyUsers: 1 })
   const user = original.users[0]!
   const project = await original.ctx.projectStorage.createProject(user.authority, 'Original private project')

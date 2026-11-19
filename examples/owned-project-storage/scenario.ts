@@ -2,7 +2,7 @@
  * Runnable keyless AUTH-003B/005 example. Real Loader providers back every
  * operation; backup/restore touches disposable synthetic state only.
  */
-import { mkdtemp, mkdir, rm, cp, readFile, writeFile, chmod, readdir } from 'node:fs/promises'
+import { mkdtemp, mkdir, rm, cp, readFile, writeFile, chmod, readdir, realpath } from 'node:fs/promises'
 import { DatabaseSync, backup } from 'node:sqlite'
 import { join, relative } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -88,7 +88,7 @@ async function runtimeReceipts(): Promise<string[]> {
  */
 export async function ownedStorageScenario(): Promise<string> {
   const fixture = await storageHarness()
-  const snapshot = await mkdtemp(join(tmpdir(), 'arx-owned-backup-fixture-'))
+  const snapshot = await realpath(await mkdtemp(join(tmpdir(), 'arx-owned-backup-fixture-')))
   let resumed: Awaited<ReturnType<typeof storageHarness>> | undefined
   let closed = false
   try {

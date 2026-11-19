@@ -33,7 +33,7 @@ import SessionReferences from '@arx-ai/arx-session-reference'
 import * as TurnOutlines from '@arx-ai/arx-session-turn-outline'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { once } from 'node:events'
-import { mkdir, mkdtemp, readFile, writeFile, rm, symlink } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, writeFile, rm, symlink, realpath } from 'node:fs/promises'
 import { setTimeout as delay } from 'node:timers/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -72,7 +72,7 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
   dispatchRemotes?: boolean
   baseline?: { logRoot: string
     compression: 'none' | 'zstd' } } = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-native-worker-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-native-worker-fixture-')))
   const workers = new Map<string, NativeWorker>()
   // A response that did not report x-arx-quiescent: true stays here until
   // cancelled, because control retains its lease.

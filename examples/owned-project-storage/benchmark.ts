@@ -4,7 +4,7 @@
  */
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { mkdtemp, writeFile, mkdir, rm, statfs, readFile } from 'node:fs/promises'
+import { mkdtemp, writeFile, mkdir, rm, statfs, readFile, realpath } from 'node:fs/promises'
 import { tmpdir, cpus, totalmem, platform, release } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -26,7 +26,7 @@ const compression = process.argv[3] ?? 'zstd'
 if (compression !== 'none' && compression !== 'zstd') throw new Error('explicit none or zstd benchmark encoding required')
 const output = resolve(process.argv[2] ?? '')
 if (process.argv[2] === undefined) throw new Error('explicit fixture evidence output directory required')
-const scenarioRoot = await mkdtemp(join(tmpdir(), 'arx-auth005-bench-'))
+const scenarioRoot = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth005-bench-')))
 const raw: { arm: string
   operation: string
   user: number

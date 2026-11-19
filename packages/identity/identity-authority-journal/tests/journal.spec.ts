@@ -1,4 +1,4 @@
-import { chmod, mkdtemp, mkdir, readFile, rm, writeFile, symlink, rename } from 'node:fs/promises'
+import { chmod, mkdtemp, mkdir, readFile, rm, writeFile, symlink, rename, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@arx-ai/cordis'
@@ -20,7 +20,7 @@ async function load(path: string, allowInitialize = false, extra: Record<string,
 }
 describe('protected authority outside restored data', () => {
   it('never initializes implicitly, preserves a hash-linked watermark and releases its writer on disposal', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-fixture-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-fixture-')))
     const path = join(root, 'authority')
     await expect(load(path)).rejects.toBeDefined()
     ctx = await load(path, true)
@@ -41,7 +41,7 @@ describe('protected authority outside restored data', () => {
     expect(raw).toContain('fixture-first')
   })
   it('rejects restored-root placement and public directory permissions', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-policy-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-policy-')))
     ctx = new Context()
     await expect(ctx.plugin(Journal, { root: join(root, 'nested'), allowInitialize: true, protectedRoots: [root] })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await ctx.fiber.dispose()
@@ -52,7 +52,7 @@ describe('protected authority outside restored data', () => {
     await expect(load(path, true)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
   })
   it('captures caller payload before queuing and prevents mutation of cached records', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-immutable-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-immutable-')))
     ctx = await load(join(root, 'authority'), true)
     const payload = { nested: { items: ['original'], optional: null } }
     const pending = ctx.identityAuthorityJournal.append(0, { operationId: 'snapshot', kind: 'owner', payload })
@@ -72,7 +72,7 @@ describe('protected authority outside restored data', () => {
       await expect(ctx.identityAuthorityJournal.recordsAfter(sequence)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
   })
   it('refuses partial records, changed chain, oversized records and non-private authority files', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-corrupt-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-corrupt-')))
     const path = join(root, 'authority')
     ctx = await load(path, true)
     await ctx.identityAuthorityJournal.append(0, { operationId: 'valid', kind: 'owner', payload: {} })
@@ -100,7 +100,7 @@ describe('protected authority outside restored data', () => {
     await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
   })
   it('requires explicit genesis, canonical roots, an exclusive writer and available watermark storage', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-config-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-config-')))
     const path = join(root, 'authority')
     await mkdir(path, { mode: 0o700 })
     await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })

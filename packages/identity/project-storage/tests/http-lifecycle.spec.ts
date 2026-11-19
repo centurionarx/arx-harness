@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { subscribe, unsubscribe } from 'node:diagnostics_channel'
 import { IncomingMessage, ServerResponse, request as httpRequest } from 'node:http'
-import { readFile, cp, mkdtemp, rm } from 'node:fs/promises'
+import { readFile, cp, mkdtemp, rm, realpath } from 'node:fs/promises'
 import { setImmediate as nextTick } from 'node:timers/promises'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity/contract'
@@ -25,7 +25,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })

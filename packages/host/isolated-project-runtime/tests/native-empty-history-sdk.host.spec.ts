@@ -1,6 +1,6 @@
 /** Real native SDK creation commits an owned empty header without model execution. */
 import { randomUUID } from 'node:crypto'
-import { rm, cp, mkdtemp } from 'node:fs/promises'
+import { rm, cp, mkdtemp, realpath } from 'node:fs/promises'
 import { afterEach, expect, it, afterAll, beforeAll } from 'vitest'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -30,7 +30,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })

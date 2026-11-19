@@ -1,5 +1,5 @@
 /** Real Loader composition shared by project storage and supervisor tests. */
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
@@ -29,7 +29,7 @@ export async function storageHarness(options: { endpoint?: string
   extraPlugins?: readonly { name: string
     plugin: unknown
     config?: unknown }[] } = {}) {
-  const root = options.root ?? await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = options.root ?? await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const index = join(root, 'index', 'history.sqlite')
   const logRoot = join(root, 'content', 'history')
   const volumeRoot = join(root, 'content', 'volumes')

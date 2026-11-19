@@ -1,5 +1,5 @@
 import { Context, Service } from '@arx-ai/cordis'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import * as fsPromises from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -30,7 +30,7 @@ async function direct(path: string, initialize: boolean) {
 }
 describe('native authority I/O failure boundaries', () => {
   it('supports minimal direct configuration and the platform-specific directory flush branch without a fake journal', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-minimal-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-minimal-')))
     const path = join(root, 'authority')
     const platform = Object.getOwnPropertyDescriptor(process, 'platform')!
     Object.defineProperty(process, 'platform', { value: 'win32' })
@@ -47,7 +47,7 @@ describe('native authority I/O failure boundaries', () => {
     expect((await ctx.identityAuthorityJournal.recordsAfter(0))[0]!.operationId).toBe('fixture-platform')
   })
   it('propagates native lstat failure rather than treating it as absent authority', async () => {
-    root = await mkdtemp(join(tmpdir(), 'arx-journal-native-failure-'))
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-native-failure-')))
     const path = join(root, 'authority'), native = vi.mocked(fsPromises.lstat).getMockImplementation()!
     vi.mocked(fsPromises.lstat).mockImplementation(async (...args) => {
       if (String(args[0]) === join(path, 'authority.jsonl'))

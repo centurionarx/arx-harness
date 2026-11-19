@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi, afterAll, beforeAll } from 'vitest'
 import { randomUUID } from 'node:crypto'
-import { mkdtemp, rm, mkdir, symlink, readFile, writeFile, appendFile, cp } from 'node:fs/promises'
+import { mkdtemp, rm, mkdir, symlink, readFile, writeFile, appendFile, cp, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
@@ -22,7 +22,7 @@ beforeAll(async () => {
 })
 afterAll(() => rm(seed.root, { recursive: true, force: true }))
 async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] & object, 'root' | 'readyUsers' | 'initialize'> = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'arx-project-fixture-'))
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-project-fixture-')))
   const remove = () => rm(root, { recursive: true, force: true })
   const harness = await cp(seed.root, root, { recursive: true }).then(() => storageHarness({ ...options, root }))
     .catch(async (error: unknown) => { await remove(); throw error })
@@ -193,7 +193,7 @@ describe('private control storage boundaries', () => {
   it.each(['overlap-index', 'overlap-log', 'reverse-overlap', 'root-file', 'root-symlink', 'index-directory',
     'index-symlink', 'index-version'])(
     'refuses unsafe storage setup %s before admitting any owner operations', async (kind) => {
-      const root = await mkdtemp(join(tmpdir(), 'arx-storage-invalid-')); roots.push(root)
+      const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-storage-invalid-'))); roots.push(root)
       const indexPath = join(root, 'index', 'history.sqlite')
       const logRoot = join(root, 'content', 'history'), volumeRoot = join(root, 'content', 'volumes')
       const storageConfig: NonNullable<Parameters<typeof storageHarness>[0]>['storageConfig'] = {}

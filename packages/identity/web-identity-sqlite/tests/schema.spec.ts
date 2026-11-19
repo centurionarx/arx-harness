@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -7,7 +7,7 @@ import { configureDatabase, fixedSqliteVersion, IDENTITY_APPLICATION_ID, SCHEMA_
 let root: string | undefined, db: DatabaseSync | undefined
 afterEach(async () => { vi.restoreAllMocks(); db?.close(); db = undefined; if (root !== undefined)
   await rm(root, { recursive: true, force: true }); root = undefined })
-async function database() { root = await mkdtemp(join(tmpdir(), 'arx-auth-schema-')); db = new DatabaseSync(join(root, 'auth.sqlite')); return db }
+async function database() { root = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-schema-'))); db = new DatabaseSync(join(root, 'auth.sqlite')); return db }
 describe('independent auth schema and native SQLite durability', () => {
   it('rejects uninitialized or unrelated/history schemas and uses the measured corrected driver', async () => {
     const sqlite = await database()
