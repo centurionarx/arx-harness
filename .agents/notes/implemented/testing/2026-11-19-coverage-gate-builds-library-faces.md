@@ -26,7 +26,7 @@ The AUTH fixtures create each temporary root as `realpath(await mkdtemp(…))`. 
 
 ## Consequences
 
-- The coverage job spends about two minutes on `build:lib` before its first test. In `ci-primary` and `ci-windows-complete` the instrumented coverage gate starts after `build` instead of beside it.
+- The coverage job spends about two minutes on `build:lib` before its first test. In `ci-primary` and `ci-windows-complete` the instrumented coverage gate starts after `build`.
 - A bare `pnpm run test` or `pnpm run test:coverage` on a checkout without `lib/` fails in these fifteen specs; `pnpm run build:lib` once makes them pass.
 - A spec in the coverage gate may import `lib/` of the Host and Client faces. A spec that needs `apps/web/dist` belongs to the snapshot lanes.
 - `vite-tsconfig-paths` still resolves bare workspace imports to `src`, so the instrumented code is the source, not the built copy.
