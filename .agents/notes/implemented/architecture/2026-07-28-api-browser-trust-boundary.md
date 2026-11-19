@@ -27,3 +27,5 @@ Two boundaries stay deliberately out of scope: reachability is the webserver bin
 - Non-loopback deployments must have their serving authorities trusted or requests are refused. The arx CLI keeps its advertised `--host 0.0.0.0` LAN URL working by deriving the machine's LAN IP literals into the connection row (port-less entries — an IP-literal Host cannot be a rebound name, and the bound port may be OS-assigned) and offers `arx web --trusted-host` for named authorities; compositions the CLI does not boot declare `trustedHosts` themselves. Non-browser automation rides the same fence: loopback, a derived LAN IP, or a declared authority passes; an undeclared DNS alias is refused.
 - Clients must label POST bodies `application/json` (ours always did; raw-fetch tests gained the header).
 - The trusted-network assumption of an unauthenticated `0.0.0.0` deployment is now documented instead of implicit.
+
+[Native web authority](../../proposed/architecture/2026-10-08-native-web-authority-and-owned-control-plane.md) adds account and content ownership while preserving this decision.

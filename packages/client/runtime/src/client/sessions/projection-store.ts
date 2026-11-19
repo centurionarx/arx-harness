@@ -75,11 +75,22 @@ interface Channel {
  * manager's list projection reads the `title` key).
  */
 export class ProjectionValueStore {
+  private disposed = false
   private readonly rows = new Map<string, Row>()
   private readonly channels = new Map<string, Channel>()
   private valuesCache: Readonly<Partial<SessionProjectionMap>> | undefined
   /** Coarse any-key channel (no snapshot cache to rebuild: reads hit rows directly). */
   private readonly anyNotifier = new Notifier(() => {})
+
+  /** Close projection channels and release values with their Session or runtime owner. */
+  dispose(): void {
+    this.disposed = true
+    this.anyNotifier.dispose()
+    for (const channel of this.channels.values()) channel.notifier.dispose()
+    this.rows.clear()
+    this.channels.clear()
+    this.valuesCache = undefined
+  }
 
   /**
    * Key-addressed bare observable face (the useProjection resolution path).
@@ -132,6 +143,7 @@ export class ProjectionValueStore {
    * @param seq - the unit's watermark at emission.
    */
   apply(key: string, value: unknown, seq: number): void {
+    if (this.disposed) return
     const row = this.rows.get(key)
     if (row !== undefined && seq <= row.seq) return // higher seq wins; replays and stale frames drop
     this.rows.set(key, { value, seq })
@@ -187,6 +199,7 @@ export class ProjectionValueStore {
     if (channel === undefined) {
       // The notifier only batches (no snapshot cache to rebuild: faces read rows directly).
       const notifier = new Notifier(() => {})
+      if (this.disposed) notifier.dispose()
       channel = {
         notifier,
         face: {

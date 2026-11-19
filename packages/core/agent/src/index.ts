@@ -85,14 +85,16 @@ export interface CreateAgentOptions {
    * fork lineage, the `seedLength` seed boundary, the coarse `origin`
    * classification, and the `delegationDepth` recursion budget. Mirrors the
    * `cwd`/`parentSession`/`seedLength`/`origin`/`delegationDepth` fields of
-   * {@link CreateSessionOptions.meta} in arx-session (the internal-only
-   * `createdAt`, used when reconstructing a persisted session, is deliberately
-   * excluded — a factory caller never sets it). This is durable session data,
+   * {@link CreateSessionOptions.meta} in arx-session. A trusted allocation
+   * authority may supply its already committed `createdAt`; ordinary callers
+   * omit it and receive the current creation time. This is durable session data,
    * so the session boundary validates and snapshots it before asynchronous
    * setup begins.
    */
   readonly meta?: {
     readonly cwd?: string
+    /** Preallocated creation time from a trusted persistence authority; never a browser field. */
+    readonly createdAt?: number
     readonly parentSession?: SessionId
     readonly seedLength?: number
     readonly origin?: 'subagent'

@@ -115,7 +115,7 @@ Sources: [`packages/core/session/src/types.ts:340`](../packages/core/session/src
 }
 ```
 
-Source: [`packages/core/agent/src/types.ts:19`](../packages/core/agent/src/types.ts)
+Source: [`packages/core/agent/src/types.ts:30`](../packages/core/agent/src/types.ts)
 
 ### `agent-preset/*`
 
@@ -534,7 +534,7 @@ Source: [`packages/llm/llm-retry/src/types.ts:11`](../packages/llm/llm-retry/src
 'model/selection': ModelSelection
 ```
 
-Source: [`packages/core/agent/src/model-selection.ts:33`](../packages/core/agent/src/model-selection.ts)
+Source: [`packages/core/agent/src/types.ts:47`](../packages/core/agent/src/types.ts)
 
 ### `permission/*`
 

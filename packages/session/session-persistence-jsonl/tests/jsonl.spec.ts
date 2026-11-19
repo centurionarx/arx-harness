@@ -1555,12 +1555,12 @@ describe('JsonlSessionPersistence: edge cases', () => {
     }), { surfaceOp: 'append' })
     session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
     // Make the durable materialize fail on the next flush.
-    const backend = ctx2.sessionPersistence as unknown as { materialize: (...args: unknown[]) => Promise<void> }
-    const origMat = backend.materialize.bind(backend)
-    backend.materialize = () => Promise.reject(new Error('disk full'))
+    const backend = ctx2.sessionPersistence as unknown as { materializeArtifact: (...args: unknown[]) => Promise<void> }
+    const origMat = backend.materializeArtifact.bind(backend)
+    backend.materializeArtifact = () => Promise.reject(new Error('disk full'))
     await expectFlushError(ctx2.sessions.flush(session), /disk full/)
     // The events are STILL buffered (not silently dropped): a retry persists them.
-    backend.materialize = origMat
+    backend.materializeArtifact = origMat
     await ctx2.sessions.flush(session)
     const loaded = await ctx2.sessionPersistence.load(SessionId('flush-fail'))
     expect(loaded.events.map(e => e.seq)).toEqual([0, 1, 2])
@@ -1618,4 +1618,31 @@ describe('JsonlSessionPersistence: edge cases', () => {
     expect(session.events.length).toBe(0)
   })
 
+})
+
+describe('explicit header materialization', () => {
+  it('commits a lazily created header once and stays passive in the same and a reloaded backend', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'arx-jsonl-materialize-')); dirs.push(dir)
+    const mount = async () => {
+      const ctx = new Context()
+      await ctx.plugin(SessionStore)
+      const fiber = await ctx.plugin(JsonlSessionPersistence, { root: dir, compression: 'none' })
+      return { persistence: ctx.sessionPersistence, fiber }
+    }
+    const header = meta('materialize-header')
+    const path = rawLogPath(dir, header.cwd, header.id)
+    const first = await mount()
+    await first.persistence.create(header)
+    await expect(stat(path)).rejects.toThrow()
+    await first.persistence.materialize(header.id)
+    const committed = await readFile(path, 'utf8')
+    expect(committed.trimEnd().split('\n')).toHaveLength(1)
+    await first.persistence.materialize(header.id)
+    expect(await readFile(path, 'utf8')).toBe(committed)
+    await first.fiber.dispose()
+    const reloaded = await mount()
+    await reloaded.persistence.materialize(header.id)
+    expect(await readFile(path, 'utf8')).toBe(committed)
+    await reloaded.fiber.dispose()
+  })
 })

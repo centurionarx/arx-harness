@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-runtime",
   "description": "Client core services: SlotRegistry, SessionRuntime (scope tree + object layer)",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
@@ -32,19 +32,19 @@
   "arx": {
     "client": {
       "inject": [
+        "@arx-ai/arx-client-slots",
         "@arx-ai/arx-client-connection",
         "@arx-ai/arx-typert-registry",
         "@arx-ai/arx-api-remotes"
       ],
       "platform": "web",
-      "immediately": true
+      "immediately": true,
+      "external": [
+        "@arx-ai/arx-client-slots/client"
+      ]
     }
   },
   "license": "MIT",
-  "dependencies": {
-    "immer": "^11.1.18",
-    "zustand": "~5.0.15"
-  },
   "peerDependencies": {
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-api-remotes": "workspace:^",
@@ -61,7 +61,8 @@
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-session-title": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/cordis": "workspace:^",
@@ -83,7 +84,8 @@
     "@arx-ai/arx-session": "workspace:^",
     "@arx-ai/arx-session-projection": "workspace:^",
     "@arx-ai/arx-session-title": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "files": [
     "lib/index.js",

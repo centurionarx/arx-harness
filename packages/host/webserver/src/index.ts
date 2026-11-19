@@ -61,6 +61,17 @@ export interface Config {
   host: '127.0.0.1' | '0.0.0.0'
   /** Listen port; zero requests an OS-assigned port. */
   port: number
+  /** Native identity uses only a principal-bound request renderer. */
+  accessMode?: 'local' | 'authenticated'
+}
+
+/** One principal-bound index renderer supplied by the native control composition. */
+export type RequestIndexRenderer = (html: string, request: IncomingMessage) => Promise<string>
+
+/** Native index rendering cannot fall through to the shared operator composition. */
+export class RequestIndexUnavailableError extends Error {
+  /** Construct a fixed safe availability failure without submitted values. */
+  constructor() { super('Authenticated index renderer unavailable') }
 }
 
 /**
@@ -74,6 +85,7 @@ export class WebServer extends Service {
   static Config: z<Config> = z.object({
     host: z.union([z.const('127.0.0.1'), z.const('0.0.0.0')]).required(),
     port: z.natural().max(65535).required(),
+    accessMode: z.union([z.const('local'), z.const('authenticated')]).default('local'),
   })
 
   private readonly exact = new Map<string, WebRoute>()
@@ -81,6 +93,7 @@ export class WebServer extends Service {
   private readonly upgrades = new Map<string, WebUpgradeRoute>()
   private readonly upgradedSockets = new Set<Duplex>()
   private readonly indexTaps: ((html: string) => string)[] = []
+  private requestIndexRenderer: { readonly render: RequestIndexRenderer } | undefined
   private fallback: WebRoute['handler'] | undefined
   private server!: Server
   private listenedPort!: number
@@ -97,6 +110,37 @@ export class WebServer extends Service {
   /** The configured bind host (the loopback or all-interfaces literal). */
   get host(): Config['host'] {
     return this.config.host
+  }
+
+  /** Index mode is operator configuration; browser requests cannot change it. */
+  get accessMode(): 'local' | 'authenticated' { return this.config.accessMode ?? 'local' }
+
+  /**
+   * Claim the native request-renderer seat, with one owner and no global taps.
+   * @param render - Async renderer which authenticates and projects this request.
+   * @returns Disposer which releases only this registration.
+   */
+  registerRequestIndexRenderer(render: RequestIndexRenderer): () => void {
+    if (this.accessMode !== 'authenticated') throw new Error('webserver: request renderer requires authenticated mode')
+    if (this.requestIndexRenderer !== undefined) throw new Error('webserver: request index renderer already registered')
+    const registration = { render }
+    this.requestIndexRenderer = registration
+    return () => { if (this.requestIndexRenderer === registration) this.requestIndexRenderer = undefined }
+  }
+
+  /**
+   * Render the request through its operator-selected local or native composition.
+   * @param html - Raw built shell, before global index listeners or taps run.
+   * @param request - Original request carrying the serving authority and cookies.
+   * @returns Principal-bound native HTML or the existing local index rendering.
+   */
+  async renderRequestIndex(html: string, request: IncomingMessage): Promise<string> {
+    if (this.accessMode === 'local') return this.renderIndex(html)
+    const registration = this.requestIndexRenderer
+    if (registration === undefined) throw new RequestIndexUnavailableError()
+    const rendered = await registration.render(html, request)
+    if (this.requestIndexRenderer !== registration) throw new RequestIndexUnavailableError()
+    return rendered
   }
 
   /**
@@ -284,6 +328,7 @@ export class WebServer extends Service {
    * @returns rows in subscriber activation order.
    */
   collectIndexInjections(): IndexInjection[] {
+    if (this.accessMode === 'authenticated') throw new RequestIndexUnavailableError()
     const table: IndexInjection[] = []
     this.ctx.emit('webserver/index-inject', table)
     return table

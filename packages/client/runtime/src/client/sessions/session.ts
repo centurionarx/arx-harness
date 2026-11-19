@@ -192,6 +192,7 @@ export class Session implements SessionFace {
     mode: 'queue' | 'steer',
     signal?: AbortSignal,
   ): Promise<RpcResult<{ accepted: true }>> {
+    if (this.openGeneration < 0) return transportError(new Error('session is disposed'))
     this.promptError = null
     this.lastAgentError = null
     // Synchronous, before the first await: the blank → engaging edge must be
@@ -231,6 +232,7 @@ export class Session implements SessionFace {
         } else {
           const routed = (await this.api.subagents.prompt({
             ...this.address,
+            /* v8 ignore next 3 -- the `: []` arm is unreachable: image parts are refused above, and PromptContentPart is text or image. */
             content: content.flatMap(part => part.type === 'text'
               ? [{ type: 'text' as const, text: part.text }]
               : []),
@@ -242,6 +244,7 @@ export class Session implements SessionFace {
     } catch (error) {
       result = transportError(error)
     }
+    if (this.openGeneration < 0) return transportError(new Error('session is disposed'))
     if (!result.ok) {
       this.promptError = { op: 'send', error: result.error }
       this.notifier.markDirty()
@@ -272,10 +275,12 @@ export class Session implements SessionFace {
     attachmentId: AttachmentIdType,
   ): Promise<RpcResult<{ attachment: ImageAttachmentRef; data: Uint8Array }>> {
     try {
+      this.assertActive()
       const result = (await this.api.sessions.attachment({
         sessionId: this.sessionId,
         attachmentId,
       })).result
+      this.assertActive()
       if (!result.ok) return result
       const binary = atob(result.value.data)
       const data = Uint8Array.from(binary, char => char.charCodeAt(0))
@@ -288,7 +293,10 @@ export class Session implements SessionFace {
   /** Apply one operation to a still-pending queue occurrence. */
   async updateQueue(itemId: MessageId, action: QueueAction): Promise<RpcResult<{ accepted: true }>> {
     try {
-      return (await this.api.sessions.updateQueue({ sessionId: this.sessionId, itemId, action })).result
+      this.assertActive()
+      const { result } = await this.api.sessions.updateQueue({ sessionId: this.sessionId, itemId, action })
+      this.assertActive()
+      return result
     } catch (error) {
       return transportError(error)
     }
@@ -304,6 +312,7 @@ export class Session implements SessionFace {
    * @returns the cancel result.
    */
   async cancel(): Promise<RpcResult<{ accepted: true }>> {
+    if (this.openGeneration < 0) return transportError(new Error('session is disposed'))
     const address = this.address
     if (address !== undefined && address.mode === 'one-shot') {
       const result: RpcResult<{ accepted: true }> = {
@@ -326,6 +335,7 @@ export class Session implements SessionFace {
     } catch (error) {
       result = transportError(error)
     }
+    if (this.openGeneration < 0) return transportError(new Error('session is disposed'))
     if (!result.ok) {
       this.promptError = { op: 'stop', error: result.error }
       this.notifier.markDirty()
@@ -344,7 +354,9 @@ export class Session implements SessionFace {
    */
   async rename(title: string): Promise<RpcResult<{ title: string; seq: number }>> {
     try {
+      this.assertActive()
       const { result } = await this.api.sessions.rename({ sessionId: this.sessionId, title })
+      this.assertActive()
       if (result.ok) this.projections.apply('title', result.value.title, result.value.seq)
       return result
     } catch (error) {
@@ -360,13 +372,16 @@ export class Session implements SessionFace {
    * @returns the admission result, or the error branch on transport failure.
    */
   async command(line: string): Promise<RemoteResult<{ matched: boolean }>> {
+    this.assertActive()
     const result = await this.remote.commands.execute(this.sessionId, line, [])
+    this.assertActive()
     if (!result.ok) return result
     return { ok: true, value: { matched: result.value !== undefined } }
   }
 
   /** First open: pull the tail page (idempotent — in-flight/already-open returns the existing promise). */
   open(): Promise<void> {
+    if (this.openGeneration < 0) return Promise.resolve()
     if (this.openState === 'open') return Promise.resolve()
     if (this.openPromise !== null) return this.openPromise
     const promise = this.doOpen(this.openGeneration).finally(() => {
@@ -379,11 +394,13 @@ export class Session implements SessionFace {
 
   /** Page up: pull one earlier page with the window's first seq as beforeSeq and prepend. */
   async loadOlder(): Promise<void> {
-    if (this.openState !== 'open' || !this.hasMore || this.loadingOlder) return
+    if (this.openGeneration < 0 || this.openState !== 'open' || !this.hasMore || this.loadingOlder) return
+    const generation = this.openGeneration
     this.loadingOlder = true
     this.notifier.markDirty()
     try {
       const { result } = await this.history({ beforeSeq: this.baseSeq, maxMessages: PAGE_MESSAGES })
+      if (generation !== this.openGeneration) return
       if (!result.ok) return // keep the window as-is; do not overwrite openError (open already succeeded)
       const older = result.value.events
       if (older.length === 0) {
@@ -406,10 +423,12 @@ export class Session implements SessionFace {
       this.hasMore = result.value.hasMore
       this.conversation.prepend(older.map(conversationInput), this.hasMore)
     } catch (error) {
-      console.error('[web-runtime] loadOlder failed:', error)
+      if (generation === this.openGeneration) console.error('[web-runtime] loadOlder failed:', error)
     } finally {
-      this.loadingOlder = false
-      this.notifier.markDirty()
+      if (generation === this.openGeneration) {
+        this.loadingOlder = false
+        this.notifier.markDirty()
+      }
     }
   }
 
@@ -418,6 +437,7 @@ export class Session implements SessionFace {
    *  in-flight open first — its history request rode the dead connection and must not settle
    *  the fresh generation into 'error'. */
   async resync(): Promise<void> {
+    if (this.openGeneration < 0) return
     // The queue mirror is NOT cleared here: onConnected (which drives resync)
     // races the mux frames — the fresh generation's baseline may have landed
     // already, and the host never resends it. The mirror re-baselines on the
@@ -469,6 +489,7 @@ export class Session implements SessionFace {
    * @param frame - the routed frame.
    */
   handleMuxEnvelope(rpcId: RpcId, frame: MuxFrame): void {
+    if (this.openGeneration < 0) return
     switch (frame.type) {
       case 'session/event': {
         this.acceptLiveEvent(frame.event, frame.view)
@@ -590,11 +611,50 @@ export class Session implements SessionFace {
     this.notifier.markDirty()
   }
 
-  /** No-op because session instances remain resident. */
-  dispose(): void {}
+  /** End the resident instance, invalidate its existing history generation, and release private state. */
+  dispose(): void {
+    if (this.openGeneration < 0) return
+    this.openGeneration = -1
+    this.notifier.dispose()
+    this.actx = undefined
+    this.events = []
+    this.views = []
+    this.baseSeq = 0
+    this.hasMore = false
+    this.openState = 'cold'
+    this.openError = null
+    this.openPromise = null
+    this.loadingOlder = false
+    for (const wait of this.pending.values()) wait.markSettled()
+    this.pending.clear()
+    this.pendingRev++
+    this.pendingCache = null
+    this.queueMirror.reset()
+    this.conversation.replaceWindow([], false)
+    this.conversation.flush()
+    this.running = false
+    this.address = undefined
+    this.parentAvailable = false
+    this.promptAttempted = false
+    this.firstPromptPendingTurn = false
+    this.blankBit = true
+    this.removed = true
+    this.promptError = null
+    this.lastAgentError = null
+    this.liveBuffer = []
+    this.stitching = false
+    this.subscribedLastSeq = null
+    this.projections.dispose()
+    this.snapshotCache = this.buildSnapshot()
+  }
+
+  private assertActive(): void {
+    if (this.openGeneration < 0) throw new Error('session is disposed')
+  }
 
   /** Rebuild the current window after a low-frequency Definition or view registration change. */
   rebuildConversationRegistry(): void {
+    if (this.openGeneration < 0) return
     this.scheduleConversation(this.conversation.rebuildRegistry())
   }
 
@@ -664,12 +724,18 @@ export class Session implements SessionFace {
     if (projections !== undefined) this.projections.seed(projections)
     const buffered = this.liveBuffer
     this.liveBuffer = []
-    for (const item of buffered) this.appendLive(item.event, item.view)
+    // A buffered live selection may already sit inside the new window (the Host committed it after the
+    // history request left), where appendLive drops it as overlap; notify once when the buffer held a pick.
+    for (const item of buffered) this.appendLive(item.event, item.view, false)
+    const actx = this.actx
+    if (actx !== undefined && buffered.some(item => item.event.type === 'model/selection')) {
+      actx.emit(actx, 'session/model-selection', this.sessionId)
+    }
     this.notifier.markDirty()
   }
 
   /** Seq-guarded append shared by stitching and the open-state live path. */
-  private appendLive(event: SessionEvent, view?: ToolEventView): ConversationPublication {
+  private appendLive(event: SessionEvent, view?: ToolEventView, notifySelection = true): ConversationPublication {
     const tailSeq = this.windowTailSeq()
     if (tailSeq !== null && event.seq <= tailSeq) return 'none' // replay overlap, drop
     this.events.push(event)
@@ -677,6 +743,10 @@ export class Session implements SessionFace {
     if (event.type === 'turn/start') this.firstPromptPendingTurn = false
     const queueChanged = this.queueMirror.acceptDurable(event)
     const publication = this.conversation.append({ event, view })
+    const actx = this.actx
+    if (notifySelection && event.type === 'model/selection' && actx !== undefined) {
+      actx.emit(actx, 'session/model-selection', this.sessionId)
+    }
     return queueChanged ? 'immediate' : publication
   }
 

@@ -9,6 +9,7 @@ import { Context, Service } from '@arx-ai/cordis'
 import { SessionPreparation } from '@arx-ai/arx-session'
 import type { SessionEvent, SessionId, SessionHeader } from '@arx-ai/arx-session'
 import type { SessionPersistenceRevision } from './revision.ts'
+import type { PersistenceCoordinator } from './coordinator.ts'
 
 // Re-export the metadata vocabulary so Consumers import it from the Service Definition.
 export type { SessionHeader } from '@arx-ai/arx-session'
@@ -38,6 +39,31 @@ export interface SessionRawArtifact {
   readonly filename: string
   /** The artifact's full text content, decoded from the backend's physical encoding. */
   readonly content: string
+}
+
+/** A revision-bound decoded byte range requested without a full artifact read. */
+export interface SessionRawArtifactPageRequest {
+  /** Inclusive UTF-8 byte offset, initially zero. */
+  readonly offset: number
+  /** Largest returned plaintext range; at least four bytes for UTF-8 carry. */
+  readonly maxBytes: number
+  /** Previous page's exact source revision; changed artifacts reject. */
+  readonly revision?: SessionPersistenceRevision
+}
+/** A bounded raw page, preserving the backend's original serialization. */
+export interface SessionRawArtifactPage {
+  /** Header validated from the independently readable first record. */
+  readonly meta: SessionHeader
+  /** Logical artifact filename, without its physical compression suffix. */
+  readonly filename: string
+  /** Requested decoded byte offset. */
+  readonly offset: number
+  /** Complete UTF-8 text with at most the requested byte budget. */
+  readonly content: string
+  /** Inclusive next byte offset when another page may be present. */
+  readonly nextOffset?: number
+  /** Stable source identity required for a continuation. */
+  readonly revision: SessionPersistenceRevision
 }
 
 // The backend-agnostic write-path orchestration first-party backends compose.
@@ -124,6 +150,29 @@ export abstract class SessionPersistence extends Service {
   }
 
   /**
+   * Whether raw pages use bounded retained plaintext rather than a full-log
+   * buffer. The default deliberately declares no range capability.
+   */
+  readonly supportsRawArtifactPages: boolean = false
+
+  /**
+   * Read an independently revision-bound UTF-8 page without falling back to
+   * {@link readRaw}. A checksummed backend may decode a whole containing frame
+   * while retaining only the requested page. Unknown providers reject.
+   * @param _id - Persisted session identity.
+   * @param _request - Decoded byte range and optional continuation revision.
+   * @param signal - Optional cancellation.
+   * @returns A bounded artifact page or undefined for an absent artifact.
+   * @throws For unsupported range reads, invalid offsets or a changed revision.
+   */
+  readRawPage(_id: SessionId, _request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage | undefined> {
+    if (signal?.aborted === true) {
+      return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error('aborted'))
+    }
+    return Promise.reject(new Error('this session persistence backend does not expose bounded raw pages'))
+  }
+
+  /**
    * Register a new session's metadata. A backend MAY defer the physical write
    * until the first {@link append} (lazy materialization), in which case a
    * created-but-never-appended session is absent from {@link list}
@@ -131,6 +180,17 @@ export abstract class SessionPersistence extends Service {
    * @param meta - the immutable header (id, version, cwd, lineage) to record.
    */
   abstract create(meta: SessionHeader): Promise<void>
+
+  /**
+   * Explicitly commit a registered header without inventing events. Default
+   * creation remains lazy; providers that do not own this capability reject.
+   * Successful repeated calls preserve the existing artifact unchanged.
+   * @param _id - Registered session whose canonical header must be durable.
+   * @returns Completion only after the provider's durable header receipt.
+   */
+  materialize(_id: SessionId): Promise<void> {
+    return Promise.reject(new Error('this session persistence backend does not support explicit header materialization'))
+  }
 
   /**
    * Durably persist a batch of events. Honors the append-only and contiguous-
@@ -238,6 +298,81 @@ export abstract class SessionPersistence extends Service {
    * @returns one header and opaque revision per materialized session without loading full logs.
    */
   abstract listSnapshots(signal?: AbortSignal): Promise<SessionPersistenceSnapshot[]>
+
+  /**
+   * Observe one materialized log's source-qualified revision without mutation.
+   * Providers with direct identity lookup override this metadata-list fallback.
+   * An unchanged source keeps its revision; an absent lazy log returns undefined.
+   * @param id - Persisted session identity, independent of any index projection.
+   * @param signal - Optional cancellation for the provider's observation.
+   * @returns The provider's current revision, or undefined for an absent log.
+   */
+  async readRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined> {
+    signal?.throwIfAborted()
+    const snapshot = (await this.listSnapshots(signal)).find(value => value.header.id === id)
+    signal?.throwIfAborted()
+    return snapshot?.revision
+  }
+}
+
+/**
+ * The six canonical delegates used by persistence providers that already own a
+ * {@link PersistenceCoordinator}. Storage, lookup, capabilities and ownership
+ * stay in each provider; the existing constructor and coordinator are retained.
+ * @typeParam TornMarker - The provider's opaque interrupted-tail repair token.
+ */
+export abstract class CoordinatedSessionPersistence<TornMarker = unknown> extends SessionPersistence {
+  /** The provider's existing coordinator, initialized by its original constructor. */
+  protected abstract readonly coordinator: PersistenceCoordinator<TornMarker>
+
+  /**
+   * Snapshot lazy session metadata in the existing coordinator.
+   * @param meta - Immutable existing-format session header.
+   * @returns Completion after coordinator admission.
+   */
+  override create(meta: SessionHeader): Promise<void> { return this.coordinator.create(meta) }
+
+  /**
+   * Serialize a contiguous append through the original durable coordinator.
+   * @param id - Session identity resolved by the provider's own backend.
+   * @param events - Ordered existing-format events.
+   * @returns Completion after the backend's durable receipt.
+   */
+  override append(id: SessionId, events: readonly SessionEvent[]): Promise<void> { return this.coordinator.append(id, events) }
+
+  /**
+   * Prepare an unpublished session without changing adoption or repair policy.
+   * @param id - Persisted session identity.
+   * @param signal - Optional preparation cancellation.
+   * @returns The coordinator's canonical preparation reservation.
+   */
+  override prepare(id: SessionId, signal?: AbortSignal): Promise<SessionPreparation> { return this.coordinator.prepare(id, signal) }
+
+  /**
+   * Load the canonical header and repaired committed event prefix.
+   * @param id - Persisted session identity.
+   * @returns The coordinator's validated inspection.
+   */
+  override load(id: SessionId): Promise<SessionInspection> { return this.coordinator.load(id) }
+
+  /**
+   * Inspect stored history through the coordinator's existing preparation cache.
+   * @param id - Persisted session identity.
+   * @param signal - Optional inspection cancellation.
+   * @returns The original immutable header and committed events.
+   */
+  override inspect(id: SessionId, signal?: AbortSignal): Promise<SessionInspection> { return this.coordinator.inspect(id, signal) }
+
+  /**
+   * Read a stored suffix through the provider's original backend.
+   * @param id - Persisted session identity.
+   * @param fromSeq - First canonical sequence to return.
+   * @param signal - Optional suffix-read cancellation.
+   * @returns The original header and detached stored event suffix.
+   */
+  override readFrom(id: SessionId, fromSeq: number, signal?: AbortSignal): Promise<{ meta: SessionHeader; events: SessionEvent[] }> {
+    return this.coordinator.readFrom(id, fromSeq, signal)
+  }
 }
 
 export default SessionPersistence

@@ -1,0 +1,3 @@
+- button "Select model, current Acme Think, reasoning effort High":
+  - text: Acme Think High
+  - img

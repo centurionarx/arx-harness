@@ -4,23 +4,28 @@
  * documented on the public interfaces in `./manifest.ts`; this file owns the
  * state tables and the load/materialize machinery.
  */
-import { stripClientSuffix } from './manifest.ts'
+import { stripClientSuffix, compositionPluginFace } from './manifest.ts'
 import type {
   BootManifest, BootModuleRow, ClientBundleRegistration, ClientModuleLoader, ClientModuleRecord,
   ClientModuleSystemOptions,
 } from './manifest.ts'
+import type { ClientComposition } from '@arx-ai/arx-client-ui-slots/composition'
 
 /** Default bundle-load hook: same-origin external classic script. */
-const defaultLoadBundle = (url: string): Promise<void> => new Promise((resolve, reject) => {
+const defaultLoadBundle = (url: string, signal?: AbortSignal): Promise<void> => new Promise((resolve, reject) => {
+  if (signal?.aborted) { reject(new Error('client module tree ended')); return }
   const el = document.createElement('script')
   el.async = true
   el.src = url
+  const cleanup = (): void => { el.remove(); signal?.removeEventListener('abort', abort) }
+  const abort = (): void => { cleanup(); reject(new Error('client module tree ended')) }
+  signal?.addEventListener('abort', abort, { once: true })
   el.addEventListener('load', () => {
-    el.remove()
+    cleanup()
     resolve()
   }, { once: true })
   el.addEventListener('error', () => {
-    el.remove()
+    cleanup()
     reject(new Error(`client-modules: bundle script ${url} failed to load`))
   }, { once: true })
   document.head.append(el)
@@ -55,6 +60,8 @@ export class ClientModuleSystem implements ClientModuleLoader {
   readonly manifest: BootManifest
   readonly loadCache = new Map<string, ClientModuleRecord>()
 
+  private readonly composition: ClientComposition | undefined
+  private readonly signal: AbortSignal | undefined
   private readonly seed: Map<string, unknown>
   private readonly factories = new Map<string, ClientBundleRegistration['factory']>()
   private readonly bootstrapIds = new Set<string>()
@@ -71,8 +78,10 @@ export class ClientModuleSystem implements ClientModuleLoader {
    */
   constructor(options: ClientModuleSystemOptions) {
     this.manifest = options.manifest
+    this.composition = options.composition === undefined ? undefined : Object.freeze({ ...options.composition })
+    this.signal = options.signal
     this.seed = new Map(Object.entries(options.staticModules))
-    this.loadBundle = options.loadBundle ?? defaultLoadBundle
+    this.loadBundle = options.loadBundle ?? (url => defaultLoadBundle(url, this.signal))
 
     for (const row of options.manifest.modules) {
       if (this.graphRows.has(row.id)) throw new Error(`client-modules: duplicate graph entry "${row.id}"`)
@@ -145,6 +154,7 @@ export class ClientModuleSystem implements ClientModuleLoader {
 
   /** Materialize a registered factory (synchronous; memoized in loadCache). */
   private materialize(id: string): ClientModuleRecord {
+    this.assertLive()
     const existing = this.loadCache.get(id)
     if (existing !== undefined) return existing
     const registered = this.factories.get(id)
@@ -157,6 +167,7 @@ export class ClientModuleSystem implements ClientModuleLoader {
     try {
       const edges = new Set<string>()
       const exports = registered(this.makeRequire(edges))
+      this.assertLive()
       const record: ClientModuleRecord = { id, exports, styles: claimStyles(id), edges }
       this.loadCache.set(id, record)
       return record
@@ -173,6 +184,7 @@ export class ClientModuleSystem implements ClientModuleLoader {
    */
   private makeRequire(edges: Set<string>): (spec: string) => unknown {
     return (spec: string): unknown => {
+      this.assertLive()
       edges.add(spec)
       if (this.seed.has(spec)) return this.seed.get(spec)
       const id = stripClientSuffix(spec)
@@ -187,10 +199,11 @@ export class ClientModuleSystem implements ClientModuleLoader {
   }
 
   async import(specifier: string): Promise<unknown> {
+    this.assertLive()
     if (this.seed.has(specifier)) return this.seed.get(specifier)
     const id = stripClientSuffix(specifier)
     const existing = this.loadCache.get(id)
-    if (existing !== undefined) return existing.exports
+    if (existing !== undefined) return compositionPluginFace(id, existing.exports, this.composition)
     const row = this.graphRows.get(id)
     if (row !== undefined) {
       await this.arriveGraphRow(row)
@@ -200,16 +213,19 @@ export class ClientModuleSystem implements ClientModuleLoader {
         + 'and not a row in the boot graph (the runtime mirror of the bundle purity gate)',
       )
     }
-    return this.materialize(id).exports
+    return compositionPluginFace(id, this.materialize(id).exports, this.composition)
   }
 
   async prefetch(id: string): Promise<void> {
+    this.assertLive()
     const normalized = stripClientSuffix(id)
     if (this.loadCache.has(normalized)) return
     const row = this.graphRows.get(normalized)
     if (row === undefined) throw new Error(`client-modules: prefetch("${id}") — not a graph entry`)
     await this.arriveGraphRow(row)
   }
+
+  private assertLive(): void { if (this.signal?.aborted) throw new Error('client module tree ended') }
 
   invalidate(id: string): void {
     const normalized = stripClientSuffix(id)

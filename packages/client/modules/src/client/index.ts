@@ -43,6 +43,8 @@ export function createClientModuleSystem(
   moduleSystem = new ClientModuleSystem({
     manifest: parseBootManifest(options.boot),
     staticModules: options.staticModules,
+    ...(options.composition === undefined ? {} : { composition: options.composition }),
+    ...(options.signal === undefined ? {} : { signal: options.signal }),
     registrationTarget: target,
     bootstrapModule,
     ...(options.loadBundle === undefined ? {} : { loadBundle: options.loadBundle }),

@@ -15,7 +15,8 @@
     "src/client/rpc.ts",
     "src/client/web-api-client.ts",
     "src/loopback-hostname.ts",
-    "src/rpc.ts"
+    "src/rpc.ts",
+    "src/client/authenticated-fetch.ts"
   ],
   "references": [
     {
@@ -44,6 +45,9 @@
     },
     {
       "path": "../../util/brand"
+    },
+    {
+      "path": "../../identity/web-identity"
     }
   ]
 }

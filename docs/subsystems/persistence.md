@@ -4,6 +4,10 @@ The **durability seam** for the event log. [session.md](session.md) describes th
 
 The seam is a [capability seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.md): one abstract service ([arx-session-persistence](../../packages/session/session-persistence), `ctx.sessionPersistence`) defining locate/create/append, reusable Session preparation, logical load/inspect, physical suffix reads, and lightweight list/snapshot observation over the existing `SessionEvent` — **no parallel persisted event type** — and three interchangeable providers implementing the same contract. See the [session-persistence Agent Note](../../.agents/notes/implemented/architecture/2026-06-14-session-persistence.md).
 
+## Bounded artifact and revision views
+
+`SessionRawArtifactPageRequest` supplies an offset, bounded byte count and cancellation signal for an explicit raw-artifact page. `SessionRawArtifactPage` returns only that validated UTF-8 range, its header and continuation offset; JSONL providers validate the complete overlapping Zstandard frame before returning plaintext. Paged support is an optional capability and a missing implementation rejects the operation. `SessionPersistenceRevision` identifies an observed committed provider prefix, while `StoredPrefix` carries the corresponding unpublished history used by preparation and cold recovery. `StoredSessionSummary` contains lightweight session metadata; neither it nor a raw header provides filesystem authorization. Owned access and the private index commit are defined in [identity and project storage](identity.md).
+
 ## The flush checkpoint
 
 `session/event` is a *synchronous* notification; persistence plugins copy the event into a per-session controller without blocking the producer. The first pending event starts a fixed batching window, and later events join without resetting its deadline. Expiry starts one durable batch; events admitted during that write receive their own deadline and form a follow-up batch. `session/flush` cancels the wait and drains through quiescence, so the loop still uses it as the ordering and error-observation checkpoint before claiming the next ordinary turn. A rejected background write retains its events and pauses automatic retry; a new event starts a fresh window, while explicit flush retries immediately and reports failure through `agent/error` and the logger, never as a session event past the closed turn. Disposal performs the same final drain. The configured maximum bounds only intentional batching wait, not event-loop scheduling or backend durability latency ([decision](../../.agents/notes/implemented/architecture/2026-08-08-bounded-session-persistence-write-batching.md)).
@@ -228,6 +232,8 @@ interface SessionPersistenceSnapshot {
 
 ## The backends
 
+`CoordinatedSessionPersistence<TornMarker>` extends the abstract service with a protected provider-owned coordinator. Its generic parameter preserves the backend's opaque interrupted-tail repair token; the [Service Definition](../../packages/session/session-persistence/README.md#the-write-coordinator) owns the shared delegation contract.
+
 All implement the same abstract `SessionPersistence` (locate/create/append/prepare/load/inspect/readFrom/list/listSnapshots over `SessionEvent`, with optional cancellation on observation methods) and pass the shared `runPersistenceContract` suite:
 
 - **[arx-session-persistence-jsonl](../../packages/session/session-persistence-jsonl)** — an append-only logical JSONL log per session, stored as checksummed concatenated Zstandard frames by default or raw lines by configuration, with crash-safe atomic writes, interrupted-turn recovery, and a read/replay path.
@@ -275,6 +281,18 @@ abstract locate(meta: SessionHeader): SessionLocation | undefined
 readRaw(_id: SessionId, signal?: AbortSignal): Promise<SessionRawArtifact | undefined>
 
 /**
+ * Read an independently revision-bound UTF-8 page without falling back to
+ * {@link readRaw}. A checksummed backend may decode a whole containing frame
+ * while retaining only the requested page. Unknown providers reject.
+ * @param _id - Persisted session identity.
+ * @param _request - Decoded byte range and optional continuation revision.
+ * @param signal - Optional cancellation.
+ * @returns A bounded artifact page or undefined for an absent artifact.
+ * @throws For unsupported range reads, invalid offsets or a changed revision.
+ */
+readRawPage(_id: SessionId, _request: SessionRawArtifactPageRequest, signal?: AbortSignal): Promise<SessionRawArtifactPage | undefined>
+
+/**
  * Register a new session's metadata. A backend MAY defer the physical write
  * until the first {@link append} (lazy materialization), in which case a
  * created-but-never-appended session is absent from {@link list}
@@ -282,6 +300,15 @@ readRaw(_id: SessionId, signal?: AbortSignal): Promise<SessionRawArtifact | unde
  * @param meta - the immutable header (id, version, cwd, lineage) to record.
  */
 abstract create(meta: SessionHeader): Promise<void>
+
+/**
+ * Explicitly commit a registered header without inventing events. Default
+ * creation remains lazy; providers that do not own this capability reject.
+ * Successful repeated calls preserve the existing artifact unchanged.
+ * @param _id - Registered session whose canonical header must be durable.
+ * @returns Completion only after the provider's durable header receipt.
+ */
+materialize(_id: SessionId): Promise<void>
 
 /**
  * Durably persist a batch of events. Honors the append-only and contiguous-
@@ -375,6 +402,16 @@ abstract list(signal?: AbortSignal): Promise<SessionHeader[]>
  * @returns one header and opaque revision per materialized session without loading full logs.
  */
 abstract listSnapshots(signal?: AbortSignal): Promise<SessionPersistenceSnapshot[]>
+
+/**
+ * Observe one materialized log's source-qualified revision without mutation.
+ * Providers with direct identity lookup override this metadata-list fallback.
+ * An unchanged source keeps its revision; an absent lazy log returns undefined.
+ * @param id - Persisted session identity, independent of any index projection.
+ * @param signal - Optional cancellation for the provider's observation.
+ * @returns The provider's current revision, or undefined for an absent log.
+ */
+async readRevision(id: SessionId, signal?: AbortSignal): Promise<SessionPersistenceRevision | undefined>
 ```
 
 Types: [SessionEvent](session.md) · [SessionId](core.md)

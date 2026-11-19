@@ -20,6 +20,10 @@ import type { CommandContribution, SelectOption } from '@arx-ai/arx-client-ui-co
 import type { ModelSelectInjected } from '../src/client/slots.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { en } from '../src/client/locales.ts'
+import type { SessionEvent } from '@arx-ai/arx-session/types'
+import { Session } from '../../runtime/src/client/sessions/session.ts'
+import { FakeApiClient, deferred, fakeRemote, ok } from '../../runtime/tests/fake-api.client.ts'
+import { entries } from '../../runtime/tests/event-script.client.ts'
 
 const sid = (k: string): SessionId => k as SessionId
 
@@ -300,6 +304,116 @@ describe('ui-model-selection dual entry', () => {
     expect(faceA.directory).not.toBe(faceB.directory)
     // The service face resolves the same instance the seat inject handed out.
     expect(b.ctx.modelDirectories.directoryFor(sid('a')).store).toBe(faceA.directory)
+  })
+
+  it('refreshes an external selection without opening either entry and preserves the other session block', async () => {
+    const b = await bench({ selected: false })
+    const target = b.mint('target')
+    b.mint('other')
+    const targetFace = b.seat().inject!(sid('target'))
+    const otherFace = b.seat().inject!(sid('other'))
+    b.setRoutable(false)
+    targetFace.load()
+    otherFace.load()
+    await vi.waitFor(() => {
+      expect(b.blockOf('target')).toEqual({ reason: en['blocked.unselected'] })
+      expect(b.blockOf('other')).toEqual({ reason: en['blocked.unselected'] })
+    })
+    const callsBefore = b.calls.models
+    b.setHostCurrent({ provider: 'deepseek-official', model: 'deepseek-v4-pro' })
+    b.setRoutable(true)
+    target.ctx.emit(target.ctx, 'session/model-selection', sid('target'))
+    await vi.waitFor(() => {
+      expect(targetFace.directory.getSnapshot()).toMatchObject({
+        current: { provider: 'deepseek-official', model: 'deepseek-v4-pro' }, routable: true, status: 'ready',
+      })
+      expect(b.blockOf('target')).toBeUndefined()
+    })
+    expect(otherFace.directory.getSnapshot()).toMatchObject({ current: null, routable: false })
+    expect(b.blockOf('other')).toEqual({ reason: en['blocked.unselected'] })
+    expect(b.calls).toEqual({ models: callsBefore + 1, select: 0 })
+
+    target.ctx.emit(target.ctx, 'session/model-selection', sid('other'))
+    await Promise.resolve()
+    expect(b.calls.models).toBe(callsBefore + 1)
+  })
+
+  it('unblocks the composer when an external selection lands inside the history window of an opening session', async () => {
+    const b = await bench({ selected: false })
+    const scope = b.mint('target')
+    const face = b.seat().inject!(sid('target'))
+    b.setRoutable(false)
+    face.load()
+    await vi.waitFor(() => { expect(b.blockOf('target')).toEqual({ reason: en['blocked.unselected'] }) })
+    const api = new FakeApiClient()
+    const history = deferred<Awaited<ReturnType<FakeApiClient['onHistory']>>>()
+    api.onHistory = () => history.promise
+    const session = new Session(sid('target'), api, fakeRemote())
+    session.bindScope(scope.ctx)
+    const picked = { provider: 'deepseek-official', model: 'deepseek-v4-pro' }
+    const selection = { seq: 8, time: 8, type: 'model/selection', data: picked } as SessionEvent
+    try {
+      const opening = session.open()
+      // The Host commits the external pick while the history request is in flight.
+      b.setHostCurrent(picked)
+      b.setRoutable(true)
+      session.handleMuxEnvelope('live' as never, { type: 'session/event', sessionId: sid('target'), event: selection })
+      history.resolve(ok({ events: entries([selection]) as never[], hasMore: false }))
+      await opening
+      await vi.waitFor(() => {
+        expect(face.directory.getSnapshot()).toMatchObject({ current: picked, routable: true, status: 'ready' })
+        expect(b.blockOf('target')).toBeUndefined()
+      })
+      expect(b.calls.select).toBe(0)
+    } finally {
+      session.dispose()
+    }
+  })
+
+  it('keeps the external selection over a stale catalog answer that arrives later', async () => {
+    let resolveOld: (value: unknown) => void = () => undefined
+    let calls = 0
+    const current = { provider: 'deepseek-official', model: 'deepseek-v4-pro' }
+    const b = await bench({ selected: false, wire: { models: () => {
+      calls += 1
+      return calls === 1
+        ? new Promise((resolve) => { resolveOld = resolve })
+        : Promise.resolve({ result: { ok: true, value: { current, routable: true, groups: GROUPS, failures: [] } } })
+    } } })
+    const scope = b.mint('target')
+    const face = b.seat().inject!(sid('target'))
+    face.load()
+    scope.ctx.emit(scope.ctx, 'session/model-selection', sid('target'))
+    await vi.waitFor(() => { expect(face.directory.getSnapshot().current).toEqual(current) })
+    resolveOld({ result: { ok: true, value: { routable: false, groups: GROUPS, failures: [] } } })
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(face.directory.getSnapshot()).toMatchObject({ current, routable: true, status: 'ready' })
+    expect(b.blockOf('target')).toBeUndefined()
+    expect(b.calls.select).toBe(0)
+  })
+
+  it('cannot refresh or publish from a disposed selection scope into its replacement', async () => {
+    let resolveModels: (value: unknown) => void = () => undefined
+    const b = await bench({ wire: { models: () => new Promise((resolve) => { resolveModels = resolve }) } })
+    const first = b.mint('target')
+    const oldFace = b.seat().inject!(sid('target'))
+    first.ctx.emit(first.ctx, 'session/model-selection', sid('target'))
+    expect(b.calls.models).toBe(1)
+    await first.fiber.dispose()
+    b.mint('target')
+    const freshFace = b.seat().inject!(sid('target'))
+    first.ctx.emit(first.ctx, 'session/model-selection', sid('target'))
+    resolveModels({ result: { ok: true, value: {
+      current: { provider: 'deepseek-official', model: 'deepseek-v4-pro' },
+      routable: false, groups: GROUPS, failures: [],
+    } } })
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(b.calls.models).toBe(1)
+    expect(oldFace.directory.getSnapshot().current).toBeNull()
+    expect(freshFace.directory.getSnapshot()).toMatchObject({ current: null, routable: null, status: 'idle' })
+    expect(b.blockOf('target')).toBeUndefined()
   })
 
   it('drops an unconsumed local selection and restores the Host target after reconnect', async () => {

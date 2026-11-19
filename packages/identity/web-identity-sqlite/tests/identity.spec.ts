@@ -1,0 +1,113 @@
+import { backup, DatabaseSync } from 'node:sqlite'
+import { readFile, rm, copyFile, chmod } from 'node:fs/promises'
+import { join } from 'node:path'
+import { afterEach, describe, expect, it } from 'vitest'
+import { SessionId } from '@arx-ai/arx-session'
+import { ModuleId, ProjectId } from '@arx-ai/arx-web-identity'
+import { identityHarness } from '../../../../examples/web-identity/tests/harness.ts'
+import { verifyPassword } from '../src/crypto.ts'
+import { fixedSqliteVersion } from '../src/schema.ts'
+let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
+afterEach(async () => { await fixture?.close(); fixture = undefined })
+describe('native identity and durable authority', () => {
+  it('requires corrected WAL versions', () => {
+    for (const version of ['3.51.3', '3.52.0', '3.50.7', '3.44.6'])
+      expect(fixedSqliteVersion(version)).toBe(true)
+    for (const version of ['3.51.2', '3.50.6', '3.44.5', '3.49.9', '2.99.99'])
+      expect(fixedSqliteVersion(version)).toBe(false)
+  })
+  it('isolates identities, projects, parent deletion and admin power through the real Loader', { timeout: 30000 }, async () => {
+    fixture = await identityHarness({ readyUsers: 2 })
+    const { ctx, master, users, paths, deliveries } = fixture, a = users[0]!, b = users[1]!
+    expect(ctx.get('sessions')).toBeUndefined()
+    expect(ctx.get('apiProxy')).toBeUndefined()
+    await expect(ctx.webIdentity.revalidate({ ...a.authority })).rejects.toMatchObject({ code: 'AUTH_INVALID' })
+    await expect(ctx.webIdentity.login(a.username.toUpperCase(), a.password, 'admin')).rejects.toMatchObject({ code: 'AUTH_INVALID' })
+    const byEmail = await ctx.webIdentity.login(a.username + '@fixture.test', a.password, 'user')
+    expect(byEmail.state.principal.userId).toBe(a.userId)
+    const first = await ctx.webIdentity.createProject(a.authority)
+    const second = await ctx.webIdentity.createProject(a.authority)
+    expect((await ctx.webIdentity.listOwnedProjects(a.authority)).projectIds).toEqual(expect.arrayContaining([first, second]))
+    const scope = await ctx.webIdentity.createWorkspace(a.authority, first)
+    const session = SessionId('identity-fixture-session')
+    await ctx.webIdentity.registerSession(a.authority, scope, session)
+    expect(await ctx.webIdentity.authorizeOwner(a.authority, { kind: 'session', sessionId: session }, ModuleId('storage'))).toEqual(scope)
+    for (const authority of [master!, b.authority])
+      await expect(ctx.webIdentity.authorizeOwner(authority, { kind: 'session', sessionId: session })).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.createProject(master!)).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.registerSession(b.authority, { ...scope, userId: b.userId }, session))
+      .rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.registerSession(a.authority, scope, session)).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.authorizeOwner(a.authority, { kind: 'project', projectId: ProjectId('00000000-0000-4000-8000-000000000000') })).rejects.toMatchObject({ status: 403 })
+    const deleted: string[] = []
+    ctx.on('web-identity/ownership-deleted', async (userId, resource) => { await Promise.resolve(); deleted.push(userId + ':' + resource.kind) })
+    await ctx.webIdentity.deleteWorkspace(a.authority, scope.workspaceId)
+    expect(deleted).toContain(a.userId + ':workspace')
+    expect((await ctx.webIdentity.authenticate(a.token, 'user')).revision).toBe(a.authority.revision)
+    await expect(ctx.webIdentity.authorizeOwner(a.authority, { kind: 'session', sessionId: session })).rejects.toMatchObject({ status: 403 })
+    const other = await ctx.webIdentity.createWorkspace(a.authority, second)
+    const nested = SessionId('identity-fixture-nested')
+    await ctx.webIdentity.registerSession(a.authority, other, nested)
+    await ctx.webIdentity.deleteProject(a.authority, second)
+    await expect(ctx.webIdentity.authorizeOwner(a.authority, { kind: 'workspace', workspaceId: other.workspaceId })).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.authorizeOwner(a.authority, { kind: 'session', sessionId: nested })).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.correctInvitationEmail(master!, a.userId, 'admin@fixture.test')).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.setStatus(master!, master!.principal.userId, 'BLOCKED')).rejects.toMatchObject({ status: 403 })
+    await expect(ctx.webIdentity.setModules(master!, a.userId, ['unknown'])).rejects.toMatchObject({ status: 400 })
+    const notifications: string[] = []
+    ctx.on('web-identity/invalidated', async (userId) => { await Promise.resolve(); notifications.push(userId) })
+    await ctx.webIdentity.setModules(master!, a.userId, ['storage'])
+    expect(notifications).toContain(a.userId)
+    await expect(ctx.webIdentity.authenticate(a.token, 'user')).rejects.toMatchObject({ status: 401 })
+    await expect(ctx.webIdentity.revalidate(a.authority)).rejects.toMatchObject({ status: 401 })
+    expect(deliveries).toHaveLength(2)
+    const db = new DatabaseSync(paths.database)
+    expect(db.prepare('PRAGMA synchronous').get()!.synchronous).toBe(2)
+    expect(db.prepare('SELECT count(*) AS n FROM outbox WHERE ciphertext IS NOT NULL').get()!.n).toBe(0)
+    db.close()
+    const journal = await readFile(join(paths.journal, 'authority.jsonl'), 'utf8')
+    for (const secret of [a.token, b.token, a.password, b.password, new URL(deliveries[0]!.link).hash])
+      expect(journal).not.toContain(secret)
+  })
+  it('restores current revocations, credentials, token invalidation and owner tombstones over an old SQLite backup', { timeout: 30000 }, async () => {
+    fixture = await identityHarness({ readyUsers: 1 })
+    const original = fixture, { ctx, paths, master, users } = original, a = users[0]!
+    const project = await ctx.webIdentity.createProject(a.authority), scope = await ctx.webIdentity.createWorkspace(a.authority, project)
+    const sid = SessionId('restore-session')
+    await ctx.webIdentity.registerSession(a.authority, scope, sid)
+    const snapshot = join(paths.root, 'old.sqlite'), db = new DatabaseSync(paths.database)
+    await backup(db, snapshot)
+    db.close()
+    await chmod(snapshot, 0o600)
+    await ctx.webIdentity.forgotPassword(a.username)
+    await ctx.webIdentity.flushOutbox()
+    const reset = new URLSearchParams(new URL(original.deliveries.at(-1)!.link).hash.slice(1)).get('reset')!
+    const changedPassword = 'Restored-current-' + 'x'.repeat(20)
+    await ctx.webIdentity.resetPassword(reset, changedPassword)
+    const current = await ctx.webIdentity.login(a.username, changedPassword, 'user')
+    const authority = await ctx.webIdentity.authenticate(current.token, 'user')
+    await ctx.webIdentity.deleteProject(authority, project)
+    await ctx.webIdentity.setStatus(master!, a.userId, 'BLOCKED')
+    await original.close(false)
+    fixture = undefined
+    await copyFile(snapshot, paths.database)
+    await rm(paths.database + '-wal', { force: true })
+    await rm(paths.database + '-shm', { force: true })
+    fixture = await identityHarness({ root: paths.root, initialize: false, bootstrap: false })
+    await expect(fixture.ctx.webIdentity.authenticate(a.token, 'user')).rejects.toMatchObject({ status: 401 })
+    await expect(fixture.ctx.webIdentity.login(a.username, a.password, 'user')).rejects.toMatchObject({ status: 401 })
+    await expect(fixture.ctx.webIdentity.resetPassword(reset, 'Fresh-fixture-' + 'y'.repeat(20))).rejects.toMatchObject({ code: 'AUTH_TOKEN_INVALID' })
+    const inspection = new DatabaseSync(paths.database)
+    expect(inspection.prepare('SELECT status FROM users WHERE id=?').get(a.userId)!.status).toBe('BLOCKED')
+    const verifier = String(inspection.prepare('SELECT password_hash FROM users WHERE id=?').get(a.userId)!.password_hash)
+    expect(await verifyPassword(changedPassword, verifier)).toBe(true)
+    expect(await verifyPassword(a.password, verifier)).toBe(false)
+    expect(inspection.prepare('SELECT deleted FROM project_owners WHERE id=?').get(project)!.deleted).toBe(1)
+    inspection.close()
+    await fixture.close(false)
+    fixture = undefined
+    await rm(paths.journal, { recursive: true, force: true })
+    await expect(identityHarness({ root: paths.root, initialize: false, bootstrap: false })).rejects.toBeDefined()
+    await rm(paths.root, { recursive: true, force: true })
+  })
+})

@@ -14,6 +14,7 @@ import projectsRemote from '@arx-ai/arx-project/remote'
 export type { FinalizePromptEvaluationRequest, ProjectWorkflowRun, ProjectBudget, ResumeWorkflowRunRequest, ReconcileWorkflowRunRequest, PromptVariableDefinition, CreateProjectRequest, ProjectId, ProjectRecord, ProjectSummary, SavePlanRequest, SavePromptRequest } from '@arx-ai/arx-project/types'
 /** Platform-neutral assembly of generated Host Remote contributions. */
 
+import type { ConnectionHandle } from '@arx-ai/arx-client-connection/client'
 import type { Context } from '@arx-ai/cordis'
 import commandsRemote from '@arx-ai/arx-commands/remote'
 import goalsRemote from '@arx-ai/arx-goal/remote'
@@ -130,11 +131,14 @@ export const inject = ['remote']
 export async function apply(ctx: Context): Promise<() => Promise<void>> {
   const disposers: Array<() => Promise<void>> = []
   try {
-    for (const contribution of [
-      commandsRemote, goalsRemote, dynamicRemote, fileReferencesRemote,
-      pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote, projectsRemote,
-      turnOutlinesRemote, filePreviewsRemote, repositoryRemote, githubRemote,
-    ]) {
+    const native = (ctx.get('connection') as ConnectionHandle | undefined)?.accessMode === 'authenticated'
+    const contributions = native
+      ? [commandsRemote, goalsRemote, fileReferencesRemote, messageFeedbackRemote,
+        sessionReferencesRemote, turnOutlinesRemote, filePreviewsRemote]
+      : [commandsRemote, goalsRemote, dynamicRemote, fileReferencesRemote,
+        pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote, projectsRemote,
+        turnOutlinesRemote, filePreviewsRemote, repositoryRemote, githubRemote]
+    for (const contribution of contributions) {
       disposers.push(await ctx.remote.$mount(contribution))
     }
   } catch (error) {

@@ -89,6 +89,14 @@ export type SlotKind = 'single' | 'list' | 'keyed' | 'chain'
 
 /** Slot data context: global, current-session-optional, or strict session-bound. */
 export type SlotScope = 'root' | 'session-maybe' | 'session'
+/** Slot framework data kit. Omitted registrations retain the project kit. */
+export type SlotRuntime = 'project' | 'application'
+export type { ClientComposition } from './composition.ts'
+/** Application children are root scoped and carry no project hooks. */
+export type ApplicationChildrenDecl = {
+  [P in keyof SlotMap & string]?: SlotMap[P]['scope'] extends 'root' ? SlotSpec<SlotMap[P]> : never
+}
+
 
 /**
  * One SlotMap entry: kind/scope axes plus the optional owner-supplied props
@@ -219,6 +227,10 @@ export type PropsRuntime<
     : ScopeOf<K> extends 'session-maybe' ? SessionMaybeStandardProps
       : object) &
   GlobalStandardProps
+
+/** Application runtime share derives from the same owner/key/inject declarations. */
+export type PropsApplication<K extends keyof SlotMap & string, EntryKey extends EntryKeyOf<K> = EntryKeyOf<K>> =
+  OwnerOf<K> & KeyPropsOf<K, EntryKey> & SlotInjectFace<SlotInjectOf<K>>
 
 /** renderSlot dispatch options: keyed dispatch key, list filtering, and empty fallback. */
 export interface RenderOpts<EntryKey extends string = string> {
@@ -447,7 +459,8 @@ export type ComposedProps<
   I extends object,
   M = never,
   N = undefined,
-> = PropsRuntime<K, EntryKey> & PropsRenderSlots<S> & PropsStore<H> & InjectFace<I> & MatchedShare<SlotMap[K], M> & PropsLocale<N>
+  R extends SlotRuntime = 'project',
+> = (R extends 'application' ? PropsApplication<K, EntryKey> : PropsRuntime<K, EntryKey>) & PropsRenderSlots<S> & PropsStore<H> & InjectFace<I> & MatchedShare<SlotMap[K], M> & PropsLocale<N>
 
 /**
  * Inject factory parameter list, derived from the registration's declaration:
@@ -531,11 +544,14 @@ type BaseOptions<
   H,
   M = never,
   N = undefined,
+  R extends SlotRuntime = 'project',
 > = {
+  /** The literal selects the standard kit; omitted preserves project registrations. */
+  runtime?: R
   /** Target slot key (the entry contributes INTO this slot). */
-  name: K
+  name: K & (R extends 'application' ? (ScopeOf<K> extends 'root' ? K : never) : K)
   /** Child-slot declaration + render authorization + runtime spec, in one table. */
-  children?: D
+  children?: D & (R extends 'application' ? ApplicationChildrenDecl : object)
   /** Store seat: a shared handle (apply-constructed) or an exclusive factory (framework-called per entry x scope). */
   store?: H
   /**
@@ -547,7 +563,7 @@ type BaseOptions<
   locale?: N
   /** Registrant identity label for diagnostics (the runtime Service wrapper stamps the caller's fiber name). */
   registrant?: string
-} & KindOptions<K, EntryKey, M>
+} & KindOptions<K, EntryKey, M> & (R extends 'application' ? { runtime: 'application' } : { runtime?: 'project' })
 
 /**
  * One stored registration, as recorded by the core and read by the render
@@ -555,6 +571,8 @@ type BaseOptions<
  * the shares against the component).
  */
 export interface StoredEntry {
+  /** Omitted means the original project standard kit. */
+  runtime?: SlotRuntime | undefined
   component: unknown
   options: { key?: string; id?: string; order?: number; label?: SlotLabel; priority?: number }
   /** Chain routing selector (type-erased like `inject`; present exactly on chain-slot entries). */
@@ -589,6 +607,7 @@ export function resolveSlotLabel(label: SlotLabel | undefined): string | undefin
  * overload-to-implementation compatibility.
  */
 interface ErasedOptions {
+  runtime?: SlotRuntime | undefined
   name: string
   key?: string | undefined
   id?: string | undefined
@@ -746,12 +765,13 @@ export class SlotCore {
     M = never,
     N extends (keyof LocaleNamespaceMap & string) | undefined = undefined,
     C extends SlotComponent<never> = SlotComponent<never>,
+    R extends SlotRuntime = 'project',
   >(
-    options: BaseOptions<K, EntryKey, D, H, M, N> & { inject?: undefined },
+    options: BaseOptions<K, EntryKey, D, H, M, N, R> & { inject?: undefined },
     component: C
       & SlotComponent<ComposedProps<
         K, NoInfer<EntryKey>, keyof NoInfer<D> & keyof SlotMap & string,
-        HandleOf<NoInfer<H>>, object, NoInfer<M>, NoInfer<N>
+        HandleOf<NoInfer<H>>, object, NoInfer<M>, NoInfer<N>, NoInfer<R>
       >>
       & RendersCheck<C, D>,
   ): () => void
@@ -774,12 +794,13 @@ export class SlotCore {
     M = never,
     N extends (keyof LocaleNamespaceMap & string) | undefined = undefined,
     C extends SlotComponent<never> = SlotComponent<never>,
+    R extends SlotRuntime = 'project',
   >(
-    options: BaseOptions<K, EntryKey, D, H, M, N> & { inject: (...args: InjectParams<K, H>) => I },
+    options: BaseOptions<K, EntryKey, D, H, M, N, R> & { inject: (...args: InjectParams<K, H>) => I },
     component: C
       & SlotComponent<ComposedProps<
         K, NoInfer<EntryKey>, keyof NoInfer<D> & keyof SlotMap & string,
-        HandleOf<NoInfer<H>>, I, NoInfer<M>, NoInfer<N>
+        HandleOf<NoInfer<H>>, I, NoInfer<M>, NoInfer<N>, NoInfer<R>
       >>
       & RendersCheck<C, D>,
   ): () => void
@@ -790,6 +811,10 @@ export class SlotCore {
       throw new Error(`slot "${options.name}" is not declared (a parent entry's children table must declare it)`)
     }
     const spec = rec.spec
+    if (options.runtime === 'application' && (spec.scope !== 'root'
+      || Object.values(options.children ?? {}).some(child => child.scope !== 'root'))) {
+      throw new Error('application slot entries and their children must be root scoped')
+    }
     // Kind constraints stay runtime checks for dynamically-composed callers;
     // typed callers already satisfied KindOptions statically. Cell occupancy
     // clashes only at the exact priority: a different priority shadows.
@@ -843,6 +868,7 @@ export class SlotCore {
     }
 
     const entry: StoredEntry = {
+      ...(options.runtime === undefined ? {} : { runtime: options.runtime }),
       component,
       options: {
         ...(options.key !== undefined ? { key: options.key } : {}),

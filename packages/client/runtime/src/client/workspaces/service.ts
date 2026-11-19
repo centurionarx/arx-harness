@@ -57,6 +57,8 @@ export class WorkspaceRuntime implements IWorkspaces {
   private readonly connecting = new Map<WorkspaceId, Promise<SessionId>>()
   /** Guards the runtime-owned one-shot initial-selection subscription. */
   private initialSelectionStarted = false
+  /** A tree view only: the server still admits the owner and allocates the session. */
+  private readonly nativeUser: boolean
 
   /**
    * @param ctx - client root context.
@@ -64,14 +66,26 @@ export class WorkspaceRuntime implements IWorkspaces {
    * @param sessions - cross-domain sessions face used for recency and blank-session reuse.
    */
   constructor(ctx: Context, private readonly api: IApiClient, private readonly sessions: SessionsPort) {
+    const composition = ctx.get('clientComposition')
+    this.nativeUser = composition?.kind === 'user' && composition.audience === 'user' && composition.scope === 'project'
     this.manager = new WorkspaceManager(api)
     this.list = createSnapshotStore<WorkspaceListState>({
       items: [], archivedSessionIds: [], state: 'idle', phase: 'pending', error: null,
       baselinesReady: false, recentWorkspaceId: undefined,
     })
-    this.manager.subscribe(() => { this.project() })
-    this.sessions.list.subscribe(() => { this.project() })
+    const unsubscribeManager = this.manager.subscribe(() => { this.project() })
+    const unsubscribeSessions = this.sessions.list.subscribe(() => { this.project() })
     ctx.reflect.provide('workspaces', this, undefined)
+    ctx.effect(() => () => {
+      unsubscribeManager()
+      unsubscribeSessions()
+      this.manager.dispose()
+      this.connecting.clear()
+      this.list.set({
+        items: [], archivedSessionIds: [], state: 'idle', phase: 'pending', error: null,
+        baselinesReady: false, recentWorkspaceId: undefined,
+      })
+    }, 'workspaces: object lifetime')
   }
 
   /**
@@ -83,17 +97,18 @@ export class WorkspaceRuntime implements IWorkspaces {
    * Resolution guarantee (both arms): the returned id is already in the list
    * store and `sessions.binding(id)` resolves synchronously — draft hand-off
    * may write the new scope's machine before opening.
-   * @param workspaceId - chosen Workspace (must be in the workspace list).
+   * @param workspaceId - chosen Workspace; native USER may connect an own HTTP-created id before its first stream frame.
    * @returns the reused or newly created session id.
    */
   async connectWorkspace(workspaceId: WorkspaceId): Promise<SessionId> {
-    const workspace = this.list.getSnapshot().items.find(item => item.workspaceId === workspaceId)
-    if (workspace === undefined) throw new Error(`workspaces.connectWorkspace: unknown workspace ${workspaceId}`)
-    // Coalesce concurrent connects: a create's summary lands without cwd
-    // until the host frame arrives, so a second call inside that window
-    // would miss the reuse scan and mint another hidden blank session.
+    this.manager.assertActive()
+    // Coalesce even before a native HTTP-created Workspace has a stream row.
     const inflight = this.connecting.get(workspaceId)
     if (inflight !== undefined) return inflight
+    const workspace = this.list.getSnapshot().items.find(item => item.workspaceId === workspaceId)
+    if (workspace === undefined && !this.nativeUser) throw new Error(`workspaces.connectWorkspace: unknown workspace ${workspaceId}`)
+    // Native ids cross the same existing session.create carrier. No path,
+    // provisional row, or client-assigned SessionId is synthesized here.
     // Reuse requires workspace membership (id in sessionIds AND same
     // canonical cwd — the host's own membership rule), never cwd alone:
     // a cwd match can belong to no account (sessions the CLI/TUI birthed at
@@ -105,11 +120,12 @@ export class WorkspaceRuntime implements IWorkspaces {
     const sessions = this.sessions.list.getSnapshot()
     for (const id of sessions.ids) {
       const summary = sessions.byId[id]
-      if (summary !== undefined && summary.blank && summary.cwd === workspace.path
+      if (workspace !== undefined && summary !== undefined && summary.blank && summary.cwd === workspace.path
         && workspace.sessionIds.includes(summary.id)
         && !archived.includes(summary.id)) return summary.id
     }
     const attempt = this.sessions.create({ workspaceId })
+      .then((sessionId) => { this.manager.assertActive(); return sessionId })
       .finally(() => { this.connecting.delete(workspaceId) })
     this.connecting.set(workspaceId, attempt)
     return attempt
@@ -175,6 +191,7 @@ export class WorkspaceRuntime implements IWorkspaces {
    * @param workspaceId - explicit target Workspace for scoped actions.
    */
   startSession(workspaceId?: WorkspaceId): void {
+    this.manager.assertActive()
     const workspace = this.list.getSnapshot()
     const current = this.sessions.list.getSnapshot().current
     const currentWorkspaceId = current === undefined

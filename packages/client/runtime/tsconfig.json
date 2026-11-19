@@ -55,6 +55,9 @@
     },
     {
       "path": "../../api/remotes/tsconfig.client.json"
+    },
+    {
+      "path": "../slots"
     }
   ],
   "exclude": [

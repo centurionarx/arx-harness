@@ -421,12 +421,14 @@ export interface ConnectionConfig {
    * that is not a bare, canonical authority fails the plugin load.
    */
   trustedHosts?: string[]
+  /** Native auth routes never dispatch to the shared operator host. */
+  accessMode?: 'local' | 'authenticated'
   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
   maxRequestBodyBytes?: number
 }
 ```
 
-Source: [`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
+Source: [`packages/client/connection/src/index.ts:53`](../packages/client/connection/src/index.ts)
 
 <a id="arx-aiarx-client-hmr"></a>
 
@@ -980,6 +982,67 @@ export interface Config {
 
 Source: [`packages/host/open-in-app/src/index.ts:55`](../packages/host/open-in-app/src/index.ts)
 
+<a id="arx-aiarx-host-web-identity-api"></a>
+
+## `@arx-ai/arx-host-web-identity-api`
+
+Requires: `webIdentity` · `webServer`
+
+```ts config-catalog
+/**
+ * Fixed deployment audience/origin and bounded HTTP body, recovery, rate and invalidation policies.
+ */
+export interface Config {
+  /**
+   * Fixed deployment audience used for role admission and the separate USER or administration cookie.
+   */
+  audience: AuthAudience
+  /**
+   * Canonical deployment origin including scheme and authority; normal deployments require HTTPS and an exact Origin
+   * match.
+   */
+  origin: string
+  /**
+   * Permit HTTP only for an explicit disposable loopback fixture; this does not enable a public deployment.
+   */
+  allowInsecureLoopbackFixture?: boolean
+  /**
+   * Accept explicitly configured non-browser Authorization bearer clients in addition to browser cookies.
+   */
+  allowBearer?: boolean
+  /**
+   * Maximum bytes consumed for one JSON auth/admin request before a typed capacity refusal.
+   */
+  maxBodyBytes?: number
+  /**
+   * Maximum duration of an auth-only long poll before current authority is checked and a bounded response is
+   * returned.
+   */
+  invalidationTimeoutMs?: number
+  /**
+   * Maximum simultaneous auth-only long polls for one authentication session.
+   */
+  maxInvalidationRequestsPerSession?: number
+  /**
+   * Attempt allowance per socket-peer and normalized-identifier bucket during the configured public-request window.
+   */
+  publicRateLimitAttempts?: number
+  /**
+   * Lifetime of public auth attempt buckets; forwarded client address headers do not supply their identity.
+   */
+  publicRateLimitWindowMs?: number
+  /**
+   * Minimum elapsed time for a valid public recovery submission before its generic response, independent of account
+   * lookup.
+   */
+  minimumRecoveryResponseMs?: number
+}
+```
+
+Depends on: [`AuthAudience`](subsystems/identity.md)
+
+Source: [`packages/host/web-identity-api/src/index.ts:18`](../packages/host/web-identity-api/src/index.ts)
+
 <a id="arx-aiarx-host-webserver"></a>
 
 ## `@arx-ai/arx-host-webserver`
@@ -991,10 +1054,44 @@ export interface Config {
   host: '127.0.0.1' | '0.0.0.0'
   /** Listen port; zero requests an OS-assigned port. */
   port: number
+  /** Native identity uses only a principal-bound request renderer. */
+  accessMode?: 'local' | 'authenticated'
 }
 ```
 
 Source: [`packages/host/webserver/src/index.ts:59`](../packages/host/webserver/src/index.ts)
+
+<a id="arx-aiarx-identity-authority-journal"></a>
+
+## `@arx-ai/arx-identity-authority-journal`
+
+```ts config-catalog
+/**
+ * Canonical protected authority storage and explicit initialization/record-capacity policy.
+ */
+export interface Config {
+  /**
+   * Absolute protected authority directory holding the current journal and watermark outside rollback backups and
+   * worker mounts.
+   */
+  root: string
+  /**
+   * Explicit operator or fixture permission to create an authority genesis; absent authority otherwise fails normal
+   * startup closed.
+   */
+  allowInitialize?: boolean
+  /**
+   * Storage or backup roots that must not contain, or be contained by, the external current authority directory.
+   */
+  protectedRoots?: string[]
+  /**
+   * Byte ceiling for one serialized authority record before it can be appended or replayed.
+   */
+  maxRecordBytes?: number
+}
+```
+
+Source: [`packages/identity/identity-authority-journal/src/index.ts:20`](../packages/identity/identity-authority-journal/src/index.ts)
 
 <a id="arx-aiarx-invariants"></a>
 
@@ -1013,6 +1110,42 @@ export interface Config {
 ```
 
 Source: [`packages/runtime-diagnostics/invariants/src/index.ts:15`](../packages/runtime-diagnostics/invariants/src/index.ts)
+
+<a id="arx-aiarx-isolated-project-runtime"></a>
+
+## `@arx-ai/arx-isolated-project-runtime`
+
+Requires: `webIdentity` · `credentials` · `projectStorage`
+
+```ts config-catalog
+/** Deployment configuration is not mutable through USER or MASTER APIs. */
+export interface Config {
+  /** Trusted supervisor origin; absent leaves every execution unavailable. */
+  endpoint?: string
+  /** Operator-managed credential reference, never a browser-supplied secret. */
+  credentialRef?: string
+  /** Explicit loopback-only HTTP permission for disposable fixtures. */
+  fixtureLoopback?: boolean
+  /**
+   * Deadline for a unary exchange, or a stream's response headers. A workspace-scoped unary exchange
+   * and the sub-stream attach that precedes it share this one deadline.
+   */
+  requestTimeoutMs: number
+  /**
+   * Deadline for each cancellation request to return its quiescent receipt. Cancellations of one user
+   * run in parallel, each with its own deadline. The value must exceed, with margin, the longest time
+   * the supervisor takes to stop a worker, including its forced kill, and deliver the receipt. A receipt
+   * that is missing, invalid or later than this deadline closes the adapter for every user.
+   */
+  cancellationTimeoutMs: number
+  /** Largest buffered HTTP request body. */
+  maxRequestBytes: number
+  /** Largest unary result or individual SSE frame. */
+  maxResponseBytes: number
+}
+```
+
+Source: [`packages/host/isolated-project-runtime/src/index.ts:27`](../packages/host/isolated-project-runtime/src/index.ts)
 
 <a id="arx-aiarx-jobs-local"></a>
 
@@ -1733,6 +1866,36 @@ export interface Config {
 
 Source: [`packages/project/project-runner/src/index.ts:19`](../packages/project/project-runner/src/index.ts)
 
+<a id="arx-aiarx-project-storage"></a>
+
+## `@arx-ai/arx-project-storage`
+
+Requires: `webIdentity` · `sessionPersistence`
+
+```ts config-catalog
+/** All roots are operator-owned paths. Runtime workers receive only one volume. */
+export interface Config {
+  /** Derived metadata database, separate from the identity and history databases. */
+  indexPath: string
+  /** Root of the existing JSONL provider, inaccessible to every worker. */
+  logRoot: string
+  /** Parent of opaque workspace volumes, inaccessible to every worker. */
+  volumeRoot: string
+  /** Largest list response, including metadata and continuation fields. */
+  maxPageBytes: number
+  /** Maximum session headers per page. */
+  pageSize: number
+  /** Largest decoded history page, including its JSON envelope. */
+  historyPageBytes: number
+  /** Largest admitted event batch after JSON serialization. */
+  appendBytes: number
+  /** SQLite write reservation wait in milliseconds. */
+  busyTimeoutMs: number
+}
+```
+
+Source: [`packages/identity/project-storage/src/index.ts:22`](../packages/identity/project-storage/src/index.ts)
+
 <a id="arx-aiarx-pwsh-local"></a>
 
 ## `@arx-ai/arx-pwsh-local`
@@ -1962,13 +2125,17 @@ export interface Config {
   preparedSessionCacheSize?: number
   /** Fixed live-event coalescing window; not a backend completion deadline. */
   writeBatchMaxDelayMs?: number
+  /** Maximum retained raw-page header bytes before rejecting malformed metadata. */
+  rawPageHeaderMaxBytes?: number
+  /** Maximum native Zstandard window log2 for bounded raw pages; larger frames reject. */
+  rawPageWindowLogMax?: number
 }
 
 /** Physical encoding selected for JSONL session artifacts. */
 export type JsonlCompression = 'zstd' | 'none'
 ```
 
-Source: [`packages/session/session-persistence-jsonl/src/index.ts:60`](../packages/session/session-persistence-jsonl/src/index.ts)
+Source: [`packages/session/session-persistence-jsonl/src/index.ts:63`](../packages/session/session-persistence-jsonl/src/index.ts)
 
 <a id="arx-aiarx-session-persistence-sqlite"></a>
 
@@ -1995,7 +2162,7 @@ export interface Config {
 export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 ```
 
-Source: [`packages/session/session-persistence-sqlite/src/index.ts:36`](../packages/session/session-persistence-sqlite/src/index.ts)
+Source: [`packages/session/session-persistence-sqlite/src/index.ts:31`](../packages/session/session-persistence-sqlite/src/index.ts)
 
 <a id="arx-aiarx-session-projection-cache"></a>
 
@@ -3415,6 +3582,132 @@ export interface Config {
 
 Source: [`packages/web/web-fetch-http/src/index.ts:34`](../packages/web/web-fetch-http/src/index.ts)
 
+<a id="arx-aiarx-web-identity-resend"></a>
+
+## `@arx-ai/arx-web-identity-resend`
+
+Requires: `webIdentity`
+
+```ts config-catalog
+/**
+ * Explicit protected Resend key file and operator-configured sender.
+ */
+export interface Config {
+  /**
+   * Absolute protected file containing the operator Resend API key; no inline key or ambient environment lookup is
+   * used.
+   */
+  keyFile: string
+  /**
+   * Operator-configured Resend sender passed to the private invitation/reset transport.
+   */
+  from: string
+}
+```
+
+Source: [`packages/identity/web-identity-resend/src/index.ts:17`](../packages/identity/web-identity-resend/src/index.ts)
+
+<a id="arx-aiarx-web-identity-sqlite"></a>
+
+## `@arx-ai/arx-web-identity-sqlite`
+
+Requires: `identityAuthorityJournal`
+
+```ts config-catalog
+/**
+ * Private control storage, canonical recovery origins, installed grants and bounded native identity policies.
+ */
+export interface Config {
+  /**
+   * Absolute local identity SQLite file, independent of the history schema and outside private worker content.
+   */
+  path: string
+  /**
+   * Absolute protected 32-byte control key file used for session CSRF and encrypted outbox envelopes, outside DB
+   * backup sets.
+   */
+  privateKeyPath: string
+  /**
+   * Canonical audience origins used only to build private fragment-based invitation and reset links.
+   */
+  recoveryOrigins: {
+    /**
+     * Canonical USER deployment origin for recipient-owned invitation/reset completion.
+     */
+    user: string
+    /**
+     * Canonical administration origin for MASTER account password recovery.
+     */
+    admin: string
+  }
+  /**
+   * Operator-installed grant catalog; account administration may grant only these module and operation identifiers.
+   */
+  modules: {
+    /**
+     * Stable validated module identifier used by authorization and administrative grant replacement.
+     */
+    id: string
+    /**
+     * Display label for the installed module in the detached administration catalog.
+     */
+    label: string
+    /**
+     * Installed operation identifiers governed by this module; duplicate operation IDs are refused.
+     */
+    operations: string[]
+  }[]
+  /**
+   * Identifiers of the single MASTER_ADMIN account that bootstrapMaster creates; both must be valid account identifiers.
+   */
+  bootstrapAccount: {
+    /**
+     * Username of the bootstrap MASTER_ADMIN account.
+     */
+    username: string
+    /**
+     * Email address of the bootstrap MASTER_ADMIN account, used for its password recovery.
+     */
+    email: string
+  }
+  /**
+   * Explicit operator or fixture permission to create a new independent identity schema; it does not recreate a
+   * missing journal.
+   */
+  allowInitialize?: boolean
+  /**
+   * Lifetime of newly issued audience-bound authentication sessions before mandatory reauthentication.
+   */
+  sessionTtlMs?: number
+  /**
+   * Explicit maximum idle interval; only authenticated carrier activity renews it within the absolute session lifetime.
+   */
+  sessionIdleTtlMs: number
+  /**
+   * Lifetime of a single-use invitation independently of administrative account release.
+   */
+  invitationTtlMs?: number
+  /**
+   * Lifetime of a single-use credential recovery token; consumption cannot release or grant an account.
+   */
+  resetTtlMs?: number
+  /**
+   * Deadline of one pending outbox transport attempt, communicated through its cancellation signal.
+   */
+  deliveryTimeoutMs?: number
+  /**
+   * Interval of the scoped delivery pump for pending, nonexpired encrypted outbox entries.
+   */
+  deliveryRetryMs?: number
+  /**
+   * Bounded number of pending password jobs; native scrypt execution remains limited to two active jobs.
+   */
+  hashQueueLimit?: number
+}
+```
+
+Source: [`packages/identity/web-identity-sqlite/src/index.ts:22`](../packages/identity/web-identity-sqlite/src/index.ts)
+
 <a id="arx-aiarx-web-search-exa"></a>
 
 ## `@arx-ai/arx-web-search-exa`
@@ -3581,8 +3874,10 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@arx-ai/arx-client-locale` ([`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts))
 - `@arx-ai/arx-client-modules` — requires `webServer` · `loader` ([`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts))
 - `@arx-ai/arx-client-runtime` ([`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts))
+- `@arx-ai/arx-client-slots` ([`packages/client/slots/src/index.ts`](../packages/client/slots/src/index.ts))
 - `@arx-ai/arx-client-ui-agent-preset` ([`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts))
 - `@arx-ai/arx-client-ui-attachment` ([`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts))
+- `@arx-ai/arx-client-ui-auth` ([`packages/client/ui-auth/src/index.ts`](../packages/client/ui-auth/src/index.ts))
 - `@arx-ai/arx-client-ui-brand-official` ([`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts))
 - `@arx-ai/arx-client-ui-commands` ([`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts))
 - `@arx-ai/arx-client-ui-conversation` ([`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts))
@@ -3675,6 +3970,7 @@ Abstract service classes — a deployment loads a concrete implementation packag
 - `@arx-ai/arx-shell` — abstract `ShellExecutor` ([`packages/shell/shell/src/index.ts`](../packages/shell/shell/src/index.ts))
 - `@arx-ai/arx-spill` — abstract `SpillStore` ([`packages/spill/spill/src/index.ts`](../packages/spill/spill/src/index.ts))
 - `@arx-ai/arx-subprocess` — abstract `SubprocessRuntime` ([`packages/subprocess/subprocess/src/index.ts`](../packages/subprocess/subprocess/src/index.ts))
+- `@arx-ai/arx-web-identity` — abstract `WebIdentity` ([`packages/identity/web-identity/src/index.ts`](../packages/identity/web-identity/src/index.ts))
 - `@arx-ai/arx-workflow` — abstract `WorkflowEngine` ([`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts))
 
 ## Library packages (no plugin entry)

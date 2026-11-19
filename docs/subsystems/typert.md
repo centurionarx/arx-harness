@@ -328,7 +328,20 @@ Resolve strict generated definitions or conservative SRC markers against current
  * @throws {@link TypertGatewayError} for dispatch, provider, or boundary failures; lookup-policy and business errors retain identity.
  */
 async invoke(request: InvokeRemoteRequest): Promise<unknown>
+
+/**
+ * Dispatch a canonical named-argument envelope with the existing RPC error mapping.
+ * Network callers must authenticate and authorize owner-scoped arguments before
+ * invoking this worker-local boundary; this method creates no transport route.
+ * @param endpoint - Canonical namespace/method admitted by the trusted caller.
+ * @param payload - Exact named argument envelope validated by Typert codecs.
+ * @param signal - The caller's operation cancellation.
+ * @returns The existing Connection RPC result.
+ */
+async dispatchRpc( endpoint: string, payload: unknown, signal: AbortSignal, ): Promise<ConnectionRpcResult>
 ```
+
+Types: [ConnectionRpcResult](../../packages/client/connection/README.md)
 
 Source: [`packages/api/gateway/src/index.ts`](../../packages/api/gateway/src/index.ts)
 <!-- END GENERATED cordis-surface -->

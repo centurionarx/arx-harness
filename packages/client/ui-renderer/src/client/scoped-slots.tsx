@@ -346,6 +346,7 @@ function standardProps(
   scope: SlotScope,
   info: SessionMaybeProvideInfo | undefined,
 ): InjectedProps {
+  if (host.runtime === 'application') throw new SlotAssemblyError('application host has no project standard kit')
   let cache = standardPropsCache.get(host)
   if (cache === undefined) {
     cache = {
@@ -402,7 +403,10 @@ function standardKit(
   standard: InjectedProps
   actions: object | undefined
 } {
-  const standard = standardProps(host, scope, info)
+  if (host.runtime === 'application' && entry.runtime !== 'application') {
+    throw new SlotAssemblyError('application host rejects project entry')
+  }
+  const standard = entry.runtime === 'application' ? {} : standardProps(host, scope, info)
   const kit: InjectedProps = { ...standard }
   if (entry.locale !== undefined) {
     const face = host.locale
@@ -651,10 +655,25 @@ function StrictSessionEntry({ slotKey, entry, ownerProps, slotInjected, hookCont
  */
 const ANCHOR_STYLE = { display: 'contents' } as const
 
-function SlotOutlet({ slotKey, ownerProps, opts }: {
+interface SlotOutletProps {
   slotKey: string
   ownerProps: object
   opts?: (RenderOpts & ChainRenderOpts) | undefined
+}
+
+/** Different fixed tree scopes never invoke each other's hooks. */
+function SlotOutlet(props: SlotOutletProps) {
+  const host = useHost()
+  return host.runtime === 'application'
+    ? <SlotOutletBody {...props} sessionInfo={undefined} />
+    : <ProjectSlotOutlet {...props} />
+}
+function ProjectSlotOutlet(props: SlotOutletProps) {
+  const sessionInfo = useSessionMaybeProvideInfo()
+  return <SlotOutletBody {...props} sessionInfo={sessionInfo} />
+}
+function SlotOutletBody({ slotKey, ownerProps, opts, sessionInfo }: SlotOutletProps & {
+  sessionInfo: SessionMaybeProvideInfo | undefined
 }) {
   const host = useHost()
   // Version tick drives entries() re-read; the host batches per microtask.
@@ -665,7 +684,6 @@ function SlotOutlet({ slotKey, ownerProps, opts }: {
   // Locale revision tick: a locale switch re-renders every outlet, and entry
   // bodies re-derive their `t` seat at the new revision (fresh identity).
   useLocaleRevision(host.locale)
-  const sessionInfo = useSessionMaybeProvideInfo()
   // Anchor contract: every slot render site exposes a stable
   // `[data-slot="<key>"]` wrapper — the addressable seam dynamic styles
   // target — and `display:contents` keeps it layout-neutral. The wrapper
@@ -685,14 +703,15 @@ function renderOutletContent(
   slotKey: string,
   ownerProps: object,
   opts: (RenderOpts & ChainRenderOpts) | undefined,
-  sessionInfo: SessionMaybeProvideInfo,
+  sessionInfo: SessionMaybeProvideInfo | undefined,
 ): ReactNode {
   const spec = host.specOf(slotKey)
   // Undeclared (or no-longer-declared) keys render empty: a declaring entry's
   // unload returns the slot to the undeclared state while retained elements
   // may still be mounted — natural empty, not an ownership failure.
   if (!spec) return null
-  const strictSessionAbsent = spec.scope === 'session' && sessionInfo.sessionId === undefined
+  if (host.runtime === 'application' && spec.scope !== 'root') throw new SlotAssemblyError('application outlet rejects project scope')
+  const strictSessionAbsent = spec.scope === 'session' && sessionInfo?.sessionId === undefined
   if (strictSessionAbsent && (spec.kind !== 'chain' || !opts?.overlay)) {
     return <>{opts?.fallback ?? null}</>
   }
@@ -899,9 +918,9 @@ export function createSlotRenderer(): SlotRenderer {
     renderRoot(host, ownerProps) {
       return (
         <HostContext.Provider value={host}>
-          <SessionMaybeProvider>
-            <RootOutlet ownerProps={ownerProps} />
-          </SessionMaybeProvider>
+          {host.runtime === 'application'
+            ? <RootOutlet ownerProps={ownerProps} />
+            : <SessionMaybeProvider><RootOutlet ownerProps={ownerProps} /></SessionMaybeProvider>}
         </HostContext.Provider>
       )
     },

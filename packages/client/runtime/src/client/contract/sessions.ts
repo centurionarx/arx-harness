@@ -62,6 +62,11 @@ export interface ISessions {
    * @returns completion of the current or newly started refresh.
    */
   refreshSubagents(parentSessionId: SessionId): Promise<void>
+  /**
+   * Refresh the session list baseline, reusing an in-flight pull.
+   * @returns completion of that pull; it resolves after a failed pull as well.
+   */
+  refresh(): Promise<void>
 
   /**
    * Record the composition one session now runs. The agent-preset seat calls

@@ -23,6 +23,7 @@ import { createUserMessage, freezeMessage, ReasoningEffortId } from '@arx-ai/arx
 import { errorChain } from '@arx-ai/arx-llm'
 import type { ContentBlock, MessageSource } from '@arx-ai/arx-llm'
 import { isAppendSurfaceEvent, isJsonValue } from '@arx-ai/arx-session'
+import { SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import type { JsonValue, Session, SessionEvent, SessionEventMap, SessionHeader, SessionId, UserMessage } from '@arx-ai/arx-session'
 import type { SessionPersistence } from '@arx-ai/arx-session-persistence'
 import { SessionQueryError, type SessionSearchCursor } from '@arx-ai/arx-session-query'
@@ -595,6 +596,17 @@ function directoryError(error: unknown): RpcError {
 
 /** Resolved Agent model and project-directory defaults consumed by the API implementation. */
 export interface ApiProxyDefaults {
+  /**
+   * Trusted workers resolve already allocated creation metadata without a log.
+   * Browser payloads cannot supply it; absence preserves local creation time.
+   */
+  resolveSessionCreationHeader?: (sessionId: SessionId) => Promise<SessionHeader>
+  /**
+   * Trusted worker composition allocates fork ownership in the control plane.
+   * Browser payloads never carry the child identity or creation time; absent
+   * preserves local UUID allocation and the SessionStore creation timestamp.
+   */
+  allocateForkSessionHeader?: (sourceId: SessionId, seedLength: number, agentPreset?: string) => Promise<SessionHeader>
   /** Configured bounds for browser-owned authorization attempts. */
   authorization?: Partial<AuthorizationSessionLimits>
   /**
@@ -1691,10 +1703,20 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           throw new Error(`failed to ensure project directory "${cwd}": ${String(error)}`, { cause: error })
         }
         const composition = await composeAgent(presetId)
+        const creationHeader = defaults.resolveSessionCreationHeader === undefined ? undefined
+          : await defaults.resolveSessionCreationHeader(sessionId)
+        if (creationHeader !== undefined && (creationHeader.id !== sessionId
+          || creationHeader.version !== SESSION_FORMAT_VERSION || creationHeader.cwd !== cwd
+          || creationHeader.agentPreset !== composition.agentPreset
+          || creationHeader.parentSession !== undefined || creationHeader.seedLength !== undefined
+          || creationHeader.origin !== undefined || (creationHeader.delegationDepth ?? 0) !== 0)) {
+          throw new Error('session creation header differs from its trusted allocation')
+        }
         return (await ctx.agents.create({
           sessionId,
           agentOptions: agentOptions(),
           meta: {
+            ...creationHeader === undefined ? {} : { createdAt: creationHeader.createdAt },
             cwd,
             ...composition.agentPreset === undefined ? {} : { agentPreset: composition.agentPreset },
           },
@@ -2449,7 +2471,9 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
             details: {},
           })
         }
-        const childId = `session-${randomUUID()}` as SessionId
+        const allocatedHeader = defaults.allocateForkSessionHeader === undefined ? undefined
+          : await defaults.allocateForkSessionHeader(source.id, cut, resolveSessionPreset(source))
+        const childId = allocatedHeader === undefined ? `session-${randomUUID()}` as SessionId : allocatedHeader.id
         // The child inherits the parent's composition for the same reason a
         // resumed session keeps its own: the seeded history was produced under
         // those tools, and composing anything else would strand the tool calls
@@ -2461,6 +2485,7 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
             sessionId: childId,
             seed: events.slice(0, cut),
             meta: {
+              ...allocatedHeader === undefined ? {} : { createdAt: allocatedHeader.createdAt },
               ...source.header.cwd === undefined ? {} : { cwd: source.header.cwd },
               parentSession: source.id,
               seedLength: cut,

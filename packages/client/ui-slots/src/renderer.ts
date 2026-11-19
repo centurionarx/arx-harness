@@ -98,7 +98,7 @@ export interface RenderOpts {
 }
 
 /** Host API the runtime SlotRegistry presents to the installed renderer. */
-export interface SlotRendererHost {
+export interface SlotRendererCommon {
   /**
    * Subscribe to a key's registration changes (microtask-batched).
    * @param key - slot key.
@@ -159,6 +159,19 @@ export interface SlotRendererHost {
    * @returns the instance, or undefined when the entry declares no store.
    */
   storeOf(entry: StoredEntry, scopeKey: string | undefined): StoreInstanceLike | undefined
+  /**
+   * Installed locale face backing the `t` standard seat (absent until the
+   * locale plugin installs one; rendering an entry that declared `locale:`
+   * without it is an assembly failure).
+   */
+  locale?: LocaleFace | undefined
+}
+
+/** A presentation tree has no session/workspace seats. */
+export interface ApplicationSlotRendererHost extends SlotRendererCommon { readonly runtime: 'application' }
+/** The default project tree binds real object-layer services. */
+export interface ProjectSlotRendererHost extends SlotRendererCommon {
+  readonly runtime?: 'project'
   /** Session-side standard-kit sources. */
   sessions: {
     /** Session list source backing the useSessions standard hook. */
@@ -177,13 +190,9 @@ export interface SlotRendererHost {
     /** Workspace list source backing the useWorkspaces standard hook. */
     list: HostObservable<unknown>
   }
-  /**
-   * Installed locale face backing the `t` standard seat (absent until the
-   * locale plugin installs one; rendering an entry that declared `locale:`
-   * without it is an assembly failure).
-   */
-  locale?: LocaleFace | undefined
 }
+/** The renderer narrows this face before reading project data. */
+export type SlotRendererHost = ApplicationSlotRendererHost | ProjectSlotRendererHost
 
 /** The installation contract: runtime owns install()/renderSlot(); ui-renderer implements rendering. */
 export interface SlotRenderer {

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-connection",
   "description": "Wire consumer layer: HTTP-up/WebSocket-down client, ConnectionController dual streams with reconnect, and fixture api",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
@@ -56,7 +56,9 @@
     "@arx-ai/arx-commands": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^",
+    "@arx-ai/arx-isolated-project-runtime": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/arx-host-webserver": "workspace:^",
@@ -68,6 +70,8 @@
     "@arx-ai/arx-commands": "workspace:^",
     "@arx-ai/arx-llm": "workspace:^",
     "@arx-ai/arx-session": "workspace:^",
-    "@arx-ai/arx-tools": "workspace:^"
+    "@arx-ai/arx-tools": "workspace:^",
+    "@arx-ai/arx-web-identity": "workspace:^",
+    "@arx-ai/arx-isolated-project-runtime": "workspace:^"
   }
 }

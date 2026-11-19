@@ -78,6 +78,32 @@ export async function connectFreshWorkspace(page: Page, root: string, name = 'wo
     .waitFor({ timeout: 15_000 })
 }
 
+/** A browser RPC request held before it reaches the Host; see {@link holdNextApiRequest}. */
+export interface HeldApiRequest {
+  /** Resolves once the browser has sent the request and the hold intercepted it. */
+  readonly held: Promise<void>
+  /** Send the held request on to the Host, which answers with its state at this moment. */
+  release(): void
+}
+
+/**
+ * Hold the page's next request to `/api/<method>` before it leaves the browser, so a scenario can change Host state while
+ * the client waits for that answer (for example a history read during a session open). Only the first matching
+ * request is held; later ones pass through. The Host first sees the request at {@link HeldApiRequest.release}.
+ * @param page - the page whose request is held; install the hold before the action that sends the request.
+ * @param method - the RPC method name, such as `session.history`.
+ * @returns the hold's arrival signal and release.
+ */
+export async function holdNextApiRequest(page: Page, method: string): Promise<HeldApiRequest> {
+  const held = Promise.withResolvers<undefined>(), released = Promise.withResolvers<undefined>()
+  await page.route(url => url.pathname === '/api/' + method, async (route) => {
+    held.resolve(undefined)
+    await released.promise
+    await route.continue()
+  }, { times: 1 })
+  return { held: held.promise, release: () => { released.resolve(undefined) } }
+}
+
 /** Failure evidence goes to the gitignored .artifacts/ (repo convention). */
 export async function saveFailureShot(page: Page, name: string): Promise<void> {
   const dir = fileURLToPath(new URL('../../../.artifacts', import.meta.url))

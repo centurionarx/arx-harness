@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-layout",
   "description": "Shell plugin: three-column AppFrame with drag handles, ctx.layout viewing-state service (navigation + panels)",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
@@ -36,7 +36,10 @@
         "@arx-ai/arx-client-runtime",
         "@arx-ai/arx-client-ui-theme"
       ],
-      "platform": "web"
+      "platform": "web",
+      "external": [
+        "@arx-ai/arx-client-ui-theme/client"
+      ]
     }
   },
   "scripts": {

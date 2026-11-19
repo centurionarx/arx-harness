@@ -19,7 +19,7 @@ import {
   SessionPersistence, SessionPersistenceRevision, PersistenceCoordinator, SessionFormatUnsupportedError,
   type PersistenceBackend, type SessionLocation, type SessionPersistenceSnapshot,
   type SessionInspection, type SessionPersistenceRevision as PersistenceRevision, type SessionRawArtifact,
-  type StoredPrefix,
+  type StoredPrefix, type SessionRawArtifactPage, type SessionRawArtifactPageRequest,
 } from '@arx-ai/arx-session-persistence'
 import type { SessionEvent, SessionId, SessionHeader, SessionPreparation } from '@arx-ai/arx-session'
 import {
@@ -30,12 +30,15 @@ import {
 import {
   compressZstdFrame, createZstdFrameDecoder, decompressZstdFrame, decompressZstdPrefix, scanZstdFrames,
 } from './zstd.ts'
+import { readRawPage as readBoundedRawPage } from './raw-page.ts'
 import { ensureDurableDirectoryWin32, publishNewFileWin32 } from './win32.ts'
 
 export type { JsonlCompression } from './format.ts'
 
 const DEFAULT_PACK_CHUNKS = true
 const DEFAULT_COMPRESSION: JsonlCompression = 'zstd'
+const DEFAULT_RAW_PAGE_HEADER_MAX_BYTES = 1024 * 1024
+const DEFAULT_RAW_PAGE_WINDOW_LOG_MAX = 25
 /**
  * Internal scheduling constant, not deployment configuration: balance
  * frame-boundary event-loop yields against `setImmediate` overhead. One frame
@@ -80,6 +83,10 @@ export interface Config {
   preparedSessionCacheSize?: number
   /** Fixed live-event coalescing window; not a backend completion deadline. */
   writeBatchMaxDelayMs?: number
+  /** Maximum retained raw-page header bytes before rejecting malformed metadata. */
+  rawPageHeaderMaxBytes?: number
+  /** Maximum native Zstandard window log2 for bounded raw pages; larger frames reject. */
+  rawPageWindowLogMax?: number
 }
 
 /** Opaque coordinator token for replacing bytes recovered from a torn frame. */
@@ -120,6 +127,7 @@ function isENOENT(error: unknown): boolean {
  */
 export class JsonlSessionPersistence extends SessionPersistence implements PersistenceBackend<JsonlTornMarker> {
   override readonly supportsRawArtifacts = true
+  override readonly supportsRawArtifactPages = true
 
   static inject = ['sessions']
 
@@ -127,6 +135,8 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
     root: z.string().required(),
     packChunks: z.boolean().default(DEFAULT_PACK_CHUNKS),
     compression: JsonlCompressionSchema,
+    rawPageHeaderMaxBytes: z.number().step(1).min(256).max(16 * 1024 * 1024).default(DEFAULT_RAW_PAGE_HEADER_MAX_BYTES),
+    rawPageWindowLogMax: z.number().step(1).min(10).max(30).default(DEFAULT_RAW_PAGE_WINDOW_LOG_MAX),
     preparedSessionCacheSize: z.number().step(1).min(1).default(DEFAULT_PREPARED_SESSION_CACHE_SIZE),
     writeBatchMaxDelayMs: z.number().step(1).min(1).max(MAX_WRITE_BATCH_DELAY_MS)
       .default(DEFAULT_WRITE_BATCH_MAX_DELAY_MS),
@@ -177,6 +187,11 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
     return this.coordinator.create(meta)
   }
 
+  /** Commit only the canonical header; ordinary creation remains lazy. */
+  override materialize(id: SessionId): Promise<void> {
+    return this.coordinator.materialize(id)
+  }
+
   append(id: SessionId, events: readonly SessionEvent[]): Promise<void> {
     return this.coordinator.append(id, events)
   }
@@ -195,7 +210,8 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
 
   // JSONL is sequential media: no loadStoredFrom hook, so the coordinator
   // parses the stored prefix (both encodings) and skips forward to fromSeq.
-  readFrom(id: SessionId, fromSeq: number, signal?: AbortSignal): Promise<{ meta: SessionHeader; events: SessionEvent[] }> {
+  readFrom(id: SessionId, fromSeq: number, signal?: AbortSignal): Promise<{ meta: SessionHeader
+    events: SessionEvent[] }> {
     return this.coordinator.readFrom(id, fromSeq, signal)
   }
 
@@ -213,6 +229,16 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
     const path = await this.findLog(id, signal)
     if (path === undefined) return undefined
     return this.readPrefix(path, id, signal)
+  }
+
+  /**
+   * Observe the existing source-qualified file identity without a metadata scan.
+   * @param id - Stored session identity resolved across configured project directories.
+   * @param signal - Optional cancellation for identity resolution and stat.
+   * @returns The original backend revision, or undefined for a lazy log.
+   */
+  override readRevision(id: SessionId, signal?: AbortSignal): Promise<PersistenceRevision | undefined> {
+    return this.readStoredRevision(id, signal)
   }
 
   /**
@@ -282,6 +308,62 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
   }
 
   /**
+   * Read bounded plaintext with the original header and a stable source token.
+   * Zstandard verifies the entire containing frame before exposing its page;
+   * large existing frames therefore consume additional CPU/I/O but no full-log
+   * plaintext buffer. Continuations reject any changed source.
+   * @param id - Persisted session identity.
+   * @param request - Decoded offset, page budget and optional source token.
+   * @param signal - Optional read/decode cancellation.
+   * @returns A bounded raw page, or undefined for an absent artifact.
+   */
+  override async readRawPage(id: SessionId, request: SessionRawArtifactPageRequest,
+    signal?: AbortSignal): Promise<SessionRawArtifactPage | undefined> {
+    signal?.throwIfAborted()
+    await this.ensureRootEncoding()
+    const path = await this.findLog(id, signal)
+    if (path === undefined) return undefined
+    for (;;) {
+      signal?.throwIfAborted()
+      const file = await open(path, 'r')
+      try {
+        const identity = await file.stat({ bigint: true })
+        const revision = fileRevision(identity)
+        if (identity.size > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('raw artifact exceeds safe byte offsets')
+        if (request.revision !== undefined && request.revision !== revision) throw new Error('raw artifact revision changed')
+        let page: Awaited<ReturnType<typeof readBoundedRawPage>>
+        try {
+          page = await readBoundedRawPage(file, Number(identity.size), this.compression, request.offset, request.maxBytes, {
+            headerMaxBytes: this.config.rawPageHeaderMaxBytes ?? DEFAULT_RAW_PAGE_HEADER_MAX_BYTES,
+            windowLogMax: this.config.rawPageWindowLogMax ?? DEFAULT_RAW_PAGE_WINDOW_LOG_MAX,
+          }, signal)
+        } catch (error) {
+          signal?.throwIfAborted()
+          const current = fileRevision(await stat(path, { bigint: true }))
+          if (current !== revision) {
+            if (request.revision !== undefined) throw new Error('raw artifact revision changed')
+            continue
+          }
+          throw error
+        }
+        signal?.throwIfAborted()
+        const after = fileRevision(await stat(path, { bigint: true }))
+        if (revision !== after) {
+          if (request.revision !== undefined) throw new Error('raw artifact revision changed')
+          continue
+        }
+        const meta = parseHeaderMeta(page.header)
+        if (meta === undefined || meta.id !== id) throw new Error('corrupt session log: invalid raw-page header')
+        await this.assertStoredIdentity(path, meta, id, signal)
+        return { meta, filename: 'session.jsonl', offset: request.offset, content: page.content,
+          ...(page.nextOffset === undefined ? {} : { nextOffset: page.nextOffset }), revision }
+      } finally {
+        await file.close()
+      }
+    }
+  }
+
+  /**
    * Read a file's bytes under a revision-stable loop: a writer appending
    * between stat and readFile would yield a torn physical file, so retry
    * while the stat revision changes.
@@ -292,7 +374,8 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
   private async readStableFile(
     path: string,
     signal?: AbortSignal,
-  ): Promise<{ buffer: Buffer; revision: PersistenceRevision }> {
+  ): Promise<{ buffer: Buffer
+    revision: PersistenceRevision }> {
     for (;;) {
       signal?.throwIfAborted()
       const before = fileRevision(await stat(path, { bigint: true }))
@@ -424,7 +507,7 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
     if (isMaterialized) {
       await this.appendLines(meta, events)
     } else {
-      await this.materialize(meta, events)
+      await this.materializeArtifact(meta, events)
     }
   }
 
@@ -469,11 +552,13 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
     return snapshots
   }
 
-  private async listArtifacts(signal?: AbortSignal): Promise<Array<{ header: SessionHeader; path: string }>> {
+  private async listArtifacts(signal?: AbortSignal): Promise<Array<{ header: SessionHeader
+    path: string }>> {
     signal?.throwIfAborted()
     await this.ensureRootEncoding()
     signal?.throwIfAborted()
-    const artifacts: Array<{ header: SessionHeader; path: string }> = []
+    const artifacts: Array<{ header: SessionHeader
+      path: string }> = []
     const ids = new Set<SessionId>()
     for (const project of await this.listProjectDirs(signal)) {
       signal?.throwIfAborted()
@@ -511,7 +596,7 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
   // --- materialization / append / repair (file mechanics) ---
 
   /** Atomically write the header line + first batch (temp-write, fsync, publish). */
-  private async materialize(meta: SessionHeader, events: readonly SessionEvent[]): Promise<void> {
+  private async materializeArtifact(meta: SessionHeader, events: readonly SessionEvent[]): Promise<void> {
     const project = projectDir(this.root, meta.cwd)
     const dir = sessionDir(this.root, meta.cwd, meta.id)
     const finalPath = logPath(this.root, meta.cwd, meta.id, this.compression)
@@ -618,6 +703,7 @@ export class JsonlSessionPersistence extends SessionPersistence implements Persi
   /** Encode the header and first batch without combining their frame boundaries. */
   private async encodeMaterialization(meta: SessionHeader, events: readonly SessionEvent[]): Promise<Buffer | string> {
     const header = JSON.stringify(toHeaderLine(meta)) + '\n'
+    if (events.length === 0) return this.compression === 'none' ? header : compressZstdFrame(header)
     const body = eventLines(events, this.packChunks) + '\n'
     if (this.compression === 'none') return header + body
     const headerFrame = await compressZstdFrame(header)

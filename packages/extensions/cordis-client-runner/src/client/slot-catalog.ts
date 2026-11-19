@@ -80,6 +80,71 @@ export const CLIENT_NOTES: readonly string[] = [
 // detection is told to skip the data rather than the file.
 export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
   {
+    key: 'auth.admin.page',
+    kind: 'keyed',
+    scope: 'root',
+    summary: 'Identity-only MASTER pages selected by AdminRoot through users/modules/account keys.',
+    doc: 'Identity-only MASTER pages selected by AdminRoot through users/modules/account keys.\nRegistrants receive root application props and their declared administrative store,\nauth and locale faces; the page owner adds no fields. An entry replaces one selected page.\nAn absent key renders no page content; navigation stays owned by AdminRoot.',
+    registerOptions: [
+      {
+        name: 'key',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key: the entry renders where the owner dispatches this exact key. Registering an already-occupied key replaces that occupant.',
+      },
+    ],
+    ownerProps: [],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: 'fixed by the owner\'s key table { users: object; modules: object; account: object }, already taken: account, modules, users',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'root\' (client-ui-auth), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-auth AdminUsers key \'users\'',
+      'client-ui-auth AdminModules key \'modules\'',
+      'client-ui-auth AdminAccount key \'account\'',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'auth.admin.page\', () => ctx.slots.register(\n      { name: \'auth.admin.page\', key: \'<one key the owner dispatches>\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-auth/src/client/contract.ts:29',
+  },
+  {
+    key: 'auth.user.page',
+    kind: 'keyed',
+    scope: 'root',
+    summary: 'Own USER application pages selected by UserHome through projects/account keys.',
+    doc: 'Own USER application pages selected by UserHome through projects/account keys.\nRegistrants receive root application props and their declared store, auth and locale faces;\nthe page owner adds no fields. An entry replaces only that selected page\'s content.\nAn absent key renders no page content and never supplies project hooks.',
+    registerOptions: [
+      {
+        name: 'key',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key: the entry renders where the owner dispatches this exact key. Registering an already-occupied key replaces that occupant.',
+      },
+    ],
+    ownerProps: [],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: 'fixed by the owner\'s key table { projects: object; account: object }, already taken: account, projects',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'root\' (client-ui-auth), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-auth UserBrowser key \'projects\'',
+      'client-ui-auth UserHomeAccount key \'account\'',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'auth.user.page\', () => ctx.slots.register(\n      { name: \'auth.user.page\', key: \'<one key the owner dispatches>\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-auth/src/client/contract.ts:22',
+  },
+  {
     key: 'conversation',
     kind: 'single',
     scope: 'session-maybe',
@@ -1273,8 +1338,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'root',
     kind: 'single',
     scope: 'root',
-    summary: 'The built-in render-tree root hole (seeded by SlotCore): the one slot the shell itself renders, and the ancestor of every other seat.',
-    doc: 'The built-in render-tree root hole (seeded by SlotCore): the one slot the\nshell itself renders, and the ancestor of every other seat. OCCUPIED by\nui-layout\'s AppFrame, which declares the sidebar, conversation, details,\nand shell.overlay seats inside it.\n\nDO NOT register here. This is a single slot, so a second entry does not\nsit beside the frame — it shadows it, and a dynamically registered entry\nis assigned a lower priority than the shipped one, which makes it the\nwinner: the page would render your component alone, with every seat the\nframe declares gone. For a surface of your own that floats over the whole\napp, register into `shell.overlay` instead (a list slot: additive, and\nclick-through until your entry opts into pointer events).',
+    summary: 'One composition root: ui-layout for projects, ui-auth for public/admin.',
+    doc: 'One composition root: ui-layout for projects, ui-auth for public/admin.',
     registerOptions: [],
     ownerProps: [
       '/** Root owner share: the shell supplies nothing — the frame is inject-assembled. */\nexport interface RootOwnerProps { children?: never }',
@@ -1289,11 +1354,14 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'the runtime itself (built in; always present)',
     occupants: [
+      'client-ui-auth PublicRoot',
+      'client-ui-auth AdminRoot',
+      'client-ui-auth UserHome',
       'client-ui-layout AppFrame',
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'root\', () => ctx.slots.register(\n      { name: \'root\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/runtime/src/client/slots.ts:41',
+    source: 'packages/client/slots/src/client/registry.ts:30',
   },
   {
     key: 'settings.action',
@@ -1680,6 +1748,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar.settings\' (client-ui-settings-general), so it exists while that entry is mounted',
     occupants: [
       'client-ui-agent-preset AgentPresetSection id \'agent-presets\'',
+      'client-ui-auth Account id \'account\'',
       'client-ui-github GithubAccountSection id \'github\'',
       'client-ui-settings-general GeneralSection id \'general\'',
       'client-ui-settings-models ModelsSection id \'models\'',
@@ -1900,6 +1969,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-auth AccountFooter id \'account\'',
+      'client-ui-auth LogoutFooter id \'signout\'',
       'client-ui-projects ProjectsEntry id \'projects\'',
       'client-ui-cordis CordisPanel id \'cordis-panel\'',
     ],
@@ -1979,6 +2050,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-auth UserBrowser',
       'client-ui-workspace WorkspaceBrowser',
     ],
     replaceRisk: 'shadows-shipped-ui',

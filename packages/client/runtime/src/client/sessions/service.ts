@@ -159,6 +159,7 @@ export { scopeOf } from '../agents/scope.ts'
  * @returns basename title, or '' when no non-empty segment exists.
  */
 export function workspaceTitleOf(cwd: string): string {
+  /* v8 ignore next -- `?? ''` arm: split always returns at least one element. */
   return cwd.replace(/[/\\]+$/, '').split(/[/\\]/).pop() ?? ''
 }
 
@@ -305,7 +306,7 @@ export class SessionRuntime implements ISessions {
     })
     // The manager owns wire truth; the store is its projection. Manager
     // notifications are already microtask-batched.
-    this.manager.subscribe(() => { this.projectList() })
+    const unsubscribeManager = this.manager.subscribe(() => { this.projectList() })
     // Stage follower: every current write (open() and projection alike)
     // re-evaluates staging, so startup restore (persisted selection validated
     // by the projection) and reconnect resurfacing open their window with no
@@ -313,7 +314,7 @@ export class SessionRuntime implements ISessions {
     // the follower writes no list state — session.open()'s synchronous prefix
     // touches only session-side state and its own microtask-batched notifier.
     // The current-provide projection follows the same current writes.
-    this.list.subscribe(() => {
+    const unsubscribeCurrent = this.list.subscribe(() => {
       this.followCurrent()
       this.provideChannel.publishCurrent()
     })
@@ -346,6 +347,24 @@ export class SessionRuntime implements ISessions {
       }, 'sessions: conversation registry rebuild')
     }
     rootCtx.reflect.provide('sessions', this, undefined)
+    rootCtx.effect(() => () => {
+      unsubscribeManager()
+      unsubscribeCurrent()
+      this.manager.dispose()
+      for (const [id, record] of this.scopes) this.dropScope(id, record)
+      this.scopes.clear()
+      this.deferredRemovals.clear()
+      this.watched = undefined
+      try {
+        this.list.set({
+          ids: [], byId: {}, current: undefined, phase: 'pending',
+          subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+        })
+      } catch (error) {
+        console.error('sessions disposal subscriber failed:', error)
+      }
+      this.provideChannel.publishCurrent()
+    }, 'sessions: object lifetime')
   }
 
   /**
@@ -509,6 +528,7 @@ export class SessionRuntime implements ISessions {
     atSeq?: number
     increaseTitle?: boolean
   }): Promise<SessionId> {
+    this.manager.assertActive()
     const sourceTitle = opts.increaseTitle
       ? this.list.getSnapshot().byId[opts.sessionId]?.title
       : undefined
@@ -526,6 +546,7 @@ export class SessionRuntime implements ISessions {
       const child = this.binding(childId)?.session
       if (child === undefined) throw new Error(`fork child "${childId}" is not locally addressable`)
       const renamed = await child.rename(increasedForkTitle(sourceTitle))
+      this.manager.assertActive()
       if (!renamed.ok) throw new Error(`fork child rename failed: ${renamed.error.code}: ${renamed.error.message}`)
     }
     return childId

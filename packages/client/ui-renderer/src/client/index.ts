@@ -38,7 +38,7 @@ declare module '@arx-ai/cordis' {
 }
 
 /** Services required before application assembly. */
-export const inject = ['slots', 'sessions']
+export const inject = ['slots']
 
 interface BootSnapshot {
   className: string

@@ -104,6 +104,7 @@ function questionInteractionStatus(
 
 /** Instance cluster + frame entry + the session list. */
 export class SessionManager {
+  private disposed = false
   private readonly sessions = new Map<SessionId, Session>()
   /** Pre-instantiation buffer for answerable requests and the queued-turn snapshot, which history
    *  cannot reconstruct on open. Live requests remain until resolution; queue and replay duplicates
@@ -176,6 +177,44 @@ export class SessionManager {
     this.listSnapshotCache = this.buildListSnapshot()
   }
 
+  /** Release retained data and timers when the owning runtime context ends. */
+  dispose(): void {
+    if (this.disposed) return
+    this.disposed = true
+    this.notifier.dispose()
+    for (const timer of this.catalogDebounce.values()) clearTimeout(timer)
+    this.catalogDebounce.clear()
+    for (const session of this.sessions.values()) session.dispose()
+    this.sessions.clear()
+    this.pendingBuffers.clear()
+    this.pendingInteractions.clear()
+    this.completedNotifications.clear()
+    this.prevRunning.clear()
+    for (const store of this.projectionStores.values()) store.dispose()
+    this.projectionStores.clear()
+    this.addresses.clear()
+    this.catalogs.clear()
+    this.catalogInflight.clear()
+    this.catalogStale.clear()
+    this.openCatalogs.clear()
+    this.jobsBySession.clear()
+    this.summaries = []
+    this.selected = undefined
+    this.listState = 'idle'
+    this.listPhase = 'pending'
+    this.listError = null
+    this.listInflight = null
+    this.listMutations = null
+    this.entryCache.clear()
+    this.itemsCache = []
+    this.listSnapshotCache = this.buildListSnapshot()
+  }
+
+  /** Reject actions whose runtime context has ended. */
+  assertActive(): void {
+    if (this.disposed) throw new Error('session manager is disposed')
+  }
+
   // ---- Selection ----
 
   /**
@@ -183,6 +222,7 @@ export class SessionManager {
    * @param sessionId - listed or catalog-addressed Session id.
    */
   select(sessionId: SessionId): void {
+    this.assertActive()
     const address = this.navigationAddress(sessionId)
     if (!this.summaries.some(summary => summary.sessionId === sessionId) && address === undefined) {
       throw new Error(`sessions.select: unknown session ${sessionId}`)
@@ -206,6 +246,7 @@ export class SessionManager {
    * @param address - catalog-derived parent and child ids.
    */
   selectSubagent(address: SubagentAddress): void {
+    this.assertActive()
     const catalog = this.catalogs.get(address.parentSessionId)
     const entry = catalog?.entries.find(candidate => candidate.id === address.childSessionId)
     if (entry === undefined || entry.kind !== 'child' || entry.mode !== address.mode) {
@@ -260,6 +301,7 @@ export class SessionManager {
    * @param sessionId - the session to drop.
    */
   drop(sessionId: SessionId): void {
+    this.sessions.get(sessionId)?.dispose()
     this.sessions.delete(sessionId)
   }
 
@@ -270,6 +312,7 @@ export class SessionManager {
    * @returns the resident instance.
    */
   get(sessionId: SessionId): Session {
+    this.assertActive()
     let session = this.sessions.get(sessionId)
     if (session === undefined) {
       session = this.createSession(sessionId)
@@ -324,6 +367,7 @@ export class SessionManager {
 
   /** Rebuild every resident Session after one coalesced registry transaction. */
   rebuildConversationRegistry(): void {
+    if (this.disposed) return
     for (const session of this.sessions.values()) session.rebuildConversationRegistry()
   }
 
@@ -345,6 +389,7 @@ export class SessionManager {
    * @param parentSessionId - catalog owner.
    */
   refreshSubagents(parentSessionId: SessionId): Promise<void> {
+    if (this.disposed) return Promise.resolve()
     const existing = this.catalogInflight.get(parentSessionId)
     if (existing !== undefined) return existing.promise
     const previous = this.catalogs.get(parentSessionId)
@@ -360,6 +405,7 @@ export class SessionManager {
     const operation = (async () => {
       try {
         const { result } = await this.api.subagents.list({ parentSessionId })
+        if (this.disposed) return
         if (result.ok) {
           const parentAvailable = this.catalogInflight.get(parentSessionId)?.parentAvailableOverride
             ?? result.value.parentAvailable
@@ -386,6 +432,7 @@ export class SessionManager {
           })
         }
       } catch (error: unknown) {
+        if (this.disposed) return
         const folded = transportError<never>(error)
         this.catalogs.set(parentSessionId, {
           entries: this.withCatalogMutations(
@@ -394,15 +441,18 @@ export class SessionManager {
           parentAvailable: this.catalogInflight.get(parentSessionId)?.parentAvailableOverride
             ?? previous?.parentAvailable ?? false,
           state: 'error',
+          /* v8 ignore next -- the `? null` arm is unreachable: transportError always returns ok:false. */
           error: folded.ok ? null : folded.error,
         })
       } finally {
-        this.catalogInflight.delete(parentSessionId)
-        // Re-arm the trailing pull before the dirty notify: the response the
-        // caller observed predates the stale-marking change, so the follow-up
-        // refresh is the only carrier of that change.
-        if (this.catalogStale.delete(parentSessionId)) void this.refreshSubagents(parentSessionId)
-        this.notifier.markDirty()
+        if (!this.disposed) {
+          this.catalogInflight.delete(parentSessionId)
+          // Re-arm the trailing pull before the dirty notify: the response the
+          // caller observed predates the stale-marking change, so the follow-up
+          // refresh is the only carrier of that change.
+          if (this.catalogStale.delete(parentSessionId)) void this.refreshSubagents(parentSessionId)
+          this.notifier.markDirty()
+        }
       }
     })()
     this.catalogInflight.set(parentSessionId, {
@@ -437,6 +487,7 @@ export class SessionManager {
 
   /** Full refresh via session.list (single-flight: an in-flight call is reused). */
   refreshList(): Promise<void> {
+    if (this.disposed) return Promise.resolve()
     if (this.listInflight !== null) return this.listInflight
     this.listState = 'loading'
     this.listError = null
@@ -447,6 +498,7 @@ export class SessionManager {
     this.listInflight = (async () => {
       try {
         const { result } = await this.api.sessions.list({})
+        if (this.disposed) return
         if (result.ok) {
           const baseline = this.listPhase === 'pending'
             ? result.value.items
@@ -495,14 +547,17 @@ export class SessionManager {
           this.listError = result.error
         }
       } catch (error) {
+        if (this.disposed) return
         this.listState = 'error'
         const folded = transportError<never>(error)
         /* v8 ignore next -- the `? null` arm is unreachable: transportError always returns ok:false. */
         this.listError = folded.ok ? null : folded.error
       } finally {
-        this.listMutations = null
-        this.listInflight = null
-        this.notifier.markDirty()
+        if (!this.disposed) {
+          this.listMutations = null
+          this.listInflight = null
+          this.notifier.markDirty()
+        }
       }
     })()
     return this.listInflight
@@ -520,7 +575,10 @@ export class SessionManager {
     signal: AbortSignal,
   ): Promise<RpcResult<{ items: SessionSearchResultItem[]; hasMore: boolean }>> {
     try {
-      return (await this.api.sessions.search({ query }, signal)).result
+      this.assertActive()
+      const { result } = await this.api.sessions.search({ query }, signal)
+      this.assertActive()
+      return result
     } catch (error: unknown) {
       return transportError(error)
     }
@@ -537,11 +595,13 @@ export class SessionManager {
     opts: { workspaceId?: WorkspaceId; cwd?: string; sessionId?: SessionId } = {},
   ): Promise<RpcResult<{ sessionId: SessionId }>> {
     try {
+      this.assertActive()
       const shared = opts.sessionId === undefined ? {} : { sessionId: opts.sessionId }
       const payload = opts.workspaceId !== undefined
         ? { workspaceId: opts.workspaceId, ...shared }
         : { ...(opts.cwd === undefined ? {} : { cwd: opts.cwd }), ...shared }
       const { result } = await this.api.sessions.create(payload)
+      this.assertActive()
       if (result.ok) {
         this.recordMutation({ kind: 'upsert', summary: {
           sessionId: result.value.sessionId, updatedAt: Date.now(), running: false, blank: true,
@@ -581,11 +641,13 @@ export class SessionManager {
     opts: { sessionId: SessionId; atSeq?: number },
   ): Promise<RpcResult<{ sessionId: SessionId }>> {
     try {
+      this.assertActive()
       const source = this.summaries.find(s => s.sessionId === opts.sessionId)
       const { result } = await this.api.sessions.fork({
         sessionId: opts.sessionId,
         ...opts.atSeq === undefined ? {} : { atSeq: opts.atSeq },
       })
+      this.assertActive()
       const childId = result.ok
         ? result.value.sessionId
         : workspaceAttachSessionId(result.error)
@@ -625,6 +687,7 @@ export class SessionManager {
 
   /** Apply immediately and retain for replay when a list response is in flight. */
   private recordMutation(mutation: SessionListMutation): void {
+    if (this.disposed) return
     this.listMutations?.push(mutation)
     this.summaries = applyMutation(this.summaries, mutation)
     // Eager edge reconciliation — a snapshot-build-time pass would miss consecutive status frames.
@@ -681,6 +744,7 @@ export class SessionManager {
    * @param envelope - the frame with its wire rpcId.
    */
   handleMuxEnvelope(envelope: RpcRequest<MuxFrame>): void {
+    if (this.disposed) return
     const frame = envelope.payload
     if (frame.type === 'stream/error') return // Controller already treats this as stream failure
     if (
@@ -793,6 +857,7 @@ export class SessionManager {
    * @param envelope - the frame with its wire rpcId.
    */
   handleHostEnvelope(envelope: RpcRequest<HostFrame>): void {
+    if (this.disposed) return
     const frame = envelope.payload
     switch (frame.type) {
       case 'host/session-added': {
@@ -885,6 +950,7 @@ export class SessionManager {
    * request with its live rpcId.
   */
   handleDisconnected(): void {
+    if (this.disposed) return
     if (this.pendingInteractions.size > 0) {
       this.pendingInteractions.clear()
       this.notifier.markDirty()
@@ -900,6 +966,7 @@ export class SessionManager {
 
   /** After each connection generation: refresh the session baseline and rebuild opened windows. */
   handleConnected(): void {
+    if (this.disposed) return
     void this.refreshList()
     const selectedAddress = this.selected === undefined ? undefined : this.addresses.get(this.selected)
     if (selectedAddress !== undefined) void this.refreshSubagents(selectedAddress.parentSessionId)
@@ -1036,6 +1103,7 @@ export class SessionManager {
       // The composer selects the first question ahead of approval. Mirror that
       // answer order so the sidebar names the interaction the user can act on.
       const status = statuses.find(candidate => candidate !== 'approval') ?? statuses[0]
+      /* v8 ignore next -- stored interaction maps are never empty: resolvePending deletes a map when it empties. */
       if (status !== undefined) pendingInteractions.set(sessionId, status)
     }
     const fresh = flattenLineage(merged, pendingInteractions, this.completedNotifications)

@@ -1,0 +1,29 @@
+# Fixture root/key substitutions are supplied by the keyless driver.
+# No base/web-app bundle is included: this composition has no project capabilities.
+- id: identity-journal
+  name: '@arx-ai/arx-identity-authority-journal'
+  config:
+    root: __JOURNAL__
+    allowInitialize: __INITIALIZE__
+    protectedRoots: [__STATE__, __CONTENT__]
+- id: web-identity
+  name: '@arx-ai/arx-web-identity-sqlite'
+  config:
+    path: __DATABASE__
+    privateKeyPath: __KEY__
+    allowInitialize: __INITIALIZE__
+    sessionTtlMs: 28800000
+    sessionIdleTtlMs: 1800000
+    bootstrapAccount:
+      username: arxadmin
+      email: admin@centurionarx.com
+    recoveryOrigins:
+      user: https://user.fixture.test
+      admin: https://admin.fixture.test
+    modules:
+      - id: runtime
+        label: Runtime
+        operations: [tools.execute]
+      - id: storage
+        label: Storage
+        operations: [projects.create, sessions.read]

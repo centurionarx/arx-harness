@@ -19,6 +19,8 @@ export interface FetchHandler {
    * @returns complete or streaming Fetch response.
    */
   fetch(request: Request): Promise<Response>
+  /** Refuse an incoming request before its body is buffered. */
+  acceptRequest?(request: IncomingMessage): Promise<Response | undefined>
 }
 
 /**
@@ -28,12 +30,14 @@ export interface FetchHandler {
  * @param res - node:http response the bridge writes and owns to completion.
  * @param apiHandler - fetch-shaped API carrier the request is dispatched to.
  * @param maxRequestBodyBytes - maximum body bytes buffered before dispatch.
+ * @param requestOrigin - Operator-selected canonical origin; the local transport retains its internal base.
  */
 export async function bridge(
   req: IncomingMessage,
   res: ServerResponse,
   apiHandler: FetchHandler,
   maxRequestBodyBytes = DEFAULT_MAX_REQUEST_BODY_BYTES,
+  requestOrigin = 'http://arx.internal',
 ): Promise<void> {
   const abort = new AbortController()
   // Client-disconnect detection MUST hang off the response, not the request:
@@ -44,6 +48,13 @@ export async function bridge(
   res.on('close', () => {
     if (!res.writableEnded) abort.abort()
   })
+  const refused = await apiHandler.acceptRequest?.(req)
+  if (refused !== undefined) {
+    res.writeHead(refused.status, Object.fromEntries(refused.headers.entries()))
+    res.end(Buffer.from(await refused.arrayBuffer()))
+    req.resume()
+    return
+  }
   const declaredLength = req.headers['content-length']
   if (declaredLength !== undefined && Number(declaredLength) > maxRequestBodyBytes) {
     res.writeHead(413, { connection: 'close' })
@@ -66,7 +77,7 @@ export async function bridge(
   }
   /* v8 ignore next 3 -- `??` arms: node:http always sets url/method on server
   requests; the fields are only optional on the client-side IncomingMessage type */
-  const request = new Request(new URL(req.url ?? '/', 'http://arx.internal'), {
+  const request = new Request(new URL(req.url ?? '/', requestOrigin), {
     method: req.method ?? 'GET',
     headers: Object.fromEntries(Object.entries(req.headers).filter(([, v]) => typeof v === 'string') as [string, string][]),
     ...chunks.length > 0 ? { body: Buffer.concat(chunks) } : {},

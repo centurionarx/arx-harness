@@ -91,6 +91,13 @@ jobs:
       # in the workflow, so run it here too — the platform-dependent unit
       # expectations (Seatbelt path canonicalization: /tmp IS /private/tmp)
       # take their darwin branch only on this runner.
+      # Specs that start a real worker Loader import generated Typert faces
+      # and package entries from `lib/`, so the unit suite needs the Host and
+      # Client library faces built first.
+      - name: Build library faces for the unit suite
+        if: matrix.runner == 'seatbelt'
+        run: pnpm run build:lib
+
       - name: Unit tests (darwin parity)
         if: matrix.runner == 'seatbelt'
         run: pnpm run test

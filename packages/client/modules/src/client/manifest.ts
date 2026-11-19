@@ -30,6 +30,7 @@
  */
 
 import type {} from '@arx-ai/cordis'
+import type { ClientComposition } from '@arx-ai/arx-client-ui-slots/composition'
 import type { ClientModuleSystem } from './system.ts'
 
 declare module '@arx-ai/cordis' {
@@ -203,6 +204,10 @@ export interface ClientBundleRegistration {
 export interface ClientModuleCreateOptions {
   /** Raw Host-injected boot graph; the modules bundle owns validation and projection. */
   boot: unknown
+  /** Fixed for this module-system instance; a new principal requires a new boot. */
+  composition?: ClientComposition
+  /** Kernel-owned tree lifetime; cannot grant access and is never serialized. */
+  signal?: AbortSignal
   /** Module-table seed: platform-singleton specifier → shell instance. */
   staticModules: Record<string, unknown>
   /** Bundle-load hook. Defaults to a same-origin classic `<script src>` element. */
@@ -295,6 +300,10 @@ export interface ClientModuleLoader {
 export interface ClientModuleSystemOptions {
   /** Parsed boot graph owned by the resulting module system. */
   manifest: BootManifest
+  /** Fixed for this module-system instance; application faces never leak into a user boot. */
+  composition?: ClientComposition
+  /** Kernel-owned tree lifetime; cannot grant access and is never serialized. */
+  signal?: AbortSignal
   /** Module-table seed: platform-singleton specifier → shell instance. */
   staticModules: Record<string, unknown>
   /** Stable HTML-installed registration facade to switch from queue to live mode. */
@@ -303,4 +312,60 @@ export interface ClientModuleSystemOptions {
   bootstrapModule: ClientBootstrapModule
   /** Bundle-load hook. Defaults to a same-origin classic `<script src>` element. */
   loadBundle?: (url: string) => Promise<void>
+}
+
+/** The complete presentation-only plugin roster; application trees are closed to project plugins. */
+export const APPLICATION_PLUGIN_IDS = Object.freeze([
+  '@arx-ai/arx-client-modules',
+  '@arx-ai/arx-client-slots',
+  '@arx-ai/arx-client-locale',
+  '@arx-ai/arx-client-ui-theme',
+  '@arx-ai/arx-client-ui-renderer',
+  '@arx-ai/arx-client-ui-auth',
+])
+/**
+ * Reject a native manifest that could materialize plugins outside the selected tree.
+ * @param manifest - Parsed boot rows received from the request index.
+ * @param composition - Verified fixed tree for this boot.
+ */
+export function assertCompositionManifest(manifest: BootManifest, composition: ClientComposition): void {
+  if (composition.kind === 'user' && composition.scope !== 'application') return
+  const allowed = new Set<string>(APPLICATION_PLUGIN_IDS)
+  for (const row of manifest.modules) {
+    if (!allowed.has(row.id)) throw new Error('application composition rejects module ' + row.id)
+    for (const specifier of row.external) {
+      const id = stripClientSuffix(specifier)
+      if (!allowed.has(id)) throw new Error('application composition rejects external ' + specifier)
+    }
+  }
+  for (const row of manifest.plugins) {
+    if (!allowed.has(row.id) || row.inject.some(id => !allowed.has(stripClientSuffix(id)))) {
+      throw new Error('application composition rejects plugin dependency ' + row.id)
+    }
+  }
+}
+
+/** A closed composition map: package metadata/roles cannot select arbitrary alternate exports. */
+export const APPLICATION_PLUGIN_FACES = Object.freeze({
+  '@arx-ai/arx-client-locale': Object.freeze({ inject: ['@arx-ai/arx-client-slots'] }),
+  '@arx-ai/arx-client-ui-theme': Object.freeze({ inject: ['@arx-ai/arx-client-slots', '@arx-ai/arx-client-locale'] }),
+})
+
+/**
+ * Choose the declared application face from the existing module export cache.
+ * @param id - Canonical module id from the closed graph.
+ * @param exports - Actual exports already loaded by the single module system.
+ * @param composition - Verified tree view for this boot.
+ * @returns Existing application or project exports; no new module authority is created.
+ */
+export function compositionPluginFace(id: string, exports: unknown, composition?: ClientComposition): unknown {
+  if (composition === undefined || (composition.kind === 'user' && composition.scope !== 'application') || !Object.hasOwn(APPLICATION_PLUGIN_FACES, id)) return exports
+  if (typeof exports !== 'object' || exports === null) throw new Error('application plugin exports missing: ' + id)
+  const application = (exports as Record<string, unknown>).application
+  if (typeof application !== 'object' || application === null
+    || typeof (application as Record<string, unknown>).apply !== 'function'
+    || !Array.isArray((application as Record<string, unknown>).inject)) {
+    throw new Error('application plugin face missing: ' + id)
+  }
+  return application
 }

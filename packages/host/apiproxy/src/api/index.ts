@@ -107,3 +107,10 @@ export type { RequestPayload, ResponseValue, RpcMethodMap } from './rpc-map.ts'
 export type { NativeAccountsApi, NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode, NativeAccountModel } from './native-accounts.ts'
 
 export type { AuthorizationApi, AuthorizationAttemptId, AuthorizationPromptId, AuthorizationFlowView, AuthorizationPromptView, AuthorizationAttemptView } from './authorization.ts'
+
+export { API_METHOD_PAYLOAD_SCHEMAS, apiMethodForName, parseApiMethodPayload } from './method-payloads.ts'
+export type { ApiMethodPayloadSchemas } from './method-payloads.ts'
+
+// Shared transport-boundary schemas; no host service imports.
+export { clientResponseSchema } from './rpc.schema.ts'
+export { sessionEventSchema, sessionIdSchema } from './sessions.schema.ts'

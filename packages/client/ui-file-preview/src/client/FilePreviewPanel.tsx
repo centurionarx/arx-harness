@@ -9,11 +9,11 @@ const PdfPreview = lazy(async () => ({ default: (await import('./PdfPreview.tsx'
 import css from './FilePreviewPanel.module.css'
 
 /** Narrow Remote read callback owned by the registration. */
-export interface PreviewInjected { read: (path: string) => Promise<FilePreview> }
+export interface PreviewInjected { read: (path: string) => Promise<FilePreview>; nativeAvailable?: boolean }
 type Props = PropsRuntime<'details.content'> & PreviewInjected & PropsLocale<'filePreview'> & { matched: { path: string } }
 
 /** Display one current file; changing owners invalidates stale reads and releases binary resource URLs. */
-export function FilePreviewPanel({ matched, sessionId, read, openNativeFile, t }: Props) {
+export function FilePreviewPanel({ matched, sessionId, read, openNativeFile, nativeAvailable = true, t }: Props) {
   const requestKey = sessionId + '\0' + matched.path
   const [loaded, setLoaded] = useState<{ key: string; file: FilePreview } | null>(null)
   const file = loaded?.key === requestKey ? loaded.file : null
@@ -41,9 +41,9 @@ export function FilePreviewPanel({ matched, sessionId, read, openNativeFile, t }
   return <section className={css.preview}>
     <div className={css.toolbar}>
       <button type="button" onClick={() => { setRevision(value => value + 1) }}>{t('refresh')}</button>
-      <button type="button" onClick={() => { void openNativeFile(matched.path).catch((failure: unknown) => {
+      {nativeAvailable && <button type="button" onClick={() => { void openNativeFile(matched.path).catch((failure: unknown) => {
         setError(failure instanceof Error ? failure.message : t('failed'))
-      }) }}>{t('native')}</button>
+      }) }}>{t('native')}</button>}
     </div>
     <p className={css.caption}>{t('current')} · {matched.path}</p>
     {error !== null && <p role="alert">{error}</p>}

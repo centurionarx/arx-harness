@@ -16,7 +16,7 @@ import { readFile } from 'node:fs/promises'
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path'
 import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
-import type {} from '@arx-ai/arx-host-webserver'
+import { RequestIndexUnavailableError } from '@arx-ai/arx-host-webserver'
 
 /** Stable Cordis plugin name. */
 export const name = 'frontend-static'
@@ -104,8 +104,6 @@ export async function serveStatic(
 export function apply(ctx: Context, config: Config): void {
   const distIndex = config.distIndex
   const distRoot = dirname(distIndex)
-  const renderIndex = async (): Promise<string> =>
-    ctx.webServer.renderIndex(await readFile(distIndex, 'utf8'))
   ctx.effect(() => ctx.webServer.registerFallback(async (req, res) => {
     // Non-GET/HEAD without a matching named route is 405 (fallback-only
     // semantics: named routes own their method handling).
@@ -116,6 +114,20 @@ export function apply(ctx: Context, config: Config): void {
     }
     /* v8 ignore next -- node:http always sets url on server requests */
     const rawPath = new URL(req.url ?? '/', 'http://x').pathname
-    await serveStatic(decodeURIComponent(rawPath), res, distRoot, distIndex, renderIndex)
+    const native = ctx.webServer.accessMode === 'authenticated'
+    if (native) {
+      res.setHeader('Cache-Control', 'no-store')
+      res.setHeader('Referrer-Policy', 'no-referrer')
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+    }
+    const indexPath = native && (rawPath === '/reset' || rawPath === '/invite') ? '/' : rawPath
+    try {
+      await serveStatic(decodeURIComponent(indexPath), res, distRoot, distIndex, async () =>
+        ctx.webServer.renderRequestIndex(await readFile(distIndex, 'utf8'), req))
+    } catch (error) {
+      if (!(error instanceof RequestIndexUnavailableError)) throw error
+      res.writeHead(503)
+      res.end()
+    }
   }), 'frontend-static: fallback seat')
 }

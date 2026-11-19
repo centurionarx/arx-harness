@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   checkExperimentalDependencyIsolation,
   checkExperimentalManifest,
+  expectedArxPackageFiles,
   type WorkspaceManifest,
 } from './check-workspace-constraints.ts'
 
@@ -72,5 +73,24 @@ describe('experimental workspace constraints', () => {
     expect(checkExperimentalDependencyIsolation(manifests)).toEqual([
       '@arx-ai/arx-python-runtime: dependencies.@arx-ai/arx-experimental-prototype must not reference an experimental package',
     ])
+  })
+})
+
+
+describe('workspace publication build faces', () => {
+  it('keeps process worker bundles distinct from emitted worker providers', () => {
+    expect(expectedArxPackageFiles({
+      exports: { './worker': { types: './lib/types/worker.d.ts', default: './lib/worker.cjs' } },
+    })).toEqual(['lib/index.js', 'lib/invariant.js', 'lib/worker.cjs', 'lib/types/**/*.d.ts'])
+    expect(expectedArxPackageFiles({
+      exports: { './worker': { types: './lib/types/worker-persistence.d.ts', default: './lib/types/worker-persistence.js' } },
+    })).toEqual(['lib/index.js', 'lib/invariant.js', 'lib/types/**/*.js', 'lib/types/**/*.d.ts'])
+  })
+
+  it('requires the separately built browser carrier beside the identity client', () => {
+    expect(expectedArxPackageFiles({
+      name: '@arx-ai/arx-client-ui-auth',
+      exports: { './client': { types: './lib/types/client/index.d.ts', default: './lib/client.js' } },
+    })).toEqual(['lib/index.js', 'lib/invariant.js', 'lib/client.js', 'lib/browser.js', 'lib/types/**/*.d.ts'])
   })
 })

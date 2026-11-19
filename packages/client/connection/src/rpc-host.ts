@@ -48,7 +48,7 @@ export class HostConnectionService extends Service implements HostConnectionHand
    * @param ctx - owning Connection plugin context.
    * @param trustedHosts - deployment authorities accepted by trusted-host channels.
    */
-  constructor(ctx: Context, private readonly trustedHosts: readonly string[]) {
+  constructor(ctx: Context, private readonly trustedHosts: readonly string[], private readonly authenticated?: FetchHandler) {
     super(ctx, 'connection')
   }
 
@@ -72,8 +72,12 @@ export class HostConnectionService extends Service implements HostConnectionHand
     channel: '/api',
     fallback: FetchHandler,
   ): FetchHandler {
+    const authenticated = this.authenticated
+    const acceptRequest = authenticated?.acceptRequest?.bind(authenticated)
     return {
+      ...(acceptRequest === undefined ? {} : { acceptRequest }),
       fetch: (request) => {
+        if (this.authenticated !== undefined) return this.authenticated.fetch(request)
         const endpoint = endpointFromPath(channel, new URL(request.url).pathname)
         const interceptor = this.interceptors.get(channel)
         if (endpoint === undefined || interceptor === undefined || !interceptor.matches(endpoint)) {
@@ -105,7 +109,8 @@ export class HostConnectionService extends Service implements HostConnectionHand
           res.end('forbidden')
           return
         }
-        await bridge(req, res, fetchHandler)
+        await bridge(req, res, this.authenticated ?? fetchHandler, undefined,
+          this.authenticated === undefined ? undefined : this.ctx.get('webIdentityApi')?.canonicalOrigin)
       },
     }
     return owner.effect(

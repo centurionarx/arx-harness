@@ -21,8 +21,10 @@ concurrency:
 jobs:
 
   # Three jobs isolate coverage, static analysis, and the build-backed
-  # consumer tail. The consumer job owns the only Linux build so all three
-  # jobs enter runner allocation independently.
+  # consumer tail. The consumer job owns the only complete Linux build; the
+  # coverage job builds the Host and Client library faces that its native
+  # worker specs import from `lib/`. All three jobs enter runner allocation
+  # independently.
   #
   # These run on GitHub's standard hosted runners. A larger-runner pool named
   # in this expression must exist in the owning organization, and a name that

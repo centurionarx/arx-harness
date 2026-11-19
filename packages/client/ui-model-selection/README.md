@@ -8,7 +8,7 @@ When the Host reports that no adapter serves the session's route (`session.model
 
 Directories are per-session, resolved lazily through `ctx.modelDirectories.directoryFor(sessionId)`, and disposed with the session scope. Addressed subagent sessions expose neither entry, and their directory rejects loads, selections, and reconnect refreshes, because ordinary Agent-bound model RPCs would activate persisted child history outside the direct-parent continuation path.
 
-Every resident directory refetches directly on forwarded `llm/adapters-updated` and `settings/document-updated` owner events. Provider topology, provider catalogs, and the default selection therefore converge without the Host or client runtime deriving a separate model-change alias.
+Every resident directory refetches on forwarded `llm/adapters-updated` and `settings/document-updated` owner events. Its session-scoped `session/model-selection` listener also reloads `session.models` after the runtime accepts a fresh live selection event or absorbs a buffered one into a history window, so an external selection updates the current route and composer block while the picker is closed. The existing operation generation rejects late responses, and scope disposal removes the listener. The notification carries only the owning `SessionId` and adds no Host protocol message. See the [scoped refresh decision](../../../.agents/notes/implemented/bug-fix/2026-10-10-session-model-selection-refresh.md).
 
 The `/client` exports are the plugin body (`apply`/`inject`), `ModelDirectoryResolver`, `ModelDirectory` with its state fields, and the seat's injected face type.
 

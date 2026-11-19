@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-web",
   "description": "Web boot kernel: static module table, Cordis loader, framework-free boot page, and UI-renderer handoff",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
@@ -38,7 +38,8 @@
     "@arx-ai/cordis": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "@arx-ai/arx-client-ui-auth": "workspace:^"
   },
   "peerDependencies": {
     "@arx-ai/arx-invariants": "workspace:^",

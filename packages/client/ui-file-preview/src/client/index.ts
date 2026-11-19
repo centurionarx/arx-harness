@@ -18,7 +18,7 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('details.content', () => ctx.slots.register({
     name: 'details.content', locale: 'filePreview',
     select: owner => owner.preview ?? null,
-    inject: (sessionId): PreviewInjected => ({ read: async (path) => {
+    inject: (sessionId): PreviewInjected => ({ nativeAvailable: ctx.get('clientComposition') === undefined, read: async (path) => {
       const response = await ctx.remote.filePreviews.read(sessionId, path)
       if (!response.ok) throw new Error(response.error.message)
       return response.value

@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "rootDir": "../..",
+    "rewriteRelativeImportExtensions": false
+  },
+  "include": [
+    "*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/identity/project-storage/tsconfig.json"
+    },
+    {
+      "path": "../../packages/host/isolated-project-runtime/tsconfig.json"
+    },
+    {
+      "path": "../../packages/fs/fs-local/tsconfig.json"
+    },
+    {
+      "path": "../../packages/identity/web-identity-sqlite/tsconfig.json"
+    },
+    {
+      "path": "../../packages/identity/identity-authority-journal/tsconfig.json"
+    },
+    {
+      "path": "../../packages/host/web-identity-api/tsconfig.json"
+    },
+    {
+      "path": "../../packages/credentials/credentials-local/tsconfig.json"
+    }
+  ]
+}

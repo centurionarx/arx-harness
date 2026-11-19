@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-ui-theme",
   "description": "Theme plugin: Host bootstrap for the pre-plugin palette; DOM-free ThemeRuntime for light/dark/system state; --arx-* token styles and Appearance settings row",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "publishConfig": {
     "access": "public"
   },
@@ -39,7 +39,10 @@
         "@arx-ai/arx-api-remotes"
       ],
       "platform": "web",
-      "immediately": true
+      "immediately": true,
+      "external": [
+        "@arx-ai/arx-client-slots/client"
+      ]
     }
   },
   "license": "MIT",
@@ -52,7 +55,8 @@
     "@arx-ai/arx-client-ui-settings": "workspace:^",
     "@arx-ai/arx-host-webserver": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
-    "@arx-ai/arx-settings": "workspace:^"
+    "@arx-ai/arx-settings": "workspace:^",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "devDependencies": {
     "@arx-ai/cordis": "workspace:^",
@@ -68,7 +72,8 @@
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-settings": "workspace:^",
     "@types/react": "~18.3.1",
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "@arx-ai/arx-client-slots": "workspace:^"
   },
   "files": [
     "lib/index.js",
