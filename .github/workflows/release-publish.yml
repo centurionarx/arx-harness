@@ -82,7 +82,7 @@ jobs:
       - name: Verify packed install
         run: pnpm run release:verify-packed-install --family arx --from dist/npm --from dist/npm-vendor --from dist/npm-landlock
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: arx-npm-tarballs
           path: dist/npm/*
@@ -120,7 +120,7 @@ jobs:
       - name: Install (immutable, no package scripts)
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: arx-npm-tarballs
           path: dist/npm
