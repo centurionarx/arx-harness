@@ -10,6 +10,8 @@ The first test cancels a prompt that waits for the worker mount. It slept 100 ms
 
 The failed assertion was `expect(supervisor.ctxOf(id)).toBeUndefined()`. Vitest formats the received value of a failed matcher, the value was a cordis Context, and a Context throws on a read of `$$typeof`. The report showed `PrettyFormatPluginError` instead of the assertion, and the file's `afterEach` did not run before the next test. The `globalThis.fetch` spy of the failed test stayed installed. The next test stored that spy as the original `fetch` and installed its implementation on the same spy, so every request recursed until the stack was exhausted and the test ended at the 5-second default. The second failure had no cause of its own.
 
+The same suite has a third assertion that depends on the load of the machine. In [stream-deadline.spec.ts](../../../../packages/host/isolated-project-runtime/tests/stream-deadline.spec.ts) the test that keeps a stream open beyond `requestTimeoutMs` sets that limit to 50 ms and counted every cancel request the [supervisor fixture](../../../../packages/host/isolated-project-runtime/tests/supervisor.ts) received. Its attach step sends a unary request, and the runtime cancels that request when the reply takes longer than 50 ms. The count then reached 1 while the stream was still open, and the coverage job failed on a loaded runner.
+
 The unit suite on that job grew from 983 to 1091 test files with the merge and from 6 min 40 s to 16 min 1 s. With the library build that the suite needs, a run in which every test passes takes about 20 min 15 s.
 
 ## Decision
@@ -20,11 +22,15 @@ The first test holds the mount and opens the event stream before it invokes the 
 
 No assertion in the `isolated-project-runtime` specs receives a Context. The sixteen assertions that passed the result of `supervisor.ctxOf(...)` to `toBeUndefined()` or `toBeDefined()` compare it with `undefined` and assert the boolean. Each test verifies the same condition; a failure prints `expected false to be true` and the cleanup runs.
 
+The stream deadline test counts only the cancel requests that name the stream's own operation, read from the fixture's `cancelled` list. It verifies the same property: the stream stays open beyond `requestTimeoutMs` and is cancelled once, when the consumer aborts.
+
 The macOS leg of the [Sandbox workflow](../../../../.github/workflows/sandbox.yml) has a 30-minute limit; the three Linux legs keep 20. A pull request that changes the workflow file runs the workflow, so a change to it is exercised on every leg before the merge.
 
 ## Alternatives considered
 
 **Raise the test timeout.** The 5-second failure was a recursion that never ends, not a slow test. A longer limit would only delay the same failure.
+
+**Raise `requestTimeoutMs` in the stream deadline test.** A larger limit makes the cancellation of the attach request rarer, not impossible, and lengthens the test, which waits four times the limit.
 
 **Shorten or lengthen the 100 ms sleep.** Any fixed delay keeps the dependence on the duration of the mount.
 
