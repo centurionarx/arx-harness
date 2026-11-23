@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-compaction",
   "description": "Abstract compaction service seam (ctx.compaction) for the arx Harness",
-  "version": "1.0.58",
+  "version": "1.0.59",
   "publishConfig": {
     "access": "public"
   },
