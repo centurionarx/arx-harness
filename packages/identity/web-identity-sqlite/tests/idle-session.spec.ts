@@ -19,7 +19,11 @@ function deadlines() {
 describe('native durable idle and absolute session expiry', () => {
   it('keeps passive HTTP, websocket admission, provider checks and refused mutations idle', { timeout: 30000 }, async () => {
     fixture = await identityHarness({ api: 'user', readyUsers: 1, identityConfig: { sessionTtlMs: 20000, sessionIdleTtlMs: 10000 } })
-    const h = fixture, a = h.users[0]!, initial = deadlines(), base = initial.absolute - 20000
+    const h = fixture, a = h.users[0]!
+    // The harness master signed in before this user, so the clock steps below would expire its session first and
+    // the expiry sweep would advance the authority head mid-test. Only this user's session stays live.
+    await h.ctx.webIdentity.logout(h.master!)
+    const initial = deadlines(), base = initial.absolute - 20000
     let now = base + 6000
     clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
     const cookie = AUTH_COOKIE_NAMES.user + '=' + a.token, head = h.ctx.webIdentity.authorityHead
@@ -43,11 +47,15 @@ describe('native durable idle and absolute session expiry', () => {
     expect((await post({ [CSRF_HEADER]: state.csrfToken })).status).toBe(400)
     expect(deadlines()).toEqual(initial)
     expect(h.ctx.webIdentity.authorityHead).toEqual(head)
+    // The journal's last line is the master's logout, so this session's latest record is selected by id.
     const records = (await readFile(join(h.paths.journal, 'authority.jsonl'), 'utf8')).trim().split('\n')
-    const record = JSON.parse(records.at(-1)!) as { payload: { session: { idle_expires_at: number; expires_at: number } } }
+    const sessionId = (line: string) => (JSON.parse(line) as { payload: { session?: { id: string } } }).payload.session?.id
+    const own = records.findLast(line => sessionId(line) === a.authority.authSessionId)!
+    const record = JSON.parse(own) as { payload: { session: { idle_expires_at: number; expires_at: number; revoked: number } } }
     expect(record.payload.session.idle_expires_at).toBe(initial.idle)
     expect(record.payload.session.expires_at).toBe(initial.absolute)
-    expect(records.at(-1)).not.toContain(a.token)
+    expect(record.payload.session.revoked).toBe(0)
+    expect(own).not.toContain(a.token)
     now = initial.idle - 1
     expect((await post({ [CSRF_HEADER]: state.csrfToken })).status).toBe(400)
     expect(deadlines()).toEqual(initial)

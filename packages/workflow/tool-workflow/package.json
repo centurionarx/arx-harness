@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-workflow",
   "description": "Model-facing workflow tool: run a JavaScript orchestration script over ctx.workflowEngine",
-  "version": "1.0.58",
+  "version": "1.0.59",
   "publishConfig": {
     "access": "public"
   },
