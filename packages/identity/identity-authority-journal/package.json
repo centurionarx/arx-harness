@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-identity-authority-journal",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "description": "Native web identity identity-authority-journal",
   "type": "module",
   "main": "lib/index.js",
