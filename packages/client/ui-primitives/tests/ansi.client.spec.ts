@@ -441,11 +441,11 @@ describe('parseAnsiLines: bounded state and true widths', () => {
     // Verified in a real terminal (`A x`): the redraw puts the cursor at column
     // 0, the backspace clamps there, and writing `A` over the wide lead blanks
     // its spacer rather than letting the `x` slide left.
-    expect(onlySpan(`\uff37x\r${BS}A`)).toEqual({ text: 'A x', style: undefined })
+    expect(onlySpan(`\u4e2dx\r${BS}A`)).toEqual({ text: 'A x', style: undefined })
     // An erase reaching the lead blanks its spacer through the same helper.
     // Verified in a real terminal (`   |`): 1K blanks through the cursor column,
     // so the wide glyph's two cells and the `x` all become blanks.
-    expect(onlySpan(`\uff37x${ESC}[1K|`)).toEqual({ text: '   |', style: undefined })
+    expect(onlySpan(`\u4e2dx${ESC}[1K|`)).toEqual({ text: '   |', style: undefined })
   })
 
   it('clears the lead when the write lands on the spacer itself', () => {
@@ -469,7 +469,7 @@ describe('parseAnsiLines: bounded state and true widths', () => {
     // Verified in a real terminal: two wide chars, CR, then `A` shows `A ` and
     // the second glyph — writing the lead cell blanks its spacer, so the column
     // stays occupied rather than collapsing.
-    expect(onlySpan('\uff37\uff37\rA')).toEqual({ text: 'A \uff37', style: undefined })
+    expect(onlySpan('\u4e2d\u4e2d\rA')).toEqual({ text: 'A \u4e2d', style: undefined })
   })
 })
 

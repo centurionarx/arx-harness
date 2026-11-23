@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { findChineseText, HAN_CHARACTER, scannablePaths } from './verify-chinese-text.ts'
+import { findChineseText, HAN_CHARACTER, scannablePaths, scannableText } from './verify-chinese-text.ts'
 
 /** Two Han characters, built from code points so this spec holds no Chinese text itself. */
 const han = String.fromCodePoint(0x4e2d, 0x6587)
@@ -34,6 +34,13 @@ describe('findChineseText', () => {
   it('accepts Portuguese, full-width punctuation, and an empty file', () => {
     expect(findChineseText('docs/guia.md', 'Opção（recomendada）。\n')).toBeUndefined()
     expect(findChineseText('empty.txt', '')).toBeUndefined()
+  })
+})
+
+describe('scannableText', () => {
+  it('decodes UTF-8 text and leaves a file with a NUL byte unscanned', () => {
+    expect(scannableText(Buffer.from(`A ${han} sample.`, 'utf8'))).toBe(`A ${han} sample.`)
+    expect(scannableText(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]))).toBeUndefined()
   })
 })
 

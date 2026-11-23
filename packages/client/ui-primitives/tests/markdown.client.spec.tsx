@@ -78,6 +78,8 @@ describe('MarkdownText', () => {
       ['**Period.**ーＮＰ', 'Period.'],
       ['**ＥＦ！**ーＱＲ', 'ＥＦ！'],
       ['**Warning!**ーＱＲ', 'Warning!'],
+      // Two Han characters, escaped: the extension's Han branch stays exercised.
+      ['**ＧＨ：**\u5185\u5bb9', 'ＧＨ：'],
     ] as const
     const source = cases.map(([markdown]) => markdown).join('\n\n')
 

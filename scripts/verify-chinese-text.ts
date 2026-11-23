@@ -32,6 +32,15 @@ export function findChineseText(path: string, text: string): string | undefined 
 }
 
 /**
+ * Decode one tracked file for the scan.
+ * @param bytes - the file's content.
+ * @returns the UTF-8 text, or `undefined` for a binary file, which a NUL byte marks and which holds no text to translate.
+ */
+export function scannableText(bytes: Uint8Array): string | undefined {
+  return bytes.includes(0) ? undefined : Buffer.from(bytes).toString('utf8')
+}
+
+/**
  * List the tracked regular files the gate scans: symlinks and submodules are
  * skipped.
  * @param lsFiles - `git ls-files -s -z` output.
@@ -53,11 +62,10 @@ if (import.meta.main) {
   const problems: string[] = []
   let scanned = 0
   for (const path of scannablePaths(lsFiles).sort((a, b) => a.localeCompare(b))) {
-    const bytes = readFileSync(resolve(root, path))
-    // A NUL byte marks a binary file, which holds no text to translate.
-    if (bytes.includes(0)) continue
+    const text = scannableText(readFileSync(resolve(root, path)))
+    if (text === undefined) continue
     scanned += 1
-    const problem = findChineseText(path, bytes.toString('utf8'))
+    const problem = findChineseText(path, text)
     if (problem !== undefined) problems.push(problem)
   }
   if (problems.length > 0) {
