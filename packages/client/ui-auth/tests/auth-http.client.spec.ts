@@ -46,7 +46,9 @@ describe('native identity application with real HTTP authority', () => {
     })
     fireEvent.change(screen.getByLabelText('Nome de usuário ou e-mail'), { target: { value: 'admin@centurionarx.com' } })
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: fixture.masterPassword } })
+    const signedIn = bridge.answered('/auth/login')
     await act(async () => { fireEvent.submit(publicUi.container.querySelector('form')!) })
+    await signedIn
     await waitFor(() => { expect(publicUi.reloads).toEqual(['reload']) })
     expect(publicUi.container.textContent).toBe(''); expect(publicUi.auth.getSnapshot().principal).toBeUndefined()
     await publicUi.close()
@@ -78,7 +80,9 @@ describe('native identity application with real HTTP authority', () => {
     fireEvent.change(screen.getByLabelText('Senha atual'), { target: { value: fixture.masterPassword } })
     fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: nextPassword } })
     fireEvent.change(screen.getByLabelText('Confirmar nova senha'), { target: { value: nextPassword } })
+    const changed = bridge.answered('/auth/password/change')
     await act(async () => { fireEvent.submit(ui.container.querySelector('form')!) })
+    await changed
     await waitFor(() => { expect(ui.reloads).toEqual(['reload']) })
     const state = await readAuthSession()
     expect(state.authenticated && state.principal.mustChangePassword).toBe(false)
@@ -192,7 +196,9 @@ describe('native identity application with real HTTP authority', () => {
     const nextPassword = 'Fixture-' + crypto.randomUUID() + '-active-reset'
     fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: nextPassword } })
     fireEvent.change(screen.getByLabelText('Confirmar nova senha'), { target: { value: nextPassword } })
+    const reset = bridge.answered('/auth/password/reset')
     await act(async () => { fireEvent.submit(recovery.container.querySelector('form')!) })
+    await reset
     await screen.findByText('Senha definida. Volte ao acesso para entrar.')
     expect((await readAuthSession()).authenticated).toBe(false)
     expect((await login(bridge, identifier, nextPassword)).authenticated).toBe(true)
@@ -203,7 +209,9 @@ describe('native identity application with real HTTP authority', () => {
     expect(entry.composition.kind).toBe('public')
     fireEvent.change(screen.getByLabelText('Nome de usuário ou e-mail'), { target: { value: identifier } })
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: nextPassword } })
+    const signedIn = bridge.answered('/auth/login')
     await act(async () => { fireEvent.submit(entry.container.querySelector('form')!) })
+    await signedIn
     await waitFor(() => { expect(entry.reloads).toEqual(['reload']) })
     expect(location.pathname).toBe('/')
     expect(entry.auth.getSnapshot().phase).toBe('ended')

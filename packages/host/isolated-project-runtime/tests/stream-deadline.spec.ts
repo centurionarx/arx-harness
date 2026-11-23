@@ -61,9 +61,6 @@ const muxFrame = (rpcId: string, payload: unknown) => 'data: ' + JSON.stringify(
 describe('stream deadline covers only the supervisor response headers', () => {
   it('keeps a stream open beyond requestTimeoutMs and cancels only when the consumer aborts', async () => {
     const f = await setup()
-    let cancels = 0
-    const counted = () => { void f.supervisor.cancelledSignal().then(() => { cancels++; counted() }) }
-    counted()
     const accepted = f.supervisor.acceptedSignal()
     const controller = new AbortController()
     const stream = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
@@ -72,16 +69,20 @@ describe('stream deadline covers only the supervisor response headers', () => {
     await f.attach()
     await accepted
     await sleep(REQUEST_TIMEOUT_MS * 4)
-    expect(cancels).toBe(0)
-    const operation = [...f.supervisor.operations.values()][0]!
+    const operation = [...f.supervisor.operations.values()][0]
+    if (operation === undefined) throw new Error('the stream operation ended before the consumer aborted')
+    // Only the stream's operation counts. The attach request is unary, and the runtime cancels it
+    // when its reply takes longer than requestTimeoutMs.
+    const streamCancels = () => f.supervisor.cancelled.filter(id => id === operation.id).length
+    expect(streamCancels()).toBe(0)
     operation.response.write(muxFrame('late-frame', { type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 }))
     const frame = await first
     if (frame.done === true) throw new Error('expected a late mux frame')
     expect(frame.value.payload).toEqual({ type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 })
-    expect(cancels).toBe(0)
+    expect(streamCancels()).toBe(0)
     controller.abort()
     await stream.return?.()
-    expect(cancels).toBe(1)
+    expect(streamCancels()).toBe(1)
     expect(f.supervisor.operations.size).toBe(0)
   })
 

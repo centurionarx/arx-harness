@@ -52,6 +52,7 @@ interface NativeWorker {
   ctx?: Context
   carrier?: ReturnType<typeof toOwnedWorkerFetch>
   mounting?: Promise<void>
+  awaitingMount: string[]
   stopping?: Promise<void>
   toolCalls: number
   modelCalls: number
@@ -88,8 +89,10 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
   const stoppingWith = new Map<string, NativeWorker>()
   const abandoned: Promise<void>[] = []
   let stopBarrier: Promise<void> | undefined
+  let mountBarrier: Promise<void> | undefined
   let forcedStops = 0
   async function mount(worker: NativeWorker, capability: string) {
+    await mountBarrier
     const assignment = worker.assignment
     const workerRoot = join(root, worker.workerId)
     await mkdir(workerRoot, { mode: 0o700 })
@@ -237,7 +240,12 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     try {
       if (worker.stopping !== undefined) await worker.stopping
       const capability = String(incoming.headers[WORKER_CAPABILITY_HEADER] ?? '')
-      if (worker.carrier === undefined) { worker.mounting ??= mount(worker, capability); await worker.mounting }
+      if (worker.carrier === undefined) {
+        worker.mounting ??= mount(worker, capability)
+        const path = String(incoming.url)
+        worker.awaitingMount.push(path)
+        try { await worker.mounting } finally { worker.awaitingMount.splice(worker.awaitingMount.indexOf(path), 1) }
+      }
       const chunks: Buffer[] = []
       for await (const chunk of incoming) chunks.push(Buffer.from(chunk as Uint8Array))
       // A cancelled operation never reaches the worker carrier.
@@ -281,7 +289,7 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     endpoint: 'http://127.0.0.1:' + String(address.port), seen,
     assign(assignment: Assignment) {
       if (workers.has(assignment.scope.workspaceId)) throw new Error('native worker assignment is immutable')
-      workers.set(assignment.scope.workspaceId, { assignment, workerId: randomUUID(), toolCalls: 0, modelCalls: 0 })
+      workers.set(assignment.scope.workspaceId, { assignment, workerId: randomUUID(), awaitingMount: [], toolCalls: 0, modelCalls: 0 })
     },
     ctxOf(workspaceId: string) { return workers.get(workspaceId)?.ctx },
     carrierOf(workspaceId: string) { return workers.get(workspaceId)?.carrier },
@@ -300,6 +308,10 @@ export async function nativeSupervisorFixture(options: { workerConfig?: Partial<
     async restart() { await Promise.all([...workers.values()].map(stop)) },
     /** Every later worker stop waits for this barrier before disposing its Context; no argument removes it. */
     holdStop(barrier?: Promise<void>) { stopBarrier = barrier },
+    /** Every later worker mount waits for this barrier before it starts; no argument removes it. */
+    holdMount(barrier?: Promise<void>) { mountBarrier = barrier },
+    /** Request paths admitted for one worker that wait for its mount to finish. */
+    awaitingMount(workspaceId: string) { return [...workers.get(workspaceId)?.awaitingMount ?? []] },
     /** Number of worker stops that reached `stopTimeoutMs` before their disposal finished. */
     get forcedStops() { return forcedStops },
     async close() {
