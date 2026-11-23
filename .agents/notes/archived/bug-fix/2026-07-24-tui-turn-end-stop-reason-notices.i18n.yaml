@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/bug-fix/2026-07-24-tui-turn-end-stop-reason-notices.md
-2026-07-24-tui-turn-end-stop-reason-notices.md: 62784ed7cd085ada49b2e0e3d9d809c33a2af917
-2026-07-24-tui-turn-end-stop-reason-notices.zh.md: 162ba4ed44c98bfe00153b7acf69424784f92f5e
+2026-07-24-tui-turn-end-stop-reason-notices.md: 89c0a41f6189066d63aa9efad9eea098726c6816
+2026-07-24-tui-turn-end-stop-reason-notices.pt-BR.md: 1d73d9522acebbce39a8784483285ad54e8f148e

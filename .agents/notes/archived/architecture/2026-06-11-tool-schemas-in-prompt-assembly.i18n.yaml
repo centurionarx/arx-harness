@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-06-11-tool-schemas-in-prompt-assembly.md: 4d5251163969127ad9fd8ed0c64416057713dfa8
-2026-06-11-tool-schemas-in-prompt-assembly.zh.md: c04246baa196f50ec1c0dc6f91e9b7b12f67c5e0
+2026-06-11-tool-schemas-in-prompt-assembly.md: 16b42a385dab851fedcfde34860d86f93a17f9b4
+2026-06-11-tool-schemas-in-prompt-assembly.pt-BR.md: 7d772399254729a6a5c4d3bf6d5ffce555f6ba7f

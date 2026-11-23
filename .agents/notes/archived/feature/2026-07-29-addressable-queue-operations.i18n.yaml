@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-29-addressable-queue-operations.md: 258e4e4e50a4c6386a2e8c28402fe32cb8870e1a
-2026-07-29-addressable-queue-operations.zh.md: b4370d87892df2e0477c0897b45b4c7a1030978e
+2026-07-29-addressable-queue-operations.md: b2936476e1cf6fbc9b146dc934cc0f36016e59bc
+2026-07-29-addressable-queue-operations.pt-BR.md: b193bf5558fb0c732ed8ed22fba552b26183c589

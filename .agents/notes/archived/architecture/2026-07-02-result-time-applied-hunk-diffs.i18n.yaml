@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-02-result-time-applied-hunk-diffs.md: 19b41cc441f5cab299dbeded0a9eae25ab7e9f97
-2026-07-02-result-time-applied-hunk-diffs.zh.md: b77ec75f0f8af615bde3b95d8fb4620fddedbc9c
+2026-07-02-result-time-applied-hunk-diffs.md: 06e4b1af22796e22dba243092462662be024e526
+2026-07-02-result-time-applied-hunk-diffs.pt-BR.md: 51264fda216e382e0f2a9a6a034208a2855ce3f8

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-04-cordis-jsdoc-completeness-gate.md: 4b033ab52c8bfe79d1ca9db4baf3db2a533223be
-2026-07-04-cordis-jsdoc-completeness-gate.zh.md: f1c1c9976deadaaa700a8a152e4f29a31122ca1a
+2026-07-04-cordis-jsdoc-completeness-gate.md: 170b1b3dfd96e7d4337d6efc47b0e7e597b0a2d0
+2026-07-04-cordis-jsdoc-completeness-gate.pt-BR.md: b083bea53b594f5b77c10e45e5d55adeadb1123f

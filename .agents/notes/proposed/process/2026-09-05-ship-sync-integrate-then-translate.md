@@ -239,7 +239,7 @@ Proof: after each wave, `--list` reports no missing counterpart inside `included
 - **Google Ads as an in-tree Cordis plugin.** Hand-rolls an OAuth2 and GAQL client against the dependencies policy; the authorization flow is the only part the harness must own.
 - **A migration flag that tolerates missing counterparts everywhere.** Simpler than `included`, but it makes the gate lie for the whole migration instead of telling the truth about a declared scope.
 - **Excluding generated documents from pairing permanently.** Removes the generator work but leaves the Portuguese site without its catalogs and API pages.
-- **Translating archived notes.** Out of scope by the manifest and frozen by the archive gate; the 143 legacy `.zh.md` files stay as they are.
+- **Translating archived notes.** Out of scope by the manifest and frozen by the archive gate. The 143 legacy `.zh.md` files are gone: [the Chinese-text rule](../../implemented/process/2026-09-29-chinese-text-becomes-brazilian-portuguese.md) replaced 100 with Portuguese counterparts and deleted 43 triplets.
 
 ## Acceptance criteria
 

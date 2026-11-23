@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-24-new-session-clears-to-empty-state.md: c9b57fec3aa093062847aacba4d01b877edf4bd5
-2026-07-24-new-session-clears-to-empty-state.zh.md: 82a4f8b1e933d6aa3531556e8be4839b204ea562
+2026-07-24-new-session-clears-to-empty-state.md: 7bedf4e41fc319db7df6197dc466025718e577ab
+2026-07-24-new-session-clears-to-empty-state.pt-BR.md: d88931fa250300299215aa64deec66a33eb22ace

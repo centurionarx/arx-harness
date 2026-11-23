@@ -4,9 +4,16 @@ import { createHash } from 'node:crypto'
 import { basename } from 'node:path'
 import { AGENT_NOTE_CLASSES } from './agent-note-tree.ts'
 
+/**
+ * Current frozen-content manifest version. Version 2 seals English and
+ * Brazilian Portuguese counterparts
+ * ([reseal](../.agents/notes/implemented/process/2026-09-29-chinese-text-becomes-brazilian-portuguese.md)).
+ */
+export const ARCHIVE_MANIFEST_VERSION = 2
+
 /** Versioned fields in the frozen-content manifest. */
 export interface ArchiveManifest {
-  version: 1
+  version: typeof ARCHIVE_MANIFEST_VERSION
   files: Readonly<Record<string, string>>
 }
 
@@ -27,13 +34,28 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/**
+ * Parse the manifest of the commit a change is compared with. A version 1
+ * baseline sealed counterparts in another language and pins nothing; any other
+ * baseline must be a valid manifest of the current version, so its seals bind.
+ * @param content - the baseline manifest's JSON text.
+ * @returns the seals the current manifest must preserve.
+ */
+export function parseBaselineArchiveManifest(content: string): ArchiveManifest {
+  const value: unknown = JSON.parse(content)
+  if (isRecord(value) && value.version === 1) return { version: ARCHIVE_MANIFEST_VERSION, files: {} }
+  return parseArchiveManifest(content)
+}
+
 /** Parse the archive manifest and reject fields or hashes outside its closed schema. */
 export function parseArchiveManifest(content: string): ArchiveManifest {
   const value: unknown = JSON.parse(content)
   if (!isRecord(value)) throw new Error('expected a JSON object')
   const fields = Object.keys(value).sort()
   if (fields.join(',') !== 'files,version') throw new Error('expected exactly the fields `version` and `files`')
-  if (value.version !== 1) throw new Error('unsupported manifest version (expected 1)')
+  if (value.version !== ARCHIVE_MANIFEST_VERSION) {
+    throw new Error(`unsupported manifest version (expected ${String(ARCHIVE_MANIFEST_VERSION)})`)
+  }
   if (!isRecord(value.files)) throw new Error('`files` must be an object')
   const files: Record<string, string> = {}
   for (const [path, hash] of Object.entries(value.files)) {
@@ -42,13 +64,13 @@ export function parseArchiveManifest(content: string): ArchiveManifest {
     }
     files[path] = hash
   }
-  return { version: 1, files }
+  return { version: ARCHIVE_MANIFEST_VERSION, files }
 }
 
 /** Render the archive manifest with deterministic path ordering. */
 export function renderArchiveManifest(files: Readonly<Record<string, string>>): string {
   return `${JSON.stringify({
-    version: 1,
+    version: ARCHIVE_MANIFEST_VERSION,
     files: Object.fromEntries(Object.entries(files).sort(([left], [right]) => left.localeCompare(right))),
   }, null, 2)}\n`
 }
@@ -79,7 +101,7 @@ function validDate(value: string): boolean {
 
 interface Triplet {
   source?: Buffer
-  zh?: Buffer
+  pt?: Buffer
   meta?: Buffer
 }
 
@@ -94,7 +116,7 @@ function pairMeta(content: string): Map<string, string> | undefined {
   return entries
 }
 
-function validateHeader(path: string, content: Buffer, sourceBase: string, chinese: boolean): string[] {
+function validateHeader(path: string, content: Buffer, sourceBase: string, portuguese: boolean): string[] {
   const errors: string[] = []
   const lines = content.toString('utf8').split('\n')
   if (!/^# Agent Note: \S/.test(lines[0] ?? '')) errors.push(`${path}: line 1 must be \`# Agent Note: <title>\``)
@@ -107,9 +129,9 @@ function validateHeader(path: string, content: Buffer, sourceBase: string, chine
     errors.push(`${path}: archive date ${archived} predates the note filename`)
   }
   if (lines[4] !== '') errors.push(`${path}: line 5 must be blank`)
-  const switcher = chinese
-    ? `[English](${sourceBase}.md) | 中文`
-    : `English | [中文](${sourceBase}.zh.md)`
+  const switcher = portuguese
+    ? `[English](${sourceBase}.md) | Português`
+    : `English | [Português](${sourceBase}.pt-BR.md)`
   if (lines[5] !== switcher) errors.push(`${path}: line 6 must be ${JSON.stringify(switcher)}`)
   return errors
 }
@@ -119,9 +141,9 @@ export function validateArchiveArtifacts(artifacts: ReadonlyMap<string, Buffer>)
   const errors: string[] = []
   const triplets = new Map<string, Triplet>()
   for (const [path, content] of artifacts) {
-    const match = /^([^/]+)\/(\d{4}-\d{2}-\d{2}-.+?)(\.zh\.md|\.i18n\.yaml|\.md)$/.exec(path)
+    const match = /^([^/]+)\/(\d{4}-\d{2}-\d{2}-.+?)(\.pt-BR\.md|\.i18n\.yaml|\.md)$/.exec(path)
     if (match?.[1] === undefined || match[2] === undefined || match[3] === undefined) {
-      errors.push(`${path}: expected {kind}/yyyy-mm-dd-topic.{md,zh.md,i18n.yaml}`)
+      errors.push(`${path}: expected {kind}/yyyy-mm-dd-topic.{md,pt-BR.md,i18n.yaml}`)
       continue
     }
     if (!(AGENT_NOTE_CLASSES as readonly string[]).includes(match[1])) {
@@ -131,37 +153,37 @@ export function validateArchiveArtifacts(artifacts: ReadonlyMap<string, Buffer>)
     const key = `${match[1]}/${match[2]}`
     const triplet = triplets.get(key) ?? {}
     if (match[3] === '.md') triplet.source = content
-    else if (match[3] === '.zh.md') triplet.zh = content
+    else if (match[3] === '.pt-BR.md') triplet.pt = content
     else triplet.meta = content
     triplets.set(key, triplet)
   }
 
   for (const [key, triplet] of [...triplets].sort(([left], [right]) => left.localeCompare(right))) {
     const sourcePath = `${key}.md`
-    const zhPath = `${key}.zh.md`
+    const ptPath = `${key}.pt-BR.md`
     const metaPath = `${key}.i18n.yaml`
-    const { source, zh, meta } = triplet
+    const { source, pt, meta } = triplet
     const missing = [
       source === undefined ? sourcePath : undefined,
-      zh === undefined ? zhPath : undefined,
+      pt === undefined ? ptPath : undefined,
       meta === undefined ? metaPath : undefined,
     ].filter((path): path is string => path !== undefined)
-    if (source === undefined || zh === undefined || meta === undefined) {
+    if (source === undefined || pt === undefined || meta === undefined) {
       errors.push(`${key}: incomplete archived triplet; missing ${missing.join(', ')}`)
       continue
     }
     const sourceBase = basename(key)
     errors.push(...validateHeader(sourcePath, source, sourceBase, false))
-    errors.push(...validateHeader(zhPath, zh, sourceBase, true))
+    errors.push(...validateHeader(ptPath, pt, sourceBase, true))
     const sourceDate = /^Archived: (\d{4}-\d{2}-\d{2})$/m.exec(source.toString('utf8'))?.[1]
-    const zhDate = /^Archived: (\d{4}-\d{2}-\d{2})$/m.exec(zh.toString('utf8'))?.[1]
-    if (sourceDate !== undefined && zhDate !== undefined && sourceDate !== zhDate) {
-      errors.push(`${key}: English and Chinese archive dates differ (${sourceDate} vs ${zhDate})`)
+    const ptDate = /^Archived: (\d{4}-\d{2}-\d{2})$/m.exec(pt.toString('utf8'))?.[1]
+    if (sourceDate !== undefined && ptDate !== undefined && sourceDate !== ptDate) {
+      errors.push(`${key}: English and Portuguese archive dates differ (${sourceDate} vs ${ptDate})`)
     }
     const pair = pairMeta(meta.toString('utf8'))
     if (pair === undefined || pair.size !== 2
       || pair.get(`${sourceBase}.md`) !== gitBlobHash(source)
-      || pair.get(`${sourceBase}.zh.md`) !== gitBlobHash(zh)) {
+      || pair.get(`${sourceBase}.pt-BR.md`) !== gitBlobHash(pt)) {
       errors.push(`${metaPath}: consistency record must contain the current Git blob hashes of both archived sides`)
     }
   }

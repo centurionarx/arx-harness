@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/feature/2026-07-31-hover-card-click-copy.md
-2026-07-31-hover-card-click-copy.md: 906f64129ee9ba767859260a3288faada21ea4de
-2026-07-31-hover-card-click-copy.zh.md: 0359b2edacde9e048db900d315b6a7befd361075
+2026-07-31-hover-card-click-copy.md: c6630355e72f001779335548341e82e4a502046f
+2026-07-31-hover-card-click-copy.pt-BR.md: f08e575f5dbc64698646abc383a77f567686c774
