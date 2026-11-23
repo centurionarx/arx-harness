@@ -84,11 +84,11 @@ The two existing applications preserve the division: the Web application mounts 
 The sections from here down are the protocol body carried by the front layer (`arx-host-apiproxy`). The wire has exactly four message kinds (the four quadrants) — the Web carriage in the right column is only an example; swapping the carrier (in-process/IPC) leaves the quadrants unchanged:
 
 ```
-                 client 发起                      server 发起
-  request   ① ClientRequest                 ③ ServerRequest
-            （POST /api/<method> body）      （WebSocket message：session 事件、审批/问答 requested）
-  response  ② ServerResponse                ④ ClientResponse
-            （该 POST 的 HTTP 应答体）        （POST /api/respond body，回填 ③ 的 rpcId）
+                 iniciado pelo client                 iniciado pelo server
+  request   ① ClientRequest                      ③ ServerRequest
+            (POST /api/<method> body)            (WebSocket message: eventos de sessão, requested de aprovação/pergunta)
+  response  ② ServerResponse                     ④ ClientResponse
+            (corpo da resposta HTTP desse POST)  (POST /api/respond body, devolve o rpcId de ③)
 ```
 
 ### Wire full forms: a four-member named discriminated union (`api/rpc.ts`)
@@ -124,10 +124,10 @@ Method parameter/return structures **live only in the interface method signature
 
 ```ts ignore-check
 export interface RpcMethodMap {
-  'session.list': SessionsApi['list']        // map key 即 wire 路径段
-  // …其余方法同形登记，全集见 api/rpc-map.ts
+  'session.list': SessionsApi['list']        // a map key é o segmento de caminho no wire
+  // …os demais métodos são registrados da mesma forma; o conjunto completo está em api/rpc-map.ts
 }
-// 派生泛型（穿透窄形取业务类型；实际声明带 K extends keyof RpcMethodMap 约束）
+// Genéricos derivados (atravessam a forma estreita para obter os tipos de negócio; a declaração real traz a restrição K extends keyof RpcMethodMap)
 export type RequestPayload<K> = Parameters<RpcMethodMap[K]>[0]['payload']
 export type ResponseValue<K> =
   Awaited<ReturnType<RpcMethodMap[K]>> extends RpcResponse<infer T> ? T : never
