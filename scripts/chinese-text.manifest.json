@@ -300,21 +300,6 @@
     ".agents/notes/archived/testing/2026-07-18-tui-terminal-state-snapshots.md",
     ".agents/notes/archived/testing/2026-07-18-tui-terminal-state-snapshots.zh.md",
     ".agents/notes/archived/testing/2026-07-26-execa-for-test-subprocess-plumbing.md",
-    ".agents/notes/archived/testing/2026-07-26-execa-for-test-subprocess-plumbing.zh.md",
-    "apps/cli/tests/web-agent-presets.e2e.ts",
-    "apps/web/tests/goal-multi-turn-actions.e2e.ts",
-    "apps/web/tests/produced-files.e2e.ts",
-    "apps/web/tests/snapshots/goal-multi-turn-actions/replay.override.json",
-    "apps/web/tests/snapshots/goal-multi-turn-actions/session.jsonl",
-    "apps/web/tests/snapshots/goal-multi-turn-actions/ui.expected.md",
-    "apps/web/tests/snapshots/permission-policy-context/session.jsonl",
-    "examples/headless-agent/tests/fixtures/e2b/e2b/bin.ts",
-    "examples/headless-agent/tests/fixtures/e2b/e2b/fixture-lsp.mjs",
-    "examples/headless-agent/tests/headless.snapshot.ts",
-    "scripts/translation-brief.spec.ts",
-    "scripts/translation-brief.ts",
-    "scripts/translation-links.spec.ts",
-    "scripts/translation-pairing-merge.spec.ts",
-    "scripts/translation-pairing.spec.ts"
+    ".agents/notes/archived/testing/2026-07-26-execa-for-test-subprocess-plumbing.zh.md"
   ]
 }
