@@ -101,7 +101,7 @@ const retry = (seq: number): ModelRetryNode => ({
   retryState: 'scheduled',
   provider: 'mock', mode: 'normal', policyKey: 'mock-normal',
   retry: 1, maxRetries: 2, delayMs: 450,
-  failure: { code: 'TRANSPORT', message: '连接被重置' },
+  failure: { code: 'TRANSPORT', message: 'A conexão foi redefinida' },
 })
 const turnError = (seq: number, code?: string): TurnErrorNode => ({
   kind: 'turn-error', seq, time: seq * 1_000, turn: 1, step: 0,
@@ -122,12 +122,12 @@ const runningCall = (callId: string, name = 'bash'): RunningToolCall => ({
 })
 const command = (over: Partial<CommandNode> = {}): CommandNode => ({
   kind: 'command', seq: 5, time: 5_000, commandId: 'cmd-1' as CommandNode['commandId'],
-  name: 'plan', args: '', outcome: { kind: 'success', text: '已进入 plan mode' },
+  name: 'plan', args: '', outcome: { kind: 'success', text: 'Entrou em plan mode' },
   ...over,
 })
 const compaction = (over: Partial<CompactionSummaryNode> = {}): CompactionSummaryNode => ({
   kind: 'compaction', seq: 8, time: 8_000,
-  summary: '## 压缩摘要\n\n保留的事实。',
+  summary: '## Resumo da compactação\n\nFatos preservados.',
   summaryEventSeq: 7,
   shadowedItemCount: 16,
   shadowedTokenCount: 11_309,
@@ -349,7 +349,7 @@ describe('Chat node rendering', () => {
         if (value !== 'report.html') return undefined
         return {
           open: () => { void h.openFile(`for-seq-${String(owner.seq)}/site/report.html`) },
-          label: '打开 site/report.html',
+          label: 'Abrir site/report.html',
           title: 'site/report.html',
         }
       },
@@ -359,7 +359,7 @@ describe('Chat node rendering', () => {
     // narration stays inert code, and the unknown file resolves to nothing.
     const mentions = view.container.querySelectorAll('code button')
     expect(mentions).toHaveLength(1)
-    const mention = view.getByRole('button', { name: '打开 site/report.html' })
+    const mention = view.getByRole('button', { name: 'Abrir site/report.html' })
     expect(mention.getAttribute('title')).toBe('site/report.html')
     fireEvent.click(mention)
     // The vocabulary was built from the closing message's own owner currency.
@@ -1352,7 +1352,7 @@ describe('ChatView', () => {
         new PendingWait('approval', RpcId('r1'), SID,
           { approvalId: 'ap1', toolName: 'bash' } as PendingWait<'approval'>['payload'], vi.fn()),
         new PendingWait('question', RpcId('r2'), SID,
-          { questions: [{ id: 'q1', question: '选择' }] }, vi.fn()),
+          { questions: [{ id: 'q1', question: 'Escolha' }] }, vi.fn()),
       ],
     })
     const view = render(<h.ChatView {...h.props} />)
@@ -1369,7 +1369,7 @@ describe('ChatView', () => {
     expect(view.getByText('plan')).toBeTruthy()
     expect(view.queryByText('/plan')).toBeNull()
     expect(view.queryByText('/plan now')).toBeNull()
-    expect(view.getByText('已进入 plan mode')).toBeTruthy()
+    expect(view.getByText('Entrou em plan mode')).toBeTruthy()
 
     // Error outcome flips the row state; a text-less error gets the default copy.
     const failed = makeHarness({
@@ -1429,11 +1429,11 @@ describe('ChatView', () => {
     expect(row.getAttribute('aria-expanded')).toBe('false')
     expect(row.querySelector('[data-compaction-icon="context"]')).not.toBeNull()
     expect(row.querySelector('[data-compaction-disclosure="collapsed"]')).not.toBeNull()
-    expect(view.queryByText('保留的事实。')).toBeNull()
+    expect(view.queryByText('Fatos preservados.')).toBeNull()
     fireEvent.click(row)
     expect(row.getAttribute('aria-expanded')).toBe('true')
     expect(row.querySelector('[data-compaction-disclosure="expanded"]')).not.toBeNull()
-    expect(view.getByRole('heading', { name: '压缩摘要' })).toBeTruthy()
+    expect(view.getByRole('heading', { name: 'Resumo da compactação' })).toBeTruthy()
   })
 
   it('keeps /compact no-history and error settlements on the generic command row', () => {

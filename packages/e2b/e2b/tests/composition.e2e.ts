@@ -146,10 +146,10 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
       bashRead: 'versioned-by-fs\n',
       fsRead: 'written-by-bash\n',
       explicitEnvironment: true,
-      splitUtf8Output: '你好',
+      splitUtf8Output: 'ＡＢ',
       hover: {
         kind: 'hover',
-        hover: { contents: '**remote hover** 你好 café' },
+        hover: { contents: '**remote hover** ＡＢ café' },
       },
       definition: {
         kind: 'locations',
@@ -166,8 +166,8 @@ describe.skipIf(!process.env.E2B_API_KEY)('E2B live Loader composition', () => {
     expect(terminalMotd.length).toBeGreaterThan(0)
     expect(terminalMotd).not.toContain('exec /bin/bash')
     expect(terminalMotd).not.toContain('.arx-e2b/terminals/')
-    expect((output.terminal as { echo: { viewport: string } }).echo.viewport).toContain('PTY-你好')
-    expect((output.terminal as { scrollback: string }).scrollback).toContain('PTY-你好')
+    expect((output.terminal as { echo: { viewport: string } }).echo.viewport).toContain('PTY-ＡＢ')
+    expect((output.terminal as { scrollback: string }).scrollback).toContain('PTY-ＡＢ')
     expect((output.terminal as { signal: { targetPgid: number } }).signal.targetPgid).toBeGreaterThan(0)
     expect(['stdin_read', 'inferred_idle']).toContain(
       (output.terminal as { interrupted: { waitReason: string } }).interrupted.waitReason,

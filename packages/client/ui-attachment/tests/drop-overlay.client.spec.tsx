@@ -9,12 +9,12 @@ afterEach(cleanup)
 describe('DropOverlay', () => {
   it('portals the invitation with its title and limits desc to the body', () => {
     const view = render(
-      <DropOverlay disabled={false} labels={{ title: '图片拖动到此处即可添加', desc: '最多 20 张，每张 5MB' }} />,
+      <DropOverlay disabled={false} labels={{ title: 'Arraste imagens para cá para adicioná-las', desc: 'Até 20 imagens, 5MB cada' }} />,
     )
     const overlay = view.getByRole('status')
     expect(overlay.parentElement).toBe(document.body)
-    expect(overlay.textContent).toContain('图片拖动到此处即可添加')
-    expect(overlay.textContent).toContain('最多 20 张，每张 5MB')
+    expect(overlay.textContent).toContain('Arraste imagens para cá para adicioná-las')
+    expect(overlay.textContent).toContain('Até 20 imagens, 5MB cada')
   })
 
   it('names the invitation independently of other page status regions', () => {
@@ -29,21 +29,21 @@ describe('DropOverlay', () => {
   })
 
   it('omits the desc line when none is resolved', () => {
-    const view = render(<DropOverlay disabled={false} labels={{ title: '图片拖动到此处即可添加' }} />)
-    expect(view.getByRole('status').textContent).toBe('图片拖动到此处即可添加')
+    const view = render(<DropOverlay disabled={false} labels={{ title: 'Arraste imagens para cá para adicioná-las' }} />)
+    expect(view.getByRole('status').textContent).toBe('Arraste imagens para cá para adicioná-las')
   })
 
   it('drops the desc and switches the illustration while disabled', () => {
     const enabled = render(
-      <DropOverlay disabled={false} labels={{ title: '拖入', desc: '限制' }} />,
+      <DropOverlay disabled={false} labels={{ title: 'Solte aqui', desc: 'Limites' }} />,
     )
     const enabledSvg = enabled.getByRole('status').querySelector('svg')!.innerHTML
     enabled.unmount()
     const disabled = render(
-      <DropOverlay disabled labels={{ title: '当前无法添加图片', desc: '限制' }} />,
+      <DropOverlay disabled labels={{ title: 'Não é possível adicionar imagens agora', desc: 'Limites' }} />,
     )
     const overlay = disabled.getByRole('status')
-    expect(overlay.textContent).toBe('当前无法添加图片')
+    expect(overlay.textContent).toBe('Não é possível adicionar imagens agora')
     expect(overlay.querySelector('svg')!.innerHTML).not.toBe(enabledSvg)
   })
 })

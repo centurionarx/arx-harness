@@ -22,24 +22,24 @@ afterEach(() => {
 
 const t = ((key: string, params?: Readonly<Record<string, unknown>>): string => {
   const messages: Record<string, string> = {
-    'image.pending': '待发送图片',
-    'image.original': '原图',
-    'image.preview': '原图预览',
-    'image.closePreview': '关闭原图预览',
-    'image.openOriginal': '查看原图',
-    'image.scrollLeft': '向左滚动图片',
-    'image.scrollRight': '向右滚动图片',
-    'image.dropBlocked': '当前无法添加图片',
-    'image.dropTitle': '图片拖动到此处即可添加',
+    'image.pending': 'Imagens pendentes',
+    'image.original': 'Imagem original',
+    'image.preview': 'Prévia da imagem original',
+    'image.closePreview': 'Fechar a prévia da imagem original',
+    'image.openOriginal': 'Ver original',
+    'image.scrollLeft': 'Rolar as imagens para a esquerda',
+    'image.scrollRight': 'Rolar as imagens para a direita',
+    'image.dropBlocked': 'Não é possível adicionar imagens agora',
+    'image.dropTitle': 'Arraste imagens para cá para adicioná-las',
   }
   if (key === 'image.remove') {
     const name = params?.name
-    return `移除图片 ${typeof name === 'string' ? name : ''}`
+    return `Remover a imagem ${typeof name === 'string' ? name : ''}`
   }
   if (key === 'image.dropDesc') {
     const count = params?.count
     const size = params?.size
-    return `最多 ${typeof count === 'number' ? String(count) : ''} 张，每张 ${typeof size === 'string' ? size : ''}`
+    return `Até ${typeof count === 'number' ? String(count) : ''} imagens, ${typeof size === 'string' ? size : ''} cada`
   }
   return messages[key] ?? key
 }) as ComposerAttachmentsProps['t']
@@ -82,8 +82,8 @@ describe('ComposerAttachments', () => {
     const image = attachment('dropped').file
     const dataTransfer = { types: ['Files'], files: [image], dropEffect: 'none' }
     expect(fireEvent.dragEnter(document.body, { dataTransfer })).toBe(false)
-    expect(view.getByRole('status').textContent).toContain('图片拖动到此处即可添加')
-    expect(view.getByRole('status').textContent).toContain('最多 20 张，每张 5MB')
+    expect(view.getByRole('status').textContent).toContain('Arraste imagens para cá para adicioná-las')
+    expect(view.getByRole('status').textContent).toContain('Até 20 imagens, 5MB cada')
     expect(fireEvent.dragOver(document.body, { dataTransfer })).toBe(false)
     expect(dataTransfer.dropEffect).toBe('copy')
     expect(fireEvent.drop(document.body, { dataTransfer })).toBe(false)
@@ -123,7 +123,7 @@ describe('ComposerAttachments', () => {
     const image = attachment('blocked').file
     const dataTransfer = { types: ['Files'], files: [image], dropEffect: 'copy' }
     fireEvent.dragEnter(document.body, { dataTransfer })
-    expect(view.getByRole('status').textContent).toBe('当前无法添加图片')
+    expect(view.getByRole('status').textContent).toBe('Não é possível adicionar imagens agora')
     fireEvent.dragOver(document.body, { dataTransfer })
     expect(dataTransfer.dropEffect).toBe('none')
     fireEvent.drop(document.body, { dataTransfer })
@@ -137,24 +137,24 @@ describe('ComposerAttachments', () => {
     const initial = props({ attachments: [image], onRemoveImage })
     const view = render(<ComposerAttachments {...initial} />)
 
-    fireEvent.click(view.getByRole('button', { name: '移除图片 pixel.png' }))
+    fireEvent.click(view.getByRole('button', { name: 'Remover a imagem pixel.png' }))
     expect(onRemoveImage).toHaveBeenCalledWith(image.id)
-    fireEvent.click(view.getByTitle('查看原图'))
-    expect(view.getByRole('dialog', { name: '原图预览' })).toBeTruthy()
+    fireEvent.click(view.getByTitle('Ver original'))
+    expect(view.getByRole('dialog', { name: 'Prévia da imagem original' })).toBeTruthy()
     view.rerender(<ComposerAttachments {...props({ attachments: [], onRemoveImage })} />)
-    expect(view.queryByRole('dialog', { name: '原图预览' })).toBeNull()
+    expect(view.queryByRole('dialog', { name: 'Prévia da imagem original' })).toBeNull()
 
     view.rerender(<ComposerAttachments {...initial} />)
-    fireEvent.click(view.getByTitle('查看原图'))
+    fireEvent.click(view.getByTitle('Ver original'))
     fireEvent.keyDown(window, { key: 'Escape' })
-    expect(view.queryByRole('dialog', { name: '原图预览' })).toBeNull()
+    expect(view.queryByRole('dialog', { name: 'Prévia da imagem original' })).toBeNull()
   })
 
   it('labels an unnamed attachment and its original-image preview', () => {
     const image = attachment('unnamed', '')
     const view = render(<ComposerAttachments {...props({ attachments: [image] })} />)
-    expect(view.getByAltText('待发送图片')).toBeTruthy()
-    fireEvent.click(view.getByTitle('查看原图'))
-    expect(view.getByAltText('原图')).toBeTruthy()
+    expect(view.getByAltText('Imagens pendentes')).toBeTruthy()
+    fireEvent.click(view.getByTitle('Ver original'))
+    expect(view.getByAltText('Imagem original')).toBeTruthy()
   })
 })

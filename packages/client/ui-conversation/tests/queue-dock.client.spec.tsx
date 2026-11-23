@@ -200,14 +200,14 @@ describe('QueueDock', () => {
 
   it('renders active actions and disables editing for mixed-content rows', () => {
     const snap = snapshotWith([
-      row('i-1', '第一条排队消息'),
+      row('i-1', 'Primeira mensagem na fila'),
       row('i-2', null, 'image [image]'),
     ])
     const source = liveSession(snap)
     const { container, getByRole } = render(<QueueDock {...kitFor(snap)} useSession={source.useSession} />)
     fireEvent.click(getByRole('button', { name: '2 queued messages' }))
     expect([...container.querySelectorAll('li')].map(item => item.textContent))
-      .toEqual(['第一条排队消息', 'image [image]'])
+      .toEqual(['Primeira mensagem na fila', 'image [image]'])
     expect(container.querySelectorAll('button')).toHaveLength(7)
     expect(container.querySelectorAll('[aria-label="Edit queued message"]')).toHaveLength(2)
     expect(container.querySelectorAll('[aria-label="Remove queued message"]')).toHaveLength(2)
@@ -273,7 +273,7 @@ describe('QueueDock', () => {
     const editor = getByLabelText('Edit queued message')
     fireEvent.change(editor, { target: { value: '   ' } })
     expect(getByLabelText('Save queued message')).toHaveProperty('disabled', true)
-    fireEvent.change(editor, { target: { value: '输入中' } })
+    fireEvent.change(editor, { target: { value: 'ｄｉｇｉｔａｎｄｏ' } })
     fireEvent.keyDown(editor, { key: 'Enter', isComposing: true })
     expect(updateQueue).not.toHaveBeenCalled()
     expect(getByLabelText('Edit queued message')).toBeTruthy()
@@ -373,10 +373,10 @@ describe('QueueDock', () => {
   })
 
   it('follows authoritative retirement back to null', () => {
-    const snap = snapshotWith([row('i-1', '在场')])
+    const snap = snapshotWith([row('i-1', 'presente')])
     const source = liveSession(snap)
     const { container } = render(<QueueDock {...kitFor(snap)} useSession={source.useSession} />)
-    expect(container.textContent).toContain('在场')
+    expect(container.textContent).toContain('presente')
     act(() => { source.push(snapshotWith([])) })
     expect(container.innerHTML).toBe('')
   })

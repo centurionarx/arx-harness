@@ -91,20 +91,20 @@ describe('MessageItem arms', () => {
     const view = render(
       <MessageItem
         t={t}
-        referenceLabels={['你好']}
+        referenceLabels={['Olá']}
         node={{
           kind: 'user',
           seq: 1,
           time: 1_000,
-          content: [{ type: 'text', text: '@你好这个在讲啥' }] as never,
+          content: [{ type: 'text', text: '@Oláisso fala de quê' }] as never,
           source: null,
         }}
       />,
     )
-    expect(view.container.querySelector('[data-ref-chip="session"]')?.textContent).toBe('你好')
+    expect(view.container.querySelector('[data-ref-chip="session"]')?.textContent).toBe('Olá')
     expect(view.container.querySelector('[data-ref-chip="session"] svg')).not.toBeNull()
-    expect(view.getByText('这个在讲啥')).toBeTruthy()
-    expect(view.getByText('Referenced session · 你好')).toBeTruthy()
+    expect(view.getByText('isso fala de quê')).toBeTruthy()
+    expect(view.getByText('Referenced session · Olá')).toBeTruthy()
   })
 
   it('renders the complete metadata-confirmed multi-word session label', () => {
@@ -770,19 +770,19 @@ describe('MessageItem arms', () => {
           form: 'recall',
           version: 1,
           references: [
-            { label: '重构 loader', retainedMessages: 18, omittedMessages: 42, truncated: true },
-            { label: '修 CI', retainedMessages: 3, omittedMessages: 0, truncated: false },
+            { label: 'Refatorar loader', retainedMessages: 18, omittedMessages: 42, truncated: true },
+            { label: 'Corrigir CI', retainedMessages: 3, omittedMessages: 0, truncated: false },
           ],
         },
-        provenance: { role: 'recall', label: '重构 loader, 修 CI' },
+        provenance: { role: 'recall', label: 'Refatorar loader, Corrigir CI' },
         form: 'recall',
       } as never}
       />,
     )
     expect(view.container.querySelector('[data-context-recall-icon]')).not.toBeNull()
-    fireEvent.click(view.getByRole('button', { name: /^Session recall\s*重构 loader, 修 CI$/ }))
+    fireEvent.click(view.getByRole('button', { name: /^Session recall\s*Refatorar loader, Corrigir CI$/ }))
     const rows = [...view.container.querySelectorAll('[data-context-recalls] li')].map(node => node.textContent)
-    expect(rows).toEqual(['重构 loader18 kept · 42 omittedtruncated', '修 CI3 kept · 0 omitted'])
+    expect(rows).toEqual(['Refatorar loader18 kept · 42 omittedtruncated', 'Corrigir CI3 kept · 0 omitted'])
     expect(view.container.querySelector('[data-context-text]')?.textContent).toBe('recalled material')
   })
 
@@ -797,7 +797,7 @@ describe('MessageItem arms', () => {
     const view = render(
       <MessageItem t={t} node={{
         kind: 'compaction', seq: 5, time: 1_000,
-        summary: '## 摘要标题\n\n保留的事实。',
+        summary: '## Título do resumo\n\nFatos preservados.',
         summaryEventSeq: 4,
         shadowedItemCount: 16,
         shadowedTokenCount: 11_309,
@@ -807,10 +807,10 @@ describe('MessageItem arms', () => {
     const row = view.getByRole('button', { name: /Context compacted/ })
     expect(row.getAttribute('aria-expanded')).toBe('false')
     expect(view.getByText('Compacted 16 history items (~11309 tokens)')).toBeTruthy()
-    expect(view.queryByText(/保留的事实/)).toBeNull()
+    expect(view.queryByText(/Fatos preservados/)).toBeNull()
     fireEvent.click(row)
     expect(row.getAttribute('aria-expanded')).toBe('true')
-    expect(view.getByRole('heading', { name: '摘要标题' })).toBeTruthy()
+    expect(view.getByRole('heading', { name: 'Título do resumo' })).toBeTruthy()
     fireEvent.click(row)
     expect(row.getAttribute('aria-expanded')).toBe('false')
   })
@@ -848,7 +848,7 @@ describe('MessageItem arms', () => {
           retry: 1,
           maxRetries: 2,
           delayMs: 2_500.4,
-          failure: { code: 'TRANSPORT', message: '连接被重置' },
+          failure: { code: 'TRANSPORT', message: 'A conexão foi redefinida' },
         }}
       />,
     )
@@ -858,7 +858,7 @@ describe('MessageItem arms', () => {
     expect(details?.dataset.active).toBe('true')
     expect(view.getByRole('status').textContent).toBe('Retrying model request (1/2) · 3s')
     expect(view.getByText('Retry delay:').parentElement?.textContent).toBe('Retry delay: 2500ms')
-    expect(view.getByText('Failure reason:').parentElement?.textContent).toBe('Failure reason: 连接被重置')
+    expect(view.getByText('Failure reason:').parentElement?.textContent).toBe('Failure reason: A conexão foi redefinida')
 
     act(() => { vi.advanceTimersByTime(1_100) })
     expect(view.getByRole('status').textContent).toBe('Retrying model request (1/2) · 2s')
@@ -882,7 +882,7 @@ describe('MessageItem arms', () => {
           retry: 2,
           maxRetries: 2,
           delayMs: 3_500.4,
-          failure: { code: 'TRANSPORT', message: '再次断开' },
+          failure: { code: 'TRANSPORT', message: 'Desconectou novamente' },
         }}
       />,
     )
@@ -907,7 +907,7 @@ describe('MessageItem arms', () => {
         retry: 2,
         maxRetries: 2,
         delayMs: 3_500.4,
-        failure: { code: 'TRANSPORT', message: '再次断开' },
+        failure: { code: 'TRANSPORT', message: 'Desconectou novamente' },
       }}
       />,
     )
@@ -928,7 +928,7 @@ describe('MessageItem arms', () => {
         policyKey: 'mock-always',
         retry: 3,
         delayMs: 3_500.4,
-        failure: { code: 'TRANSPORT', message: '继续重试' },
+        failure: { code: 'TRANSPORT', message: 'Tentando novamente' },
       }}
       />,
     )
@@ -949,7 +949,7 @@ describe('MessageItem arms', () => {
         retry: 1,
         maxRetries: 2,
         delayMs: 3_500.4,
-        failure: { code: 'TRANSPORT', message: '用户取消' },
+        failure: { code: 'TRANSPORT', message: 'Cancelado pelo usuário' },
       }}
       />,
     )
