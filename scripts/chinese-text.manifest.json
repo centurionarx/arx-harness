@@ -88,10 +88,6 @@
     "packages/terminal/terminal-bash/tests/session.spec.ts",
     "packages/terminal/tool-terminal/tests/render.spec.ts",
     "packages/terminal/tool-terminal/tests/tools.spec.ts",
-    "packages/test-support/llm-mock-server/tests/server.spec.ts",
-    "scripts/translation-brief.spec.ts",
-    "scripts/translation-brief.ts",
-    "scripts/translation-pairing-merge.spec.ts",
-    "scripts/translation-pairing.spec.ts"
+    "packages/test-support/llm-mock-server/tests/server.spec.ts"
   ]
 }

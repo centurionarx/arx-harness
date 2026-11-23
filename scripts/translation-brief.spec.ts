@@ -77,12 +77,12 @@ describe('markdown spans', () => {
   })
 
   it('aligns sections by depth only, so translated heading text still maps', () => {
-    const zh = DOC.replace('## First', '## 第一节').replace('## Second', '## 第二节').replace('# Title', '# 标题')
+    const zh = DOC.replace('## First', '## Primeira seção').replace('## Second', '## Segunda seção').replace('# Title', '# Título')
     expect(spansAligned(sectionSpans(DOC), sectionSpans(zh))).toBe(true)
   })
 
   it('aligns span lists only on equal non-empty kind sequences', () => {
-    const zh = DOC.replace('First body.', '第一段。').replace('item one', '第一项').replace('Intro paragraph.', '导语。')
+    const zh = DOC.replace('First body.', 'Primeiro parágrafo.').replace('item one', 'primeiro item').replace('Intro paragraph.', 'Parágrafo de introdução.')
     expect(spansAligned(markdownUnits(DOC), markdownUnits(zh))).toBe(true)
     const reshaped = DOC.replace('- item one\n- item two', 'merged paragraph')
     expect(spansAligned(markdownUnits(DOC), markdownUnits(reshaped))).toBe(false)
@@ -198,14 +198,14 @@ describe('brief rendering', () => {
     label: 'paragraph',
     confirmedSourceText: 'old text about the agent\n',
     currentSourceText: 'new text about the agent\n',
-    counterpartText: '关于 agent 的旧文本\n',
+    counterpartText: 'texto antigo sobre o agent\n',
     counterpartStartLine: 9,
   }
 
   it('renders unit bundles with three-way context and line anchors', () => {
     const brief = renderTranslationBrief({
       ...base,
-      scope: { kind: 'units', bundles: [bundle], firstOccurrenceNotes: ['agent: the document-wide first occurrence moved from #2 to #1; the agent（智能体） form moves with it (later occurrences drop the annotation).'] },
+      scope: { kind: 'units', bundles: [bundle], firstOccurrenceNotes: ['agent: the document-wide first occurrence moved from #2 to #1; the agent (agente) form moves with it (later occurrences drop the annotation).'] },
     })
     expect(brief).toContain('# Translation update briefing: docs/foo.md')
     expect(brief).toContain('## Changed units')
@@ -213,7 +213,7 @@ describe('brief rendering', () => {
     expect(brief).toContain('Last-confirmed English:')
     expect(brief).toContain('Current Portuguese (bring this along):')
     expect(brief).toContain('## First-occurrence notes')
-    expect(brief).toContain('agent（智能体）')
+    expect(brief).toContain('agent (agente)')
     expect(brief).toContain('First-occurrence annotations attach to the document-wide first occurrence only')
     expect(brief).toContain('targets in the active bilingual corpus use `.pt-BR.md` for Portuguese')
     expect(brief).toContain('a missing in-scope counterpart is an error')
