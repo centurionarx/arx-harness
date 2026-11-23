@@ -1,6 +1,9 @@
-# Sandbox CI: the keyless real-kernel confinement proofs. This master-only
-# reference stays outside the pull-request verdict; rationale lives in
+# Sandbox CI: the keyless real-kernel confinement proofs. This reference runs
+# on master and is never part of `all checks passed`; rationale lives in
 # .agents/notes/implemented/process/2026-07-21-serial-cross-platform-ci-reference.md.
+# A pull request that changes this file also runs it, so a change to the
+# workflow is exercised on every leg before it merges. No other pull request
+# runs the matrix.
 # A separate workflow from ci.yml because the axis is different — these jobs
 # fan out over OS×runner (kernel capabilities), not node versions. The Landlock
 # launcher is built from native/landlock-run on each Landlock leg and installed
@@ -10,6 +13,9 @@ name: Sandbox
 on:
   push:
     branches: [master]
+  pull_request:
+    paths:
+      - .github/workflows/sandbox.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,7 +60,10 @@ jobs:
             runner: seatbelt
     name: sandbox e2e (${{ matrix.runner }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    # A stuck-job bound, not a performance budget. The Seatbelt leg also builds
+    # the library faces and runs the whole unit suite, about 20 minutes on the
+    # hosted macOS runner; the Linux legs finish in under 4.
+    timeout-minutes: ${{ matrix.runner == 'seatbelt' && 30 || 20 }}
     steps:
       - uses: actions/checkout@v6
 
