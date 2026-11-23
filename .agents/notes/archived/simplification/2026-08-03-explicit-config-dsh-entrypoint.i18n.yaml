@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-08-03-explicit-config-dsh-entrypoint.md
-2026-08-03-explicit-config-dsh-entrypoint.md: 4474e786b3a99ff0ee81ac54fcb6eb5aaff5ee04
-2026-08-03-explicit-config-dsh-entrypoint.zh.md: 11b7b27c7560aaa43a9fdcfb12a9a17f9433e619
+2026-08-03-explicit-config-dsh-entrypoint.md: 3a8951c6f94c4e70f9f59490f8d0a9af2676a2a1
+2026-08-03-explicit-config-dsh-entrypoint.pt-BR.md: 319b78627f441f8c5d16737772ef659746c21571

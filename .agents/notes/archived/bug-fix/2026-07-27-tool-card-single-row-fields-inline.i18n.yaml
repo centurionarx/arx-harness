@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/bug-fix/2026-07-27-tool-card-single-row-fields-inline.md
-2026-07-27-tool-card-single-row-fields-inline.md: 23989e08ac7e32097212bf951461ca1d4213f729
-2026-07-27-tool-card-single-row-fields-inline.zh.md: 8358f7b8dff67c0d3f459d08bf37e3a47f276107
+2026-07-27-tool-card-single-row-fields-inline.md: eecb591c93d71847281ddf1fde834d7912694f3d
+2026-07-27-tool-card-single-row-fields-inline.pt-BR.md: 671e956c58e7cc5a3d4d811a1053c6345ab5cedb

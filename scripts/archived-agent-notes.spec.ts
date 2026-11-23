@@ -3,6 +3,7 @@ import {
   extendArchiveManifest,
   gitBlobHash,
   parseArchiveManifest,
+  parseBaselineArchiveManifest,
   renderArchiveManifest,
   validateArchiveArtifacts,
   validateArchiveManifestExtension,
@@ -12,12 +13,12 @@ import { isArchivedAgentNotePath } from './repo-files.ts'
 
 function fixture(): Map<string, Buffer> {
   const base = '2026-07-26-example'
-  const source = Buffer.from(`# Agent Note: Example\n\nStatus: implemented\nArchived: 2026-07-26\n\nEnglish | [中文](${base}.zh.md)\n\n## Problem\n\nExample.\n`)
-  const zh = Buffer.from(`# Agent Note: 示例\n\nStatus: implemented\nArchived: 2026-07-26\n\n[English](${base}.md) | 中文\n\n## 问题\n\n示例。\n`)
-  const meta = Buffer.from(`${base}.md: ${gitBlobHash(source)}\n${base}.zh.md: ${gitBlobHash(zh)}\n`)
+  const source = Buffer.from(`# Agent Note: Example\n\nStatus: implemented\nArchived: 2026-07-26\n\nEnglish | [Português](${base}.pt-BR.md)\n\n## Problem\n\nExample.\n`)
+  const pt = Buffer.from(`# Agent Note: Exemplo\n\nStatus: implemented\nArchived: 2026-07-26\n\n[English](${base}.md) | Português\n\n## Problema\n\nExemplo.\n`)
+  const meta = Buffer.from(`${base}.md: ${gitBlobHash(source)}\n${base}.pt-BR.md: ${gitBlobHash(pt)}\n`)
   return new Map([
     [`process/${base}.md`, source],
-    [`process/${base}.zh.md`, zh],
+    [`process/${base}.pt-BR.md`, pt],
     [`process/${base}.i18n.yaml`, meta],
   ])
 }
@@ -45,39 +46,39 @@ describe('archived Agent Notes', () => {
 
   it('extends the manifest without permitting a sealed change or removal', () => {
     const artifacts = fixture()
-    const empty: ArchiveManifest = { version: 1, files: {} }
+    const empty: ArchiveManifest = { version: 2, files: {} }
     const first = extendArchiveManifest(empty, artifacts)
     expect(first.errors).toEqual([])
     expect(first.added).toHaveLength(3)
 
-    const sealed: ArchiveManifest = { version: 1, files: first.files }
+    const sealed: ArchiveManifest = { version: 2, files: first.files }
     const changed = new Map(artifacts)
     changed.set('process/2026-07-26-example.md', Buffer.from('changed'))
     expect(extendArchiveManifest(sealed, changed).errors).toEqual([
       'process/2026-07-26-example.md: sealed content hash changed',
     ])
-    changed.delete('process/2026-07-26-example.zh.md')
+    changed.delete('process/2026-07-26-example.pt-BR.md')
     expect(extendArchiveManifest(sealed, changed).errors).toContain(
-      'process/2026-07-26-example.zh.md: sealed artifact is missing',
+      'process/2026-07-26-example.pt-BR.md: sealed artifact is missing',
     )
   })
 
   it('rejects replacing manifest seals alongside changed archive content', () => {
     const artifacts = fixture()
-    const initial = extendArchiveManifest({ version: 1, files: {} }, artifacts)
-    const baseline: ArchiveManifest = { version: 1, files: initial.files }
+    const initial = extendArchiveManifest({ version: 2, files: {} }, artifacts)
+    const baseline: ArchiveManifest = { version: 2, files: initial.files }
     const path = 'process/2026-07-26-example.md'
     const changedArtifacts = new Map(artifacts)
     changedArtifacts.set(path, Buffer.from('changed'))
-    const replacement = extendArchiveManifest({ version: 1, files: {} }, changedArtifacts)
-    const current: ArchiveManifest = { version: 1, files: replacement.files }
+    const replacement = extendArchiveManifest({ version: 2, files: {} }, changedArtifacts)
+    const current: ArchiveManifest = { version: 2, files: replacement.files }
 
     expect(extendArchiveManifest(current, changedArtifacts).errors).toEqual([])
     expect(validateArchiveManifestExtension(baseline, current)).toEqual([
       `${path}: sealed manifest hash changed`,
     ])
     const removed: ArchiveManifest = {
-      version: 1,
+      version: 2,
       files: Object.fromEntries(Object.entries(current.files).filter(([candidate]) => candidate !== path)),
     }
     expect(validateArchiveManifestExtension(baseline, removed)).toContain(
@@ -85,10 +86,23 @@ describe('archived Agent Notes', () => {
     )
   })
 
+  it('treats a version 1 baseline as pinning nothing and binds every other baseline', () => {
+    const seal = `sha256:${'a'.repeat(64)}`
+    const versionOne = JSON.stringify({ version: 1, files: { 'process/z.md': seal } })
+    expect(() => parseArchiveManifest(versionOne)).toThrow(/unsupported manifest version \(expected 2\)/)
+    expect(parseBaselineArchiveManifest(versionOne)).toEqual({ version: 2, files: {} })
+    expect(parseBaselineArchiveManifest(JSON.stringify({ version: 2, files: { 'process/z.md': seal } }))).toEqual({
+      version: 2,
+      files: { 'process/z.md': seal },
+    })
+    expect(() => parseBaselineArchiveManifest(JSON.stringify({ version: 3, files: {} }))).toThrow(/unsupported manifest version/)
+    expect(() => parseBaselineArchiveManifest(JSON.stringify({ files: {} }))).toThrow(/expected exactly the fields/)
+  })
+
   it('round-trips the deterministic manifest schema', () => {
     const content = renderArchiveManifest({ 'process/z.md': `sha256:${'a'.repeat(64)}` })
     expect(parseArchiveManifest(content)).toEqual({
-      version: 1,
+      version: 2,
       files: { 'process/z.md': `sha256:${'a'.repeat(64)}` },
     })
   })

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-04-prune-write-only-fs-surface.md: e1b6bb6bd9721120015aaced8ffae84048396b60
-2026-07-04-prune-write-only-fs-surface.zh.md: 2f8135b2b1fa9892270a110ea3c3112e6ea20700
+2026-07-04-prune-write-only-fs-surface.md: 6acd0014b8e1240ab254b38f768d39b59fdd1a59
+2026-07-04-prune-write-only-fs-surface.pt-BR.md: 5233cdfd484752e41bbbe991fc4166f0e9879faf

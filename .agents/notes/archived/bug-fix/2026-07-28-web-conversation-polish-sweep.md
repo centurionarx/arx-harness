@@ -3,7 +3,7 @@
 Status: implemented
 Archived: 2026-08-07
 
-English | [中文](2026-07-28-web-conversation-polish-sweep.zh.md)
+English | [Português](2026-07-28-web-conversation-polish-sweep.pt-BR.md)
 
 ## Problem
 
@@ -14,7 +14,7 @@ A design review of the web GUI's conversation surfaces found a batch of presenta
 The sweep lands as presentation-layer changes only; nothing enters the session log.
 
 - **Portal menus pre-render hidden and measure before paint.** The menu list mounts with `visibility: hidden` at (0,0), measures in `useLayoutEffect`, and becomes visible already at its final position. Menus keep 12px viewport clearance with internal scroll; workspace create actions pin in a non-scrolling footer.
-- **The chat flow skips assistant nodes that render nothing.** A finalized assistant node whose blocks are only tool-call heads and blank text/reasoning is dropped from the flow derivation, so consecutive tool results merge into one group. Interrupted nodes always render (they carry the 已停止 marker).
+- **The chat flow skips assistant nodes that render nothing.** A finalized assistant node whose blocks are only tool-call heads and blank text/reasoning is dropped from the flow derivation, so consecutive tool results merge into one group. Interrupted nodes always render (they carry the Interrompido marker).
 - **Tool row summaries relativize workspace-rooted paths.** The session cwd threads through the toolview slot contract (`ToolRowOwnerProps.cwd`) and `toolRowModel` strips it from summaries that start with it; paths outside the workspace stay verbatim. Display-only — args and the log are untouched.
 - **The running sweep is a glare-band overlay.** A fixed-width `::after` gradient band animates across the row (the deepsuite ShimmerText pattern), replacing the previous `mask-image` approach, in both ToolRow and the Bash toolview.
 - **The hero workspace chip is a selector, not an echo.** With no live selection (cold start, or the workspace was deleted after the list settled) it shows a "Choose workspace" placeholder; the cwd-derived name only bridges the initial list load, and stale pending picks clear when their workspace leaves a ready list.

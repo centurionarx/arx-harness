@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/feature/2026-07-27-assistant-timing-header-trailing.md
-2026-07-27-assistant-timing-header-trailing.md: 2ef926cff989499aa05ebfa781eea10399c69d18
-2026-07-27-assistant-timing-header-trailing.zh.md: 282ac1e65b3c4e185839d3c6b70a085f685e8013
+2026-07-27-assistant-timing-header-trailing.md: 692a895ba05db55e986a166fce7f5b9b1bd94c16
+2026-07-27-assistant-timing-header-trailing.pt-BR.md: c797645ba12871dfa5c61d486a23eb8838a4d197
