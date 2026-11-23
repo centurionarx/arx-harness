@@ -107,8 +107,13 @@ jobs:
         if: matrix.runner == 'seatbelt'
         run: pnpm run build:lib
 
+      # The same case, hook and poll budget as the coverage lanes of ci.yml:
+      # fixtures that start a real server process take over 10 seconds on this
+      # runner while the rest of the suite runs beside them.
       - name: Unit tests (darwin parity)
         if: matrix.runner == 'seatbelt'
+        env:
+          ARX_COVERAGE_TEST_TIMEOUT_MS: '30000'
         run: pnpm run test
 
       - name: Sandbox e2e (real kernel confinement, world-verified)

@@ -12,6 +12,8 @@ The failed assertion was `expect(supervisor.ctxOf(id)).toBeUndefined()`. Vitest 
 
 The same suite has a third assertion that depends on the load of the machine. In [stream-deadline.spec.ts](../../../../packages/host/isolated-project-runtime/tests/stream-deadline.spec.ts) the test that keeps a stream open beyond `requestTimeoutMs` sets that limit to 50 ms and counted every cancel request the [supervisor fixture](../../../../packages/host/isolated-project-runtime/tests/supervisor.ts) received. Its attach step sends a unary request, and the runtime cancels that request when the reply takes longer than 50 ms. The count then reached 1 while the stream was still open, and the coverage job failed on a loaded runner.
 
+The `client/ui-auth` specs that use a real HTTP authority start it as a child process through [browser-fixture.host.ts](../../../../examples/web-identity/tests/browser-fixture.host.ts) in a `beforeEach` hook. The start takes about 5 seconds on an idle 4-core Linux machine and about 12 seconds when six other processes occupy the cores. The macOS job ran the suite with the Vitest defaults of 5 seconds for a test and 10 seconds for a hook, and two hooks of [extended-http.client.spec.ts](../../../../packages/client/ui-auth/tests/extended-http.client.spec.ts) ended at 10 seconds. The same specs wait with Testing Library for the result of a login, a password change or a password reset. Those requests hash a password, and a Testing Library wait ends after 1 second whatever the Vitest limits are; [auth-http.client.spec.ts](../../../../packages/client/ui-auth/tests/auth-http.client.spec.ts) failed there on the same run.
+
 The unit suite on that job grew from 983 to 1091 test files with the merge and from 6 min 40 s to 16 min 1 s. With the library build that the suite needs, a run in which every test passes takes about 20 min 15 s.
 
 ## Decision
@@ -23,6 +25,10 @@ The first test holds the mount and opens the event stream before it invokes the 
 No assertion in the `isolated-project-runtime` specs receives a Context. The sixteen assertions that passed the result of `supervisor.ctxOf(...)` to `toBeUndefined()` or `toBeDefined()` compare it with `undefined` and assert the boolean. Each test verifies the same condition; a failure prints `expected false to be true` and the cleanup runs.
 
 The stream deadline test counts only the cancel requests that name the stream's own operation, read from the fixture's `cancelled` list. It verifies the same property: the stream stays open beyond `requestTimeoutMs` and is cancelled once, when the consumer aborts.
+
+The unit step of the macOS leg sets `ARX_COVERAGE_TEST_TIMEOUT_MS` to `30000`, the value the coverage lanes of `ci.yml` set. [vitest.config.ts](../../../../vitest.config.ts) applies it to the test, hook and poll limits of every project, so `pnpm run test` uses it without another mechanism.
+
+The HTTP bridge of the `client/ui-auth` specs has `answered(path)`, which settles when the next request to a path has an answer. The six form submissions of `auth-http.client.spec.ts` and `extended-http.client.spec.ts` whose server answer the test waits for await that answer before the Testing Library wait, so the 1-second wait covers only the rendering that follows the answer.
 
 The macOS leg of the [Sandbox workflow](../../../../.github/workflows/sandbox.yml) has a 30-minute limit; the three Linux legs keep 20. A pull request that changes the workflow file runs the workflow, so a change to it is exercised on every leg before the merge.
 
@@ -38,6 +44,10 @@ The macOS leg of the [Sandbox workflow](../../../../.github/workflows/sandbox.ym
 
 **Restore the spies at the start of each test.** That hides the skipped cleanup: the harness and the supervisor of the failed test would still stay open, and the failure message would still be unreadable.
 
+**Raise the Testing Library limit in the `client/ui-auth` specs.** One limit would then cover both a slow server answer and a slow render, and a slow render would pass.
+
+**Start the HTTP authority once per file in the `client/ui-auth` specs.** It removes the 5-second start from every test and is the larger correction, but each test would share server state with the others of its file and the specs need a reset step between tests. It is deferred.
+
 **Add `workflow_dispatch` to the Sandbox workflow.** GitHub starts a manual run only for a workflow whose trigger is already on the default branch, so it cannot exercise a change before its merge.
 
 **Run the Sandbox workflow on every pull request.** Each run costs about 21 minutes of hosted macOS time and 10 minutes across the Linux legs. The unit suite already runs on Linux in the required checks.
@@ -52,4 +62,6 @@ The macOS leg of the [Sandbox workflow](../../../../.github/workflows/sandbox.ym
 - A spec reads a Context from `ctxOf` only to compare it with `undefined` or to use it. Passing one to `expect` hides the failure and skips the cleanup of that test.
 - A pull request that edits `sandbox.yml` spends about 31 minutes of hosted runner time per push, about 21 of them on macOS. Other pull requests are unaffected, and the four jobs stay outside `all checks passed`.
 - The macOS leg has about 50% margin over the current suite. The limit bounds a stuck job; it is not a performance budget.
-- The macOS leg runs `pnpm run test` with the 5-second default, while the coverage lanes of `ci.yml` set a 30-second budget. A test that passes only with the larger budget fails first on this job.
+- The stream deadline test does not assert that no other operation is cancelled while the stream is open. A cancel request for another operation id passes it.
+- No CI lane runs the whole unit suite with the Vitest defaults; a local `pnpm run test` still does. A test that takes between 5 and 30 seconds, or a hook between 10 and 30, passes on every lane; a regression that makes a fast test slow is detected only when it passes 30 seconds or by the duration of the job.
+- The `client/ui-auth` specs still start one server process per test. On the macOS runner that start is the largest part of each test, and the two files take about 95 seconds of the suite.
