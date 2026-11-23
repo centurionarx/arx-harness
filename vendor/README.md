@@ -50,6 +50,7 @@ Keep this log exhaustive — every divergence from upstream must be listed.
 18. **Entry `disabled` interpolation in `loader/src/config/entry.ts`**: a `disabled: !!js` expression evaluates against the loader context at every mount decision; the raw node stays in the options, so write-back keeps the `!!js` form. `disabled` is the only interpolated metadata field. Covered by `packages/boot/app-boot/tests/user-patches.spec.ts` and `apps/cli/tests/windows-shell.spec.ts`.
 
 19. **`cordis/src/{fiber,reflect,unloading}.ts` dependency disposal joins**: retain publicly removed fibers in an internal per-root set until their existing teardown settles. Service notifications include matching unloading consumers when joining teardown, preserve isolation checks, and never refresh or reactivate a fiber whose uid is null. Public registry removal remains immediate. Ancestor and concurrent provider/consumer disposal regressions keep final writes ahead of resource closure.
+20. **`hmr/package.json` description**: removed the `zh` entry of the `@arx-ai/cordis` plugin `description`, leaving `en`. Rationale: no tracked file holds Chinese text, and `verify-chinese-text` scans `vendor/`; nothing reads the localized description.
 
 ## Sync procedure
 

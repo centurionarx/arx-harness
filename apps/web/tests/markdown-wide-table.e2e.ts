@@ -74,7 +74,8 @@ const WIDTHS = [1680, 1100, 640]
 const SENTENCE = 'This cell carries one full sentence so the unwrapped table is far wider than the message column.'
 /** Unbroken path-like token (no scheme, so GFM does not autolink it and no anchor joins the tab order). */
 const LONG_TOKEN = 'workspace/arx-harness/packages/client/ui-primitives/src/markdown/render.tsx/'.repeat(3)
-const CJK_SENTENCE = '这个单元格包含一段较长的中文说明，用来验证长内容在窄列宽下按最小可读宽度换行而不是把列压缩到无法阅读。'
+/** Full-width (East Asian Wide) text with no spaces: like CJK prose, it offers a break opportunity between any two characters. */
+const WIDE_SENTENCE = 'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ，ＲＳＴＵＶＷＸＹＺＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺＡＢＣＤ。'
 
 /** The assistant markdown: one 3-column fill, one 12-column wide, one long-cell table. */
 function tablesMarkdown(): string {
@@ -97,7 +98,7 @@ function tablesMarkdown(): string {
     `| ${LONG_CELL_MARKER} | Value |`,
     '| --- | --- |',
     `| path | ${LONG_TOKEN} |`,
-    `| 说明 | ${CJK_SENTENCE} |`,
+    `| note | ${WIDE_SENTENCE} |`,
     '',
     TAIL_MARKER,
   ].join('\n')
@@ -324,7 +325,7 @@ describe('web e2e: markdown tables fill the column, wide ones break out and scro
       const columnWidth = fill!.clientWidth
       // #520: an ordinary wide table fills the message column and wraps…
       expect(fill!.overflow, `fill viewport ${String(stop.width)}`).toBeLessThanOrEqual(1)
-      // …a long unbroken token and long CJK prose wrap instead of forcing a scroll…
+      // …a long unbroken token and long full-width prose wrap instead of forcing a scroll…
       expect(longCell!.overflow, `long-cell viewport ${String(stop.width)}`).toBeLessThanOrEqual(1)
       // …and a many-column table keeps its natural width behind the scroll fallback.
       expect(wide!.overflow, `wide viewport ${String(stop.width)}`).toBeGreaterThan(1)
