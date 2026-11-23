@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/simplification/2026-07-31-web-ui-no-steer-entry-or-interjection-chrome.md
-2026-07-31-web-ui-no-steer-entry-or-interjection-chrome.md: 8ef2b7deb103f2e2a9147b4b50c7d39936ed2381
-2026-07-31-web-ui-no-steer-entry-or-interjection-chrome.zh.md: 875e44a06e1cebf4f2b1731909c479b2f06fb06a
+2026-07-31-web-ui-no-steer-entry-or-interjection-chrome.md: 512bda94ddc85bfaa1d3445b5e860534149a9fd3
+2026-07-31-web-ui-no-steer-entry-or-interjection-chrome.pt-BR.md: 200c02e0c2cd01b5716cee0c65b0436b1bf1585f

@@ -18,9 +18,9 @@ The four shipped `preset.yml` files under [`apps/cli/config/agent-presets`](../.
 
 ## Decision
 
-Every browser scenario advertises `en-US` and asserts the dictionary value. `ZH_BROWSER_LOCALE` and `connectFreshWorkspaceZh` are gone from `apps/web/tests/support.ts`: the Chinese helper was character-for-character the English one, because the picker copy it targeted no longer exists. The `约…年`/`…月…日` duration and clock normalizers in `scaffold.ts` go with them — no shipped locale can produce those spellings.
+Every browser scenario advertises `en-US` and asserts the dictionary value. `ZH_BROWSER_LOCALE` and `connectFreshWorkspaceZh` are gone from `apps/web/tests/support.ts`: the Chinese helper was character-for-character the English one, because the picker copy it targeted no longer exists. The Chinese approximate-year duration and month-day clock normalizers in `scaffold.ts` go with them — no shipped locale can produce those spellings.
 
-Content whose subject is CJK stays: `markdown-cjk-strong.e2e.ts`, the wide-table sentence, the `关于我.md` filename in `produced-files.e2e.ts`, and the recorded prompt in `goal-multi-turn-actions.e2e.ts`, whose fixture would no longer replay. The custom-provider rename in `models-settings.e2e.ts` keeps a non-ASCII display name — `Acme Gateway São Paulo` — so the settings document still proves it round-trips a name outside ASCII.
+Content whose subject is CJK stays: `markdown-cjk-strong.e2e.ts`, the wide-table sentence, the CJK filename in `produced-files.e2e.ts`, and the recorded prompt in `goal-multi-turn-actions.e2e.ts`, whose fixture would no longer replay. The custom-provider rename in `models-settings.e2e.ts` keeps a non-ASCII display name — `Acme Gateway São Paulo` — so the settings document still proves it round-trips a name outside ASCII.
 
 `preset.yml` publishes the same English the dictionary does, so a duplicated preset carries the copy its source displays.
 

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-26-code-mode-trajectory-waterfall-spans.md: 2e158878faff29aa1ccd03b9b07a370b10cbb4f8
-2026-07-26-code-mode-trajectory-waterfall-spans.zh.md: 462968c9dae66880778b7a5e871a54983402e221
+2026-07-26-code-mode-trajectory-waterfall-spans.md: 623ca5b4b334a2eb621c9905a3deac67b4491e53
+2026-07-26-code-mode-trajectory-waterfall-spans.pt-BR.md: 81c4741e7d052a27267fddbefb74fa4cd85acb84

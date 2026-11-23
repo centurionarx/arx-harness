@@ -54,7 +54,7 @@ Each line below is a trap that costs a turn; the executor can skip all of them.
 - **Generated regions are locked.** `docs/subsystems/*.md` carry `ts type-equiv` blocks matched against source JSDoc; `## Cordis API` regions come from `pnpm run gen-cordis-catalog`; `docs/config-catalog.md`, the graph documents, `packages/extensions/cordis-client-runner/src/client/slot-catalog.ts`, and `packages/extensions/tool-cordis/src/api-catalog.ts` are generated. Regenerate rather than edit; when no generator can produce the change a hand edit is recommended to the owner and made only once they authorize it. New seam types go in `LINK_MAP` and new event scopes in `EVENT_SCOPE_PAGE` of `scripts/gen-cordis-catalog.ts`.
 - **Coverage is 100% per file under `packages/*/*/src`.** Measure with `npx vitest run --coverage --coverage.include='<package>/src/**' --coverage.reporter=text <package>`; an unreachable guard is a coverage hole, so restructure rather than exempt.
 - **Measure against the baseline, not zero, until Phase 0 lands.** Compare failure sets against `HEAD` with the change stashed: `pnpm run lint` at 11 errors, `pnpm run test` at 16 failures, `verify-md-links` at 27. A count that matches can hide a swapped failure; diff the sorted lists.
-- **Count Chinese with a Unicode-aware tool.** `git grep -E '[一-龥]'` miscounts by bytes; a Python `re.compile(r'[一-鿿]')` over the file tree gives the 24/24 above.
+- **Count Chinese with a Unicode-aware tool.** `git grep -E` with a literal `U+4E00`–`U+9FA5` bracket range miscounts by bytes; a Python `re.compile(r'[\u4e00-\u9fff]')` over the file tree gives the 24/24 above.
 - **Workflows die at the session limit** and resume from `resumeFromRunId` with completed agents cached. Keep batches small and commit per verified batch. A multi-agent workflow runs only when the session's user asks for one; Phase 7 assumes that request.
 
 ### Skills the executor loads
@@ -239,7 +239,7 @@ Proof: after each wave, `--list` reports no missing counterpart inside `included
 - **Google Ads as an in-tree Cordis plugin.** Hand-rolls an OAuth2 and GAQL client against the dependencies policy; the authorization flow is the only part the harness must own.
 - **A migration flag that tolerates missing counterparts everywhere.** Simpler than `included`, but it makes the gate lie for the whole migration instead of telling the truth about a declared scope.
 - **Excluding generated documents from pairing permanently.** Removes the generator work but leaves the Portuguese site without its catalogs and API pages.
-- **Translating archived notes.** Out of scope by the manifest and frozen by the archive gate; the 143 legacy `.zh.md` files stay as they are.
+- **Translating archived notes.** Out of scope by the manifest and frozen by the archive gate. The 143 legacy `.zh.md` files are gone: [the Chinese-text rule](../../implemented/process/2026-09-29-chinese-text-becomes-brazilian-portuguese.md) replaced 100 with Portuguese counterparts and deleted 43 triplets.
 
 ## Acceptance criteria
 

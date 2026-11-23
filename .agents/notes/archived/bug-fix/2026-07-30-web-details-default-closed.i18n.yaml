@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/archived/bug-fix/2026-07-30-web-details-default-closed.md
-2026-07-30-web-details-default-closed.md: e4271917b998c9a916d8c67b30627022587547b8
-2026-07-30-web-details-default-closed.zh.md: 3b9432067c944ea604e039ee1b305a927a1c206e
+2026-07-30-web-details-default-closed.md: 1204a900795af38cb775a5ecf8b900084ee710d7
+2026-07-30-web-details-default-closed.pt-BR.md: 603e7b8c4a5e142312bd0e246682c20050622bcc

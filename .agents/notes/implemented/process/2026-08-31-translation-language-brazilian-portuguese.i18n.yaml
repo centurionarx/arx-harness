@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-31-translation-language-brazilian-portuguese.md
 2026-08-31-translation-language-brazilian-portuguese.md: dcb223b608e9fdb0197053d34a519372e35f89be
-2026-08-31-translation-language-brazilian-portuguese.pt-BR.md: 8a260c26154783e15beabe7eb61d30d41e7a55e1
+2026-08-31-translation-language-brazilian-portuguese.pt-BR.md: c76ad40453e60b0bace57a0465caf4e6a7dd845e

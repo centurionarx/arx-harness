@@ -26,6 +26,6 @@ The second language of the pairing contract is Brazilian Portuguese. Concretely:
 
 ## Consequences
 
-- Pairing work updates Portuguese; the terminology table is the first stop for any new term, and its `不要译作` column becomes a Portuguese "não traduzir como" column.
+- Pairing work updates Portuguese; the terminology table is the first stop for any new term, and its "do not translate as" column becomes a Portuguese "não traduzir como" column.
 - The conversion of the existing corpus happened in the same change: the 397 Chinese counterparts were translated once, after the brand-naming sweep had settled the English sources, so no pair was translated twice.
 - Bilingual gates keep their mechanics; only the suffix, locale, and prompt template changed.

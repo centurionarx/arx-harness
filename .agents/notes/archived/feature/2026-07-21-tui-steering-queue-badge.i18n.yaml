@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-21-tui-steering-queue-badge.md: 37e8a11c0dd30a0674107ff33d51a31d92385ada
-2026-07-21-tui-steering-queue-badge.zh.md: 6ef412b26a32c3aa359215404ca81635fca776c1
+2026-07-21-tui-steering-queue-badge.md: 38a26e186e4cb1bd612e133df6aa924028d2c0f7
+2026-07-21-tui-steering-queue-badge.pt-BR.md: 2db32f454a2607ee38022a147c70f864403cd40a

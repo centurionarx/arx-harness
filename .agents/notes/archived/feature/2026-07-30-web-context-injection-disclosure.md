@@ -3,7 +3,7 @@
 Status: implemented
 Archived: 2026-08-07
 
-English | [中文](2026-07-30-web-context-injection-disclosure.zh.md)
+English | [Português](2026-07-30-web-context-injection-disclosure.pt-BR.md)
 
 ## Problem
 
@@ -11,7 +11,7 @@ The Web conversation rendered every logged non-user message through the generic 
 
 ## Decision
 
-`MessageItem` routes context nodes to `ContextInjectionRow`. The row starts collapsed, names the presentation `上下文注入`, uses the existing browse glyph, and exposes the whole 24px header as one pointer and keyboard disclosure target. Its expanded body begins 4px below the header at the shared 22px content indent and renders the design's 141px scrollport with 8px radius, code-block background, 11/16 code text, and no border.
+`MessageItem` routes context nodes to `ContextInjectionRow`. The row starts collapsed, names the presentation `Injeção de contexto`, uses the existing browse glyph, and exposes the whole 24px header as one pointer and keyboard disclosure target. Its expanded body begins 4px below the header at the shared 22px content indent and renders the design's 141px scrollport with 8px radius, code-block background, 11/16 code text, and no border.
 
 `ContextInjectionRow` serializes both logged `content` and `source` into one inline JSON value, preserving provenance alongside model-visible material. The display remains bounded by the existing 20,000-character truncation policy. It changes no session event, runtime fold, or context-producing plugin.
 

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write
-2026-07-21-dsh-system-prompt-source-path.md: 9581966d10693e1ccbdce1a860314a34387e225e
-2026-07-21-dsh-system-prompt-source-path.zh.md: 392fcd44d988d483306effc34d4aaf4211803b4e
+2026-07-21-dsh-system-prompt-source-path.md: b1e598f46cf271df0a163e0c1730324830a48290
+2026-07-21-dsh-system-prompt-source-path.pt-BR.md: a50fd1e9f7e24f56edc0d536b86d74c56aa180ff

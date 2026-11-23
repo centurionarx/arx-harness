@@ -1,0 +1,41 @@
+# Agent Note: Barra de objetivo acoplada na web
+
+Status: implemented
+Archived: 2026-08-07
+
+[English](2026-07-22-docked-web-goal-bar.md) | Português
+
+## Problema
+
+A UI web não tinha nenhuma superfície de objetivo: a pilha de objetivos foi entregue com as ferramentas do modelo, os adaptadores de TUI/ACP (Agent Client Protocol) e o comando `/goal`, mas o cliente de navegador não expunha nada disso: nenhum verbo de runtime, nenhum indicador. Esta mudança introduz, juntos, os verbos de objetivo do cliente (métodos de sessão do runtime por RPC) e a primeira UI de objetivo. O posicionamento segue a premissa do redesenho de que a presença do objetivo pertence ao contexto do compositor: o objetivo é uma propriedade do trabalho para o qual o usuário está prestes a escrever um prompt, então o indicador dele pertence à pilha de contexto do compositor; a [decisão da pilha de contexto do compositor](../bug-fix/2026-07-30-composer-context-stack-order.md) é dona da posição dele entre Goal, Todo, Queue e o compositor. O mock mantém apenas um brilho, uma palavra de fase ("Ongoing/Paused/Blocked Goal"), o objetivo truncado e as ações de ícone de editar/limpar, com retomar aparecendo apenas em um objetivo pausado.
+
+## Decisão
+
+`GoalBar` (`packages/client/ui-goal/src/client/GoalBar.tsx`) é um componente autocontido, guiado por props, registrado em segundo lugar na lista de input-dock do compositor, depois de Todo e antes de Queue. O cartão independente de 752px segue a geometria horizontal do compositor, e todos os estados visíveis compartilham uma única altura fixa de 36px, de modo que a troca de fase nunca o redimensiona. Carregando (`goal === undefined`), ausente (`goal === null`) e `phase === 'complete'` não renderizam nada: um objetivo concluído é histórico, não chrome.
+
+A visibilidade determina o rótulo e as ações: ativo mostra "Ongoing Goal" com pausar/editar/limpar; pausado mostra "Paused Goal" e troca pausar por um botão de ícone de retomar; bloqueado mostra "Blocked Goal" e carrega `blockedReason.message` como o tooltip `title` da faixa. A criação de objetivo fica no comando `/goal`, não na barra. O lápis troca a faixa por um formulário de edição inline preenchido com o objetivo atual: Enter ou o botão de confirmação salva por meio de `GoalBarActions.onEdit(objective)`, Esc cancela, e um objetivo composto só de espaços em branco mantém o salvamento desativado. O formulário só fecha quando a edição dá certo; uma falha preserva o rascunho e exibe o erro na barra. As falhas de retomar e de limpar também são exibidas ali. Fora isso, limpar chama `onClear` diretamente, sem confirmação: uma limpeza mantém uma lápide durável, então nada fica irrecuperável. Toda mutação primeiro adquire uma trava síncrona de voo único, local ao componente, porque a renderização do estado pendente do React não consegue fechar a janela de cliques dentro do mesmo frame. Uma limpeza bem-sucedida também suprime imediatamente aquele id de objetivo exato enquanto a projeção nula autoritativa não chega, de modo que uma lápide já confirmada não deixa um controle de limpar desatualizado que envie `GOAL_NOT_FOUND`; uma falha libera a trava e continua passível de nova tentativa. Um efeito com chave no id do objetivo redefine esse estado transitório e descarta o formulário de edição quando a identidade do objetivo muda, de modo que nem um marcador de limpeza nem um rascunho sobrevivente afetam o objetivo substituto.
+
+`GoalBarActions` fica no contrato de slot do ui-goal (`packages/client/ui-goal/src/client/slots.ts`) e carrega exatamente os verbos renderizados: `onEdit`/`onPause`/`onResume`/`onClear`. Cada callback retorna de forma assíncrona um resultado explícito de sucesso/falha, para que `GoalBar` seja dona de suas transições e da exibição de erros. `apply.ts` os conecta aos métodos de sessão do runtime; a sessão do runtime resolve internamente a ref de compare-and-set do objetivo atual, então a UI não passa nenhuma ref.
+
+A sessão do runtime ganha a superfície de objetivo de que a faixa (e a UI futura) precisa por meio da projeção `goal` calculada pelo host. A cauda do histórico semeia o valor atual inteiro, e os frames `session/projection` o atualizam quando inserções duráveis `agent/inbox/spliced` confirmam snapshots de objetivo ou lápides de limpeza; a admissão posterior no contexto é irrelevante para a atualidade da UI. Os quatro verbos de mutação renderizados convertem as falhas de transporte em resultados `{ ok: false }`, como todo método de sessão irmão.
+
+O fundo da faixa é `--dsw-alias-interactive-bg-hover`, e não o literal `#F5F6F7` do mock: o cinza translúcido de hover resolve para esse valor sobre a base branca do tema claro e destaca a faixa do cartão do compositor no modo escuro, em que um token claro estático afundaria. Todas as cores são tokens `--dsw-*`.
+
+## Testes
+
+`packages/client/ui-goal/tests/goalbar.spec.tsx` fixa o comportamento apenas por meio de props: carregando/ausente/concluído não renderizam nada, a faixa ativa renderiza rótulo/objetivo e dispara limpar, cliques rápidos de limpar dentro do mesmo frame despacham uma única vez e uma limpeza bem-sucedida esconde a faixa antes da convergência da projeção, o formulário de edição vem preenchido, rejeita vazio, salva com Enter, cancela com Esc e é redefinido quando a identidade do objetivo muda, a faixa ativa dispara pausar, a faixa pausada dispara retomar e a faixa bloqueada expõe o tooltip do motivo. Os casos de caminho de falha do componente provam que uma edição que falha preserva o rascunho e que os erros de editar/retomar/limpar continuam visíveis e passíveis de nova tentativa na barra. As specs de esqueleto montam `ConversationRoot` com e sem `goalActions`; o caso undefined é semeado com um objetivo ativo, então é a gate ausente, e não o objetivo ausente, que esconde a faixa. As specs da sessão do runtime fixam os resultados com erro convertido e as atualizações de projeção. Um teste de fumaça sem chave, em navegador real, inicializa a aplicação montada por `boot → RPC → runtime → GoalBar` e grava um snapshot inline do rótulo, do objetivo e das ações renderizados.
+
+## Alternativas consideradas
+
+- **Colocar a faixa no cabeçalho da sessão**: rejeitado porque a premissa do redesenho é que a presença do objetivo pertence ao contexto do compositor; uma faixa no cabeçalho a separa de Todo, de Queue e do prompt que ela qualifica.
+- **Renderizar um placeholder "Loading goal…" para `undefined`**: rejeitado: a faixa piscaria e se recolheria a cada abertura de sessão, ruído de chrome para um estado que dura menos de um segundo.
+- **Incluir um recurso inline de criação quando nenhum objetivo está definido**: rejeitado depois da revisão da implementação: a criação de objetivo fica no comando `/goal`, de acordo com o padrão em que o modelo cria objetivos sob pedido; a barra é um indicador de status, não uma superfície de criação.
+- **Carregar o conjunto completo de verbos (incluindo `onComplete`) em `GoalBarActions`**: rejeitado como generalidade especulativa: a interface carrega apenas os verbos renderizados (`onPause` entrou nela quando a faixa ativa ganhou a ação de pausar).
+
+## Consequências
+
+- A presença do objetivo na UI web é uma faixa independente do contexto do compositor: brilho, rótulo de fase, objetivo truncado e pausar/editar/limpar (com retomar no lugar de pausar quando pausado). É a primeira superfície de objetivo do cliente de navegador.
+- As mutações de objetivo são de voo único dentro do componente; uma limpeza bem-sucedida esconde imediatamente o objetivo exato enquanto a entrega da projeção converge, o que evita erros de CAS duplicados sem tornar autoritativo um estado transitório da UI.
+- A sessão do runtime expõe os verbos de objetivo por RPC com os erros de transporte convertidos e consome a projeção durável do objetivo inteiro, mantida pelo host, na abertura e nas atualizações ao vivo.
+- A edição do objetivo fica acessível pela UI pela primeira vez, por meio de `goal.edit` com a ref que pertence ao runtime; concluir continua disponível para outras superfícies (`/goal`, ferramentas do modelo).
+- `goal === null` não renderiza nada; o compositor não carrega nenhum recurso persistente de criação: criar é trabalho do comando `/goal`.

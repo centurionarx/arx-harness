@@ -3,7 +3,7 @@
 Status: implemented
 Archived: 2026-07-26
 
-English | [中文](2026-07-04-remove-agent-steering-mirror.zh.md)
+English | [Português](2026-07-04-remove-agent-steering-mirror.pt-BR.md)
 
 ## Problem
 

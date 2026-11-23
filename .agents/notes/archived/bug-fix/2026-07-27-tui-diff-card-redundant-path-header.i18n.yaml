@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-07-27-tui-diff-card-redundant-path-header.md
-2026-07-27-tui-diff-card-redundant-path-header.md: 608a11892a20d020087180175eff847021dc0554
-2026-07-27-tui-diff-card-redundant-path-header.zh.md: bf7f1c1eeb994f9940b5f7dfb7db72d422293bd4
+2026-07-27-tui-diff-card-redundant-path-header.md: 7c4e34f86faab826de293e5afcd0aecad3f2268c
+2026-07-27-tui-diff-card-redundant-path-header.pt-BR.md: 166b9063d4e9a37e0b02e1376b08d51d7c8e29b2
