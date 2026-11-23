@@ -133,8 +133,8 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     now = initial.idle
     await expect(stream.next()).rejects.toMatchObject({ code: 'AUTH_INVALID', status: 401 })
     expect(await questionOutcome).toMatchObject({ error: { code: 'ASK_ABORTED' } })
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
-    expect(supervisor.ctxOf(other.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
+    expect(supervisor.ctxOf(other.workspace.workspaceId) !== undefined).toBe(true)
     await expect(h.ctx.webIdentity.authenticate(own.account.token, 'user')).rejects.toMatchObject({ code: 'AUTH_INVALID' })
     expect(await h.ctx.isolatedProjectRuntime.invoke(other.authority, undefined,
       request('session.history', { sessionId: other.meta.id }))).toMatchObject({ ok: true })
@@ -155,8 +155,8 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     expect(await runtime.invoke(own.authority, undefined, request('host.describe'))).toEqual({ ok: true, value: {
       version: expect.any(String) as string, cwd: '', attachedSessions: 0, home: '', canOpenPath: false } })
     expect(supervisor.seen).toHaveLength(forwarded)
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
-    expect(supervisor.ctxOf(second.workspace.workspaceId)).toBeUndefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
+    expect(supervisor.ctxOf(second.workspace.workspaceId) === undefined).toBe(true)
     const peerController = new AbortController()
     const peerMux = runtime.streamMux(peer.authority, peerController.signal)[Symbol.asyncIterator]()
     const peerFirst = peerMux.next()
@@ -280,8 +280,8 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     if (outcome === undefined) throw new Error('genuine idle question was not entered')
     expect(await outcome).toMatchObject({ error: { code: 'ASK_ABORTED' } })
     expect(cancellationReceipts).toBeGreaterThan(0)
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
-    expect(supervisor.ctxOf(second.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
+    expect(supervisor.ctxOf(second.workspace.workspaceId) !== undefined).toBe(true)
     await expect(h.ctx.webIdentity.authenticate(own.account.token, 'user')).rejects.toMatchObject({ code: 'AUTH_INVALID' })
     expect((await h.ctx.webIdentity.authenticate(login.token, 'user')).revision).toBe(initialRevision)
     expect(await h.ctx.isolatedProjectRuntime.invoke(second.authority, undefined,
@@ -290,7 +290,7 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     // are active. Same-workspace cancellation remains an operational limit.
     expect(await h.ctx.isolatedProjectRuntime.invoke(other.authority, undefined,
       request('session.create', { sessionId: other.meta.id }))).toMatchObject({ ok: true, value: { sessionId: other.meta.id } })
-    expect(supervisor.ctxOf(other.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(other.workspace.workspaceId) !== undefined).toBe(true)
     expect(deadlines(second.authority)).toEqual(secondDeadline)
     expect(deadlines(other.authority)).toEqual(otherDeadline)
     replay.assertConsumed()
@@ -399,17 +399,17 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     await cancelled
     if (questionOutcome === undefined) throw new Error('real pending tool question unavailable')
     expect(await questionOutcome).toMatchObject({ error: { code: 'ASK_ABORTED' } })
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
     release()
     const outcome = await reply
     expect(replyDispatches).toBe(0)
     expect(outcome).toMatchObject({ error: { code: 'RUNTIME_FORBIDDEN', status: 403 } })
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
     expect(cancellationReceipts).toBeGreaterThan(0)
     expect((await h.ctx.webIdentity.authenticate(login.token, 'user')).revision).toBe(initialRevision)
     expect(await h.ctx.isolatedProjectRuntime.invoke(other.authority, undefined,
       request('session.create', { sessionId: other.meta.id }))).toMatchObject({ ok: true, value: { sessionId: other.meta.id } })
-    expect(supervisor.ctxOf(other.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(other.workspace.workspaceId) !== undefined).toBe(true)
     replay.assertConsumed()
     replay.dispose(); disposeTool()
     expect(supervisor.counts).toEqual({ modelCalls: 1, toolCalls: 1 })
@@ -457,12 +457,12 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     expect(await deletion).toEqual({ deleted: true })
     expect(acknowledgements).toBe(1)
     expect(await outcome).toMatchObject({ error: { code: 'ASK_ABORTED' } })
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
+    expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
     expect(deadlines(own.authority)).toEqual(initial)
     expect((await h.ctx.webIdentity.authenticate(login.token, 'user')).authSessionId).toBe(responder.authSessionId)
     expect(await h.ctx.isolatedProjectRuntime.invoke(other.authority, undefined,
       request('session.create', { sessionId: other.meta.id }))).toMatchObject({ ok: true })
-    expect(supervisor.ctxOf(other.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(other.workspace.workspaceId) !== undefined).toBe(true)
   })
   it('closes authority when a quiet SID cannot obtain a receipt from its genuinely unavailable supervisor', async () => {
     const { h, supervisor: peer, own, outcome } = await pendingQuestion('unavailable-expiry-choice')

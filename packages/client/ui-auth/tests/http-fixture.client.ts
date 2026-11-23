@@ -41,19 +41,31 @@ const nativeFetch = globalThis.fetch
 export function httpBridge(url: string) {
   let cookie = ''
   const requests: Array<{ method: string; path: string }> = []
+  const waiting = new Map<string, Array<() => void>>()
   const fetcher: typeof fetch = async (input, init) => {
     const target = typeof input === 'string' ? new URL(input, url) : new URL(input instanceof URL ? input.href : input.url, url)
     const headers = new Headers(init?.headers)
     headers.set('Origin', url)
     if (cookie !== '') headers.set('Cookie', cookie)
     requests.push({ method: init?.method ?? 'GET', path: target.pathname })
-    const response = await nativeFetch(target, { ...init, headers })
-    const setCookie = response.headers.getSetCookie()
-    if (setCookie.length > 0) cookie = setCookie.at(-1)!.split(';')[0]!
-    return response
+    try {
+      const response = await nativeFetch(target, { ...init, headers })
+      const setCookie = response.headers.getSetCookie()
+      if (setCookie.length > 0) cookie = setCookie.at(-1)!.split(';')[0]!
+      return response
+    } finally { for (const settle of waiting.get(target.pathname)?.splice(0) ?? []) settle() }
   }
   return {
     fetcher, requests,
+    /**
+     * Wait for the server's next answer to one path. A step that hashes a password takes longer than the
+     * one-second limit of a Testing Library wait on a loaded machine, so a test awaits the answer first.
+     * @param path - request path, such as `/auth/login`.
+     * @returns a promise settled when the next request to `path` has an answer or has failed.
+     */
+    answered(path: string): Promise<void> {
+      return new Promise((resolve) => { waiting.set(path, [...waiting.get(path) ?? [], resolve]) })
+    },
     install(): void { vi.stubGlobal('fetch', fetcher) },
     clear(): void { cookie = '' },
   }
