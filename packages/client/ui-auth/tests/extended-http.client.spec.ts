@@ -138,14 +138,18 @@ describe('native UI mutations and recovery with real HTTP', () => {
     const wrong = 'Fixture-' + crypto.randomUUID()
     fireEvent.change(screen.getByLabelText('Nome de usuário ou e-mail'), { target: { value: fixture.users[0]!.username } })
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: wrong } })
+    const refused = bridge.answered('/auth/login')
     await act(async () => { fireEvent.submit(ui.container.querySelector('form')!) })
+    await refused
     await screen.findByRole('alert')
     expect(ui.container.textContent).not.toContain(wrong)
     expect(screen.getByLabelText<HTMLInputElement>('Senha').value).toBe('')
     fireEvent.click(screen.getByRole('button', { name: 'Esqueci minha senha' }))
     expect(screen.queryByLabelText('Senha')).toBeNull()
     fireEvent.change(screen.getByLabelText('Nome de usuário ou e-mail'), { target: { value: fixture.users[0]!.username } })
+    const requested = bridge.answered('/auth/password/forgot')
     await act(async () => { fireEvent.submit(ui.container.querySelector('form')!) })
+    await requested
     await screen.findByText('Se houver uma conta elegível, você receberá as instruções de recuperação.')
     fireEvent.click(screen.getByRole('button', { name: 'Voltar ao acesso' }))
     expect(ui.reloads).toEqual(['reload']); await ui.close()
@@ -157,7 +161,9 @@ describe('native UI mutations and recovery with real HTTP', () => {
     expect(screen.getByRole('alert').textContent).toBe('As senhas precisam ser iguais.')
     fireEvent.change(screen.getByLabelText('Nova senha'), { target: { value: wrong } })
     fireEvent.change(screen.getByLabelText('Confirmar nova senha'), { target: { value: wrong } })
+    const rejected = bridge.answered('/auth/password/reset')
     await act(async () => { fireEvent.submit(recovery.container.querySelector('form')!) })
+    await rejected
     await waitFor(() => { expect(screen.getByRole('alert').textContent).toBe('Este link expirou ou já foi usado. Solicite um novo link.') })
     expect(location.hash).toBe(''); expect(history.state).toBeNull()
     expect(recovery.container.textContent).not.toContain('invalid-fixture-token')

@@ -132,21 +132,28 @@ describe('native supervisor cancellation by operation id', () => {
       }
       return response
     })
-    const { stream } = openMux(own.authority)
-    const streamOutcome = stream.next().then(() => 'settled', () => 'settled')
-    const caller = new AbortController()
-    const prompt = harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.prompt',
-      { sessionId: own.meta.id, mode: 'queue', content: [{ type: 'text', text: 'Never dispatch' }] }), caller.signal)
-    const promptOutcome = prompt.then(() => 'dispatched', () => 'refused')
-    await sleep(100)
-    expect(supervisor.ctxOf(own.workspace.workspaceId)).toBeUndefined()
-    caller.abort()
-    expect(await promptOutcome).toBe('refused')
-    expect(receipts).toEqual([{ promptSeen: false }])
-    for (const controller of controllers) controller.abort()
-    await streamOutcome
-    await sleep(500)
-    expect(supervisor.seen).not.toContain('session.prompt')
+    let releaseMount!: () => void
+    supervisor.holdMount(new Promise<void>((resolve) => { releaseMount = resolve }))
+    try {
+      const { stream } = openMux(own.authority)
+      const streamOutcome = stream.next().then(() => 'settled', () => 'settled')
+      const caller = new AbortController()
+      const prompt = harness.ctx.isolatedProjectRuntime.invoke(own.authority, undefined, request('session.prompt',
+        { sessionId: own.meta.id, mode: 'queue', content: [{ type: 'text', text: 'Never dispatch' }] }), caller.signal)
+      const promptOutcome = prompt.then(() => 'dispatched', () => 'refused')
+      // The stream opens first, so its request starts the mount and the prompt waits in the runtime for that attach.
+      await vi.waitFor(() => { expect(supervisor.awaitingMount(own.workspace.workspaceId)).toEqual(['/api/events.mux']) })
+      // A Context is never handed to `expect`: printing one throws and the failure would skip this file's cleanup.
+      expect(supervisor.ctxOf(own.workspace.workspaceId) === undefined).toBe(true)
+      caller.abort()
+      expect(await promptOutcome).toBe('refused')
+      expect(receipts).toEqual([{ promptSeen: false }])
+      releaseMount()
+      for (const controller of controllers) controller.abort()
+      await streamOutcome
+      await sleep(500)
+      expect(supervisor.seen).not.toContain('session.prompt')
+    } finally { releaseMount() }
   })
 
   it('replaces the worker context before the receipt when a cancelled prompt hangs inside the carrier beside an open stream', async () => {
@@ -311,7 +318,7 @@ describe('native supervisor cancellation by operation id', () => {
     if (streamOperation === undefined) throw new Error('native stream operation id unavailable')
     const foreign = await cancelAs(streamOperation, b.authority.principal.userId)
     expect(foreign.status).toBe(403)
-    expect(supervisor.ctxOf(a.workspace.workspaceId)).toBeDefined()
+    expect(supervisor.ctxOf(a.workspace.workspaceId) !== undefined).toBe(true)
   })
 
   it('closing one stream leaves the USER\'s other stream on the same worker delivering frames', async () => {
