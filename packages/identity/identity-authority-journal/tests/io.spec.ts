@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import Journal from '../src/index.ts'
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>()
-  return { ...actual, lstat: vi.fn(actual.lstat) }
+  return { ...actual, lstat: vi.fn(actual.lstat), open: vi.fn(actual.open) }
 })
 let ctx: Context | undefined, root: string | undefined
 afterEach(async () => { vi.restoreAllMocks(); await ctx?.fiber.dispose(); ctx = undefined; if (root !== undefined)
@@ -45,6 +45,28 @@ describe('native authority I/O failure boundaries', () => {
     ctx = undefined
     ctx = await direct(path, false)
     expect((await ctx.identityAuthorityJournal.recordsAfter(0))[0]!.operationId).toBe('fixture-platform')
+  })
+  it('flushes the authority directory after each watermark publication off win32', async () => {
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-directory-flush-')))
+    const path = join(root, 'authority'), native = vi.mocked(fsPromises.open).getMockImplementation()!
+    ctx = await direct(path, true)
+    const directory = { sync: vi.fn(async () => { }), close: vi.fn(async () => { }) }
+    vi.mocked(fsPromises.open).mockImplementation(async (...args) => String(args[0]) === path
+      ? directory as unknown as Awaited<ReturnType<typeof fsPromises.open>>
+      : native(...args))
+    // The directory handle is a stub, so the POSIX flush branch runs on every platform, Windows included.
+    const platform = Object.getOwnPropertyDescriptor(process, 'platform')!
+    Object.defineProperty(process, 'platform', { value: 'linux' })
+    try {
+      await ctx.identityAuthorityJournal.append(0, { operationId: 'fixture-directory-flush', kind: 'owner', payload: {} })
+    }
+    finally {
+      Object.defineProperty(process, 'platform', platform)
+      vi.mocked(fsPromises.open).mockImplementation(native)
+    }
+    expect(directory.sync).toHaveBeenCalledOnce()
+    expect(directory.close).toHaveBeenCalledOnce()
+    expect(ctx.identityAuthorityJournal.head.sequence).toBe(1)
   })
   it('propagates native lstat failure rather than treating it as absent authority', async () => {
     root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-native-failure-')))
