@@ -9,10 +9,12 @@ describe.skipIf(process.env.ARX_NATIVE_ACCOUNTS_SMOKE !== '1')('installed native
     const ctx = new Context()
     await ctx.plugin(LocalSubprocess)
     // The Loader-equivalent schema pass fills every default at load.
-    await ctx.plugin(NativeAccounts, {} as Config)
+    // An installed Antigravity CLI joins the probe when its absolute path is exported.
+    const antigravityExecutable = process.env.ARX_NATIVE_ACCOUNTS_AGY
+    await ctx.plugin(NativeAccounts, (antigravityExecutable === undefined ? {} : { antigravityExecutable }) as Config)
     try {
       const accounts = await ctx.nativeAccounts.describe()
-      expect(accounts.map(account => account.provider)).toEqual(['claude-code', 'codex'])
+      expect(accounts.map(account => account.provider)).toEqual(['claude-code', 'codex', 'antigravity'])
       await writeFile('.arx-build/native-account-smoke-safe.json', JSON.stringify(accounts.map(account => ({ provider: account.provider, availability: account.availability,
         status: account.status, authMode: account.authMode,
         models: account.models?.map(model => ({ id: model.id, resolvedModel: model.resolvedModel })) }))))

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-agent-instructions",
   "description": "Workspace context loader for AGENTS.md/CLAUDE.md instruction files",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "publishConfig": {
     "access": "public"
   },

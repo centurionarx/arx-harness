@@ -7,7 +7,7 @@ import { createSnapshotStore } from '@arx-ai/arx-client-runtime/client'
 import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client'
 import {
   CHAT_ROUTES, claudeRouteEntries, codexRouteEntries, pinnedCatalog, reconciledModels, staleOverrides, storedModels,
-  storedRoute, type ChatRouteState,
+  storedRoute, type ChatRouteProvider, type ChatRouteState,
 } from './chat-roster.ts'
 import { answered, messageOf } from './store.ts'
 
@@ -91,7 +91,7 @@ export class NativeAccountsStore {
       if (this.disposed || generation !== this.loadGeneration) return
       this.codexCatalog = catalog
       const routes: State['routes'] = {}
-      for (const provider of Object.keys(CHAT_ROUTES) as NativeAccountProvider[]) {
+      for (const provider of Object.keys(CHAT_ROUTES) as ChatRouteProvider[]) {
         const roster = rosterOf(accounts, provider)
         if (roster === undefined || (provider === 'codex' && catalog === undefined)) continue
         const namespace = this.namespaceOf(provider)
@@ -156,7 +156,7 @@ export class NativeAccountsStore {
    * not the native Codex sign-in.
    * @param provider - the native product whose roster feeds the route.
    */
-  async enable(provider: NativeAccountProvider): Promise<void> {
+  async enable(provider: ChatRouteProvider): Promise<void> {
     const roster = rosterOf(this.store.getSnapshot().accounts, provider)
     if (roster === undefined) return
     this.store.update((state) => { state.busy = true; state.error = null })
@@ -184,7 +184,7 @@ export class NativeAccountsStore {
    * @param provider - the native product.
    * @returns the namespace view, or `undefined` when the mirror carries none.
    */
-  private namespaceOf(provider: NativeAccountProvider): SettingsNamespaceView | undefined {
+  private namespaceOf(provider: ChatRouteProvider): SettingsNamespaceView | undefined {
     return this.settings.getSnapshot().view?.namespaces.find(row => row.ns === CHAT_ROUTES[provider].ns)
   }
 
@@ -204,7 +204,7 @@ export class NativeAccountsStore {
    *   or, for Codex, does not exist or the last load could not read the catalog.
    */
   private routeWrite(
-    provider: NativeAccountProvider, models: readonly NativeAccountModel[], namespace: SettingsNamespaceView | undefined,
+    provider: ChatRouteProvider, models: readonly NativeAccountModel[], namespace: SettingsNamespaceView | undefined,
   ): RouteWrite | undefined {
     const { route } = CHAT_ROUTES[provider]
     const stored = storedRoute(namespace?.value, route)

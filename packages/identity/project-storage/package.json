@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-project-storage",
   "description": "Owner-authorized control-plane session index and durable history access",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

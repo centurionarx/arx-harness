@@ -5,6 +5,7 @@ import type { NativeAccountAttempt, NativeAccountProvider, NativeLoginMode } fro
 import type { HostDescriptionSource } from '@arx-ai/arx-client-connection/client'
 import type { NativeAccountsStore } from './native-accounts-store.ts'
 import type { ModelsKey } from './locales.ts'
+import { chatRouteProvider, type ChatRouteProvider } from './chat-roster.ts'
 import styles from './ModelsSection.module.css'
 
 /**
@@ -44,7 +45,7 @@ export interface NativeAccountsInjected {
   begin: (provider: NativeAccountProvider, mode: NativeLoginMode) => void
   cancel: () => void
   submit: (code: string) => void
-  enable: (provider: NativeAccountProvider) => void
+  enable: (provider: ChatRouteProvider) => void
 }
 
 type Props = InjectFace<NativeAccountsInjected> & PropsLocale<'settings.models'>
@@ -72,6 +73,7 @@ export function NativeAccounts({ available, useAccounts, useHostDescription, wat
       {state.loading && <p role="status">{t('native.loading')}</p>}
       {state.accounts.map((account) => {
         const route = state.routes[account.provider]
+        const chat = chatRouteProvider(account.provider)
         // The notice weighs the device code against the browser, so an account offering one mode gets none.
         const remote = headless && account.loginModes.includes('device-code') && account.loginModes.includes('browser')
         return (
@@ -88,12 +90,13 @@ export function NativeAccounts({ available, useAccounts, useHostDescription, wat
             {account.provider === 'claude-code' && account.status === 'connected' && account.authMode !== 'subscription'
               && <p className={styles.notice}>{t('native.subscriptionRequired')}</p>}
             {account.provider === 'codex' && route === 'absent' && <p className={styles.notice}>{t('native.codexChatFirst')}</p>}
+            {chat === undefined && account.availability === 'available' && <p className={styles.notice}>{t('native.noChatRoute')}</p>}
             {remote && account.availability === 'available' && <p className={styles.notice}>{t('native.remoteSignIn')}</p>}
             <div className={styles.rowActions}>
-              {account.status === 'connected' && (account.provider === 'claude-code' || account.authMode === 'subscription') && (
+              {chat !== undefined && account.status === 'connected' && (chat === 'claude-code' || account.authMode === 'subscription') && (
                 <button type="button" className={styles.secondaryButton}
                   disabled={state.busy || route === undefined || route === 'current' || (account.provider === 'codex' && route === 'absent')}
-                  onClick={() => { enable(account.provider) }}>
+                  onClick={() => { enable(chat) }}>
                   {route === 'current' ? t('native.enabled') : route === 'stale' ? t('native.update') : t('native.enable')}
                 </button>
               )}

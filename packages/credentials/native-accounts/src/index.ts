@@ -3,12 +3,14 @@ import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
 import type {} from '@arx-ai/arx-subprocess'
 import { NativeAccountManager } from './manager.ts'
-import { claudeAccountDriver, codexAccountDriver } from './drivers.ts'
+import { antigravityAccountDriver, claudeAccountDriver, codexAccountDriver } from './drivers.ts'
 import type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginMode } from './types.ts'
 export type { NativeAccountAttempt, NativeAccountAttemptId, NativeAccountProvider, NativeAccountView, NativeLoginInput, NativeLoginMode, NativeAccountModel } from './types.ts'
 export { NativeAccountError } from './manager.ts'
 
 declare module '@arx-ai/cordis' { interface Context { nativeAccounts: NativeAccounts } }
+/** An absolute POSIX path, Windows drive path, or Windows UNC path. */
+const ABSOLUTE_PATH = /^(?:\/|[A-Za-z]:[\\/]|\\\\)/
 /** Deployment-owned process and login limits. */
 export interface Config {
   /** Working directory the native tools run in; absent, the harness process's own. */
@@ -32,6 +34,12 @@ export interface Config {
   pollIntervalMs: number
   /** Most sign-in attempts held at once, running and retained together. */
   maxAttempts: number
+  /**
+   * Absolute path of the installed Antigravity CLI (`agy`). The CLI installs
+   * outside any package manager and updates itself, so no version ships with
+   * this package; absent, Antigravity reports unavailable.
+   */
+  antigravityExecutable?: string
 }
 /** Account lifecycle service; official products remain the only writers of their credentials. */
 export default class NativeAccounts extends Service {
@@ -46,12 +54,14 @@ export default class NativeAccounts extends Service {
     resultRetentionMs: z.number().min(1).max(2147483647).default(60000),
     maxAttempts: z.number().step(1).min(1).max(1024).default(32),
     pollIntervalMs: z.number().min(100).max(60000).default(1000),
+    antigravityExecutable: z.string().pattern(ABSOLUTE_PATH),
   })
   private readonly manager: NativeAccountManager
   constructor(ctx: Context, config: Config) {
     super(ctx, 'nativeAccounts')
     const spec = { ...config, cwd: config.cwd ?? process.cwd(), spawn: ctx.subprocess.spawn.bind(ctx.subprocess) }
-    this.manager = new NativeAccountManager([claudeAccountDriver(spec), codexAccountDriver(spec)], config)
+    this.manager = new NativeAccountManager([claudeAccountDriver(spec), codexAccountDriver(spec),
+      antigravityAccountDriver(spec, config.antigravityExecutable)], config)
     ctx.effect(() => () => this.manager.dispose(), 'native account attempt teardown')
   }
   /** Read sanitized account and native model metadata.

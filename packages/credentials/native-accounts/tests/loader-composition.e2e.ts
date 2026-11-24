@@ -8,9 +8,10 @@ describe('native account settings composition', () => {
       binScript: fixture('driver.ts'), libBinScript: fixture('driver.ts'), configPath: fixture('cordis.yml'),
       binArgs: [fixture('cordis.yml')], tsconfigPath: fileURLToPath(new URL('../../../../tsconfig.json', import.meta.url)) })
     expect(stderr).toBe('')
-    expect(stdout.trim()).toBe(['Claude Code: disconnected', 'OpenAI Codex: disconnected',
+    expect(stdout.trim()).toBe(['Claude Code: disconnected', 'OpenAI Codex: disconnected', 'Antigravity CLI: disconnected',
       'Claude Code: browser link and code prompt', 'Claude Code: connected',
-      'OpenAI Codex: browser link and return-address prompt', 'OpenAI Codex: connected'].join('\n'))
+      'OpenAI Codex: browser link and return-address prompt', 'OpenAI Codex: connected',
+      'Antigravity CLI: Google link and code prompt', 'Antigravity CLI: connected, models gemini-3-pro'].join('\n'))
     expect(stdout).not.toContain('MUST-NOT-LEAK')
     expect(stdout).not.toContain('fixture-code')
     expect(stdout).not.toContain('fixture-callback')
