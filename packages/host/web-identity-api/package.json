@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-host-web-identity-api",
-  "version": "1.0.67",
+  "version": "1.0.68",
   "description": "Native web identity host-web-identity-api",
   "type": "module",
   "main": "lib/index.js",
