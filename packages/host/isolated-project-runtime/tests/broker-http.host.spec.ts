@@ -71,6 +71,11 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
   }
 
   beforeAll(async () => {
+    // The runtime bounds each unary exchange with `AbortSignal.timeout(requestTimeoutMs)`. Setup and the
+    // cases here drive unary exchanges but assert none of their deadlines (stream-deadline.spec.ts owns
+    // those), so a loaded machine must not expire them: the signal never aborts in this file. The broker's
+    // socket deadline is `incoming.setTimeout(requestTimeoutMs)` and keeps real time.
+    vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => new AbortController().signal)
     supervisor = await nativeSupervisorFixture()
     harness = await storageHarness({ endpoint: supervisor.endpoint, http: true,
       runtimeConfig: { requestTimeoutMs: 1000, maxRequestBytes: 1024 },
@@ -103,7 +108,10 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
     workerId = context.ownedWorkerHistory.config.workerId
     capability = token
   })
-  afterAll(async () => { abort?.abort(); await mux?.return?.(); await harness?.close(); await supervisor?.close() })
+  afterAll(async () => {
+    abort?.abort(); await mux?.return?.(); await harness?.close(); await supervisor?.close()
+    vi.restoreAllMocks()
+  })
 
   it('refuses GET/HEAD and absent JSON or capability without accepting a browser credential', async () => {
     for (const method of ['GET', 'HEAD']) {
