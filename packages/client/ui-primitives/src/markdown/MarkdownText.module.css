@@ -1,4 +1,4 @@
-/* Visual baseline: the deepsuite markdown stylesheet, adapted
+/* Visual baseline: the reference design system's markdown stylesheet, adapted
    to CSS Modules. Cite pills, header anchors, and thinking-small variants are
    intentionally absent (no matching DOM). Token names match that sheet. */
 
@@ -56,7 +56,7 @@
 }
 
 .markdown a {
-  /* The deepsuite sheet uses brand-text (blue in newDesign); this sheet
+  /* The reference sheet uses brand-text (blue in newDesign); this sheet
      keeps design-platform brand-text as near-black, so links use the blue
      business-primary alias instead. */
   color: var(--arx-alias-state-business-primary);
@@ -206,7 +206,7 @@
 
 /* Many-column tables (the renderer's `md-table-wide` hook) keep their
    natural width and scroll inside the wrapper; a hosting layout may widen
-   the wrapper through the hook (deepsuite chat TableWrapper parity). */
+   the wrapper through the hook (reference chat client TableWrapper parity). */
 .tableScroll table {
   border-collapse: collapse;
   width: max-content;
@@ -215,7 +215,7 @@
 
 /* Tables under four columns, and any table inside a blockquote, fill the
    column instead: cells wrap down to their minimum readable width, and the
-   wrapper's scroll only remains for the below-floor case (deepsuite chat
+   wrapper's scroll only remains for the below-floor case (reference chat client
    parity:
    `.wrapper:not(:has(th:nth-child(4), td:nth-child(4)))`). */
 .tableFill table {

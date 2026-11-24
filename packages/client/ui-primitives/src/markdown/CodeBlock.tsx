@@ -2,7 +2,7 @@
 // run_code program body, and the details panel's raw args/output — with
 // shiki highlighting for the registered grammars and an identical-geometry
 // plain fallback for everything else. Chrome (language banner + copy) matches
-// deepsuite markdown code blocks; token colors stay on `--shiki-*`.
+// the reference design system's markdown code blocks; token colors stay on `--shiki-*`.
 
 import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import clsx from 'clsx'

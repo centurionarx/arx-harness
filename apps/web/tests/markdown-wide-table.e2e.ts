@@ -1,4 +1,4 @@
-// Web e2e scenario: markdown tables in the message column, deepsuite-chat
+// Web e2e scenario: markdown tables in the message column, reference-chat-client
 // parity. Tables under four columns (and long-cell tables) fill the 748px
 // message column and wrap; four-or-more-column tables keep their natural
 // width, scroll horizontally inside their wrapper, and — through the

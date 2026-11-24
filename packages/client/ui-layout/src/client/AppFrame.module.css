@@ -5,8 +5,9 @@
   height: 100%;
   overflow: hidden;
   background: var(--arx-alias-bg-base);
-  /* Collapse/expand animates the tracks on the deepsuite sider curve
-     (--ds-ease-in-out / --ds-transition-duration-slow, ui-theme base.css). */
+  /* Collapse/expand animates the tracks on the reference design system's sider
+     curve (--ds-ease-in-out / --ds-transition-duration-slow, ui-theme
+     base.css). */
   transition: grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out);
 }
 

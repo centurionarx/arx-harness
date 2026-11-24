@@ -173,8 +173,8 @@ test('keeps terminal Status aligned with the native close reason', () => {
 test('separates resolving and informational references', () => {
   assert.deepEqual(
     parseReferences({
-      body: 'Fixes #12\nRelated to #4\nRefs centurionarx/dsh-test#7',
-      repository: 'centurionarx/dsh-test',
+      body: 'Fixes #12\nRelated to #4\nRefs centurionarx/example-repo#7',
+      repository: 'centurionarx/example-repo',
     }),
     { all: [4, 7, 12], resolving: [12], related: [4, 7] },
   )

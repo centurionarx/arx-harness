@@ -12,6 +12,7 @@ import type { WorkspaceId } from '@arx-ai/arx-workspace'
 import { WebIdentityError } from '@arx-ai/arx-web-identity'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import { WORKER_BROKER_PATH, WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
+import { downlinkRegistered } from './downlinks.ts'
 import { supervisorFixture } from './supervisor.ts'
 
 const resources: { close(): Promise<void> }[] = []
@@ -62,23 +63,6 @@ async function setup() {
 }
 const status = (sessionId: string) => ({ type: 'server-request', rpcId: randomUUID(), method: 'events.host',
   payload: { type: 'host/session-status', sessionId, running: true } })
-
-/**
- * Resolves when the runtime registers its next downlink. A quiescence or a session expiry ends only registered
- * downlinks, so a test that ends one waits for the registration instead of for elapsed time.
- * @param runtime - The isolated project runtime that opens the downlink.
- * @returns A promise settled by the next registration.
- */
-function downlinkRegistered(runtime: unknown): Promise<undefined> {
-  const downlinks = (runtime as { downlinks: Set<unknown> }).downlinks
-  const registered = Promise.withResolvers<undefined>(), add = downlinks.add.bind(downlinks)
-  downlinks.add = (value: unknown) => {
-    delete (downlinks as Partial<Set<unknown>>).add
-    registered.resolve(undefined)
-    return add(value)
-  }
-  return registered.promise
-}
 
 describe('control aggregates user-level operations across workspace workers', () => {
   it('answers host.describe itself without any supervisor request or host home path', async () => {

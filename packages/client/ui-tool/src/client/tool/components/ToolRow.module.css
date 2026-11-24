@@ -11,10 +11,11 @@
   overflow: hidden;
 }
 
-/* Running sweep (deepsuite ShimmerText pattern): a fixed-width glare band —
-   theme background at 60% — glides over the row content from off-left to
-   off-right, washing glyphs and icon toward the background as it passes.
-   ease-out with a 10% end hold gives each pass a beat before the next. */
+/* Running sweep (reference design system ShimmerText pattern): a fixed-width
+   glare band — theme background at 60% — glides over the row content from
+   off-left to off-right, washing glyphs and icon toward the background as it
+   passes. ease-out with a 10% end hold gives each pass a beat before the
+   next. */
 .root[data-state='running'] .row::after {
   content: '';
   position: absolute;
@@ -115,7 +116,7 @@
   line-height: 24px;
   color: var(--arx-alias-label-secondary);
   text-decoration: underline;
-  text-decoration-color: var(--arx-alias-label-quaternary);
+  text-decoration-color: var(--arx-alias-label-caption);
   text-underline-offset: 3px;
   cursor: pointer;
 }
