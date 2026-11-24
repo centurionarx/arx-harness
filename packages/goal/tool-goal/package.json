@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-goal",
   "description": "Model-facing same-session goal tools with execution-time authority checks",
-  "version": "1.0.65",
+  "version": "1.0.66",
   "publishConfig": {
     "access": "public"
   },
