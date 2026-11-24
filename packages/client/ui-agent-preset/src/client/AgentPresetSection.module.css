@@ -183,7 +183,7 @@
 
 .cardId {
   margin-top: auto;
-  font-family: var(--arx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--arx-font-markdown-code-font-family, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 11px;
   color: var(--arx-alias-label-dimmed);
 }
@@ -267,7 +267,7 @@
 }
 
 .revealedPath code {
-  font-family: var(--arx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--arx-font-markdown-code-font-family, ui-monospace, SFMono-Regular, Menlo, monospace);
   color: var(--arx-alias-label-secondary);
   user-select: all;
   overflow-wrap: anywhere;
@@ -350,7 +350,7 @@
   border-radius: 10px;
   background: var(--arx-alias-bg-layer-2);
   color: var(--arx-alias-label-secondary);
-  font-family: var(--arx-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--arx-font-markdown-code-font-family, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 12.5px;
   line-height: 1.5;
   white-space: pre;

@@ -6,8 +6,8 @@
 .panel h3 { margin: 0 0 6px; color: var(--arx-alias-label-secondary); font-size: 12px; font-weight: 600; }
 .members, .tasks { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .members button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; width: 100%; min-height: 34px; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--arx-alias-label-primary); text-align: left; cursor: pointer; }
-.members button:hover:not(:disabled), .members button:focus-visible { background: var(--arx-alias-fill-l2); }
+.members button:hover:not(:disabled), .members button:focus-visible { background: var(--arx-alias-interactive-bg-hover); }
 .members button:disabled { cursor: default; opacity: .65; }
 .members span, .tasks span, .tasks small { color: var(--arx-alias-label-tertiary); font-size: 11px; }
-.tasks li { display: grid; gap: 3px; padding: 8px; border-radius: 8px; background: var(--arx-alias-fill-l1); }
+.tasks li { display: grid; gap: 3px; padding: 8px; border-radius: 8px; background: var(--arx-alias-bg-module-platform); }
 .tasks li > div { display: flex; justify-content: space-between; gap: 8px; }

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-persona",
   "description": "Composition-authored deployment persona section for the arx Harness",
-  "version": "1.0.65",
+  "version": "1.0.66",
   "publishConfig": {
     "access": "public"
   },

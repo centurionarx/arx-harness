@@ -113,7 +113,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--arx-alias-label-error);
+  color: var(--arx-alias-state-error-primary);
 }
 
 .discard,

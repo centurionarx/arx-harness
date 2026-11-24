@@ -274,6 +274,7 @@ function ciSharedStaticGates(): Gate[] {
       label: 'optional dependency imports',
     }),
     pnpmScript('client-packages', 'verify-client-packages', { label: 'client packages' }),
+    pnpmScript('css-tokens', 'verify-css-tokens', { label: 'CSS tokens' }),
     pnpmScript('issue-management', 'test:issue-management', { label: 'Issue management policy' }),
   ]
 }

@@ -15,9 +15,9 @@ The sheet reads the `--arx-*` token for each name (`--arx-specific-menu`, the `-
 ## Alternatives considered
 
 - **Declare `--dsw-*` aliases in the theme** — rejected: it keeps a second token namespace alive for one stylesheet, and every other client sheet already reads `--arx-*`.
-- **A repository-wide gate for undeclared tokens** — deferred: the same defect exists in other client sheets ([feedback editor note](2026-08-13-feedback-note-editor-popover.md)), and a gate that fails on them belongs with their fixes.
+- **Rely on the repository-wide gate alone** — rejected: [`verify-css-tokens`](../../../../scripts/verify-css-tokens.ts) checks that every read is declared but not which variables the sheet rebinds for the theme scrollbar ([CSS token gate](../process/2026-11-24-client-css-reads-declared-tokens.md)).
 
 ## Consequences
 
 - The catalog menu shows the themed surface, edge, shadow, label colors, overdue state, and scrollbar in both themes.
-- The per-sheet spec is the third copy of this check, beside `ui-message-feedback` and `ui-settings-models`; other client sheets remain unguarded until the deferred gate lands.
+- The repository-wide gate reports an undeclared read in any client stylesheet; this sheet's spec adds the scrollbar-rebinding check.
