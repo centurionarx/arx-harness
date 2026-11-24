@@ -6,7 +6,7 @@ Status: implemented
 
 ## Problem
 
-The produced-files row lists a turn's output, but the closing message usually also *names* the file in prose — as inline code, like `` `deepseek-homepage.html` `` — and that mention was inert text. The reader's eye lands on the sentence first; the affordance sat one row below it. The model was not told that this exact inline-code spelling activates the Web file opener, so producing the useful reference depended on habit.
+The produced-files row lists a turn's output, but the closing message usually also *names* the file in prose — as inline code, like `` `example-homepage.html` `` — and that mention was inert text. The reader's eye lands on the sentence first; the affordance sat one row below it. The model was not told that this exact inline-code spelling activates the Web file opener, so producing the useful reference depended on habit.
 
 ## Decision
 

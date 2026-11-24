@@ -8,13 +8,13 @@ The telemetry seam and OTel backend ([revival Note](2026-07-23-session-telemetry
 
 ## Decision
 
-The shared arx base bundle (`packages/bundle/base/cordis.patch.yml`) mounts the `session-telemetry-otel` row with a baked-in production endpoint, so every profile has one consistent telemetry capability. The [default-off decision](2026-08-10-telemetry-default-off.md) keeps that row in `DISABLED` mode unless a deployment explicitly selects `FULL` or `FEEDBACK_ONLY`; the endpoint alone does not authorize reporting. Web and headless use the [bounded, escalating process-shutdown controller](../bug-fix/2026-08-03-cli-signal-shutdown-escalation.md) on SIGINT/SIGTERM, giving an enabled backend's three-second shutdown deadline time to drain before the five-second launcher bound.
+The shared arx base bundle (`packages/bundle/base/cordis.patch.yml`) mounts the `session-telemetry-otel` row with its endpoint read from `ARX_TELEMETRY_OTLP_URL`, so every profile has one consistent telemetry capability. The [default-off decision](2026-08-10-telemetry-default-off.md) keeps that row in `DISABLED` mode unless a deployment explicitly selects `FULL` or `FEEDBACK_ONLY`; the endpoint alone does not authorize reporting. Web and headless use the [bounded, escalating process-shutdown controller](../bug-fix/2026-08-03-cli-signal-shutdown-escalation.md) on SIGINT/SIGTERM, giving an enabled backend's three-second shutdown deadline time to drain before the five-second launcher bound.
 
 | Ruling | Value | Rationale |
 |---|---|---|
 | Mount surface | `packages/bundle/base/cordis.patch.yml` | One capability row for every profile that loads the shared base |
 | Sharing mode | `ARX_TELEMETRY_MODE`, default `DISABLED`; explicit `FULL` or `FEEDBACK_ONLY` opts in | A fresh profile makes no telemetry network request, while internal deployments retain both upload policies |
-| Endpoint | `ARX_TELEMETRY_OTLP_URL`, default `https://harness-telemetry.deepseeksvc.com/v1/logs` | Internal collector; the env override serves local/dev runs |
+| Endpoint | `ARX_TELEMETRY_OTLP_URL`, no default URL | The deployment supplies the collector's full OTLP logs endpoint; an uploading mode without it fails at load |
 | Hard opt-out | any non-empty `ARX_TELEMETRY_DISABLED` (including `0`/`false`) disables the row | The launcher patch takes effect before load-time transport validation and overrides every configured mode |
 | Cadence | `processor.scheduledDelayMillis: 10000` (10s/batch) in uploading modes | Streaming while the session runs, never exit-time-only; a crash loses at most the last unexported interval |
 | Exit-drain bound | `exporter.timeoutMillis: 1000` + `maxExportBatchSize: 2048` (== maxQueueSize) + `exportTimeoutMillis: 1500` + `shutdownTimeoutMillis: 3000` | Ordinary unreachable-collector failure releases in ~1s: timeoutMillis is the per-attempt socket timeout and retry deadline, while one queue-sized batch avoids sequential drain multiplication. The ARX-owned 3s outer bound covers the SDK's preceding unbounded `forceFlush()` wait when the transport Promise never obtains a socket. |

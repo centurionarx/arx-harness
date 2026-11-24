@@ -16,7 +16,7 @@ A Session request names one existing project and its exact Workspace, preset, pe
 
 `@arx-ai/arx-webhook-github` owns one exact HTTP route. A generator effect yields the rule disposer before registering the route, so route registration failure rolls back and drains the rule; normal disposal removes the route before draining the rule. It caps raw bytes, resolves an environment credential for each request, computes HMAC-SHA256 over the raw body, uses `timingSafeEqual`, and parses JSON only after authentication. Non-empty repository and event allowlists are mandatory. The rule prompt labels the configured instruction as trusted policy and the authenticated payload as untrusted data.
 
-The implementation adapts the provider-neutral registration, bounded-body, and Workspace-backed Session seams from `deepseek-ai/deepseek-harness` snapshot `c291e7961a515f6d7af9304e7fd1d257929aef26`. This version adds durable reservation, capacity refusal, project identity, conservative restart recovery, and explicit reconciliation required by the arx orchestration plan.
+The implementation adapts the provider-neutral registration, bounded-body, and Workspace-backed Session seams from the upstream snapshot `c291e7961a515f6d7af9304e7fd1d257929aef26`. This version adds durable reservation, capacity refusal, project identity, conservative restart recovery, and explicit reconciliation required by the arx orchestration plan.
 
 ## Alternatives considered
 

@@ -1,6 +1,6 @@
 # Session migration preflight
 
-The arx event format remains version 0. DeepSeek's later format numbers are not compatible merely because arx originated there: arx owns additional required events and message shapes. No upstream conversion is run automatically.
+The arx event format remains version 0. Format numbers above the arx format, as written by the upstream project, are not compatible: arx owns additional required events and message shapes. No upstream conversion is run automatically.
 
 ## Inspect a snapshot
 
@@ -14,7 +14,7 @@ The copy is a snapshot, not a lock on an actively running session. Stop writes w
 
 ## Known limitations
 
-Only an identity copy of the current arx format is supported. A new structural format needs a separately reviewed adjacent-version adapter with frozen source and target fixtures before this command may convert it. Format 3 from DeepSeek is explicitly refused. Compressed JSONL and SQLite stores require an export to plaintext through their existing export paths. Publication requires hard-link support in the destination filesystem; an unsupported filesystem fails without overwriting a destination. Header and event-envelope checks do not substitute for plugin-specific semantic validation.
+Only an identity copy of the current arx format is supported. A new structural format needs a separately reviewed adjacent-version adapter with frozen source and target fixtures before this command may convert it. Format 3 written by the upstream project is explicitly refused. Compressed JSONL and SQLite stores require an export to plaintext through their existing export paths. Publication requires hard-link support in the destination filesystem; an unsupported filesystem fails without overwriting a destination. Header and event-envelope checks do not substitute for plugin-specific semantic validation.
 
 ## Validation
 
