@@ -77,11 +77,16 @@ async function pendingQuestion(id: string) {
     headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
   return { h, supervisor, own, mux, frame: frame.value, outcome, send }
 }
+/**
+ * Stops the clock 250 ms before the SID's idle deadline. The clock moves only through `reach()`, which sets it to
+ * that deadline, so the steps before it cannot expire the SID however long they take.
+ */
 function scheduleQuietClock(authority: RequestAuthority) {
-  const initial = deadlines(authority), realNow = Date.now.bind(Date), offset = initial.idle - realNow() - 250
-  const date = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+  const initial = deadlines(authority)
+  let now = initial.idle - 250
+  const date = vi.spyOn(Date, 'now').mockImplementation(() => now)
   restoreClock = () => { date.mockRestore() }
-  return initial
+  return { initial, reach: () => { now = initial.idle } }
 }
 
 let a: Awaited<ReturnType<typeof owned>> | undefined
@@ -264,8 +269,9 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
     expect(deadlines(second.authority).idle).toBeGreaterThan(initial.idle - 250)
     expect(deadlines(other.authority).idle).toBeGreaterThan(initial.idle - 250)
-    const realNow = Date.now.bind(Date), offset = initial.idle - realNow() - 250
-    const date = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+    // The clock stays 250 ms before A's idle deadline until the steps below finish, then moves to the deadline.
+    let now = initial.idle - 250
+    const date = vi.spyOn(Date, 'now').mockImplementation(() => now)
     restoreClock = () => { date.mockRestore() }
     await h.ctx.webIdentity.revalidate(second.authority, { activity: true })
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
@@ -275,6 +281,7 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     // Passive admission may reschedule the genuine timer but does not renew A.
     await h.ctx.webIdentity.authenticate(own.account.token, 'user')
     expect(deadlines(own.authority)).toEqual(initial)
+    now = initial.idle
     // No A HTTP call, frame, question response or explicit cancel occurs here.
     await cancelled
     if (outcome === undefined) throw new Error('genuine idle question was not entered')
@@ -387,13 +394,15 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
     expect(deadlines(responder).idle).toBeGreaterThan(initial.idle - 250)
     expect(deadlines(other.authority).idle).toBeGreaterThan(initial.idle - 250)
-    const realNow = Date.now.bind(Date), offset = initial.idle - realNow() - 250
-    const date = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+    // The clock stays 250 ms before A's idle deadline until the steps below finish, then moves to the deadline.
+    let now = initial.idle - 250
+    const date = vi.spyOn(Date, 'now').mockImplementation(() => now)
     restoreClock = () => { date.mockRestore() }
     await h.ctx.webIdentity.revalidate(responder, { activity: true })
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
     await h.ctx.webIdentity.authenticate(own.account.token, 'user')
     expect(deadlines(own.authority)).toEqual(initial)
+    now = initial.idle
     // Authorization has completed against the real owner, but the original SID
     // expires without another frame or request before that result is delivered.
     await cancelled
@@ -447,8 +456,9 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
     await receiptHeld
     // The quiet SID reaches its deadline only after the deletion barrier holds the receipt; a passive
     // authentication reschedules the identity expiry timer against the advanced clock.
-    const initial = scheduleQuietClock(own.authority)
+    const { initial, reach } = scheduleQuietClock(own.authority)
     await h.ctx.webIdentity.authenticate(login.token, 'user')
+    reach()
     await realExpiry
     expect(acknowledgements).toBe(0)
     await expect(h.ctx.isolatedProjectRuntime.invoke(responder, undefined, request('host.describe')))
@@ -479,9 +489,10 @@ describe('idle expiry at a genuine native SDK publication boundary', () => {
         throw error
       }
     })
-    scheduleQuietClock(own.authority)
+    const { reach } = scheduleQuietClock(own.authority)
     await h.ctx.webIdentity.revalidate(other.authority, { activity: true })
     await h.ctx.webIdentity.authenticate(own.account.token, 'user')
+    reach()
     // Actual server and worker closure creates the missing transport; no
     // cancellation receipt or provider result is substituted.
     await peer.close(); supervisor = undefined

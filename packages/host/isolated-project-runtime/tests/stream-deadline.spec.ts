@@ -5,7 +5,6 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
-import { setTimeout as sleep } from 'node:timers/promises'
 import { SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { RpcId } from '@arx-ai/arx-host-apiproxy/api'
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
@@ -40,7 +39,24 @@ async function seededHarness(options: Omit<Parameters<typeof storageHarness>[0] 
 
 const REQUEST_TIMEOUT_MS = 50
 const resources: { close(): Promise<void> }[] = []
-afterEach(async () => { for (const item of resources.splice(0).reverse()) await item.close() })
+afterEach(async () => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+  for (const item of resources.splice(0).reverse()) await item.close()
+})
+/**
+ * Moves the runtime's header and unary deadlines to a fake clock, so `requestTimeoutMs` elapses only when the
+ * test advances it. Loopback requests, sqlite and the supervisor fixture keep real time, and a slow machine
+ * cannot expire a deadline before the step that the test observes.
+ */
+function fakeDeadlines(): void {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
+    const controller = new AbortController()
+    setTimeout(() => { controller.abort(new DOMException('The operation timed out', 'TimeoutError')) }, ms)
+    return controller.signal
+  })
+}
 async function setup(endpoint?: string) {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
   const harness = await seededHarness({ endpoint: endpoint ?? supervisor.endpoint,
@@ -61,22 +77,26 @@ const muxFrame = (rpcId: string, payload: unknown) => 'data: ' + JSON.stringify(
 describe('stream deadline covers only the supervisor response headers', () => {
   it('keeps a stream open beyond requestTimeoutMs and cancels only when the consumer aborts', async () => {
     const f = await setup()
-    const accepted = f.supervisor.acceptedSignal()
+    fakeDeadlines()
+    f.supervisor.frame({ type: 'server-request', rpcId: 'first-frame', method: 'events.mux',
+      payload: { type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 } })
     const controller = new AbortController()
     const stream = f.runtime.streamMux(f.authority, controller.signal)[Symbol.asyncIterator]()
     const first = stream.next()
-    first.catch(() => {})
     await f.attach()
-    await accepted
-    await sleep(REQUEST_TIMEOUT_MS * 4)
+    // The first frame proves that the runtime holds the stream's response headers before the deadline elapses.
+    expect((await first).done).toBe(false)
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS * 4)
     const operation = [...f.supervisor.operations.values()][0]
     if (operation === undefined) throw new Error('the stream operation ended before the consumer aborted')
     // Only the stream's operation counts. The attach request is unary, and the runtime cancels it
     // when its reply takes longer than requestTimeoutMs.
     const streamCancels = () => f.supervisor.cancelled.filter(id => id === operation.id).length
     expect(streamCancels()).toBe(0)
+    const late = stream.next()
+    late.catch(() => {})
     operation.response.write(muxFrame('late-frame', { type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 }))
-    const frame = await first
+    const frame = await late
     if (frame.done === true) throw new Error('expected a late mux frame')
     expect(frame.value.payload).toEqual({ type: 'session/subscribed', sessionId: f.header.id, lastSeq: 0 })
     expect(streamCancels()).toBe(0)
@@ -89,8 +109,12 @@ describe('stream deadline covers only the supervisor response headers', () => {
   it('rejects a stream whose supervisor sends no response headers at requestTimeoutMs', async () => {
     const cancelled: string[] = []
     const streamOperations: string[] = []
+    const streamRequested = Promise.withResolvers<undefined>()
     const silent = createServer((request, response) => {
-      if (request.url?.startsWith('/api/events.') === true) streamOperations.push(String(request.headers['x-arx-operation-id']))
+      if (request.url?.startsWith('/api/events.') === true) {
+        streamOperations.push(String(request.headers['x-arx-operation-id']))
+        streamRequested.resolve(undefined)
+      }
       const match = /^\/_arx\/operations\/([^/]+)\/cancel$/.exec(request.url ?? '')
       if (match === null) return
       cancelled.push(match[1]!)
@@ -102,17 +126,24 @@ describe('stream deadline covers only the supervisor response headers', () => {
     const address = silent.address()
     if (address === null || typeof address === 'string') throw new Error('silent supervisor port unavailable')
     const f = await setup('http://127.0.0.1:' + String(address.port))
-    const started = performance.now()
+    fakeDeadlines()
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
-    const next = stream.next()
-    await Promise.all([expect(next).rejects.toMatchObject({ name: 'TimeoutError' }), f.attach()])
-    expect(performance.now() - started).toBeLessThan(REQUEST_TIMEOUT_MS * 40)
+    let settled = false
+    const next = stream.next().finally(() => { settled = true })
+    next.catch(() => {})
+    const attached = f.attach()
+    await streamRequested.promise
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS - 1)
+    expect(settled).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    await Promise.all([expect(next).rejects.toMatchObject({ name: 'TimeoutError' }), attached])
     expect(streamOperations).toHaveLength(1)
     expect(cancelled.filter(id => streamOperations.includes(id))).toEqual(streamOperations)
   })
 
   it('keeps a pending question answerable after requestTimeoutMs', async () => {
     const f = await setup()
+    fakeDeadlines()
     f.supervisor.frame({ type: 'server-request', rpcId: 'pending-question', method: 'events.mux',
       payload: { type: 'question/requested', sessionId: f.header.id,
         questions: [{ id: 'choice', question: 'Continue?', options: [{ label: 'Continue' }] }] } })
@@ -126,7 +157,7 @@ describe('stream deadline covers only the supervisor response headers', () => {
     // A live downlink keeps reading, so a closed transport runs the stream's cleanup.
     const reading = stream.next()
     reading.catch(() => {})
-    await sleep(REQUEST_TIMEOUT_MS * 4)
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS * 4)
     f.supervisor.rawReply(JSON.stringify({ accepted: true }))
     const response = await f.runtime.fetch(f.authority, new Request('http://fixture/api/respond', { method: 'POST',
       headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'client-response', rpcId: 'pending-question',
@@ -140,6 +171,7 @@ describe('stream deadline covers only the supervisor response headers', () => {
 
   it('refuses an answer whose stream lease is cancelled during its authorization', async () => {
     const f = await setup()
+    fakeDeadlines()
     f.supervisor.frame({ type: 'server-request', rpcId: 'cancelled-question', method: 'events.mux',
       payload: { type: 'question/requested', sessionId: f.header.id,
         questions: [{ id: 'choice', question: 'Continue?', options: [{ label: 'Continue' }] }] } })
@@ -158,19 +190,21 @@ describe('stream deadline covers only the supervisor response headers', () => {
         result: { ok: true, value: { sessionId: f.header.id, answer: { answers: [{ id: 'choice', selected: ['Continue'] }] } } } }) })))
       .rejects.toMatchObject({ status: 403 })
     await closing
-    vi.restoreAllMocks()
   })
 
   it('cuts an idle frameless stream on revocation after it outlives requestTimeoutMs', async () => {
     const f = await setup()
-    const accepted = f.supervisor.acceptedSignal()
+    fakeDeadlines()
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
     let settled = false
     const next = stream.next().then(result => (result.done ? 'done' : 'frame'), () => 'rejected')
     void next.then(() => { settled = true })
+    // The attach request waits for the stream's response headers before its own request.
     await f.attach()
-    await accepted
-    await sleep(REQUEST_TIMEOUT_MS * 4)
+    expect(f.supervisor.operations.size).toBe(1)
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS * 4)
+    // A loopback round trip runs after anything that an elapsed deadline would have ended.
+    await f.attach()
     expect(settled).toBe(false)
     await f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId, 'BLOCKED')
     expect(await next).not.toBe('frame')

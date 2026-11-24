@@ -9,7 +9,6 @@ import { identityHarness } from '../../../../examples/web-identity/tests/harness
 let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
 let clock: MockInstance<() => number> | undefined
 let release: (() => void) | undefined
-const realNow = Date.now.bind(Date)
 afterEach(async () => {
   release?.(); release = undefined; clock?.mockRestore(); clock = undefined; vi.restoreAllMocks()
   await fixture?.close(); fixture = undefined
@@ -29,11 +28,12 @@ async function prepared() {
   const h = fixture, a = h.users[0]!, b = h.users[1]!
   const second = await h.ctx.webIdentity.login(a.username, a.password, 'user')
   const a2 = await h.ctx.webIdentity.authenticate(second.token, 'user')
-  let offset = Math.min(...rows().map(row => Number(row.idle_expires_at))) - realNow() - 1000
-  clock = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+  // The clock stays where the test sets it, so the time a loaded machine spends on a step never reaches a deadline.
+  let now = Math.min(...rows().map(row => Number(row.idle_expires_at))) - 1000
+  clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
   for (const authority of [h.master!, a2, b.authority]) await h.ctx.webIdentity.revalidate(authority, { activity: true })
   const deadline = Number(stored(a.authority).idle_expires_at)
-  return { h, a, b, a2, second, near: (milliseconds: number) => { offset = deadline - realNow() + milliseconds } }
+  return { h, a, b, a2, second, near: (milliseconds: number) => { now = deadline + milliseconds } }
 }
 describe('partial native quiet expiry durability failure', () => {
   it('quiesces the durable prefix and awaits unavailable-provider disposal before closing', { timeout: 30000 }, async () => {
@@ -88,6 +88,7 @@ describe('partial native quiet expiry durability failure', () => {
     })
     near(-80)
     await h.ctx.webIdentity.authenticate(a.token, 'user')
+    near(0)
     await vi.waitFor(() => { expect(disposed).toEqual(expect.arrayContaining([a.userId, b.userId, h.master!.principal.userId])) },
       { timeout: 5000 })
     await expect(h.ctx.webIdentity.revalidate(b.authority)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
