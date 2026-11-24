@@ -1,5 +1,5 @@
 import { Context, Service } from '@arx-ai/cordis'
-import { mkdtemp, rm, realpath } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, realpath } from 'node:fs/promises'
 import * as fsPromises from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -50,7 +50,10 @@ describe('native authority I/O failure boundaries', () => {
     root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-directory-flush-')))
     const path = join(root, 'authority'), native = vi.mocked(fsPromises.open).getMockImplementation()!
     ctx = await direct(path, true)
-    const directory = { sync: vi.fn(async () => { }), close: vi.fn(async () => { }) }
+    // Each flush records the watermark it makes durable, so a flush before the rename would record the genesis head.
+    const flushed: unknown[] = []
+    const directory = { sync: vi.fn(async () => { flushed.push(JSON.parse(await readFile(join(path, 'watermark.json'), 'utf8'))) }),
+      close: vi.fn(async () => { }) }
     vi.mocked(fsPromises.open).mockImplementation(async (...args) => String(args[0]) === path
       ? directory as unknown as Awaited<ReturnType<typeof fsPromises.open>>
       : native(...args))
@@ -64,7 +67,7 @@ describe('native authority I/O failure boundaries', () => {
       Object.defineProperty(process, 'platform', platform)
       vi.mocked(fsPromises.open).mockImplementation(native)
     }
-    expect(directory.sync).toHaveBeenCalledOnce()
+    expect(flushed).toMatchObject([{ sequence: 1 }])
     expect(directory.close).toHaveBeenCalledOnce()
     expect(ctx.identityAuthorityJournal.head.sequence).toBe(1)
   })

@@ -133,7 +133,6 @@ describe('protected authority outside restored data', () => {
     const watermark = join(path, 'watermark.json')
     await rm(watermark)
     await mkdir(watermark)
-    await writeFile(join(watermark, 'occupied'), '')
     await expect(ctx.identityAuthorityJournal.append(0, { operationId: 'storage-failed', kind: 'owner', payload: {} })).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
     expect(() => ctx!.identityAuthorityJournal.head).toThrow(/unavailable/)
   })
