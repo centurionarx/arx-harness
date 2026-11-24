@@ -12,6 +12,7 @@ import { oneTurnLog } from '../../../session/session-persistence/tests/contract.
 import { storageHarness } from '../../../identity/project-storage/tests/harness.ts'
 import * as BrokerHttp from '../src/broker-http.ts'
 import { WORKER_BROKER_PATH, WORKER_CAPABILITY_HEADER } from '../src/broker-contract.ts'
+import { downlinkRegistered } from './downlinks.ts'
 import { nativeSupervisorFixture } from './native-supervisor.ts'
 
 interface WireResult { status: number; text: string; cacheControl: string | undefined }
@@ -71,14 +72,12 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
   }
 
   beforeAll(async () => {
-    // The runtime bounds each unary exchange with `AbortSignal.timeout(requestTimeoutMs)`. Setup and the
-    // cases here drive unary exchanges but assert none of their deadlines (stream-deadline.spec.ts owns
-    // those), so a loaded machine must not expire them: the signal never aborts in this file. The broker's
-    // socket deadline is `incoming.setTimeout(requestTimeoutMs)` and keeps real time.
-    vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => new AbortController().signal)
     supervisor = await nativeSupervisorFixture()
     harness = await storageHarness({ endpoint: supervisor.endpoint, http: true,
-      runtimeConfig: { requestTimeoutMs: 1000, maxRequestBytes: 1024 },
+      // Setup and the cases drive unary exchanges and streams but assert none of their deadlines
+      // (stream-deadline.spec.ts owns those), so the window matches the CI test timeout. The socket-deadline
+      // case lowers requestTimeoutMs for its own request.
+      runtimeConfig: { requestTimeoutMs: 30_000, maxRequestBytes: 1024 },
       extraPlugins: [{ name: '@arx-ai/arx-isolated-project-runtime/broker-http', plugin: BrokerHttp }] })
     if (harness.url === undefined) throw new Error('real broker HTTP endpoint missing')
     origin = harness.url
@@ -95,9 +94,10 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
       { type: 'client-request', method: 'session.create', payload: { sessionId },
         rpcId: RpcId(randomUUID()) })).toMatchObject({ ok: true })
     abort = new AbortController()
+    const registered = downlinkRegistered(harness.ctx.isolatedProjectRuntime)
     mux = harness.ctx.isolatedProjectRuntime.streamMux(authority(), abort.signal)[Symbol.asyncIterator]()
     const first = mux.next()
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await registered
     expect(await harness.ctx.isolatedProjectRuntime.invoke(authority(), undefined,
       { type: 'client-request', method: 'session.history', payload: { sessionId },
         rpcId: RpcId(randomUUID()) })).toMatchObject({ ok: true })
@@ -108,10 +108,7 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
     workerId = context.ownedWorkerHistory.config.workerId
     capability = token
   })
-  afterAll(async () => {
-    abort?.abort(); await mux?.return?.(); await harness?.close(); await supervisor?.close()
-    vi.restoreAllMocks()
-  })
+  afterAll(async () => { abort?.abort(); await mux?.return?.(); await harness?.close(); await supervisor?.close() })
 
   it('refuses GET/HEAD and absent JSON or capability without accepting a browser credential', async () => {
     for (const method of ['GET', 'HEAD']) {
@@ -198,6 +195,9 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
     const fork = JSON.stringify({ operation: 'allocate-fork', workerId, workspaceId, sessionId,
       seedLength: oneTurnLog().length })
     const settled = Promise.withResolvers<WireResult>()
+    // The broker reads requestTimeoutMs when the request arrives; only this request gets the short socket deadline.
+    const config = harness.ctx.isolatedProjectRuntime.config, configured = config.requestTimeoutMs
+    config.requestTimeoutMs = 1000
     const client = request(origin, { method: 'POST', path: WORKER_BROKER_PATH, agent: false,
       headers: authorized(marker) }, (incoming) => {
       collect(incoming).then(settled.resolve, settled.reject)
@@ -215,7 +215,7 @@ describe('private broker over genuine Node HTTP lifecycle', () => {
       const allocationsAfterDeadline = after.sessions.filter(item => !existing.has(item.sessionId)).length
       expect(allocationsAfterDeadline, 'ownership allocations after the actual socket deadline').toBe(0)
       expect(result.status).toBe(503)
-    } finally { dispose(); client.destroy() }
+    } finally { config.requestTimeoutMs = configured; dispose(); client.destroy() }
   })
 
   it('observes a real client disconnect while reading a partial body without a mutation or receipt', async () => {
