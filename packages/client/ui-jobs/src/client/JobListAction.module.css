@@ -88,7 +88,7 @@
   flex: none;
   padding: 0 6px;
   border-radius: 5px;
-  background: var(--arx-alias-interactive-bg-hover);
+  background: var(--arx-alias-bg-module-platform);
   color: var(--arx-alias-label-secondary);
   font-size: 11px;
   line-height: 18px;

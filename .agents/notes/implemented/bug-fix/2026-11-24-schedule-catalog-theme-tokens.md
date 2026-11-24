@@ -15,7 +15,7 @@ The sheet reads the `--arx-*` token for each name (`--arx-specific-menu`, the `-
 ## Alternatives considered
 
 - **Declare `--dsw-*` aliases in the theme** — rejected: it keeps a second token namespace alive for one stylesheet, and every other client sheet already reads `--arx-*`.
-- **Only a per-sheet spec** — not sufficient alone: the same defect existed in other client sheets, so [`verify-css-tokens`](../../../../scripts/verify-css-tokens.ts) now checks every client stylesheet ([CSS token gate](../process/2026-11-24-client-css-reads-declared-tokens.md)); the per-sheet spec keeps the scrollbar-rebinding check, which the gate does not make.
+- **Rely on the repository-wide gate alone** — rejected: [`verify-css-tokens`](../../../../scripts/verify-css-tokens.ts) checks that every read is declared but not which variables the sheet rebinds for the theme scrollbar ([CSS token gate](../process/2026-11-24-client-css-reads-declared-tokens.md)).
 
 ## Consequences
 
