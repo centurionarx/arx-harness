@@ -64,13 +64,13 @@ describe('Resend delivery boundary without real email', () => {
     await chmod(key, 0o644)
     await expect(Adapter.apply(ctx, { keyFile: key, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await chmod(key, 0o600)
-    if (process.platform === 'win32') {
-      const open = join(paths.keyRoot, 'resend-acl.key')
-      await writeFile(open, 're_' + 'a'.repeat(16), { mode: 0o600 })
-      execFileSync('icacls', [open, '/grant', '*S-1-1-0:(R)'])
-      await expect(Adapter.apply(ctx, { keyFile: open, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
-      execFileSync('icacls', [open, '/remove:g', '*S-1-1-0'])
-    }
+    // A well-formed key isolates the access check: this file is rejected for who can read it, not for its content.
+    const readable = join(paths.keyRoot, 'resend-readable.key')
+    await writeFile(readable, 're_' + 'a'.repeat(16), { mode: 0o600 })
+    if (process.platform === 'win32') execFileSync('icacls', [readable, '/grant', '*S-1-1-0:(R)'])
+    else await chmod(readable, 0o644)
+    await expect(Adapter.apply(ctx, { keyFile: readable, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION',
+      message: 'Private Resend key required', cause: { message: expect.stringContaining(process.platform === 'win32' ? 'S-1-1-0' : 'mode 0644') as string } })
     const directory = join(paths.keyRoot, 'directory')
     await mkdir(directory, { mode: 0o700 })
     await expect(Adapter.apply(ctx, { keyFile: directory, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })

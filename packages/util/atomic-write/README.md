@@ -38,7 +38,7 @@ How long a contender waits is a property of the operation the holder runs, so it
 - **Windows** reads the owner and DACL with `GetFileSecurityW`. It rejects an owner other than the process user, SYSTEM, or Administrators; a missing or null DACL; an access-allowed entry for any other principal, whatever its mask or inheritance flags; and any entry type other than access-allowed or access-denied. Deny entries are ignored, and an empty DACL passes. A violation names the principal's SID and the entry's access mask, so an operator knows which entry to remove.
 - **Failure is closed.** A malformed descriptor is a violation; a failed native read rejects the returned promise.
 
-The check verifies; it never changes a permission. The window between the caller's `lstat`, the access read, and the later open is the same one the POSIX mode check already has.
+The check verifies; it never changes a permission. On POSIX the type and the mode come from the same `lstat`. On Windows the access read looks the path up again and follows a final link, so an entry replaced between the `lstat` and that read is judged by its replacement. Replacing it requires write access to the parent directory, which already allows replacing the entry between the check and the caller's later open.
 
 ## Model Experience
 

@@ -39,6 +39,11 @@ const MALFORMED = 'malformed security descriptor'
  * any mask or inheritance, for any other principal; and any entry type other
  * than access-allowed or access-denied. Deny entries are ignored. A malformed
  * descriptor rejects; a native read failure rejects the returned promise.
+ *
+ * On Windows the entry type comes from the caller's `lstat` and the access
+ * from a second lookup of `path` that follows a final link. Replacing the
+ * entry between the two requires write access to its parent directory, which
+ * already allows replacing it between the check and the caller's later open.
  * @param path - the entry whose access is verified.
  * @param info - the caller's `lstat` result for `path`.
  * @param options - POSIX owner policy.
@@ -91,14 +96,15 @@ function descriptorViolation(descriptor: Buffer, trusted: ReadonlySet<string>): 
 
 /**
  * Decode the SID at `offset` in the string form ConvertSidToStringSidW
- * produces, or `undefined` when it is not a revision-1 SID inside `limit`.
+ * produces (an authority of 2^32 or more as twelve lowercase hex digits), or
+ * `undefined` when it is not a revision-1 SID inside `limit`.
  */
 function sidAt(buffer: Buffer, offset: number, limit: number): string | undefined {
   if (offset < 20 || offset + 8 > limit || buffer[offset] !== 1) return undefined
   const count = buffer.readUInt8(offset + 1)
   if (count > 15 || offset + 8 + count * 4 > limit) return undefined
   const authority = buffer.readUIntBE(offset + 2, 6)
-  let text = 'S-1-' + (authority < 2 ** 32 ? String(authority) : '0x' + authority.toString(16).toUpperCase().padStart(12, '0'))
+  let text = 'S-1-' + (authority < 2 ** 32 ? String(authority) : '0x' + authority.toString(16).padStart(12, '0'))
   for (let index = 0; index < count; index++) text += '-' + String(buffer.readUInt32LE(offset + 8 + index * 4))
   return text
 }
