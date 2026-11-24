@@ -10,7 +10,7 @@ The model vendor's name ran through the product as a brand: comments, JSDoc, Mar
 
 The name goes wherever it names the vendor; it stays byte-identical wherever it configures reaching the vendor. The keep list is `deepseek-official` and the `deepseek` catalog route key, the `deepseek-v4-*` / `deepseek-chat` / `deepseek-reasoner` model ids, `DEEPSEEK_API_KEY` and `DEEPSEEK_BASE_URL`, `api.deepseek.com`, `thinkingFormat: deepseek`, and provider display names. Everything else names the mechanism or drops the clause. The name is never rewritten to `arx` or `Centurionarx`: the product is not the vendor.
 
-The design-token ramp `--arx-static-deepseek-*` became `--arx-static-azure-*`. `deepsuite`, the visual-baseline codename, is a different word and stays.
+The vendor-named design-token ramp became `--arx-static-azure-*`. The visual-baseline codename does not contain the vendor name and stays.
 
 ## Consequences
 

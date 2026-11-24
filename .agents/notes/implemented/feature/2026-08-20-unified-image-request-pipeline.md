@@ -50,7 +50,7 @@ Historical attachment objects that later disappear or fail integrity verificatio
 
 **Treat PNG as a screenshot and reject 16-bit PNG.** File format does not reveal pixel complexity, and 16-bit RGB/RGBA is a convertible sample depth rather than an unsupported image type. Pixel sampling and post-conversion probes give the required facts.
 
-**Keep DeepSeek data URLs as the primary transport.** Inline base64 repeats bytes on every request and caps usable image history by request-body size. Files API references reuse uploaded deterministic request bytes and provide explicit expiry and deletion; the bounded fallback uses data URLs only when file resolution fails.
+**Keep data URLs as the primary DeepSeek request transport.** Inline base64 repeats bytes on every request and caps usable image history by request-body size. Files API references reuse uploaded deterministic request bytes and provide explicit expiry and deletion; the bounded fallback uses data URLs only when file resolution fails.
 
 **Trust a locally indexed file id indefinitely.** Remote expiry, deletion, and lost upload responses make local and provider state diverge. Response-directed invalidation and one re-upload recover without an unbounded retry loop; an ambiguous stale-file response must invalidate every file used by that attempt because it provides no safe exact target.
 
