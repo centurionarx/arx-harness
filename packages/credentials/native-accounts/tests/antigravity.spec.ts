@@ -82,6 +82,14 @@ describe('native Antigravity account status', () => {
     expect(host.children.map(child => child.spec.argv)).toEqual([[AGY, 'models']])
     expect(host.children[0]!.waitForExit).toHaveBeenCalledOnce()
   })
+  it.each([
+    ['an address', 'gemini-3-pro  signed in as person@example.test'],
+    ['a path', 'gemini-3-pro  /home/person/.gemini'],
+    ['an overlong name', `gemini-3-pro  ${'Gemini '.repeat(12)}`],
+  ])('replaces a display name holding %s with the model id', async (_case, line) => {
+    const host = products({ models: signedIn(`${line}\n`) })
+    expect(await host.driver.describe(live())).toMatchObject({ models: [{ id: 'gemini-3-pro', name: 'gemini-3-pro' }] })
+  })
   it('lists one model per line by its leading id', async () => {
     const host = products({ models: signedIn('gemini-3-pro  Gemini 3 Pro\n\n  gemini-3-flash\n') })
     expect(await host.driver.describe(live())).toEqual({ availability: 'available', status: 'connected', models: [
@@ -163,6 +171,13 @@ describe('native Antigravity sign-in', () => {
     } })
     await expect(host.driver.login('browser', live(), vi.fn(), async () => 'wrong')).rejects.toThrow('Native sign-in failed')
     expect(host.children.map(child => child.spec.argv[1])).toEqual(['acp'])
+  })
+  it('fails when the CLI exits cleanly but its listing names no model', async () => {
+    const host = products({
+      models: () => ({ exitCode: 0, stdout: '' }),
+      login: (child) => { queueMicrotask(() => { child.exit(0) }) },
+    })
+    await expect(host.driver.login('browser', live(), vi.fn(), async () => '')).rejects.toThrow('Invalid native model list')
   })
   it('fails when the CLI exits cleanly but still reports no signed-in account', async () => {
     const host = products({ login: (child) => { queueMicrotask(() => { child.exit(0) }) } })

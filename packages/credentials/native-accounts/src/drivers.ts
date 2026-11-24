@@ -342,10 +342,16 @@ const ANTIGRAVITY_CODE_PROMPT = 'Then paste the authorization code, or the full 
 const ANTIGRAVITY_SIGNED_OUT = 'Please sign in to view available models.'
 /**
  * This driver's reading of a model id in an `agy models` line: a lowercase
- * token holding a hyphen or a digit, such as `gemini-3-pro`. Header words such
- * as `Available`, `ID`, or `models:` do not match.
+ * token of at most 128 characters holding a hyphen or a digit, such as
+ * `gemini-3-pro`. Header words such as `Available`, `ID`, or `models:` do not match.
  */
-const ANTIGRAVITY_MODEL_ID = /^(?=[a-z0-9._:/-]*[-0-9])[a-z0-9][a-z0-9._:/-]*$/
+const ANTIGRAVITY_MODEL_ID = /^(?=[a-z0-9._:/-]*[-0-9])[a-z0-9][a-z0-9._:/-]{0,127}$/
+/**
+ * A display name this driver relays: at most 64 letters, digits, spaces, and
+ * `.()+-`. Any other rest of a line, which could carry an address or a path,
+ * is replaced by the model id.
+ */
+const ANTIGRAVITY_MODEL_NAME = /^[A-Za-z0-9][A-Za-z0-9 .()+-]{0,63}$/
 /**
  * Read the signed-in account's models with `agy models`, which needs no model turn.
  * @param spec - owning process service and deployment settings.
@@ -371,8 +377,8 @@ async function antigravityListing(spec: NativeDriverSpec, executable: string, si
 }
 /**
  * Project `agy models` lines: a line whose first token is a model id names one
- * model, and the rest of the line, when present, is its display name; any
- * other line, such as a header, is skipped. A listing that names no model is
+ * model, and the rest of the line is its display name when it is a relayable
+ * name, otherwise the id; any other line, such as a header, is skipped. A listing that names no model is
  * refused rather than read as a signed-in account without models: it is what
  * a changed listing format, or an executable that is not `agy`, produces.
  * @param lines - the non-empty listing lines.
@@ -382,7 +388,9 @@ function antigravityModels(lines: readonly string[]): NativeAccountModel[] {
   const models: NativeAccountModel[] = []
   for (const line of lines) {
     const [id, ...rest] = line.split(/\s+/) as [string, ...string[]]
-    if (ANTIGRAVITY_MODEL_ID.test(id)) models.push({ id, name: rest.length === 0 ? id : rest.join(' ') })
+    if (!ANTIGRAVITY_MODEL_ID.test(id)) continue
+    const name = rest.join(' ')
+    models.push({ id, name: ANTIGRAVITY_MODEL_NAME.test(name) ? name : id })
   }
   if (models.length === 0) throw new Error('Invalid native model list')
   return models
@@ -412,7 +420,9 @@ export function antigravityAccountDriver(spec: NativeDriverSpec, executable: str
       await codePromptSignIn(spec, () => [executable, 'acp', '--login'], {
         hosts: ANTIGRAVITY_AUTHORIZATION_HOSTS, codePrompt: ANTIGRAVITY_CODE_PROMPT,
         async confirm() {
-          if (await antigravityListing(spec, executable, signal) === undefined) throw new Error('Native sign-in incomplete')
+          const lines = await antigravityListing(spec, executable, signal)
+          if (lines === undefined) throw new Error('Native sign-in incomplete')
+          antigravityModels(lines)
         },
       }, signal, notice, prompt)
     },
