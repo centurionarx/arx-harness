@@ -1,0 +1,12 @@
+- region "Native product accounts":
+  - heading "Native product accounts" [level=3]
+  - paragraph: Connect the native tools used by delegated agents. A subscription account can also supply the chat models its plan offers; Codex chat models use a separate OpenAI connection.
+  - text: Claude Code Not connected
+  - button "Connect in browser"
+  - text: OpenAI Codex Not connected
+  - button "Connect in browser"
+  - button "Connect with device code"
+  - text: Antigravity CLI Not connected
+  - paragraph: arx has no chat route for this product; its models are listed for reference.
+  - button "Connect in browser"
+  - button "Refresh account status"
