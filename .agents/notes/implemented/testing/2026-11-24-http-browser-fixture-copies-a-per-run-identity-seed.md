@@ -34,5 +34,6 @@ With the seed ready, a start took 3.1 to 4.8 seconds on an otherwise idle Linux 
 - `--first-password` starts, which test the MASTER bootstrap itself, and fixture starts outside Vitest such as the native browser gates still start from an empty root.
 - A copy holds no captured delivery: `recovery-link` returns only mail sent after the start, which is all any spec asks for.
 - Every run of the `thread-safe` project spends one bootstrap of CPU in the background, including runs that start no HTTP fixture. Teardown stops the seed process if it is still running.
-- A failed seed fails the fixture start that asks for it, with the seed process's stderr in the error.
+- A failed seed fails every seeded fixture start of the run: the server process exits with the seed's stderr in its error, and the launcher reports the tail of the server's stderr. A seed process that hangs leaves each seeded start waiting until its hook budget, without a message.
+- The seed lives as long as the Vitest process, so in watch mode a rerun after an identity or storage schema change copies a database the old code created; restart Vitest after such a change.
 - Module loading through tsx, about 2.2 seconds on Linux, remains in every start.

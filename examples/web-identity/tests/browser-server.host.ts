@@ -42,7 +42,9 @@ function isSeedUser(value: unknown): value is SeedUser {
 async function identitySeed(): Promise<IdentitySeed | undefined> {
   const raw = process.env[IDENTITY_SEED_ENV]
   if (raw === undefined || restricted) return undefined
-  const address = JSON.parse(raw) as { url: string; token: string }
+  const address: unknown = JSON.parse(raw)
+  if (typeof address !== 'object' || address === null || !('url' in address) || typeof address.url !== 'string'
+    || !('token' in address) || typeof address.token !== 'string') throw new Error(IDENTITY_SEED_ENV + ' is not a seed address')
   const response = await fetch(address.url, { headers: { Authorization: 'Bearer ' + address.token } })
   if (!response.ok) throw new Error('identity seed unavailable: ' + await response.text())
   const value: unknown = await response.json()

@@ -21,8 +21,8 @@ import type { IdentitySeedAddress } from './browser-fixture.contract.ts'
 
 declare module 'vitest' {
   interface ProvidedContext {
-    /** The seed address `identity-seed.global.ts` provides to the workers of its project. */
-    identitySeed: IdentitySeedAddress
+    /** The seed address `identity-seed.global.ts` provides; absent in a project without that global setup. */
+    identitySeed?: IdentitySeedAddress
   }
 }
 
@@ -37,12 +37,22 @@ export default async function setup(project: TestProject): Promise<() => Promise
     { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'ignore', 'pipe', 'ipc'] })
   let stderr = ''
   child.stderr?.on('data', (chunk: Buffer) => { stderr = (stderr + chunk.toString('utf8')).slice(-4096) })
+  // `close` follows the IPC message and the end of stderr, so a seed that sent its message has resolved and a failed
+  // seed reports its complete stderr.
   const seed = new Promise<string>((resolve, reject) => {
     child.once('message', (message: unknown) => { resolve(JSON.stringify(message)) })
-    child.once('exit', (code, signal) => { reject(new Error(`identity seed exited (${String(code ?? signal)}): ${stderr}`)) })
+    child.once('close', (code, signal) => { reject(new Error(`identity seed exited (${String(code ?? signal)}): ${stderr}`)) })
   })
   // A seed failure reaches the fixture that asks for it; a run without HTTP fixtures never asks.
   seed.catch(() => { })
+  const stop = async (): Promise<void> => {
+    if (child.exitCode === null && child.signalCode === null) {
+      const exited = once(child, 'exit')
+      child.kill()
+      await exited
+    }
+    await rm(root, { recursive: true, force: true })
+  }
   const token = randomBytes(24).toString('hex')
   const server = createServer((request, response) => {
     if (request.headers.authorization !== 'Bearer ' + token) {
@@ -52,16 +62,17 @@ export default async function setup(project: TestProject): Promise<() => Promise
     seed.then((body) => { response.writeHead(200, { 'Content-Type': 'application/json' }).end(body) },
       (error: unknown) => { response.writeHead(503).end(error instanceof Error ? error.message : 'identity seed failed') })
   })
-  server.listen(0, '127.0.0.1')
-  await once(server, 'listening')
+  try {
+    server.listen(0, '127.0.0.1')
+    await once(server, 'listening')
+  }
+  catch (error) {
+    await stop()
+    throw error
+  }
   project.provide('identitySeed', { url: 'http://127.0.0.1:' + String((server.address() as AddressInfo).port), token })
   return async () => {
     server.close()
-    if (child.exitCode === null && child.signalCode === null) {
-      const exited = once(child, 'exit')
-      child.kill()
-      await exited
-    }
-    await rm(root, { recursive: true, force: true })
+    await stop()
   }
 }

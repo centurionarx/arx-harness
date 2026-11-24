@@ -10,10 +10,15 @@ export async function browserFixture(audience: 'user' | 'admin', firstPassword =
     [audience, ...(firstPassword ? ['--first-password'] : []), ...(frontend ? ['--frontend'] : []), ...(projectRuntime ? ['--runtime'] : [])],
     { execArgv: ['--import', 'tsx'], silent: true,
       env: seed === undefined ? process.env : { ...process.env, [IDENTITY_SEED_ENV]: JSON.stringify(seed) } })
-  const ready = await message(child, 'ready') as unknown as Omit<BrowserFixtureControl, 'command' | 'close'>
+  // Draining both pipes keeps a chatty server from blocking on a full pipe; the stderr tail explains an early exit.
+  let stderr = ''
+  child.stdout?.resume()
+  child.stderr?.on('data', (chunk: Buffer) => { stderr = (stderr + chunk.toString('utf8')).slice(-4096) })
+  const diagnostics = (): string => stderr
+  const ready = await message(child, 'ready', diagnostics) as unknown as Omit<BrowserFixtureControl, 'command' | 'close'>
   return { ...ready, child,
     async command(type: string, fields: object = {}): Promise<Record<string, unknown>> {
-      const pending = message(child, type === 'block-user' ? 'blocked' : type)
+      const pending = message(child, type === 'block-user' ? 'blocked' : type, diagnostics)
       child.send({ type, ...fields }); return pending
     },
     async close(): Promise<void> {
@@ -22,7 +27,7 @@ export async function browserFixture(audience: 'user' | 'admin', firstPassword =
     },
   }
 }
-function message(child: ChildProcess, type: string): Promise<Record<string, unknown>> {
+function message(child: ChildProcess, type: string, diagnostics: () => string): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const clear = (): void => { child.off('message', onMessage); child.off('exit', onExit) }
     const onMessage = (raw: unknown): void => {
@@ -31,7 +36,7 @@ function message(child: ChildProcess, type: string): Promise<Record<string, unkn
       if (result.type === type) { clear(); resolve(result) }
       if (result.type === 'fixture-error') { clear(); reject(new Error('identity fixture operation failed')) }
     }
-    const onExit = (): void => { clear(); reject(new Error('identity fixture exited before response')) }
+    const onExit = (): void => { clear(); reject(new Error('identity fixture exited before response: ' + diagnostics())) }
     child.on('message', onMessage); child.on('exit', onExit)
   })
 }

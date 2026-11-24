@@ -7,8 +7,8 @@ import type { BrowserFixtureControl, BrowserFixtureFactory, IdentitySeedAddress 
 
 declare module 'vitest' {
   interface ProvidedContext {
-    /** The seed address `identity-seed.global.ts` provides to the workers of its project. */
-    identitySeed: IdentitySeedAddress
+    /** The seed address `identity-seed.global.ts` provides; absent in a project without that global setup. */
+    identitySeed?: IdentitySeedAddress
   }
 }
 /** Load the real Node fixture at runtime while its provider remains outside the Client type program. */
