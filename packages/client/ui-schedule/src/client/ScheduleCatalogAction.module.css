@@ -59,7 +59,9 @@
      (see ui-theme styles/scrollbar.css for the rebinding contract). */
   --arx-scrollbar-thumb: var(--arx-alias-scrollbar-bg-l2);
   --arx-scrollbar-thumb-hover: var(--arx-alias-scrollbar-hover-l2);
-  box-shadow: 0 0 0 1px var(--arx-alias-border-l1), var(--arx-shadow-lv3);
+  /* The 1px ring uses the shared menu edge token, as Menu and PopupSelectView
+     do with their border; a ring keeps the 336px box unchanged. */
+  box-shadow: 0 0 0 1px var(--arx-alias-border-inverted), var(--arx-shadow-lv3);
 }
 
 .row {

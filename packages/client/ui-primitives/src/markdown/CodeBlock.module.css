@@ -1,5 +1,6 @@
-/* Visual baseline: the reference design system's markdown code-block.css. Highlight colors
-   stay on the existing shiki `--shiki-*` sheet (not Prism highlight.css). */
+/* Visual baseline: the reference design system's markdown code-block.css.
+   Highlight colors stay on the existing shiki `--shiki-*` sheet (not Prism
+   highlight.css). */
 
 .block {
   --dsl-code-block-banner-background-color: var(--arx-alias-markdown-code-block-banner);

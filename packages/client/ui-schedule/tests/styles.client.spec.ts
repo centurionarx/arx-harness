@@ -21,19 +21,22 @@ const tokens = readdirSync(fileURLToPath(new URL('../../ui-theme/src/styles/', i
   .map(name => readFileSync(fileURLToPath(new URL(`../../ui-theme/src/styles/${name}`, import.meta.url)), 'utf8'))
   .join('\n')
 
+/** Custom properties the sheet declares itself, which its own `var()` reads may name. */
+const local = [...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gm)].map(match => String(match[1]))
+
 describe('ScheduleCatalogAction theme styles', () => {
-  it('reads only theme variables the theme sheets declare', () => {
-    // Legacy prefixes are matched too, so a name from an older token set is
-    // reported as undeclared instead of slipping past the filter.
-    const named = [...css.matchAll(/var\((--(?:dsw|dsh|arx|ds)-[a-z0-9-]+)/g)].map(match => match[1])
+  it('reads only variables the theme sheets or the sheet itself declare', () => {
+    // Every prefix is matched, so a name from an older token set is reported as
+    // undeclared instead of slipping past a prefix filter.
+    const named = [...css.matchAll(/var\((--[a-z0-9-]+)/g)].map(match => String(match[1]))
     expect(named.length).toBeGreaterThan(5)
-    const undeclared = [...new Set(named)].filter(name => !tokens.includes(`  ${String(name)}:`))
+    const undeclared = [...new Set(named)].filter(name => !tokens.includes(`  ${name}:`) && !local.includes(name))
     expect(undeclared).toEqual([])
   })
 
-  it('rebinds the scrollbar variables the theme scrollbar reads', () => {
-    const rebound = [...css.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gm)].map(match => match[1])
-    expect(rebound).toEqual(['--arx-scrollbar-thumb', '--arx-scrollbar-thumb-hover'])
-    for (const name of rebound) expect(tokens).toMatch(new RegExp(`var\\(${String(name)}\\b`))
+  it('rebinds exactly the scrollbar variables the theme scrollbar reads', () => {
+    const scrollbar = local.filter(name => name.includes('scrollbar'))
+    expect(scrollbar).toEqual(['--arx-scrollbar-thumb', '--arx-scrollbar-thumb-hover'])
+    for (const name of scrollbar) expect(tokens).toMatch(new RegExp(`var\\(${name}[,)\\s]`))
   })
 })

@@ -93,7 +93,8 @@
   min-width: 0;
 }
 
-/* Running sweep glare — same reference ShimmerText pattern as ToolRow. */
+/* Running sweep glare — same reference design system ShimmerText pattern as
+   ToolRow. */
 .root[data-state='running']::after {
   content: '';
   position: absolute;
