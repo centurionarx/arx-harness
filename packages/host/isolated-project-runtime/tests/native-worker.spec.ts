@@ -224,7 +224,8 @@ describe('owned history with native worker Loader and ApiProxy', () => {
     expect(response.headers.get('content-type')).toBe('application/zip')
     const zip = new Uint8Array(await response.arrayBuffer())
     expect([...zip.slice(0, 4)]).toEqual([80, 75, 3, 4])
-    expect(original?.content).toContain(own.meta.cwd)
+    // The log stores the working directory as a JSON string, which escapes the backslashes of a Windows path.
+    expect(original?.content).toContain(JSON.stringify(own.meta.cwd))
     const exported = unzipSync(zip)
     expect(Object.keys(exported)).toEqual(['session.jsonl'])
     expect(strFromU8(exported['session.jsonl']!)).toBe(original!.content)

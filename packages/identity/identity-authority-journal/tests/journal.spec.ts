@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { chmod, mkdtemp, mkdir, readFile, rm, writeFile, symlink, rename, realpath } from 'node:fs/promises'
+import { chmod, mkdtemp, mkdir, readFile, rm, writeFile, symlink, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@arx-ai/cordis'
@@ -143,15 +143,12 @@ describe('protected authority outside restored data', () => {
     ctx = await load(path, false, { maxRecordBytes: 1024 })
     await expect(ctx.identityAuthorityJournal.append(0, { operationId: 'too-large', kind: 'owner', payload: { data: 'x'.repeat(2000) } })).rejects.toMatchObject({ code: 'AUTH_CAPACITY' })
     expect(ctx.identityAuthorityJournal.head.sequence).toBe(0)
-    const moved = join(root, 'moved')
-    await rename(path, moved)
-    try {
-      await expect(ctx.identityAuthorityJournal.append(0, { operationId: 'storage-failed', kind: 'owner', payload: {} })).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
-      expect(() => ctx!.identityAuthorityJournal.head).toThrow(/unavailable/)
-    }
-    finally {
-      await rename(moved, path)
-    }
+    // A directory at the watermark path fails the next publication on every platform while the journal stays open.
+    const watermark = join(path, 'watermark.json')
+    await rm(watermark)
+    await mkdir(watermark)
+    await expect(ctx.identityAuthorityJournal.append(0, { operationId: 'storage-failed', kind: 'owner', payload: {} })).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
+    expect(() => ctx!.identityAuthorityJournal.head).toThrow(/unavailable/)
   })
   it('rejects an authority root or watermark of the wrong entry type before reading its access', async () => {
     root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-entry-type-')))
