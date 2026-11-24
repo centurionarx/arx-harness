@@ -6,7 +6,7 @@ English | [Português](2026-08-31-centurionarx-brand-naming.pt-BR.md)
 
 ## Problem
 
-The product was rebranded to arx, but the model vendor's name still appeared across roughly 750 files carrying three different senses: the organization presented as behind the product, the LLM provider the harness ships against, and the credentials that reach that provider. Nothing distinguished these senses, so product surfaces — the website, UI strings, agent personas, documentation — still presented the harness as the previous owner's, while a blanket find-and-replace would have broken the very configuration that reaches the model.
+The product was rebranded to arx, but the model vendor's name still appeared across roughly 750 files carrying three different senses: the organization presented as behind the product, the LLM provider the harness ships against, and the credentials that reach that provider. Nothing distinguished these senses, so product surfaces — the website, UI strings, agent personas, documentation — still presented the harness under the earlier brand, while a blanket find-and-replace would have broken the very configuration that reaches the model.
 
 ## Decision
 
