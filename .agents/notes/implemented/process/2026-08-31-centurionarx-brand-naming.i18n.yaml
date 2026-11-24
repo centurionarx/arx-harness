@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md
-2026-08-31-centurionarx-brand-naming.md: 2baaa2642dd31b9b026a5dece8c67ed2d8ca8d02
-2026-08-31-centurionarx-brand-naming.pt-BR.md: 71b26ce8fa2eaafdba147ee75b1314cd528f670e
+2026-08-31-centurionarx-brand-naming.md: 3ccaca046b68d16d82f74562bedcc767ae16172f
+2026-08-31-centurionarx-brand-naming.pt-BR.md: 35c7b5565a6217ac01c0788c4be1d9df76e767b3

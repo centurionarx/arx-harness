@@ -5,7 +5,7 @@
  * vendor copyright notice are removed first. The line then fails when it holds
  * a brand form, or when an occurrence remains after the model-access forms are
  * removed and no model-access term stands within {@link ACCESS_TERM_WINDOW}
- * words of it. The allowed paths, the brand forms, the access forms, and the
+ * words of it. No path is exempt. The brand forms, the access forms, and the
  * access terms below are the complete, closed list of exceptions; the
  * [brand-naming Agent Note](../.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)
  * owns the rule.
@@ -40,12 +40,6 @@ export interface NamedForm {
   /** The pattern; access forms carry the `g` flag because every match is removed. */
   readonly pattern: RegExp
 }
-
-/** Paths the gate never scans; every other tracked text file, license files and vendored sources included, is scanned. */
-export const ALLOWED_PATHS: readonly NamedForm[] = [
-  // TODO: remove once the owner decides whether to retire the upstream-sync tooling, which reads the original repository URL.
-  { name: 'upstream-sync manifest', pattern: /^scripts\/upstream-sync\.manifest\.json$/ },
-]
 
 /** Verbs that, followed by `by`, `at`, `from`, or `under` and the vendor name, claim authorship or origin. */
 const ORIGIN_VERBS = 'created|built|developed|made|owned|authored|founded|originated|forked|written|maintained|published|shipped|branded'
@@ -140,12 +134,11 @@ export function judgeLine(line: string): string | undefined {
 
 /**
  * Report the brand uses of the vendor's name in one file.
- * @param path - repository-relative path used in the message and matched against {@link ALLOWED_PATHS}.
+ * @param path - repository-relative path used in the failure messages.
  * @param text - the file's text.
- * @returns one message per failing line, empty when the file is allowed or holds no brand use.
+ * @returns one message per failing line, empty when the file holds no brand use.
  */
 export function findVendorBrand(path: string, text: string): string[] {
-  if (ALLOWED_PATHS.some(form => form.pattern.test(path))) return []
   const problems: string[] = []
   for (const [index, line] of text.split('\n').entries()) {
     const reason = judgeLine(line)
