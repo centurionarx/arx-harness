@@ -20,7 +20,6 @@ import { installLlmReplay } from '@arx-ai/arx-llm-replay'
 import { textResponse, toolCallResponse } from '../../../packages/core/agent-loop/tests/mock-adapter.ts'
 import { WorkspaceId } from '@arx-ai/arx-workspace'
 import * as BrokerHttp from '../../../packages/host/isolated-project-runtime/src/broker-http.ts'
-import { nativeSupervisorFixture } from '../../../packages/host/isolated-project-runtime/tests/native-supervisor.ts'
 import { USER_PROJECT_BASE, USER_RUNTIME_FEATURES, authenticatedGraph, nativeComposition } from '../../../packages/client/modules/src/authenticated-graph.ts'
 
 const audience = process.argv[2] === 'admin' ? 'admin' : 'user'
@@ -53,7 +52,10 @@ async function identitySeed(): Promise<IdentitySeed | undefined> {
     || !('users' in value) || !Array.isArray(value.users) || !value.users.every(isSeedUser)) throw new Error('identity seed contract invalid')
   return { root: value.root, masterPassword: value.masterPassword, users: value.users }
 }
-const supervisor = withRuntime ? await nativeSupervisorFixture({ fsTools: true }) : undefined
+// Only a runtime start loads the native supervisor, whose module graph is most of a start's load time.
+const supervisor = withRuntime
+  ? await (await import('../../../packages/host/isolated-project-runtime/tests/native-supervisor.ts')).nativeSupervisorFixture({ fsTools: true })
+  : undefined
 const workspaceVolumes = new Map<string, string>()
 const previewReplays = new Map<string, ReturnType<typeof installLlmReplay>>()
 let resolverRoot: string | undefined

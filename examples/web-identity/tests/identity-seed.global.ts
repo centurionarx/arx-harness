@@ -31,7 +31,13 @@ declare module 'vitest' {
  * @param project - the Vitest project whose workers receive the seed address.
  * @returns teardown that stops the seed and removes its root.
  */
+// A seed that has not finished by then is stopped, so every later fixture start fails with this reason instead of
+// waiting for its hook budget. The bootstrap is about eight password hashes plus the harness load, under 40 seconds
+// on a loaded Windows runner; each run logs the actual duration.
+const SEED_DEADLINE_MS = 120_000
+
 export default async function setup(project: TestProject): Promise<() => Promise<void>> {
+  const started = performance.now()
   const root = await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-seed-')))
   const child = fork(fileURLToPath(new URL('./identity-seed.host.ts', import.meta.url)), [root],
     { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'ignore', 'pipe', 'ipc'] })
@@ -39,13 +45,25 @@ export default async function setup(project: TestProject): Promise<() => Promise
   child.stderr?.on('data', (chunk: Buffer) => { stderr = (stderr + chunk.toString('utf8')).slice(-4096) })
   // `close` follows the IPC message and the end of stderr, so a seed that sent its message has resolved and a failed
   // seed reports its complete stderr.
+  let expired = false
+  const deadline = setTimeout(() => { expired = true; child.kill() }, SEED_DEADLINE_MS)
+  deadline.unref()
   const seed = new Promise<string>((resolve, reject) => {
-    child.once('message', (message: unknown) => { resolve(JSON.stringify(message)) })
-    child.once('close', (code, signal) => { reject(new Error(`identity seed exited (${String(code ?? signal)}): ${stderr}`)) })
+    child.once('message', (message: unknown) => {
+      clearTimeout(deadline)
+      process.stderr.write(`identity seed ready: ${String(Math.round(performance.now() - started))}ms\n`)
+      resolve(JSON.stringify(message))
+    })
+    child.once('close', (code, signal) => {
+      reject(new Error(expired
+        ? `identity seed did not finish within ${String(SEED_DEADLINE_MS)}ms: ${stderr}`
+        : `identity seed exited (${String(code ?? signal)}): ${stderr}`))
+    })
   })
   // A seed failure reaches the fixture that asks for it; a run without HTTP fixtures never asks.
   seed.catch(() => { })
   const stop = async (): Promise<void> => {
+    clearTimeout(deadline)
     if (child.exitCode === null && child.signalCode === null) {
       const exited = once(child, 'exit')
       child.kill()
