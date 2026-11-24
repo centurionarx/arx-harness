@@ -11,11 +11,9 @@
  * owns the rule.
  */
 
-import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { scannablePaths, scannableText } from './verify-chinese-text.ts'
+import { scanTrackedText } from './verify-chinese-text.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -157,15 +155,7 @@ export function findVendorBrand(path: string, text: string): string[] {
 }
 
 if (import.meta.main) {
-  const lsFiles = execFileSync('git', ['-C', root, 'ls-files', '-s', '-z'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
-  const problems: string[] = []
-  let scanned = 0
-  for (const path of scannablePaths(lsFiles).sort((a, b) => a.localeCompare(b))) {
-    const text = scannableText(readFileSync(resolve(root, path)))
-    if (text === undefined) continue
-    scanned += 1
-    problems.push(...findVendorBrand(path, text))
-  }
+  const { scanned, problems } = scanTrackedText(root, findVendorBrand)
   if (problems.length > 0) {
     console.error('verify-vendor-name failed:\n')
     for (const problem of problems) console.error(`  ${problem}`)
