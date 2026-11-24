@@ -9,7 +9,8 @@ import type { SettingsDescribeFace } from '@arx-ai/arx-client-ui-settings/client
 import { NativeAccountsStore } from '../src/client/native-accounts-store.ts'
 import { NativeAccounts } from '../src/client/NativeAccounts.tsx'
 import {
-  claudeRouteEntries, codexRouteEntries, entryId, pinnedCatalog, reconciledModels, staleOverrides, storedModels, storedRoute,
+  chatRouteProvider, claudeRouteEntries, codexRouteEntries, entryId, pinnedCatalog, reconciledModels, staleOverrides,
+  storedModels, storedRoute, type ChatRouteProvider,
 } from '../src/client/chat-roster.ts'
 import { en } from '../src/client/locales.ts'
 
@@ -33,6 +34,11 @@ const refused = (message: string): RpcResponse<never> =>
 type Api = IApiClient['nativeAccounts']
 type Reply<M extends (...args: never[]) => Promise<unknown>> = Awaited<ReturnType<M>>
 
+/** A signed-in Antigravity CLI, which lists models but feeds no chat route. */
+const antigravity: NativeAccountView = {
+  provider: 'antigravity', label: 'Antigravity CLI', availability: 'available', status: 'connected',
+  loginModes: ['browser'], loginInFlight: false, models: [{ id: 'gemini-3-pro', name: 'Gemini 3 Pro' }],
+}
 /** A connected Codex subscription whose plan offers one catalog model and one the catalog lacks. */
 const codex: NativeAccountView = {
   provider: 'codex', label: 'OpenAI Codex', availability: 'available', status: 'connected', authMode: 'subscription',
@@ -98,7 +104,7 @@ function bench(view: { writable?: boolean; namespace?: boolean; codexRoute?: unk
     available: true, useAccounts: bindSnapshotSelector(controller.store), useHostDescription: bindSnapshotSelector(host()),
     watch: () => controller.watch(), reload: () => { void controller.load() }, begin: controller.begin.bind(controller),
     cancel: () => { void controller.cancel() }, submit: (code: string) => { void controller.submit(code) },
-    enable: (provider: NativeAccountView['provider']) => { void controller.enable(provider) }, t: (key: string) => en[key as keyof typeof en],
+    enable: (provider: ChatRouteProvider) => { void controller.enable(provider) }, t: (key: string) => en[key as keyof typeof en],
   }
   return { controller, nativeAccounts, mutate, discoverModels, enabled, props, settings }
 }
@@ -116,6 +122,14 @@ function deferred<T>() {
 afterEach(() => { cleanup(); vi.useRealTimers() })
 
 describe('native product accounts', () => {
+  it('gives a product without a chat route no route state', async () => {
+    const b = bench({ accounts: [account, antigravity] })
+    await b.controller.load()
+    expect(b.controller.store.getSnapshot().routes).toEqual({ 'claude-code': 'absent' })
+    expect(chatRouteProvider('antigravity')).toBeUndefined()
+    expect(chatRouteProvider('codex')).toBe('codex')
+  })
+
   it('loads sanitized metadata and enables the canonical Claude models under the route preset name', async () => {
     const b = bench()
     await b.controller.load()
@@ -599,6 +613,18 @@ describe('native product account card', () => {
     cleanup()
     card({ accounts: [{ ...codex, authMode: 'api-key' }] })
     expect(screen.queryByRole('button', { name: 'Enable in chat' })).toBeNull()
+  })
+
+  it('lists a product without a chat route for reference and offers only its sign-in', () => {
+    card({ accounts: [antigravity] })
+    expect(screen.getByText('Gemini 3 Pro')).toBeTruthy()
+    expect(screen.getByText('arx has no chat route for this product; its models are listed for reference.')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Enable in chat' })).toBeNull()
+    expect(loginButtons()).toEqual(['Connect in browser'])
+    cleanup()
+    const { models: _models, ...listed } = antigravity
+    card({ accounts: [{ ...listed, availability: 'unavailable', status: 'unknown' }] })
+    expect(screen.queryByText('arx has no chat route for this product; its models are listed for reference.')).toBeNull()
   })
 
   it('puts the device code first on a host without a desktop and weighs it against the browser only where both are offered', () => {

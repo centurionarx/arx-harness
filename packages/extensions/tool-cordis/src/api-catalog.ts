@@ -4918,7 +4918,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'NativeAccountProvider',
-    declaration: 'export type NativeAccountProvider = \'claude-code\' | \'codex\';',
+    declaration: 'export type NativeAccountProvider = \'claude-code\' | \'codex\' | \'antigravity\';',
   },
   {
     name: 'NativeAccountView',

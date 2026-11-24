@@ -5,6 +5,10 @@ import { PassThrough } from 'node:stream'
 import { Context, Service } from '@arx-ai/cordis'
 import type { SubprocessHandle, SubprocessOutcome, SubprocessSpawnSpec } from '@arx-ai/arx-subprocess'
 let connected = false
+let antigravityConnected = false
+/** Sign every fixture product out, so a suite's earlier sign-ins do not reach its later probes. */
+export function signOutFixtureAccounts(): void { connected = false; antigravityConnected = false }
+const reader = (text: string) => ({ readFrom: () => ({ text, nextOffset: text.length, lossy: false }) })
 export default class FixtureSubprocess extends Service {
   constructor(ctx: Context) { super(ctx, 'subprocess') }
   spawn(spec: SubprocessSpawnSpec): SubprocessHandle {
@@ -15,8 +19,21 @@ export default class FixtureSubprocess extends Service {
     const finish = (): void => { if (!settled) { settled = true; stdout.end(); stderr.end(); complete({ exitCode: 0, signal: null }) } }
     const isStatus = spec.argv.includes('status')
     const status = JSON.stringify({ loggedIn: connected, authMethod: 'claude.ai', accessToken: 'MUST-NOT-LEAK' })
+    // Antigravity CLI 1.5.16 output; the signed-in listing's lines are this fixture's own.
+    const isListing = spec.argv[1] === 'models'
+    const listing = antigravityConnected ? { exitCode: 0, stdout: 'gemini-3-pro  Gemini 3 Pro\n', stderr: '' }
+      : { exitCode: 1, stdout: '', stderr: 'Error: Please sign in to view available models. Launch the CLI without arguments to sign in.\n' }
     if (isStatus) queueMicrotask(finish)
-    else if (spec.argv.includes('login')) {
+    else if (isListing) {
+      queueMicrotask(() => {
+        if (!settled) { settled = true; stdout.end(); stderr.end(); complete({ exitCode: listing.exitCode, signal: null }) }
+      })
+    }
+    else if (spec.argv[1] === 'acp' && spec.argv[2] === '--login') {
+      queueMicrotask(() => stdout.write('Open this link in a browser to log in with Google:\n\n  https://accounts.google.com/o/oauth2/auth?state=test-state\n\n'
+        + 'Then paste the authorization code, or the full URL of the page you land on, and press Enter:\n'))
+      stdin.once('data', (value) => { if (String(value) !== 'fixture-code\n') throw new Error('Unexpected code'); antigravityConnected = true; finish() })
+    } else if (spec.argv.includes('login')) {
       queueMicrotask(() => stdout.write('Open https://claude.com/oauth/authorize?state=test-state\nPaste code here if prompted > '))
       stdin.once('data', (value) => { if (String(value) !== 'fixture-code\n') throw new Error('Unexpected code'); connected = true; finish() })
     } else {
@@ -47,7 +64,7 @@ export default class FixtureSubprocess extends Service {
     }
     spec.signal?.addEventListener('abort', finish, { once: true })
     return { pid: -1, stdin, stdout, stderr, done,
-      collected: { stdout: { readFrom: () => ({ text: status, nextOffset: status.length, lossy: false }) } },
+      collected: isListing ? { stdout: reader(listing.stdout), stderr: reader(listing.stderr) } : { stdout: reader(status) },
       terminate: finish, waitForExit: async () => { await done; return true } }
   }
 }

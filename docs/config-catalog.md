@@ -1744,10 +1744,16 @@ export interface Config {
   pollIntervalMs: number
   /** Most sign-in attempts held at once, running and retained together. */
   maxAttempts: number
+  /**
+   * Absolute path of the installed Antigravity CLI (`agy`). The CLI installs
+   * outside any package manager and updates itself, so no version ships with
+   * this package; absent, Antigravity reports unavailable.
+   */
+  antigravityExecutable?: string
 }
 ```
 
-Source: [`packages/credentials/native-accounts/src/index.ts:13`](../packages/credentials/native-accounts/src/index.ts)
+Source: [`packages/credentials/native-accounts/src/index.ts:15`](../packages/credentials/native-accounts/src/index.ts)
 
 <a id="arx-aiarx-permission-presets"></a>
 

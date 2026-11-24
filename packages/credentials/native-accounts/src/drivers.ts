@@ -126,48 +126,78 @@ export function claudeAccountDriver(spec: NativeDriverSpec): NativeAccountDriver
       catch { /* Model discovery may fail while the native status remains connected. */ }
       return { availability: 'available', status: 'connected', ...authMode === undefined ? {} : { authMode }, ...models === undefined ? {} : { models } }
     },
-    async login(_mode, signal, notice, prompt) {
-      signal.throwIfAborted()
-      const child = spec.spawn({ argv: [claudeAccountExecutable(), 'auth', 'login', '--claudeai'],
-        cwd: spec.cwd, env: spec.env, signal, graceMs: spec.graceMs,
-        stdio: { stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' } })
-      const stdin = child.stdin as NonNullable<SubprocessHandle['stdin']>
-      const stdout = child.stdout as NonNullable<SubprocessHandle['stdout']>
-      const stderr = child.stderr as NonNullable<SubprocessHandle['stderr']>
-      let tail = ''
-      let prompting = false
-      let answer: Promise<void> | undefined
-      let parseError: unknown
-      const decoder = new StringDecoder('utf8')
-      const receive = (chunk: Buffer | string): void => {
-        if (parseError !== undefined || signal.aborted) return
-        tail = (tail + (typeof chunk === 'string' ? chunk : decoder.write(chunk))).slice(-spec.outputMaxBytes)
-        try {
-          for (const match of tail.matchAll(/https:\/\/[^\s\x1b]+(?=[\s\x1b])/g)) {
-            const url = match[0]
-            const host = new URL(url).hostname
-            if ((CLAUDE_AUTHORIZATION_HOSTS as readonly string[]).includes(host)) notice(url)
-          }
-          if (!prompting && tail.includes('Paste code here if prompted >')) {
-            prompting = true
-            answer = prompt('code').then((code) => { if (!signal.aborted) stdin.write(`${code}\n`) })
-            void answer.catch(() => { /* Cancellation is awaited through process cleanup below. */ })
-          }
-        } catch (error) { parseError = error; child.terminate() }
-      }
-      stdout.on('data', receive); stderr.on('data', receive)
-      try {
-        const result = await child.done
-        signal.throwIfAborted()
-        if (parseError !== undefined) throw new Error('Native sign-in output could not be relayed', { cause: parseError })
-        if (result.exitCode !== 0) throw new Error('Native sign-in failed')
-        const status = await claudeStatus(spec, claudeAccountExecutable(), signal)
-        if (status.loggedIn !== true || status.authMethod !== 'claude.ai') throw new Error('Native subscription sign-in incomplete')
-      } finally {
-        stdout.off('data', receive); stderr.off('data', receive)
-        await release(child)
-      }
+    login(_mode, signal, notice, prompt) {
+      return codePromptSignIn(spec, () => [claudeAccountExecutable(), 'auth', 'login', '--claudeai'], {
+        hosts: CLAUDE_AUTHORIZATION_HOSTS, codePrompt: 'Paste code here if prompted >',
+        async confirm() {
+          const status = await claudeStatus(spec, claudeAccountExecutable(), signal)
+          if (status.loggedIn !== true || status.authMethod !== 'claude.ai') throw new Error('Native subscription sign-in incomplete')
+        },
+      }, signal, notice, prompt)
     },
+  }
+}
+/** What distinguishes one product's terminal sign-in that prints an address and then asks for a pasted code. */
+interface CodePromptSignIn {
+  /** Exact HTTPS hosts whose addresses are relayed; the CLI's other output links are not. */
+  hosts: readonly string[]
+  /** Text the CLI prints when it waits for the pasted code. */
+  codePrompt: string
+  /** Confirms, after a zero exit, that the product now holds the expected sign-in. */
+  confirm(): Promise<void>
+}
+/**
+ * Run one terminal sign-in: relay the product's sign-in addresses, answer its
+ * code prompt once with the person's pasted line, and require a zero exit
+ * followed by the product's own confirmation.
+ * @param spec - owning process service and deployment settings.
+ * @param argv - resolves the product's sign-in command once the attempt is known to be live.
+ * @param product - the product's sign-in hosts, prompt text, and confirmation.
+ * @param signal - the attempt's lifetime; aborting it terminates the CLI.
+ * @param notice - receives each relayed address.
+ * @param prompt - asks the person for the pasted code.
+ */
+async function codePromptSignIn(
+  spec: NativeDriverSpec, argv: () => string[], product: CodePromptSignIn, signal: AbortSignal,
+  notice: (url: string) => void, prompt: (input: NativeLoginInput) => Promise<string>,
+): Promise<void> {
+  signal.throwIfAborted()
+  const child = spec.spawn({ argv: argv(), cwd: spec.cwd, env: spec.env, signal, graceMs: spec.graceMs,
+    stdio: { stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' } })
+  const stdin = child.stdin as NonNullable<SubprocessHandle['stdin']>
+  const stdout = child.stdout as NonNullable<SubprocessHandle['stdout']>
+  const stderr = child.stderr as NonNullable<SubprocessHandle['stderr']>
+  let tail = ''
+  let prompting = false
+  let answer: Promise<void> | undefined
+  let parseError: unknown
+  const decoder = new StringDecoder('utf8')
+  const receive = (chunk: Buffer | string): void => {
+    if (parseError !== undefined || signal.aborted) return
+    tail = (tail + (typeof chunk === 'string' ? chunk : decoder.write(chunk))).slice(-spec.outputMaxBytes)
+    try {
+      for (const match of tail.matchAll(/https:\/\/[^\s\x1b]+(?=[\s\x1b])/g)) {
+        const url = match[0]
+        const host = new URL(url).hostname
+        if (product.hosts.includes(host)) notice(url)
+      }
+      if (!prompting && tail.includes(product.codePrompt)) {
+        prompting = true
+        answer = prompt('code').then((code) => { if (!signal.aborted) stdin.write(`${code}\n`) })
+        void answer.catch(() => { /* Cancellation is awaited through process cleanup below. */ })
+      }
+    } catch (error) { parseError = error; child.terminate() }
+  }
+  stdout.on('data', receive); stderr.on('data', receive)
+  try {
+    const result = await child.done
+    signal.throwIfAborted()
+    if (parseError !== undefined) throw new Error('Native sign-in output could not be relayed', { cause: parseError })
+    if (result.exitCode !== 0) throw new Error('Native sign-in failed')
+    await product.confirm()
+  } finally {
+    stdout.off('data', receive); stderr.off('data', receive)
+    await release(child)
   }
 }
 /**
@@ -301,6 +331,84 @@ export function codexAccountDriver(spec: NativeDriverSpec): NativeAccountDriver 
         const settled = await Promise.race([completion, abort, connection.closed.then(() => { throw new Error('Native login process exited') })])
         if (settled.loginId !== loginId || settled.success !== true) throw new Error('Native sign-in failed')
       } finally { await connection.close() }
+    },
+  }
+}
+/** Host of the Google sign-in page the Antigravity CLI prints for a terminal sign-in. */
+const ANTIGRAVITY_AUTHORIZATION_HOSTS = ['accounts.google.com'] as const
+/** Text the Antigravity CLI prints when it waits for the pasted authorization code. */
+const ANTIGRAVITY_CODE_PROMPT = 'Then paste the authorization code, or the full URL of the page you land on, and press Enter:'
+/** Diagnostic `agy models` writes to stderr, with exit code 1, when no account is signed in. */
+const ANTIGRAVITY_SIGNED_OUT = 'Please sign in to view available models.'
+/** Model ids `agy --model` accepts: one token without whitespace. */
+const ANTIGRAVITY_MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/
+/**
+ * Read the signed-in account's models with `agy models`, which needs no model turn.
+ * @param spec - owning process service and deployment settings.
+ * @param executable - the configured Antigravity CLI.
+ * @param signal - the probe's lifetime.
+ * @returns the listing's lines, or `undefined` when the CLI reports no signed-in account.
+ */
+async function antigravityListing(spec: NativeDriverSpec, executable: string, signal: AbortSignal): Promise<string[] | undefined> {
+  signal.throwIfAborted()
+  const child = spec.spawn({ argv: [executable, 'models'], cwd: spec.cwd, env: spec.env, signal, graceMs: spec.graceMs,
+    stdio: { stdin: 'ignore', stdout: { maxBytes: spec.outputMaxBytes }, stderr: { maxBytes: spec.outputMaxBytes } } })
+  try {
+    const result = await child.done
+    signal.throwIfAborted()
+    const collected = child.collected as Required<SubprocessHandle['collected']>
+    const stdout = collected.stdout.readFrom(0)
+    const stderr = collected.stderr.readFrom(0)
+    if (stdout.lossy || stderr.lossy) throw new Error('Native status exceeded its limit')
+    if (result.exitCode === 1 && stderr.text.includes(ANTIGRAVITY_SIGNED_OUT)) return undefined
+    if (result.exitCode !== 0) throw new Error('Native status unavailable')
+    return stdout.text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0)
+  } finally { await release(child) }
+}
+/**
+ * Project `agy models` lines: each line names one model by its first token,
+ * and the rest of the line, when present, is its display name.
+ * @param lines - the non-empty listing lines.
+ * @returns the models, or `undefined` when a line does not start with a model id.
+ */
+function antigravityModels(lines: readonly string[]): NativeAccountModel[] | undefined {
+  const models: NativeAccountModel[] = []
+  for (const line of lines) {
+    const [id = '', ...rest] = line.split(/\s+/)
+    if (!ANTIGRAVITY_MODEL_ID.test(id)) return undefined
+    models.push({ id, name: rest.length === 0 ? id : rest.join(' ') })
+  }
+  return models
+}
+/**
+ * Native Antigravity CLI driver. The CLI installs outside any package manager
+ * and updates itself, so the deployment names its executable; without one the
+ * product reports unavailable. Sign-in runs `agy acp --login`, whose Google
+ * page shows a code the person pastes back.
+ * @param spec - owning process service and deployment settings.
+ * @param executable - absolute path of the installed `agy`, or `undefined` when none is configured.
+ * @returns native driver, without starting any process.
+ */
+export function antigravityAccountDriver(spec: NativeDriverSpec, executable: string | undefined): NativeAccountDriver {
+  return {
+    provider: 'antigravity', label: 'Antigravity CLI', loginModes: ['browser'], authorizationHosts: ANTIGRAVITY_AUTHORIZATION_HOSTS,
+    async describe(signal) {
+      if (executable === undefined) return { availability: 'unavailable', status: 'unknown' }
+      try { await access(executable) }
+      catch { return { availability: 'unavailable', status: 'unknown' } }
+      const lines = await antigravityListing(spec, executable, signal)
+      if (lines === undefined) return { availability: 'available', status: 'disconnected' }
+      const models = antigravityModels(lines)
+      return { availability: 'available', status: 'connected', ...models === undefined ? {} : { models } }
+    },
+    async login(_mode, signal, notice, prompt) {
+      if (executable === undefined) throw new Error('Native product unavailable')
+      await codePromptSignIn(spec, () => [executable, 'acp', '--login'], {
+        hosts: ANTIGRAVITY_AUTHORIZATION_HOSTS, codePrompt: ANTIGRAVITY_CODE_PROMPT,
+        async confirm() {
+          if (await antigravityListing(spec, executable, signal) === undefined) throw new Error('Native sign-in incomplete')
+        },
+      }, signal, notice, prompt)
     },
   }
 }

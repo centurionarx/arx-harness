@@ -2,7 +2,7 @@
 import type { Branded } from '@arx-ai/arx-brand'
 
 /** Native product that owns its login storage. */
-export type NativeAccountProvider = 'claude-code' | 'codex'
+export type NativeAccountProvider = 'claude-code' | 'codex' | 'antigravity'
 /** Private, unguessable login capability; never included in account listings. */
 export type NativeAccountAttemptId = Branded<'native-account-attempt'>
 /** Login mechanisms supported by the pinned product. */

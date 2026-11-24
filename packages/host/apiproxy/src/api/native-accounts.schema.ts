@@ -8,7 +8,7 @@ import type { RequestPayload, ResponseValue } from './rpc-map.ts'
 import type { Wire } from './rpc.schema.ts'
 /** NativeAccountAttemptId: one brand cast after UUID validation. */
 const attemptId = z.uuid() as unknown as z.ZodType<NativeAccountAttemptId>
-const provider = z.enum(['claude-code', 'codex'])
+const provider = z.enum(['claude-code', 'codex', 'antigravity'])
 const mode = z.enum(['browser', 'device-code'])
 const attempt = z.object({ id: attemptId, provider,
   state: z.enum(['starting', 'waiting', 'connected', 'cancelled', 'expired', 'failed']),

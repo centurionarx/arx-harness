@@ -21,4 +21,11 @@ try {
   ctx.nativeAccounts.submit(codex.id, `${redirect}?code=fixture-callback&state=fixture`)
   while (ctx.nativeAccounts.poll(codex.id).state !== 'connected') await new Promise(resolve => setTimeout(resolve, 5))
   console.log('OpenAI Codex: connected')
+  const antigravity = ctx.nativeAccounts.begin('antigravity')
+  while (ctx.nativeAccounts.poll(antigravity.id).input !== 'code') await new Promise(resolve => setTimeout(resolve, 5))
+  console.log('Antigravity CLI: Google link and code prompt')
+  ctx.nativeAccounts.submit(antigravity.id, 'fixture-code')
+  while (ctx.nativeAccounts.poll(antigravity.id).state !== 'connected') await new Promise(resolve => setTimeout(resolve, 5))
+  const signedIn = (await ctx.nativeAccounts.describe()).find(account => account.provider === 'antigravity')
+  console.log(`Antigravity CLI: ${signedIn?.status ?? 'missing'}, models ${signedIn?.models?.map(model => model.id).join(', ') ?? 'none'}`)
 } finally { await ctx.fiber.dispose() }

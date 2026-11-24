@@ -20,10 +20,22 @@ export interface ChatRouteTarget {
   readonly route: string
 }
 
+/** Native products whose roster feeds a chat route; Antigravity lists its models without one. */
+export type ChatRouteProvider = Exclude<NativeAccountProvider, 'antigravity'>
+
 /** The chat route each native product's roster feeds. */
-export const CHAT_ROUTES: Readonly<Record<NativeAccountProvider, ChatRouteTarget>> = {
+export const CHAT_ROUTES: Readonly<Record<ChatRouteProvider, ChatRouteTarget>> = {
   'claude-code': { ns: 'llm-agent-cli', route: 'claude-subscription' },
   codex: { ns: 'llm-pi-ai', route: 'openai-codex' },
+}
+
+/**
+ * The chat-route product a native product is, if any.
+ * @param provider - the native product.
+ * @returns the provider narrowed to a chat-route product, or `undefined` for a product without a chat route.
+ */
+export function chatRouteProvider(provider: NativeAccountProvider): ChatRouteProvider | undefined {
+  return provider === 'antigravity' ? undefined : provider
 }
 
 /**

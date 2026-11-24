@@ -227,6 +227,14 @@ export interface WebScaffold {
 /** Options for {@link launchWebScaffold}. */
 export interface LaunchOptions {
   /**
+   * Mount the native accounts service with a subprocess double standing in
+   * for the native products: the module at `subprocess` registers the
+   * `subprocess` service inside an isolated group beside the service, so
+   * every other plugin keeps the host's real subprocess service. `config` is
+   * the service's config. Absent, the service stays unmounted.
+   */
+  nativeAccounts?: { subprocess: string; config: Record<string, unknown> }
+  /**
    * Optional product overlay applied after the shipped Web surface and before
    * the scaffold's hermetic test patches, matching the launcher's `--patch`
    * ordering.
@@ -552,8 +560,16 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     { id: 'ui-open-in-app', disabled: options.openInApp !== true },
     // Account status runs the host's own Claude Code and Codex logins, which
     // differ per machine and would reach every Models page golden. Unmounted,
-    // the card renders the same unavailable state on every host.
+    // the card renders the same unavailable state on every host. A scenario
+    // that drives the card mounts the service against a subprocess double.
     { id: 'native-accounts', disabled: true },
+    ...options.nativeAccounts === undefined ? [] : [{ insert: [{
+      id: 'native-accounts-fixture', name: 'cordis:group', group: true, isolate: { subprocess: true as const },
+      config: [
+        { id: 'native-subprocess-fixture', name: options.nativeAccounts.subprocess },
+        { id: 'native-accounts-under-test', name: '@arx-ai/arx-native-accounts', config: options.nativeAccounts.config },
+      ],
+    }] }],
     ...options.agentPresets === undefined
       ? []
       // Never the derived harness-home root: a developer's own presets must not
