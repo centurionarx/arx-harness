@@ -2,7 +2,7 @@ import { IncomingMessage } from 'node:http'
 import { Socket } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { DatabaseSync } from 'node:sqlite'
-import { identityHarness } from '../../../../examples/web-identity/tests/harness.ts'
+import { identityHarness, nextInvalidation } from '../../../../examples/web-identity/tests/harness.ts'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER } from '@arx-ai/arx-web-identity/contract'
 let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
 afterEach(async () => { await fixture?.close(); fixture = undefined })
@@ -31,22 +31,28 @@ describe('native HTTP fences and bounded invalidation', () => {
     await expect(ctx.webIdentityApi.authenticateRequest(original)).rejects.toMatchObject({ code: 'AUTH_ORIGIN' })
   })
   it('limits concurrent polls, handles disconnect and expiry, and rejects missing generations', { timeout: 30000 }, async () => {
-    fixture = await identityHarness({ api: 'user', readyUsers: 1, apiConfig: { invalidationTimeoutMs: 200, maxInvalidationRequestsPerSession: 1 } })
+    fixture = await identityHarness({ api: 'user', readyUsers: 1, apiConfig: { invalidationTimeoutMs: 30000, maxInvalidationRequestsPerSession: 1 } })
     const { ctx, url, users, paths } = fixture, a = users[0]!, state = await ctx.webIdentity.state(a.authority), cookie = AUTH_COOKIE_NAMES.user + '=' + a.token
     const get = (path: string, signal?: AbortSignal) => fetch(url! + path, {
       headers: { cookie }, ...(signal === undefined ? {} : { signal }) })
     for (const query of ['', '?generation=-1', '?generation=NaN'])
       expect((await get('/auth/invalidation' + query)).status).toBe(400)
     expect(await (await get('/auth/invalidation?generation=0')).json()).toMatchObject({ invalidated: true, reason: 'credentials-changed' })
+    // Each step waits for the server's poll state; the deadline of the first poll outlasts the test.
+    const first = nextInvalidation(ctx, a.authority.authSessionId)
     const abort = new AbortController(), pending = get('/auth/invalidation?generation=' + String(state.generation), abort.signal)
     const abandoned = expect(pending).rejects.toBeDefined()
-    await new Promise(resolve => setTimeout(resolve, 25))
+    await first.pending
     expect((await get('/auth/invalidation?generation=' + String(state.generation))).status).toBe(429)
     abort.abort()
     await abandoned
-    await new Promise(resolve => setTimeout(resolve, 25))
+    expect(await first.settled).toMatchObject({ invalidated: true, reason: 'disposed' })
+    // The expiry is detected when the poll's deadline revalidates the session. The session expires right after the
+    // poll is registered, before any timer can run, so a short deadline keeps the test fast without a race.
+    ;(ctx.webIdentityApi as unknown as { config: { invalidationTimeoutMs?: number } }).config.invalidationTimeoutMs = 200
+    const second = nextInvalidation(ctx, a.authority.authSessionId)
     const expiring = get('/auth/invalidation?generation=' + String(state.generation))
-    await new Promise(resolve => setTimeout(resolve, 25))
+    await second.pending
     const db = new DatabaseSync(paths.database)
     db.prepare('UPDATE web_sessions SET expires_at=0 WHERE id=?').run(a.authority.authSessionId)
     db.close()

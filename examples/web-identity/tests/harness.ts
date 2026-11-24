@@ -13,7 +13,8 @@ import HttpServer from '@arx-ai/arx-host-webserver'
 import type { Config as IdentityConfig } from '@arx-ai/arx-web-identity-sqlite'
 import type { Config as ApiConfig } from '@arx-ai/arx-host-web-identity-api'
 import IdentityApi from '@arx-ai/arx-host-web-identity-api'
-import type { AuthAudience, IdentityDelivery, RequestAuthority, WebUserId } from '@arx-ai/arx-web-identity'
+import type { ServerResponse } from 'node:http'
+import type { AuthAudience, AuthInvalidation, IdentityDelivery, RequestAuthority, WebUserId } from '@arx-ai/arx-web-identity'
 export interface IdentityHarnessOptions {
   root?: string
   initialize?: boolean
@@ -145,4 +146,38 @@ export async function identityHarness(options: IdentityHarnessOptions = {}) {
         await rm(root, { recursive: true, force: true })
     } },
   }
+}
+
+/** Private members of the identity API that {@link nextInvalidation} observes. */
+interface InvalidationInternals {
+  pending: Map<string, Set<unknown>>
+  invalidation(response: ServerResponse, authority: RequestAuthority, generation: number): Promise<AuthInvalidation>
+}
+
+/**
+ * Observes the next invalidation poll that the identity API registers for one auth session, so a test orders its
+ * steps against the server's state instead of against elapsed time. Install it before the poll request is sent.
+ * A request that the API answers without registering a poll, such as a 429 or a generation mismatch, is ignored.
+ * @param ctx - Context of an {@link identityHarness} created with `api`.
+ * @param authSessionId - Auth session whose poll is observed.
+ * @returns `pending` settles once the poll waits on the server; `settled` settles with the result the server
+ * returns for it, including the result of a disconnect.
+ */
+export function nextInvalidation(ctx: Context, authSessionId: string): { pending: Promise<undefined>; settled: Promise<AuthInvalidation> } {
+  const api = ctx.webIdentityApi as unknown as InvalidationInternals
+  const original = api.invalidation.bind(api)
+  const pending = Promise.withResolvers<undefined>(), settled = Promise.withResolvers<AuthInvalidation>()
+  let observed = false
+  // The wrapper stays installed after its poll and passes calls through, so observers of other sessions keep working.
+  api.invalidation = (response, authority, generation) => {
+    const before = api.pending.get(authSessionId)?.size ?? 0
+    const result = original(response, authority, generation)
+    if (!observed && authority.authSessionId === authSessionId && (api.pending.get(authSessionId)?.size ?? 0) > before) {
+      observed = true
+      pending.resolve(undefined)
+      result.then(settled.resolve, settled.reject)
+    }
+    return result
+  }
+  return { pending: pending.promise, settled: settled.promise }
 }

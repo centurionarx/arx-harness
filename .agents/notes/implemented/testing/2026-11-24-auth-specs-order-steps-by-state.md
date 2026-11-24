@@ -1,0 +1,40 @@
+# Agent Note: AUTH specs order their steps by observed state, not by elapsed time
+
+Status: implemented
+
+## Problem
+
+On 2026-11-23 four AUTH-area tests failed under CI load, each in a different run ([the previous fixes](2026-11-23-native-supervisor-specs-hold-the-mount.md)). A sweep of `packages/host/isolated-project-runtime/tests`, `packages/identity/*/tests`, `packages/client/ui-auth/tests`, `packages/host/web-identity-api/tests`, `examples/web-identity/tests` and `examples/owned-project-storage` found more tests of the same classes. Each candidate below was made to fail on an idle 4-core Linux machine by an injected delay at the suspected step; CPU load alone (six to twelve busy processes beside the run) did not fail any of them in two to four runs.
+
+- [stream-deadline.spec.ts](../../../../packages/host/isolated-project-runtime/tests/stream-deadline.spec.ts) sets `requestTimeoutMs` to 50 ms, and four of its five tests need the stream's response headers to arrive within that limit. A 60 ms stall in the supervisor fixture before it writes the headers failed those four tests.
+- The three `quiet-expiry` specs of `web-identity-sqlite`, two tests of [idle-native-worker.host.spec.ts](../../../../packages/host/isolated-project-runtime/tests/idle-native-worker.host.spec.ts) plus its `scheduleQuietClock`, one test of [native-operation-cancel.host.spec.ts](../../../../packages/host/isolated-project-runtime/tests/native-operation-cancel.host.spec.ts) and one of [ownership-publication.host.spec.ts](../../../../packages/identity/project-storage/tests/ownership-publication.host.spec.ts) mock `Date.now` as real time plus an offset that leaves 30 to 250 ms before an idle deadline, and then await several identity operations that must finish before it. A 350 ms stall after the clock was installed failed all eleven tests.
+- [api.spec.ts](../../../../packages/host/web-identity-api/tests/api.spec.ts), [admin.spec.ts](../../../../packages/host/web-identity-api/tests/admin.spec.ts), [fences.spec.ts](../../../../packages/host/web-identity-api/tests/fences.spec.ts) and `quiet-expiry-api.spec.ts` send an invalidation poll, sleep 20 or 25 ms, and then log out, send a second poll or expire the session, assuming the poll is already pending on the server. Three of them give the poll a 100 or 200 ms deadline that must not end before the event. Delaying the poll's arrival at the handler by 60 ms failed the first three.
+- Two tests of [multi-workspace-routing.spec.ts](../../../../packages/host/isolated-project-runtime/tests/multi-workspace-routing.spec.ts) open a downlink, sleep 20 ms, and quiesce the user or expire the session, which ends only downlinks already registered. Delaying the stream's revalidation by 100 ms left both tests waiting until their timeout.
+
+## Decision
+
+Each step waits for the state it needs, or the deadline it tests moves only when the test moves it.
+
+- `stream-deadline.spec.ts` installs a fake clock for `setTimeout`, `clearTimeout` and `AbortSignal.timeout` after its setup, so `requestTimeoutMs` stays 50 ms but elapses only when the test advances the clock. Every `setTimeout` created during a test is fake, including identity and HTTP client timers, and none of them is due within the advances; socket I/O, SQLite and the fixture keep real time. Each advance follows an observed state: a first frame read from the stream, a completed attach request, or the silent supervisor having received the stream request. `recordCancels(runtime)` wraps the runtime's private `cancel` and records each trigger; an elapsed deadline reaches it within the microtasks that follow, so after one turn of the event loop the record is complete. The silent-supervisor test asserts that no cancellation has started 1 ms before the deadline and that one has started at it, replacing the elapsed-time bound; the frameless test asserts that none has started after four times the deadline.
+- The `Date.now` mocks above return a fixed value. The clock stays before the deadline while the test's steps run and is set to the deadline after them, so the expiry timer finds the session due on its next run. The deadline comparison in `web-identity-sqlite` is `<=`.
+- The identity harness exports `nextInvalidation(ctx, authSessionId)`. It wraps the API's private `invalidation` method and settles `pending` once a poll of that session is registered and `settled` with that poll's result. The tests await `pending` instead of sleeping. In `api.spec.ts`, `fences.spec.ts` and `quiet-expiry-api.spec.ts` the polls that wait for an event have a 30-second deadline, set through the API's private `config` where the test also needs the short default, so their result can come only from that event; `admin.spec.ts` removes the value and uses the 25-second default. The expiry poll of `fences.spec.ts` keeps 200 ms because its session expires synchronously after the registration, and that expiry is detected only when the poll's deadline revalidates the session.
+- `multi-workspace-routing.spec.ts` awaits `downlinkRegistered(runtime)`, which wraps the runtime's private `downlinks.add` for one call.
+
+Every fixed test passes with the same injected delays, and stalls up to 500 ms for the stream deadline. Reverted source mutations still fail the changed specs: a stream header timer that is never cleared fails three `stream-deadline` tests, a header timer of half the limit fails the silent-supervisor test, and an expiry sweep that runs 2 seconds early fails the backwards-clock test of `quiet-expiry.spec.ts`.
+
+## Alternatives considered
+
+**Raise `requestTimeoutMs`, the margins or the sleeps.** Each larger value makes a failure rarer, not impossible, and lengthens the test.
+
+**Poll private state with `vi.waitFor`.** A poll interval adds delay and a limit; a wrapped method settles at the registration itself.
+
+**Fake every timer in the stream deadline tests.** Faking `setTimeout` before the setup also stops harness and identity timers that the setup needs; installing the fake clock after the setup limits it to the runtime's deadlines.
+
+**Start the `extended-http.client.spec.ts` authority once per file.** Its admin test needs an admin fixture, so the two user tests could share at most one start. Under ten busy processes each of the eleven `client/ui-auth` HTTP tests took about 17 seconds including the start, below the 30-second budget of every CI unit lane, and no run failed. Without a failure to fix it is deferred.
+
+## Consequences
+
+- Candidates that did not fail under load or a plausible injected delay are unchanged: the 50 ms sleeps before a unary request in ten `isolated-project-runtime` tests, the one-second `vi.waitFor` waits of `native-supervisor-stop`, `idle-native-worker`, `broker-http` and `native-operation-cancel`, the one-second Testing Library waits over HTTP in `client/ui-auth`, and the frozen clock of `idle-completed-activity.host.spec.ts`, which an injected login gap from 0 to 1200 ms did not fail.
+- A 50 ms sleep before a unary request cannot lose the stream: the stream's authorization starts first and is the cheaper one, and `streams()` attaches every live lease when it registers.
+- `nextInvalidation`, `downlinkRegistered` and `recordCancels` read private members of the identity API and the runtime. A rename of `invalidation`, `downlinks` or `cancel` fails those specs at the wrapped call; a rename of `pending` makes each poll answer 500, and the spec fails at its test timeout. A rename of the API's `invalidationTimeoutMs` makes the assignment in `api.spec.ts` and `fences.spec.ts` ineffective, and those polls fall back to the harness's 100 ms deadline.
+- Every CI unit lane sets `ARX_COVERAGE_TEST_TIMEOUT_MS` to 30000; a local `pnpm run test` keeps the Vitest defaults. The setup hooks that still need more than the 10-second hook default under load are the `client/ui-auth` HTTP authority start and the seeded `beforeAll` of the `isolated-project-runtime` specs, which ended at 10 seconds under twelve busy processes in `stream-deadline.spec.ts`.

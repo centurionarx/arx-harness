@@ -1,6 +1,6 @@
 import type { AdminUserSummary } from '@arx-ai/arx-web-identity/contract'
 import { afterEach, describe, expect, it } from 'vitest'
-import { identityHarness } from '../../../../examples/web-identity/tests/harness.ts'
+import { identityHarness, nextInvalidation } from '../../../../examples/web-identity/tests/harness.ts'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER, parseAuthState, parseAuthInvalidation } from '@arx-ai/arx-web-identity/contract'
 import { identityProblem } from '../src/index.ts'
 let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
@@ -72,8 +72,12 @@ describe('native identity HTTP real composition', () => {
     const forbiddenEmail = await mutation('/admin/users/' + user.userId + '/invitation-email', { email: 'admin@fixture.test' }, cookie, state.csrfToken, 'PATCH')
     expect(forbiddenEmail.status).toBe(403)
     expect((await mutation('/admin/users/' + state.principal.userId + '/status', { status: 'BLOCKED' }, cookie, state.csrfToken, 'PATCH')).status).toBe(403)
+    // This poll ends with the logout: its deadline outlasts the test, and the logout waits until the poll is pending.
+    ;(ctx.webIdentityApi as unknown as { config: { invalidationTimeoutMs?: number } }).config.invalidationTimeoutMs = 30000
+    const session = await ctx.webIdentity.authenticate(cookie.slice(cookie.indexOf('=') + 1), 'admin')
+    const registered = nextInvalidation(ctx, session.authSessionId)
     const invalidation = get('/auth/invalidation?generation=' + String(state.generation), cookie)
-    await new Promise(resolve => setTimeout(resolve, 20))
+    await registered.pending
     const logout = await mutation('/auth/logout', {}, cookie, state.csrfToken)
     expect(logout.status).toBe(204)
     expect(logout.headers.get('Set-Cookie')).toContain('Max-Age=0')

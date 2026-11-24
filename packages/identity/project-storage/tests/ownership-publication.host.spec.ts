@@ -336,12 +336,14 @@ describe('current ownership at the physical read and HTTP publication points', (
       if (row === undefined) throw new Error('real publisher idle deadline unavailable')
       const idle = Number(row.idle_expires_at)
       expect(idle).toBeLessThan(Number(row.expires_at))
-      const realNow = Date.now.bind(Date), offset = idle - realNow() - 250
-      const clock = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+      // The clock stays 250 ms before the publisher's idle deadline until the steps below finish, then moves to it.
+      let now = idle - 250
+      const clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
       restoreDate = () => { clock.mockRestore() }
       await own.h.ctx.webIdentity.revalidate(second.authority, { activity: true })
       await own.h.ctx.webIdentity.revalidate(other.authority, { activity: true })
       await own.h.ctx.webIdentity.authenticate(own.account.token, 'user')
+      now = idle
       // The genuine provider timer, with no new A request/frame/cancel, closes
       // only the publisher whose issued authSessionId reached its deadline.
       await firstClosed.promise

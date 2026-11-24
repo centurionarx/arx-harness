@@ -245,11 +245,14 @@ describe('native supervisor cancellation by operation id', () => {
       return response
     })
     await harness.ctx.webIdentity.revalidate(other, { activity: true })
-    const realNow = Date.now.bind(Date), offset = idleDeadline(own.authority) - realNow() - 250
-    vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+    // The clock stays 250 ms before A's idle deadline until the steps below finish, then moves to the deadline.
+    const deadline = idleDeadline(own.authority)
+    let now = deadline - 250
+    vi.spyOn(Date, 'now').mockImplementation(() => now)
     await harness.ctx.webIdentity.revalidate(other, { activity: true })
     // Passive admission reschedules the real expiry timer under the shifted clock.
     await harness.ctx.webIdentity.authenticate(account.token, 'user')
+    now = deadline
     await receipt
     expect(atReceipt).toEqual([{ workerStopped: true, turnAborted: true }])
   })
