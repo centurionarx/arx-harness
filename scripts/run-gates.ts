@@ -749,6 +749,7 @@ function docSyncLeafGates(options: {
     pnpmScript('skill-invocation-metadata', 'verify-skill-invocation-metadata', { label: 'skill invocation metadata' }),
     pnpmScript('doc-budgets', 'verify-doc-budgets', { label: 'doc budgets' }),
     pnpmScript('chinese-text', 'verify-chinese-text', { label: 'Chinese text' }),
+    pnpmScript('vendor-name', 'verify-vendor-name', { label: 'vendor name' }),
     pnpmExec('docs-site-projection', ['vitest', 'run', 'scripts/project-doc-site.spec.ts', 'scripts/verify-doc-site-fragments.spec.ts'], {
       label: 'documentation site checks',
     }),

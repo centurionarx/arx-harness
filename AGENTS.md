@@ -102,7 +102,7 @@ Real-API tests and demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, 
 
 ## Conventions
 
-- **Naming**: the organization is Centurionarx; the product is arx / arx Harness. The model vendor's name appears only in model-access configuration ([brand naming](.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)).
+- **Naming**: the organization is Centurionarx; the product is arx / arx Harness. The model vendor's name appears only in model-access configuration and license notices; `verify-vendor-name` enforces it ([brand naming](.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)).
 - **Chinese text becomes Brazilian Portuguese** in every file; English prose stays English. No tracked file holds a Han character: code or a test that needs one writes it as a `\u` escape, and other width or layout tests use non-Han wide characters; `verify-chinese-text` fails on any occurrence, with no exception list ([rule](.agents/notes/implemented/process/2026-09-29-chinese-text-becomes-brazilian-portuguese.md)).
 - **A long session names its handoff point.** At session start and after each compaction, check its length; once compacted or past three PRs, tell the owner when to continue in a new session (pushes validated, before the next multi-PR task) and leave a handoff summary ([rule](.agents/notes/implemented/process/2026-09-29-a-long-session-names-its-handoff-point.md)).
 
