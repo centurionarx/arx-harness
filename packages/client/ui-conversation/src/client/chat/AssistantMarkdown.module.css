@@ -20,7 +20,7 @@
 /* Wide markdown tables (the renderer's ≥4-column md-table-wide hook) span
    the whole transcript width instead of clipping at the 748px message
    column, while the table content keeps starting at its normal x (the lead
-   padding compensates the negative margin) — deepsuite chat TableWrapper
+   padding compensates the negative margin) — reference chat client TableWrapper
    parity, with 100cqw (the ChatView scroll container) standing in for its
    JS-measured --dsl-virtual-list-width. `--arx-table-spare` clamps to zero
    when the transcript is narrower than the message column, so narrow

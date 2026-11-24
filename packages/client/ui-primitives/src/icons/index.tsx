@@ -1,6 +1,6 @@
 /**
  * ic_ds_* icon set for the arx web UI. All glyphs render fill="currentColor"
- * and take {size, className}. Batch A mirrors the deepsuite icon library
+ * and take {size, className}. Batch A mirrors the reference design system's icon library
  * (same figma source); batch B glyphs are harness-only figma extracts.
  */
 import type { IconProps } from './props.ts'
