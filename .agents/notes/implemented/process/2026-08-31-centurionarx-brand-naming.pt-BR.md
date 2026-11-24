@@ -6,7 +6,7 @@ Status: implemented
 
 ## Problem
 
-O produto foi renomeado para arx, mas o nome do fornecedor do modelo ainda aparecia em cerca de 750 arquivos carregando três sentidos diferentes: a organização apresentada como responsável pelo produto, o provedor de LLM contra o qual o harness é executado e as credenciais que alcançam esse provedor. Nada distinguia esses sentidos, então superfícies de produto — o site, strings de UI, personas do agente, documentação — ainda apresentavam o harness como do antigo dono, enquanto um find-and-replace indiscriminado teria quebrado exatamente a configuração que alcança o modelo.
+O produto foi renomeado para arx, mas o nome do fornecedor do modelo ainda aparecia em cerca de 750 arquivos carregando três sentidos diferentes: a organização apresentada como responsável pelo produto, o provedor de LLM contra o qual o harness é executado e as credenciais que alcançam esse provedor. Nada distinguia esses sentidos, então superfícies de produto — o site, strings de UI, personas do agente, documentação — ainda apresentavam o harness sob a marca anterior, enquanto um find-and-replace indiscriminado teria quebrado exatamente a configuração que alcança o modelo.
 
 ## Decision
 
