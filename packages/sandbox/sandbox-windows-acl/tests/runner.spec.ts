@@ -7,6 +7,7 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -30,6 +31,191 @@ function runRunner(args: string[], timeoutMs = 30_000) {
     timeout: timeoutMs,
     encoding: 'utf8',
   })
+}
+
+/** One probe's outcome in the outside-the-roots rights matrix. */
+interface ProbeCell {
+  result: string
+  detail: string
+  stillExists?: boolean
+  content?: string
+}
+
+// Files the outside-the-roots matrix plants in a directory the runner user
+// fully controls; each probe targets its own victim.
+const OUTSIDE_VICTIM_FILES = [
+  'v-pwsh-remove.txt', 'v-cmd-del.txt', 'v-dotnet.txt', 'v-node-unlink.txt', 'v-rename.txt',
+  'v-move.txt', 'v-masks.txt', 'v-dacl.txt', 'v-icacls.txt',
+]
+
+// The confined Node half of the matrix (CommonJS, written to the scratch
+// directory at run time). argv: koffi entry path, outside directory,
+// workspace directory, mode. It prints one `PROBE-JSON` line and never
+// throws, so one native run reports every probe. The self-relative security
+// descriptor grants Everyone FILE_ALL_ACCESS: SECURITY_DESCRIPTOR_RELATIVE
+// (20 bytes) + ACL header (8) + ACCESS_ALLOWED_ACE (8) + S-1-1-0 (12).
+const OUTSIDE_RIGHTS_PROBE = String.raw`'use strict'
+const fs = require('node:fs')
+const path = require('node:path')
+const [koffiEntry, outside, workspace, mode] = process.argv.slice(2)
+const results = {}
+const errorCell = (error) => ({
+  result: error && (error.code === 'EPERM' || error.code === 'EACCES') ? 'DENIED' : 'ERROR',
+  detail: String(error && error.code) + ': ' + String(error && error.message),
+})
+const fsProbe = (name, operation) => {
+  try { operation(); results[name] = { result: 'OK', detail: '' } } catch (error) { results[name] = errorCell(error) }
+}
+fsProbe('node-unlink', () => fs.unlinkSync(path.join(outside, 'v-node-unlink.txt')))
+fsProbe('rename-in-place', () => fs.renameSync(path.join(outside, 'v-rename.txt'), path.join(outside, 'v-rename-renamed.txt')))
+fsProbe('move-into-workspace', () => fs.renameSync(path.join(outside, 'v-move.txt'), path.join(workspace, 'moved-from-outside-' + mode + '.txt')))
+fsProbe('rmdir', () => fs.rmdirSync(path.join(outside, 'v-empty-dir')))
+
+let api
+try {
+  const koffi = require(koffiEntry)
+  const kernel32 = koffi.load('kernel32.dll')
+  const advapi32 = koffi.load('advapi32.dll')
+  const PVOID = koffi.pointer('void')
+  api = {
+    createFileW: kernel32.func('__stdcall', 'CreateFileW', PVOID, ['str16', 'uint32', 'uint32', PVOID, 'uint32', 'uint32', PVOID]),
+    openProcess: kernel32.func('__stdcall', 'OpenProcess', PVOID, ['uint32', 'int', 'uint32']),
+    closeHandle: kernel32.func('__stdcall', 'CloseHandle', 'int', [PVOID]),
+    getLastError: kernel32.func('__stdcall', 'GetLastError', 'uint32', []),
+    setKernelObjectSecurity: advapi32.func('__stdcall', 'SetKernelObjectSecurity', 'int', [PVOID, 'uint32', PVOID]),
+  }
+  results['koffi-load'] = { result: 'OK', detail: koffiEntry }
+} catch (error) {
+  results['koffi-load'] = { result: 'ERROR', detail: String(error && error.message) }
+}
+const failed = (handle) => handle === null || handle === undefined || handle === 0n || handle === -1n
+  || handle === 0xFFFFFFFFFFFFFFFFn || handle === 0 || handle === -1
+const win32Cell = (label) => {
+  const code = api.getLastError()
+  return { result: code === 5 ? 'DENIED' : 'ERROR', detail: label + ' Win32 ' + code }
+}
+const nativeProbe = (name, body) => {
+  if (api === undefined) { results[name] = { result: 'ERROR', detail: 'koffi unavailable' }; return }
+  try { results[name] = body() } catch (error) { results[name] = { result: 'ERROR', detail: String(error && error.message) } }
+}
+const openProbe = (name, target, access, directory) => nativeProbe(name, () => {
+  const handle = api.createFileW(target, access, 7, null, 3, directory ? 0x02000000 : 0, null)
+  if (failed(handle)) return win32Cell('CreateFileW(0x' + access.toString(16) + ')')
+  api.closeHandle(handle)
+  return { result: 'OK', detail: 'CreateFileW granted 0x' + access.toString(16) }
+})
+const masks = path.join(outside, 'v-masks.txt')
+openProbe('open-file-write-data', masks, 0x2, false)
+openProbe('open-file-read-control', masks, 0x20000, false)
+openProbe('open-file-delete', masks, 0x10000, false)
+openProbe('open-file-write-dac', masks, 0x40000, false)
+openProbe('open-file-write-owner', masks, 0x80000, false)
+openProbe('open-dir-delete-child', outside, 0x40, true)
+
+const everyoneFullAccess = () => {
+  const sd = Buffer.alloc(48)
+  sd.writeUInt8(1, 0)
+  sd.writeUInt16LE(0x8004, 2)
+  sd.writeUInt32LE(20, 16)
+  sd.writeUInt8(2, 20)
+  sd.writeUInt16LE(28, 22)
+  sd.writeUInt16LE(1, 24)
+  sd.writeUInt8(0, 28)
+  sd.writeUInt16LE(20, 30)
+  sd.writeUInt32LE(0x1F01FF, 32)
+  sd.writeUInt8(1, 36)
+  sd.writeUInt8(1, 37)
+  sd.writeUInt8(1, 43)
+  sd.writeUInt32LE(0, 44)
+  return sd
+}
+nativeProbe('dacl-rewrite-then-write', () => {
+  const target = path.join(outside, 'v-dacl.txt')
+  const handle = api.createFileW(target, 0x40000, 7, null, 3, 0, null)
+  if (failed(handle)) return win32Cell('CreateFileW(WRITE_DAC)')
+  const applied = api.setKernelObjectSecurity(handle, 4, everyoneFullAccess())
+  const refused = applied === 0 ? win32Cell('SetKernelObjectSecurity') : undefined
+  api.closeHandle(handle)
+  if (refused !== undefined) return refused
+  try {
+    fs.writeFileSync(target, 'escaped')
+    return { result: 'OK', detail: 'DACL replaced with Everyone:FA, then the file was written' }
+  } catch (error) {
+    return { result: 'PARTIAL', detail: 'DACL replaced with Everyone:FA; write failed: ' + String(error && error.code) }
+  }
+})
+const processProbe = (name, access) => nativeProbe(name, () => {
+  const handle = api.openProcess(access, 0, process.ppid)
+  if (failed(handle)) return win32Cell('OpenProcess(0x' + access.toString(16) + ')')
+  api.closeHandle(handle)
+  return { result: 'OK', detail: 'OpenProcess granted 0x' + access.toString(16) + ' on the runner pid ' + process.ppid }
+})
+processProbe('process-write-dac', 0x40000)
+processProbe('process-vm-write', 0x28)
+console.log('PROBE-JSON ' + JSON.stringify(results))
+`
+
+/**
+ * The confined PowerShell half of the matrix: one `PROBE <name> <result>
+ * <detail>` line per probe. Read-only PowerShell runs in ConstrainedLanguage,
+ * which refuses `[System.IO.File]::Delete`, so that probe runs only under
+ * workspace-write.
+ * @param outside - the directory holding the victims.
+ * @param mode - the confined mode the script runs under.
+ * @returns the `-Command` script.
+ */
+function outsidePwshProbe(outside: string, mode: 'read-only' | 'workspace-write'): string {
+  // Single-quoted PowerShell only: the script crosses two command-line
+  // quoting layers (Node spawn, then the runner's CreateProcessAsUserW).
+  const quoted = (name: string) => `'${join(outside, name)}'`
+  const flat = (expression: string) => `(${expression} -replace '\\s+',' ')`
+  return [
+    "$ErrorActionPreference='Continue';",
+    "('PROBE language-mode INFO ' + $ExecutionContext.SessionState.LanguageMode);",
+    `try{Remove-Item -LiteralPath ${quoted('v-pwsh-remove.txt')} -Force -ErrorAction Stop;'PROBE pwsh-remove-item OK'}catch{'PROBE pwsh-remove-item FAILED ' + ${flat('$_.Exception.Message')}};`,
+    `$p=${quoted('v-cmd-del.txt')};$o=(cmd.exe /d /c del /q $p 2>&1 | Out-String);('PROBE cmd-del EXIT' + $LASTEXITCODE + ' ' + ${flat('$o')});`,
+    mode === 'workspace-write'
+      ? `try{[System.IO.File]::Delete(${quoted('v-dotnet.txt')});'PROBE dotnet-file-delete OK'}catch{'PROBE dotnet-file-delete FAILED ' + ${flat('$_.Exception.Message')}};`
+      : "'PROBE dotnet-file-delete NOT-RUN ConstrainedLanguage refuses System.IO.File';",
+    `$p=${quoted('v-icacls.txt')};$o=(icacls.exe $p /grant '*S-1-1-0:(M)' 2>&1 | Out-String);$c=$LASTEXITCODE;$w='not attempted';`
+      + "if($c -eq 0){try{Set-Content -LiteralPath $p -Value escaped -ErrorAction Stop;$w='written'}catch{$w=$_.Exception.Message}};"
+      + `$r='DENIED';if($c -eq 0){$r='GRANTED'};('PROBE icacls-grant-then-write ' + $r + ' icacls exit ' + $c + '; ' + ${flat('$o')} + '; write: ' + ${flat('$w')});`,
+  ].join('')
+}
+
+/**
+ * Vitest's partial-object matcher, typed as the opaque expectation it is.
+ * @param fields - the fields the observed cell must carry.
+ * @returns the asymmetric matcher.
+ */
+function containing(fields: Partial<ProbeCell>): unknown {
+  return expect.objectContaining(fields)
+}
+
+/**
+ * Parse both halves' output into probe cells (process-boundary JSON and lines).
+ * @param stdout - the confined run's captured stdout.
+ * @returns the probe cells keyed by probe name.
+ */
+function parseProbeOutput(stdout: string): Record<string, ProbeCell> {
+  const cells: Record<string, ProbeCell> = {}
+  for (const rawLine of stdout.split('\n')) {
+    const line = rawLine.replace(/\r$/, '')
+    const json = /^PROBE-JSON (.*)$/.exec(line)
+    if (json !== null) {
+      const parsed: unknown = JSON.parse(json[1] ?? '{}')
+      if (typeof parsed === 'object' && parsed !== null) {
+        for (const [name, value] of Object.entries(parsed)) {
+          const cell = value as { result?: unknown; detail?: unknown }
+          cells[name] = { result: String(cell.result), detail: String(cell.detail) }
+        }
+      }
+      continue
+    }
+    const probe = /^PROBE (\S+) (\S+) ?(.*)$/.exec(line)
+    if (probe !== null) cells[probe[1] ?? ''] = { result: probe[2] ?? '', detail: probe[3] ?? '' }
+  }
+  return cells
 }
 
 describe.skipIf(!isWin32 || !pwshAvailable())('windows-acl runner', () => {
@@ -163,6 +349,91 @@ describe.skipIf(!isWin32 || !pwshAvailable())('windows-acl runner', () => {
     expect(existsSync(victimFile)).toBe(false)
     expect(existsSync(renamedDir)).toBe(true)
   }, 30_000)
+
+  it('outside the granted roots: deletion, renames, and DACL rewrites are denied under BOTH modes', () => {
+    // WRITE_RESTRICTED considers the restricting SIDs only for write access,
+    // and FILE_GENERIC_WRITE excludes DELETE, FILE_DELETE_CHILD, WRITE_DAC,
+    // and WRITE_OWNER. The matrix exercises each of those rights, and the
+    // tools that use them, on victims in a directory the runner user fully
+    // controls outside every granted root, plus WRITE_DAC and VM-write opens
+    // on the runner process. Every probe must be denied and every victim
+    // must keep its content; the failure message prints each probe's
+    // Windows response.
+    const probeScript = join(scratchRoot, 'outside-rights-probe.cjs')
+    writeFileSync(probeScript, OUTSIDE_RIGHTS_PROBE)
+    const koffiEntry = createRequire(import.meta.url).resolve('koffi')
+    const observed: Record<string, Record<string, ProbeCell>> = {}
+    const expected: Record<string, Record<string, unknown>> = {}
+    const transcript: string[] = []
+    for (const mode of ['read-only', 'workspace-write'] as const) {
+      const outside = mkdtempSync(join(scratchRoot, `outside-${mode}-`))
+      const control = join(outside, 'control.txt')
+      writeFileSync(control, 'original')
+      rmSync(control) // precondition: the unconfined runner user may delete here
+      for (const name of OUTSIDE_VICTIM_FILES) writeFileSync(join(outside, name), 'original')
+      mkdirSync(join(outside, 'v-empty-dir'))
+
+      const runnerPrefix = ['--workspace', writableDir, '--temp', isolatedTemp, '--mode', mode, '--']
+      const pwshRun = runRunner([...runnerPrefix, 'pwsh', '/NoLogo', '/NonInteractive', '/NoProfile', '/Command', outsidePwshProbe(outside, mode)])
+      const nodeRun = runRunner([...runnerPrefix, process.execPath, probeScript, koffiEntry, outside, writableDir, mode])
+      for (const [half, run] of [['pwsh', pwshRun], ['node', nodeRun]] as const) {
+        transcript.push(`[${mode}] ${half} status=${String(run.status)} signal=${String(run.signal)} error=${String(run.error?.message)}`)
+        transcript.push(`[${mode}] ${half} stdout: ${run.stdout.trim()}`)
+        if (run.stderr.trim() !== '') transcript.push(`[${mode}] ${half} stderr: ${run.stderr.trim().slice(0, 2000)}`)
+      }
+
+      const cells = { ...parseProbeOutput(pwshRun.stdout), ...parseProbeOutput(nodeRun.stdout) }
+      const cell = (name: string): ProbeCell => cells[name] ?? { result: 'MISSING', detail: 'the probe printed no line' }
+      const survives = (name: string) => existsSync(join(outside, name))
+      const content = (name: string) => existsSync(join(outside, name)) ? readFileSync(join(outside, name), 'utf8') : '<deleted>'
+      observed[mode] = {
+        'runner-exit': { result: `pwsh ${String(pwshRun.status)} node ${String(nodeRun.status)}`, detail: '' },
+        'pwsh-remove-item': { ...cell('pwsh-remove-item'), stillExists: survives('v-pwsh-remove.txt') },
+        'cmd-del': { ...cell('cmd-del'), stillExists: survives('v-cmd-del.txt') },
+        'dotnet-file-delete': { ...cell('dotnet-file-delete'), stillExists: survives('v-dotnet.txt') },
+        'node-unlink': { ...cell('node-unlink'), stillExists: survives('v-node-unlink.txt') },
+        'rename-in-place': { ...cell('rename-in-place'), stillExists: survives('v-rename.txt') },
+        'move-into-workspace': { ...cell('move-into-workspace'), stillExists: survives('v-move.txt') },
+        'rmdir': { ...cell('rmdir'), stillExists: survives('v-empty-dir') },
+        'open-file-write-data': cell('open-file-write-data'),
+        'open-file-delete': cell('open-file-delete'),
+        'open-file-write-dac': cell('open-file-write-dac'),
+        'open-file-write-owner': cell('open-file-write-owner'),
+        'open-dir-delete-child': cell('open-dir-delete-child'),
+        'dacl-rewrite-then-write': { ...cell('dacl-rewrite-then-write'), content: content('v-dacl.txt') },
+        'icacls-grant-then-write': { ...cell('icacls-grant-then-write'), content: content('v-icacls.txt') },
+        'process-write-dac': cell('process-write-dac'),
+        'process-vm-write': cell('process-vm-write'),
+      }
+      const survived = containing({ stillExists: true })
+      const denied = containing({ result: 'DENIED' })
+      expected[mode] = {
+        'runner-exit': containing({ result: 'pwsh 0 node 0' }),
+        'pwsh-remove-item': survived,
+        'cmd-del': survived,
+        'dotnet-file-delete': survived,
+        'node-unlink': survived,
+        'rename-in-place': survived,
+        'move-into-workspace': survived,
+        'rmdir': survived,
+        'open-file-write-data': denied,
+        'open-file-delete': denied,
+        'open-file-write-dac': denied,
+        'open-file-write-owner': denied,
+        'open-dir-delete-child': denied,
+        'dacl-rewrite-then-write': containing({ result: 'DENIED', content: 'original' }),
+        'icacls-grant-then-write': containing({ result: 'DENIED', content: 'original' }),
+        'process-write-dac': denied,
+        'process-vm-write': denied,
+      }
+      for (const info of ['language-mode', 'koffi-load', 'open-file-read-control']) {
+        transcript.push(`[${mode}] info ${info}: ${cell(info).result} ${cell(info).detail}`)
+      }
+    }
+    const matrix = Object.entries(observed).flatMap(([mode, rows]) => Object.entries(rows).map(([probe, row]) =>
+      `${mode} | ${probe} | ${row.result} | ${row.stillExists === undefined ? '' : `stillExists=${String(row.stillExists)}`}${row.content === undefined ? '' : `content=${JSON.stringify(row.content)}`} | ${row.detail}`))
+    expect(observed, ['Outside-the-roots rights matrix:', ...matrix, '', 'Runs:', ...transcript].join('\n')).toEqual(expected)
+  }, 120_000)
 
   it('paired SIDs: the runner trusts caller-owned private-temp grants and materializes nothing itself', () => {
     const seamWorkspace = join(scratchRoot, 'seam-workspace')
