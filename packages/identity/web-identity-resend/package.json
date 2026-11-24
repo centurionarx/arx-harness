@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-web-identity-resend",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "description": "Native web identity web-identity-resend",
   "type": "module",
   "main": "lib/index.js",

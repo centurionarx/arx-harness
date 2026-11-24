@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-client-slots",
   "description": "Neutral Cordis slot provider and React-free store engine",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "publishConfig": {
     "access": "public"
   },
