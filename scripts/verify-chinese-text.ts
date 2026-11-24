@@ -57,17 +57,33 @@ export function scannablePaths(lsFiles: string): string[] {
   return paths
 }
 
-if (import.meta.main) {
-  const lsFiles = execFileSync('git', ['-C', root, 'ls-files', '-s', '-z'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+/**
+ * Scan every tracked regular text file of a checkout, in path order.
+ * @param checkout - absolute path of the repository root.
+ * @param check - reports the problems one file holds, given its repository-relative path and text.
+ * @returns the number of text files scanned and every reported problem.
+ */
+export function scanTrackedText(
+  checkout: string,
+  check: (path: string, text: string) => readonly string[],
+): { scanned: number; problems: string[] } {
+  const lsFiles = execFileSync('git', ['-C', checkout, 'ls-files', '-s', '-z'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
   const problems: string[] = []
   let scanned = 0
   for (const path of scannablePaths(lsFiles).sort((a, b) => a.localeCompare(b))) {
-    const text = scannableText(readFileSync(resolve(root, path)))
+    const text = scannableText(readFileSync(resolve(checkout, path)))
     if (text === undefined) continue
     scanned += 1
-    const problem = findChineseText(path, text)
-    if (problem !== undefined) problems.push(problem)
+    problems.push(...check(path, text))
   }
+  return { scanned, problems }
+}
+
+if (import.meta.main) {
+  const { scanned, problems } = scanTrackedText(root, (path, text) => {
+    const problem = findChineseText(path, text)
+    return problem === undefined ? [] : [problem]
+  })
   if (problems.length > 0) {
     console.error('verify-chinese-text failed:\n')
     for (const problem of problems) console.error(`  ${problem}`)

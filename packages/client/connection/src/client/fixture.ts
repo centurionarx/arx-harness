@@ -78,7 +78,7 @@ const MARKDOWN_FIXTURE = [
   '| history | rendered |',
   '| streaming | stable |',
   '',
-  '[DeepSeek](https://www.deepseek.com)',
+  '[arx Harness](https://example.com)',
   '',
   '```ts',
   'const markdown = true',
@@ -262,11 +262,11 @@ const WEB_SEARCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'sear
       publishedAt: '2026-07-01',
     },
     {
-      url: 'https://www.deepseek.com/blog/harness-architecture',
+      url: 'https://example.com/blog/harness-architecture',
       snippet: 'The capability-seam pattern splits each capability into interface, implementation, and consumer packages.',
     },
     {
-      url: 'https://docs.deepseek.com/harness/plugins',
+      url: 'https://docs.example.com/harness/plugins',
       title: 'Writing a harness plugin',
       publishedAt: '2026-06-15',
     },
@@ -276,7 +276,7 @@ const WEB_SEARCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'sear
 
 /** The `web_fetch` result view for the web-fetch turn, authored inline for the same reason. */
 const WEB_FETCH_RESULT: Omit<Extract<ToolResultView, { card: 'web'; kind: 'fetch' }>, 'card' | 'kind'> = {
-  url: 'https://www.deepseek.com/blog/harness-architecture',
+  url: 'https://example.com/blog/harness-architecture',
   statusCode: 200,
   truncated: false,
 }
@@ -546,7 +546,7 @@ function buildAlphaLog(): SessionEvent[] {
   // the todo turn for the same reason turn 66 is: the standing plan retires at
   // the next turn/start, so a turn after it would empty the dock's plan strip.
   toolTurn(70, 'web_search', '{"queries":["arx harness architecture"]}', 'Search results for arx harness architecture.')
-  toolTurn(71, 'web_fetch', '{"url":"https://www.deepseek.com/blog/harness-architecture"}', '# Harness architecture\n\nEverything is a plugin.')
+  toolTurn(71, 'web_fetch', '{"url":"https://example.com/blog/harness-architecture"}', '# Harness architecture\n\nEverything is a plugin.')
 
   // Turn 72: max-tokens sample — the provider ends the turn at its output cap
   // mid-sentence, so the chat flow must render the turn-max-tokens notice
@@ -1593,8 +1593,8 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
     ['/home', ['fixture']],
     [FIXTURE_HOME, ['Documents', 'Downloads', '.config']],
     [`${FIXTURE_HOME}/Documents`, [
-      'project', 'deepseek-iOS', 'deepseek-android', 'deepseek-platform',
-      'deepseek-web', 'arx-harness', 'deepseek-app', 'deepseek-landing-blog',
+      'project', 'example-ios', 'example-android', 'example-platform',
+      'example-web', 'arx-harness', 'example-app', 'example-landing-blog',
     ]],
   ])
   const childrenOf = (path: string): string[] | undefined => {
@@ -2988,7 +2988,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       },
     },
     settings: {
-      // Only the resolved DeepSeek address needed by first-run readiness is
+      // Only the resolved DeepSeek endpoint address needed by first-run readiness is
       // represented here. Fixture-backed journeys do not open its Models
       // editor; real schema-driven forms ride the HTTP transport.
       describe: request => ok(request, {
