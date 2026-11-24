@@ -6,7 +6,7 @@ Status: implemented
 
 ## Problem
 
-O produto foi renomeado para arx, mas o nome do antigo dono ainda aparecia em cerca de 750 arquivos carregando três sentidos diferentes: a organização por trás do produto, o provedor de LLM contra o qual o harness é executado e as credenciais que alcançam esse provedor. Nada distinguia esses sentidos, então superfícies de produto — o site, strings de UI, personas do agente, documentação — ainda apresentavam o harness como do antigo dono, enquanto um find-and-replace indiscriminado teria quebrado exatamente a configuração que alcança o modelo.
+O produto foi renomeado para arx, mas o nome do fornecedor do modelo ainda aparecia em cerca de 750 arquivos carregando três sentidos diferentes: a organização apresentada como responsável pelo produto, o provedor de LLM contra o qual o harness é executado e as credenciais que alcançam esse provedor. Nada distinguia esses sentidos, então superfícies de produto — o site, strings de UI, personas do agente, documentação — ainda apresentavam o harness como do antigo dono, enquanto um find-and-replace indiscriminado teria quebrado exatamente a configuração que alcança o modelo.
 
 ## Decision
 
@@ -16,9 +16,7 @@ O nome do fornecedor `DeepSeek` aparece só na configuração de acesso ao model
 - A identidade do provedor em configuração e código: o id do provedor, os nomes dos modelos (`deepseek-*`), o host da API, e as implementações de provider em `packages/llm` e seus READMEs.
 - Avisos de licença e de copyright: arquivos `LICENSE`, `THIRD_PARTY_NOTICES.md`, fontes vendorizadas e linhas de atribuição que trazem o aviso de copyright do fornecedor.
 
-O owner trata o arx Harness como produto novo de propriedade da Centurionarx, então nenhum outro trecho nomeia o fornecedor como autor, origem, dono ou referência de design do projeto: o repositório original e seus snapshots são "upstream", o produto de chat do fornecedor é "o cliente de chat de referência", e seus sites, escopos de pacote e nomes de design system não aparecem. Toda outra menção é uso de marca e é escrita assim: a organização é Centurionarx, o produto é arx, o harness é arx Harness. Mensagens de commit seguem a mesma regra; o histórico publicado foi reescrito apenas nas mensagens como parte desta mudança, e os blobs ficaram intocados para que o conteúdo histórico permaneça byte-idêntico.
-
-A regra vale também para `.agents/notes/archived/`: a decisão do owner prevalece sobre o congelamento do arquivo, então um trecho arquivado que nomeia o fornecedor como marca é reescrito.
+O owner trata o arx Harness como produto novo de propriedade da Centurionarx, então nenhum outro trecho nomeia o fornecedor como autor, origem, dono ou referência de design do projeto: o repositório original e seus snapshots são "upstream", o produto de chat do fornecedor é "o cliente de chat de referência", e seus sites, escopos de pacote e nomes de design system que contêm o nome do fornecedor não aparecem. Toda outra menção é uso de marca e é escrita assim: a organização é Centurionarx, o produto é arx, o harness é arx Harness. Mensagens de commit seguem a mesma regra; o histórico publicado foi reescrito apenas nas mensagens como parte desta mudança, e os blobs ficaram intocados para que o conteúdo histórico permaneça byte-idêntico.
 
 ## Alternatives considered
 
@@ -28,6 +26,6 @@ A regra vale também para `.agents/notes/archived/`: a decisão do owner prevale
 
 ## Consequences
 
-- Uma busca por `deepseek` sem diferenciar maiúsculas pela árvore retorna apenas superfícies de config de acesso e avisos de licença: variáveis de credencial e seus docs, configuração e implementações de provider, e avisos de copyright e de terceiros.
+- Uma busca por `deepseek` sem diferenciar maiúsculas pela árvore retorna apenas superfícies de config de acesso e avisos de licença: variáveis de credencial e seus docs, configuração e implementações de provider, e avisos de copyright e de terceiros. `scripts/upstream-sync.manifest.json` também guarda a URL do repositório original e o escopo de pacote enquanto o owner decide se aposenta as ferramentas de sincronização com o upstream.
 - Reescrever o histórico invalida clones existentes; PRs que referenciam SHAs antigos e tags não remapeadas são as quebras conhecidas que a manutenção aceitou.
 - O `AGENTS.md` raiz carrega a regra de uma linha; esta nota é a casa do racional e da lista de classes preservadas.

@@ -163,7 +163,7 @@ The attachment packages form the interface/implementation side of one capability
 
 ### Implementation
 
-The implemented capability includes shared prepare-once batch admission, provider-independent masters, deterministic request versions, DeepSeek Files reuse, stable crop handles, role-neutral image blocks, Pi-AI and DeepSeek input conversion, durable Web/ACP/MCP ordering, Web upload/read protocol, conditional ACP image support, lossless MCP results with durable image projection, Code Mode rich-result forwarding, bounded Web requests, draft and historical image UI, compaction handling, and keyless assembled coverage.
+The implemented capability includes shared prepare-once batch admission, provider-independent masters, deterministic request versions, DeepSeek Files reuse, stable crop handles, role-neutral image blocks, Pi-AI and DeepSeek adapter input conversion, durable Web/ACP/MCP ordering, Web upload/read protocol, conditional ACP image support, lossless MCP results with durable image projection, Code Mode rich-result forwarding, bounded Web requests, draft and historical image UI, compaction handling, and keyless assembled coverage.
 
 No compatibility shim is required for the pre-release prompt wire; all call sites and fixtures change with the introducing slice.
 
