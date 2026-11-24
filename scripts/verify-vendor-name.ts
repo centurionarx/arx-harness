@@ -44,16 +44,27 @@ export const ALLOWED_PATHS: readonly NamedForm[] = [
 /** Verbs that, followed by `by`, `at`, `from`, or `under` and the vendor name, claim authorship or origin. */
 const ORIGIN_VERBS = 'created|built|developed|made|owned|authored|founded|originated|forked|written|maintained|published|shipped|branded'
 
+/** Portuguese verbs that, followed by `por`, `pela`, or `pelo` and the vendor name, claim authorship or origin. */
+const ORIGIN_VERBS_PT = 'criad[oa]s?|desenvolvid[oa]s?|feit[oa]s?|mantid[oa]s?|construíd[oa]s?|publicad[oa]s?'
+
 /** Nouns that, after the vendor name, present the vendor as the project's owner or brand. */
 const ORIGIN_NOUNS = 'product|project|harness|team|company|organization|brand|identity|branding'
 
 /** Forms that present the vendor as author, origin, owner, or product brand; a line holding one fails even beside model-access terms. */
 export const BRAND_FORMS: readonly NamedForm[] = [
-  { name: 'original repository', pattern: /deepseek[ -]harness|deepseek-ai\b/i },
+  { name: 'original repository', pattern: /deepseek[ -]?harness|deepseek-ai\b/i },
   { name: 'vendor package scope', pattern: /@deepseek\//i },
   { name: 'vendor website', pattern: /(?:https?:\/\/|\b(?:www|docs|cdn)\.)deepseek\.com/i },
   { name: 'vendor service host', pattern: /deepseeksvc|dp-cdn-deepseek/i },
-  { name: 'origin claim', pattern: new RegExp(`\\b(?:${ORIGIN_VERBS}) (?:by|at|from|under) DeepSeek\\b|\\bDeepSeek(?:'s)? (?:${ORIGIN_NOUNS})\\b`, 'i') },
+  {
+    name: 'origin claim',
+    pattern: new RegExp([
+      String.raw`\b(?:${ORIGIN_VERBS}) (?:by|at|from|under) DeepSeek\b`,
+      String.raw`(?:^|[^\p{L}])(?:${ORIGIN_VERBS_PT}) pel[oa] DeepSeek\b`,
+      String.raw`\bDeepSeek(?:'s)? (?:${ORIGIN_NOUNS})\b|\bDeepSeek-(?:made|owned|built|branded)\b`,
+      String.raw`\bDeepSeek owns\b|\bbelongs to DeepSeek\b`,
+    ].join('|'), 'iu'),
+  },
   // A line holding the `deepseek-chat` model id may carry that model's display name.
   { name: 'vendor chat product', pattern: /^(?!.*\bdeepseek-chat\b).*(?:\bDeepSeek ?Chat(?![ -]?completions)|deepseekchat)/i },
   { name: 'vendor design system', pattern: /DeepSeek design|DeepSeek wordmark|--(?:arx|dsw)-static-deepseek/i },
