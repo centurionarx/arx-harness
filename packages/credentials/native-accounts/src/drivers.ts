@@ -372,17 +372,20 @@ async function antigravityListing(spec: NativeDriverSpec, executable: string, si
 /**
  * Project `agy models` lines: a line whose first token is a model id names one
  * model, and the rest of the line, when present, is its display name; any
- * other line, such as a header, is skipped.
+ * other line, such as a header, is skipped. A listing that names no model is
+ * refused rather than read as a signed-in account without models: it is what
+ * a changed listing format, or an executable that is not `agy`, produces.
  * @param lines - the non-empty listing lines.
- * @returns the models, or `undefined` when no line names a model.
+ * @returns the models; throws when no line names a model.
  */
-function antigravityModels(lines: readonly string[]): NativeAccountModel[] | undefined {
+function antigravityModels(lines: readonly string[]): NativeAccountModel[] {
   const models: NativeAccountModel[] = []
   for (const line of lines) {
     const [id, ...rest] = line.split(/\s+/) as [string, ...string[]]
     if (ANTIGRAVITY_MODEL_ID.test(id)) models.push({ id, name: rest.length === 0 ? id : rest.join(' ') })
   }
-  return models.length === 0 ? undefined : models
+  if (models.length === 0) throw new Error('Invalid native model list')
+  return models
 }
 /**
  * Native Antigravity CLI driver. The CLI installs outside any package manager
@@ -402,8 +405,7 @@ export function antigravityAccountDriver(spec: NativeDriverSpec, executable: str
       catch { return { availability: 'unavailable', status: 'unknown' } }
       const lines = await antigravityListing(spec, executable, signal)
       if (lines === undefined) return { availability: 'available', status: 'disconnected' }
-      const models = antigravityModels(lines)
-      return { availability: 'available', status: 'connected', ...models === undefined ? {} : { models } }
+      return { availability: 'available', status: 'connected', models: antigravityModels(lines) }
     },
     async login(_mode, signal, notice, prompt) {
       if (executable === undefined) throw new Error('Native product unavailable')

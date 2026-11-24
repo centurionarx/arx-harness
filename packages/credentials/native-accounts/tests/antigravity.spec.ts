@@ -97,9 +97,13 @@ describe('native Antigravity account status', () => {
     const host = products({ models: signedIn(stdout) })
     expect(await host.driver.describe(live())).toMatchObject({ status: 'connected', models: [{ id: 'gemini-3-pro', name: 'Gemini 3 Pro' }] })
   })
-  it('keeps the account connected without models when no line names a model id', async () => {
-    const host = products({ models: signedIn('Available models:\nDefault\n') })
-    expect(await host.driver.describe(live())).toEqual({ availability: 'available', status: 'connected' })
+  it.each([
+    ['a listing whose lines name no model id', 'Available models:\nDefault\n'],
+    ['an empty listing, as a program other than agy that exits cleanly produces', ''],
+  ])('refuses %s instead of reporting a signed-in account', async (_case, stdout) => {
+    const host = products({ models: signedIn(stdout) })
+    await expect(host.driver.describe(live())).rejects.toThrow('Invalid native model list')
+    expect(host.children[0]!.waitForExit).toHaveBeenCalledOnce()
   })
   it.each([
     ['another failure with exit code 1', { exitCode: 1, stderr: 'Error: network unreachable\n' }, 'Native status unavailable'],
