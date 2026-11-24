@@ -6,19 +6,19 @@ English | [Português](2026-08-31-centurionarx-brand-naming.pt-BR.md)
 
 ## Problem
 
-The product was rebranded to arx, but the previous owner's name still appeared across roughly 750 files carrying three different senses: the organization behind the product, the LLM provider the harness ships against, and the credentials that reach that provider. Nothing distinguished these senses, so product surfaces — the website, UI strings, agent personas, documentation — still presented the harness as DeepSeek's, while a blanket find-and-replace would have broken the very configuration that reaches the model.
+The product was rebranded to arx, but the previous owner's name still appeared across roughly 750 files carrying three different senses: the organization behind the product, the LLM provider the harness ships against, and the credentials that reach that provider. Nothing distinguished these senses, so product surfaces — the website, UI strings, agent personas, documentation — still presented the harness as the previous owner's, while a blanket find-and-replace would have broken the very configuration that reaches the model.
 
 ## Decision
 
-`DeepSeek` appears in exactly three classes of places, all of which name the model access configuration:
+The vendor name `DeepSeek` appears only in model-access configuration and license notices, in exactly three classes of places:
 
-- The credential variables `DEEPSEEK_API_KEY` and `DEEPSEEK_BASE_URL` and the documentation that specifies them.
+- The credential variables `DEEPSEEK_API_KEY` and `DEEPSEEK_BASE_URL`, the provider account login, and the documentation that specifies them.
 - Provider identity in configuration and code: the provider id, model names (`deepseek-*`), the API host, and the `packages/llm` provider implementations and their READMEs.
-- Third-party attributions: `THIRD_PARTY_NOTICES.md`, lockfiles, historical links to the pre-rename repository and its issues, the rebrand tooling that names the old identifiers it maps, and citations of external products' design decisions (for example the DeepSeek Chat UI geometry the client references).
+- License and copyright notices: `LICENSE` files, `THIRD_PARTY_NOTICES.md`, vendored sources, and attribution lines that carry the vendor's copyright notice.
 
-Every other mention is brand usage and is written as follows: the organization is Centurionarx, the product is arx, the harness is arx Harness. Commit messages follow the same rule; the published history was rewritten message-only as part of this change, and blobs were left untouched so historical content stays byte-identical.
+The owner treats arx Harness as a new product owned by Centurionarx, so no other passage names the vendor as the project's author, origin, owner, or design reference: the original repository and its snapshots are "upstream", the vendor's consumer chat product is "the reference chat client", and its websites, package scopes, and design-system names do not appear. Every other mention is brand usage and is written as follows: the organization is Centurionarx, the product is arx, the harness is arx Harness. Commit messages follow the same rule; the published history was rewritten message-only as part of this change, and blobs were left untouched so historical content stays byte-identical.
 
-The frozen `.agents/notes/archived/` tree keeps its original wording; archived notes are never rewritten, and their verification accepts the historical naming in the frozen tree.
+The rule covers `.agents/notes/archived/` too: the owner's decision takes precedence over the archive freeze, so an archived passage that names the vendor as a brand is rewritten.
 
 ## Alternatives considered
 
@@ -28,6 +28,6 @@ The frozen `.agents/notes/archived/` tree keeps its original wording; archived n
 
 ## Consequences
 
-- A case-insensitive `deepseek` search over the tree returns only access-config surfaces: credential variables and their docs, provider configuration and implementations, third-party notices, and the frozen archive.
+- A case-insensitive `deepseek` search over the tree returns only access-config surfaces and license notices: credential variables and their docs, provider configuration and implementations, and copyright and third-party notices.
 - History rewriting invalidates existing clones; PRs referencing old SHAs and the unmapped tags are the known breakage the maintainer accepted.
 - Root `AGENTS.md` carries the one-line rule; this note owns the rationale and the keep-classes list.
