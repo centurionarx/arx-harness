@@ -89,8 +89,16 @@ describe('native Antigravity account status', () => {
       { id: 'gemini-3-flash', name: 'gemini-3-flash' },
     ] })
   })
-  it('keeps the account connected without models when a line names no model id', async () => {
-    const host = products({ models: signedIn('gemini-3-pro\n* Gemini 3 Flash\n') })
+  it.each([
+    ['a title line', 'Available models:\ngemini-3-pro  Gemini 3 Pro\n'],
+    ['a table header', 'ID  NAME\ngemini-3-pro  Gemini 3 Pro\n'],
+    ['a marked line', '* Gemini 3 Flash\ngemini-3-pro  Gemini 3 Pro\n'],
+  ])('skips %s that names no model id', async (_case, stdout) => {
+    const host = products({ models: signedIn(stdout) })
+    expect(await host.driver.describe(live())).toMatchObject({ status: 'connected', models: [{ id: 'gemini-3-pro', name: 'Gemini 3 Pro' }] })
+  })
+  it('keeps the account connected without models when no line names a model id', async () => {
+    const host = products({ models: signedIn('Available models:\nDefault\n') })
     expect(await host.driver.describe(live())).toEqual({ availability: 'available', status: 'connected' })
   })
   it.each([

@@ -340,8 +340,12 @@ const ANTIGRAVITY_AUTHORIZATION_HOSTS = ['accounts.google.com'] as const
 const ANTIGRAVITY_CODE_PROMPT = 'Then paste the authorization code, or the full URL of the page you land on, and press Enter:'
 /** Diagnostic `agy models` writes to stderr, with exit code 1, when no account is signed in. */
 const ANTIGRAVITY_SIGNED_OUT = 'Please sign in to view available models.'
-/** Model ids `agy --model` accepts: one token without whitespace. */
-const ANTIGRAVITY_MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/
+/**
+ * This driver's reading of a model id in an `agy models` line: a lowercase
+ * token holding a hyphen or a digit, such as `gemini-3-pro`. Header words such
+ * as `Available`, `ID`, or `models:` do not match.
+ */
+const ANTIGRAVITY_MODEL_ID = /^(?=[a-z0-9._:/-]*[-0-9])[a-z0-9][a-z0-9._:/-]*$/
 /**
  * Read the signed-in account's models with `agy models`, which needs no model turn.
  * @param spec - owning process service and deployment settings.
@@ -366,19 +370,19 @@ async function antigravityListing(spec: NativeDriverSpec, executable: string, si
   } finally { await release(child) }
 }
 /**
- * Project `agy models` lines: each line names one model by its first token,
- * and the rest of the line, when present, is its display name.
+ * Project `agy models` lines: a line whose first token is a model id names one
+ * model, and the rest of the line, when present, is its display name; any
+ * other line, such as a header, is skipped.
  * @param lines - the non-empty listing lines.
- * @returns the models, or `undefined` when a line does not start with a model id.
+ * @returns the models, or `undefined` when no line names a model.
  */
 function antigravityModels(lines: readonly string[]): NativeAccountModel[] | undefined {
   const models: NativeAccountModel[] = []
   for (const line of lines) {
-    const [id = '', ...rest] = line.split(/\s+/)
-    if (!ANTIGRAVITY_MODEL_ID.test(id)) return undefined
-    models.push({ id, name: rest.length === 0 ? id : rest.join(' ') })
+    const [id, ...rest] = line.split(/\s+/) as [string, ...string[]]
+    if (ANTIGRAVITY_MODEL_ID.test(id)) models.push({ id, name: rest.length === 0 ? id : rest.join(' ') })
   }
-  return models
+  return models.length === 0 ? undefined : models
 }
 /**
  * Native Antigravity CLI driver. The CLI installs outside any package manager
