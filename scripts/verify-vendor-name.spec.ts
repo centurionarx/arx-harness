@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ACCESS_FORMS, ALLOWED_PATHS, BRAND_FORMS, findVendorBrand, judgeLine } from './verify-vendor-name.ts'
+import { ACCESS_FORMS, BRAND_FORMS, findVendorBrand, judgeLine } from './verify-vendor-name.ts'
 
 /** The vendor name in its brand spelling, built from parts so this spec holds no brand form itself. */
 const Name = ['Deep', 'Seek'].join('')
@@ -104,11 +104,9 @@ describe('findVendorBrand', () => {
     expect(findVendorBrand('docs/guide.md', text)).toEqual(['docs/guide.md:3: unqualified name', 'docs/guide.md:4: vendor website'])
   })
 
-  it('skips only the upstream-sync manifest and scans license files and vendored sources', () => {
+  it('scans every path, including the retired upstream-sync manifest, license files, and vendored sources', () => {
     const text = `Holder: ${Name}, see https://www.${name}.com.`
-    expect(ALLOWED_PATHS.map(form => form.name)).toEqual(['upstream-sync manifest'])
-    expect(findVendorBrand('scripts/upstream-sync.manifest.json', text)).toEqual([])
-    for (const path of ['LICENSE', 'packages/fs/tool-present/LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/cordis/README.md', 'scripts/verify-vendor-name.ts', 'scripts/upstream-sync.ts']) {
+    for (const path of ['scripts/upstream-sync.manifest.json', 'LICENSE', 'packages/fs/tool-present/LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/cordis/README.md', 'scripts/verify-vendor-name.ts']) {
       expect(findVendorBrand(path, text)).toEqual([`${path}:1: vendor website`])
     }
   })

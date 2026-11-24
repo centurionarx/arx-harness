@@ -4,7 +4,7 @@
  */
 import { randomBytes, randomUUID } from 'node:crypto'
 import { resolve, join, relative } from 'node:path'
-import { mkdtemp, mkdir, readdir, readFile, writeFile, realpath, symlink, rm } from 'node:fs/promises'
+import { cp, mkdtemp, mkdir, readdir, readFile, writeFile, realpath, symlink, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { symbols, type Context, type Plugin } from '@arx-ai/cordis'
@@ -12,20 +12,50 @@ import { pathToFileURL } from 'node:url'
 import { identityHarness } from './harness.ts'
 import { storageHarness } from '../../../packages/identity/project-storage/tests/harness.ts'
 import { ModuleId, parseAuthState } from '@arx-ai/arx-web-identity/contract'
+import type { WebUserId } from '@arx-ai/arx-web-identity/contract'
+import { IDENTITY_SEED_ENV } from './browser-fixture.contract.ts'
 import { Session, SessionId, SESSION_FORMAT_VERSION } from '@arx-ai/arx-session'
 import { MessageId, freezeMessage } from '@arx-ai/arx-llm'
 import { installLlmReplay } from '@arx-ai/arx-llm-replay'
 import { textResponse, toolCallResponse } from '../../../packages/core/agent-loop/tests/mock-adapter.ts'
 import { WorkspaceId } from '@arx-ai/arx-workspace'
 import * as BrokerHttp from '../../../packages/host/isolated-project-runtime/src/broker-http.ts'
-import { nativeSupervisorFixture } from '../../../packages/host/isolated-project-runtime/tests/native-supervisor.ts'
 import { USER_PROJECT_BASE, USER_RUNTIME_FEATURES, authenticatedGraph, nativeComposition } from '../../../packages/client/modules/src/authenticated-graph.ts'
 
 const audience = process.argv[2] === 'admin' ? 'admin' : 'user'
 const restricted = process.argv.includes('--first-password')
 const frontend = process.argv.includes('--frontend')
 const withRuntime = frontend && audience === 'user' && process.argv.includes('--runtime')
-const supervisor = withRuntime ? await nativeSupervisorFixture({ fsTools: true }) : undefined
+// The performance clock starts with the process, so this reads the module load, which tsx transpilation dominates.
+const loadedMs = performance.now()
+interface SeedUser { readonly userId: WebUserId; readonly username: string; readonly password: string }
+interface IdentitySeed { readonly root: string; readonly masterPassword: string; readonly users: readonly SeedUser[] }
+function isSeedUser(value: unknown): value is SeedUser {
+  return typeof value === 'object' && value !== null && 'userId' in value && typeof value.userId === 'string'
+    && 'username' in value && typeof value.username === 'string' && 'password' in value && typeof value.password === 'string'
+}
+/**
+ * The per-run seed, when the Vitest global setup serves one; a `--first-password`
+ * start or a fixture outside Vitest starts from an empty root.
+ */
+async function identitySeed(): Promise<IdentitySeed | undefined> {
+  const raw = process.env[IDENTITY_SEED_ENV]
+  if (raw === undefined || restricted) return undefined
+  const address: unknown = JSON.parse(raw)
+  if (typeof address !== 'object' || address === null || !('url' in address) || typeof address.url !== 'string'
+    || !('token' in address) || typeof address.token !== 'string') throw new Error(IDENTITY_SEED_ENV + ' is not a seed address')
+  const response = await fetch(address.url, { headers: { Authorization: 'Bearer ' + address.token } })
+  if (!response.ok) throw new Error('identity seed unavailable: ' + await response.text())
+  const value: unknown = await response.json()
+  if (typeof value !== 'object' || value === null || !('root' in value) || typeof value.root !== 'string'
+    || !('masterPassword' in value) || typeof value.masterPassword !== 'string'
+    || !('users' in value) || !Array.isArray(value.users) || !value.users.every(isSeedUser)) throw new Error('identity seed contract invalid')
+  return { root: value.root, masterPassword: value.masterPassword, users: value.users }
+}
+// Only a runtime start loads the native supervisor, whose module graph is most of a start's load time.
+const supervisor = withRuntime
+  ? await (await import('../../../packages/host/isolated-project-runtime/tests/native-supervisor.ts')).nativeSupervisorFixture({ fsTools: true })
+  : undefined
 const workspaceVolumes = new Map<string, string>()
 const previewReplays = new Map<string, ReturnType<typeof installLlmReplay>>()
 let resolverRoot: string | undefined
@@ -80,9 +110,21 @@ if (frontend) {
 }
 const native = frontend ? { accessMode: 'authenticated' as const,
   packageBaseUrl: pathToFileURL(resolverRoot!).href + '/', extraPlugins } : {}
+const harnessStarted = performance.now()
+const seed = await identitySeed()
+// A copy of the seed skips the MASTER bootstrap and the two ready users, whose password hashing dominates a start;
+// an admin start uses the identity part of the same root.
+const seededRoot = seed === undefined ? undefined : await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-fixture-')))
+if (seed !== undefined && seededRoot !== undefined) await cp(seed.root, seededRoot, { recursive: true })
 const fixture = audience === 'user' && !restricted
-  ? await storageHarness({ http: true, ...(supervisor === undefined ? {} : { endpoint: supervisor.endpoint }), ...native })
-  : await identityHarness({ api: audience, readyUsers: restricted ? 0 : 2, bootstrap: !restricted, ...native })
+  ? await storageHarness({ http: true, ...(seededRoot === undefined ? {} : { root: seededRoot }),
+    ...(supervisor === undefined ? {} : { endpoint: supervisor.endpoint }), ...native })
+  : await identityHarness({ api: audience,
+    ...(seededRoot === undefined ? { readyUsers: restricted ? 0 : 2, bootstrap: !restricted } : { root: seededRoot }), ...native })
+const users: readonly SeedUser[] = seed?.users ?? fixture.users
+const master = seed === undefined ? fixture.master : await fixture.ctx.webIdentity.authenticate(
+  (await fixture.ctx.webIdentity.login('arxadmin', seed.masterPassword, 'admin')).token, 'admin')
+const harnessMs = performance.now() - harnessStarted
 let bootstrapPassword: string | undefined
 if (restricted) {
   bootstrapPassword = 'Fixture-' + randomBytes(24).toString('hex')
@@ -91,8 +133,8 @@ if (restricted) {
 if (frontend && audience === 'user' && !withRuntime) {
   // This is an HTTP-only USER deployment: real owner storage remains usable,
   // while unconfigured execution stays closed. No project services are fabricated.
-  if (fixture.master === undefined) throw new Error('fixture master required')
-  for (const user of fixture.users) await fixture.ctx.webIdentity.setModules(fixture.master, user.userId, [ModuleId('storage')])
+  if (master === undefined) throw new Error('fixture master required')
+  for (const user of users) await fixture.ctx.webIdentity.setModules(master, user.userId, [ModuleId('storage')])
 }
 let adminUrl: string | undefined
 let adminScope: Context | undefined
@@ -136,14 +178,17 @@ const close = async (): Promise<void> => {
   for (const replay of previewReplays.values()) replay.dispose()
   previewReplays.clear()
   await fixture.close()
+  if (seededRoot !== undefined) await rm(seededRoot, { recursive: true, force: true })
   await supervisor?.close()
   if (resolverRoot !== undefined) await rm(resolverRoot, { recursive: true, force: true })
 }
 if (process.send === undefined) throw new Error('identity browser fixture requires private IPC')
 process.send({ type: 'ready', url: fixture.url, adminUrl, audience,
   resolution: { packages: resolutionPackages.sort(), fixtureOnly: true },
-  masterPassword: bootstrapPassword ?? fixture.passwords.master,
-  users: fixture.users.map(row => ({ username: row.username, password: row.password })) })
+  masterPassword: bootstrapPassword ?? seed?.masterPassword ?? fixture.passwords.master,
+  users: users.map(row => ({ username: row.username, password: row.password })),
+  timing: { loadedMs: Math.round(loadedMs), harnessMs: Math.round(harnessMs), readyMs: Math.round(performance.now()),
+    seeded: seed !== undefined } })
 process.on('message', (raw: unknown) => {
   if (typeof raw !== 'object' || raw === null) return
   const message = raw as {
@@ -207,22 +252,22 @@ process.on('message', (raw: unknown) => {
     }
 
     if (message.type === 'block-user' && typeof message.index === 'number') {
-      const user = fixture.users[message.index]
-      if (user === undefined || fixture.master === undefined) throw new Error('invalid fixture user')
-      await fixture.ctx.webIdentity.setStatus(fixture.master, user.userId, 'BLOCKED')
+      const user = users[message.index]
+      if (user === undefined || master === undefined) throw new Error('invalid fixture user')
+      await fixture.ctx.webIdentity.setStatus(master, user.userId, 'BLOCKED')
       process.send?.({ type: 'blocked' })
     }
     if (message.type === 'set-modules' && typeof message.index === 'number' && Array.isArray(message.grants)) {
-      const user = fixture.users[message.index]
-      if (user === undefined || fixture.master === undefined) throw new Error('invalid fixture user')
-      await fixture.ctx.webIdentity.setModules(fixture.master, user.userId, message.grants.map((value) => {
+      const user = users[message.index]
+      if (user === undefined || master === undefined) throw new Error('invalid fixture user')
+      await fixture.ctx.webIdentity.setModules(master, user.userId, message.grants.map((value) => {
         if (typeof value !== 'string') throw new Error('invalid fixture grant')
         return ModuleId(value)
       }))
       process.send?.({ type: 'set-modules' })
     }
     if (message.type === 'seed-history' && typeof message.index === 'number') {
-      const user = fixture.users[message.index]
+      const user = users[message.index]
       if (user === undefined || audience !== 'user') throw new Error('invalid fixture user')
       const login = await fixture.ctx.webIdentity.login(user.username, user.password, 'user')
       const owner = await fixture.ctx.webIdentity.authenticate(login.token, 'user')
@@ -261,7 +306,7 @@ process.on('message', (raw: unknown) => {
     }
     if (message.type === 'assign-workspace' && typeof message.index === 'number' && typeof message.workspaceId === 'string') {
       if (supervisor === undefined) throw new Error('native supervisor required')
-      const user = fixture.users[message.index]
+      const user = users[message.index]
       if (user === undefined) throw new Error('invalid fixture user')
       const login = await fixture.ctx.webIdentity.login(user.username, user.password, 'user')
       const owner = await fixture.ctx.webIdentity.authenticate(login.token, 'user')

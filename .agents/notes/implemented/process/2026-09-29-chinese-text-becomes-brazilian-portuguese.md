@@ -14,8 +14,6 @@ The product and this repository came from a Chinese-language upstream. The UI di
 
 **`verify-chinese-text` enforces the rule in `doc-sync`.** It scans every tracked text file, `vendor/` included, for Han characters and fails on any occurrence, naming the file and its first such line. It reads no exception list. Kana, Hangul, and full-width forms and punctuation alone are not Chinese text. The gate reads text only: a binary file such as a screenshot is outside it and is reviewed by eye.
 
-**Upstream imports translate to Brazilian Portuguese.** `check-upstream-import` and the sync procedure name Brazilian Portuguese as the target language.
-
 ## Alternatives considered
 
 **Translate Chinese text to English.** English matches the prose and code around most of this text, but the owner's rule names Brazilian Portuguese for every file.
