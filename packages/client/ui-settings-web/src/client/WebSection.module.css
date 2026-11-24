@@ -166,7 +166,7 @@ select.input {
   font-size: 12px;
   line-height: 18px;
   background: var(--arx-alias-brand-primary);
-  color: var(--arx-alias-label-on-brand);
+  color: var(--arx-alias-label-primary-foreground);
   cursor: pointer;
 }
 

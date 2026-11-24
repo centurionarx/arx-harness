@@ -116,7 +116,7 @@
   line-height: 24px;
   color: var(--arx-alias-label-secondary);
   text-decoration: underline;
-  text-decoration-color: var(--arx-alias-label-quaternary);
+  text-decoration-color: var(--arx-alias-label-caption);
   text-underline-offset: 3px;
   cursor: pointer;
 }

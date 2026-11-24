@@ -28,7 +28,7 @@
 
 .seat:disabled {
   cursor: default;
-  color: var(--arx-alias-label-quaternary);
+  color: var(--arx-alias-label-caption);
 }
 
 .seatIcon {
