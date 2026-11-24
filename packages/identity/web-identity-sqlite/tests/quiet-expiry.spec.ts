@@ -9,7 +9,6 @@ import { identityHarness } from '../../../../examples/web-identity/tests/harness
 let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
 let clock: MockInstance<() => number> | undefined
 let release: (() => void) | undefined
-const realNow = Date.now.bind(Date)
 afterEach(async () => {
   release?.(); release = undefined; clock?.mockRestore(); clock = undefined; await fixture?.close(); fixture = undefined
 })
@@ -28,11 +27,12 @@ async function prepared() {
   const h = fixture, a = h.users[0]!, b = h.users[1]!
   const second = await h.ctx.webIdentity.login(a.username, a.password, 'user')
   const a2 = await h.ctx.webIdentity.authenticate(second.token, 'user')
-  let offset = Math.min(...rows().map(row => Number(row.idle_expires_at))) - realNow() - 1000
-  clock = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + offset)
+  // The clock stays where the test sets it, so the time a loaded machine spends on a step never reaches a deadline.
+  let now = Math.min(...rows().map(row => Number(row.idle_expires_at))) - 1000
+  clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
   for (const authority of [h.master!, a2, b.authority]) await h.ctx.webIdentity.revalidate(authority, { activity: true })
   const deadline = Number(stored(a.authority).idle_expires_at)
-  return { h, a, b, a2, second, near: (milliseconds: number) => { offset = deadline - realNow() + milliseconds } }
+  return { h, a, b, a2, second, near: (milliseconds: number) => { now = deadline + milliseconds } }
 }
 describe('native quiet authentication expiry', () => {
   it('durably revokes only the due SID without new traffic and waits for its real public listener', { timeout: 30000 }, async () => {
@@ -53,6 +53,7 @@ describe('native quiet authentication expiry', () => {
     near(-80)
     await h.ctx.webIdentity.authenticate(a.token, 'user') // Reschedules only; no idle write.
     const head = h.ctx.webIdentity.authorityHead
+    near(0)
     await vi.waitFor(() => { expect(observed).toEqual([a.authority.authSessionId]) }, { timeout: 5000 })
     expect(h.ctx.webIdentity.authorityHead.sequence).toBe(head.sequence + 1)
     await expect(h.ctx.webIdentity.authenticate(a.token, 'user')).rejects.toMatchObject({ code: 'AUTH_INVALID' })
@@ -72,6 +73,7 @@ describe('native quiet authentication expiry', () => {
     h.ctx.on('web-identity/session-expired', () => { entered = true; throw new Error('fixture quiescence rejected') })
     near(-50)
     await h.ctx.webIdentity.authenticate(a.token, 'user')
+    near(0)
     await vi.waitFor(() => { expect(entered).toBe(true) }, { timeout: 5000 })
     await vi.waitFor(async () => { await expect(h.ctx.webIdentity.revalidate(b.authority)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' }) }, { timeout: 5000 })
     expect(stored(a.authority).revoked).toBe(1)
@@ -89,6 +91,7 @@ describe('native quiet authentication expiry', () => {
     expect(stored(a.authority).revoked).toBe(0)
     near(-30)
     await h.ctx.webIdentity.authenticate(a.token, 'user')
+    near(0)
     await vi.waitFor(() => { expect(observed).toEqual([a.authority.authSessionId]) }, { timeout: 5000 })
   })
 })

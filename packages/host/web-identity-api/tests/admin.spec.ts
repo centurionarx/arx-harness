@@ -3,7 +3,7 @@ import { Context } from '@arx-ai/cordis'
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { Socket } from 'node:net'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { identityHarness } from '../../../../examples/web-identity/tests/harness.ts'
+import { identityHarness, nextInvalidation } from '../../../../examples/web-identity/tests/harness.ts'
 import { AUTH_COOKIE_NAMES, AUTH_HEADER, CSRF_HEADER, parseModuleCatalog, parseAdminUserList } from '@arx-ai/arx-web-identity/contract'
 import IdentityApi from '../src/index.ts'
 let fixture: Awaited<ReturnType<typeof identityHarness>> | undefined
@@ -102,8 +102,9 @@ describe('closed native administration and HTTP failure budgets', () => {
     expect(internals.rates.has('expired')).toBe(false)
     expect(internals.identifierRates.has('expired')).toBe(false)
     const cookie = AUTH_COOKIE_NAMES.user + '=' + a.token, state = await ctx.webIdentity.state(a.authority)
+    const registered = nextInvalidation(ctx, a.authority.authSessionId)
     const poll = fetch(url! + '/auth/invalidation?generation=' + String(state.generation), { headers: { cookie } })
-    await new Promise(resolve => setTimeout(resolve, 20))
+    await registered.pending
     await ctx.webIdentity.logout(a.authority)
     expect(await (await poll).json()).toMatchObject({ invalidated: true, reason: 'logout' })
     const request = new IncomingMessage(new Socket()), response = new ServerResponse(request)
