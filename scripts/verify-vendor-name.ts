@@ -19,8 +19,21 @@ import { scannablePaths, scannableText } from './verify-chinese-text.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
+/** The vendor's name in its brand spelling, built from parts so this gate's own source holds no occurrence. */
+const VENDOR = ['Deep', 'Seek'].join('')
+
+/**
+ * Build a pattern that names the vendor.
+ * @param source - regular-expression source where `{V}` stands for the brand spelling, `{v}` for lowercase, and `{U}` for uppercase.
+ * @param flags - regular-expression flags.
+ * @returns the compiled pattern.
+ */
+function vendorPattern(source: string, flags: string): RegExp {
+  return new RegExp(source.replaceAll('{V}', VENDOR).replaceAll('{v}', VENDOR.toLowerCase()).replaceAll('{U}', VENDOR.toUpperCase()), flags)
+}
+
 /** One occurrence of the vendor's name in any spelling. */
-export const VENDOR_NAME = /deepseek/i
+export const VENDOR_NAME = vendorPattern('{v}', 'i')
 
 /** One named pattern of the closed exception lists. */
 export interface NamedForm {
@@ -30,13 +43,8 @@ export interface NamedForm {
   readonly pattern: RegExp
 }
 
-/** Paths the gate never scans, each with the owner decision that keeps it. */
+/** Paths the gate never scans; every other tracked text file, license files and vendored sources included, is scanned. */
 export const ALLOWED_PATHS: readonly NamedForm[] = [
-  { name: 'license file', pattern: /(?:^|\/)LICENSE(?:\.[a-z]+)?$/ },
-  { name: 'third-party notices', pattern: /^THIRD_PARTY_NOTICES\.md$/ },
-  { name: 'vendored source', pattern: /^vendor\// },
-  // The gate's regular expressions must spell the forms they match.
-  { name: 'this gate', pattern: /^scripts\/verify-vendor-name\.ts$/ },
   // TODO: remove once the owner decides whether to retire the upstream-sync tooling, which reads the original repository URL.
   { name: 'upstream-sync manifest', pattern: /^scripts\/upstream-sync\.manifest\.json$/ },
 ]
@@ -52,43 +60,46 @@ const ORIGIN_NOUNS = 'product|project|harness|team|company|organization|brand|id
 
 /** Forms that present the vendor as author, origin, owner, or product brand; a line holding one fails even beside model-access terms. */
 export const BRAND_FORMS: readonly NamedForm[] = [
-  { name: 'original repository', pattern: /deepseek[ -]?harness|deepseek-ai\b/i },
-  { name: 'vendor package scope', pattern: /@deepseek\//i },
-  { name: 'vendor website', pattern: /(?:https?:\/\/|\b(?:www|docs|cdn)\.)deepseek\.com/i },
-  { name: 'vendor service host', pattern: /deepseeksvc|dp-cdn-deepseek/i },
+  { name: 'original repository', pattern: vendorPattern(String.raw`{v}[ -]?harness|{v}-ai\b`, 'i') },
+  { name: 'vendor package scope', pattern: vendorPattern(String.raw`@{v}/`, 'i') },
+  { name: 'vendor website', pattern: vendorPattern(String.raw`(?:https?://|\b(?:www|docs|cdn)\.){v}\.com`, 'i') },
+  { name: 'vendor service host', pattern: vendorPattern(String.raw`{v}svc|dp-cdn-{v}`, 'i') },
   {
     name: 'origin claim',
-    pattern: new RegExp([
-      String.raw`\b(?:${ORIGIN_VERBS}) (?:by|at|from|under) DeepSeek\b`,
-      String.raw`(?:^|[^\p{L}])(?:${ORIGIN_VERBS_PT}) pel[oa] DeepSeek\b`,
-      String.raw`\bDeepSeek(?:'s)? (?:${ORIGIN_NOUNS})\b|\bDeepSeek-(?:made|owned|built|branded)\b`,
-      String.raw`\bDeepSeek owns\b|\bbelongs to DeepSeek\b`,
+    pattern: vendorPattern([
+      String.raw`\b(?:${ORIGIN_VERBS}) (?:by|at|from|under) {V}\b`,
+      String.raw`(?:^|[^\p{L}])(?:${ORIGIN_VERBS_PT}) pel[oa] {V}\b`,
+      String.raw`\b{V}(?:'s)? (?:${ORIGIN_NOUNS})\b|\b{V}-(?:made|owned|built|branded)\b`,
+      String.raw`\b{V} owns\b|\bbelongs to {V}\b`,
     ].join('|'), 'iu'),
   },
-  // A line holding the `deepseek-chat` model id may carry that model's display name.
-  { name: 'vendor chat product', pattern: /^(?!.*\bdeepseek-chat\b).*(?:\bDeepSeek ?Chat(?![ -]?completions)|deepseekchat)/i },
-  { name: 'vendor design system', pattern: /DeepSeek design|DeepSeek wordmark|--(?:arx|dsw)-static-deepseek/i },
-  { name: 'vendor product directory', pattern: /\.deepseek\//i },
+  // A line holding the chat model id may carry that model's display name.
+  { name: 'vendor chat product', pattern: vendorPattern(String.raw`^(?!.*\b{v}-chat\b).*(?:\b{V} ?Chat(?![ -]?completions)|{v}chat)`, 'i') },
+  { name: 'vendor design system', pattern: vendorPattern(String.raw`{V} design|{V} wordmark|--(?:arx|dsw)-static-{v}`, 'i') },
+  { name: 'vendor product directory', pattern: vendorPattern(String.raw`\.{v}/`, 'i') },
 ]
 
 /** A copyright notice naming the vendor; the sentence holding one is a license notice and is removed before the line is judged. */
-export const LICENSE_NOTICE = /\b[Cc]opyright (?:\(c\) )?\d{4} DeepSeek\b/
+export const LICENSE_NOTICE = vendorPattern(String.raw`\b[Cc]opyright (?:\(c\) )?\d{4} {V}\b`, '')
 
 /** Model-access forms removed from a line before the remaining occurrences are judged. */
 export const ACCESS_FORMS: readonly NamedForm[] = [
-  { name: 'environment variable', pattern: /DEEPSEEK_[A-Z0-9_]+|\bdeepseek_[a-z0-9_]+/g },
-  { name: 'API host', pattern: /(?:https?:\/\/)?api\.deepseek\.(?:com|example)[\w./:-]*/gi },
-  { name: 'model or route id', pattern: /\bdeepseek-(?:official|v\d[\w.-]*|chat|reasoner|flash|preview|e2e|defaults)\b/gi },
-  { name: 'model display name', pattern: /\bDeepSeek[- ]V\d(?:[- ](?:Flash|Pro))?\b/g },
-  { name: 'provider package', pattern: /\b(?:arx-)?(?:llm|web-search)-deepseek\b/g },
+  { name: 'environment variable', pattern: vendorPattern(String.raw`{U}_[A-Z0-9_]+|\b{v}_[a-z0-9_]+`, 'g') },
+  { name: 'API host', pattern: vendorPattern(String.raw`(?:https?://)?api\.{v}\.(?:com|example)[\w./:-]*`, 'gi') },
+  { name: 'model or route id', pattern: vendorPattern(String.raw`\b{v}-(?:official|v\d[\w.-]*|chat|reasoner|flash|preview|e2e|defaults)\b`, 'gi') },
+  { name: 'model display name', pattern: vendorPattern(String.raw`\b{V}[- ]V\d(?:[- ](?:Flash|Pro))?\b`, 'g') },
+  { name: 'provider package', pattern: vendorPattern(String.raw`\b(?:arx-)?(?:llm|web-search)-{v}\b`, 'g') },
   {
     name: 'provider display name',
-    pattern: new RegExp([
-      String.raw`\b(?:displayName|name|detail)['"]?\s*[:=]\s*(?:(['"])DeepSeek(?: (?:Chat|Reasoner))?\1|DeepSeek(?![\w-]| \w))`,
-      String.raw`\b(?:CatalogAdapter|toBe|toEqual)\(\[?(['"])DeepSeek\2`,
+    pattern: vendorPattern([
+      String.raw`\b(?:displayName|name|detail)['"]?\s*[:=]\s*(?:(['"]){V}(?: (?:Chat|Reasoner))?\1|{V}(?![\w-]| \w))`,
+      String.raw`\b(?:CatalogAdapter|toBe|toEqual)\(\[?(['"]){V}\2`,
     ].join('|'), 'g'),
   },
-  { name: 'provider id', pattern: /(['"`])deepseek\1|\bdeepseek(?=\??:|\[)|(?<=\b(?:provider|thinkingFormat)\s*[:=]\s*)deepseek\b/g },
+  {
+    name: 'provider id',
+    pattern: vendorPattern(String.raw`(['"\x60]){v}\1|\b{v}(?=\??:|\[)|(?<=\b(?:provider|thinkingFormat)\s*[:=]\s*){v}\b`, 'g'),
+  },
   { name: 'code identifier', pattern: /\b\w*[Dd]eep[Ss]eek(?=[A-Z])\w*/g },
 ]
 

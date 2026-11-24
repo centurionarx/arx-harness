@@ -104,14 +104,16 @@ describe('findVendorBrand', () => {
     expect(findVendorBrand('docs/guide.md', text)).toEqual(['docs/guide.md:3: unqualified name', 'docs/guide.md:4: vendor website'])
   })
 
-  it('skips each allowed path and only those paths', () => {
+  it('skips only the upstream-sync manifest and scans license files and vendored sources', () => {
     const text = `Holder: ${Name}, see https://www.${name}.com.`
-    expect(ALLOWED_PATHS.map(form => form.name)).toEqual(['license file', 'third-party notices', 'vendored source', 'this gate', 'upstream-sync manifest'])
-    for (const path of ['LICENSE', 'packages/fs/tool-present/LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/cordis/README.md', 'scripts/verify-vendor-name.ts', 'scripts/upstream-sync.manifest.json']) {
-      expect(findVendorBrand(path, text)).toEqual([])
-    }
-    for (const path of ['LICENSE.md.bak', 'docs/THIRD_PARTY_NOTICES.md', 'packages/vendor/README.md', 'scripts/verify-vendor-name.spec.ts', 'scripts/upstream-sync.ts']) {
+    expect(ALLOWED_PATHS.map(form => form.name)).toEqual(['upstream-sync manifest'])
+    expect(findVendorBrand('scripts/upstream-sync.manifest.json', text)).toEqual([])
+    for (const path of ['LICENSE', 'packages/fs/tool-present/LICENSE', 'THIRD_PARTY_NOTICES.md', 'vendor/cordis/README.md', 'scripts/verify-vendor-name.ts', 'scripts/upstream-sync.ts']) {
       expect(findVendorBrand(path, text)).toEqual([`${path}:1: vendor website`])
     }
+  })
+
+  it('accepts a license file whose vendor mention is its copyright notice', () => {
+    expect(findVendorBrand('packages/fs/tool-present/LICENSE', ['MIT License', '', `Copyright (c) 2026 ${Name}`].join('\n'))).toEqual([])
   })
 })
