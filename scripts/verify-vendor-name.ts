@@ -35,6 +35,8 @@ export const ALLOWED_PATHS: readonly NamedForm[] = [
   { name: 'license file', pattern: /(?:^|\/)LICENSE(?:\.[a-z]+)?$/ },
   { name: 'third-party notices', pattern: /^THIRD_PARTY_NOTICES\.md$/ },
   { name: 'vendored source', pattern: /^vendor\// },
+  // The patterns below must name the forms they match.
+  { name: 'this gate', pattern: /^scripts\/verify-vendor-name\.ts$/ },
   // Pending owner decision: the upstream-sync tooling reads the original repository URL and maps its package names.
   { name: 'upstream-sync manifest', pattern: /^scripts\/upstream-sync\.manifest\.json$/ },
 ]
