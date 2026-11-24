@@ -459,6 +459,35 @@ describe.skipIf(MODE === 'record')('web e2e: conversational reminders', () => {
       MODE,
     )
     expect(await page.locator('[data-schedule-reminder]').count()).toBe(0)
+
+    // The Session-header catalog lists the two active Every records. Its sheet
+    // reads theme tokens; an undeclared one drops the declaration, so the
+    // computed surface and row color must equal the resolved theme tokens.
+    await page.getByRole('button', { name: '2 reminders', exact: true }).click()
+    const catalog = page.getByRole('list', { name: 'Active reminders', exact: true })
+    await catalog.waitFor({ timeout: 15_000 })
+    const styles = await catalog.evaluate((menu) => {
+      const resolve = (property: 'backgroundColor' | 'color', token: string): string => {
+        const probe = document.createElement('span')
+        probe.style[property] = `var(${token})`
+        document.body.append(probe)
+        const value = getComputedStyle(probe)[property]
+        probe.remove()
+        return value
+      }
+      const row = menu.querySelector('li')
+      return {
+        surface: getComputedStyle(menu).backgroundColor,
+        expectedSurface: resolve('backgroundColor', '--arx-specific-menu'),
+        shadow: getComputedStyle(menu).boxShadow,
+        row: row === null ? null : getComputedStyle(row).color,
+        expectedRow: resolve('color', '--arx-alias-label-primary'),
+      }
+    })
+    expect(styles.expectedSurface).not.toBe('rgba(0, 0, 0, 0)')
+    expect(styles.surface).toBe(styles.expectedSurface)
+    expect(styles.shadow).not.toBe('none')
+    expect(styles.row).toBe(styles.expectedRow)
   }, 60_000)
 
   it('uses request-local browser context to create an explicit local At reminder', async () => {

@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-tool-terminal",
   "description": "Six model-facing persistent PTY tools with owner isolation and generic background-job integration",
-  "version": "1.0.64",
+  "version": "1.0.65",
   "publishConfig": {
     "access": "public"
   },
