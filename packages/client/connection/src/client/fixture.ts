@@ -2988,7 +2988,7 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       },
     },
     settings: {
-      // Only the resolved DeepSeek address needed by first-run readiness is
+      // Only the resolved DeepSeek endpoint address needed by first-run readiness is
       // represented here. Fixture-backed journeys do not open its Models
       // editor; real schema-driven forms ride the HTTP transport.
       describe: request => ok(request, {

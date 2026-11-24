@@ -1,12 +1,12 @@
 /**
  * Enforce the rule that the model vendor's name appears only in model-access
  * contexts (root `AGENTS.md`, Conventions: Naming). Every tracked regular text
- * file is scanned line by line for the vendor's name. A line fails when it
- * holds a brand form and no license notice, or when an occurrence remains after the model-access
- * forms are removed and no model-access term stands within
- * {@link ACCESS_TERM_WINDOW} words of it. The allowed paths, the brand forms,
- * the access forms, and the access terms below are the complete, closed list
- * of exceptions; the
+ * file is scanned line by line for the vendor's name. Sentences holding a
+ * vendor copyright notice are removed first. The line then fails when it holds
+ * a brand form, or when an occurrence remains after the model-access forms are
+ * removed and no model-access term stands within {@link ACCESS_TERM_WINDOW}
+ * words of it. The allowed paths, the brand forms, the access forms, and the
+ * access terms below are the complete, closed list of exceptions; the
  * [brand-naming Agent Note](../.agents/notes/implemented/process/2026-08-31-centurionarx-brand-naming.md)
  * owns the rule.
  */
@@ -35,11 +35,17 @@ export const ALLOWED_PATHS: readonly NamedForm[] = [
   { name: 'license file', pattern: /(?:^|\/)LICENSE(?:\.[a-z]+)?$/ },
   { name: 'third-party notices', pattern: /^THIRD_PARTY_NOTICES\.md$/ },
   { name: 'vendored source', pattern: /^vendor\// },
-  // The patterns below must name the forms they match.
+  // The gate's regular expressions must spell the forms they match.
   { name: 'this gate', pattern: /^scripts\/verify-vendor-name\.ts$/ },
-  // Pending owner decision: the upstream-sync tooling reads the original repository URL and maps its package names.
+  // TODO: remove once the owner decides whether to retire the upstream-sync tooling, which reads the original repository URL.
   { name: 'upstream-sync manifest', pattern: /^scripts\/upstream-sync\.manifest\.json$/ },
 ]
+
+/** Verbs that, followed by `by`, `at`, `from`, or `under` and the vendor name, claim authorship or origin. */
+const ORIGIN_VERBS = 'created|built|developed|made|owned|authored|founded|originated|forked|written|maintained|published|shipped|branded'
+
+/** Nouns that, after the vendor name, present the vendor as the project's owner or brand. */
+const ORIGIN_NOUNS = 'product|project|harness|team|company|organization|brand|identity|branding'
 
 /** Forms that present the vendor as author, origin, owner, or product brand; a line holding one fails even beside model-access terms. */
 export const BRAND_FORMS: readonly NamedForm[] = [
@@ -47,12 +53,14 @@ export const BRAND_FORMS: readonly NamedForm[] = [
   { name: 'vendor package scope', pattern: /@deepseek\//i },
   { name: 'vendor website', pattern: /(?:https?:\/\/|\b(?:www|docs|cdn)\.)deepseek\.com/i },
   { name: 'vendor service host', pattern: /deepseeksvc|dp-cdn-deepseek/i },
-  { name: 'vendor chat product', pattern: /DeepSeek Chat(?![ -]?[Cc]ompletions|['"])|deepseekchat/ },
+  { name: 'origin claim', pattern: new RegExp(`\\b(?:${ORIGIN_VERBS}) (?:by|at|from|under) DeepSeek\\b|\\bDeepSeek(?:'s)? (?:${ORIGIN_NOUNS})\\b`, 'i') },
+  // A line holding the `deepseek-chat` model id may carry that model's display name.
+  { name: 'vendor chat product', pattern: /^(?!.*\bdeepseek-chat\b).*(?:\bDeepSeek ?Chat(?![ -]?completions)|deepseekchat)/i },
   { name: 'vendor design system', pattern: /DeepSeek design|DeepSeek wordmark|--(?:arx|dsw)-static-deepseek/i },
   { name: 'vendor product directory', pattern: /\.deepseek\//i },
 ]
 
-/** A copyright notice naming the vendor; a line holding one is a license notice and is allowed whole. */
+/** A copyright notice naming the vendor; the sentence holding one is a license notice and is removed before the line is judged. */
 export const LICENSE_NOTICE = /\b[Cc]opyright (?:\(c\) )?\d{4} DeepSeek\b/
 
 /** Model-access forms removed from a line before the remaining occurrences are judged. */
@@ -62,19 +70,24 @@ export const ACCESS_FORMS: readonly NamedForm[] = [
   { name: 'model or route id', pattern: /\bdeepseek-(?:official|v\d[\w.-]*|chat|reasoner|flash|preview|e2e|defaults)\b/gi },
   { name: 'model display name', pattern: /\bDeepSeek[- ]V\d(?:[- ](?:Flash|Pro))?\b/g },
   { name: 'provider package', pattern: /\b(?:arx-)?(?:llm|web-search)-deepseek\b/g },
-  { name: 'provider display name', pattern: /(['"])DeepSeek(?: [A-Z][a-z]+)?\1|\b(?:displayName|name|detail): DeepSeek\b(?! \w)/g },
-  { name: 'provider id', pattern: /(?<![\w./@-])deepseek(?![\w-])/g },
+  {
+    name: 'provider display name',
+    pattern: new RegExp([
+      String.raw`\b(?:displayName|name|detail)['"]?\s*[:=]\s*(?:(['"])DeepSeek(?: (?:Chat|Reasoner))?\1|DeepSeek(?![\w-]| \w))`,
+      String.raw`\b(?:CatalogAdapter|toBe|toEqual)\(\[?(['"])DeepSeek\2`,
+    ].join('|'), 'g'),
+  },
+  { name: 'provider id', pattern: /(['"`])deepseek\1|\bdeepseek(?=\??:|\[)|(?<=\b(?:provider|thinkingFormat)\s*[:=]\s*)deepseek\b/g },
   { name: 'code identifier', pattern: /\b\w*[Dd]eep[Ss]eek(?=[A-Z])\w*/g },
 ]
 
 /** Words, as regular-expression alternatives, marking the remaining prose name as the model provider; English and Portuguese. */
 export const ACCESS_TERMS: readonly string[] = [
   'adapters?', 'APIs?', 'endpoints?', 'models?', 'providers?', 'routes?', 'keys?', 'credentials?', 'accounts?', 'login',
-  'requests?', 'serializ\\w*', 'Files', 'Completions', 'SSE', 'thinking', 'reasoning', 'catalogs?', 'onboarding', 'setup',
-  'configuration', 'config', 'wire', 'vision', 'tokens?', 'e2e', 'gateways?', 'function', 'replay', 'defaults', 'services?',
-  'implementations?', 'deployments?', 'composition', 'conversations?', 'contract', 'address', 'lookup', 'probe', 'polic(?:y|ies)',
-  'layouts?', 'fetch', 'specific', 'readiness', 'nonce', 'URLs?', 'conversion', 'settings',
-  'acesso', 'modelos?', 'provedor(?:es)?', 'chaves?', 'contas?', 'configuração', 'credencia\\w*',
+  'requests?', 'serializ\\w*', 'Completions', 'SSE', 'thinking', 'reasoning', 'catalogs?', 'onboarding', 'wire', 'vision',
+  'tokens?', 'gateways?', 'replay', 'config(?:uration)?', 'implementations?', 'deployments?', 'composition', 'contract', 'defaults',
+  'services?', 'e2e', 'nonce', 'probe', 'polic(?:y|ies)', 'layouts?', 'lookup', 'Files', 'conversations?',
+  'acesso', 'modelos?', 'provedor(?:es)?', 'chaves?', 'contas?', 'credencia\\w*',
 ]
 
 /** One whole word that is an access term. */
@@ -90,10 +103,11 @@ export const ACCESS_TERM_WINDOW = 8
  *   access term within the window, or `undefined` when the line is allowed.
  */
 export function judgeLine(line: string): string | undefined {
-  if (!VENDOR_NAME.test(line) || LICENSE_NOTICE.test(line)) return undefined
-  const brand = BRAND_FORMS.find(form => form.pattern.test(line))
+  if (!VENDOR_NAME.test(line)) return undefined
+  const judged = line.split(/(?<=[.;])\s+/).filter(sentence => !LICENSE_NOTICE.test(sentence)).join(' ')
+  const brand = BRAND_FORMS.find(form => form.pattern.test(judged))
   if (brand !== undefined) return brand.name
-  let rest = line
+  let rest = judged
   for (const form of ACCESS_FORMS) rest = rest.replace(form.pattern, ' ')
   const words = rest.split(/[^\p{L}\p{N}_']+/u).filter(word => word !== '')
   for (const [index, word] of words.entries()) {
