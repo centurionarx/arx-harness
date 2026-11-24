@@ -35,10 +35,13 @@ function isSeedUser(value: unknown): value is SeedUser {
   return typeof value === 'object' && value !== null && 'userId' in value && typeof value.userId === 'string'
     && 'username' in value && typeof value.username === 'string' && 'password' in value && typeof value.password === 'string'
 }
-/** The per-run USER seed, when the Vitest global setup serves one; a fixture outside Vitest starts from an empty root. */
+/**
+ * The per-run seed, when the Vitest global setup serves one; a `--first-password`
+ * start or a fixture outside Vitest starts from an empty root.
+ */
 async function identitySeed(): Promise<IdentitySeed | undefined> {
   const raw = process.env[IDENTITY_SEED_ENV]
-  if (raw === undefined || audience !== 'user' || restricted) return undefined
+  if (raw === undefined || restricted) return undefined
   const address = JSON.parse(raw) as { url: string; token: string }
   const response = await fetch(address.url, { headers: { Authorization: 'Bearer ' + address.token } })
   if (!response.ok) throw new Error('identity seed unavailable: ' + await response.text())
@@ -105,13 +108,15 @@ const native = frontend ? { accessMode: 'authenticated' as const,
   packageBaseUrl: pathToFileURL(resolverRoot!).href + '/', extraPlugins } : {}
 const harnessStarted = performance.now()
 const seed = await identitySeed()
-// A copy of the seed skips the MASTER bootstrap and the two ready users, whose password hashing dominates a start.
+// A copy of the seed skips the MASTER bootstrap and the two ready users, whose password hashing dominates a start;
+// an admin start uses the identity part of the same root.
 const seededRoot = seed === undefined ? undefined : await realpath(await mkdtemp(join(tmpdir(), 'arx-auth-fixture-')))
 if (seed !== undefined && seededRoot !== undefined) await cp(seed.root, seededRoot, { recursive: true })
 const fixture = audience === 'user' && !restricted
   ? await storageHarness({ http: true, ...(seededRoot === undefined ? {} : { root: seededRoot }),
     ...(supervisor === undefined ? {} : { endpoint: supervisor.endpoint }), ...native })
-  : await identityHarness({ api: audience, readyUsers: restricted ? 0 : 2, bootstrap: !restricted, ...native })
+  : await identityHarness({ api: audience,
+    ...(seededRoot === undefined ? { readyUsers: restricted ? 0 : 2, bootstrap: !restricted } : { root: seededRoot }), ...native })
 const users: readonly SeedUser[] = seed?.users ?? fixture.users
 const master = seed === undefined ? fixture.master : await fixture.ctx.webIdentity.authenticate(
   (await fixture.ctx.webIdentity.login('arxadmin', seed.masterPassword, 'admin')).token, 'admin')

@@ -146,7 +146,7 @@ export default defineConfig({
           name: 'thread-safe',
           execArgv: vitestExecArgv,
           ...laneBudget,
-          // Seeds the HTTP browser fixture's USER identity once per run, in the background, for the specs that start it.
+          // Seeds the HTTP browser fixture's identity once per run, in the background, for the specs that start it.
           globalSetup: ['./examples/web-identity/tests/identity-seed.global.ts'],
           // Node 24 has aborted in its CJS lexer (v8::ToLocalChecked Empty
           // MaybeLocal in cjs_lexer::Parse) from worker threads on macOS,

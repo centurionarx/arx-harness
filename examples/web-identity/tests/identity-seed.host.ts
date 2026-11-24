@@ -1,6 +1,6 @@
 /**
- * Seeds one USER-audience identity and owner-storage root for the HTTP browser
- * fixture: MASTER bootstrap and two ready users, the password hashing that
+ * Seeds one identity and owner-storage root for the HTTP browser fixture's USER
+ * and admin starts: MASTER bootstrap and two ready users, the password hashing that
  * dominates a fixture start. The parent passes the empty root as argv[2] and
  * receives the credentials only over private IPC after the harness closed.
  */

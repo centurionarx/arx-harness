@@ -10,11 +10,11 @@ The `client/ui-auth` and `client/runtime` HTTP specs start [the browser fixture 
 
 [identity-seed.global.ts](../../../../examples/web-identity/tests/identity-seed.global.ts) is a Vitest global setup of the `thread-safe` project. When a run starts, it forks [identity-seed.host.ts](../../../../examples/web-identity/tests/identity-seed.host.ts), which runs the same `storageHarness({ http: true })` bootstrap into a private temporary root, closes it, and sends the root, the MASTER password and the two users over IPC. The setup does not await the seed. A loopback HTTP server answers each fixture start with the seed after it exists; it accepts only the per-run bearer token that `provide('identitySeed')` gives the workers. Teardown stops an unfinished seed process and removes the root.
 
-`browserFixture` in [http-fixture.client.ts](../../../../packages/client/ui-auth/tests/http-fixture.client.ts) passes `inject('identitySeed')` to the launcher, which hands it to the server process in `ARX_TEST_IDENTITY_SEED`. A USER start without `--first-password` copies the seed root into its own temporary root, starts the storage harness over the copy, and logs MASTER in again. Credentials travel only over loopback and private IPC; the copied root holds verifiers, never passwords.
+`browserFixture` in [http-fixture.client.ts](../../../../packages/client/ui-auth/tests/http-fixture.client.ts) passes `inject('identitySeed')` to the launcher, which hands it to the server process in `ARX_TEST_IDENTITY_SEED`. Every start without `--first-password` copies the seed root into its own temporary root and logs MASTER in again: a USER start runs the storage harness over the copy, and an admin start runs the identity harness over the identity part of the same copy. Credentials travel only over loopback and private IPC; the copied root holds verifiers, never passwords.
 
 The `ready` message carries `timing`: the module load, the harness start, and the time to ready, in milliseconds since the server process started, and whether the start was seeded. The helper writes one `identity fixture start:` line to stderr per start, because this Vitest setup does not print console calls, so the CI log shows where each start spent its time.
 
-With the seed ready, a USER start took 3.1 to 4.8 seconds on Linux, against 6.2 to 7.1 seconds for the unseeded admin starts in the same run; the harness phase fell from 3.9 to about 1.0 second.
+With the seed ready, a start took 3.1 to 4.8 seconds on an otherwise idle Linux machine, against 6.1 to 7.1 seconds unseeded; the harness phase fell from 3.9 to about 1.0 second.
 
 ## Alternatives considered
 
@@ -31,7 +31,8 @@ With the seed ready, a USER start took 3.1 to 4.8 seconds on Linux, against 6.2 
 ## Consequences
 
 - A fixture start that asks before the background seed finishes waits for it, so the first USER start of a run can still pay the bootstrap.
-- Admin and `--first-password` starts, and fixture starts outside Vitest such as the native browser gates, still bootstrap from an empty root.
+- `--first-password` starts, which test the MASTER bootstrap itself, and fixture starts outside Vitest such as the native browser gates still start from an empty root.
+- A copy holds no captured delivery: `recovery-link` returns only mail sent after the start, which is all any spec asks for.
 - Every run of the `thread-safe` project spends one bootstrap of CPU in the background, including runs that start no HTTP fixture. Teardown stops the seed process if it is still running.
 - A failed seed fails the fixture start that asks for it, with the seed process's stderr in the error.
 - Module loading through tsx, about 2.2 seconds on Linux, remains in every start.

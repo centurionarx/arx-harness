@@ -1,6 +1,6 @@
 /**
- * Vitest global setup that seeds the HTTP browser fixture's USER identity once
- * per Vitest process. A child process starts the seed in the background when
+ * Vitest global setup that seeds the HTTP browser fixture's identity once per
+ * Vitest process. A child process starts the seed in the background when
  * the run starts, so no test hook waits for its password hashing unless a
  * fixture asks before it ends. A loopback server answers each fixture start
  * with the seed root and credentials; it requires the per-run bearer token
