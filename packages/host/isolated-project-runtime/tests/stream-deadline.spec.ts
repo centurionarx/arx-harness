@@ -46,8 +46,9 @@ afterEach(async () => {
 })
 /**
  * Moves the runtime's header and unary deadlines to a fake clock, so `requestTimeoutMs` elapses only when the
- * test advances it. Loopback requests, sqlite and the supervisor fixture keep real time, and a slow machine
- * cannot expire a deadline before the step that the test observes.
+ * test advances it and a slow machine cannot expire a deadline before the step that the test observes. Every
+ * `setTimeout` created during the test is fake, including identity and HTTP client timers; none of them is due
+ * within the advances these tests make. Socket I/O, SQLite and the supervisor fixture keep real time.
  */
 function fakeDeadlines(): void {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
@@ -57,6 +58,19 @@ function fakeDeadlines(): void {
     return controller.signal
   })
 }
+/**
+ * Records the trigger of each lease cancellation that the runtime starts. An elapsed deadline reaches `cancel()`
+ * within the microtasks that follow it, so the record is complete after one turn of the event loop.
+ * @param runtime - The isolated project runtime under test.
+ * @returns The triggers recorded so far, in call order.
+ */
+function recordCancels(runtime: unknown): string[] {
+  const target = runtime as { cancel(lease: unknown, trigger: string): Promise<void> }
+  const triggers: string[] = [], cancel = target.cancel.bind(target)
+  target.cancel = (lease, trigger) => { triggers.push(trigger); return cancel(lease, trigger) }
+  return triggers
+}
+const eventLoopTurn = () => new Promise(resolve => setImmediate(resolve))
 async function setup(endpoint?: string) {
   const supervisor = await supervisorFixture(); resources.push(supervisor)
   const harness = await seededHarness({ endpoint: endpoint ?? supervisor.endpoint,
@@ -127,15 +141,18 @@ describe('stream deadline covers only the supervisor response headers', () => {
     if (address === null || typeof address === 'string') throw new Error('silent supervisor port unavailable')
     const f = await setup('http://127.0.0.1:' + String(address.port))
     fakeDeadlines()
+    const cancels = recordCancels(f.runtime)
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
-    let settled = false
-    const next = stream.next().finally(() => { settled = true })
+    const next = stream.next()
     next.catch(() => {})
     const attached = f.attach()
     await streamRequested.promise
     await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS - 1)
-    expect(settled).toBe(false)
+    await eventLoopTurn()
+    expect(cancels).toEqual([])
     await vi.advanceTimersByTimeAsync(1)
+    await eventLoopTurn()
+    expect(cancels).toContain('request-failed')
     await Promise.all([expect(next).rejects.toMatchObject({ name: 'TimeoutError' }), attached])
     expect(streamOperations).toHaveLength(1)
     expect(cancelled.filter(id => streamOperations.includes(id))).toEqual(streamOperations)
@@ -196,16 +213,14 @@ describe('stream deadline covers only the supervisor response headers', () => {
     const f = await setup()
     fakeDeadlines()
     const stream = f.runtime.streamMux(f.authority, new AbortController().signal)[Symbol.asyncIterator]()
-    let settled = false
     const next = stream.next().then(result => (result.done ? 'done' : 'frame'), () => 'rejected')
-    void next.then(() => { settled = true })
     // The attach request waits for the stream's response headers before its own request.
     await f.attach()
     expect(f.supervisor.operations.size).toBe(1)
+    const cancels = recordCancels(f.runtime)
     await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS * 4)
-    // A loopback round trip runs after anything that an elapsed deadline would have ended.
-    await f.attach()
-    expect(settled).toBe(false)
+    await eventLoopTurn()
+    expect(cancels).toEqual([])
     await f.harness.ctx.webIdentity.setStatus(f.harness.master, f.authority.principal.userId, 'BLOCKED')
     expect(await next).not.toBe('frame')
     expect(f.supervisor.operations.size).toBe(0)

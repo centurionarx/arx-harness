@@ -44,7 +44,9 @@ describe('quiet expiry admission and HTTP publication', () => {
       { headers: { cookie: AUTH_COOKIE_NAMES.user + '=' + a.token } })
     const other = fetch(h.url! + '/auth/invalidation?generation=' + String(a2.revision),
       { headers: { cookie: AUTH_COOKIE_NAMES.user + '=' + second.token }, signal: otherAbort.signal })
-    const abandoned = other.then(() => { otherSettled = true; return 'settled' }, () => 'aborted')
+    const abandoned = other.then(() => 'settled', () => 'aborted')
+    // The server settles a poll in the same expiry sweep that settles A's, so this flag is set before A's body is read.
+    void polls[1]!.settled.then(() => { otherSettled = true })
     try {
       await Promise.all(polls.map(observed => observed.pending))
       near(-80)
