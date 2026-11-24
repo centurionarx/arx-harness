@@ -52,7 +52,7 @@ function props(
     byId: summaries ?? {
       [CHILD]: {
         id: CHILD,
-        title: '正在扫描项目文件',
+        title: 'Analisando os arquivos do projeto',
         displayTitle: 'worker',
         running: true,
         blank: false,
@@ -165,7 +165,7 @@ describe('SubagentHeaderLineage', () => {
 
     expect(input.setCatalogOpen).toHaveBeenCalledWith(PARENT, true)
     expect(screen.getAllByRole('treeitem')).toHaveLength(3)
-    expect(screen.getByText('正在扫描项目文件 · continuable · running')).toBeTruthy()
+    expect(screen.getByText('Analisando os arquivos do projeto · continuable · running')).toBeTruthy()
     expect(screen.getByText('one-shot · not running')).toBeTruthy()
     const diagnostic = screen.getByRole('treeitem', { name: /corrupted session record/ })
     expect(diagnostic.getAttribute('aria-disabled')).toBe('true')
@@ -751,7 +751,7 @@ describe('SubagentHeaderLineage', () => {
         },
       }),
       lineageSessionId: CHILD,
-      displayTitle: '正在扫描项目文件',
+      displayTitle: 'Analisando os arquivos do projeto',
       openTitle: vi.fn(),
     }
     render(<SubagentHeaderLineage {...input} />)
@@ -781,11 +781,11 @@ describe('SubagentHeaderLineage', () => {
       ...props(undefined, {}, {
         [CHILD]: {
           ...summary(CHILD, 1), parentId: PARENT, origin: 'subagent' as const,
-          displayTitle: '正在扫描项目文件',
+          displayTitle: 'Analisando os arquivos do projeto',
         },
       }),
       lineageSessionId: CHILD,
-      displayTitle: '正在扫描项目文件',
+      displayTitle: 'Analisando os arquivos do projeto',
       ...(openTitle === undefined ? {} : { openTitle }),
     }
     render(<SubagentHeaderLineage {...input} />)

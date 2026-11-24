@@ -35,7 +35,8 @@ type Feedback = { key: 'error.incomplete' | 'error.unanswered' } | { text: strin
  * @returns Display label plus recommendation state.
  */
 export function parseRecommendedLabel(label: string): { label: string; recommended: boolean } {
-  const suffix = /\s*(?:\((?:recommended|recomendad[ao]|推荐)\)|（(?:recommended|recomendad[ao]|推荐)）)\s*$/i
+  // \u63a8\u8350 is the two-character Chinese word for "recommended".
+  const suffix = /\s*(?:\((?:recommended|recomendad[ao]|\u63a8\u8350)\)|（(?:recommended|recomendad[ao]|\u63a8\u8350)）)\s*$/i
   return suffix.test(label)
     ? { label: label.replace(suffix, ''), recommended: true }
     : { label, recommended: false }

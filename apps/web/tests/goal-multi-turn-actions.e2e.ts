@@ -22,7 +22,7 @@ const OVERRIDE = join(SNAPSHOT_DIR, 'replay.override.json')
 const UI_EXPECTED = join(SNAPSHOT_DIR, 'ui.expected.md')
 const MODE = webSnapshotMode()
 
-const PROMPT = '做两个turn，每个turn输出随机一个包的文件结构。注意你做完一个turn之后，直接输出内容，停止，我们的系统会帮你再开一个turn，你看着做一个类似的'
+const PROMPT = 'Faça dois turns; em cada turn, mostre a estrutura de arquivos de um pacote aleatório. Atenção: ao terminar um turn, mostre o conteúdo diretamente e pare; nosso sistema vai abrir outro turn para você, e aí você faz algo parecido'
 const COMMAND = `/goal ${PROMPT}`
 
 const PACKAGE_FILES: Readonly<Record<string, string>> = {

@@ -23,14 +23,14 @@ const MODE = webSnapshotMode()
 const SEED_ID = 'markdown-cjk-strong-web-e2e'
 const DONE = 'CJK_STRONG_DONE'
 const CASES = [
-  ['**注意：**内容', '注意：', '注意：内容'],
-  ['**Notice:**内容', 'Notice:', 'Notice:内容'],
-  ['**事件中间件（waterfall）**实现', '事件中间件（waterfall）', '事件中间件（waterfall）实现'],
-  ['**事件中间件(waterfall)**实现', '事件中间件(waterfall)', '事件中间件(waterfall)实现'],
-  ['**句号。**后续', '句号。', '句号。后续'],
-  ['**Period.**后续', 'Period.', 'Period.后续'],
-  ['**提醒！**继续', '提醒！', '提醒！继续'],
-  ['**Warning!**继续', 'Warning!', 'Warning!继续'],
+  ['**ＡＢ：**ーＪＫ', 'ＡＢ：', 'ＡＢ：ーＪＫ'],
+  ['**Notice:**ーＪＫ', 'Notice:', 'Notice:ーＪＫ'],
+  ['**ＡＢＣＤＥ（waterfall）**ーＬＭ', 'ＡＢＣＤＥ（waterfall）', 'ＡＢＣＤＥ（waterfall）ーＬＭ'],
+  ['**ＡＢＣＤＥ(waterfall)**ーＬＭ', 'ＡＢＣＤＥ(waterfall)', 'ＡＢＣＤＥ(waterfall)ーＬＭ'],
+  ['**ＣＤ。**ーＮＰ', 'ＣＤ。', 'ＣＤ。ーＮＰ'],
+  ['**Period.**ーＮＰ', 'Period.', 'Period.ーＮＰ'],
+  ['**ＥＦ！**ーＱＲ', 'ＥＦ！', 'ＥＦ！ーＱＲ'],
+  ['**Warning!**ーＱＲ', 'Warning!', 'Warning!ーＱＲ'],
 ] as const
 
 /** Build one settled assistant reply covering CJK-adjacent strong punctuation boundaries. */

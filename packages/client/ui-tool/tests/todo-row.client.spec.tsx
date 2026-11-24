@@ -17,30 +17,30 @@ const t: TodoRowProps['t'] = makeTranslate(en, commonEn)
 afterEach(cleanup)
 
 const LIST: TodoItem[] = [
-  { content: '搭骨架', status: 'completed' },
-  { content: '写组件', status: 'in_progress' },
-  { content: '补测试', status: 'pending' },
+  { content: 'Montar o esqueleto', status: 'completed' },
+  { content: 'Escrever os componentes', status: 'in_progress' },
+  { content: 'Completar os testes', status: 'pending' },
 ]
 
 const PARALLEL: TodoItem[] = [
-  { content: '搭骨架', status: 'completed' },
-  { content: '写组件', status: 'in_progress' },
-  { content: '跑后台构建', status: 'in_progress' },
-  { content: '读源码', status: 'in_progress' },
-  { content: '补测试', status: 'pending' },
+  { content: 'Montar o esqueleto', status: 'completed' },
+  { content: 'Escrever os componentes', status: 'in_progress' },
+  { content: 'Rodar o build em segundo plano', status: 'in_progress' },
+  { content: 'Ler o código-fonte', status: 'in_progress' },
+  { content: 'Completar os testes', status: 'pending' },
 ]
 
 describe('planSummary', () => {
   it('counts done/total and names the single active item with no extra count', () => {
-    expect(planSummary(LIST)).toEqual({ done: 1, total: 3, activeContent: '写组件', activeExtra: 0 })
+    expect(planSummary(LIST)).toEqual({ done: 1, total: 3, activeContent: 'Escrever os componentes', activeExtra: 0 })
   })
 
   it('reports the extra active count separately when several items are in progress', () => {
-    expect(planSummary(PARALLEL)).toEqual({ done: 1, total: 5, activeContent: '写组件', activeExtra: 2 })
+    expect(planSummary(PARALLEL)).toEqual({ done: 1, total: 5, activeContent: 'Escrever os componentes', activeExtra: 2 })
   })
 
   it('has no hint when nothing is in progress', () => {
-    expect(planSummary([{ content: '都完了', status: 'completed' }]))
+    expect(planSummary([{ content: 'Tudo concluído', status: 'completed' }]))
       .toEqual({ done: 1, total: 1, activeContent: null, activeExtra: 0 })
   })
 
@@ -80,15 +80,15 @@ describe('TodoRow', () => {
   it('summarizes counts and the active item from the call args', () => {
     render(<TodoRow {...rowProps(resultNode(ARGS))} />)
     expect(screen.getByText('Update to-do list')).toBeTruthy()
-    expect(screen.getByText('1/3 completed · 写组件')).toBeTruthy()
+    expect(screen.getByText('1/3 completed · Escrever os componentes')).toBeTruthy()
   })
 
   it('reports the extra active count outside the ellipsized summary text', () => {
     const { container } = render(<TodoRow {...rowProps(resultNode(JSON.stringify({ todos: PARALLEL })))} />)
-    const text = screen.getByText('1/5 completed · 写组件')
+    const text = screen.getByText('1/5 completed · Escrever os componentes')
     const extra = screen.getByText('+2')
     expect(text.contains(extra)).toBe(false)
-    expect(container.textContent).toContain('1/5 completed · 写组件+2')
+    expect(container.textContent).toContain('1/5 completed · Escrever os componentes+2')
   })
 
   it('omits the active clause when no item is in progress and reads running-call args', () => {
@@ -129,7 +129,7 @@ describe('TodoRow', () => {
     render(<TodoRow {...rowProps(resultNode(ARGS))} />)
     fireEvent.click(screen.getByRole('button', { expanded: false }))
     expect(screen.getByRole('button', { expanded: true })).toBeTruthy()
-    expect(screen.getByText(/搭骨架/)).toBeTruthy()
+    expect(screen.getByText(/Montar o esqueleto/)).toBeTruthy()
   })
 
   it.each([

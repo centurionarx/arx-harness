@@ -21,18 +21,18 @@ const t: TodoDockProps['t'] = makeTranslate(en, commonEn)
 afterEach(cleanup)
 
 const LIST: TodoItem[] = [
-  { content: '搭骨架', status: 'completed' },
-  { content: '写组件', status: 'in_progress' },
-  { content: '补测试', status: 'pending' },
+  { content: 'Montar a estrutura', status: 'completed' },
+  { content: 'Escrever o componente', status: 'in_progress' },
+  { content: 'Completar os testes', status: 'pending' },
 ]
 
 /** A parallel plan: three tasks running at once (concurrent subagents). */
 const PARALLEL: TodoItem[] = [
-  { content: '搭骨架', status: 'completed' },
-  { content: '写组件', status: 'in_progress' },
-  { content: '跑后台构建', status: 'in_progress' },
-  { content: '读源码', status: 'in_progress' },
-  { content: '补测试', status: 'pending' },
+  { content: 'Montar a estrutura', status: 'completed' },
+  { content: 'Escrever o componente', status: 'in_progress' },
+  { content: 'Rodar o build em segundo plano', status: 'in_progress' },
+  { content: 'Ler o código-fonte', status: 'in_progress' },
+  { content: 'Completar os testes', status: 'pending' },
 ]
 
 describe('TodoPanel', () => {
@@ -52,8 +52,8 @@ describe('TodoPanel', () => {
 
   it('omits the completed segment while nothing is done yet', () => {
     render(<TodoPanel todos={[
-      { content: '写组件', status: 'in_progress' },
-      { content: '补测试', status: 'pending' },
+      { content: 'Escrever o componente', status: 'in_progress' },
+      { content: 'Completar os testes', status: 'pending' },
     ]} t={t} />)
     expect(screen.getByText('1 in progress · 1 pending')).toBeTruthy()
     expect(screen.queryByText(/completed/)).toBeNull()
@@ -64,8 +64,8 @@ describe('TodoPanel', () => {
     fireEvent.click(screen.getByRole('button', { expanded: false }))
     const items = screen.getAllByRole('listitem')
     expect(items.map(li => li.getAttribute('data-status'))).toEqual(['completed', 'in_progress', 'pending'])
-    expect(screen.getByText('搭骨架')).toBeTruthy()
-    expect(screen.getByText('写组件')).toBeTruthy()
+    expect(screen.getByText('Montar a estrutura')).toBeTruthy()
+    expect(screen.getByText('Escrever o componente')).toBeTruthy()
     // Each status row carries an SVG glyph (not a text bullet).
     expect(items.every(li => li.querySelector('svg') !== null)).toBe(true)
   })
@@ -78,7 +78,7 @@ describe('TodoPanel', () => {
     expect(screen.queryByRole('list')).toBeNull()
     // Collapsed header is title + progress only (no in-progress content hint).
     expect(screen.getByText('1 completed · 1 in progress · 1 pending')).toBeTruthy()
-    expect(screen.queryByText('写组件')).toBeNull()
+    expect(screen.queryByText('Escrever o componente')).toBeNull()
     fireEvent.click(screen.getByRole('button', { expanded: false }))
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
   })
@@ -90,15 +90,15 @@ describe('TodoPanel', () => {
     // items carry the in-progress glyph at once, and the header counts all three.
     const statuses = screen.getAllByRole('listitem').map(li => li.getAttribute('data-status'))
     expect(statuses.filter(s => s === 'in_progress')).toHaveLength(3)
-    expect(screen.getByText('跑后台构建')).toBeTruthy()
-    expect(screen.getByText('读源码')).toBeTruthy()
+    expect(screen.getByText('Rodar o build em segundo plano')).toBeTruthy()
+    expect(screen.getByText('Ler o código-fonte')).toBeTruthy()
     expect(screen.getByText('1 completed · 3 in progress · 1 pending')).toBeTruthy()
   })
 
   it('an all-completed list collapses the summary to the done count alone', () => {
-    render(<TodoPanel todos={[{ content: '都完了', status: 'completed' }]} t={t} />)
+    render(<TodoPanel todos={[{ content: 'Tudo concluído', status: 'completed' }]} t={t} />)
     expect(screen.getByRole('button', { expanded: false })).toBeTruthy()
-    expect(screen.queryByText('都完了')).toBeNull()
+    expect(screen.queryByText('Tudo concluído')).toBeNull()
     expect(screen.getByText('1 completed')).toBeTruthy()
     expect(screen.queryByText(/in progress|pending/)).toBeNull()
   })

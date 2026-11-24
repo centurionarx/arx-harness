@@ -83,7 +83,7 @@ try {
   if (!explicitEnvironment) throw new Error(`E2B subprocess dropped an explicit environment entry: ${environmentText}`)
 
   const splitUtf8Handle = ctx.subprocess.spawn({
-    argv: ['bash', '-c', "printf '\\344'; sleep 0.05; printf '\\275'; sleep 0.05; printf '\\240'; sleep 0.05; printf '\\345'; sleep 0.05; printf '\\245'; sleep 0.05; printf '\\275'"],
+    argv: ['bash', '-c', "printf '\\357'; sleep 0.05; printf '\\274'; sleep 0.05; printf '\\241'; sleep 0.05; printf '\\357'; sleep 0.05; printf '\\274'; sleep 0.05; printf '\\242'"],
     cwd: process.cwd(),
     stdio: { stdin: 'ignore', stdout: { maxBytes: 32 }, stderr: { maxBytes: 4_096 } },
     graceMs: 500,
@@ -91,7 +91,7 @@ try {
   })
   const splitUtf8Outcome = await splitUtf8Handle.done
   const splitUtf8Output = splitUtf8Handle.collected.stdout?.readFrom(0).text
-  if (splitUtf8Outcome.exitCode !== 0 || splitUtf8Output !== '你好') {
+  if (splitUtf8Outcome.exitCode !== 0 || splitUtf8Output !== 'ＡＢ') {
     throw new Error(`E2B subprocess corrupted split UTF-8 output: ${JSON.stringify({ splitUtf8Outcome, splitUtf8Output })}`)
   }
 
@@ -123,7 +123,7 @@ try {
   const remoteLspFixture = await ctx.fs.resolve('fixture-lsp.mjs')
   await ctx.fs.writeText(remoteLspFixture, lspFixture, { kind: 'createIfAbsent' })
   const remoteSource = await ctx.fs.resolve('multibyte # file.ts')
-  await ctx.fs.writeText(remoteSource, 'const café = "你好"\nconsole.log(café)\n', { kind: 'createIfAbsent' })
+  await ctx.fs.writeText(remoteSource, 'const café = "ＡＢ"\nconsole.log(café)\n', { kind: 'createIfAbsent' })
   const hover = await ctx.lsp.query({
     operation: 'hover',
     filePath: 'multibyte # file.ts',
@@ -140,7 +140,7 @@ try {
   const terminal = await ctx.terminals.spawn(owner, { type: 'shell' })
   terminalId = terminal.sessionId
   const terminalEcho = await ctx.terminals.startSend(owner, terminal.sessionId, {
-    text: "printf 'PTY-你好\\n'",
+    text: "printf 'PTY-ＡＢ\\n'",
     submit: true,
   }).done
   const sleeping = ctx.terminals.startSend(owner, terminal.sessionId, {

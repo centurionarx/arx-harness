@@ -198,15 +198,15 @@ function promptData(text: string): unknown {
 
 describe('session reference URI and inline mentions', () => {
   it('round-trips arbitrary session ids and replaces mentions with readable labels', () => {
-    const sessionId = SessionId('unicode/引号"/slash\\/line\n')
+    const sessionId = SessionId('unicode/citação"/slash\\/line\n')
     const uri = encodeSessionReferenceUri(sessionId)
     expect(decodeSessionReferenceUri(uri)).toBe(sessionId)
 
-    const mention = formatSessionReferenceMention({ sessionId, label: '源]会话' })
+    const mention = formatSessionReferenceMention({ sessionId, label: 'origem]sessão' })
     const parsed = parseSessionReferenceText(`compare ${mention} and ${uri}`)
-    expect(parsed.text).toBe(`compare @源]会话 and @${sessionId}`)
+    expect(parsed.text).toBe(`compare @origem]sessão and @${sessionId}`)
     expect(parsed.references).toEqual([
-      { sessionId, label: '源]会话' },
+      { sessionId, label: 'origem]sessão' },
       { sessionId, label: sessionId },
     ])
     expect(formatSessionReferenceMention({ sessionId })).toContain(`@[${sessionId.replaceAll('\\', '\\\\').replaceAll(']', '\\]')}]`)
@@ -608,7 +608,7 @@ describe('session reference discovery and preparation', () => {
         step: 1,
         message: createMessage({
           role: 'assistant',
-          content: [{ type: 'text', text: `latest-${'界'.repeat(400)}` }],
+          content: [{ type: 'text', text: `latest-${'€'.repeat(400)}` }],
           source: {
             kind: 'model',
             ...{ provider: 'mock', model: 'mock' },
@@ -638,7 +638,7 @@ describe('session reference discovery and preparation', () => {
       source.append(
         'user/message',
         createUserMessage({
-          content: [{ type: 'text', text: `${id}-${'界'.repeat(400)}` }],
+          content: [{ type: 'text', text: `${id}-${'€'.repeat(400)}` }],
           source: checkpointSource(id),
         }),
         { surfaceOp: 'append' },

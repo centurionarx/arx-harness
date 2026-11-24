@@ -115,16 +115,16 @@ describe('MenuView', () => {
         source: 'reference',
         status: 'ready',
         items: [
-          { name: 'Folder · src/', section: '文件与文件夹' },
-          { name: 'File · README.md', section: '文件与文件夹' },
-          { name: 'Session · Research', section: 'Session 对话' },
+          { name: 'Folder · src/', section: 'Arquivos e pastas' },
+          { name: 'File · README.md', section: 'Arquivos e pastas' },
+          { name: 'Session · Research', section: 'Conversas das sessões' },
         ],
       }],
       highlight: { source: 'reference', index: 0 },
     }))
     expect(screen.queryByText('reference')).toBeNull()
-    expect(screen.getAllByText('文件与文件夹')).toHaveLength(1)
-    expect(screen.getAllByText('Session 对话')).toHaveLength(1)
+    expect(screen.getAllByText('Arquivos e pastas')).toHaveLength(1)
+    expect(screen.getAllByText('Conversas das sessões')).toHaveLength(1)
     const options = screen.getAllByRole('option')
     expect(options.map(option => option.textContent)).toEqual([
       'Folder · src/',

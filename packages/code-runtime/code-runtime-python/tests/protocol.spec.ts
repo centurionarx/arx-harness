@@ -233,8 +233,8 @@ describe('checkDoneValue', () => {
     // A high surrogate followed by a NON-low character is a lone surrogate (6-byte
     // escape) plus that character: `\ud800` + `a` = 2 quotes + 6 + 1 = 9.
     expect(checkDoneValue('\ud800a', 9)).toEqual({ ok: true, bytes: 9 })
-    // A BMP 3-byte code point (CJK) meters at its raw UTF-8 width: 2 quotes + 3.
-    expect(checkDoneValue('中', 5)).toEqual({ ok: true, bytes: 5 })
+    // A BMP 3-byte code point (the euro sign) meters at its raw UTF-8 width: 2 quotes + 3.
+    expect(checkDoneValue('€', 5)).toEqual({ ok: true, bytes: 5 })
     // Same non-allocating meter for object keys, before the value is enqueued.
     expect(checkDoneValue({ ['\0'.repeat(200)]: 1 }, 1024)).toEqual({ ok: false, reason: 'over-budget' })
     // A string reached with less than the two quotes' worth of budget is refused

@@ -86,7 +86,7 @@ describe('outcome mapping helpers', () => {
 
   it('bounds multibyte diagnostics and marks truncation', async () => {
     const exact = 'x'.repeat(MAX_SUBAGENT_DIAGNOSTIC_BYTES)
-    const oversized = '权限'.repeat(MAX_SUBAGENT_DIAGNOSTIC_BYTES)
+    const oversized = '€€'.repeat(MAX_SUBAGENT_DIAGNOSTIC_BYTES)
     const controller = new AbortController()
     const exactResult = await settleRunResult({
       attempt: async () => { throw new Error('provider failed') },

@@ -37,12 +37,12 @@ function dispatch(message) {
       sourceUri = ''
       return
     case 'textDocument/hover':
-      if (!source.includes('const café = "你好"')) {
+      if (!source.includes('const café = "ＡＢ"')) {
         send({ jsonrpc: '2.0', id: message.id, error: { code: -32000, message: 'multibyte source was corrupted' } })
         return
       }
       respond(message.id, {
-        contents: { kind: 'markdown', value: '**remote hover** 你好 café' },
+        contents: { kind: 'markdown', value: '**remote hover** ＡＢ café' },
         range: { start: { line: 0, character: 6 }, end: { line: 0, character: 10 } },
       })
       return

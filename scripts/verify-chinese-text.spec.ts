@@ -1,80 +1,51 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import {
-  CHINESE_TEXT_MANIFEST_PATH,
-  findChineseTextProblems,
-  HAN_CHARACTER,
-  parseChineseTextManifest,
-  scannablePaths,
-} from './verify-chinese-text.ts'
+import { findChineseText, HAN_CHARACTER, scannablePaths, scannableText } from './verify-chinese-text.ts'
 
 /** Two Han characters, built from code points so this spec holds no Chinese text itself. */
 const han = String.fromCodePoint(0x4e2d, 0x6587)
 
-const manifest = parseChineseTextManifest(JSON.stringify({
-  literal: { 'src/parser.ts': 'matches model output' },
-  pending: ['docs/guide.md'],
-}))
-
 describe('HAN_CHARACTER', () => {
-  it('matches Chinese text and not kana, Hangul, full-width punctuation, or Portuguese', () => {
+  it('matches Chinese text and not kana, Hangul, full-width forms, or Portuguese', () => {
     expect(HAN_CHARACTER.test(`label ${han}`)).toBe(true)
     expect(HAN_CHARACTER.test(String.fromCodePoint(0x3072, 0x30ab, 0xd55c))).toBe(false)
     expect(HAN_CHARACTER.test('Seguro（RECOMENDADO）')).toBe(false)
+    expect(HAN_CHARACTER.test('ＡＢＣ')).toBe(false)
     expect(HAN_CHARACTER.test('Opção recomendada')).toBe(false)
   })
 })
 
-describe('findChineseTextProblems', () => {
-  it('accepts listed files that hold Chinese text', () => {
-    const holding = new Set(['src/parser.ts', 'docs/guide.md'])
-    expect(findChineseTextProblems(holding, new Set([...holding, 'README.md']), manifest)).toEqual([])
+describe('findChineseText', () => {
+  it('rejects a file that holds Chinese text, naming its first line and the line count', () => {
+    const text = ['# Guide', '', `A ${han} sample.`, 'English.', han].join('\n')
+    expect(findChineseText('docs/guide.md', text)).toBe(
+      'docs/guide.md:3: holds Chinese text on 2 line(s); translate it to Brazilian Portuguese, or write a Han character code must match as a \\u escape',
+    )
   })
 
-  it('rejects an unlisted file that holds Chinese text', () => {
-    const holding = new Set(['src/parser.ts', 'docs/guide.md', 'docs/new.md'])
-    expect(findChineseTextProblems(holding, holding, manifest)).toEqual([
-      'docs/new.md: holds Chinese text; translate it to Brazilian Portuguese, or list it under literal with the reason code must match that text',
-    ])
+  it('rejects a single Han character inside source code', () => {
+    expect(findChineseText('src/parser.ts', `const suffix = /${han[0] ?? ''}/`)).toMatch(/^src\/parser\.ts:1: holds Chinese text on 1 line\(s\)/)
   })
 
-  it('rejects a listed file that no longer holds Chinese text, so the backlog only shrinks', () => {
-    const scanned = new Set(['src/parser.ts', 'docs/guide.md'])
-    expect(findChineseTextProblems(new Set(['src/parser.ts']), scanned, manifest)).toEqual([
-      `docs/guide.md: holds no Chinese text; remove its entry from ${CHINESE_TEXT_MANIFEST_PATH}`,
-    ])
+  it('accepts a file whose code names a Han character by its escape', () => {
+    expect(findChineseText('src/parser.ts', String.raw`const suffix = /\u63a8\u8350/`)).toBeUndefined()
   })
 
-  it('rejects an entry that names no scanned text file', () => {
-    expect(findChineseTextProblems(new Set(['docs/guide.md']), new Set(['docs/guide.md']), manifest)).toEqual([
-      `src/parser.ts: listed in ${CHINESE_TEXT_MANIFEST_PATH} but not a tracked text file; remove the entry`,
-    ])
+  it('accepts Portuguese, full-width punctuation, and an empty file', () => {
+    expect(findChineseText('docs/guia.md', 'Opção（recomendada）。\n')).toBeUndefined()
+    expect(findChineseText('empty.txt', '')).toBeUndefined()
   })
 })
 
-describe('parseChineseTextManifest', () => {
-  it.each([
-    ['a non-object document', '[]', 'expected an object with literal and pending'],
-    ['an unknown key', '{"literal":{},"pending":[],"extra":1}', 'unknown key(s): extra'],
-    ['a literal list', '{"literal":[],"pending":[]}', 'literal must be an object of path → reason'],
-    ['an empty reason', '{"literal":{"a.ts":" "},"pending":[]}', 'literal a.ts: the reason must be a non-empty string'],
-    ['a non-array pending', '{"literal":{},"pending":{}}', 'pending must be an array of paths'],
-    ['a duplicate pending entry', '{"literal":{},"pending":["a.md","a.md"]}', 'pending lists a.md twice'],
-    ['a path in both sections', '{"literal":{"a.md":"why"},"pending":["a.md"]}', 'a.md is listed under both literal and pending'],
-  ])('fails loud on %s', (_case, text, message) => {
-    expect(() => parseChineseTextManifest(text)).toThrow(`${CHINESE_TEXT_MANIFEST_PATH}: ${message}`)
-  })
-
-  it('parses the committed manifest', () => {
-    const committed = parseChineseTextManifest(readFileSync(resolve(import.meta.dirname, '..', CHINESE_TEXT_MANIFEST_PATH), 'utf8'))
-    expect(committed.pending.length).toBeGreaterThan(0)
+describe('scannableText', () => {
+  it('decodes UTF-8 text and leaves a file with a NUL byte unscanned', () => {
+    expect(scannableText(Buffer.from(`A ${han} sample.`, 'utf8'))).toBe(`A ${han} sample.`)
+    expect(scannableText(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]))).toBeUndefined()
   })
 })
 
 describe('scannablePaths', () => {
-  it('keeps regular files and skips symlinks, submodules, and vendored sources', () => {
+  it('keeps regular files, vendored sources included, and skips symlinks and submodules', () => {
     const entries = [
       '100644 aaaa 0\tdocs/guide.md',
       '100755 bbbb 0\tscripts/run.sh',
@@ -83,6 +54,6 @@ describe('scannablePaths', () => {
       '100644 eeee 0\tvendor/cordis/src/index.ts',
       '',
     ].join('\0')
-    expect(scannablePaths(entries)).toEqual(['docs/guide.md', 'scripts/run.sh'])
+    expect(scannablePaths(entries)).toEqual(['docs/guide.md', 'scripts/run.sh', 'vendor/cordis/src/index.ts'])
   })
 })
