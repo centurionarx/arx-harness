@@ -19,12 +19,14 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",

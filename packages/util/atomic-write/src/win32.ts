@@ -34,6 +34,7 @@ async function loadBindings() {
     close: kernel.func('int __stdcall CloseHandle(void *handle)') as (handle: Pointer) => number,
     free: kernel.func('void * __stdcall LocalFree(void *memory)') as (memory: Pointer) => Pointer,
     move: kernel.func('int __stdcall MoveFileExW(const char16_t *source, const char16_t *target, uint32_t flags)') as (source: string, target: string, flags: number) => number,
+    getFileSecurity: security.func('int __stdcall GetFileSecurityW(const char16_t *path, uint32_t flags, void *descriptor, uint32_t size, _Out_ uint32_t *needed)') as (path: string, flags: number, descriptor: Buffer | null, size: number, needed: [number]) => number,
     lastError: kernel.func('uint32_t __stdcall GetLastError()') as () => number,
   }
 }
@@ -183,4 +184,31 @@ export async function publishWin32(source: string, target: string, replace: bool
     if (![5, 32, 33].includes(error.win32Code) || delay === undefined) throw error
     await new Promise<void>(resolve => setTimeout(resolve, delay))
   }
+}
+
+/** An entry's owner and DACL with the SID of the process user, read for one access check. */
+export interface FileSecurityWin32 {
+  /** Self-relative security descriptor holding the owner and the DACL. */
+  descriptor: Buffer
+  /** String SID of the process user. */
+  user: string
+}
+
+/**
+ * Read the owner and DACL of an existing entry. GetFileSecurityW follows a
+ * final symbolic link, so callers reject links first. A descriptor that grows
+ * between the size probe and the read rejects instead of retrying.
+ * @param path - existing file or directory.
+ * @returns the self-relative descriptor and the process user's SID.
+ */
+export async function fileSecurityWin32(path: string): Promise<FileSecurityWin32> {
+  const api = await win32()
+  const target = toNamespacedPath(path)
+  const information = 0x1 | 0x4 // OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION
+  const needed: [number] = [0]
+  api.getFileSecurity(target, information, null, 0, needed) // Size probe; it fails with ERROR_INSUFFICIENT_BUFFER.
+  if (needed[0] === 0) throw nativeError(api, 'GetFileSecurityW', path)
+  const descriptor = Buffer.alloc(needed[0])
+  checked(api, api.getFileSecurity(target, information, descriptor, descriptor.length, needed), 'GetFileSecurityW', path)
+  return { descriptor, user: currentUserSid(api) }
 }

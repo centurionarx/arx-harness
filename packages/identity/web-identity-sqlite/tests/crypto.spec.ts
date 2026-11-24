@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { chmod, mkdir, mkdtemp, rm, symlink, writeFile, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -58,10 +59,15 @@ describe('password work and bounded admission', () => {
     await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await writeFile(path, Buffer.alloc(32, 7), { mode: 0o600 })
     await chmod(path, 0o644)
-    // readPrivateKey applies no mode or owner check on win32, so it accepts a key file that other accounts can read there.
+    // chmod changes no Windows ACL, so the key stays private there; POSIX rejects the group and other bits.
     if (process.platform === 'win32') await expect(readPrivateKey(path)).resolves.toHaveLength(32)
     else await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await chmod(path, 0o600)
+    if (process.platform === 'win32') {
+      execFileSync('icacls', [path, '/grant', '*S-1-1-0:(R)'])
+      await expect(readPrivateKey(path)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [path, '/remove:g', '*S-1-1-0'])
+    }
     const linked = join(root, 'linked')
     await symlink(path, linked)
     await expect(readPrivateKey(linked)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })

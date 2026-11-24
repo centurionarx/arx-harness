@@ -2,6 +2,7 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import { lstat, readFile } from 'node:fs/promises'
 import { isAbsolute, basename } from 'node:path'
+import { privateAccessViolation } from '@arx-ai/arx-atomic-write'
 import { identityFailure, WebIdentityError } from '@arx-ai/arx-web-identity'
 import type { IdentityDelivery } from '@arx-ai/arx-web-identity'
 const N = 131072
@@ -144,10 +145,11 @@ export async function readPrivateKey(path: string): Promise<Buffer> {
   if (!isAbsolute(path) || basename(path) === '.env')
     identityFailure('AUTH_CONFIGURATION', 503, 'Private identity key required')
   const info = await lstat(path)
-  if (!info.isFile() || info.isSymbolicLink()
-        || (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))) {
+  if (!info.isFile() || info.isSymbolicLink())
     identityFailure('AUTH_CONFIGURATION', 503, 'Private identity key required')
-  }
+  const violation = await privateAccessViolation(path, info, { posixOwner: true })
+  if (violation !== undefined)
+    identityFailure('AUTH_CONFIGURATION', 503, 'Private identity key required', violation)
   const key = await readFile(path)
   if (key.length !== 32)
     identityFailure('AUTH_CONFIGURATION', 503, 'Private identity key required')

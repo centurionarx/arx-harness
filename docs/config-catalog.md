@@ -1091,7 +1091,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/identity/identity-authority-journal/src/index.ts:20`](../packages/identity/identity-authority-journal/src/index.ts)
+Source: [`packages/identity/identity-authority-journal/src/index.ts:21`](../packages/identity/identity-authority-journal/src/index.ts)
 
 <a id="arx-aiarx-invariants"></a>
 
@@ -3611,7 +3611,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/identity/web-identity-resend/src/index.ts:17`](../packages/identity/web-identity-resend/src/index.ts)
+Source: [`packages/identity/web-identity-resend/src/index.ts:18`](../packages/identity/web-identity-resend/src/index.ts)
 
 <a id="arx-aiarx-web-identity-sqlite"></a>
 
@@ -3712,7 +3712,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/identity/web-identity-sqlite/src/index.ts:22`](../packages/identity/web-identity-sqlite/src/index.ts)
+Source: [`packages/identity/web-identity-sqlite/src/index.ts:23`](../packages/identity/web-identity-sqlite/src/index.ts)
 
 <a id="arx-aiarx-web-search-exa"></a>
 

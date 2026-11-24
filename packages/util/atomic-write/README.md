@@ -1,6 +1,6 @@
 # arx-atomic-write
 
-Atomic file replacement with pre-publication flushing, shared by the settings, credentials, and preset-metadata stores. Windows private writes use lazily loaded Koffi bindings to create protected current-user-only files before writing content.
+Atomic file replacement with pre-publication flushing, shared by the settings, credentials, and preset-metadata stores, plus the [private access check](#private-access-check) the identity packages run at startup. Windows private writes use lazily loaded Koffi bindings to create protected current-user-only files before writing content.
 
 ## Surface
 
@@ -30,6 +30,16 @@ await withFileLock('/home/u/.arx/settings.yaml', async () => {
 
 How long a contender waits is a property of the operation the holder runs, so it is stated per call through `waitMs`. The default is sized for file work alone; a holder whose cycle includes a network round trip — a credential mutation that refreshes an expired token — states a longer one, because leaving the default would fail every other writer of that file for the duration. The retry cadence stays fixed: it governs how often a contender asks, which no caller has a reason to vary.
 
+## Private access check
+
+`privateAccessViolation(path, info, { posixOwner })` reports why an existing file or directory is reachable by a principal other than the process user, or returns `undefined`. The caller passes its own `lstat` result and has already rejected symbolic links and wrong entry types, because the Windows read follows a final link. The identity key files, the identity database and its directory, and the authority journal use it at startup.
+
+- **POSIX** rejects any group or other mode bit and, with `posixOwner: true`, an owner other than the process user.
+- **Windows** reads the owner and DACL with `GetFileSecurityW`. It rejects an owner other than the process user, SYSTEM, or Administrators; a missing or null DACL; an access-allowed entry for any other principal, whatever its mask or inheritance flags; and any entry type other than access-allowed or access-denied. Deny entries are ignored, and an empty DACL passes. A violation names the principal's SID and the entry's access mask, so an operator knows which entry to remove.
+- **Failure is closed.** A malformed descriptor is a violation; a failed native read rejects the returned promise.
+
+The check verifies; it never changes a permission. The window between the caller's `lstat`, the access read, and the later open is the same one the POSIX mode check already has.
+
 ## Model Experience
 
 None, as this is a pure filesystem primitive; nothing here reaches a model request.
@@ -41,5 +51,6 @@ None; nothing here enters a request prefix.
 ## Known Limitations and Deferred Work
 
 - **Post-commit durability can remain unconfirmed** — a successful return confirms publication, not an unconditional power-loss guarantee. Operators must investigate durability warnings; filesystem, storage hardware, and remote-volume guarantees still apply. Existing parents and operating-system administrators are outside the private-file policy; restrict the store directory as well.
+- **Volumes without persistent ACLs fail the Windows access check** — FAT-class volumes report a synthesized descriptor that grants Everyone access, so private identity files cannot live there.
 - **String content only** — no `Buffer` or stream form until a consumer needs one.
 - **Orphaned locks require operator recovery** — a process that exits while holding the lock can leave the sibling behind. Later writers time out without deleting it; an operator removes it only after verifying that no writer still owns it. File age alone is not safe evidence of abandonment.

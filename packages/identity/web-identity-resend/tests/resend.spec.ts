@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { writeFile, chmod, symlink, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -63,6 +64,13 @@ describe('Resend delivery boundary without real email', () => {
     await chmod(key, 0o644)
     await expect(Adapter.apply(ctx, { keyFile: key, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
     await chmod(key, 0o600)
+    if (process.platform === 'win32') {
+      const open = join(paths.keyRoot, 'resend-acl.key')
+      await writeFile(open, 're_' + 'a'.repeat(16), { mode: 0o600 })
+      execFileSync('icacls', [open, '/grant', '*S-1-1-0:(R)'])
+      await expect(Adapter.apply(ctx, { keyFile: open, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [open, '/remove:g', '*S-1-1-0'])
+    }
     const directory = join(paths.keyRoot, 'directory')
     await mkdir(directory, { mode: 0o700 })
     await expect(Adapter.apply(ctx, { keyFile: directory, from: 'sender@fixture.test' })).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
