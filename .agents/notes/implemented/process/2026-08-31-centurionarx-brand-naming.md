@@ -30,4 +30,5 @@ The rule covers `.agents/notes/archived/` too: the owner's decision takes preced
 
 - A case-insensitive `deepseek` search over the tree returns only access-config surfaces and license notices: credential variables and their docs, provider configuration and implementations, and copyright and third-party notices.
 - History rewriting invalidates existing clones; PRs referencing old SHAs and the unmapped tags are the known breakage the maintainer accepted.
+- [`verify-vendor-name`](../../../../scripts/verify-vendor-name.ts), a `doc-sync` gate, fails a line that holds a brand form, or a vendor-name occurrence that is not a model-access form and has no model-access term within eight words; its allowed paths, brand forms, access forms, and access terms are one closed list. A line that mixes brand prose with a nearby access term passes unless it holds a listed brand form, so review still owns new phrasings. `scripts/upstream-sync.manifest.json` is allowed pending the owner's decision on the upstream-sync tooling.
 - Root `AGENTS.md` carries the one-line rule; this note owns the rationale and the keep-classes list.

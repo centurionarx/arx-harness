@@ -1,6 +1,6 @@
 /**
  * Declare existing files through the configured filesystem and publish only accepted deliveries.
- * Inspired by DeepSeek Harness tool-present; attribution lives in the package README.
+ * Adapted from the upstream tool-present; attribution lives in the package README.
  * @module @arx-ai/arx-tool-present
  */
 import type { Context } from '@arx-ai/cordis'

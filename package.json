@@ -87,6 +87,7 @@
     "verify-skill-invocation-metadata": "tsx scripts/verify-skill-invocation-metadata.ts",
     "verify-doc-budgets": "tsx scripts/verify-doc-budgets.ts",
     "verify-chinese-text": "tsx scripts/verify-chinese-text.ts",
+    "verify-vendor-name": "tsx scripts/verify-vendor-name.ts",
     "docs:dev": "pnpm --filter @arx-ai/website run dev",
     "docs:build": "pnpm --filter @arx-ai/website run build && pnpm run verify-doc-site-fragments",
     "docs:build:mpa": "pnpm --filter @arx-ai/website exec vitepress build . --mpa && pnpm run verify-doc-site-fragments",
