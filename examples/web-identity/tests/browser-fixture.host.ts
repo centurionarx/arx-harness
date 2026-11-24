@@ -2,11 +2,14 @@
 import { fork, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 import { fileURLToPath } from 'node:url'
-import type { BrowserFixtureControl } from './browser-fixture.contract.ts'
-export async function browserFixture(audience: 'user' | 'admin', firstPassword = false, frontend = false, projectRuntime = false): Promise<BrowserFixtureControl & { readonly child: ChildProcess }> {
+import { IDENTITY_SEED_ENV } from './browser-fixture.contract.ts'
+import type { BrowserFixtureControl, IdentitySeedAddress } from './browser-fixture.contract.ts'
+export async function browserFixture(audience: 'user' | 'admin', firstPassword = false, frontend = false, projectRuntime = false,
+  seed?: IdentitySeedAddress): Promise<BrowserFixtureControl & { readonly child: ChildProcess }> {
   const child = fork(fileURLToPath(new URL('./browser-server.host.ts', import.meta.url)),
     [audience, ...(firstPassword ? ['--first-password'] : []), ...(frontend ? ['--frontend'] : []), ...(projectRuntime ? ['--runtime'] : [])],
-    { execArgv: ['--import', 'tsx'], silent: true })
+    { execArgv: ['--import', 'tsx'], silent: true,
+      env: seed === undefined ? process.env : { ...process.env, [IDENTITY_SEED_ENV]: JSON.stringify(seed) } })
   const ready = await message(child, 'ready') as unknown as Omit<BrowserFixtureControl, 'command' | 'close'>
   return { ...ready, child,
     async command(type: string, fields: object = {}): Promise<Record<string, unknown>> {

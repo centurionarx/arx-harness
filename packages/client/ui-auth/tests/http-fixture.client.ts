@@ -1,23 +1,38 @@
 /** A transport bridge to a real child-process HTTP server, never an auth adapter. */
-import { vi } from 'vitest'
+import { inject, vi } from 'vitest'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type { BrowserFixtureControl, BrowserFixtureFactory } from '../../../../examples/web-identity/tests/browser-fixture.contract.ts'
+import type { BrowserFixtureControl, BrowserFixtureFactory, IdentitySeedAddress } from '../../../../examples/web-identity/tests/browser-fixture.contract.ts'
+
+declare module 'vitest' {
+  interface ProvidedContext {
+    /** The seed address `identity-seed.global.ts` provides to the workers of its project. */
+    identitySeed: IdentitySeedAddress
+  }
+}
 /** Load the real Node fixture at runtime while its provider remains outside the Client type program. */
 export async function browserFixture(audience: 'user' | 'admin', firstPassword = false,
   frontend = false, projectRuntime = false): Promise<BrowserFixtureControl> {
   const require = createRequire(pathToFileURL(resolve(process.cwd(), 'package.json')))
   const module: unknown = require(resolve(process.cwd(), 'examples/web-identity/tests/browser-fixture.host.ts'))
   if (!isFixtureModule(module)) throw new Error('real HTTP fixture factory unavailable')
-  const ready: unknown = await module.browserFixture(audience, firstPassword, frontend, projectRuntime)
+  const ready: unknown = await module.browserFixture(audience, firstPassword, frontend, projectRuntime, inject('identitySeed'))
   if (!isFixtureControl(ready) || ready.audience !== audience) throw new Error('real HTTP fixture control contract invalid')
+  // The start phases reach the CI log, where a slow hook has no other breakdown; this Vitest setup does not print console calls.
+  if (ready.timing !== undefined) process.stderr.write(`identity fixture start: ${audience} seeded=${String(ready.timing.seeded)}`
+    + ` loaded=${String(ready.timing.loadedMs)}ms harness=${String(ready.timing.harnessMs)}ms ready=${String(ready.timing.readyMs)}ms\n`)
   return ready
 }
 function isFixtureModule(value: unknown): value is {
   readonly browserFixture: (...args: Parameters<BrowserFixtureFactory>) => Promise<unknown>
 } {
   return typeof value === 'object' && value !== null && 'browserFixture' in value && typeof value.browserFixture === 'function'
+}
+
+function isTiming(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'seeded' in value && typeof value.seeded === 'boolean'
+    && ['loadedMs', 'harnessMs', 'readyMs'].every(key => key in value && typeof (value as Record<string, unknown>)[key] === 'number')
 }
 
 function isFixtureControl(value: unknown): value is BrowserFixtureControl {
@@ -28,6 +43,7 @@ function isFixtureControl(value: unknown): value is BrowserFixtureControl {
     || !('command' in value) || typeof value.command !== 'function'
     || !('close' in value) || typeof value.close !== 'function') return false
   if ('adminUrl' in value && value.adminUrl !== undefined && typeof value.adminUrl !== 'string') return false
+  if ('timing' in value && value.timing !== undefined && !isTiming(value.timing)) return false
   if (!value.users.every((row: unknown) => typeof row === 'object' && row !== null
     && 'username' in row && typeof row.username === 'string' && 'password' in row && typeof row.password === 'string')) return false
   if (!('resolution' in value) || value.resolution === undefined) return true
