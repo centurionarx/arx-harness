@@ -144,6 +144,35 @@ export function setTokenDefaultDaclGrant(api: Win32Bindings, token: NativePtr, s
   api.localFree(newDacl)
 }
 
+/**
+ * Lower the restricted token's mandatory integrity level to Low
+ * (S-1-16-4096). `WRITE_RESTRICTED` evaluates the restricting SIDs for write
+ * access only, and DELETE and FILE_DELETE_CHILD fall outside that check (the
+ * native runner suite pins it), so a Medium-level confined child can delete
+ * any object its user may delete. The mandatory integrity check grants a
+ * subject that does not dominate the object's label only read and execute
+ * access, which excludes DELETE, FILE_DELETE_CHILD, WRITE_DAC, and
+ * WRITE_OWNER on every Medium-or-higher object (unlabeled files carry an
+ * implicit Medium label). The granted roots therefore carry an inheritable
+ * Low label (`grantWrite` in acl.ts). Lowering needs only TOKEN_ADJUST_DEFAULT on
+ * the handle, which {@link openCurrentProcessToken} requests and the
+ * restricted token inherits. Fails closed: a failure throws before any spawn.
+ * @param api - the binding table.
+ * @param token - the restricted token to lower.
+ * @param lowSid - a native copy of {@link abi.LOW_INTEGRITY_SID}, alive for the call.
+ */
+export function setTokenIntegrityLow(api: Win32Bindings, token: NativePtr, lowSid: NativePtr): void {
+  // TOKEN_MANDATORY_LABEL { SID_AND_ATTRIBUTES Label } followed by room for
+  // the SID length the documented call passes, so the kernel's read of
+  // TokenInformationLength bytes stays inside this buffer.
+  const label = Buffer.alloc(abi.TOKEN_MANDATORY_LABEL_SIZE + abi.LOW_INTEGRITY_SID.length)
+  label.writeBigUInt64LE(ptrAddress(lowSid), 0)
+  label.writeUInt32LE(abi.SE_GROUP_INTEGRITY, 8)
+  if (api.setTokenInformation(token, abi.TokenIntegrityLevel, label, label.length) === 0) {
+    throwLastError(api, 'SetTokenInformation', 'TokenIntegrityLevel (Low)')
+  }
+}
+
 /** Pack `SID_AND_ATTRIBUTES[count]` (16-byte stride; Attributes stay 0). */
 function buildRestrictingSids(sids: readonly NativePtr[]): Buffer {
   const buffer = Buffer.alloc(abi.SID_AND_ATTRIBUTES_SIZE * sids.length)

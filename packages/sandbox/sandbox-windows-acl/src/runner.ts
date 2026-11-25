@@ -15,14 +15,17 @@
  *
  * Modes:
  *  - workspace-write: the workspace and temp directories carry distinct
- *    capability-SID Write grants; other ACL-addressable writes are denied
- *    except for the documented Everyone and hard-link boundaries.
+ *    capability-SID Write grants and a Low label; other ACL-addressable
+ *    writes and deletions are denied except for the documented Everyone,
+ *    Low-label, and hard-link boundaries.
  *  - read-only: no capability-SID grants; the restricting list carries no
  *    capability SID, so a standing grant ACE from an earlier
  *    workspace-write period stays inert. BOTH modes drop Authenticated Users
  *    (CIM unavailable — documented in README) and INTERACTIVE/LOCAL (the
  *    Public tree writes are denied); the two lists share the keep-alive group
- *    (logon SID, EVERYONE) and differ only by the capabilities.
+ *    (logon SID, EVERYONE) and differ only by the capabilities. BOTH modes run
+ *    the child at Low mandatory integrity, which denies deleting Medium
+ *    objects that the restricting SIDs do not cover.
  *
  * `--write-sid` + `--temp-write-sid`: the seam's grant contract — the
  * CALLER has already materialized distinct workspace and private-temp ACEs

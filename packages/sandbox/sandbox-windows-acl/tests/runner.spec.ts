@@ -666,21 +666,62 @@ describe.skipIf(!isWin32 || !pwshAvailable())('windows-acl runner', () => {
     }
   }, 30_000)
 
-  it('partial boundary: an external Everyone-Modify directory stays writable under BOTH modes', () => {
+  it('Everyone-Modify boundary: denied at the implicit Medium label, writable only where the object is labeled Low, under BOTH modes', () => {
     // Everyone is a required keep-alive restricting SID: without it early DLL
     // initialization and CNG fail. A normal DACL that grants Everyone Modify
-    // therefore also clears the WRITE_RESTRICTED pass-2 check. Pin this
-    // unavoidable gap beside the provider's `partial` enforcement report.
-    for (const mode of ['read-only', 'workspace-write'] as const) {
-      const target = join(worldWritableDir, `${mode}.txt`)
-      const result = runRunner([
-        '--workspace', writableDir, '--temp', isolatedTemp, '--mode', mode,
-        '--', process.execPath, '-e', "require('node:fs').writeFileSync(process.argv[1], 'written')", target,
-      ])
-      expect(result.status, `mode: ${mode}\nstderr: ${result.stderr}`).toBe(0)
-      expect(existsSync(target), `mode: ${mode}`).toBe(true)
+    // therefore clears the WRITE_RESTRICTED pass-2 check, but the Low-integrity
+    // token still fails the mandatory check on every object at the implicit
+    // Medium label. The gap narrows to Low-labeled objects that grant Everyone
+    // write access, pinned beside the provider's `partial` enforcement report.
+    const lowWorldWritableDir = join(scratchRoot, 'world-writable-low')
+    mkdirSync(lowWorldWritableDir)
+    for (const args of [['/grant', '*S-1-1-0:(OI)(CI)(M)'], ['/setintegritylevel', '(OI)(CI)L']]) {
+      const setup = spawnSync('icacls', [lowWorldWritableDir, ...args], { encoding: 'utf8' })
+      expect(setup.status, `icacls ${args.join(' ')}: ${setup.stdout}\n${setup.stderr}`).toBe(0)
     }
-  }, 30_000)
+    for (const mode of ['read-only', 'workspace-write'] as const) {
+      for (const [directory, expected] of [[worldWritableDir, false], [lowWorldWritableDir, true]] as const) {
+        const target = join(directory, `${mode}.txt`)
+        const result = runRunner([
+          '--workspace', writableDir, '--temp', isolatedTemp, '--mode', mode,
+          '--', process.execPath, '-e', "try { require('node:fs').writeFileSync(process.argv[1], 'written') } catch (error) { console.log(error.code) }", target,
+        ])
+        expect(result.status, `mode: ${mode}\nstderr: ${result.stderr}`).toBe(0)
+        expect(existsSync(target), `mode: ${mode}, directory: ${directory}, child stdout: ${result.stdout}`).toBe(expected)
+      }
+    }
+  }, 60_000)
+
+  it('the Low label reaches files that existed before the first grant, and a standing grant without it is relabeled', () => {
+    // A fresh workspace: the first grant must propagate the inheritable Low
+    // label onto the existing nested file, or the Low-integrity child cannot
+    // write it. A workspace whose standing exact ACE predates the label
+    // (simulated by relabeling it Medium) takes one re-apply on the next grant.
+    const fresh = join(scratchRoot, 'label-fresh-workspace')
+    const relabeled = join(scratchRoot, 'label-relabeled-workspace')
+    for (const root of [fresh, relabeled]) {
+      mkdirSync(join(root, 'nested'), { recursive: true })
+      writeFileSync(join(root, 'nested', 'existing.txt'), 'before')
+    }
+    const standing = AclWriteGrant.create(workspaceWriteSid(relabeled))
+    standing.add(relabeled, true)
+    standing.dispose() // frees the SID; the standing ACE and label stay
+    const medium = spawnSync('icacls', [relabeled, '/setintegritylevel', '(OI)(CI)M'], { encoding: 'utf8' })
+    expect(medium.status, `icacls: ${medium.stdout}\n${medium.stderr}`).toBe(0)
+    for (const root of [fresh, relabeled]) {
+      const temp = mkdtempSync(join(tmpdir(), 'arx-acl-label-temp-'))
+      try {
+        const result = runRunner([
+          '--workspace', root, '--temp', temp, '--mode', 'workspace-write',
+          '--', process.execPath, '-e', "require('node:fs').writeFileSync(process.argv[1], 'after')", join(root, 'nested', 'existing.txt'),
+        ])
+        expect(result.status, `workspace: ${root}\nstderr: ${result.stderr}`).toBe(0)
+        expect(readFileSync(join(root, 'nested', 'existing.txt'), 'utf8'), `workspace: ${root}`).toBe('after')
+      } finally {
+        rmSync(temp, { recursive: true, force: true })
+      }
+    }
+  }, 60_000)
 
   it('partial boundary: a workspace hard link lets the grant reach an external file object', () => {
     // NTFS ACLs belong to the file object, not one pathname. Propagating the

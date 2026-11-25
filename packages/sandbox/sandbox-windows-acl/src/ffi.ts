@@ -89,7 +89,7 @@ export interface Win32Bindings {
   setEntriesInAclW(count: number, entries: Buffer, oldAcl: NativePtr | null, newAcl: NativePtr): number
   setNamedSecurityInfoW(
     path: string, objectType: number, information: number,
-    owner: null, group: null, dacl: NativePtr | null, sacl: null,
+    owner: null, group: null, dacl: NativePtr | null, sacl: Buffer | null,
   ): number
   getNamedSecurityInfoW(
     path: string, objectType: number, information: number,
@@ -242,6 +242,31 @@ export function ptrAddress(ptr: NativePtr): bigint {
 export function allocBytes(length: number): NativePtr {
   const value: unknown = koffi.alloc('uint8', length)
   return value as NativePtr
+}
+
+/**
+ * Allocate a native copy of a fixed byte sequence (a constant SID that a
+ * Win32 structure references by pointer).
+ * @param bytes - the bytes to copy.
+ * @returns the allocated block holding the copy.
+ */
+export function allocCopy(bytes: readonly number[]): NativePtr {
+  const block = allocBytes(bytes.length)
+  bytes.forEach((byte, index) => {
+    koffi.encode(block, index, 'uint8', byte)
+  })
+  return block
+}
+
+/**
+ * Allocate one pointer-sized slot holding NULL, for an out-parameter the
+ * callee leaves unwritten when the requested part is absent.
+ * @returns the zeroed slot pointer.
+ */
+export function allocNullPtrSlot(): NativePtr {
+  const slot = allocPtrSlot()
+  koffi.encode(slot, PVOID, 0n)
+  return slot
 }
 
 /**

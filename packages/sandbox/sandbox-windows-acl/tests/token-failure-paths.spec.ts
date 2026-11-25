@@ -15,7 +15,7 @@ import { allocBytes, isNullPtr } from '../src/ffi.ts'
 import type { NativePtr, Win32Bindings } from '../src/ffi.ts'
 import { Win32Error } from '../src/errors.ts'
 import {
-  createRestrictedToken, findLogonSid, makeWellKnownSid, openCurrentProcessToken, setTokenDefaultDaclGrant,
+  createRestrictedToken, findLogonSid, makeWellKnownSid, openCurrentProcessToken, setTokenDefaultDaclGrant, setTokenIntegrityLow,
 } from '../src/token.ts'
 import * as abi from '../src/win32-abi.ts'
 
@@ -368,6 +368,39 @@ describe('setTokenDefaultDaclGrant failure paths', () => {
     ;(api.localFree as unknown as ReturnType<typeof vi.fn>).mockImplementation(localFree)
     setTokenDefaultDaclGrant(api, token, sid)
     expect(localFree).toHaveBeenCalledWith(99n)
+  })
+})
+
+describe('setTokenIntegrityLow', () => {
+  it('passes a TOKEN_MANDATORY_LABEL naming the Low SID with SE_GROUP_INTEGRITY', () => {
+    const setTokenInformation = vi.fn(() => 1)
+    const api = { setTokenInformation } as unknown as Win32Bindings
+    const lowSid = allocBytes(abi.LOW_INTEGRITY_SID.length)
+    setTokenIntegrityLow(api, 9n as NativePtr, lowSid)
+    expect(setTokenInformation).toHaveBeenCalledTimes(1)
+    const [token, cls, label, length] = setTokenInformation.mock.calls[0] as unknown as [bigint, number, Buffer, number]
+    expect(token).toBe(9n)
+    expect(cls).toBe(abi.TokenIntegrityLevel)
+    expect(label.readBigUInt64LE(0)).toBe(koffi.address(lowSid))
+    expect(label.readUInt32LE(8)).toBe(abi.SE_GROUP_INTEGRITY)
+    expect(length).toBe(label.length)
+    expect(length).toBe(abi.TOKEN_MANDATORY_LABEL_SIZE + abi.LOW_INTEGRITY_SID.length)
+  })
+
+  it('reports a SetTokenInformation failure', () => {
+    const api = {
+      setTokenInformation: vi.fn(() => 0),
+      getLastError: vi.fn(() => 5),
+      formatMessageW: vi.fn(() => 0),
+    } as unknown as Win32Bindings
+    let caught: unknown
+    try {
+      setTokenIntegrityLow(api, 9n as NativePtr, allocBytes(abi.LOW_INTEGRITY_SID.length))
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(Win32Error)
+    expect((caught as Win32Error).api).toBe('SetTokenInformation')
   })
 })
 
