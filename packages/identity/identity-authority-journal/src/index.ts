@@ -11,6 +11,7 @@ import { isAbsolute, join, relative } from 'node:path'
 import { createInterface } from 'node:readline'
 import { Context, Service } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
+import { privateAccessViolation } from '@arx-ai/arx-atomic-write'
 import { IdentityAuthorityJournal, identityFailure } from '@arx-ai/arx-web-identity'
 import type { AuthorityEvent, AuthorityHead, AuthorityRecord } from '@arx-ai/arx-web-identity'
 const GENESIS = '0'.repeat(64)
@@ -85,13 +86,16 @@ export class FileIdentityAuthorityJournal extends IdentityAuthorityJournal {
       return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))
     }))
       identityFailure('AUTH_CONFIGURATION', 503, 'Authority journal must be outside restored roots')
+    // TODO: create the directory with a protected current-user DACL on Windows; mode 0o700 sets no Windows ACL, so a
+    // root initialized outside a private parent fails the access check below until the operator restricts it.
     if (this.config.allowInitialize === true)
       await mkdir(this.root, { recursive: true, mode: 0o700 })
     const info = await lstat(this.root)
-    if (!info.isDirectory() || info.isSymbolicLink()
-            || (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))) {
+    if (!info.isDirectory() || info.isSymbolicLink())
       identityFailure('AUTH_CONFIGURATION', 503, 'Private authority directory required')
-    }
+    const rootViolation = await privateAccessViolation(this.root, info, { posixOwner: true })
+    if (rootViolation !== undefined)
+      identityFailure('AUTH_CONFIGURATION', 503, 'Private authority directory required', rootViolation)
     if (await realpath(this.root) !== this.root)
       identityFailure('AUTH_CONFIGURATION', 503, 'Canonical authority directory required')
     const lock = await open(join(this.root, 'writer.lock'), 'wx', 0o600)
@@ -131,9 +135,11 @@ export class FileIdentityAuthorityJournal extends IdentityAuthorityJournal {
     }
     else {
       const fileInfo = await lstat(file)
-      if (!fileInfo.isFile() || fileInfo.isSymbolicLink() || (process.platform !== 'win32' && ((fileInfo.mode & 0o077) !== 0 || fileInfo.uid !== process.getuid?.()))) {
+      if (!fileInfo.isFile() || fileInfo.isSymbolicLink())
         identityFailure('AUTHORITY_UNAVAILABLE', 503, 'Private identity authority required')
-      }
+      const fileViolation = await privateAccessViolation(file, fileInfo, { posixOwner: true })
+      if (fileViolation !== undefined)
+        identityFailure('AUTHORITY_UNAVAILABLE', 503, 'Private identity authority required', fileViolation)
       this.handle = await open(file, 'a+', 0o600)
       if (fileInfo.size !== 0) {
         const tail = Buffer.alloc(1)
@@ -162,10 +168,11 @@ export class FileIdentityAuthorityJournal extends IdentityAuthorityJournal {
         input.destroy()
       }
       const watermarkInfo = await lstat(watermark)
-      if (!watermarkInfo.isFile() || watermarkInfo.isSymbolicLink()
-                || (process.platform !== 'win32' && ((watermarkInfo.mode & 0o077) !== 0 || watermarkInfo.uid !== process.getuid?.()))) {
+      if (!watermarkInfo.isFile() || watermarkInfo.isSymbolicLink())
         identityFailure('AUTHORITY_UNAVAILABLE', 503, 'Private authority watermark required')
-      }
+      const watermarkViolation = await privateAccessViolation(watermark, watermarkInfo, { posixOwner: true })
+      if (watermarkViolation !== undefined)
+        identityFailure('AUTHORITY_UNAVAILABLE', 503, 'Private authority watermark required', watermarkViolation)
       const actual = JSON.parse(await readFile(watermark, 'utf8')) as AuthorityHead
       if (actual.sequence !== this.current.sequence || actual.hash !== this.current.hash) {
         identityFailure('AUTHORITY_UNAVAILABLE', 503, 'Current identity authority watermark required')

@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-web-identity-resend",
-  "version": "1.0.70",
+  "version": "1.0.71",
   "description": "Native web identity web-identity-resend",
   "type": "module",
   "main": "lib/index.js",
@@ -19,12 +19,14 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",
     "@arx-ai/schemastery": "workspace:^"
   },
   "devDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",

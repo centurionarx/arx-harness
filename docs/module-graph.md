@@ -958,10 +958,13 @@ flowchart TD
   pkg_tool_call_timeout_policy --> pkg_llm
   pkg_tool_call_timeout_policy --> pkg_timeout
   pkg_tool_call_timeout_policy --> pkg_tools
+  pkg_identity_authority_journal --> pkg_atomic_write
   pkg_identity_authority_journal --> pkg_invariants
   pkg_identity_authority_journal --> pkg_web_identity
+  pkg_web_identity_resend --> pkg_atomic_write
   pkg_web_identity_resend --> pkg_invariants
   pkg_web_identity_resend --> pkg_web_identity
+  pkg_web_identity_sqlite --> pkg_atomic_write
   pkg_web_identity_sqlite --> pkg_invariants
   pkg_web_identity_sqlite --> pkg_session
   pkg_web_identity_sqlite --> pkg_web_identity
@@ -1831,9 +1834,9 @@ flowchart TD
 | [`repository`](../packages/git/repository) | `git` | [`fs`](../packages/fs/fs), [`fs-local`](../packages/fs/fs-local), [`invariants`](../packages/runtime-diagnostics/invariants), [`subprocess`](../packages/subprocess/subprocess), [`subprocess-local`](../packages/subprocess/subprocess-local), [`typert-protocol`](../packages/typert/protocol), [`workspace`](../packages/workspace/workspace) |
 | [`repeat-tool-reminder`](../packages/guard/repeat-tool-reminder) | `guard` | [`agent`](../packages/core/agent), [`invariants`](../packages/runtime-diagnostics/invariants), [`tools`](../packages/core/tools) |
 | [`tool-call-timeout-policy`](../packages/guard/timeout-policy) | `guard` | [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools) |
-| [`identity-authority-journal`](../packages/identity/identity-authority-journal) | `identity` | [`invariants`](../packages/runtime-diagnostics/invariants), [`web-identity`](../packages/identity/web-identity) |
-| [`web-identity-resend`](../packages/identity/web-identity-resend) | `identity` | [`invariants`](../packages/runtime-diagnostics/invariants), [`web-identity`](../packages/identity/web-identity) |
-| [`web-identity-sqlite`](../packages/identity/web-identity-sqlite) | `identity` | [`invariants`](../packages/runtime-diagnostics/invariants), [`session`](../packages/core/session), [`web-identity`](../packages/identity/web-identity), [`workspace`](../packages/workspace/workspace) |
+| [`identity-authority-journal`](../packages/identity/identity-authority-journal) | `identity` | [`atomic-write`](../packages/util/atomic-write), [`invariants`](../packages/runtime-diagnostics/invariants), [`web-identity`](../packages/identity/web-identity) |
+| [`web-identity-resend`](../packages/identity/web-identity-resend) | `identity` | [`atomic-write`](../packages/util/atomic-write), [`invariants`](../packages/runtime-diagnostics/invariants), [`web-identity`](../packages/identity/web-identity) |
+| [`web-identity-sqlite`](../packages/identity/web-identity-sqlite) | `identity` | [`atomic-write`](../packages/util/atomic-write), [`invariants`](../packages/runtime-diagnostics/invariants), [`session`](../packages/core/session), [`web-identity`](../packages/identity/web-identity), [`workspace`](../packages/workspace/workspace) |
 | [`tool-ask-user`](../packages/interaction/tool-ask-user) | `interaction` | [`agent`](../packages/core/agent), [`invariants`](../packages/runtime-diagnostics/invariants), [`tools`](../packages/core/tools), [`user-questions`](../packages/interaction/user-questions) |
 | [`tool-jobs`](../packages/jobs/tool-jobs) | `jobs` | [`agent`](../packages/core/agent), [`invariants`](../packages/runtime-diagnostics/invariants), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
 | [`tool-lsp`](../packages/lsp/tool-lsp) | `lsp` | [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`lsp`](../packages/lsp/lsp), [`system-prompt`](../packages/core/system-prompt), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools) |
