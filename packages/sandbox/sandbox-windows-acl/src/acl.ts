@@ -209,7 +209,11 @@ function mergeAndApply(
     null, null, newAcl, labelSacl,
   )
   const freedNew = api.localFree(newAcl)
-  if (applyResult !== abi.ERROR_SUCCESS) throwWin32(api, 'SetNamedSecurityInfoW', applyResult, `${label}(${path})`)
+  if (applyResult !== abi.ERROR_SUCCESS) {
+    // Setting the label needs WRITE_OWNER, which ownership does not imply:
+    // name it so an access-denied grant points at the missing right.
+    throwWin32(api, 'SetNamedSecurityInfoW', applyResult, labelSacl === null ? `${label}(${path})` : `${label}(${path}) DACL and Low label (requires WRITE_DAC and WRITE_OWNER)`)
+  }
   if (freedDescriptor !== null && !isNullPtr(freedDescriptor)) throwLastError(api, 'LocalFree', `${label}(${path}) descriptor`)
   if (!isNullPtr(freedNew)) throwLastError(api, 'LocalFree', `${label}(${path}) new ACL`)
 }

@@ -202,7 +202,7 @@ describe.skipIf(!isWin32)('ACL editing', () => {
       grantWrite(api, dir, capabilitySid)
       expect(apply).toHaveBeenCalledTimes(1)
       // The exact ACE now stands (the per-session grant surviving from a
-      // previous server lifetime): the second grant is a DACL read only.
+      // previous server lifetime): the second grant reads the DACL and label only.
       grantWrite(api, dir, capabilitySid)
       expect(apply).toHaveBeenCalledTimes(1)
       const aces = readDirectAces(api, dir)

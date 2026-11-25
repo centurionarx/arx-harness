@@ -260,7 +260,25 @@ describe('mergeAndApply failure paths', () => {
     }
     expect(caught).toBeInstanceOf(Win32Error)
     expect((caught as Win32Error).api).toBe('SetNamedSecurityInfoW')
+    expect((caught as Win32Error).message).toContain('requires WRITE_DAC and WRITE_OWNER')
     expect(localFree).toHaveBeenCalledWith(9n)
+  })
+
+  it('a failed revoke apply names only the DACL edit (no label, so no WRITE_OWNER hint)', () => {
+    const sid = craftSid(1, 0)
+    const api = aclApi({
+      getNamedSecurityInfoW: readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), 0n, 6n),
+      setNamedSecurityInfoW: vi.fn(() => 5),
+    })
+    let caught: unknown
+    try {
+      revokeWrite(api, 'C:\\granted', sid)
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(Win32Error)
+    expect((caught as Win32Error).api).toBe('SetNamedSecurityInfoW')
+    expect((caught as Win32Error).message).not.toContain('WRITE_OWNER')
   })
 
   it('reports a failed descriptor LocalFree after a successful apply', () => {

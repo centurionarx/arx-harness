@@ -601,6 +601,19 @@ describe.skipIf(!isWin32 || !pwshAvailable())('windows-acl runner', () => {
     }
   }, 30_000)
 
+  it('NUL stays writable at Low integrity under BOTH modes (cmd > NUL and the NUL device path from node)', () => {
+    // NUL writes are ambient in both modes (README Modes); cmd scripts and git
+    // hooks redirect to NUL constantly, so the Low-integrity token must keep them.
+    for (const mode of ['read-only', 'workspace-write'] as const) {
+      const prefix = ['--workspace', writableDir, '--temp', isolatedTemp, '--mode', mode, '--']
+      const cmd = runRunner([...prefix, 'cmd.exe', '/d', '/c', 'echo', 'discarded>NUL'])
+      expect(cmd.status, `mode: ${mode}\ncmd stdout: ${cmd.stdout}\nstderr: ${cmd.stderr}`).toBe(0)
+      expect(cmd.stdout, `mode: ${mode}`).not.toContain('discarded')
+      const node = runRunner([...prefix, process.execPath, '-e', "require('node:fs').writeFileSync(process.argv[1], 'discarded')", '\\\\.\\NUL'])
+      expect(node.status, `mode: ${mode}\nnode stderr: ${node.stderr}`).toBe(0)
+    }
+  }, 60_000)
+
   it('mode-downgrade leak regression: a STANDING workspace grant is inert under read-only and effective again on re-upgrade', () => {
     // The reported defect: a session that materialized its grant in
     // workspace-write keeps the ACE standing for the server lifetime. After
