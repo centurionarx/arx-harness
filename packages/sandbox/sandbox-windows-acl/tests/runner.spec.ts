@@ -432,7 +432,11 @@ describe.skipIf(!isWin32 || !pwshAvailable())('windows-acl runner', () => {
     }
     const matrix = Object.entries(observed).flatMap(([mode, rows]) => Object.entries(rows).map(([probe, row]) =>
       `${mode} | ${probe} | ${row.result} | ${row.stillExists === undefined ? '' : `stillExists=${String(row.stillExists)}`}${row.content === undefined ? '' : `content=${JSON.stringify(row.content)}`} | ${row.detail}`))
-    expect(observed, ['Outside-the-roots rights matrix:', ...matrix, '', 'Runs:', ...transcript].join('\n')).toEqual(expected)
+    const report = ['Outside-the-roots rights matrix:', ...matrix, '', 'Runs:', ...transcript].join('\n')
+    // Printed on success too: each native run records every probe's Windows
+    // response, including the cmd.exe and icacls.exe launches from pwsh.
+    console.log(report)
+    expect(observed, report).toEqual(expected)
   }, 120_000)
 
   it('paired SIDs: the runner trusts caller-owned private-temp grants and materializes nothing itself', () => {
