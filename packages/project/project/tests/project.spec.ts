@@ -422,6 +422,8 @@ describe('project aggregate over the JSON storage backend', () => {
       { version: 0, id: stranger, createdAt: 3, cwd: paths.workspacePath },
     ]
     const { ctx, workspaceId } = await harness({ ...paths, headers, maxActiveRuns: 3, maxStepsPerRun: 3, maxRunDurationMs: 10_000 })
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(30_000)
     let project = await ctx.projects.create({ workspaceId, name: 'Driven project' })
     project = await ctx.projects.savePrompt(project.id, project.version, {
       name: 'step', template: 'Run {{target}}', variablesSchema: { target: { type: 'string', required: true } }, sourceSkills: [],
