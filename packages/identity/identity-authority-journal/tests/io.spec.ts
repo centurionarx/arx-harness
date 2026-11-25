@@ -32,10 +32,11 @@ describe('native authority I/O failure boundaries', () => {
   it('supports minimal direct configuration and the platform-specific directory flush branch without a fake journal', async () => {
     root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-minimal-')))
     const path = join(root, 'authority')
+    ctx = await direct(path, true)
+    // Only the publication runs as win32: on another platform the startup access check would read a Windows ACL.
     const platform = Object.getOwnPropertyDescriptor(process, 'platform')!
     Object.defineProperty(process, 'platform', { value: 'win32' })
     try {
-      ctx = await direct(path, true)
       await ctx.identityAuthorityJournal.append(0, { operationId: 'fixture-platform', kind: 'owner', payload: {} })
     }
     finally {

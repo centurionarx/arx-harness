@@ -131,8 +131,8 @@ export interface PageOptions {
 }
 /** Safe failure text is deliberately independent of submitted values. */
 export class WebIdentityError extends Error {
-  constructor(readonly code: string, readonly status: number, message: string) {
-    super(message)
+  constructor(readonly code: string, readonly status: number, message: string, options?: ErrorOptions) {
+    super(message, options)
     this.name = 'WebIdentityError'
   }
 }
@@ -141,10 +141,11 @@ export class WebIdentityError extends Error {
  * @param code - Stable identity failure category.
  * @param status - HTTP status for the failure.
  * @param message - Safe fixed diagnostic text.
+ * @param detail - Operator diagnostic kept in the error's `cause`; HTTP responses never carry it.
  * @returns Never returns; throws WebIdentityError.
  */
-export function identityFailure(code: string, status: number, message: string): never {
-  throw new WebIdentityError(code, status, message)
+export function identityFailure(code: string, status: number, message: string, detail?: string): never {
+  throw new WebIdentityError(code, status, message, detail === undefined ? undefined : { cause: new Error(detail) })
 }
 declare module '@arx-ai/cordis' {
   interface Context {

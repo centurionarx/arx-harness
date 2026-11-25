@@ -1,6 +1,6 @@
 {
   "name": "@arx-ai/arx-web-identity-sqlite",
-  "version": "1.0.70",
+  "version": "1.0.71",
   "description": "Native web identity web-identity-sqlite",
   "type": "module",
   "main": "lib/index.js",
@@ -19,6 +19,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",
@@ -27,6 +28,7 @@
     "@arx-ai/arx-workspace": "workspace:^"
   },
   "devDependencies": {
+    "@arx-ai/arx-atomic-write": "workspace:^",
     "@arx-ai/cordis": "workspace:^",
     "@arx-ai/arx-invariants": "workspace:^",
     "@arx-ai/arx-web-identity": "workspace:^",

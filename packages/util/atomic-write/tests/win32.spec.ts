@@ -46,6 +46,11 @@ vi.mock('koffi', () => ({
             case 'CreateFileW': return native.fileHandle
             case 'GetVolumeInformationByHandleW': (args[5] as number[])[0] = native.flags; return 1
             case 'WriteFile': (args[3] as number[])[0] = Math.min(native.chunk, Number(args[2])); return 1
+            case 'GetFileSecurityW':
+              (args[4] as number[])[0] = native.fail.has('security-size') ? 0 : 24
+              if (args[2] === null || native.fail.has('security-data')) return 0
+              ;(args[2] as Buffer).fill(7)
+              return 1
             case 'LocalFree': return null
             case 'GetLastError': return native.error
             default: return 1
@@ -197,5 +202,31 @@ describe('Windows private staging', () => {
     await expect(publishWin32('source', 'other-volume', true)).rejects.toMatchObject({ code: 'EXDEV' })
     native.error = 12345
     await expect(publishWin32('source', 'target', true)).rejects.toMatchObject({ code: 'EIO', win32Code: 12345 })
+  })
+})
+
+describe('Windows security descriptor read', () => {
+  it('probes the size, reads the owner and DACL into a sized buffer, and names the process user', async () => {
+    const { fileSecurityWin32 } = await import('../src/win32.ts')
+    const result = await fileSecurityWin32('state.key')
+    expect(result).toEqual({ descriptor: Buffer.alloc(24, 7), user: native.sid })
+    const reads = calls('GetFileSecurityW')
+    expect(reads).toHaveLength(2)
+    expect(reads[0]!.slice(1, 4)).toEqual([5, null, 0])
+    expect(reads[1]!.slice(1, 2)).toEqual([5])
+    expect(reads[1]![3]).toBe(24)
+    expect(calls('CloseHandle')).toHaveLength(2)
+  })
+
+  it('rejects when the size probe or the read fails', async () => {
+    const { fileSecurityWin32 } = await import('../src/win32.ts')
+    native.fail.add('security-size')
+    native.error = 2
+    await expect(fileSecurityWin32('missing.key')).rejects.toMatchObject({ code: 'ENOENT', syscall: 'GetFileSecurityW', path: 'missing.key' })
+    native.fail.clear()
+    native.fail.add('security-data')
+    native.error = 122
+    await expect(fileSecurityWin32('grown.key')).rejects.toMatchObject({ code: 'EIO', syscall: 'GetFileSecurityW', win32Code: 122 })
+    expect(calls('OpenProcess')).toHaveLength(0)
   })
 })

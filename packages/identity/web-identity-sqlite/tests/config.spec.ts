@@ -1,6 +1,7 @@
 import { Context, Service } from '@arx-ai/cordis'
+import { execFileSync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
-import { chmod, rename, rm, symlink } from 'node:fs/promises'
+import { chmod, rename, rm, symlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Journal from '@arx-ai/arx-identity-authority-journal'
@@ -92,7 +93,7 @@ describe('identity projection closed configuration and recovery', () => {
       { recoveryOrigins: { user: 'http://user.fixture.test', admin: 'https://admin.fixture.test' } },
       { path: 'relative.sqlite' }, { privateKeyPath: join(paths.state, 'key') }])
       await expect(load(paths, override)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
-    // The projection applies no mode check to its directory or database on win32, so these rejections hold only on POSIX.
+    // POSIX rejects by mode bits and Windows by an access entry for another principal.
     if (process.platform !== 'win32') {
       await chmod(paths.state, 0o755)
       await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
@@ -100,6 +101,14 @@ describe('identity projection closed configuration and recovery', () => {
       await chmod(paths.database, 0o644)
       await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
       await chmod(paths.database, 0o600)
+    }
+    else {
+      execFileSync('icacls', [paths.state, '/grant', '*S-1-1-0:(R)'])
+      await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [paths.state, '/remove:g', '*S-1-1-0'])
+      execFileSync('icacls', [paths.database, '/grant', '*S-1-1-0:(R)'])
+      await expect(load(paths)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [paths.database, '/remove:g', '*S-1-1-0'])
     }
     const alias = join(paths.root, 'alias')
     await symlink(paths.root, alias, 'dir')
@@ -111,6 +120,15 @@ describe('identity projection closed configuration and recovery', () => {
     await rm(paths.database)
     await rename(saved, paths.database)
     await expect(load(paths, { path: join(paths.state, 'missing.sqlite') })).rejects.toMatchObject({ code: 'AUTH_SCHEMA' })
+  })
+  it('rejects a database whose directory is not a directory before reading its access', { timeout: 30000 }, async () => {
+    fixture = await identityHarness()
+    const { paths } = fixture
+    await fixture.close(false)
+    const file = join(paths.root, 'not-a-directory')
+    await writeFile(file, '', { mode: 0o600 })
+    await expect(load(paths, { path: join(file, 'identity.sqlite') }))
+      .rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', message: 'Private identity directory required' })
   })
   it('refuses a database ahead of authority, same-head hash mismatch or changed prefix', { timeout: 30000 }, async () => {
     fixture = await identityHarness()
