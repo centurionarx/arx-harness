@@ -44,7 +44,7 @@ Only dispatch and the tool body overlap. `tools/pre-execute` and `tools/post-exe
 
 Each started call appends `tool/call` immediately before its pre-execute gate. Completed dispatches occupy model-order slots, and a commit cursor appends `tool/result` and collects `additionalContexts` only when the next slot is ready. Live surfaces may show several pending calls, but results and post-tool context remain model-ordered.
 
-An abort before a group starts records no calls from that group. An abort during a group stops replenishment, waits for already-started calls, commits their results in order, drains accepted batch context after those results, and then ends the step through the existing abort path. Calls that never start have no audit event. An unexpected scheduler failure stops new dispatches, waits for every already-started dispatch to settle, and rethrows the first failure. Because that failure is terminal internal state rather than a tool outcome, the loop does not invent tool results for rejected or uncommitted calls.
+An abort before a group starts records no calls from that group. An abort during a group stops replenishment, waits for already-started calls, commits their results in order, drains accepted batch context after those results, and then ends the step through the existing abort path. Calls that never start have no audit event. An unexpected scheduler failure stops new dispatches, waits for every already-started dispatch to settle, and rethrows the first failure. Because that failure is terminal internal state rather than a tool outcome, the scheduler commits no result for rejected or uncommitted calls; the failed step's boundary answers each of them with a recovery result that claims no outcome ([failed-step recovery](../bug-fix/2026-11-25-failed-step-answers-its-tool-calls.md)).
 
 Code Mode remains outside this scheduler because the model emits one native `run_code` call. `run_code` and its internal dispatch queue remain serial; native sibling calls in `mode: 'both'` use the normal scheduler.
 
@@ -82,7 +82,7 @@ Snapshot coverage pins the visible multi-call transcript: pending calls may over
 
 **Expose staged methods or a scheduling waterfall.** Public `prepare` / `dispatch` / `finalize` methods or a `tools/execution-mode` event add extension surface before another consumer needs it. The loop uses an internal scheduler view, while `executionMode(exec)` leaves an insertion point for a policy hook.
 
-**Convert scheduler failures into tool results.** AgentLoop cannot determine whether a rejected dispatch invoked the tool body; ToolRuntime owns body-invocation state and typed tool outcomes. Internal scheduler failures therefore remain terminal instead of being reclassified as `ABORTED` results.
+**Convert scheduler failures into tool results.** AgentLoop cannot determine whether a rejected dispatch invoked the tool body; ToolRuntime owns body-invocation state and typed tool outcomes. Internal scheduler failures therefore remain terminal instead of being reclassified as `ABORTED` results; the step boundary records `TOOL_OUTCOME_UNKNOWN` for a recorded call instead ([failed-step recovery](../bug-fix/2026-11-25-failed-step-answers-its-tool-calls.md)).
 
 **Start calls while the model streams.** This may reduce latency further but changes assistant-message authority, replay, and call/result pairing. The scheduler starts only after the assistant message is complete.
 
@@ -102,4 +102,4 @@ Concurrent external calls can compete for quota or process capacity. Providers o
 
 Tool registration is a scheduling boundary. Registry mutations affect not-yet-started calls because the scheduler reclassifies after each barrier and before every pool replenishment. Already-started calls retain the scheduling decision under which they entered the pool.
 
-A terminal scheduler failure may leave recorded calls without results before the failed step closes. Waiting for live dispatches preserves quiescence without misreporting those internal failures as tool outcomes.
+A terminal scheduler failure leaves recorded calls without scheduler results; the failed step records a recovery result for each before it closes ([failed-step recovery](../bug-fix/2026-11-25-failed-step-answers-its-tool-calls.md)). Waiting for live dispatches preserves quiescence without misreporting those internal failures as tool outcomes.

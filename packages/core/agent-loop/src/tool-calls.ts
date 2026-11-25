@@ -6,8 +6,9 @@
  * and drains started calls.
  *
  * Abort records synthetic error results for skipped calls so replay stays
- * valid. A terminal scheduler failure preserves already-recorded `tool/call`
- * events without fabricating results.
+ * valid. A terminal scheduler failure keeps already-recorded `tool/call`
+ * events and commits no further result; the failed step's boundary then
+ * records a recovery result for every call left without one.
  * @module arx-agent-loop/tool-calls
  */
 
@@ -44,8 +45,8 @@ interface GroupOutcome {
  * the signal still aborted after accepting started-call context through the
  * caller-supplied acceptor (the machine stages it in its next-step inbox for the
  * step boundary). An internal scheduler failure stops new dispatches, drains
- * already-started dispatches, and rejects with the first failure without
- * fabricating tool results.
+ * already-started dispatches, and rejects with the first failure; uncommitted
+ * calls receive their recovery results at the failed step's boundary.
  * The committed step's AgentLoop driver boundary supplies the initiating Agent
  * that becomes each explicit {@link ToolExecutionInput.agent}.
  *
@@ -115,8 +116,8 @@ function parseArguments(raw: string): unknown {
  * drain and remains for the caller's next barrier. Results and contexts commit
  * in model order. Abort stops starts, drains and commits started calls, accepts
  * their contexts into the owning batch, records results for skipped calls, and
- * returns an aborted outcome. Scheduler failure drains dispatches without
- * committing synthetic recovery results.
+ * returns an aborted outcome. Scheduler failure drains dispatches and leaves
+ * every uncommitted call to the step boundary's recovery results.
  */
 async function runGroup(
   ctx: Context,
@@ -213,7 +214,7 @@ async function runGroup(
   }
 
   // Ordered pre-execute may await; only dispatch/body overlaps. A scheduler
-  // failure stops new dispatches and reaches the turn boundary after every
+  // failure stops new dispatches and reaches the step boundary after every
   // already-started dispatch settles.
   try {
     await fillPool()

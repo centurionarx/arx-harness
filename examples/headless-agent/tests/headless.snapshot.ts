@@ -34,6 +34,8 @@ const goalScenarioDir = join(snapshotsDir, 'goal-tools')
 const goalConfigPath = fileURLToPath(new URL('../goal.cordis.snapshot.yml', import.meta.url))
 const retryScenarioDir = join(snapshotsDir, 'provider-retry')
 const retryConfigPath = fileURLToPath(new URL('../retry.cordis.snapshot.yml', import.meta.url))
+const failedStepScenarioDir = join(snapshotsDir, 'failed-step-recovery')
+const failedStepConfigPath = fileURLToPath(new URL('../failed-step.cordis.snapshot.yml', import.meta.url))
 const compactionScenarioDir = join(snapshotsDir, 'compaction-recovery')
 const compactionSessionFixture = join(compactionScenarioDir, 'session.jsonl')
 const compactionStreamExpected = join(compactionScenarioDir, 'stream-json.expected.jsonl')
@@ -351,6 +353,46 @@ describe('headless stream-json snapshots', () => {
     const normalized = normalizeHeadlessStream(result.stdout, runCwd)
     if (refreshing) await writeFile(streamExpected, normalized)
     expect(normalized).toBe(await readFile(streamExpected, 'utf8'))
+  }, LOADER_SMOKE_TEST_TIMEOUT_MS)
+
+  it('answers every call of a failed tool step before the next request', async () => {
+    const prompt = await scenarioPrompt(failedStepScenarioDir, 'failed-step-recovery')
+    const streamExpected = join(failedStepScenarioDir, 'stream-json.expected.jsonl')
+    let runCwd = ''
+    const result = await runLoaderSmoke({
+      label: 'failed step headless stream-json snapshot',
+      tempDirPrefix: 'headless-snapshot-failed-step-',
+      binScript,
+      libBinScript: binScript,
+      configPath: failedStepConfigPath,
+      binArgs: [failedStepConfigPath, prompt],
+      tsconfigPath,
+      env: {
+        ARX_SNAPSHOT: 'replay',
+        NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=ExperimentalWarning'].filter(Boolean).join(' '),
+      },
+      prepare: (cwd) => { runCwd = cwd },
+      inspect: async (cwd) => {
+        const logs = await persistedLogs(cwd)
+        expect(logs).toHaveLength(1)
+        const records = parseJsonl(logs[0]?.content ?? '')
+        const types = records.map(record => record.type)
+        const recoveryCodes = records
+          .filter(record => record.type === 'tool/result')
+          .map(record => (record.data as { error?: { code?: unknown } }).error?.code)
+        expect(recoveryCodes).toEqual(['TOOL_OUTCOME_UNKNOWN', 'TOOL_NOT_STARTED'])
+        expect(types.lastIndexOf('tool/result')).toBeLessThan(types.indexOf('step/end'))
+        expect(records
+          .filter(record => record.type === 'turn/end')
+          .map(record => (record.data as { reason: { kind: unknown } }).reason.kind)).toEqual(['error', 'completed'])
+      },
+    })
+
+    expect(result.stderr).toBe('')
+    const normalized = normalizeHeadlessStream(result.stdout, runCwd)
+    if (refreshing) await writeFile(streamExpected, normalized)
+    expect(normalized).toBe(await readFile(streamExpected, 'utf8'))
+    expect(JSON.parse(result.stdout.trimEnd().split('\n').at(-1) ?? '{}')).toMatchObject({ type: 'result', output: 'RECOVERY_OK' })
   }, LOADER_SMOKE_TEST_TIMEOUT_MS)
 
   it('recovers from context overflow through an assembled compaction', async () => {

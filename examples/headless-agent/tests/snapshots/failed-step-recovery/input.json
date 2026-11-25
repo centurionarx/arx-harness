@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {
+      "op": "prompt",
+      "text": "print first and second with two bash calls"
+    }
+  ]
+}

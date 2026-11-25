@@ -3,10 +3,10 @@
  * ACP expected outputs own transcript-facing coverage.
  */
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import { createUserMessage, CallId, StreamChunk  } from '@arx-ai/arx-llm'
-import SessionStore, { SessionEvent, SessionId } from '@arx-ai/arx-session'
+import SessionStore, { SessionEvent, SessionId, TOOL_NOT_STARTED, TOOL_OUTCOME_UNKNOWN } from '@arx-ai/arx-session'
 import SystemPrompt from '@arx-ai/arx-system-prompt'
 import LlmRuntime from '@arx-ai/arx-llm'
 import ToolRuntime, { defineContentToolFixture, TOOL_ABORTED_BEFORE_DISPATCH, TOOL_RUNTIME_SCHEDULER, type PostToolDecision, type PreToolDecision } from '@arx-ai/arx-tools'
@@ -687,8 +687,94 @@ describe('tool-call scheduler: failure quiescence', () => {
     expect(events(agent).findLast(event => event.type === 'turn/end')).toMatchObject({
       data: { reason: { kind: 'error', error: { message: schedulerError.message, code: 'UNKNOWN' } } },
     })
+    // Every recorded call may have run, so the failed step answers each with an unknown outcome.
+    expect(recoveryResults(agent)).toEqual([
+      { callId: CallId('c1'), code: TOOL_OUTCOME_UNKNOWN, cites: 'tool/call' },
+      { callId: CallId('c2'), code: TOOL_OUTCOME_UNKNOWN, cites: 'tool/call' },
+      { callId: CallId('c3'), code: TOOL_OUTCOME_UNKNOWN, cites: 'tool/call' },
+    ])
+    expectResultsBeforeStepEnd(agent)
+  })
+
+  it('answers unrecorded calls as not started, so the next request pairs every call', async () => {
+    const adapter = new MockAdapter([
+      multiCall([
+        { id: 'e1', name: 'x', args: { id: '1' } },
+        { id: 'e2', name: 'x', args: { id: '2' } },
+      ]),
+      textResponse('recovered'),
+    ])
+    const ctx = await harness(adapter)
+    ctx.tools.register(gatedExclusiveTool('x').tool)
+    ctx.tools[TOOL_RUNTIME_SCHEDULER].dispatch = () => Promise.reject(new Error('scheduler exploded'))
+    const agent = ctx.agentLoop.create(SessionId('scheduler-failure-barrier'), { provider: 'mock', model: 'mock' })
+
+    let idle = waitForIdle(ctx, agent)
+    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'go' }], source: { kind: 'user' } }))
+    await idle
+
+    expect(events(agent).filter(event => event.type === 'tool/call').map(event => event.data.callId)).toEqual([CallId('e1')])
+    expect(recoveryResults(agent)).toEqual([
+      { callId: CallId('e1'), code: TOOL_OUTCOME_UNKNOWN, cites: 'tool/call' },
+      { callId: CallId('e2'), code: TOOL_NOT_STARTED, cites: undefined },
+    ])
+    expectResultsBeforeStepEnd(agent)
+
+    idle = waitForIdle(ctx, agent)
+    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'continue' }], source: { kind: 'user' } }))
+    await idle
+
+    const next = adapter.requests[1]!.messages
+    const assistant = next.findIndex(message => message.content.some(block => block.type === 'tool-call'))
+    expect(next.slice(assistant + 1, assistant + 3).map(message => message.content[0])).toMatchObject([
+      { type: 'tool-result', toolCallId: CallId('e1'), isError: true },
+      { type: 'tool-result', toolCallId: CallId('e2'), isError: true },
+    ])
+    expect(events(agent).findLast(event => event.type === 'turn/end')).toMatchObject({ data: { reason: { kind: 'completed' } } })
+  })
+
+  it('keeps the step failure as the turn outcome when recovery results cannot be recorded', async () => {
+    const adapter = new MockAdapter([multiCall([{ id: 'f1', name: 'x', args: { id: '1' } }])])
+    const ctx = await harness(adapter)
+    ctx.tools.register(gatedExclusiveTool('x').tool)
+    ctx.tools[TOOL_RUNTIME_SCHEDULER].dispatch = () => Promise.reject(new Error('scheduler exploded'))
+    const warn = vi.spyOn((ctx.agentLoop as unknown as { ctx: Context }).ctx.logger, 'warn').mockImplementation(() => undefined)
+    const agent = ctx.agentLoop.create(SessionId('scheduler-failure-unrecorded'), { provider: 'mock', model: 'mock' })
+    const append = agent.session.append.bind(agent.session)
+    vi.spyOn(agent.session, 'append').mockImplementation(((type: string, ...rest: unknown[]) => {
+      if (type === 'tool/result') throw new Error('log refused')
+      return (append as (...args: unknown[]) => unknown)(type, ...rest)
+    }) as unknown as typeof agent.session.append)
+
+    const idle = waitForIdle(ctx, agent)
+    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'go' }], source: { kind: 'user' } }))
+    await idle
+
+    expect(events(agent).some(event => event.type === 'tool/result')).toBe(false)
+    expect(events(agent).findLast(event => event.type === 'turn/end')).toMatchObject({
+      data: { reason: { kind: 'error', error: { message: 'scheduler exploded', code: 'UNKNOWN' } } },
+    })
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('recovery tool results not recorded: log refused'))
   })
 })
+
+/** Each recovery result's call, recovery code, and the event type it cites. */
+function recoveryResults(agent: Agent): { callId: CallId; code: string | undefined; cites: string | undefined }[] {
+  const log = events(agent)
+  return log
+    .filter((event): event is SessionEvent<'tool/result'> => event.type === 'tool/result')
+    .map(event => ({
+      callId: event.data.message.source.callId,
+      code: event.data.error?.code,
+      cites: event.sourceEventSeqs === undefined ? undefined : log[event.sourceEventSeqs[0]!]?.type,
+    }))
+}
+
+/** Assert the failed step records its last result before it closes. */
+function expectResultsBeforeStepEnd(agent: Agent): void {
+  const types = events(agent).map(event => event.type)
+  expect(types.lastIndexOf('tool/result')).toBeLessThan(types.indexOf('step/end'))
+}
 
 describe('code-mode native-tool denial through the agent loop', () => {
   /** A minimal in-process code runtime for test purposes — never actually runs. */
