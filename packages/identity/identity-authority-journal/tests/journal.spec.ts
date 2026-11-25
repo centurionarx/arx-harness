@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { chmod, mkdtemp, mkdir, readFile, rm, writeFile, symlink, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -48,10 +49,15 @@ describe('protected authority outside restored data', () => {
     ctx = undefined
     const path = join(root, 'public')
     await mkdir(path, { mode: 0o700 })
-    // The journal applies no mode or owner check on win32, so the rejection of a path that other accounts can reach holds only on POSIX.
+    // POSIX rejects by mode bits and Windows by an access entry for another principal.
     if (process.platform !== 'win32') {
       await chmod(path, 0o755)
       await expect(load(path, true)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION' })
+    }
+    else {
+      execFileSync('icacls', [path, '/grant', '*S-1-1-0:(R)'])
+      await expect(load(path, true)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [path, '/remove:g', '*S-1-1-0'])
     }
   })
   it('captures caller payload before queuing and prevents mutation of cached records', async () => {
@@ -90,7 +96,7 @@ describe('protected authority outside restored data', () => {
     }
     await writeFile(file, original, { mode: 0o600 })
     const watermark = join(path, 'watermark.json')
-    // The journal applies no mode or owner check on win32, so the rejection of a path that other accounts can reach holds only on POSIX.
+    // POSIX rejects by mode bits and Windows by an access entry for another principal.
     if (process.platform !== 'win32') {
       await chmod(file, 0o644)
       await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
@@ -98,6 +104,14 @@ describe('protected authority outside restored data', () => {
       await chmod(watermark, 0o644)
       await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
       await chmod(watermark, 0o600)
+    }
+    else {
+      execFileSync('icacls', [file, '/grant', '*S-1-1-0:(R)'])
+      await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [file, '/remove:g', '*S-1-1-0'])
+      execFileSync('icacls', [watermark, '/grant', '*S-1-1-0:(R)'])
+      await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE', cause: { message: expect.stringContaining('S-1-1-0') as string } })
+      execFileSync('icacls', [watermark, '/remove:g', '*S-1-1-0'])
     }
     const external = join(root, 'external')
     await writeFile(external, original, { mode: 0o600 })
@@ -135,5 +149,19 @@ describe('protected authority outside restored data', () => {
     await mkdir(watermark)
     await expect(ctx.identityAuthorityJournal.append(0, { operationId: 'storage-failed', kind: 'owner', payload: {} })).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE' })
     expect(() => ctx!.identityAuthorityJournal.head).toThrow(/unavailable/)
+  })
+  it('rejects an authority root or watermark of the wrong entry type before reading its access', async () => {
+    root = await realpath(await mkdtemp(join(tmpdir(), 'arx-journal-entry-type-')))
+    const file = join(root, 'file')
+    await writeFile(file, '', { mode: 0o600 })
+    await expect(load(file)).rejects.toMatchObject({ code: 'AUTH_CONFIGURATION', message: 'Private authority directory required' })
+    const path = join(root, 'authority')
+    ctx = await load(path, true)
+    await ctx.fiber.dispose()
+    ctx = undefined
+    const watermark = join(path, 'watermark.json')
+    await rm(watermark)
+    await mkdir(watermark, { mode: 0o700 })
+    await expect(load(path)).rejects.toMatchObject({ code: 'AUTHORITY_UNAVAILABLE', message: 'Private authority watermark required' })
   })
 })

@@ -1,8 +1,9 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
+import { lstat, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, toNamespacedPath } from 'node:path'
 import { expect, it } from 'vitest'
-import { writeFileAtomic } from '../src/index.ts'
+import { privateAccessViolation, writeFileAtomic } from '../src/index.ts'
 
 /** Query owner and DACL independently from the production creation bindings. */
 async function securityDescriptor(path: string): Promise<string> {
@@ -75,6 +76,38 @@ it.runIf(process.platform === 'win32')('waits out a short-lived reader that deni
     expect(await readFile(target, 'utf8')).toBe('replacement')
   } finally {
     if (reader !== undefined) close(reader)
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+function icacls(path: string, ...change: string[]): void {
+  execFileSync('icacls', [path, ...change], { stdio: 'pipe' })
+}
+
+async function violation(path: string): Promise<string | undefined> {
+  return privateAccessViolation(path, await lstat(path), { posixOwner: true })
+}
+
+it.runIf(process.platform === 'win32')('accepts entries only the process user, SYSTEM and Administrators reach, and names any other allow entry', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'arx-private-access-'))
+  const file = join(root, 'identity.key')
+  const directory = join(root, 'state')
+  try {
+    await writeFile(file, 'key')
+    await mkdir(directory)
+    const atomic = join(directory, 'atomic.key')
+    await writeFileAtomic(atomic, 'key', { mode: 0o600 })
+    // A failure prints the entry's SDDL, which names the runner's actual owner and access entries.
+    for (const path of [root, file, directory, atomic]) expect(await violation(path), await securityDescriptor(path)).toBeUndefined()
+    icacls(file, '/grant', '*S-1-1-0:(R)')
+    expect(await violation(file)).toMatch(/: allow entry for S-1-1-0 with access mask 0x[0-9a-f]{8}$/)
+    icacls(file, '/remove:g', '*S-1-1-0')
+    icacls(file, '/deny', '*S-1-1-0:(W)')
+    expect(await violation(file), await securityDescriptor(file)).toBeUndefined()
+    icacls(file, '/remove:d', '*S-1-1-0')
+    icacls(directory, '/grant', '*S-1-5-32-545:(OI)(CI)(IO)(R)')
+    expect(await violation(directory)).toMatch(/: allow entry for S-1-5-32-545 with access mask 0x[0-9a-f]{8}$/)
+  } finally {
     await rm(root, { recursive: true, force: true })
   }
 })

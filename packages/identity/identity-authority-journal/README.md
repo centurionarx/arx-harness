@@ -4,7 +4,7 @@ This reference owns `ctx.identityAuthorityJournal`. Required config is a private
 
 Records are append-only, hash linked, newline bounded and fsynced before atomic, fsynced watermark publication. Events and returned records are detached and recursively frozen. A single exclusive writer is enforced. Missing/incomplete/corrupt journal, mismatched watermark, conflicting sequence or reused operation ID fails closed. A crashed writer lock requires operator verification before removal; there is no automatic PID-only lock stealing. Normal disposal releases the lock.
 
-The journal includes credential verifiers, authorization changes, opaque ownership and tombstones, never project content, plaintext passwords or raw tokens. Protect it from workers and the MASTER web role, retain it for every recoverable backup, and exclude it from snapshot sets that can be rolled back. SHA-256 links detect corruption; they cannot defend against an operator with write access to the complete journal/watermark. Mode bits are a local configuration check, and a shared UID is insufficient.
+The journal includes credential verifiers, authorization changes, opaque ownership and tombstones, never project content, plaintext passwords or raw tokens. Protect it from workers and the MASTER web role, retain it for every recoverable backup, and exclude it from snapshot sets that can be rolled back. SHA-256 links detect corruption; they cannot defend against an operator with write access to the complete journal/watermark. At startup the root, journal and watermark must be reachable only by the process user, checked by [`privateAccessViolation`](../../util/atomic-write/README.md#private-access-check): POSIX mode bits and owner, or the Windows owner and DACL. The check is local configuration, and a shared account is insufficient.
 
 The companion compares projected events with the current journal head. Journal commit precedes the [SQLite FULL projection](../web-identity-sqlite/README.md); this is a replayable protocol, not a two-phase transaction. ACK covers local crash durability, not loss of the authority disk. [The decision record](../../../.agents/notes/implemented/architecture/2026-10-08-native-web-identity-journal-and-audience.md) explains the restore boundary.
 
@@ -28,4 +28,6 @@ This package contributes no model-visible request prefix or cache-key mutation.
 
 ## Known Limitations and Deferred Work
 
+- On Windows, `allowInitialize` creates the root with mode 0700, which sets no ACL. A new root passes the startup check only when the entries it inherits from its parent are already private; otherwise the operator restricts its DACL first.
+- On Windows the watermark is published with a plain rename and no retry. A short sharing violation from a scanner or indexer makes the append fail, and the journal stays unavailable until restart.
 - The journal and watermark require protected persistent storage and one writer. Filesystem durability does not provide replication or recovery after total authority-disk loss.

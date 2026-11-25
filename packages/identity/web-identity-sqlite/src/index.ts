@@ -9,6 +9,7 @@ import { dirname, isAbsolute, relative } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { SQLInputValue } from 'node:sqlite'
 import { Context, Service } from '@arx-ai/cordis'
+import { privateAccessViolation } from '@arx-ai/arx-atomic-write'
 import z from '@arx-ai/schemastery'
 import { WebIdentity, WebIdentityError, identityFailure, ModuleId } from '@arx-ai/arx-web-identity'
 import type { AdminUserList, AdminUserSummary, AuthAudience, AuthInvalidationReason, AuthState, AuthorityEvent, AuthorityRecord, IdentityDeliveryProvider, JsonValue, LoginResult, ModuleCatalog, ModuleId as ModuleIdType, OwnerResource, OwnedResource, OwnerScope, PageOptions, ProjectId, RequestAuthority, WebAuthSessionId, WebModule, WebPrincipal, WebUserId } from '@arx-ai/arx-web-identity'
@@ -282,12 +283,16 @@ export class SqliteWebIdentity extends WebIdentity {
       identityFailure('AUTH_CONFIGURATION', 503, 'Separate private identity storage and authority required')
     }
     this.key = await readPrivateKey(this.config.privateKeyPath)
+    // TODO: create the directory with a protected current-user DACL on Windows; mode 0o700 sets no Windows ACL, so a
+    // directory initialized outside a private parent fails the access check below until the operator restricts it.
     if (this.config.allowInitialize === true)
       await mkdir(dirname(this.config.path), { recursive: true, mode: 0o700 })
     const parent = await lstat(dirname(this.config.path))
-    if (!parent.isDirectory() || parent.isSymbolicLink() || (process.platform !== 'win32' && (parent.mode & 0o077) !== 0)) {
+    if (!parent.isDirectory() || parent.isSymbolicLink())
       identityFailure('AUTH_CONFIGURATION', 503, 'Private identity directory required')
-    }
+    const parentViolation = await privateAccessViolation(dirname(this.config.path), parent, { posixOwner: false })
+    if (parentViolation !== undefined)
+      identityFailure('AUTH_CONFIGURATION', 503, 'Private identity directory required', parentViolation)
     if (await realpath(dirname(this.config.path)) !== dirname(this.config.path))
       identityFailure('AUTH_CONFIGURATION', 503, 'Canonical identity directory required')
     let exists = true
@@ -306,9 +311,11 @@ export class SqliteWebIdentity extends WebIdentity {
       await file.close()
     }
     const info = await lstat(this.config.path)
-    if (!info.isFile() || info.isSymbolicLink() || (process.platform !== 'win32' && (info.mode & 0o077) !== 0)) {
+    if (!info.isFile() || info.isSymbolicLink())
       identityFailure('AUTH_CONFIGURATION', 503, 'Private identity database required')
-    }
+    const violation = await privateAccessViolation(this.config.path, info, { posixOwner: false })
+    if (violation !== undefined)
+      identityFailure('AUTH_CONFIGURATION', 503, 'Private identity database required', violation)
     this.database = new DatabaseSync(this.config.path)
     configureDatabase(this.database, this.config.allowInitialize === true)
     this.projectionReady = true

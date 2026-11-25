@@ -4,6 +4,7 @@
  * @module @arx-ai/arx-web-identity-resend
  */
 import { lstat, readFile } from 'node:fs/promises'
+import { privateAccessViolation } from '@arx-ai/arx-atomic-write'
 import { isAbsolute, basename } from 'node:path'
 import type { Context } from '@arx-ai/cordis'
 import z from '@arx-ai/schemastery'
@@ -60,9 +61,11 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
         || !config.from.includes('@'))
     identityFailure('AUTH_CONFIGURATION', 503, 'Private Resend configuration required')
   const info = await lstat(config.keyFile)
-  if (!info.isFile() || info.isSymbolicLink() || (process.platform !== 'win32' && ((info.mode & 0o077) !== 0 || info.uid !== process.getuid?.()))) {
+  if (!info.isFile() || info.isSymbolicLink())
     identityFailure('AUTH_CONFIGURATION', 503, 'Private Resend key required')
-  }
+  const violation = await privateAccessViolation(config.keyFile, info, { posixOwner: true })
+  if (violation !== undefined)
+    identityFailure('AUTH_CONFIGURATION', 503, 'Private Resend key required', violation)
   const key = (await readFile(config.keyFile, 'utf8')).trim()
   if (!/^re_[A-Za-z0-9_-]{10,}$/.test(key))
     identityFailure('AUTH_CONFIGURATION', 503, 'Resend key invalid')

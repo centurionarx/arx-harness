@@ -1,5 +1,6 @@
 /**
- * Atomic, flushed file replacement and cross-process writer coordination.
+ * Atomic, flushed file replacement, cross-process writer coordination, and
+ * verification that only the process user can reach an existing entry.
  * Private Windows files use native protected DACLs, not Node's POSIX mode bits.
  * @module @arx-ai/arx-atomic-write
  */
@@ -10,6 +11,9 @@ import type { FileHandle } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { createDirectoryWin32, openPrivateFileWin32, publishWin32 } from './win32.ts'
 import type { PrivateFileWin32 } from './win32.ts'
+
+export { privateAccessViolation } from './private-access.ts'
+export type { PrivateAccessOptions } from './private-access.ts'
 
 /** Filesystem permissions for the replacement and newly created directories. */
 export interface WriteFileAtomicOptions {
