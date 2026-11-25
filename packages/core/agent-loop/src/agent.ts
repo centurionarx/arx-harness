@@ -28,7 +28,7 @@ import {
 import type { Scope } from '@arx-ai/arx-scope'
 import { createScope } from '@arx-ai/arx-scope'
 import type { EpochHeader, RequestContext, Session, SessionId, TurnEndReason, UserMessage } from '@arx-ai/arx-session'
-import { canonicalHeader, headerEquals } from '@arx-ai/arx-session'
+import { canonicalHeader, headerEquals, interruptedTurnClosers } from '@arx-ai/arx-session'
 import { joinContextSections, renderContextSections, renderPrompt } from '@arx-ai/arx-system-prompt'
 import type { PromptAssembly } from '@arx-ai/arx-system-prompt'
 import type { Context } from '@arx-ai/cordis'
@@ -50,6 +50,21 @@ type StepEndReason = Extract<TurnEndReason, { kind: 'completed' | 'max-tokens' }
 type PreparedStep =
   | { kind: 'reject' }
   | { kind: 'enter'; messages: UserMessage[]; assembly: PromptAssembly }
+
+/**
+ * Append the crash-recovery results that {@link interruptedTurnClosers}
+ * derives for the open step's unanswered model calls, in model order. Its
+ * step and turn closers are not appended: the live turn records its own.
+ */
+function appendRecoveryToolResults(session: Session): void {
+  for (const closer of interruptedTurnClosers(session.events)) {
+    if (closer.type !== 'tool/result') continue
+    session.append('tool/result', closer.data, {
+      surfaceOp: 'append',
+      ...closer.sourceEventSeqs === undefined ? {} : { sourceEventSeqs: closer.sourceEventSeqs },
+    })
+  }
+}
 
 /** Remove adapter-derived values before plugins propose the next request config. */
 function requestProposal(header: EpochHeader): LlmCallConfig {
@@ -288,6 +303,9 @@ export class ReactLoopAgent implements Agent {
           // max-tokens stays sticky: a later completed step must not
           // downgrade the turn outcome.
           if (turnEnds === null || turnEnds.kind !== 'max-tokens') turnEnds = stepEnd
+        } catch (error: unknown) {
+          this.answerUnansweredToolCalls(error)
+          throw error
         } finally {
           this.session.append('step/end', { turn, step })
         }
@@ -327,6 +345,26 @@ export class ReactLoopAgent implements Agent {
     phase.wakeRequested = false
     phase.step = 0
     return true
+  }
+
+  /**
+   * Answer each model call of a failed step that still lacks a result, so the
+   * step closes with a call/result pair for every call it requested. A call
+   * with a recorded `tool/call` receives `TOOL_OUTCOME_UNKNOWN`, because its
+   * body may have run; an unrecorded call receives `TOOL_NOT_STARTED`. When
+   * recording fails, a warning names both failures and the step closes
+   * without the results; the caller still rethrows the step's failure, but a
+   * later failure while closing the step or turn replaces it.
+   * @param stepError - the failure that ended the step.
+   */
+  private answerUnansweredToolCalls(stepError: unknown): void {
+    try {
+      appendRecoveryToolResults(this.session)
+    } catch (error: unknown) {
+      this.loopCtx.logger.warn(
+        `agent "${this.id}": recovery tool results not recorded after step failure (${errorChain(stepError)}): ${errorChain(error)}`,
+      )
+    }
   }
 
   private async step(assembly: PromptAssembly): Promise<StepEndReason | null> {

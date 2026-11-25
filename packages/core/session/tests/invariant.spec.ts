@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Context } from '@arx-ai/cordis'
 import { createScope, scopeTarget } from '@arx-ai/arx-scope'
 import { createUserMessage, CallId, createMessage, createToolResultMessage, freezeMessage } from '@arx-ai/arx-llm'
-import SessionStore, { SessionId, TOOL_NOT_STARTED } from '@arx-ai/arx-session'
+import SessionStore, { SessionId, TOOL_NOT_STARTED, type SessionEvent } from '@arx-ai/arx-session'
 import * as SessionInvariant from '@arx-ai/arx-session/invariant'
 import InvariantRegistry, { InvariantError } from '@arx-ai/arx-invariants'
 
@@ -324,7 +324,7 @@ describe('session-log invariants', () => {
     })).toThrow(/outside any open turn/)
   })
 
-  it('allows not-started repair results and unresolved calls at step end', async () => {
+  it('allows not-started repair results without a recorded call', async () => {
     const repaired = (await setup()).ctx.sessions.create()
     expect(() => {
       repaired.append('turn/start', { turn: 1 })
@@ -343,23 +343,98 @@ describe('session-log invariants', () => {
       repaired.append('turn/end', { turn: 1, reason: { kind: 'interrupted' } })
     }).not.toThrow()
 
-    const unresolved = (await setup()).ctx.sessions.create()
-    expect(() => {
-      unresolved.append('turn/start', { turn: 1 })
-      unresolved.append('step/start', { turn: 1, step: 1 })
-      unresolved.append('tool/call', { turn: 1, step: 1, callId: CallId('c1'), name: 'echo', arguments: '{}' })
-      unresolved.append('step/end', { turn: 1, step: 1 })
-      unresolved.append('turn/end', { turn: 1, reason: { kind: 'error', error: { message: 'boom', code: 'UNKNOWN' } } })
-    }).not.toThrow()
   })
 
-  it('does not let a result in a later step satisfy an earlier call', async () => {
+  it('accepts seeded history whose failed step left calls unanswered, and still checks live steps', async () => {
+    const { ctx } = await setup()
+    const session = ctx.sessions.create(SessionId('failed-step-history'), { seed: failedStepHistory(true) })
+
+    expect(session.events.filter(event => event.type === 'turn/end')).toHaveLength(1)
+    session.append('turn/start', { turn: 2 })
+    session.append('step/start', { turn: 2, step: 1 })
+    session.append('tool/call', { turn: 2, step: 1, callId: CallId('c3'), name: 'echo', arguments: '{}' })
+    expect(() => session.append('step/end', { turn: 2, step: 1 }))
+      .toThrow(/with unanswered tool calls: c3$/)
+  })
+
+  it('refuses a step end while a recorded call has no result', async () => {
     const { ctx } = await setup()
     const session = ctx.sessions.create()
     session.append('turn/start', { turn: 1 })
     session.append('step/start', { turn: 1, step: 1 })
     session.append('tool/call', { turn: 1, step: 1, callId: CallId('c1'), name: 'echo', arguments: '{}' })
-    session.append('step/end', { turn: 1, step: 1 })
+
+    expect(() => session.append('step/end', { turn: 1, step: 1 }))
+      .toThrow(/step\/end closes turn 1\/step 1 with unanswered tool calls: c1/)
+  })
+
+  it('refuses a step end while an assistant call was never recorded or answered', async () => {
+    const { ctx } = await setup()
+    const session = ctx.sessions.create()
+    session.append('turn/start', { turn: 1 })
+    session.append('step/start', { turn: 1, step: 1 })
+    session.append('assistant/message', {
+      turn: 1,
+      step: 1,
+      message: createMessage({
+        role: 'assistant',
+        content: [
+          { type: 'tool-call', id: CallId('answered'), name: 'echo', arguments: '{}' },
+          { type: 'tool-call', id: CallId('skipped'), name: 'echo', arguments: '{}' },
+        ],
+        source: {
+          kind: 'model',
+          ...{ provider: 'mock', model: 'mock' },
+        },
+      }),
+    }, { surfaceOp: 'append', sourceEventSeqs: [] })
+    const call = session.append('tool/call', { turn: 1, step: 1, callId: CallId('answered'), name: 'echo', arguments: '{}' })
+    session.append('tool/result', {
+      turn: 1,
+      step: 1,
+      message: createToolResultMessage({ callId: CallId('answered'), content: [], isError: false }),
+    }, { surfaceOp: 'append', sourceEventSeqs: [call.seq] })
+
+    expect(() => session.append('step/end', { turn: 1, step: 1 }))
+      .toThrow(/with unanswered tool calls: skipped$/)
+  })
+
+  it('answers a requested call only with a not-started result until its call is recorded', async () => {
+    const { ctx } = await setup()
+    const session = ctx.sessions.create()
+    session.append('turn/start', { turn: 1 })
+    session.append('step/start', { turn: 1, step: 1 })
+    session.append('assistant/message', {
+      turn: 1,
+      step: 1,
+      message: createMessage({
+        role: 'assistant',
+        content: [{ type: 'tool-call', id: CallId('requested'), name: 'echo', arguments: '{}' }],
+        source: {
+          kind: 'model',
+          ...{ provider: 'mock', model: 'mock' },
+        },
+      }),
+    }, { surfaceOp: 'append', sourceEventSeqs: [] })
+
+    expect(() => session.append('tool/result', {
+      turn: 1,
+      step: 1,
+      message: createToolResultMessage({ callId: CallId('requested'), content: [], isError: false }),
+    }, { surfaceOp: 'append' })).toThrow(/no prior tool\/call in this step/)
+    session.append('tool/result', {
+      turn: 1,
+      step: 1,
+      message: createToolResultMessage({ callId: CallId('requested'), content: [], isError: true }),
+      error: { name: 'ToolNotStartedError', code: TOOL_NOT_STARTED },
+    }, { surfaceOp: 'append' })
+    expect(() => session.append('step/end', { turn: 1, step: 1 })).not.toThrow()
+  })
+
+  it('does not let a result in a later step satisfy an earlier call', async () => {
+    const { ctx } = await setup()
+    // Only seeded history can close a step with a recorded call unanswered.
+    const session = ctx.sessions.create(SessionId('open-failed-step-history'), { seed: failedStepHistory(false) })
     session.append('step/start', { turn: 1, step: 2 })
     expect(() => session.append('tool/result', {
       turn: 1,
@@ -431,3 +506,51 @@ describe('session-log invariants', () => {
     })).not.toThrow()
   })
 })
+
+/**
+ * A log in the shape an earlier release wrote when a step failed: the
+ * assistant requested `c1` and `c2`, only `c1` was recorded, and the step
+ * closed without results.
+ * @param closed - whether the turn's error `turn/end` follows the step.
+ */
+function failedStepHistory(closed: boolean): SessionEvent[] {
+  const events: SessionEvent[] = [
+    { type: 'turn/start', seq: 0, time: 0, data: { turn: 1 } },
+    {
+      type: 'user/message',
+      seq: 1,
+      time: 0,
+      data: createUserMessage({ content: [{ type: 'text', text: 'go' }], source: { kind: 'user' } }),
+      surfaceOp: 'append',
+    },
+    { type: 'step/start', seq: 2, time: 0, data: { turn: 1, step: 1 } },
+    {
+      type: 'assistant/message',
+      seq: 3,
+      time: 0,
+      data: {
+        turn: 1,
+        step: 1,
+        message: createMessage({
+          role: 'assistant',
+          content: [
+            { type: 'tool-call', id: CallId('c1'), name: 'echo', arguments: '{}' },
+            { type: 'tool-call', id: CallId('c2'), name: 'echo', arguments: '{}' },
+          ],
+          source: {
+            kind: 'model',
+            ...{ provider: 'mock', model: 'mock' },
+          },
+        }),
+      },
+      surfaceOp: 'append',
+      sourceEventSeqs: [],
+    },
+    { type: 'tool/call', seq: 4, time: 0, data: { turn: 1, step: 1, callId: CallId('c1'), name: 'echo', arguments: '{}' } },
+    { type: 'step/end', seq: 5, time: 0, data: { turn: 1, step: 1 } },
+  ]
+  if (closed) {
+    events.push({ type: 'turn/end', seq: 6, time: 0, data: { turn: 1, reason: { kind: 'error', error: { message: 'boom', code: 'UNKNOWN' } } } })
+  }
+  return events
+}

@@ -26,15 +26,20 @@ interface SessionTrace {
   openStep: number | null
   nextTurn: number
   nextStep: number
-  pendingCalls: Set<CallId>
+  /**
+   * The open step's model calls that have no result yet: `requested` by the
+   * assistant message, `started` once their `tool/call` is recorded.
+   */
+  unansweredCalls: Map<CallId, 'requested' | 'started'>
 }
 
 /** One accepted event's deferred mutation of a committed session trace. */
 interface SessionTraceTransition {
   scalars: Pick<SessionTrace, 'lastSeq' | 'openTurn' | 'openStep' | 'nextTurn' | 'nextStep'>
-  pendingCalls:
+  calls:
     | { kind: 'none' }
-    | { kind: 'add' | 'delete'; callId: CallId }
+    | { kind: 'request'; callIds: readonly CallId[] }
+    | { kind: 'start' | 'answer'; callId: CallId }
     | { kind: 'clear' }
 }
 
@@ -51,11 +56,19 @@ function requireOpenStep(
   }
 }
 
-/** Validate one candidate event without mutating the committed trace. */
+/**
+ * Validate one candidate event without mutating the committed trace.
+ * `origin` is `history` for an event replayed from a seed or from a session
+ * that existed before this companion loaded. History is exempt from the
+ * unanswered-call check at `step/end`: a log written by an earlier release
+ * can close a failed step without results, and an append-only log cannot
+ * gain them inside a closed turn. Every appended event satisfies the check.
+ */
 function validateEvent(
   trace: SessionTrace,
   event: SessionEvent,
   fail: InvariantFailure,
+  origin: 'history' | 'append',
 ): SessionTraceTransition {
   if (event.seq <= trace.lastSeq) {
     fail(`seq must strictly increase: saw ${event.seq} after ${trace.lastSeq}`)
@@ -64,7 +77,7 @@ function validateEvent(
   let openStep = trace.openStep
   let nextTurn = trace.nextTurn
   let nextStep = trace.nextStep
-  let pendingCalls: SessionTraceTransition['pendingCalls'] = { kind: 'none' }
+  let calls: SessionTraceTransition['calls'] = { kind: 'none' }
 
   // Context and plugin-owned log-only events may be appended between model
   // executions. Core execution events retain their explicit turn relations.
@@ -106,7 +119,11 @@ function validateEvent(
     }
     case 'step/end': {
       requireOpenStep(trace, 'step/end', event.data.turn, event.data.step, fail)
-      pendingCalls = { kind: 'clear' }
+      // Providers reject a request whose history holds a call without its result.
+      if (origin === 'append' && trace.unansweredCalls.size > 0) {
+        fail(`step/end closes turn ${event.data.turn}/step ${event.data.step} with unanswered tool calls: ${[...trace.unansweredCalls.keys()].join(', ')}`)
+      }
+      calls = { kind: 'clear' }
       openStep = null
       nextStep += 1
       break
@@ -117,11 +134,13 @@ function validateEvent(
     }
     case 'assistant/message': {
       requireOpenStep(trace, 'assistant/message', event.data.turn, event.data.step, fail)
+      const callIds = event.data.message.content.flatMap(block => block.type === 'tool-call' ? [block.id] : [])
+      if (callIds.length > 0) calls = { kind: 'request', callIds }
       break
     }
     case 'tool/call': {
       requireOpenStep(trace, 'tool/call', event.data.turn, event.data.step, fail)
-      pendingCalls = { kind: 'add', callId: event.data.callId }
+      calls = { kind: 'start', callId: event.data.callId }
       break
     }
     case 'tool/result': {
@@ -136,10 +155,10 @@ function validateEvent(
       requireOpenStep(trace, 'tool/result', event.data.turn, event.data.step, fail)
       const callId = event.data.message.source.callId
       const syntheticNotStarted = event.data.message.content[0].isError === true && event.data.error?.code === TOOL_NOT_STARTED
-      if (!trace.pendingCalls.has(callId) && !syntheticNotStarted) {
+      if (trace.unansweredCalls.get(callId) !== 'started' && !syntheticNotStarted) {
         fail(`tool/result for ${callId} with no prior tool/call in this step`)
       }
-      pendingCalls = { kind: 'delete', callId }
+      calls = { kind: 'answer', callId }
       break
     }
     case 'user/message':
@@ -161,28 +180,32 @@ function validateEvent(
   }
   return {
     scalars: { lastSeq: event.seq, openTurn, openStep, nextTurn, nextStep },
-    pendingCalls,
+    calls,
   }
 }
 
 /** Apply one already-validated transition after its event commits. */
 function applyTransition(trace: SessionTrace, transition: SessionTraceTransition): void {
   Object.assign(trace, transition.scalars)
-  switch (transition.pendingCalls.kind) {
+  const { calls } = transition
+  switch (calls.kind) {
     case 'none':
       break
-    case 'add':
-      trace.pendingCalls.add(transition.pendingCalls.callId)
+    case 'request':
+      for (const callId of calls.callIds) trace.unansweredCalls.set(callId, 'requested')
       break
-    case 'delete':
-      trace.pendingCalls.delete(transition.pendingCalls.callId)
+    case 'start':
+      trace.unansweredCalls.set(calls.callId, 'started')
+      break
+    case 'answer':
+      trace.unansweredCalls.delete(calls.callId)
       break
     case 'clear':
-      trace.pendingCalls.clear()
+      trace.unansweredCalls.clear()
       break
     /* v8 ignore next -- validateEvent produces this closed transition union */
     default:
-      assertNever(transition.pendingCalls, 'session trace pending-call transition')
+      assertNever(calls, 'session trace tool-call transition')
   }
 }
 
@@ -201,14 +224,14 @@ const install: InvariantInstaller = Object.assign((ctx: Context, fail: Invariant
     openStep: null,
     nextTurn: 1,
     nextStep: 1,
-    pendingCalls: new Set(),
+    unansweredCalls: new Map(),
   })
 
   const seedSession = (session: Session): SessionTrace => {
     const trace = freshTrace()
     traces.set(session, trace)
     for (const event of session.events) {
-      applyTransition(trace, validateEvent(trace, event, fail))
+      applyTransition(trace, validateEvent(trace, event, fail, 'history'))
     }
     return trace
   }
@@ -234,7 +257,7 @@ const install: InvariantInstaller = Object.assign((ctx: Context, fail: Invariant
     if (eventName !== 'session/event') return
     const [session, event] = args as [Session, SessionEvent]
     const trace = traceFor(session)
-    const transition = validateEvent(trace, event, fail)
+    const transition = validateEvent(trace, event, fail, 'append')
     // A later dispatch listener may veto. Validation is pure, so abandoning
     // this weakly keyed transition does not advance or retain the session.
     stagedTransitions.set(event, { session, trace, transition })

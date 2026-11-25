@@ -2,7 +2,7 @@
 
 Event-sourced session log and in-memory store. A `Session` is the append-only source of truth for an agent's whole interaction history — the LLM message history is *derived* from it. A **surface** layer (an ordered projection of message-producing events) is maintained on top of the raw log for efficient derivation and compaction.
 
-The optional `@arx-ai/arx-session/invariant` companion registers this package's relational trace checks with `ctx.invariants`: monotonic sequence numbers, turn/step enclosure, and same-step tool call/result pairing. It replays existing sessions when loaded or reloaded; storage validation, snapshotting, freezing, cited source-event validation, and surface acceptance remain always-on responsibilities of the root session package.
+The optional `@arx-ai/arx-session/invariant` companion registers this package's relational trace checks with `ctx.invariants`: monotonic sequence numbers, turn/step enclosure, same-step tool call/result pairing, and an appended `step/end` only after every model call of the step has a result. Seeded history is exempt from that last rule, because a log written by an earlier release can close a failed step without results. It replays existing sessions when loaded or reloaded; storage validation, snapshotting, freezing, cited source-event validation, and surface acceptance remain always-on responsibilities of the root session package.
 
 ## Service: `SessionStore` (ctx key: `sessions`)
 
@@ -110,11 +110,11 @@ Appended surface entries preserve reusable prefixes. A `replace` operation inval
 
 #### What the model sees
 
-If recovery finds an assistant tool request with no durable `tool/call`, its synthetic `TOOL_NOT_STARTED` result says `The tool call was interrupted before the Harness recorded it as started. Retry it if it is still needed.` If a durable `tool/call` has no result, its `TOOL_OUTCOME_UNKNOWN` result says `The tool call was interrupted after it was recorded, but no result was durably recorded. Its outcome is unknown. Decide whether to retry from the tool semantics: retry only if the operation is read-only or idempotent; if it may have side effects, first verify external state or ask the user. Do not retry blindly.`
+Crash recovery and a live step failure in [AgentLoop](../agent-loop/README.md#loop-lifecycle-agentts) record the same results. If recovery finds an assistant tool request with no durable `tool/call`, its synthetic `TOOL_NOT_STARTED` result says `The tool call was interrupted before the Harness recorded it as started. Retry it if it is still needed.` If a durable `tool/call` has no result, its `TOOL_OUTCOME_UNKNOWN` result says `The tool call was interrupted after it was recorded, but no result was durably recorded. Its outcome is unknown. Decide whether to retry from the tool semantics: retry only if the operation is read-only or idempotent; if it may have side effects, first verify external state or ask the user. Do not retry blindly.`
 
 #### Token effect
 
-Zero tokens in an intact session. Each repaired call adds its retained risk-specific error text on resume.
+Zero tokens in an intact session. Each repaired or failed-step call adds its retained risk-specific error text to later requests.
 
 #### KV Cache effect
 

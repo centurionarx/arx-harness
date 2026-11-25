@@ -1,0 +1,10 @@
+# Live failed-step composition for the SDK snapshot: the shared runtime plus a
+# fixture that fails the first dispatch inside the real tool-call scheduler.
+- id: base
+  name: '@arx-ai/cordis-plugin-include'
+  config:
+    path: ./cordis.yml
+    patches:
+      - insert:
+          - id: scheduler-fault
+            name: './tests/fixtures/scheduler-fault.mjs'

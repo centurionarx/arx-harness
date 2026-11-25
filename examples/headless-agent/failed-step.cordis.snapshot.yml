@@ -1,0 +1,14 @@
+# Keyless failed-step composition for the headless stream-json snapshot. The
+# fixture backend replaces the model route and fails the first dispatch inside
+# the real tool-call scheduler.
+- id: base
+  name: '@arx-ai/cordis-plugin-include'
+  config:
+    path: ./cordis.yml
+    patches:
+      - id: llm
+        name: '@arx-ai/arx-llm-pi-ai'
+        disabled: true
+      - insert:
+          - id: failed-step-snapshot-backend
+            name: './tests/fixtures/failed-step-snapshot-backend.mjs'
