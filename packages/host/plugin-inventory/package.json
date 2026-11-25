@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-host-plugin-inventory",
   "description": "Read-only Remote projection of current Cordis Loader plugin state",
-  "version": "1.0.69",
+  "version": "1.0.70",
   "publishConfig": {
     "access": "public"
   },

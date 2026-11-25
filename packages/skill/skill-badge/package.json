@@ -1,7 +1,7 @@
 {
   "name": "@arx-ai/arx-skill-badge",
   "description": "Bundled arx badge skill provider for arx Harness",
-  "version": "1.0.69",
+  "version": "1.0.70",
   "publishConfig": {
     "access": "public"
   },
