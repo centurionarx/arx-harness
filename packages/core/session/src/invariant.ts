@@ -56,11 +56,19 @@ function requireOpenStep(
   }
 }
 
-/** Validate one candidate event without mutating the committed trace. */
+/**
+ * Validate one candidate event without mutating the committed trace.
+ * `origin` is `history` for an event replayed from a seed or from a session
+ * that existed before this companion loaded. History is exempt from the
+ * unanswered-call check at `step/end`: a log written by an earlier release
+ * can close a failed step without results, and an append-only log cannot
+ * gain them inside a closed turn. Every appended event satisfies the check.
+ */
 function validateEvent(
   trace: SessionTrace,
   event: SessionEvent,
   fail: InvariantFailure,
+  origin: 'history' | 'append',
 ): SessionTraceTransition {
   if (event.seq <= trace.lastSeq) {
     fail(`seq must strictly increase: saw ${event.seq} after ${trace.lastSeq}`)
@@ -112,7 +120,7 @@ function validateEvent(
     case 'step/end': {
       requireOpenStep(trace, 'step/end', event.data.turn, event.data.step, fail)
       // Providers reject a request whose history holds a call without its result.
-      if (trace.unansweredCalls.size > 0) {
+      if (origin === 'append' && trace.unansweredCalls.size > 0) {
         fail(`step/end closes turn ${event.data.turn}/step ${event.data.step} with unanswered tool calls: ${[...trace.unansweredCalls.keys()].join(', ')}`)
       }
       calls = { kind: 'clear' }
@@ -223,7 +231,7 @@ const install: InvariantInstaller = Object.assign((ctx: Context, fail: Invariant
     const trace = freshTrace()
     traces.set(session, trace)
     for (const event of session.events) {
-      applyTransition(trace, validateEvent(trace, event, fail))
+      applyTransition(trace, validateEvent(trace, event, fail, 'history'))
     }
     return trace
   }
@@ -249,7 +257,7 @@ const install: InvariantInstaller = Object.assign((ctx: Context, fail: Invariant
     if (eventName !== 'session/event') return
     const [session, event] = args as [Session, SessionEvent]
     const trace = traceFor(session)
-    const transition = validateEvent(trace, event, fail)
+    const transition = validateEvent(trace, event, fail, 'append')
     // A later dispatch listener may veto. Validation is pure, so abandoning
     // this weakly keyed transition does not advance or retain the session.
     stagedTransitions.set(event, { session, trace, transition })

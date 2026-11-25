@@ -37,6 +37,8 @@ const liveConfig = join(testsDir, '..', 'cordis.yml')
 const replayConfig = join(testsDir, '..', 'cordis.snapshot.yml')
 const minimalLiveConfig = join(testsDir, '..', 'minimal.cordis.yml')
 const minimalReplayConfig = join(testsDir, '..', 'minimal.snapshot.cordis.yml')
+const failedStepLiveConfig = join(testsDir, '..', 'failed-step.cordis.yml')
+const failedStepReplayConfig = join(testsDir, '..', 'failed-step.cordis.snapshot.yml')
 const runtimeBin = fileURLToPath(new URL('../../../packages/examples/jsonrpc-demo/src/bin.ts', import.meta.url))
 const repoTsconfig = fileURLToPath(new URL('../../../tsconfig.json', import.meta.url))
 
@@ -101,6 +103,15 @@ const SCENARIOS: SdkScenario[] = [
     prompt: "Use the subagent tool exactly once with description 'echo probe' and prompt: Reply with exactly: child answer 42. Then reply with the subagent's final answer verbatim.",
     sessionId: 'sdk-snapshot-subagent',
     children: 1,
+  },
+  {
+    // The first scheduler dispatch fails, so the SDK sees the turn end with
+    // its error after a recovery result for each requested call.
+    name: 'failed-step-recovery',
+    prompt: 'Print first and second with two bash calls.',
+    sessionId: 'sdk-snapshot-failed-step',
+    children: 0,
+    configs: { live: failedStepLiveConfig, replay: failedStepReplayConfig },
   },
   {
     name: 'persistent-tools',

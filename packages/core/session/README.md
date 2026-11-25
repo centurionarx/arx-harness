@@ -2,7 +2,7 @@
 
 Event-sourced session log and in-memory store. A `Session` is the append-only source of truth for an agent's whole interaction history — the LLM message history is *derived* from it. A **surface** layer (an ordered projection of message-producing events) is maintained on top of the raw log for efficient derivation and compaction.
 
-The optional `@arx-ai/arx-session/invariant` companion registers this package's relational trace checks with `ctx.invariants`: monotonic sequence numbers, turn/step enclosure, same-step tool call/result pairing, and a `step/end` only after every model call of the step has a result. It replays existing sessions when loaded or reloaded; storage validation, snapshotting, freezing, cited source-event validation, and surface acceptance remain always-on responsibilities of the root session package.
+The optional `@arx-ai/arx-session/invariant` companion registers this package's relational trace checks with `ctx.invariants`: monotonic sequence numbers, turn/step enclosure, same-step tool call/result pairing, and an appended `step/end` only after every model call of the step has a result. Seeded history is exempt from that last rule, because a log written by an earlier release can close a failed step without results. It replays existing sessions when loaded or reloaded; storage validation, snapshotting, freezing, cited source-event validation, and surface acceptance remain always-on responsibilities of the root session package.
 
 ## Service: `SessionStore` (ctx key: `sessions`)
 

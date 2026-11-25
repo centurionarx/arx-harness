@@ -81,7 +81,7 @@ turn/end
 
 `turn/*`, `step/*`, `user/message`, `assistant/*`, and `tool/*` are durable session events; the rest are live extension points across three domains. `agent/pre-step`, `agent/request`, `llm/stream`, and the three `tools/*` events are waterfalls, whose listeners must call `next()` to delegate; `agent/turn-stopping` is serial and has no `next()`.
 
-A step closes only after every model call it requested has a `tool/result`. A step that fails first records a recovery result for each unanswered call before `step/end`, so the log stays a valid model history.
+A step closes after every model call it requested has a `tool/result`. A step that fails first records a recovery result for each unanswered call before `step/end`, so the log stays a valid model history; only a failure of that recording, which is logged, leaves calls unanswered.
 
 Input reaches the driver through one inbox. Some messages wake it immediately; injected context waits in the inbox until another message does.
 

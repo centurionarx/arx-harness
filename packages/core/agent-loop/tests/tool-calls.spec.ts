@@ -754,7 +754,9 @@ describe('tool-call scheduler: failure quiescence', () => {
     expect(events(agent).findLast(event => event.type === 'turn/end')).toMatchObject({
       data: { reason: { kind: 'error', error: { message: 'scheduler exploded', code: 'UNKNOWN' } } },
     })
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('recovery tool results not recorded: log refused'))
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(
+      'recovery tool results not recorded after step failure (scheduler exploded): log refused',
+    ))
   })
 })
 

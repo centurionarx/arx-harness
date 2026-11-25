@@ -304,7 +304,7 @@ export class ReactLoopAgent implements Agent {
           // downgrade the turn outcome.
           if (turnEnds === null || turnEnds.kind !== 'max-tokens') turnEnds = stepEnd
         } catch (error: unknown) {
-          this.answerUnansweredToolCalls()
+          this.answerUnansweredToolCalls(error)
           throw error
         } finally {
           this.session.append('step/end', { turn, step })
@@ -352,14 +352,18 @@ export class ReactLoopAgent implements Agent {
    * step closes with a call/result pair for every call it requested. A call
    * with a recorded `tool/call` receives `TOOL_OUTCOME_UNKNOWN`, because its
    * body may have run; an unrecorded call receives `TOOL_NOT_STARTED`. When
-   * recording fails, the step's own failure stays the turn outcome.
+   * recording fails, a warning names both failures and the step closes
+   * without the results; the caller still rethrows the step's failure, but a
+   * later failure while closing the step or turn replaces it.
+   * @param stepError - the failure that ended the step.
    */
-  private answerUnansweredToolCalls(): void {
+  private answerUnansweredToolCalls(stepError: unknown): void {
     try {
       appendRecoveryToolResults(this.session)
     } catch (error: unknown) {
-      // Reported here because the caller rethrows the step's own failure.
-      this.loopCtx.logger.warn(`agent "${this.id}": recovery tool results not recorded: ${errorChain(error)}`)
+      this.loopCtx.logger.warn(
+        `agent "${this.id}": recovery tool results not recorded after step failure (${errorChain(stepError)}): ${errorChain(error)}`,
+      )
     }
   }
 
