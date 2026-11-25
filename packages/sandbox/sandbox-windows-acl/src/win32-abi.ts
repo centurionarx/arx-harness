@@ -96,10 +96,34 @@ export const WinWorldSid = 1
 export const TokenGroups = 2
 /** TokenDefaultDacl: the token's default DACL — the DACL every NEW object created without an explicit SD takes. */
 export const TokenDefaultDacl = 6
+/** TokenIntegrityLevel: the token's mandatory integrity label (a TOKEN_MANDATORY_LABEL). */
+export const TokenIntegrityLevel = 25
+
+// Mandatory integrity (winnt.h: SE_GROUP_INTEGRITY, SECURITY_MANDATORY_*,
+// SYSTEM_MANDATORY_LABEL_*).
+/** SE_GROUP_INTEGRITY: SID_AND_ATTRIBUTES flag marking the integrity label SID of a TOKEN_MANDATORY_LABEL. */
+export const SE_GROUP_INTEGRITY = 0x00000020
+/**
+ * S-1-16-4096, the low mandatory level (SECURITY_MANDATORY_LABEL_AUTHORITY
+ * {0,0,0,0,0,16}, SECURITY_MANDATORY_LOW_RID 0x1000), as its 12 SID bytes:
+ * Revision@0, SubAuthorityCount@1, IdentifierAuthority@2 (6 bytes,
+ * big-endian), SubAuthority[0]@8 (little-endian).
+ */
+export const LOW_INTEGRITY_SID: readonly number[] = [1, 1, 0, 0, 0, 0, 0, 16, 0x00, 0x10, 0x00, 0x00]
+/** sizeof(TOKEN_MANDATORY_LABEL) on x64: one SID_AND_ATTRIBUTES (PSID@0, Attributes@8, padded to 16). */
+export const TOKEN_MANDATORY_LABEL_SIZE = 16
+/** ACL_REVISION: the revision of an ACL that holds only standard ACE types. */
+export const ACL_REVISION = 2
+/** SYSTEM_MANDATORY_LABEL_ACE_TYPE: the ACE type of a mandatory integrity label in a SACL. */
+export const SYSTEM_MANDATORY_LABEL_ACE_TYPE = 0x11
+/** SYSTEM_MANDATORY_LABEL_NO_WRITE_UP: a lower-integrity subject cannot write the labeled object. */
+export const SYSTEM_MANDATORY_LABEL_NO_WRITE_UP = 0x1
 
 // SECURITY_INFORMATION (winnt.h line ~4293)
 /** DACL_SECURITY_INFORMATION: read/write only the DACL of a security descriptor. */
 export const DACL_SECURITY_INFORMATION = 0x00000004
+/** LABEL_SECURITY_INFORMATION: read/write the mandatory label; setting it requires WRITE_OWNER on the object. */
+export const LABEL_SECURITY_INFORMATION = 0x00000010
 
 // PROCESS access rights (winnt.h lines ~4364)
 /** PROCESS_QUERY_INFORMATION: read exit status and times of a process handle. */

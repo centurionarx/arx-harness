@@ -27,7 +27,11 @@
  *    (CREATE_NO_WINDOW / CREATE_NEW_CONSOLE children die with
  *    STATUS_DLL_INIT_FAILED under the restriction);
  *  - the private temp directory and every writable directory must be owned by the
- *    caller (owner-implicit WRITE_DAC);
+ *    caller (owner-implicit WRITE_DAC) and grant the caller WRITE_OWNER, which
+ *    setting their Low label requires;
+ *  - the child runs at Low mandatory integrity: WRITE_RESTRICTED does not
+ *    evaluate DELETE or FILE_DELETE_CHILD against the restricting SIDs, so the
+ *    integrity check confines deletion to Low-labeled objects;
  *  - grants are standing ACE mutations on real directories. WORKSPACE grants
  *    are deliberately never revoked — the ACE is the cross-session reuse
  *    cache (revoking would force the next session to re-propagate the whole
@@ -45,11 +49,11 @@ import { resolve } from 'node:path'
 
 import { grantWrite, revokeWrite } from './acl.ts'
 import { Win32Error } from './errors.ts'
-import { allocPtrSlot, decodePtr, isNullPtr, throwLastError, win32 } from './ffi.ts'
+import { allocCopy, allocPtrSlot, decodePtr, isNullPtr, throwLastError, win32 } from './ffi.ts'
 import type { NativePtr, Win32Bindings } from './ffi.ts'
 import { assertPrivateTempDisjoint } from './path-boundary.ts'
 import { drainPipe, spawnSandboxed, spawnSandboxedInherited, waitForExit } from './spawn.ts'
-import { createRestrictedToken, findLogonSid, makeWellKnownSid, openCurrentProcessToken, setTokenDefaultDaclGrant } from './token.ts'
+import { createRestrictedToken, findLogonSid, makeWellKnownSid, openCurrentProcessToken, setTokenDefaultDaclGrant, setTokenIntegrityLow } from './token.ts'
 import * as abi from './win32-abi.ts'
 
 export { quoteArg } from './spawn.ts'
@@ -60,7 +64,7 @@ export { Win32Error } from './errors.ts'
 
 /** Construction options: the workspace/temp allowlists and their distinct SID identities. */
 export interface AclSandboxOptions {
-  /** Directories the confined child may write into (must exist and be caller-owned). */
+  /** Directories the confined child may write into (must exist, be caller-owned, and grant the caller WRITE_OWNER for the Low label). */
   writableDirs: readonly string[]
   /**
    * Existing private temp directory to grant. Workspace-write callers must
@@ -282,6 +286,12 @@ export class AclSandbox {
         this.mode,
       )
       this.token = restrictedToken
+      // Both modes run at Low integrity: DELETE and FILE_DELETE_CHILD fall
+      // outside the WRITE_RESTRICTED check, and only the mandatory integrity
+      // check keeps them off Medium objects outside the Low-labeled roots.
+      const lowSid = allocCopy(abi.LOW_INTEGRITY_SID)
+      this.sidAllocations.push(lowSid)
+      setTokenIntegrityLow(api, restrictedToken, lowSid)
       // The restricted token's default DACL still names only the user's
       // ambient SIDs — none of the restricting SIDs. Every NEW object the
       // confined process creates (anonymous stdio pipes, sync objects) takes

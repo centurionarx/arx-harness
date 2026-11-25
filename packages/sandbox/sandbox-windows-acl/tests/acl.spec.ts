@@ -9,7 +9,7 @@
  * whose per-test lock file is removed in cleanup.
  */
 
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -104,6 +104,50 @@ function readDirectAces(api: Win32Bindings, path: string): DirectAce[] {
   }
 }
 
+/** One mandatory label ACE: AceType, AceFlags, Mask, and the SID string. */
+interface LabelAce {
+  type: number
+  flags: number
+  mask: number
+  sid: string
+}
+
+/**
+ * Read an object's mandatory label ACEs (LABEL_SECURITY_INFORMATION needs
+ * only READ_CONTROL). The SID is decoded field by field so the read never
+ * passes the ACE's own bytes. Only the descriptor is LocalFree'd.
+ */
+function readLabelAces(api: Win32Bindings, path: string): LabelAce[] {
+  const slots = [allocPtrSlot(), allocPtrSlot(), allocPtrSlot(), allocPtrSlot(), allocPtrSlot()] as const
+  koffi.encode(slots[3], koffi.pointer('void'), 0n)
+  const readResult = api.getNamedSecurityInfoW(path, abi.SE_FILE_OBJECT, abi.LABEL_SECURITY_INFORMATION, ...slots)
+  if (readResult !== abi.ERROR_SUCCESS) throw new Error(`GetNamedSecurityInfoW(LABEL) failed (${readResult}) for ${path}`)
+  const acl = decodePtr(slots[3])
+  const descriptor = decodePtr(slots[4])
+  try {
+    if (acl === null) return []
+    const aceCount = koffi.decode(acl, 4, 'uint16') as number
+    const aces: LabelAce[] = []
+    let offset = 8
+    for (let index = 0; index < aceCount; index++) {
+      const sidOffset = offset + 8
+      const count = koffi.decode(acl, sidOffset + 1, 'uint8') as number
+      const authority = koffi.decode(acl, sidOffset + 7, 'uint8') as number
+      const subs = Array.from({ length: count }, (_unused, at) => koffi.decode(acl, sidOffset + 8 + at * 4, 'uint32') as number)
+      aces.push({
+        type: koffi.decode(acl, offset, 'uint8') as number,
+        flags: koffi.decode(acl, offset + 1, 'uint8') as number,
+        mask: koffi.decode(acl, offset + 4, 'uint32') as number,
+        sid: `S-${String(koffi.decode(acl, sidOffset, 'uint8'))}-${String(authority)}${subs.map(sub => `-${String(sub)}`).join('')}`,
+      })
+      offset += koffi.decode(acl, offset + 2, 'uint16') as number
+    }
+    return aces
+  } finally {
+    if (descriptor !== null) api.localFree(descriptor)
+  }
+}
+
 describe.skipIf(!isWin32)('ACL editing', () => {
   const scratchDirs: string[] = []
   afterEach(() => {
@@ -158,7 +202,7 @@ describe.skipIf(!isWin32)('ACL editing', () => {
       grantWrite(api, dir, capabilitySid)
       expect(apply).toHaveBeenCalledTimes(1)
       // The exact ACE now stands (the per-session grant surviving from a
-      // previous server lifetime): the second grant is a DACL read only.
+      // previous server lifetime): the second grant reads the DACL and label only.
       grantWrite(api, dir, capabilitySid)
       expect(apply).toHaveBeenCalledTimes(1)
       const aces = readDirectAces(api, dir)
@@ -167,6 +211,26 @@ describe.skipIf(!isWin32)('ACL editing', () => {
       expect(readDirectAces(api, dir).some(ace => ace.sid === 'S-1-4-4242-2')).toBe(false)
     } finally {
       apply.mockRestore()
+      if (!isNullPtr(capabilitySid)) api.localFree(capabilitySid)
+    }
+  })
+
+  it('grantWrite labels the root Low (OI|CI, NO_WRITE_UP), the label reaches an existing child, and revokeWrite leaves it', async () => {
+    const api = await win32()
+    const dir = scratch()
+    mkdirSync(join(dir, 'nested'))
+    writeFileSync(join(dir, 'nested', 'child.txt'), 'before the grant')
+    const capabilitySid = sidFromString(api, 'S-1-4-4242-3')
+    try {
+      grantWrite(api, dir, capabilitySid)
+      const lowLabel = { type: abi.SYSTEM_MANDATORY_LABEL_ACE_TYPE, mask: abi.SYSTEM_MANDATORY_LABEL_NO_WRITE_UP, sid: 'S-1-16-4096' }
+      expect(readLabelAces(api, dir)).toEqual([{ ...lowLabel, flags: abi.SUB_CONTAINERS_AND_OBJECTS_INHERIT }])
+      const child = readLabelAces(api, join(dir, 'nested', 'child.txt'))
+      expect(child).toEqual([expect.objectContaining(lowLabel)])
+      expect((child[0]?.flags ?? 0) & abi.INHERITED_ACE).toBe(abi.INHERITED_ACE)
+      revokeWrite(api, dir, capabilitySid)
+      expect(readLabelAces(api, dir)).toEqual([{ ...lowLabel, flags: abi.SUB_CONTAINERS_AND_OBJECTS_INHERIT }])
+    } finally {
       if (!isNullPtr(capabilitySid)) api.localFree(capabilitySid)
     }
   })

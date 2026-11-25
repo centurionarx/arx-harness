@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
 import koffi from 'koffi'
 
-import { grantWrite, revokeWrite, withPathLock } from '../src/acl.ts'
+import { buildLowLabelSacl, grantWrite, revokeWrite, withPathLock } from '../src/acl.ts'
 import { allocBytes, ptrAddress } from '../src/ffi.ts'
 import type { NativePtr, Win32Bindings } from '../src/ffi.ts'
 import { Win32Error } from '../src/errors.ts'
@@ -86,6 +86,33 @@ function craftAclWithGrant(sid: NativePtr, match: boolean): NativePtr {
       : offset === 0 ? 9 : 0)
   }
   return acl
+}
+
+/**
+ * One in-memory Low label ACL as buildLowLabelSacl writes it; `mutate`
+ * rewrites single bytes so a test can break exactly one field.
+ */
+function craftLowLabelAcl(mutate: (bytes: Buffer) => void = () => {}): NativePtr {
+  const bytes = buildLowLabelSacl()
+  mutate(bytes)
+  const acl = allocBytes(bytes.length)
+  bytes.forEach((byte, index) => {
+    koffi.encode(acl, index, 'uint8', byte)
+  })
+  return acl
+}
+
+/** A GetNamedSecurityInfoW stub that hands back the given DACL, label ACL, and descriptor addresses. */
+function readsSecurity(dacl: bigint, label: bigint, descriptor: bigint): Win32Bindings['getNamedSecurityInfoW'] {
+  return vi.fn((
+    _path: unknown, _type: unknown, _info: unknown, _owner: unknown, _group: unknown,
+    daclSlot: NativePtr, saclSlot: NativePtr, descriptorSlot: NativePtr,
+  ) => {
+    koffi.encode(daclSlot, PVOID, dacl)
+    koffi.encode(saclSlot, PVOID, label)
+    koffi.encode(descriptorSlot, PVOID, descriptor)
+    return 0
+  })
 }
 
 describe('withPathLock failure paths', () => {
@@ -233,7 +260,25 @@ describe('mergeAndApply failure paths', () => {
     }
     expect(caught).toBeInstanceOf(Win32Error)
     expect((caught as Win32Error).api).toBe('SetNamedSecurityInfoW')
+    expect((caught as Win32Error).message).toContain('requires WRITE_DAC and WRITE_OWNER')
     expect(localFree).toHaveBeenCalledWith(9n)
+  })
+
+  it('a failed revoke apply names only the DACL edit (no label, so no WRITE_OWNER hint)', () => {
+    const sid = craftSid(1, 0)
+    const api = aclApi({
+      getNamedSecurityInfoW: readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), 0n, 6n),
+      setNamedSecurityInfoW: vi.fn(() => 5),
+    })
+    let caught: unknown
+    try {
+      revokeWrite(api, 'C:\\granted', sid)
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(Win32Error)
+    expect((caught as Win32Error).api).toBe('SetNamedSecurityInfoW')
+    expect((caught as Win32Error).message).not.toContain('WRITE_OWNER')
   })
 
   it('reports a failed descriptor LocalFree after a successful apply', () => {
@@ -276,16 +321,17 @@ describe('mergeAndApply failure paths', () => {
 })
 
 describe('the exact-ACE skip and DACL-walk defenses', () => {
-  it('grantWrite skips the apply when the standing exact ACE matches (descriptor freed, nothing merged)', () => {
+  it('grantWrite skips the apply when the standing exact ACE and Low label match (descriptor freed, nothing merged)', () => {
     const sid = craftSid(1, 0)
     const localFree = vi.fn(() => 0n as NativePtr)
     const setNamedSecurityInfoW = vi.fn(() => 0)
     const api = aclApi({
       getNamedSecurityInfoW: vi.fn((
         _path: unknown, _type: unknown, _info: unknown, _owner: unknown, _group: unknown,
-        dacl: NativePtr, _sacl: unknown, descriptor: NativePtr,
+        dacl: NativePtr, sacl: NativePtr, descriptor: NativePtr,
       ) => {
         koffi.encode(dacl, PVOID, ptrAddress(craftAclWithGrant(sid, true)))
+        koffi.encode(sacl, PVOID, ptrAddress(craftLowLabelAcl()))
         koffi.encode(descriptor, PVOID, 6n)
         return 0
       }),
@@ -297,16 +343,17 @@ describe('the exact-ACE skip and DACL-walk defenses', () => {
     expect(localFree).toHaveBeenCalledWith(6n)
   })
 
-  it('grantWrite skips the apply without freeing when the exact ACE stands but no descriptor owns it', () => {
+  it('grantWrite skips the apply without freeing when the exact ACE and label stand but no descriptor owns it', () => {
     const sid = craftSid(1, 0)
     const localFree = vi.fn(() => 0n as NativePtr)
     const setNamedSecurityInfoW = vi.fn(() => 0)
     const api = aclApi({
       getNamedSecurityInfoW: vi.fn((
         _path: unknown, _type: unknown, _info: unknown, _owner: unknown, _group: unknown,
-        dacl: NativePtr, _sacl: unknown, descriptor: NativePtr,
+        dacl: NativePtr, sacl: NativePtr, descriptor: NativePtr,
       ) => {
         koffi.encode(dacl, PVOID, ptrAddress(craftAclWithGrant(sid, true)))
+        koffi.encode(sacl, PVOID, ptrAddress(craftLowLabelAcl()))
         koffi.encode(descriptor, PVOID, 0n) // the read "returned" a bare ACL with no descriptor
         return 0
       }),
@@ -323,9 +370,10 @@ describe('the exact-ACE skip and DACL-walk defenses', () => {
     const api = aclApi({
       getNamedSecurityInfoW: vi.fn((
         _path: unknown, _type: unknown, _info: unknown, _owner: unknown, _group: unknown,
-        dacl: NativePtr, _sacl: unknown, descriptor: NativePtr,
+        dacl: NativePtr, sacl: NativePtr, descriptor: NativePtr,
       ) => {
         koffi.encode(dacl, PVOID, ptrAddress(craftAclWithGrant(sid, true)))
+        koffi.encode(sacl, PVOID, ptrAddress(craftLowLabelAcl()))
         koffi.encode(descriptor, PVOID, 6n)
         return 0
       }),
@@ -402,6 +450,94 @@ describe('the exact-ACE skip and DACL-walk defenses', () => {
     })
     grantWrite(api, 'C:\\granted', sid)
     expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('the Low label: applied with the grant, skipped only when exact', () => {
+  it('buildLowLabelSacl writes one inheritable NO_WRITE_UP label ACE for S-1-16-4096', () => {
+    expect(buildLowLabelSacl().toString('hex')).toBe('02001c0001000000' + '1103140001000000' + '010100000000001000100000')
+  })
+
+  it('grantWrite reads the DACL and label, then applies both in one call', () => {
+    const getNamedSecurityInfoW = readsSecurity(0n, 0n, 0n)
+    const setNamedSecurityInfoW = vi.fn(() => 0)
+    const api = aclApi({ getNamedSecurityInfoW, setNamedSecurityInfoW })
+    grantWrite(api, 'C:\\granted', craftSid(1, 0))
+    expect(getNamedSecurityInfoW).toHaveBeenCalledWith(
+      'C:\\granted', abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION | abi.LABEL_SECURITY_INFORMATION,
+      expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.anything(),
+    )
+    expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(1)
+    expect(setNamedSecurityInfoW).toHaveBeenCalledWith(
+      'C:\\granted', abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION | abi.LABEL_SECURITY_INFORMATION,
+      null, null, 9n, buildLowLabelSacl(),
+    )
+  })
+
+  it('a standing exact ACE without the label (a grant made before the label existed) takes one apply', () => {
+    const sid = craftSid(1, 0)
+    const setNamedSecurityInfoW = vi.fn(() => 0)
+    const api = aclApi({
+      getNamedSecurityInfoW: readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), 0n, 6n),
+      setNamedSecurityInfoW,
+    })
+    grantWrite(api, 'C:\\granted', sid)
+    expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(1)
+  })
+
+  it('skips a non-matching label ACE and matches the exact one after it', () => {
+    const sid = craftSid(1, 0)
+    const exact = buildLowLabelSacl()
+    const ace = exact.subarray(8)
+    const medium = Buffer.from(ace)
+    medium.writeUInt8(0x20, 8 + 9) // S-1-16-8192: the Medium level
+    const twoAces = Buffer.concat([exact.subarray(0, 8), medium, ace])
+    twoAces.writeUInt16LE(twoAces.length, 2)
+    twoAces.writeUInt16LE(2, 4)
+    const label = allocBytes(twoAces.length)
+    twoAces.forEach((byte, index) => {
+      koffi.encode(label, index, 'uint8', byte)
+    })
+    const setNamedSecurityInfoW = vi.fn(() => 0)
+    const api = aclApi({
+      getNamedSecurityInfoW: readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), ptrAddress(label), 6n),
+      setNamedSecurityInfoW,
+    })
+    grantWrite(api, 'C:\\granted', sid)
+    expect(setNamedSecurityInfoW).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['an implausibly small label ACL', (bytes: Buffer) => { bytes.writeUInt16LE(4, 2) }],
+    ['a label ACE that would overrun the ACL', (bytes: Buffer) => { bytes.writeUInt16LE(200, 10) }],
+    ['a label ACE header that is too short', (bytes: Buffer) => { bytes.writeUInt16LE(4, 10) }],
+    ['a different ACE type', (bytes: Buffer) => { bytes.writeUInt8(abi.ACCESS_ALLOWED_ACE_TYPE, 8) }],
+    ['a label that does not inherit', (bytes: Buffer) => { bytes.writeUInt8(0, 9) }],
+    ['a different label policy', (bytes: Buffer) => { bytes.writeUInt32LE(0x3, 12) }],
+    ['a label ACE of another size', (bytes: Buffer) => { bytes.writeUInt16LE(16, 10) }],
+    ['a different integrity level', (bytes: Buffer) => { bytes.writeUInt8(0x20, 25) }],
+  ])('re-applies on %s', (_name, mutate) => {
+    const sid = craftSid(1, 0)
+    const setNamedSecurityInfoW = vi.fn(() => 0)
+    const api = aclApi({
+      getNamedSecurityInfoW: readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), ptrAddress(craftLowLabelAcl(mutate)), 6n),
+      setNamedSecurityInfoW,
+    })
+    grantWrite(api, 'C:\\granted', sid)
+    expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(1)
+  })
+
+  it('revokeWrite reads and rewrites the DACL only, leaving the label untouched', () => {
+    const sid = craftSid(1, 0)
+    const getNamedSecurityInfoW = readsSecurity(ptrAddress(craftAclWithGrant(sid, true)), 0n, 6n)
+    const setNamedSecurityInfoW = vi.fn(() => 0)
+    const api = aclApi({ getNamedSecurityInfoW, setNamedSecurityInfoW })
+    expect(revokeWrite(api, 'C:\\granted', sid)).toBe(true)
+    expect(getNamedSecurityInfoW).toHaveBeenCalledWith(
+      'C:\\granted', abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION,
+      expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.anything(),
+    )
+    expect(setNamedSecurityInfoW).toHaveBeenCalledWith('C:\\granted', abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION, null, null, 9n, null)
   })
 })
 

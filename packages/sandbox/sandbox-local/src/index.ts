@@ -15,8 +15,8 @@
  * session); the private-temp ACEs are revoked on dispose. The runner
  * receives both SIDs (their presence marks the seam-managed contract) and
  * stops managing DACLs itself. The rung reports partial enforcement because
- * WRITE_RESTRICTED must retain Everyone in its
- * restricting list and NTFS hard links alias one file object across paths.
+ * WRITE_RESTRICTED must retain Everyone, Low-labeled objects outside the roots
+ * stay deletable, and NTFS hard links alias one file object across paths.
  * @module @arx-ai/arx-sandbox-local
  */
 
@@ -179,10 +179,11 @@ const STATIC_ENFORCEMENT: Record<SelectedRunner['runner'], SandboxEnforcement> =
   landlock: 'full',
   seatbelt: 'full',
   // WRITE_RESTRICTED needs Everyone in both restricting lists for process
-  // initialization. An external object that grants Everyone write access
-  // therefore remains writable, and NTFS hard links can alias a granted
-  // workspace file to a path outside it. The backend enforces the remaining
-  // ACL-addressable surface but must not advertise the absolute promise.
+  // initialization. A Low-labeled external object that grants Everyone write
+  // access therefore remains writable, other Low-labeled objects remain
+  // deletable, and NTFS hard links can alias a granted workspace file to a
+  // path outside it. The backend enforces the remaining ACL-addressable
+  // surface but must not advertise the absolute promise.
   'windows-acl': 'partial',
 }
 
@@ -515,7 +516,7 @@ export class LocalSandboxProvider extends SandboxProvider {
     // every promised file effect by construction, so their passing probes
     // are always full enforcement; the Landlock launcher's probe report
     // distinguishes full from per-ABI-partial, while windows-acl is always
-    // partial for its documented Everyone and hard-link boundaries.
+    // partial for its documented Everyone, Low-label, and hard-link boundaries.
     switch (runner) {
       case 'bwrap': {
         const probe = this.internals.probeBwrap ?? (() => defaultProbeBwrap(this.probeTimeoutMs))

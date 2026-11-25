@@ -34,6 +34,7 @@ interface HappyStubs {
   createRestrictedToken: MockFn
   createJobObjectW: MockFn
   getNamedSecurityInfoW: MockFn
+  setTokenInformation: MockFn
 }
 
 const state = vi.hoisted(() => ({ stubs: undefined as HappyStubs | undefined }))
@@ -164,7 +165,7 @@ function happyStubs(): HappyStubs {
   } as unknown as Win32Bindings
   return {
     api, setNamedSecurityInfoW, convertStringSidToSidW, closeHandle, localFree,
-    createRestrictedToken, createJobObjectW, getNamedSecurityInfoW,
+    createRestrictedToken, createJobObjectW, getNamedSecurityInfoW, setTokenInformation,
   }
 }
 
@@ -225,6 +226,40 @@ describe('AclSandbox init', () => {
     await sandbox.init()
     expect(sandbox.tempDir).toBe(resolve(temp))
     expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(2)
+  })
+
+  it.each(['read-only', 'workspace-write'] as const)('%s: lowers the restricted token to Low integrity before merging its default DACL', async (mode) => {
+    const { setTokenInformation } = state.stubs as HappyStubs
+    const sandbox = mode === 'read-only'
+      ? new AclSandbox({ writableDirs: [], tempDir: null, mode })
+      : new AclSandbox({ writableDirs: [scratch()], tempDir: null, writeSid: 'S-1-4-9000-20', mode })
+    await sandbox.init()
+    const classes = setTokenInformation.mock.calls.map(call => call[1] as number)
+    expect(classes).toEqual([abi.TokenIntegrityLevel, abi.TokenDefaultDacl])
+    const [, , label, length] = setTokenInformation.mock.calls[0] as [unknown, number, Buffer, number]
+    expect(label.readUInt32LE(8)).toBe(abi.SE_GROUP_INTEGRITY)
+    expect(label.readBigUInt64LE(0)).not.toBe(0n)
+    expect(length).toBe(abi.TOKEN_MANDATORY_LABEL_SIZE + abi.LOW_INTEGRITY_SID.length)
+    sandbox.dispose()
+  })
+
+  it('fails closed when lowering the integrity level fails: the temp grant is revoked and nothing spawns', async () => {
+    const { setTokenInformation, setNamedSecurityInfoW, getNamedSecurityInfoW } = state.stubs as HappyStubs
+    setTokenInformation.mockImplementation((_token: unknown, cls: number) => (cls === abi.TokenIntegrityLevel ? 0 : 1))
+    const sandbox = new AclSandbox({
+      writableDirs: [scratch()],
+      tempDir: scratch(),
+      writeSid: 'S-1-4-9000-21',
+      tempWriteSid: 'S-1-4-9000-21-1',
+      mode: 'workspace-write',
+    })
+    await expect(sandbox.init()).rejects.toThrow(/SetTokenInformation/u)
+    expect(setNamedSecurityInfoW).toHaveBeenCalledTimes(2) // workspace grant, temp grant
+    // The third read is the temp revocation, DACL only (the stub DACL is empty, so nothing is re-applied).
+    expect(getNamedSecurityInfoW).toHaveBeenCalledTimes(3)
+    expect(getNamedSecurityInfoW.mock.calls[2]?.[2]).toBe(abi.DACL_SECURITY_INFORMATION)
+    expect(sandbox.tempDir).toBeUndefined()
+    expect(() => sandbox.spawn({ command: 'cmd.exe' })).toThrow(/not initialized/u)
   })
 
   it('requires an explicit private temp directory or null under workspace-write', () => {

@@ -1,7 +1,9 @@
 /**
  * ACL editing helpers: grant/revoke a capability SID on a directory via
  * SetEntriesInAclW + SetNamedSecurityInfoW (the same calls the POC uses, with
- * the failure handling the POC lacks). Every API call is checked and every
+ * the failure handling the POC lacks). A grant also labels the directory
+ * Low, in the same call, so the Low-integrity confined token can write and
+ * delete inside it. Every API call is checked and every
  * failure is reported with the API name, the exact Win32 code, the formatted
  * system text, and the affected path.
  *
@@ -16,7 +18,7 @@ import { createHash } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-import { allocOverlapped, allocPtrSlot, decodePtr, decodeUint8At, decodeUint16At, decodeUint32At, getTempPath, isInvalidHandle, isNullPtr, ptrAddress, sameSidAt, throwLastError, throwWin32 } from './ffi.ts'
+import { allocNullPtrSlot, allocOverlapped, allocPtrSlot, decodePtr, decodeUint8At, decodeUint16At, decodeUint32At, getTempPath, isInvalidHandle, isNullPtr, ptrAddress, sameSidAt, throwLastError, throwWin32 } from './ffi.ts'
 import type { NativePtr, Win32Bindings } from './ffi.ts'
 import * as abi from './win32-abi.ts'
 
@@ -109,40 +111,73 @@ export function withPathLock<T>(api: Win32Bindings, path: string, action: () => 
 }
 
 /**
- * Read the directory's current explicit DACL via GetNamedSecurityInfoW.
- * Allocation contract (the POC's RevokeAccess, minus its missing checks): the
- * returned ACL pointer sits INSIDE the security descriptor allocation — only
- * the descriptor may be LocalFree'd, and it must not be freed before
- * SetEntriesInAclW has consumed the ACL. Freeing the ACL pointer itself
- * corrupts the heap (verified the hard way).
+ * Read the directory's current explicit DACL via GetNamedSecurityInfoW, and
+ * its mandatory label when `withLabel` is set (LABEL_SECURITY_INFORMATION
+ * needs only READ_CONTROL). Allocation contract (the POC's RevokeAccess,
+ * minus its missing checks): the returned ACL pointers sit INSIDE the
+ * security descriptor allocation — only the descriptor may be LocalFree'd,
+ * and it must not be freed before SetEntriesInAclW has consumed the ACL.
+ * Freeing an ACL pointer itself corrupts the heap (verified the hard way).
  * @param api - the binding table.
- * @param path - the directory whose DACL is read.
- * @returns the current explicit DACL (null when the directory carries none) and its owning descriptor.
+ * @param path - the directory whose security is read.
+ * @param withLabel - also read the mandatory label.
+ * @returns the current explicit DACL and label ACL (null when absent) and their owning descriptor.
  */
-function readCurrentDacl(api: Win32Bindings, path: string): { oldAcl: NativePtr | null; descriptor: NativePtr | null } {
+function readCurrentSecurity(
+  api: Win32Bindings,
+  path: string,
+  withLabel: boolean,
+): { oldAcl: NativePtr | null; labelAcl: NativePtr | null; descriptor: NativePtr | null } {
   const ownerSlot = allocPtrSlot()
   const groupSlot = allocPtrSlot()
   const daclSlot = allocPtrSlot()
-  const saclSlot = allocPtrSlot()
+  const saclSlot = allocNullPtrSlot()
   const descriptorSlot = allocPtrSlot()
   const readResult = api.getNamedSecurityInfoW(
-    path, abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION,
+    path, abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION | (withLabel ? abi.LABEL_SECURITY_INFORMATION : 0),
     ownerSlot, groupSlot, daclSlot, saclSlot, descriptorSlot,
   )
   if (readResult !== abi.ERROR_SUCCESS) throwWin32(api, 'GetNamedSecurityInfoW', readResult, path)
-  return { oldAcl: decodePtr(daclSlot), descriptor: decodePtr(descriptorSlot) }
+  return { oldAcl: decodePtr(daclSlot), labelAcl: withLabel ? decodePtr(saclSlot) : null, descriptor: decodePtr(descriptorSlot) }
+}
+
+/**
+ * The SACL every granted root carries: one SYSTEM_MANDATORY_LABEL_ACE for
+ * the Low level with NO_WRITE_UP, inherited by subdirectories and files
+ * (OI|CI). The confined token runs at Low (`setTokenIntegrityLow` in
+ * token.ts), so only Low-labeled trees pass its mandatory integrity check
+ * for write and delete access. Layout: ACL header (AclRevision@0,
+ * AclSize@2, AceCount@4; 8 bytes), ACE header (AceType@8, AceFlags@9,
+ * AceSize@10), Mask@12, inline SID@16 (12 bytes).
+ * @returns the self-contained label ACL.
+ */
+export function buildLowLabelSacl(): Buffer {
+  const aceSize = 8 + abi.LOW_INTEGRITY_SID.length
+  const acl = Buffer.alloc(8 + aceSize)
+  acl.writeUInt8(abi.ACL_REVISION, 0)
+  acl.writeUInt16LE(acl.length, 2)
+  acl.writeUInt16LE(1, 4)
+  acl.writeUInt8(abi.SYSTEM_MANDATORY_LABEL_ACE_TYPE, 8)
+  acl.writeUInt8(abi.SUB_CONTAINERS_AND_OBJECTS_INHERIT, 9)
+  acl.writeUInt16LE(aceSize, 10)
+  acl.writeUInt32LE(abi.SYSTEM_MANDATORY_LABEL_NO_WRITE_UP, 12)
+  Buffer.from(abi.LOW_INTEGRITY_SID).copy(acl, 16)
+  return acl
 }
 
 /**
  * Shared tail of grantWrite and revokeWrite: merge `entry` into `oldAcl`
  * (null = no explicit DACL yet; SetEntriesInAclW builds one from scratch),
- * free the descriptor before applying the merged ACL, apply it, then free the
- * merged ACL — checking every call and reporting with the caller's label.
+ * free the descriptor before applying the merged ACL, apply it (with the Low
+ * label when `labelSacl` is given, in the same SetNamedSecurityInfoW call so
+ * the tree propagates once), then free the merged ACL — checking every call
+ * and reporting with the caller's label.
  * @param api - the binding table.
  * @param path - the directory the DACL edit applies to.
  * @param entry - the EXPLICIT_ACCESS_W to merge (grant or revoke).
- * @param oldAcl - the current explicit DACL (from {@link readCurrentDacl}).
+ * @param oldAcl - the current explicit DACL (from {@link readCurrentSecurity}).
  * @param descriptor - the descriptor allocation owning `oldAcl`.
+ * @param labelSacl - the label to apply alongside the DACL, or null to leave the label untouched.
  * @param label - the caller's name for error details.
  */
 function mergeAndApply(
@@ -151,6 +186,7 @@ function mergeAndApply(
   entry: Buffer,
   oldAcl: NativePtr | null,
   descriptor: NativePtr | null,
+  labelSacl: Buffer | null,
   label: string,
 ): void {
   const newAclSlot = allocPtrSlot()
@@ -169,11 +205,15 @@ function mergeAndApply(
   // before applying, exactly like the POC.
   const freedDescriptor = descriptor !== null ? api.localFree(descriptor) : null
   const applyResult = api.setNamedSecurityInfoW(
-    path, abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION,
-    null, null, newAcl, null,
+    path, abi.SE_FILE_OBJECT, abi.DACL_SECURITY_INFORMATION | (labelSacl === null ? 0 : abi.LABEL_SECURITY_INFORMATION),
+    null, null, newAcl, labelSacl,
   )
   const freedNew = api.localFree(newAcl)
-  if (applyResult !== abi.ERROR_SUCCESS) throwWin32(api, 'SetNamedSecurityInfoW', applyResult, `${label}(${path})`)
+  if (applyResult !== abi.ERROR_SUCCESS) {
+    // Setting the label needs WRITE_OWNER, which ownership does not imply:
+    // name it so an access-denied grant points at the missing right.
+    throwWin32(api, 'SetNamedSecurityInfoW', applyResult, labelSacl === null ? `${label}(${path})` : `${label}(${path}) DACL and Low label (requires WRITE_DAC and WRITE_OWNER)`)
+  }
   if (freedDescriptor !== null && !isNullPtr(freedDescriptor)) throwLastError(api, 'LocalFree', `${label}(${path}) descriptor`)
   if (!isNullPtr(freedNew)) throwLastError(api, 'LocalFree', `${label}(${path}) new ACL`)
 }
@@ -189,7 +229,7 @@ function mergeAndApply(
  * reads ({@link sameSidAt}). A malformed header reads as "no exact grant"
  * so the caller falls back to the merge-apply path, which owns the robust
  * failure handling.
- * @param oldAcl - the current explicit DACL pointer (from {@link readCurrentDacl}).
+ * @param oldAcl - the current explicit DACL pointer (from {@link readCurrentSecurity}).
  * @param sidPtr - the capability SID to match.
  * @returns whether the exact grant ACE is already present.
  */
@@ -213,33 +253,64 @@ function hasExactGrant(oldAcl: NativePtr, sidPtr: NativePtr): boolean {
 }
 
 /**
+ * True when the label ACL carries the EXACT label {@link buildLowLabelSacl}
+ * writes (SYSTEM_MANDATORY_LABEL_ACE, OI|CI, NO_WRITE_UP, S-1-16-4096),
+ * read field by field like {@link hasExactGrant}. A malformed header reads as
+ * "no exact label" so the caller re-applies it.
+ * @param labelAcl - the label ACL pointer (from {@link readCurrentSecurity}).
+ * @returns whether the exact Low label is already present.
+ */
+function hasLowLabel(labelAcl: NativePtr): boolean {
+  const aclSize = decodeUint16At(labelAcl, 2)
+  const aceCount = decodeUint16At(labelAcl, 4)
+  if (aclSize < 8 || aclSize > 1_048_576) return false
+  let offset = 8
+  for (let index = 0; index < aceCount; index++) {
+    const aceSize = decodeUint16At(labelAcl, offset + 2)
+    if (aceSize < 8 || offset + aceSize > aclSize) return false
+    const exact = decodeUint8At(labelAcl, offset) === abi.SYSTEM_MANDATORY_LABEL_ACE_TYPE
+      && decodeUint8At(labelAcl, offset + 1) === abi.SUB_CONTAINERS_AND_OBJECTS_INHERIT
+      && decodeUint32At(labelAcl, offset + 4) === abi.SYSTEM_MANDATORY_LABEL_NO_WRITE_UP
+      && aceSize === 8 + abi.LOW_INTEGRITY_SID.length
+      && abi.LOW_INTEGRITY_SID.every((byte, at) => decodeUint8At(labelAcl, offset + 8 + at) === byte)
+    if (exact) return true
+    offset += aceSize
+  }
+  return false
+}
+
+/**
  * Grant `GRANT_MASK` (Write+Delete, displays as "Modify") to the capability SID
- * on `path`, inheriting to subcontainers and objects. Idempotent: when the
- * directory's current explicit DACL already carries the exact ACE (the
- * per-session grant surviving from a previous server lifetime), the
+ * on `path`, and label `path` Low, both inheriting to subcontainers and
+ * objects. The confined token runs at Low integrity, so without the label it
+ * could not write or delete inside the granted tree. Idempotent: when the
+ * directory already carries the exact ACE AND the exact Low label (the
+ * standing workspace grant surviving from a previous server lifetime), the
  * SetNamedSecurityInfoW apply is SKIPPED — it would otherwise re-propagate
- * the identical ACE across the whole tree (eager inheritance; minutes on
- * large workspaces). Otherwise read-merge-write: the new ACE merges into the
- * directory's CURRENT explicit DACL (same shape as {@link revokeWrite}), so
- * pre-existing explicit ACEs survive. Runs under the per-path lock. The
- * directory must be owned by the caller (owner implicit WRITE_DAC) — same
- * precondition as the POC.
+ * across the whole tree (eager inheritance; minutes on large workspaces). A
+ * directory with the ACE but no label (granted before the label existed)
+ * takes one apply, which propagates both. Otherwise read-merge-write: the
+ * new ACE merges into the directory's CURRENT explicit DACL (same shape as
+ * {@link revokeWrite}), so pre-existing explicit ACEs survive. Runs under
+ * the per-path lock. Preconditions: the caller owns the directory (owner
+ * implicit WRITE_DAC, the POC's precondition) and holds WRITE_OWNER on it,
+ * which setting a mandatory label requires.
  * @param api - the binding table.
  * @param path - the directory whose DACL gains the grant (the workspace or temp root).
  * @param sidPtr - the capability SID the ACE names.
  */
 export function grantWrite(api: Win32Bindings, path: string, sidPtr: NativePtr): void {
   withPathLock(api, path, () => {
-    const { oldAcl, descriptor } = readCurrentDacl(api, path)
-    if (oldAcl !== null && hasExactGrant(oldAcl, sidPtr)) {
-      // The exact ACE stands: releasing the descriptor is the whole operation.
+    const { oldAcl, labelAcl, descriptor } = readCurrentSecurity(api, path, true)
+    if (oldAcl !== null && hasExactGrant(oldAcl, sidPtr) && labelAcl !== null && hasLowLabel(labelAcl)) {
+      // The exact ACE and label stand: releasing the descriptor is the whole operation.
       if (descriptor !== null) {
         const freed = api.localFree(descriptor)
         if (!isNullPtr(freed)) throwLastError(api, 'LocalFree', `grantWrite(${path}) descriptor`)
       }
       return
     }
-    mergeAndApply(api, path, buildExplicitAccess(sidPtr, abi.GRANT_ACCESS, abi.GRANT_MASK), oldAcl, descriptor, 'grantWrite')
+    mergeAndApply(api, path, buildExplicitAccess(sidPtr, abi.GRANT_ACCESS, abi.GRANT_MASK), oldAcl, descriptor, buildLowLabelSacl(), 'grantWrite')
   })
 }
 
@@ -249,7 +320,7 @@ export function grantWrite(api: Win32Bindings, path: string, sidPtr: NativePtr):
  * attempted (false when the directory carries no DACL at all).
  *
  * Runs under the per-path lock (the whole get-merge-set sequence); the
- * descriptor/ACL allocation contract lives on {@link readCurrentDacl}.
+ * descriptor/ACL allocation contract lives on {@link readCurrentSecurity}.
  * @param api - the binding table.
  * @param path - the directory whose DACL loses the capability-SID ACEs.
  * @param sidPtr - the capability SID whose ACEs are removed.
@@ -257,7 +328,7 @@ export function grantWrite(api: Win32Bindings, path: string, sidPtr: NativePtr):
  */
 export function revokeWrite(api: Win32Bindings, path: string, sidPtr: NativePtr): boolean {
   return withPathLock(api, path, () => {
-    const { oldAcl, descriptor } = readCurrentDacl(api, path)
+    const { oldAcl, descriptor } = readCurrentSecurity(api, path, false)
     if (oldAcl === null) {
       if (descriptor !== null) {
         const freed = api.localFree(descriptor)
@@ -265,7 +336,7 @@ export function revokeWrite(api: Win32Bindings, path: string, sidPtr: NativePtr)
       }
       return false
     }
-    mergeAndApply(api, path, buildExplicitAccess(sidPtr, abi.REVOKE_ACCESS, 0), oldAcl, descriptor, 'revokeWrite')
+    mergeAndApply(api, path, buildExplicitAccess(sidPtr, abi.REVOKE_ACCESS, 0), oldAcl, descriptor, null, 'revokeWrite')
     return true
   })
 }
