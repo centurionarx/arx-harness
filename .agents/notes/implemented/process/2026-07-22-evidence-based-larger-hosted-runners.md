@@ -10,7 +10,7 @@ Larger runners make it possible to pay setup once and parallelize inside the rep
 
 ## Decision
 
-The enterprise keeps repo-restricted x64 larger-runner pools for Ubuntu and Windows. Ordinary pull requests run the three primary Linux jobs on the 16-core Ubuntu 24.04 pool and the independent native Windows signal on the 16-core Windows 2025 pool. The required Wine signal remains on standard hosted Linux. Public IPs are disabled, and workflow concurrency remains bounded because an autoscaling ceiling neither allocates idle machines nor makes repository work scale without limit.
+The enterprise keeps repo-restricted x64 larger-runner pools for Ubuntu and Windows. Ordinary pull requests run the three primary Linux jobs on the 16-core Ubuntu 24.04 pool and the native Windows job on the 16-core Windows 2025 pool. The required Wine signal remains on standard hosted Linux. Public IPs are disabled, and workflow concurrency remains bounded because an autoscaling ceiling neither allocates idle machines nor makes repository work scale without limit.
 
 The required primary path depends on those enterprise pools. Standard GitHub-hosted jobs retain the Node 22.19, Node 26, and Python SDK compatibility contracts, while the [portable recovery boundary](2026-07-23-portable-required-pull-request-ci.md) and [serial reference](2026-07-21-serial-cross-platform-ci-reference.md) keep complete-aggregate evidence available on `master` through the self-hosted standby pools (no Linux hosted serial reference remains). `suite=larger-runner-benchmark` compares isolated critical lanes across provisioned sizes, and `suite=consolidated-runner-benchmark` compares whole aggregates. Each benchmark reports its observed processor and memory capacity before running repository work.
 

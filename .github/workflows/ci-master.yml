@@ -267,7 +267,7 @@ jobs:
           dest: ${{ runner.temp }}/setup-pnpm
 
       # The benchmark's Windows lanes deliberately skip the store cache like
-      # the independent native Windows job; an empty input disables caching.
+      # the native Windows pull-request job; an empty input disables caching.
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.PRIMARY_NODE_VERSION }}
